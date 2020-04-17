@@ -7,55 +7,53 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20642C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 01:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20B07C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 01:04:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C46E820776
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 01:02:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C468620776
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 01:04:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="nfuuW22a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C46E820776
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="K+nttMMp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C468620776
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493HrG6gLZzDrFj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 11:02:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493HtW5nbKzF0QQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 11:04:35 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493Hp23hcTzDqSG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493Hp231rBzDqFv
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 11:00:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=nfuuW22a; 
+ header.a=rsa-sha256 header.s=201602 header.b=K+nttMMp; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 493Hp22p84z9sRN; Fri, 17 Apr 2020 11:00:42 +1000 (AEST)
+ id 493Hp21kWhz9sSG; Fri, 17 Apr 2020 11:00:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1587085242;
- bh=g1ERQ546dSK/iDMW/vYxYEg//1XoTyotxttCfMkrVjg=;
+ bh=yoah8bflFH5+cIjZW68ZwOiWwUY28dTHfS4xBrV55Lg=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=nfuuW22aTv5Z15ezeMLKG24F0NK/WIaRzA9pEnl6YeZIoRMNSHsrHTIENWaJm+v/y
- rysf+XzfR1PJs5Y83K7zXL4c82mhHRPAyLLw+XtvglbTzwnw+LHNGzah11hglaA8lm
- /WYJLFcQZUVeQFIrPX5NY0cH9c/WR1W0/JVSEBYk=
-Date: Fri, 17 Apr 2020 10:47:28 +1000
+ b=K+nttMMp/QFurxERBnQtMKnndcRtzCwL2DLHLx1Hn3NSPTBUUag1ymTvHTKORXgt6
+ 9kX/XlyDnwx0RIjZfU8cN4t4jP3ceEBt7giarpHxcE10EsoOBekvi9awjOZhageKdt
+ t4aMiN4AL4r/Gpqk4rSJK0jBdFTZiER6BKaDOzeo=
+Date: Fri, 17 Apr 2020 10:40:12 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Handle non-present PTEs in page
- fault functions
-Message-ID: <20200417004728.GB2102@umbus.fritz.box>
-References: <20200416050335.GB10545@blackberry>
- <a4e1bf29-af52-232e-d0d2-06206fa05fbe@kaod.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] target/ppc: Fix mtmsr(d) L=1 variant that loses interrupts
+Message-ID: <20200417004012.GA2102@umbus.fritz.box>
+References: <20200414111131.465560-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="U+BazGySraz5kW0T"
+ protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
 Content-Disposition: inline
-In-Reply-To: <a4e1bf29-af52-232e-d0d2-06206fa05fbe@kaod.org>
+In-Reply-To: <20200414111131.465560-1-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,144 +65,182 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, groug@kaod.org, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: qemu-devel@nongnu.org, qemu-stable@nongnu.org,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>, qemu-ppc@nongnu.org,
+ Nathan Chancellor <natechancellor@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---U+BazGySraz5kW0T
-Content-Type: text/plain; charset=iso-8859-1
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 16, 2020 at 10:07:49AM +0200, C=E9dric Le Goater wrote:
-> On 4/16/20 7:03 AM, Paul Mackerras wrote:
-> > Since cd758a9b57ee "KVM: PPC: Book3S HV: Use __gfn_to_pfn_memslot in HPT
-> > page fault handler", it's been possible in fairly rare circumstances to
-> > load a non-present PTE in kvmppc_book3s_hv_page_fault() when running a
-> > guest on a POWER8 host.
-> >=20
-> > Because that case wasn't checked for, we could misinterpret the non-pre=
-sent
-> > PTE as being a cache-inhibited PTE.  That could mismatch with the
-> > corresponding hash PTE, which would cause the function to fail with -EF=
-AULT
-> > a little further down.  That would propagate up to the KVM_RUN ioctl()
-> > generally causing the KVM userspace (usually qemu) to fall over.
-> >=20
-> > This addresses the problem by catching that case and returning to the g=
-uest
-> > instead, letting it fault again, and retrying the whole page fault from
-> > the beginning.
-> >=20
-> > For completeness, this fixes the radix page fault handler in the same
-> > way.  For radix this didn't cause any obvious misbehaviour, because we
-> > ended up putting the non-present PTE into the guest's partition-scoped
-> > page tables, leading immediately to another hypervisor data/instruction
-> > storage interrupt, which would go through the page fault path again
-> > and fix things up.
-> >=20
-> > Fixes: cd758a9b57ee "KVM: PPC: Book3S HV: Use __gfn_to_pfn_memslot in H=
-PT page fault handler"
-> > Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=3D1820402
-> > Reported-by: David Gibson <david@gibson.dropbear.id.au>
-> > Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+On Tue, Apr 14, 2020 at 09:11:31PM +1000, Nicholas Piggin wrote:
+65;5803;1c> If mtmsr L=3D1 sets MSR[EE] while there is a maskable exception=
+ pending,
+> it does not cause an interrupt. This causes the test case to hang:
 >=20
-> I didn't see the reported issue with the current 5.7-rc1. Anyhow I gave
-> this patch a try on a P8 host and a P9 host with a radix guest and a hash=
-=20
-> guest (using rhel6). Passthrough is fine also.
+> https://lists.gnu.org/archive/html/qemu-ppc/2019-10/msg00826.html
 >=20
-> Tested-by: C=E9dric Le Goater <clg@kaod.org>
+> More recently, Linux reduced the occurance of operations (e.g., rfi)
+> which stop translation and allow pending interrupts to be processed.
+> This started causing hangs in Linux boot in long-running kernel tests,
+> running with '-d int' shows the decrementer stops firing despite DEC
+> wrapping and MSR[EE]=3D1.
 >=20
-> The code looks correct,
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-April/208301.html
 >=20
-> Reviewed-by: C=E9dric Le Goater <clg@kaod.org>
+> The cause is the broken mtmsr L=3D1 behaviour, which is contrary to the
+> architecture. From Power ISA v3.0B, p.977, Move To Machine State Register,
+> Programming Note states:
+>=20
+>     If MSR[EE]=3D0 and an External, Decrementer, or Performance Monitor
+>     exception is pending, executing an mtmsrd instruction that sets
+>     MSR[EE] to 1 will cause the interrupt to occur before the next
+>     instruction is executed, if no higher priority exception exists
+>=20
+> Fix this by handling L=3D1 exactly the same way as L=3D0, modulo the MSR
+> bits altered.
+>=20
+> The confusion arises from L=3D0 being "context synchronizing" whereas L=
+=3D1
+> is "execution synchronizing", which is a weaker semantic. However this
+> is not a relaxation of the requirement that these exceptions cause
+> interrupts when MSR[EE]=3D1 (e.g., when mtmsr executes to completion as
+> TCG is doing here), rather it specifies how a pipelined processor can
+> have multiple instructions in flight where one may influence how another
+> behaves.
+>=20
+> Cc: qemu-stable@nongnu.org
+> Reported-by: Anton Blanchard <anton@ozlabs.org>
+> Reported-by: Nathan Chancellor <natechancellor@gmail.com>
+> Tested-by: Nathan Chancellor <natechancellor@gmail.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> Thanks very much to Nathan for reporting and testing it, I added his
+> Tested-by tag despite a more polished patch, as the the basics are=20
+> still the same (and still fixes his test case here).
+>=20
+> This bug possibly goes back to early v2.04 / mtmsrd L=3D1 support around
+> 2007, and the code has been changed several times since then so may
+> require some backporting.
+>=20
+> 32-bit / mtmsr untested at the moment, I don't have an environment
+> handy.
+>=20
+>  target/ppc/translate.c | 46 +++++++++++++++++++++++++-----------------
+>  1 file changed, 27 insertions(+), 19 deletions(-)
 
-I ran my test case overnight with this patch for over 1000 iterations,
-without any apparent problems so
-
-Tested-by: David Gibson <david@gibson.dropbear.id.au>
+Applied to ppc-for-5.0.
 
 >=20
-> Thanks,
->=20
-> C.=20
->=20
->=20
-> > ---
-> > This is a reworked version of the patch David Gibson sent recently,
-> > with the fix applied to the radix case as well. The commit message
-> > is mostly stolen from David's patch.
-> >=20
-> >  arch/powerpc/kvm/book3s_64_mmu_hv.c    | 9 +++++----
-> >  arch/powerpc/kvm/book3s_64_mmu_radix.c | 9 +++++----
-> >  2 files changed, 10 insertions(+), 8 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/boo=
-k3s_64_mmu_hv.c
-> > index 3aecec8..20b7dce 100644
-> > --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> > @@ -604,18 +604,19 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *r=
-un, struct kvm_vcpu *vcpu,
-> >  	 */
-> >  	local_irq_disable();
-> >  	ptep =3D __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-> > +	pte =3D __pte(0);
-> > +	if (ptep)
-> > +		pte =3D *ptep;
-> > +	local_irq_enable();
-> >  	/*
-> >  	 * If the PTE disappeared temporarily due to a THP
-> >  	 * collapse, just return and let the guest try again.
-> >  	 */
-> > -	if (!ptep) {
-> > -		local_irq_enable();
-> > +	if (!pte_present(pte)) {
-> >  		if (page)
-> >  			put_page(page);
-> >  		return RESUME_GUEST;
-> >  	}
-> > -	pte =3D *ptep;
-> > -	local_irq_enable();
-> >  	hpa =3D pte_pfn(pte) << PAGE_SHIFT;
-> >  	pte_size =3D PAGE_SIZE;
-> >  	if (shift)
-> > diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/=
-book3s_64_mmu_radix.c
-> > index 134fbc1..7bf94ba 100644
-> > --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> > +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> > @@ -815,18 +815,19 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcp=
-u *vcpu,
-> >  	 */
-> >  	local_irq_disable();
-> >  	ptep =3D __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-> > +	pte =3D __pte(0);
-> > +	if (ptep)
-> > +		pte =3D *ptep;
-> > +	local_irq_enable();
-> >  	/*
-> >  	 * If the PTE disappeared temporarily due to a THP
-> >  	 * collapse, just return and let the guest try again.
-> >  	 */
-> > -	if (!ptep) {
-> > -		local_irq_enable();
-> > +	if (!pte_present(pte)) {
-> >  		if (page)
-> >  			put_page(page);
-> >  		return RESUME_GUEST;
-> >  	}
-> > -	pte =3D *ptep;
-> > -	local_irq_enable();
-> > =20
-> >  	/* If we're logging dirty pages, always map single pages */
-> >  	large_enable =3D !(memslot->flags & KVM_MEM_LOG_DIRTY_PAGES);
-> >=20
->=20
+> diff --git a/target/ppc/translate.c b/target/ppc/translate.c
+> index b207fb5386..9959259dba 100644
+> --- a/target/ppc/translate.c
+> +++ b/target/ppc/translate.c
+> @@ -4361,30 +4361,34 @@ static void gen_mtmsrd(DisasContext *ctx)
+>      CHK_SV;
+> =20
+>  #if !defined(CONFIG_USER_ONLY)
+> +    if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
+> +        gen_io_start();
+> +    }
+>      if (ctx->opcode & 0x00010000) {
+> -        /* Special form that does not need any synchronisation */
+> +        /* L=3D1 form only updates EE and RI */
+>          TCGv t0 =3D tcg_temp_new();
+> +        TCGv t1 =3D tcg_temp_new();
+>          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
+>                          (1 << MSR_RI) | (1 << MSR_EE));
+> -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
+> +        tcg_gen_andi_tl(t1, cpu_msr,
+>                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
+> -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
+> +        tcg_gen_or_tl(t1, t1, t0);
+> +
+> +        gen_helper_store_msr(cpu_env, t1);
+>          tcg_temp_free(t0);
+> +        tcg_temp_free(t1);
+> +
+>      } else {
+>          /*
+>           * XXX: we need to update nip before the store if we enter
+>           *      power saving mode, we will exit the loop directly from
+>           *      ppc_store_msr
+>           */
+> -        if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
+> -            gen_io_start();
+> -        }
+>          gen_update_nip(ctx, ctx->base.pc_next);
+>          gen_helper_store_msr(cpu_env, cpu_gpr[rS(ctx->opcode)]);
+> -        /* Must stop the translation as machine state (may have) changed=
+ */
+> -        /* Note that mtmsr is not always defined as context-synchronizin=
+g */
+> -        gen_stop_exception(ctx);
+>      }
+> +    /* Must stop the translation as machine state (may have) changed */
+> +    gen_stop_exception(ctx);
+>  #endif /* !defined(CONFIG_USER_ONLY) */
+>  }
+>  #endif /* defined(TARGET_PPC64) */
+> @@ -4394,15 +4398,23 @@ static void gen_mtmsr(DisasContext *ctx)
+>      CHK_SV;
+> =20
+>  #if !defined(CONFIG_USER_ONLY)
+> -   if (ctx->opcode & 0x00010000) {
+> -        /* Special form that does not need any synchronisation */
+> +    if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
+> +        gen_io_start();
+> +    }
+> +    if (ctx->opcode & 0x00010000) {
+> +        /* L=3D1 form only updates EE and RI */
+>          TCGv t0 =3D tcg_temp_new();
+> +        TCGv t1 =3D tcg_temp_new();
+>          tcg_gen_andi_tl(t0, cpu_gpr[rS(ctx->opcode)],
+>                          (1 << MSR_RI) | (1 << MSR_EE));
+> -        tcg_gen_andi_tl(cpu_msr, cpu_msr,
+> +        tcg_gen_andi_tl(t1, cpu_msr,
+>                          ~(target_ulong)((1 << MSR_RI) | (1 << MSR_EE)));
+> -        tcg_gen_or_tl(cpu_msr, cpu_msr, t0);
+> +        tcg_gen_or_tl(t1, t1, t0);
+> +
+> +        gen_helper_store_msr(cpu_env, t1);
+>          tcg_temp_free(t0);
+> +        tcg_temp_free(t1);
+> +
+>      } else {
+>          TCGv msr =3D tcg_temp_new();
+> =20
+> @@ -4411,9 +4423,6 @@ static void gen_mtmsr(DisasContext *ctx)
+>           *      power saving mode, we will exit the loop directly from
+>           *      ppc_store_msr
+>           */
+> -        if (tb_cflags(ctx->base.tb) & CF_USE_ICOUNT) {
+> -            gen_io_start();
+> -        }
+>          gen_update_nip(ctx, ctx->base.pc_next);
+>  #if defined(TARGET_PPC64)
+>          tcg_gen_deposit_tl(msr, cpu_msr, cpu_gpr[rS(ctx->opcode)], 0, 32=
+);
+> @@ -4422,10 +4431,9 @@ static void gen_mtmsr(DisasContext *ctx)
+>  #endif
+>          gen_helper_store_msr(cpu_env, msr);
+>          tcg_temp_free(msr);
+> -        /* Must stop the translation as machine state (may have) changed=
+ */
+> -        /* Note that mtmsr is not always defined as context-synchronizin=
+g */
+> -        gen_stop_exception(ctx);
+>      }
+> +    /* Must stop the translation as machine state (may have) changed */
+> +    gen_stop_exception(ctx);
+>  #endif
+>  }
+> =20
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -212,24 +248,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---U+BazGySraz5kW0T
+--/9DWx/yDrRhgMJTb
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6Y/J8ACgkQbDjKyiDZ
-s5KeARAArge+EauSGPsWkcx5KJ/iOjUpSUSe5mHJXFyeD7zO+1qpwNVo0QIwKzGX
-aLQMtZ+t/rcs88mFkuXQG8aZyx4e3kD8WW8I0cFM8BvaKFLpoRb5JRSrd+hwa+Yd
-imn0LHe2UZlB5MFML9IV6zBFk0juz4mdxW9vYtLzIm1Icp2+u/t7k8iQyKNjvRKC
-p4EG5NI1rwRFT/vreArPc5EwtOAnAQlQpdijOc8uSCgJ60kqX1go4pMnmP8xK25t
-99vntr3jIIFY6C0rjRHh64mOClY3DW8b+0J6tEUKTQDV710mx1uvJJm/Oxwetxpk
-mefPm9FHtRfgpuMEO5nzovCfMlms6O4cQ7zsxHVt8LcUn4W8HuP4Od0HQv13Yfuh
-vbTjpEYUS1Ls+bh2DXbpSpGtlZY33FZN+adBxcYN+rOTlYXGKrkti2kGgjO1wGiE
-MpCEJx7VXgvpm2T9Q12DACTRT0uEIa9wwun2bTNepGTcQp35uX1HedjzWjNHxZu2
-Ou8RtC2zmVbauKk8UBlueqyqmHopcPPS72ef5AC9cHZSY0zyHrMC3lGvc0Pj5J3V
-+kAMpuYufu2+46aFkZZcHz2pzJnw072qqx7KuVX0wdMC0r+wDFL1ULvAS82EjDmu
-S0lWrvygkvL9zjSFcp2K+dCtU6TwAg2LJBVCdvV/Zw9jqWWvE54=
-=ivnP
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl6Y+uoACgkQbDjKyiDZ
+s5IfvQ/7B95w2bN1JzPlxMZJbbl/6U1RSYX643qSwxmHp3qmmWV4okUgaNzsVscC
+mBl17DQbHuvl8YJduL5G6qNwfnkcEq+OIfX3k60QyQ+bf7ETK5UlmUq3c4Ao/E7e
+H9O44iv5RSBZ41TQoYUVC+1IU11Mx0GXMsKiGkHOCCB3aK9no22rY4Um9LoEhHLB
+Kue9WvNLlOcUm78BJ/00K70UffTgnbyR6q/CzUY81Lq1vuohZ1SdJWb6z8DeJLLe
+XQ9Thne+6Z48MN/tPc0gLg6MF/NSaXzC4jeuI6Ht6WHe2P1USIgB+CrRpUmU/eK2
+cpeHUZjg1oZgvno8v9uoKyQloTdaNczVJ4HmdMjt0+FmEhUFyZqx6o5aW4V93BV7
+tPUc0TxNORcc31ol2gjBVWzQRTHbF5dq3rCBJzVellzUg6hA+H/AXudVRR1Z/Szk
+CzbvVhLCpbJXmx5e/g0MZJnvejOjOTM1WLi0VwibH/ZIGVBbFP0wwG5GfAkP7D9+
+/8YX1vb+5E8a10ThMP01hyQFJjjFbhkLilT6IMwJAzf5rv3josFj+QI5wKmt9b6n
+zI2f0xkb15zX4aMAwTj05ReDQ7qA3ICwcu4As2N32PqO9j+jJ08sAzpkH6e2zXDE
+Jb0Ew1oM/n0XkPQHIRIE4pjGhpgafPyOaK5PLokVaSpm1D/2hfU=
+=Qw8M
 -----END PGP SIGNATURE-----
 
---U+BazGySraz5kW0T--
+--/9DWx/yDrRhgMJTb--
