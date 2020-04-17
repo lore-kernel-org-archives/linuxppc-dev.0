@@ -2,53 +2,72 @@ Return-Path: <SRS0=SBso=6B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40867C2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 00:36:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFF92C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 00:59:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 813532063A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 00:36:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 813532063A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
+	by mail.kernel.org (Postfix) with ESMTPS id 00FDD22240
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 00:59:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="baoRF3XB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00FDD22240
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493HGL5pFvzF0Br
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 10:36:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=libc.org
- (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
- envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=libc.org
-Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
- [216.12.86.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 493Hmq4GypzF07s
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 10:59:39 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493HDB2sLqzDqW6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 10:34:47 +1000 (AEST)
-Date: Thu, 16 Apr 2020 20:34:42 -0400
-From: Rich Felker <dalias@libc.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Message-ID: <20200417003442.GD11469@brightrain.aerifal.cx>
-References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
- <20200415225539.GL11469@brightrain.aerifal.cx>
- <87k12gf32r.fsf@mid.deneb.enyo.de>
- <20200416153509.GT11469@brightrain.aerifal.cx>
- <87sgh3e613.fsf@mid.deneb.enyo.de>
- <20200416165257.GY11469@brightrain.aerifal.cx>
- <87ftd3e1vg.fsf@mid.deneb.enyo.de>
- <20200416230235.GG26902@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493Hjl51sKzDsP1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 10:56:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=baoRF3XB; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 493Hjl0gpQz9sSG; Fri, 17 Apr 2020 10:56:59 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 493Hjk6BKpz9sRN;
+ Fri, 17 Apr 2020 10:56:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1587085018;
+ bh=gZiFHwBUJ3y5pN+65F3FPUoC3+G0poKNBpEBHgvfozU=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=baoRF3XBiwIHFnsJ4yt9WaoSFPjh+n0Gs88KDJsZ00RwT+b8psLV0d5eN9bSxalZS
+ d7Dj4iaF4uHKcaKK37q37YMUkCcDJd8PNeMFbE6dtS0WtEDs2AhfSgtwxQuZx9MrvX
+ pOO+/nz2cUkyU/DZvFxkK4yQmJnDChnFG0TWbF5QIbcubvJ1HJ1sVbTPZAuiPfclC6
+ QFtCasQ2g8xgup7QNwHfbqABrLTMaNOIhHjFl+c/N56cdKvrwLbLq6TmKjU2kDI3jf
+ iLWz5eoVGkspiEHtAfJnFhaXxbmHQxyDte+T+tOub35fdvlZQCMRRELfhHK14dowUE
+ U5Zlg3mLiGuBA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Christopher M Riedl <cmr@informatik.wtf>, linuxppc-dev@ozlabs.org
+Subject: Re: [RFC PATCH 2/3] powerpc/lib: Initialize a temporary mm for code
+ patching
+In-Reply-To: <8ff6d279-fdd9-4e4d-b4e0-f5c5cba480a4@c-s.fr>
+References: <20200323045205.20314-1-cmr@informatik.wtf>
+ <20200323045205.20314-3-cmr@informatik.wtf>
+ <ecccbeb2-731b-f9a3-1039-f2a662e3a9a5@c-s.fr>
+ <1782990079.111623.1585624792778@privateemail.com>
+ <8ff6d279-fdd9-4e4d-b4e0-f5c5cba480a4@c-s.fr>
+Date: Fri, 17 Apr 2020 10:57:10 +1000
+Message-ID: <87mu7bhqu1.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200416230235.GG26902@gate.crashing.org>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,38 +79,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-alpha@sourceware.org, musl@lists.openwall.com,
- Nicholas Piggin <npiggin@gmail.com>, Florian Weimer <fw@deneb.enyo.de>,
- libc-dev@lists.llvm.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 16, 2020 at 06:02:35PM -0500, Segher Boessenkool wrote:
-> On Thu, Apr 16, 2020 at 08:12:19PM +0200, Florian Weimer wrote:
-> > > I think my choice would be just making the inline syscall be a single
-> > > call insn to an asm source file that out-of-lines the loading of TOC
-> > > pointer and call through it or branch based on hwcap so that it's not
-> > > repeated all over the place.
-> > 
-> > I don't know how problematic control flow out of an inline asm is on
-> > POWER.  But this is basically the -moutline-atomics approach.
-> 
-> Control flow out of inline asm (other than with "asm goto") is not
-> allowed at all, just like on any other target (and will not work in
-> practice, either -- just like on any other target).  But the suggestion
-> was to use actual assembler code, not inline asm?
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> Le 31/03/2020 =C3=A0 05:19, Christopher M Riedl a =C3=A9crit=C2=A0:
+>>> On March 24, 2020 11:10 AM Christophe Leroy <christophe.leroy@c-s.fr> w=
+rote:
+>>> Le 23/03/2020 =C3=A0 05:52, Christopher M. Riedl a =C3=A9crit=C2=A0:
+>>>> When code patching a STRICT_KERNEL_RWX kernel the page containing the
+>>>> address to be patched is temporarily mapped with permissive memory
+>>>> protections. Currently, a per-cpu vmalloc patch area is used for this
+>>>> purpose. While the patch area is per-cpu, the temporary page mapping is
+>>>> inserted into the kernel page tables for the duration of the patching.
+>>>> The mapping is exposed to CPUs other than the patching CPU - this is
+>>>> undesirable from a hardening perspective.
+>>>>
+>>>> Use the `poking_init` init hook to prepare a temporary mm and patching
+>>>> address. Initialize the temporary mm by copying the init mm. Choose a
+>>>> randomized patching address inside the temporary mm userspace address
+>>>> portion. The next patch uses the temporary mm and patching address for
+>>>> code patching.
+>>>>
+>>>> Based on x86 implementation:
+>>>>
+>>>> commit 4fc19708b165
+>>>> ("x86/alternatives: Initialize temporary mm for patching")
+>>>>
+>>>> Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+>>>> ---
+>>>>    arch/powerpc/lib/code-patching.c | 26 ++++++++++++++++++++++++++
+>>>>    1 file changed, 26 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-=
+patching.c
+>>>> index 3345f039a876..18b88ecfc5a8 100644
+>>>> --- a/arch/powerpc/lib/code-patching.c
+>>>> +++ b/arch/powerpc/lib/code-patching.c
+>>>> @@ -11,6 +11,8 @@
+>>>>    #include <linux/cpuhotplug.h>
+>>>>    #include <linux/slab.h>
+>>>>    #include <linux/uaccess.h>
+>>>> +#include <linux/sched/task.h>
+>>>> +#include <linux/random.h>
+>>>>=20=20=20=20
+>>>>    #include <asm/pgtable.h>
+>>>>    #include <asm/tlbflush.h>
+>>>> @@ -39,6 +41,30 @@ int raw_patch_instruction(unsigned int *addr, unsig=
+ned int instr)
+>>>>    }
+>>>>=20=20=20=20
+>>>>    #ifdef CONFIG_STRICT_KERNEL_RWX
+>>>> +
+>>>> +__ro_after_init struct mm_struct *patching_mm;
+>>>> +__ro_after_init unsigned long patching_addr;
+>>>
+>>> Can we make those those static ?
+>>>
+>>=20
+>> Yes, makes sense to me.
+>>=20
+>>>> +
+>>>> +void __init poking_init(void)
+>>>> +{
+>>>> +	spinlock_t *ptl; /* for protecting pte table */
+>>>> +	pte_t *ptep;
+>>>> +
+>>>> +	patching_mm =3D copy_init_mm();
+>>>> +	BUG_ON(!patching_mm);
+>>>
+>>> Does it needs to be a BUG_ON() ? Can't we fail gracefully with just a
+>>> WARN_ON ?
+>>>
+>>=20
+>> I'm not sure what failing gracefully means here? The main reason this co=
+uld
+>> fail is if there is not enough memory to allocate the patching_mm. The
+>> previous implementation had this justification for BUG_ON():
+>
+> But the system can continue running just fine after this failure.
+> Only the things that make use of code patching will fail (ftrace, kgdb, .=
+..)
 
-Calling it control flow out of inline asm is something of a misnomer.
-The enclosing state is not discarded or altered; the asm statement
-exits normally, reaching the next instruction in the enclosing
-block/function as soon as the call from the asm statement returns,
-with all register/clobber constraints satisfied.
+That's probably true of ftrace, but we can't fail patching for jump
+labels (static keys).
 
-Control flow out of inline asm would be more like longjmp, and it can
-be valid -- for instance, you can implement coroutines this way
-(assuming you switch stack correctly) or do longjmp this way (jumping
-to the location saved by setjmp). But it's not what'd be happening
-here.
+See:
 
-Rich
+void arch_jump_label_transform(struct jump_entry *entry,
+			       enum jump_label_type type)
+{
+	u32 *addr =3D (u32 *)(unsigned long)entry->code;
+
+	if (type =3D=3D JUMP_LABEL_JMP)
+		patch_branch(addr, entry->target, 0);
+	else
+		patch_instruction(addr, PPC_INST_NOP);
+}
+
+cheers
