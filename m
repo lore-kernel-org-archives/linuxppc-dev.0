@@ -6,96 +6,95 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C761AC2BB55
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 09:00:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 743F3C2BB55
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 09:03:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0CCE6207FC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 09:00:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CE571207FC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 09:03:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="V9lNYPYC";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="V9lNYPYC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0CCE6207FC
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ku4XU1bB";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ku4XU1bB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE571207FC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493VRk6wNxzDrdT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 19:00:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493VWB3PXSzDrP3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 19:03:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=mst@redhat.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=mst@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=V9lNYPYC; 
+ header.s=mimecast20190719 header.b=Ku4XU1bB; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=V9lNYPYC; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ku4XU1bB; 
  dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
+ [205.139.110.61])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493VNb5dbNzDrdW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 18:57:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493VSg5Rx6zDqGx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 19:01:23 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587113868;
+ s=mimecast20190719; t=1587114081;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Jc0iygL4g4seZkV+uNiJ+8o6O2vqQrNFluUjtz+4fWg=;
- b=V9lNYPYCZEaksbojUqhAYfjLYq2tVKidy5ZaQIBOEleLx8NbMsW0J4H7X1hXvxMKyY9hLE
- zmXhrAtFR/w8A/scW7F6jVAqLfvJBNmPaqIPd0XkhAtD9m4xKMr7TBwzgbEtH3VPE1JHEn
- AeGwBjNj8xg10jG52xGnYxDIGi2rHD4=
+ bh=xBKPlLo6+sI2A/2RB1s4usLW0rCSt9Xj5ScVMSMT1UE=;
+ b=Ku4XU1bBkUE/Nn3IPWAtJUW5VSl3hfD29TOEgVyWs7vK9UD33Ajr9FiBy2Psj/uk6cJBj/
+ ybx8tlVIrbbThoDriOuhvFSUr6y6f5g3BuWJNLjQnaBxFHdlqvB851ji8E743vYIJfHkeV
+ dt8RoQeiab95bL2RKybQ26nw2bGpP7I=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587113868;
+ s=mimecast20190719; t=1587114081;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=Jc0iygL4g4seZkV+uNiJ+8o6O2vqQrNFluUjtz+4fWg=;
- b=V9lNYPYCZEaksbojUqhAYfjLYq2tVKidy5ZaQIBOEleLx8NbMsW0J4H7X1hXvxMKyY9hLE
- zmXhrAtFR/w8A/scW7F6jVAqLfvJBNmPaqIPd0XkhAtD9m4xKMr7TBwzgbEtH3VPE1JHEn
- AeGwBjNj8xg10jG52xGnYxDIGi2rHD4=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-468-9bYUxR4DMGqS0GEsQaHCfA-1; Fri, 17 Apr 2020 04:57:47 -0400
-X-MC-Unique: 9bYUxR4DMGqS0GEsQaHCfA-1
-Received: by mail-wr1-f70.google.com with SMTP id p16so660331wro.16
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 01:57:46 -0700 (PDT)
+ bh=xBKPlLo6+sI2A/2RB1s4usLW0rCSt9Xj5ScVMSMT1UE=;
+ b=Ku4XU1bBkUE/Nn3IPWAtJUW5VSl3hfD29TOEgVyWs7vK9UD33Ajr9FiBy2Psj/uk6cJBj/
+ ybx8tlVIrbbThoDriOuhvFSUr6y6f5g3BuWJNLjQnaBxFHdlqvB851ji8E743vYIJfHkeV
+ dt8RoQeiab95bL2RKybQ26nw2bGpP7I=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-78-MKgqzgalM_eQZqc8RRQy6w-1; Fri, 17 Apr 2020 05:01:19 -0400
+X-MC-Unique: MKgqzgalM_eQZqc8RRQy6w-1
+Received: by mail-wr1-f71.google.com with SMTP id 11so680748wrc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2020 02:01:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:content-transfer-encoding
  :in-reply-to;
- bh=57oFuPD/q+SMkeSS1ok5ufPqZbzHPN868lU8tZLRaro=;
- b=dSRmTOsI9pDk3S7p7+TrVlqkheZ1uh3Nv3LZPn4My0zKMQE1dSlSxb6NfrZwngNnrm
- hgh/XuYiEw+RzLEGdr07K+m6svdYt8vWb7xQrl3JqIjhtclGZgzw3Ukq2T6akD+t41HU
- PHftHTKO963qgF1Ks5QndciqpJ3g1kxMR4r4eLIN7PI3/2FVuyAcKjYA9pn7G0h0G+BX
- C126mai3J1nK+Gxth4+Kq1aKuyqva7mA2XUQNB+gchXabBLKVCcgBYbkeTOysDS9LLHq
- Sj4UaKokcS3Bzyelh3tlVeF47b/4mDihGZ+YCqQEkqZdFldaSUvYdeh6/TLfF2bztZ8E
- ddqg==
-X-Gm-Message-State: AGi0PubukgDZrjunOT2KOfPEN+SAl8SpILH0yh9kNNodXIxBqIzsEetU
- edX4R48naUh4J0smfk0D9QvKcELNeqL9jkA0oTnwuv6qU/wVnYavtMAR50NqZAZn/QyPathXcQz
- f56rDSmDgJeJz6wvX9Lhu1RG1Iw==
-X-Received: by 2002:a05:600c:4096:: with SMTP id
- k22mr2101841wmh.99.1587113865720; 
- Fri, 17 Apr 2020 01:57:45 -0700 (PDT)
-X-Google-Smtp-Source: APiQypKzNTX8c8fQ/vBkdSzMi35lJDuNvId/TTHeWg1TQWoHgILbrk1iRbqaecBOrIQnqlWsFeqPPQ==
-X-Received: by 2002:a05:600c:4096:: with SMTP id
- k22mr2101824wmh.99.1587113865518; 
- Fri, 17 Apr 2020 01:57:45 -0700 (PDT)
+ bh=+LYdr3kSxXBMDicQAv0M7nkPT5YyAgLG/RWsjILE6Rk=;
+ b=dfolBOhx8D61Y0s983m3jPFXS7gLG1kL3fx0/fjHF98cajsj8gxa91Hpby+DVe8Upq
+ WBUFWVczZktqOXQhH5JhDeS8lm7sT3nVIAwrmao7y1lcCcF4PCJaEQNGB/3W4cZPV8i6
+ DIdWuLnkQsqjNEdud0Dj4yjqTFRkGZMn/kbvFpaT9Ox3i5MqBhAOavXmmOPSUSCSjm4+
+ Qulv7uOmeN7eizUJVK1ReTKI4gmn2FIZbLH1mdRzi59HDZf5Fibprwt5yyTU4ZxVRDYK
+ nLScipAILBskOLYqAbxua4yqLCPvzYtkwjfSnMU6rDj8ADRym7iav0R55a4IOyBRy1Gi
+ m0UQ==
+X-Gm-Message-State: AGi0Pub1FOPMiUUciRxpLxY17O3sOeGNx+UCyfZC38KzZE+4s37iEcZc
+ 3MFKsihgjoVPgd+1SdFzULnwVrV1lFWbfWg6J2K12AHtfOh1OX2QoEmdsbdU5l+fPPyf8wGlLQm
+ bA9+af5P0i7eUc/WUgUYnTY7APA==
+X-Received: by 2002:a1c:7c18:: with SMTP id x24mr2155031wmc.146.1587114077406; 
+ Fri, 17 Apr 2020 02:01:17 -0700 (PDT)
+X-Google-Smtp-Source: APiQypK2vbW1OnmBJFQVh7bub7YEhkI6cUby2dGaO6wz+YQlB7a8+Q2NUcfxoXyc58GWwBIeKSXJyQ==
+X-Received: by 2002:a1c:7c18:: with SMTP id x24mr2155008wmc.146.1587114077204; 
+ Fri, 17 Apr 2020 02:01:17 -0700 (PDT)
 Received: from redhat.com (bzq-79-183-51-3.red.bezeqint.net. [79.183.51.3])
- by smtp.gmail.com with ESMTPSA id n6sm31931548wrs.81.2020.04.17.01.57.43
+ by smtp.gmail.com with ESMTPSA id c20sm7408863wmd.36.2020.04.17.02.01.15
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 17 Apr 2020 01:57:44 -0700 (PDT)
-Date: Fri, 17 Apr 2020 04:57:41 -0400
+ Fri, 17 Apr 2020 02:01:16 -0700 (PDT)
+Date: Fri, 17 Apr 2020 05:01:13 -0400
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Jason Wang <jasowang@redhat.com>
 Subject: Re: [PATCH V2] vhost: do not enable VHOST_MENU by default
-Message-ID: <20200417045454-mutt-send-email-mst@kernel.org>
+Message-ID: <20200417050029-mutt-send-email-mst@kernel.org>
 References: <20200415024356.23751-1-jasowang@redhat.com>
  <20200416185426-mutt-send-email-mst@kernel.org>
  <b7e2deb7-cb64-b625-aeb4-760c7b28c0c8@redhat.com>
@@ -216,29 +215,9 @@ ill be left
 > not set.
 >=20
 > Thanks
-
-Hmm. So looking at Documentation/kbuild/kconfig-language.rst :
-
-        Things that merit "default y/m" include:
-
-        a) A new Kconfig option for something that used to always be built
-           should be "default y".
-
-
-        b) A new gatekeeping Kconfig option that hides/shows other Kconfig
-           options (but does not generate any code of its own), should be
-           "default y" so people will see those other options.
-
-        c) Sub-driver behavior or similar options for a driver that is
-           "default n". This allows you to provide sane defaults.
-
-
-So it looks like VHOST_MENU is actually matching rule b).
-So what's the problem we are trying to solve with this patch, exactly?
-
-Geert could you clarify pls?
-
-
 >=20
+
+BTW do entries with no prompt actually appear in defconfig?
+
 > >=20
 
