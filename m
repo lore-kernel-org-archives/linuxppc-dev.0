@@ -2,66 +2,71 @@ Return-Path: <SRS0=SBso=6B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1891AC2D0EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 17:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03927C2D0EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 18:39:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7DE5D22209
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 17:41:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WZaabqWm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DE5D22209
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 574E020780
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2020 18:39:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 574E020780
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 493k150nBZzDrnR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 03:41:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 493lHy3rBgzDrgN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 04:39:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.232;
+ helo=out02.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 493jyv5wyYzDrTn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 03:39:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
- Subject:Sender:Reply-To:Content-ID:Content-Description;
- bh=LBjygYyC944CKlPD3XS2R4n/n0JfZwjSTHNfNJ0y7Zg=; b=WZaabqWmMoH65WOVHe9ERur26P
- R1zgqFtkWETNmQ3aNjbpQfcQ/JGtumJqJklq+OZU5vJzEP5wQQNy97YnDh1BrIbJDxDhQyrVfrvYA
- M43cVmGeTPWLLQ/ltsKs5UCTyoFBCLAizrOtvkyue1SS/J8tUxWZjFOuuuZe7aG3bufdDhSIkZOko
- CUdTgm1zBbjMp8h5mhSmXHGmqBQ9KJwtE8xmHNfwSdUdA6l4vo1LdOTt7ucqRtrTmDj7YpsyTGLG2
- uYhQLJtIZ+/nNevMMgYHdsr+j4FUD9CeFABIAwOdPN2f8SdoATvwE9vReArCgU2HttHEvDMju2zYx
- FaOs5k0g==;
-Received: from [2601:1c0:6280:3f0::19c2]
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jPUxl-0002jG-Sf; Fri, 17 Apr 2020 17:39:37 +0000
-Subject: Re: [PATCH] drivers: uio: new driver uio_fsl_85xx_cache_sram
-To: Wang Wenhu <wenhu.wang@vivo.com>, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20200417172130.14287-1-wenhu.wang@vivo.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <9263f8fb-74e0-4c74-6c72-bdf0dfafbf1b@infradead.org>
-Date: Fri, 17 Apr 2020 10:39:35 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+X-Greylist: delayed 1442 seconds by postgrey-1.36 at bilbo;
+ Sat, 18 Apr 2020 04:37:24 AEST
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 493lFJ1ZwlzDrg6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 04:37:23 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51])
+ by out02.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jPVUJ-0004yd-Mc; Fri, 17 Apr 2020 12:13:15 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in01.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jPVUH-0000Xy-J7; Fri, 17 Apr 2020 12:13:15 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@lst.de>
+References: <20200414070142.288696-1-hch@lst.de>
+ <20200414070142.288696-5-hch@lst.de>
+ <CAK8P3a3HvbPKTkwfWr6PbZ96koO_NrJP1qgk8H1mgk=qUScGkQ@mail.gmail.com>
+ <20200415074514.GA1393@lst.de>
+ <CAK8P3a0QGQX85LaqKC1UuTERk6Bpr5TW6aWF+jxi2cOpa4L_AA@mail.gmail.com>
+ <20200417132714.GA6401@lst.de>
+Date: Fri, 17 Apr 2020 13:10:12 -0500
+In-Reply-To: <20200417132714.GA6401@lst.de> (Christoph Hellwig's message of
+ "Fri, 17 Apr 2020 15:27:14 +0200")
+Message-ID: <87o8rqc7az.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20200417172130.14287-1-wenhu.wang@vivo.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-XM-SPF: eid=1jPVUH-0000Xy-J7; ; ; mid=<87o8rqc7az.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX18JO8/Ppng68LNpdE4K4Z5+2lJxR7m8FSs=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 4/8] binfmt_elf: open code copy_siginfo_to_user to
+ kernelspace buffer
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,38 +78,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oss@buserror.net, robh@kernel.org, kernel@vivo.com
+Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Jeremy Kerr <jk@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/17/20 10:21 AM, Wang Wenhu wrote:
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index 202ee81cfc2b..f6e6ec0089c0 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -105,6 +105,14 @@ config UIO_NETX
->  	  To compile this driver as a module, choose M here; the module
->  	  will be called uio_netx.
->  
-> +config UIO_FSL_85XX_CACHE_SRAM
-> +	tristate "Freescale MPC85xx Cache-Sram driver"
-> +	depends on FSL_SOC_BOOKE && PPC32 && !FSL_85XX_CACHE_SRAM
-> +	help
-> +	  Generic driver for accessing the Cache-Sram form user level. This
+Christoph Hellwig <hch@lst.de> writes:
 
-	                                              from
+> On Wed, Apr 15, 2020 at 10:20:11AM +0200, Arnd Bergmann wrote:
+>> > I'd rather keep it out of this series and to
+>> > an interested party.  Then again x32 doesn't seem to have a whole lot
+>> > of interested parties..
+>> 
+>> Fine with me. It's on my mental list of things that we want to kill off
+>> eventually as soon as the remaining users stop replying to questions
+>> about it.
+>> 
+>> In fact I should really turn that into a properly maintained list in
+>> Documentation/... that contains any options that someone has
+>> asked about removing in the past, along with the reasons for keeping
+>> it around and a time at which we should ask about it again.
+>
+> To the newly added x86 maintainers:  Arnd brought up the point that
+> elf_core_dump writes the ABI siginfo format into the core dump. That
+> format differs for i386 vs x32.  Is there any good way to find out
+> which is the right format when are not in a syscall?
+>
+> As far a I can tell x32 vs i386 just seems to be based around what
+> syscall table was used for the current syscall, but core dumps aren't
+> always in syscall context.
 
-and SRAM would be better than Sram IMO. (2 places)
+I don't think this matters.  The i386 and x32 signal structures
+only differ for SIGCHLD.  The SIGCHLD signal does cause coredumps.
+So as long as we get the 32bit vs 64bit distinct correct all should be
+well.
 
-> +	  is extremely helpful for some user-space applications that require
-> +	  high performance memory accesses.
-> +
->  config UIO_FSL_ELBC_GPCM
->  	tristate "eLBC/GPCM driver"
->  	depends on FSL_LBC
+Eric
 
-thanks.
--- 
-~Randy
+
 
