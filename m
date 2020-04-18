@@ -2,87 +2,69 @@ Return-Path: <SRS0=MUiv=6C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE52C2D0EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 10:47:26 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A69FC2D0EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 12:01:11 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8FBD21D82
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 10:47:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PW1rCGhq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8FBD21D82
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 714AB21D79
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 12:01:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 714AB21D79
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4948mW5BSNzDrdd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 20:47:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 494BPb6n3tzDrpp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 22:01:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1041;
- helo=mail-pj1-x1041.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.231;
+ helo=out01.mta.xmission.com; envelope-from=ebiederm@xmission.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=PW1rCGhq; dkim-atps=neutral
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
- [IPv6:2607:f8b0:4864:20::1041])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4948kb6xdQzDrL2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 20:45:41 +1000 (AEST)
-Received: by mail-pj1-x1041.google.com with SMTP id np9so2236896pjb.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 03:45:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=Ny/Pcfc4MYQgeT5bB0SY9/mF1WZmwT7h0EiEyODFyJ4=;
- b=PW1rCGhqlZg3C+5HvTZ9oq4k+7XNNR1u1QzZikIWyVjeyQvYGgLAKJuwKVMRFBKox3
- lMNIlrWxH2aDO6/2EQUmFVCYWbcE6e+ECeiXU2iisvWx5Sm28afMLqZy4el7ZVGt57O5
- R7o23llYEsgMRb86RELlaaheO3f0TKVAxdljCI9v4qq1xeIK78mgehQrKfhkPEHOhvQj
- uK/j5Zig8G+cMX2NTwgq3RsVS/iuvs+MziQUW70cbWvnMV/zqo8XiWT9MdyZOik6Pf5v
- wtfQoDqe588bz2nrqCeisqnCWejZudXYdkHu6R64LL4qpp2dbJiFh+rAIs3ulXKHklKc
- Tvcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=Ny/Pcfc4MYQgeT5bB0SY9/mF1WZmwT7h0EiEyODFyJ4=;
- b=b34Dibc+Dj++OH7elefycQgJ5Rv4FgkYCDp6u2mS2umdmwPLGKZTg1/u6vgjYBaM3L
- +nGsrCtX+ZXoYWf3IknGZhzANn9HaYZWzSMb25xE8O5P3nfKhBNVtK3LxFcdOEUoGUXN
- UAJDkYxdHZ2LYOK3+83Cet/i8N68RxLgS5vIVMTglBowMUrJjJWKfUi2Cpqe9Z8d/qmQ
- qPJyoZ0/YMUIZcKvHbinE8lOVIOWIQl68F90qRSH52k0gIOIQS4fdqjkL8SDMx2OTBF1
- cgPNFHhtK2hUGf5+3pEHIUYNPYqmBdPQUhLE4IK1zyoLPsvehN6N1hrdI7EbxgBHWIGC
- Yqqg==
-X-Gm-Message-State: AGi0PubvPeXjimIUeBrpA026809+uu0Fm+Dfh8IDgyvZAjiUmjekLwld
- maWHjdyTl8kmlQ5HWSis2pI=
-X-Google-Smtp-Source: APiQypKT8yWlRZsexgHxKxuvNTJ0BbbHOCHTL1QKY1YrWVPBC0+W+cUzpq9smYnVvCB2GxNQYj6u0w==
-X-Received: by 2002:a17:90a:6f22:: with SMTP id
- d31mr9799684pjk.14.1587206739671; 
- Sat, 18 Apr 2020 03:45:39 -0700 (PDT)
-Received: from localhost (220-244-86-41.tpgi.com.au. [220.244.86.41])
- by smtp.gmail.com with ESMTPSA id l22sm7848088pjq.15.2020.04.18.03.45.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 18 Apr 2020 03:45:39 -0700 (PDT)
-Date: Sat, 18 Apr 2020 20:44:52 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH] powerpc/64/signal: balance return predictor stack in
- signal trampoline
-To: Alan Modra <amodra@gmail.com>
-References: <20200417091747.316707-1-npiggin@gmail.com>
- <20200417234026.GB29913@bubble.grove.modra.org>
-In-Reply-To: <20200417234026.GB29913@bubble.grove.modra.org>
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494BMK5ZBZzDrfq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 21:59:07 +1000 (AEST)
+Received: from in01.mta.xmission.com ([166.70.13.51])
+ by out01.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jPm7f-0007nX-II; Sat, 18 Apr 2020 05:58:59 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in01.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jPm7e-0001Xl-Io; Sat, 18 Apr 2020 05:58:59 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+References: <20200414070142.288696-1-hch@lst.de>
+ <20200414070142.288696-3-hch@lst.de>
+ <87pnc5akhk.fsf@x220.int.ebiederm.org>
+ <87k12dakfx.fsf_-_@x220.int.ebiederm.org>
+ <c51c6192-2ea4-62d8-dd22-305f7a1e0dd3@c-s.fr>
+Date: Sat, 18 Apr 2020 06:55:56 -0500
+In-Reply-To: <c51c6192-2ea4-62d8-dd22-305f7a1e0dd3@c-s.fr> (Christophe Leroy's
+ message of "Sat, 18 Apr 2020 10:05:19 +0200")
+Message-ID: <87v9lx3t4j.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-Message-Id: <1587204036.ptxypxbi2s.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-XM-SPF: eid=1jPm7e-0001Xl-Io; ; ; mid=<87v9lx3t4j.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in01.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX18UJp5X1nu8GvTzwVNg4DhYMBf3vdPs/94=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 1/2] signal: Factor copy_siginfo_to_external32 from
+ copy_siginfo_to_user32
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,32 +76,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>, Jeremy Kerr <jk@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Alan Modra's message of April 18, 2020 9:40 am:
-> On Fri, Apr 17, 2020 at 07:17:47PM +1000, Nicholas Piggin wrote:
->> I don't know much about dwarf, gdb still seems to recognize the signal
->> frame and unwind properly if I break inside a signal handler.
->=20
-> Yes, the dwarf unwind info still looks good.  The commented out dwarf
-> near the end of sigtramp.S should probably go.  At least if you really
-> can't take an async signal in the trampoline (a kernel question, not
-> anything to do with gcc support of async signals as the comment
-> wrongly says).  If you *can* take an async signal at some point past
-> the trampoline addi, then delete the comment and uncomment the code.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-I don't think the kernel has anything that holds off signals from being=20
-raised in the tramp area, so it looks like we could get a signal there.
+> Le 17/04/2020 =C3=A0 23:09, Eric W. Biederman a =C3=A9crit=C2=A0:
+>>
+>> To remove the use of set_fs in the coredump code there needs to be a
+>> way to convert a kernel siginfo to a userspace compat siginfo.
+>>
+>> Call that function copy_siginfo_to_compat and factor it out of
+>> copy_siginfo_to_user32.
+>
+> I find it a pitty to do that.
+>
+> The existing function could have been easily converted to using
+> user_access_begin() + user_access_end() and use unsafe_put_user() to copy=
+ to
+> userspace to avoid copying through a temporary structure on the stack.
+>
+> With your change, it becomes impossible to do that.
 
-> Note that the advance_loc there bitrotted ever since the nop was added
-> before the trampoline, so you'd need to change that to an advance_loc
-> that moves from .Lsigrt_start to immediately after the addi, ie. 0x42.
+I don't follow.  You don't like temporary structures in the coredump
+code or temporary structures in copy_siginfo_to_user32?
 
-Okay, would you do the honors of fixing it for upstream kernel? I'd just=20
-be repeating what you wrote without understand it if I write a patch.
+A temporary structure in copy_siginfo_to_user is pretty much required
+so that it can be zeroed to guarantee we don't pass a structure with
+holes to userspace.
 
-Thanks,
-Nick
+The implementation of copy_siginfo_to_user32 used to use the equivalent
+of user_access_begin() and user_access_end() and the code was a mess
+that was very difficult to reason about.  I recall their being holes
+in the structure that were being copied to userspace.
+
+Meanwhile if you are going to set all of the bytes a cache hot temporary
+structure is quite cheap.
+
+> Is that really an issue to use that set_fs() in the coredump code ?
+
+Using set_fs() is pretty bad and something that we would like to remove
+from the kernel entirely.  The fewer instances of set_fs() we have the
+better.
+
+I forget all of the details but set_fs() is both a type violation and an
+attack point when people are attacking the kernel.  The existence of
+set_fs() requires somethings that should be constants to be variables.
+Something about that means that our current code is difficult to protect
+from spectre style vulnerabilities.
+
+There was a very good thread about it all in I think 2018 but
+unfortunately I can't find it now.
+
+Eric
