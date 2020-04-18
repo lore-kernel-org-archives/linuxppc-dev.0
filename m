@@ -2,49 +2,65 @@ Return-Path: <SRS0=MUiv=6C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB751C38A2E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 12:53:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36B52C38A2F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 13:54:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7892321D79
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 12:53:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7892321D79
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9AEE92054F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 13:54:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="P+i2fI3Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AEE92054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494CYR0XNSzDqxL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 22:52:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 494DwC4vwnzDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 23:54:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=81.169.241.247; helo=theia.8bytes.org;
- envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=8bytes.org
-Received: from theia.8bytes.org (8bytes.org [81.169.241.247])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=P+i2fI3Z; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494CVz1yfSzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 22:50:49 +1000 (AEST)
-Received: by theia.8bytes.org (Postfix, from userid 1000)
- id B57C0342; Sat, 18 Apr 2020 14:42:06 +0200 (CEST)
-Date: Sat, 18 Apr 2020 14:42:05 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 3/4] dma-mapping: add a dma_ops_bypass flag to struct
- device
-Message-ID: <20200418124205.GD6113@8bytes.org>
-References: <20200414122506.438134-1-hch@lst.de>
- <20200414122506.438134-4-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494DpD53p6zDrKq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 23:49:08 +1000 (AEST)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id D73E822245;
+ Sat, 18 Apr 2020 13:49:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1587217746;
+ bh=0PJdmnhUCsTCwdTxrc85iviAyXqH9RK8DKfgmt6eieQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=P+i2fI3Z0caSNMJPmVE/MZxiXD+uzsKh9Ec+8BHXwq/er1O21KZGFChN5B75w/loz
+ 618EKmGXeMT0L15/kK5XKhLVumaUIAcC1z7pKLsglL4/HkzSvZhVn4zktfUhmoSJQm
+ WQGcVK4bvQTQ0kmr+RW3tFduOYNIlSgtJwblqa0I=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.6 40/73] powerpc/pseries: Fix MCE handling on pseries
+Date: Sat, 18 Apr 2020 09:47:42 -0400
+Message-Id: <20200418134815.6519-40-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200418134815.6519-1-sashal@kernel.org>
+References: <20200418134815.6519-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200414122506.438134-4-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,36 +72,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: Sasha Levin <sashal@kernel.org>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Ganesh Goudar <ganeshgr@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christoph,
+From: Ganesh Goudar <ganeshgr@linux.ibm.com>
 
-On Tue, Apr 14, 2020 at 02:25:05PM +0200, Christoph Hellwig wrote:
-> +static inline bool dma_map_direct(struct device *dev,
-> +		const struct dma_map_ops *ops)
-> +{
-> +	if (likely(!ops))
-> +		return true;
-> +	if (!dev->dma_ops_bypass)
-> +		return false;
-> +
-> +	return min_not_zero(*dev->dma_mask, dev->bus_dma_limit) >=
-> +			    dma_direct_get_required_mask(dev);
+[ Upstream commit a95a0a1654f16366360399574e10efd87e867b39 ]
 
-Why is the dma-mask check done here? The dma-direct code handles memory
-outside of the devices dma-mask with swiotlb, no?
+MCE handling on pSeries platform fails as recent rework to use common
+code for pSeries and PowerNV in machine check error handling tries to
+access per-cpu variables in realmode. The per-cpu variables may be
+outside the RMO region on pSeries platform and needs translation to be
+enabled for access. Just moving these per-cpu variable into RMO region
+did'nt help because we queue some work to workqueues in real mode, which
+again tries to touch per-cpu variables. Also fwnmi_release_errinfo()
+cannot be called when translation is not enabled.
 
-I also don't quite get what the difference between setting the
-dma_ops_bypass flag non-zero and setting ops to NULL is.
+This patch fixes this by enabling translation in the exception handler
+when all required real mode handling is done. This change only affects
+the pSeries platform.
 
+Without this fix below kernel crash is seen on injecting
+SLB multihit:
 
-	Joerg
+BUG: Unable to handle kernel data access on read at 0xc00000027b205950
+Faulting instruction address: 0xc00000000003b7e0
+Oops: Kernel access of bad area, sig: 11 [#1]
+LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in: mcetest_slb(OE+) af_packet(E) xt_tcpudp(E) ip6t_rpfilter(E) ip6t_REJECT(E) ipt_REJECT(E) xt_conntrack(E) ip_set(E) nfnetlink(E) ebtable_nat(E) ebtable_broute(E) ip6table_nat(E) ip6table_mangle(E) ip6table_raw(E) ip6table_security(E) iptable_nat(E) nf_nat(E) nf_conntrack(E) nf_defrag_ipv6(E) nf_defrag_ipv4(E) iptable_mangle(E) iptable_raw(E) iptable_security(E) ebtable_filter(E) ebtables(E) ip6table_filter(E) ip6_tables(E) iptable_filter(E) ip_tables(E) x_tables(E) xfs(E) ibmveth(E) vmx_crypto(E) gf128mul(E) uio_pdrv_genirq(E) uio(E) crct10dif_vpmsum(E) rtc_generic(E) btrfs(E) libcrc32c(E) xor(E) zstd_decompress(E) zstd_compress(E) raid6_pq(E) sr_mod(E) sd_mod(E) cdrom(E) ibmvscsi(E) scsi_transport_srp(E) crc32c_vpmsum(E) dm_mod(E) sg(E) scsi_mod(E)
+CPU: 34 PID: 8154 Comm: insmod Kdump: loaded Tainted: G OE 5.5.0-mahesh #1
+NIP: c00000000003b7e0 LR: c0000000000f2218 CTR: 0000000000000000
+REGS: c000000007dcb960 TRAP: 0300 Tainted: G OE (5.5.0-mahesh)
+MSR: 8000000000001003 <SF,ME,RI,LE> CR: 28002428 XER: 20040000
+CFAR: c0000000000f2214 DAR: c00000027b205950 DSISR: 40000000 IRQMASK: 0
+GPR00: c0000000000f2218 c000000007dcbbf0 c000000001544800 c000000007dcbd70
+GPR04: 0000000000000001 c000000007dcbc98 c008000000d00258 c0080000011c0000
+GPR08: 0000000000000000 0000000300000003 c000000001035950 0000000003000048
+GPR12: 000000027a1d0000 c000000007f9c000 0000000000000558 0000000000000000
+GPR16: 0000000000000540 c008000001110000 c008000001110540 0000000000000000
+GPR20: c00000000022af10 c00000025480fd70 c008000001280000 c00000004bfbb300
+GPR24: c000000001442330 c00800000800000d c008000008000000 4009287a77000510
+GPR28: 0000000000000000 0000000000000002 c000000001033d30 0000000000000001
+NIP [c00000000003b7e0] save_mce_event+0x30/0x240
+LR [c0000000000f2218] pseries_machine_check_realmode+0x2c8/0x4f0
+Call Trace:
+Instruction dump:
+3c4c0151 38429050 7c0802a6 60000000 fbc1fff0 fbe1fff8 f821ffd1 3d42ffaf
+3fc2ffaf e98d0030 394a1150 3bdef530 <7d6a62aa> 1d2b0048 2f8b0063 380b0001
+---[ end trace 46fd63f36bbdd940 ]---
 
+Fixes: 9ca766f9891d ("powerpc/64s/pseries: machine check convert to use common event code")
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20200320110119.10207-1-ganeshgr@linux.ibm.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/platforms/pseries/ras.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 1d7f973c647b3..43710b69e09eb 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -683,6 +683,17 @@ static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
+ #endif
+ 
+ out:
++	/*
++	 * Enable translation as we will be accessing per-cpu variables
++	 * in save_mce_event() which may fall outside RMO region, also
++	 * leave it enabled because subsequently we will be queuing work
++	 * to workqueues where again per-cpu variables accessed, besides
++	 * fwnmi_release_errinfo() crashes when called in realmode on
++	 * pseries.
++	 * Note: All the realmode handling like flushing SLB entries for
++	 *       SLB multihit is done by now.
++	 */
++	mtmsr(mfmsr() | MSR_IR | MSR_DR);
+ 	save_mce_event(regs, disposition == RTAS_DISP_FULLY_RECOVERED,
+ 			&mce_err, regs->nip, eaddr, paddr);
+ 
+-- 
+2.20.1
 
