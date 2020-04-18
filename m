@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC0DAC38A29
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D53E9C38A29
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:29:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A4932076A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:24:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 82DE92070B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:29:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GF99DJLx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A4932076A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="gs6g1+4V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82DE92070B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494Fb74cJCzDrNG
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 00:24:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 494Fhq2FfGzDrhZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 00:29:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,31 +29,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=GF99DJLx; dkim-atps=neutral
+ header.s=default header.b=gs6g1+4V; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494FGJ5ZVwzDrRq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 00:10:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494FH50nJgzDrfL
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 00:10:41 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2107522264;
- Sat, 18 Apr 2020 14:09:58 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 692FF22253;
+ Sat, 18 Apr 2020 14:10:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1587218999;
- bh=0PJdmnhUCsTCwdTxrc85iviAyXqH9RK8DKfgmt6eieQ=;
+ s=default; t=1587219039;
+ bh=WYwADE8W9KPmvHMc3c5wIpArVFGP+Hhg+m2Vbn8klTk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GF99DJLxjgb8F3Zw68GMFbCqfpTCAQU65Iju5OKE+HwzWlunh1A3TVAnHnuxrVHqh
- lNf57hWtDp0gN+K8m6g2I9i+owesuK82thXD9Ti7zhMozwm2I2LoQmBdqClpUnrffN
- xEg7QBtPdbiiwZqQGqWVZ/TEoSa79q0J02uFR1Ik=
+ b=gs6g1+4VOiJQRNaBquvxYsDP9FI61vS+YZSuRnuCvgKuySinke+AGB3QDzTd6dr1K
+ q8UBPJ++zPffCeG1kZnqMRoyytth5h0h04cnbRLOPpBeXBtxV2hRNkE9QM1/wk6Y0I
+ FnCgLAXervzziEboou/TCOl3qhaSCvXkwpc5twZU=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.5 38/75] powerpc/pseries: Fix MCE handling on pseries
-Date: Sat, 18 Apr 2020 10:08:33 -0400
-Message-Id: <20200418140910.8280-38-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.5 72/75] pci/hotplug/pnv-php: Remove erroneous
+ warning
+Date: Sat, 18 Apr 2020 10:09:07 -0400
+Message-Id: <20200418140910.8280-72-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200418140910.8280-1-sashal@kernel.org>
 References: <20200418140910.8280-1-sashal@kernel.org>
@@ -72,93 +73,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Ganesh Goudar <ganeshgr@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, Andrew Donnellan <ajd@linux.ibm.com>,
+ linux-pci@vger.kernel.org, Alastair D'Silva <alastair@d-silva.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ganesh Goudar <ganeshgr@linux.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
 
-[ Upstream commit a95a0a1654f16366360399574e10efd87e867b39 ]
+[ Upstream commit 658ab186dd22060408d94f5c5a6d02d809baba44 ]
 
-MCE handling on pSeries platform fails as recent rework to use common
-code for pSeries and PowerNV in machine check error handling tries to
-access per-cpu variables in realmode. The per-cpu variables may be
-outside the RMO region on pSeries platform and needs translation to be
-enabled for access. Just moving these per-cpu variable into RMO region
-did'nt help because we queue some work to workqueues in real mode, which
-again tries to touch per-cpu variables. Also fwnmi_release_errinfo()
-cannot be called when translation is not enabled.
+On powernv, when removing a device through hotplug, the following
+warning is logged:
 
-This patch fixes this by enabling translation in the exception handler
-when all required real mode handling is done. This change only affects
-the pSeries platform.
+     Invalid refcount <.> on <...>
 
-Without this fix below kernel crash is seen on injecting
-SLB multihit:
+It may be incorrect, the refcount may be set to a higher value than 1
+and be valid. of_detach_node() can drop more than one reference. As it
+doesn't seem trivial to assert the correct value, let's remove the
+warning.
 
-BUG: Unable to handle kernel data access on read at 0xc00000027b205950
-Faulting instruction address: 0xc00000000003b7e0
-Oops: Kernel access of bad area, sig: 11 [#1]
-LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in: mcetest_slb(OE+) af_packet(E) xt_tcpudp(E) ip6t_rpfilter(E) ip6t_REJECT(E) ipt_REJECT(E) xt_conntrack(E) ip_set(E) nfnetlink(E) ebtable_nat(E) ebtable_broute(E) ip6table_nat(E) ip6table_mangle(E) ip6table_raw(E) ip6table_security(E) iptable_nat(E) nf_nat(E) nf_conntrack(E) nf_defrag_ipv6(E) nf_defrag_ipv4(E) iptable_mangle(E) iptable_raw(E) iptable_security(E) ebtable_filter(E) ebtables(E) ip6table_filter(E) ip6_tables(E) iptable_filter(E) ip_tables(E) x_tables(E) xfs(E) ibmveth(E) vmx_crypto(E) gf128mul(E) uio_pdrv_genirq(E) uio(E) crct10dif_vpmsum(E) rtc_generic(E) btrfs(E) libcrc32c(E) xor(E) zstd_decompress(E) zstd_compress(E) raid6_pq(E) sr_mod(E) sd_mod(E) cdrom(E) ibmvscsi(E) scsi_transport_srp(E) crc32c_vpmsum(E) dm_mod(E) sg(E) scsi_mod(E)
-CPU: 34 PID: 8154 Comm: insmod Kdump: loaded Tainted: G OE 5.5.0-mahesh #1
-NIP: c00000000003b7e0 LR: c0000000000f2218 CTR: 0000000000000000
-REGS: c000000007dcb960 TRAP: 0300 Tainted: G OE (5.5.0-mahesh)
-MSR: 8000000000001003 <SF,ME,RI,LE> CR: 28002428 XER: 20040000
-CFAR: c0000000000f2214 DAR: c00000027b205950 DSISR: 40000000 IRQMASK: 0
-GPR00: c0000000000f2218 c000000007dcbbf0 c000000001544800 c000000007dcbd70
-GPR04: 0000000000000001 c000000007dcbc98 c008000000d00258 c0080000011c0000
-GPR08: 0000000000000000 0000000300000003 c000000001035950 0000000003000048
-GPR12: 000000027a1d0000 c000000007f9c000 0000000000000558 0000000000000000
-GPR16: 0000000000000540 c008000001110000 c008000001110540 0000000000000000
-GPR20: c00000000022af10 c00000025480fd70 c008000001280000 c00000004bfbb300
-GPR24: c000000001442330 c00800000800000d c008000008000000 4009287a77000510
-GPR28: 0000000000000000 0000000000000002 c000000001033d30 0000000000000001
-NIP [c00000000003b7e0] save_mce_event+0x30/0x240
-LR [c0000000000f2218] pseries_machine_check_realmode+0x2c8/0x4f0
-Call Trace:
-Instruction dump:
-3c4c0151 38429050 7c0802a6 60000000 fbc1fff0 fbe1fff8 f821ffd1 3d42ffaf
-3fc2ffaf e98d0030 394a1150 3bdef530 <7d6a62aa> 1d2b0048 2f8b0063 380b0001
----[ end trace 46fd63f36bbdd940 ]---
-
-Fixes: 9ca766f9891d ("powerpc/64s/pseries: machine check convert to use common event code")
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+Reviewed-by: Alastair D'Silva <alastair@d-silva.org>
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20200320110119.10207-1-ganeshgr@linux.ibm.com
+Link: https://lore.kernel.org/r/20191121134918.7155-7-fbarrat@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/ras.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/pci/hotplug/pnv_php.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 1d7f973c647b3..43710b69e09eb 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -683,6 +683,17 @@ static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
- #endif
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index d7b2b47bc33eb..6037983c6e46b 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -151,17 +151,11 @@ static void pnv_php_rmv_pdns(struct device_node *dn)
+ static void pnv_php_detach_device_nodes(struct device_node *parent)
+ {
+ 	struct device_node *dn;
+-	int refcount;
  
- out:
-+	/*
-+	 * Enable translation as we will be accessing per-cpu variables
-+	 * in save_mce_event() which may fall outside RMO region, also
-+	 * leave it enabled because subsequently we will be queuing work
-+	 * to workqueues where again per-cpu variables accessed, besides
-+	 * fwnmi_release_errinfo() crashes when called in realmode on
-+	 * pseries.
-+	 * Note: All the realmode handling like flushing SLB entries for
-+	 *       SLB multihit is done by now.
-+	 */
-+	mtmsr(mfmsr() | MSR_IR | MSR_DR);
- 	save_mce_event(regs, disposition == RTAS_DISP_FULLY_RECOVERED,
- 			&mce_err, regs->nip, eaddr, paddr);
+ 	for_each_child_of_node(parent, dn) {
+ 		pnv_php_detach_device_nodes(dn);
  
+ 		of_node_put(dn);
+-		refcount = kref_read(&dn->kobj.kref);
+-		if (refcount != 1)
+-			pr_warn("Invalid refcount %d on <%pOF>\n",
+-				refcount, dn);
+-
+ 		of_detach_node(dn);
+ 	}
+ }
 -- 
 2.20.1
 
