@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D9C7C38A2F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:03:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC77C38A29
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:18:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A24120776
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:03:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B0E682076A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 14:18:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nelnPp9p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A24120776
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="L2/8ubJb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0E682076A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494F6b0dXLzDqP2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 00:03:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 494FRq1JpVzDrfM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 00:18:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=nelnPp9p; dkim-atps=neutral
+ header.s=default header.b=L2/8ubJb; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494F161FFnzDrC0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 23:58:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494FGJ3vcFzDrRH
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 00:09:59 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C444021D7E;
- Sat, 18 Apr 2020 13:49:04 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 111C622240;
+ Sat, 18 Apr 2020 14:09:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1587217745;
+ s=default; t=1587218997;
  bh=iljF7Edtms053YjF9mQtzQ/ve2E9hUgK2Tcg3enhmPM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=nelnPp9p0ObAwCqshiB1098EZ1Fd7wH+6yFGKyfFeTNqdFyUw4/3La5wsP/ZCVgCA
- /TXhw1ig14tnEj7tR7liqj08gAD7StGbSdXam21FGaoamh8n0eOspTfQeF/Gsh9DjP
- 28TFmHZD+LxydSRKlNlcAF4uy7+3Js0N4lpSBLrs=
+ b=L2/8ubJbdZDKs+6bkDQgJpSKC6wNIRYrMu2OdgfbgsEGNuOR7gDjrtg4RoePTWCbN
+ eM5ty3+W8gQqnJA6B+4IxyvsRVIgS6cjCEtnz3MAshrvjccfc2vCg5rtnywUa22VXm
+ fJSFxVaKekrIaKjNW3Z0dSA6yx5T08Cy5xVYDJrI=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.6 39/73] Revert "powerpc/64: irq_work avoid
+Subject: [PATCH AUTOSEL 5.5 37/75] Revert "powerpc/64: irq_work avoid
  interrupt when called with hardware irqs enabled"
-Date: Sat, 18 Apr 2020 09:47:41 -0400
-Message-Id: <20200418134815.6519-39-sashal@kernel.org>
+Date: Sat, 18 Apr 2020 10:08:32 -0400
+Message-Id: <20200418140910.8280-37-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200418134815.6519-1-sashal@kernel.org>
-References: <20200418134815.6519-1-sashal@kernel.org>
+In-Reply-To: <20200418140910.8280-1-sashal@kernel.org>
+References: <20200418140910.8280-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
