@@ -2,74 +2,87 @@ Return-Path: <SRS0=MUiv=6C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70DCAC352BE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 19:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 887E4C352BE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 20:23:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2ACF3221E9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 19:22:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2ACF3221E9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id D123D206D6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 20:23:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=arista.com header.i=@arista.com header.b="Ouqu5zYB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D123D206D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=arista.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494NBw5KpYzDsGm
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 05:22:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.131; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 494PYd6psvzDrQ2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 06:23:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=arista.com (client-ip=2a00:1450:4864:20::443;
+ helo=mail-wr1-x443.google.com; envelope-from=dima@arista.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=arista.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=arista.com header.i=@arista.com header.a=rsa-sha256
+ header.s=googlenew header.b=Ouqu5zYB; 
+ dkim-atps=neutral
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494My85HVyzDrj5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 05:11:28 +1000 (AEST)
-Received: from mail-qt1-f172.google.com ([209.85.160.172]) by
- mrelayeu.kundenserver.de (mreue009 [212.227.15.129]) with ESMTPSA (Nemesis)
- id 1N7zJj-1jBwrI2DNz-0155RT for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr
- 2020 21:11:23 +0200
-Received: by mail-qt1-f172.google.com with SMTP id w24so5061194qts.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 12:11:23 -0700 (PDT)
-X-Gm-Message-State: AGi0PubXWVbu9xyfpxr1eHTK8t6DSQNf+BoOjDaHfCjewsWqVr0AROkB
- /Uh6PVCYoazVAr3Oez/9YQoJP4WLZJlq0p9t3jQ=
-X-Google-Smtp-Source: APiQypI5XWv+0v5CUPd6xcl5C/iLVZmU2I5uN+IAnHyrQzOErNeb/Vq46nsA5qUEtPCx2jH3AALWiUq8REeGQkl/9Vg=
-X-Received: by 2002:ac8:4c8d:: with SMTP id j13mr2801144qtv.142.1587237082474; 
- Sat, 18 Apr 2020 12:11:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494PTn4q0LzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 06:20:29 +1000 (AEST)
+Received: by mail-wr1-x443.google.com with SMTP id d17so7134198wrg.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 13:20:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=arista.com; s=googlenew;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=p0q5MXd4DQ3tM30NHxuzJ2PGrrL0Sa5uoKgnrntXUaw=;
+ b=Ouqu5zYB+27KVL5F6AoCVi/+NUwxXy7UhXkXQYwBeTaTxMwoHWdENC6erhaOS+bk23
+ 6wxn5BBTQkjtYoonkDO6ZZrU8YsIluxo8v++1zONTLgxzvyh8IBGPJ7XKNdapg6rqFTV
+ PVZ597rFnzQK0F8G0/jKyMTUJz2enlO1j0f28vGbYilHpr0yyuM237CvVF+U4VbnDdoK
+ JRbjWiu5CDBLaXKJfw0v8ifKAUTvxU2S7VlDMBAUrsmHh+z77eRiwYaHUXJMCS0vedOj
+ UnqqOb8ULa+Zpgd9LnB1nbxELrj5r8dUZ07Gbj1YrCoblGQbWogPIt2fvH6CGYDvMJZL
+ 5IGw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=p0q5MXd4DQ3tM30NHxuzJ2PGrrL0Sa5uoKgnrntXUaw=;
+ b=onw0VRdBXlut1NwB18Gef2WzsGKD1+wyrRHb5315rAp0vaovFvYZuRWxWlcTGbC+HB
+ wtu/c8tA9s+oGGyRvzVcgap6ZhAr19hR0dhmJVn2ezqbLjyH8hTdtOd1OsYvMQlBp2vG
+ e42Ogu3ky8ZnU8HPM1fTTzwrece5Vxnd+dylMRwzKceHY/QjF1I9dTCD1soKlCKpzafk
+ lloUbgZgyHHbN+E7ybsO+/BizZuGpOCwGEHWpSQPg4wtoY2LBLLLVTpodQz56EbvzT2S
+ vb7leCP8UjLM8oa451/q4HnCjpvk3+YweRoAliE1bLaTymNxUQO4C4nOAP7tG6NFTie3
+ D9GQ==
+X-Gm-Message-State: AGi0PuaYMHAdE/40KC/wPs4BqTldb8L8fFspKIcsxgr5p5V4Y1bT/2ip
+ o0wsqrC4LH2+RpCwmwL3hW8Vzw==
+X-Google-Smtp-Source: APiQypIRxMjv5yeY1kroqWRiyqnegsmb6+5PVnvsKHq2n3zLfiuqrFzKY8QalLSgeeBOCQKbbRWhvw==
+X-Received: by 2002:adf:b344:: with SMTP id k4mr10080176wrd.76.1587241225661; 
+ Sat, 18 Apr 2020 13:20:25 -0700 (PDT)
+Received: from localhost.localdomain ([2a02:8084:e84:2480:228:f8ff:fe6f:83a8])
+ by smtp.gmail.com with ESMTPSA id
+ m1sm31735255wro.64.2020.04.18.13.20.24
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 18 Apr 2020 13:20:25 -0700 (PDT)
+From: Dmitry Safonov <dima@arista.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCHv3 26/50] powerpc: Add show_stack_loglvl()
+Date: Sat, 18 Apr 2020 21:19:20 +0100
+Message-Id: <20200418201944.482088-27-dima@arista.com>
+X-Mailer: git-send-email 2.26.0
+In-Reply-To: <20200418201944.482088-1-dima@arista.com>
+References: <20200418201944.482088-1-dima@arista.com>
 MIME-Version: 1.0
-References: <20200418162157.50428-1-wenhu.wang@vivo.com>
- <20200418162157.50428-5-wenhu.wang@vivo.com>
-In-Reply-To: <20200418162157.50428-5-wenhu.wang@vivo.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 18 Apr 2020 21:11:06 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0-7mLhGb=LCAQSTL4kNoGVcBcQOca=-tJkZAj1w2Bxsg@mail.gmail.com>
-Message-ID: <CAK8P3a0-7mLhGb=LCAQSTL4kNoGVcBcQOca=-tJkZAj1w2Bxsg@mail.gmail.com>
-Subject: Re: [PATCH v6, 4/4] drivers: misc: new driver sram_uapi for user level
- SRAM access
-To: Wang Wenhu <wenhu.wang@vivo.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:zItT9gr0eylhpWGs7/EVvRJe+RisiXf8DtGdsYDJtCXWs1icD2F
- 3EaKAg6KXihEy0af0+1FoYO8BvEZUn/PEeQUOODI25BhVb3v99WHZUlJx1ebH/HH/EPy8OH
- U9KonU0A0CXVOGgmfCYnOAOOHBGW6Ytny9J0LdWrpGgUSuwsW5/awZoAS2nKUcCtRnwljMZ
- cpWyppvLCR6qkUnKieYOw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:wpOTqRJVBIc=:316x6rIVYJYt6IUBWhNmQG
- pw9RoXkyuNvysWFGglXajqJejqQGvodQu5JXFp01ZDq7e1jSYNmFhXN92Z0taQ0e9/6gTgqZx
- IbJ8bdjUx2ARde45QPt9oZ+/drmkHgqQVR1K2VRejKjwS+X5Cp03/a6/CESQfBmeyarCYnRok
- BXtkKLjCpSZ8yZ8A4RxbO23qg6dvR7zIHa7v6XTKDLJRpRPtZxfxcdOYfCbeC3RepsfWzSA2a
- 7yj0M/1MEnCA9V+XswYuHNfL4JxXVDUefqguPNLWpi22c70qECADxwnTaXSy3YtnWjlNP3uU5
- ITpfncK6mmvbETP6cwGN5T48msU2liLRKfe5TpUzaq54FUMHBI9eNU8RJncW8ZW6lcTi4KWhf
- 2CDKh4f61tIzWLeFMUmUft0cbk4SrYHxJ8WaVpydrsdYcBzrRfwaH2DhqDrHV5FS90pB7zHqu
- R0yE6KjaYCrk1zwiTxWZ/rzKxV51MM7wwf6I7OlMjMQgCG2mFKib3zUx9uFLCmIrfyIUeGM0I
- 0r2UO9TFNVeDS10wBakTUhk6/usbrlEuTvJkgyiGDfq+ZcWOawLAVg2/XUKGsFRjKob0S0nMO
- P8suz7K6x30pUoafbqIkDoLdhXesEF4ln3RTOPetGQ7PQGs0ma5qMDvQCsn90XbG2HoIYHvCQ
- UL6mPittdX3cToNUbjgQgeO/CZ1nhEvjEDE8vuGKz1lC7ur9Iawjsn74y+swLUyHn+lvlZu4r
- qkC6eKAoHYrsvA7QXH1JlnEqRyf9D5Gxd8sLZCWWXbpsiq+TWCIUErkf+N1LXBYfu0tPybggV
- x1jGsv4CEnQDavH7VA9NkAdAe4i/3pKwfv8QD++xjpM0QSBXSE=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,30 +94,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gregkh <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, kernel@vivo.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Petr Mladek <pmladek@suse.com>, Dmitry Safonov <dima@arista.com>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 18, 2020 at 6:22 PM Wang Wenhu <wenhu.wang@vivo.com> wrote:
-> +#define DRIVER_NAME    "sram_uapi"
-> +
-> +#define SRAM_UAPI_IOCTL_SET_SRAM_TYPE  0
-> +#define SRAM_UAPI_IOCTL_ALLOC          1
-> +#define SRAM_UAPI_IOCTL_FREE           2
-> +
-> +struct res_info {
-> +       u32 offset;
-> +       u32 size;
-> +};
+Currently, the log-level of show_stack() depends on a platform
+realization. It creates situations where the headers are printed with
+lower log level or higher than the stacktrace (depending on
+a platform or user).
 
-This is of course not a proper ioctl interface at all, please see
-Documentation/driver-api/ioctl.rst for how to define the numbers
-in a uapi header file.
+Furthermore, it forces the logic decision from user to an architecture
+side. In result, some users as sysrq/kdb/etc are doing tricks with
+temporary rising console_loglevel while printing their messages.
+And in result it not only may print unwanted messages from other CPUs,
+but also omit printing at all in the unlucky case where the printk()
+was deferred.
 
-The offset/size arguments should probably be 64 bit wide.
+Introducing log-level parameter and KERN_UNSUPPRESSED [1] seems
+an easier approach than introducing more printk buffers.
+Also, it will consolidate printings with headers.
 
-       Arnd
+Introduce show_stack_loglvl(), that eventually will substitute
+show_stack().
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+[1]: https://lore.kernel.org/lkml/20190528002412.1625-1-dima@arista.com/T/#u
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Signed-off-by: Dmitry Safonov <dima@arista.com>
+---
+ arch/powerpc/kernel/process.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9c21288f8645..6ad438d59796 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -2068,7 +2068,8 @@ unsigned long get_wchan(struct task_struct *p)
+ 
+ static int kstack_depth_to_print = CONFIG_PRINT_STACK_DEPTH;
+ 
+-void show_stack(struct task_struct *tsk, unsigned long *stack)
++void show_stack_loglvl(struct task_struct *tsk, unsigned long *stack,
++		       const char *loglvl)
+ {
+ 	unsigned long sp, ip, lr, newsp;
+ 	int count = 0;
+@@ -2093,7 +2094,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 	}
+ 
+ 	lr = 0;
+-	printk("Call Trace:\n");
++	printk("%sCall Trace:\n", loglvl);
+ 	do {
+ 		if (!validate_sp(sp, tsk, STACK_FRAME_OVERHEAD))
+ 			break;
+@@ -2102,7 +2103,8 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 		newsp = stack[0];
+ 		ip = stack[STACK_FRAME_LR_SAVE];
+ 		if (!firstframe || ip != lr) {
+-			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
++			printk("%s["REG"] ["REG"] %pS",
++				loglvl, sp, ip, (void *)ip);
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 			ret_addr = ftrace_graph_ret_addr(current,
+ 						&ftrace_idx, ip, stack);
+@@ -2124,8 +2126,9 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 			struct pt_regs *regs = (struct pt_regs *)
+ 				(sp + STACK_FRAME_OVERHEAD);
+ 			lr = regs->link;
+-			printk("--- interrupt: %lx at %pS\n    LR = %pS\n",
+-			       regs->trap, (void *)regs->nip, (void *)lr);
++			printk("%s--- interrupt: %lx at %pS\n    LR = %pS\n",
++			       loglvl, regs->trap,
++			       (void *)regs->nip, (void *)lr);
+ 			firstframe = 1;
+ 		}
+ 
+@@ -2135,6 +2138,11 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 	put_task_stack(tsk);
+ }
+ 
++void show_stack(struct task_struct *tsk, unsigned long *stack)
++{
++	show_stack_loglvl(tsk, stack, KERN_DEFAULT);
++}
++
+ #ifdef CONFIG_PPC64
+ /* Called with hard IRQs off */
+ void notrace __ppc64_runlatch_on(void)
+-- 
+2.26.0
+
