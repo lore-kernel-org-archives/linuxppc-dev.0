@@ -2,26 +2,26 @@ Return-Path: <SRS0=MUiv=6C=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF2CAC2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 08:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F8F2C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 08:30:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03AD2214D8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 08:17:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C1B5521D82
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 08:30:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="AQQa/JgG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03AD2214D8
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="YTZxs//j"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1B5521D82
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4945Rw61h3zDrfx
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 18:17:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4945kp7589zDrnD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Apr 2020 18:30:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,56 +30,52 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=AQQa/JgG; dkim-atps=neutral
+ header.s=mail header.b=YTZxs//j; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4945Pm5fWnzDrfm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 18:15:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4945hv61gqzDrLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 18:29:03 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4945PZ0MxHz9txY8;
- Sat, 18 Apr 2020 10:15:46 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4945hp6Yqlz9tyjt;
+ Sat, 18 Apr 2020 10:28:58 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=AQQa/JgG; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=YTZxs//j; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hnYClEVc0eyG; Sat, 18 Apr 2020 10:15:45 +0200 (CEST)
+ with ESMTP id vrKjyk7ZXOGw; Sat, 18 Apr 2020 10:28:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4945PY6R23z9txY6;
- Sat, 18 Apr 2020 10:15:45 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4945hp4gl7z9tyjs;
+ Sat, 18 Apr 2020 10:28:58 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1587197745; bh=jB5Gl7RxVqyXpo2Hse+3VUzGqM2gawZmxz49L7U420s=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=AQQa/JgGK4MzHvWoF2Z5uKFlyqbmJPtwJYfrPJO+D4iL/MNPzfUNv7235qVqZ+XxE
- 2qr4B+iHbPm8eirpT2+BC1epVeoc8Tb7up/e08oG8+cE8EbaSzsZsFepDU+MrCJbhV
- jaPxQfZ42OA6Bw5qa9V+tN+58qaX+TXbTogZbPbo=
+ t=1587198538; bh=Cv9xcT2aNarUu2KPbvEQ/kk1/fAyjgfRlS/UomgKUnw=;
+ h=To:Cc:From:Subject:Date:From;
+ b=YTZxs//j+oCFBUF9u2rxptftD+pmTlw0wnzEXcNYQtht2O44Tbp6Ns1YwyqRAP0Sc
+ 2S8dM8vrC2mJIfNqdD1oKeWtaIeQbWZjuxR4PI00nULDCW4KwWToyrZXiuh8DSVthv
+ w2GZIox397+mFP0ustIKm/qP1nySpKyFqmzTWXgU=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EAF788B772;
- Sat, 18 Apr 2020 10:15:46 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CC9068B772;
+ Sat, 18 Apr 2020 10:28:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id xduYPJ1JYzVW; Sat, 18 Apr 2020 10:15:46 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 972068B75E;
- Sat, 18 Apr 2020 10:15:45 +0200 (CEST)
-Subject: Re: [PATCH 8/8] exec: open code copy_string_kernel
-To: Christoph Hellwig <hch@lst.de>, Andrew Morton
- <akpm@linux-foundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>
-References: <20200414070142.288696-1-hch@lst.de>
- <20200414070142.288696-9-hch@lst.de>
+ with ESMTP id mkoibPO_wpFm; Sat, 18 Apr 2020 10:28:59 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4768B8B75E;
+ Sat, 18 Apr 2020 10:28:59 +0200 (CEST)
+To: Segher Boessenkool <segher@kernel.crashing.org>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <ffea91ee-f386-9d19-0bc9-ab59eb7b9a41@c-s.fr>
-Date: Sat, 18 Apr 2020 10:15:42 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+Subject: How to use "y" constraint in GCC inline powerpc assembly ?
+Message-ID: <9fd93f18-652e-c301-f110-d9f07201330d@c-s.fr>
+Date: Sat, 18 Apr 2020 08:28:53 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-In-Reply-To: <20200414070142.288696-9-hch@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,100 +88,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- "Eric W . Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Segher,
 
+I'd like to use cr instead of gpr to return error condition from 
+__get_user().
 
-Le 14/04/2020 à 09:01, Christoph Hellwig a écrit :
-> Currently copy_string_kernel is just a wrapper around copy_strings that
-> simplifies the calling conventions and uses set_fs to allow passing a
-> kernel pointer.  But due to the fact the we only need to handle a single
-> kernel argument pointer, the logic can be sigificantly simplified while
-> getting rid of the set_fs.
+I saw in GCC doc 
+(https://gcc.gnu.org/onlinedocs/gcc/Machine-Constraints.html) that it is 
+possible to use "y" as constraint to refer to "Any condition register 
+field, cr0…cr7".
 
+I tried the test below, but it fails with "error: impossible register 
+constraint in 'asm'"
 
-Instead of duplicating almost identical code, can you write a function 
-that takes whether the source is from user or from kernel, then you just 
-do things like:
+How does "y" has to be used ?
 
-	if (from_user)
-		len = strnlen_user(str, MAX_ARG_STRLEN);
-	else
-		len = strnlen(str, MAX_ARG_STRLEN);
+int test(char *p)
+{
+	struct {
+		int r:1;
+	} res = {0};
 
+	asm("crnot %0 * 4 + eq, %0 * 4 + eq": "=&y"(res.r));
 
-	if (from_user)
-		copy_from_user(kaddr+offset, str, bytes_to_copy);
-	else
-		memcpy(kaddr+offset, str, bytes_to_copy);
-
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->   fs/exec.c | 43 ++++++++++++++++++++++++++++++++++---------
->   1 file changed, 34 insertions(+), 9 deletions(-)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index b2a77d5acede..ea90af1fb236 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -592,17 +592,42 @@ static int copy_strings(int argc, struct user_arg_ptr argv,
->    */
->   int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
->   {
-> -	int r;
-> -	mm_segment_t oldfs = get_fs();
-> -	struct user_arg_ptr argv = {
-> -		.ptr.native = (const char __user *const  __user *)&arg,
-> -	};
-> +	int len = strnlen(arg, MAX_ARG_STRLEN) + 1 /* terminating NUL */;
-> +	unsigned long pos = bprm->p;
-> +
-> +	if (len == 0)
-> +		return -EFAULT;
-> +	if (!valid_arg_len(bprm, len))
-> +		return -E2BIG;
-> +
-> +	/* We're going to work our way backwards. */
-> +	arg += len;
-> +	bprm->p -= len;
-> +	if (IS_ENABLED(CONFIG_MMU) && bprm->p < bprm->argmin)
-> +		return -E2BIG;
-> +
-> +	while (len > 0) {
-> +		unsigned int bytes_to_copy = min_t(unsigned int, len,
-> +				min_not_zero(offset_in_page(pos), PAGE_SIZE));
-> +		struct page *page;
-> +		char *kaddr;
->   
-> -	set_fs(KERNEL_DS);
-> -	r = copy_strings(1, argv, bprm);
-> -	set_fs(oldfs);
-> +		pos -= bytes_to_copy;
-> +		arg -= bytes_to_copy;
-> +		len -= bytes_to_copy;
->   
-> -	return r;
-> +		page = get_arg_page(bprm, pos, 1);
-> +		if (!page)
-> +			return -E2BIG;
-> +		kaddr = kmap_atomic(page);
-> +		flush_arg_page(bprm, pos & PAGE_MASK, page);
-> +		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
-> +		flush_kernel_dcache_page(page);
-> +		kunmap_atomic(kaddr);
-> +		put_arg_page(page);
-> +	}
-> +
-> +	return 0;
->   }
->   EXPORT_SYMBOL(copy_string_kernel);
->   
-> 
+	if (res.r)
+		return -14;
+	return 0;
+}
 
 Christophe
