@@ -2,86 +2,140 @@ Return-Path: <SRS0=VIHX=6D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE2BCC2BA2B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 07:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED3E2C2BA2B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 07:44:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D2372145D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 07:42:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 41C4121974
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 07:44:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=arista.com header.i=@arista.com header.b="NtWMGxm5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D2372145D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=arista.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="Xh1rc4a2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41C4121974
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494hd706yYzDr39
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 17:42:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=arista.com (client-ip=2a00:1450:4864:20::341;
- helo=mail-wm1-x341.google.com; envelope-from=dima@arista.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=arista.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=arista.com header.i=@arista.com header.a=rsa-sha256
- header.s=googlenew header.b=NtWMGxm5; 
+	by lists.ozlabs.org (Postfix) with ESMTP id 494hgN6Vb0zDqbX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 17:44:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=web.de
+ (client-ip=217.72.192.78; helo=mout.web.de;
+ envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=web.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
+ header.s=dbaedf251592 header.b=Xh1rc4a2; 
  dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mout.web.de (mout.web.de [217.72.192.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494PTH33v8zDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 06:19:58 +1000 (AEST)
-Received: by mail-wm1-x341.google.com with SMTP id t63so5494903wmt.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2020 13:19:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=googlenew;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=jZu2SG2CC0n9e6bY0OW4NrZkgCkX838M7bfDqNvau2s=;
- b=NtWMGxm5Z5KL60IcA5G6+HePF4i0/+hybqLX4fP2XMV4pk2XK/oJgFwY9QTP7vjDcS
- 5rwxVW1+vHKUvZUBrN7R1Jm5os3oCs5jvHX41VQ5J2K9Y+GI66NfmYOUEkhyxC+rjZg7
- 2GfsY1ICyicOKD9p22ci+KNPTEheYKJMkOJUNpoxfOXV+MY7Nfvt7+EMftdBGU8cAV7Z
- Hc5O1LA9T9GP/asJoaPI+CZlJFXlG6W/t2lsj8SpH+N8Lys5LxM4YnccVfQhfWVsNDrM
- t9gj0wsuKk0zluKdzjzbtHVloZk5oDJD4LvQFErIsDvme+gEa5teq5SfPrxjPtC9exZQ
- O63A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=jZu2SG2CC0n9e6bY0OW4NrZkgCkX838M7bfDqNvau2s=;
- b=jeovXW5V7s/DdwqmzyTyp5NKly2cnZl2rctENVsL8hZE1mIewLz6/mmlIJojU16lsg
- t1qMh+mDE5oElarF1e1eRuko8OTW5QxcJXjf8Nv3M+Mv2dwij5UVIdvqukkmQ57SChi7
- 1HoSU/DaeUXx+8bQyfyPV1d+pwwK9JffIaW3FcSLhNngtW5KBP4DHuPvORHy7badqSYN
- ccYo13u2f85bv+JIZyw6Aq7Xl4zc65s1I/CdKH9Xjk+rO1HCjnS4jEnzmhtYVCsxV8uL
- gLjYilgb4kg8bY3Py/Br6sQAYK4DdmjxLb7bfDBjgqsjfcgo7CCYgDjkwj8azTUQINPy
- B2LQ==
-X-Gm-Message-State: AGi0Pub9edzi/pJHl9suLLqhxJiYF349TwUNM40/8yEz4j4WFV9JhWeJ
- CiBLXLsftN7tbUJqdedqXz958A==
-X-Google-Smtp-Source: APiQypIu9Ehl1Z9anj4NXd+uZnvSgH6ch0y3g33ZANXWX1DjUHPmY1LH5q1VbQfnVR586X/qqwr8lw==
-X-Received: by 2002:a05:600c:210c:: with SMTP id
- u12mr10004137wml.135.1587241189836; 
- Sat, 18 Apr 2020 13:19:49 -0700 (PDT)
-Received: from localhost.localdomain ([2a02:8084:e84:2480:228:f8ff:fe6f:83a8])
- by smtp.gmail.com with ESMTPSA id
- m1sm31735255wro.64.2020.04.18.13.19.45
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 18 Apr 2020 13:19:48 -0700 (PDT)
-From: Dmitry Safonov <dima@arista.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCHv3 00/50] Add log level to show_stack()
-Date: Sat, 18 Apr 2020 21:18:54 +0100
-Message-Id: <20200418201944.482088-1-dima@arista.com>
-X-Mailer: git-send-email 2.26.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494fzs2KFpzDr39
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 16:28:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
+ s=dbaedf251592; t=1587277511;
+ bh=R0GHJO7eG/0xS8Mj3Xwo95YcotDuEUImghkPfpCjkFc=;
+ h=X-UI-Sender-Class:To:Subject:From:Cc:Date;
+ b=Xh1rc4a2nTe2FRbuM2d3LFUpy2ATvwL6Mq2jASXH2Uj1VECi3BtaU5jTeDU96zUi+
+ gwYzUq+VcXKoRGDrodiVHQrXb1tznMtvGdEFxr0epor8v8528Eupg9FhX4N5yizX0i
+ J6tVmFc1f+jyCb7V0IZQSHGzySHfodHG+S60VHtQ=
+X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
+Received: from [192.168.1.2] ([2.243.85.208]) by smtp.web.de (mrweb103
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 0M9XM3-1jWsci0q1X-00Czel; Sun, 19
+ Apr 2020 08:25:11 +0200
+To: Dmitry Safonov <dima@arista.com>, clang-built-linux@googlegroups.com,
+ kgdb-bugreport@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, nios2-dev@lists.rocketboards.org,
+ openrisc@lists.librecores.org, sparclinux@vger.kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp, x86@kernel.org
+Subject: Re: [PATCH v3 00/50] Add log level to show_stack()
+From: Markus Elfring <Markus.Elfring@web.de>
+Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
+ 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 FEE=
+Message-ID: <510426be-c95f-adea-af6a-51e592f41ce0@web.de>
+Date: Sun, 19 Apr 2020 08:24:59 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:fiBSRO5JZPPBGS/b+P/QruwXKgWy4xjJvI1a3z6iU6xtTvYTpCB
+ pGORkj/vSYtLOKKzKGbFfcSK/Mou5mOeNdeChPpnGK9+R6cV6V2QZpwk6eAyoINjSlTLuMo
+ Z/VyxDlhjzKREAtaxgxyanMkXCAvYMpuZTmfgusDDU3VdEOSrKPLcx0qIUljlW1Ka1EknhK
+ Eqtnj0zaaSVw0Vha1eRBw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ehBQdQ698Lk=:IdmHlujqBKzzQmVyxHxpoK
+ DFsD7gY9mP6ek2gQ6rxL1bwYQ1rb5wpstw3lT+rY1bU9hW5itp5hwllJEn+y1i5seCO4fcwLC
+ mZMroLfFVhVoOrgTwKR2VXilmctNTk7gJJQpMzH244yiH8Fz47UF/OibZfphqm0nIvrcwwpMl
+ gRz54IhzjzfUL+d7d/zfTucpak3ynHWOKZ0BiWupzUqdU7/korEZsWNpjEcHvCQNT8cfk5lLR
+ yQU0yAt431TPKozFgClZBlZUZv32ojrXjMkn4KLCnHcuhNEgT0QgjmTtTgHqEg3eExyILQsvc
+ 70eUl/OzAKzn6eeQOZ8o4UBMt+T8aB+sT387dq2b7khis+MP0w1QWLS6AKGCjIIljOtBSMVps
+ A3wbsAnJyLPAwOs/5pmMYVaosln4zLgVju3A1Hj184A0HVCRWS0Ev/Jiukh8CazfelYhw4DVC
+ LwpEsCuJ+BzliLsh5HQXbcLaSzSV1PsHks03z/kz93xBd5emcXaDXdyMOcPWC+J+ztYJ057Cw
+ FmuJUbfnbCyBHAmcOdXQ2L0r1VGVQaHzsYmhwLjVRqJVhZU2Ir4q62yurjtctQkq5CF43SHAS
+ r6HtFH3JuYVJnWkjNGRgFjEFerKMtvoLkJKr01VQEYpJEzZyUI0RlI3bMBNZFWnodsTzAcUh/
+ G9j4BmCAP1sQMVpn+WjR/Kx/lFAHk9mNgjgBMuY1XOyOCwgSIwb7xRY4gNbMeU68nH47zH4gj
+ dXwbZvnaZ0fRI/0H0w/SDpG9S+QIrg6EHeBdHvuQc8Id0cqP16ebg+/avJDTFH3QZdFalU7w6
+ 3lDZc7cqKqaMFwg2+zdEjIz2Nz5WbX5RaeJfFeRgx06rlgyCR95Tr8eHjOJucwr/OAYDRx1lN
+ 02JAqSH42LB0gjpvYRltpAx5o17WFhohio2K+8WYlrL2O7wOai1CsBWdxq6sNfrzBJH/epsOi
+ HWg2PMyaUccn3OjxKLf7Uf91fCAQbnFMa0+DhJVLA2U7AbbwhoMpVJ0cDx6sEhcPk4PTjPlT4
+ OWr3v5qv7OmtFlIcgGGyvMpc/ODK5bwQBcBsKDKt3HnH80LR+OUURQxbY26ROGtKsdylfz0zu
+ CnZ1aBsnFtd/p9jeOSUUh61PAUtgD/bKd2E9jIq75VtWI316Pz04pvz9Wfg/eKimP8IMb4aCS
+ tu+XVeQVahy9GAnATDTXNXqzET7vzkpRPlPAwcGWtvpMuKBV5pNuWHCGLcKJ6Vv4DB3VDSeD0
+ d4zoddkIxnUJnaDoQ
 X-Mailman-Approved-At: Sun, 19 Apr 2020 17:41:01 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,247 +148,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>,
- Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>,
- Vincent Guittot <vincent.guittot@linaro.org>,
- Paul Burton <paulburton@kernel.org>, Dmitry Safonov <dima@arista.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mel Gorman <mgorman@suse.de>,
- Jiri Slaby <jslaby@suse.com>, Matt Turner <mattst88@gmail.com>,
- uclinux-h8-devel@lists.sourceforge.jp, Len Brown <len.brown@intel.com>,
- linux-pm@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-um@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Richard Henderson <rth@twiddle.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ralf Baechle <ralf@linux-mips.org>,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linux-ia64@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- James Hogan <jhogan@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Vincent Chen <deanbo422@gmail.com>,
- Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>,
- Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
- linux-m68k@lists.linux-m68k.org, Stafford Horne <shorne@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Tony Luck <tony.luck@intel.com>, Douglas Anderson <dianders@chromium.org>,
- Dmitry Safonov <0x7f454c46@gmail.com>, Will Deacon <will@kernel.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Brian Cain <bcain@codeaurora.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- kgdb-bugreport@lists.sourceforge.net, linux-snps-arc@lists.infradead.org,
- Fenghua Yu <fenghua.yu@intel.com>, Borislav Petkov <bp@alien8.de>,
- Jeff Dike <jdike@addtoit.com>, Steven Rostedt <rostedt@goodmis.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greentime Hu <green.hu@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-parisc@vger.kernel.org,
- linux-alpha@vger.kernel.org, Ley Foon Tan <lftan@altera.com>,
- "David S. Miller" <davem@davemloft.net>, Rich Felker <dalias@libc.org>,
- Petr Mladek <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org,
+Cc: Juri Lelli <juri.lelli@redhat.com>, Rich Felker <dalias@libc.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Petr Mladek <pmladek@suse.com>,
+ Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ "James E. J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Dmitry Safonov <0x7f454c46@gmail.com>, Ben Segall <bsegall@google.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+ Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
  Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
- Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Jonas Bonn <jonas@southpole.se>, Daniel Thompson <daniel.thompson@linaro.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Brian Cain <bcain@codeaurora.org>, Helge Deller <deller@gmx.de>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ =?UTF-8?Q?Christian_Borntr=c3=a4ger?= <borntraeger@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Jeff Dike <jdike@addtoit.com>,
+ Jiri Slaby <jslaby@suse.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Aurelien Jacquiot <jacquiot.aurelien@gmail.com>,
+ Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>,
+ Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Ley Foon Tan <lftan@altera.com>, Stafford Horne <shorne@gmail.com>,
  Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Paul Walmsley <paul.walmsley@sifive.com>,
- Michal Simek <monstr@monstr.eu>, Vineet Gupta <vgupta@synopsys.com>,
- linux-mips@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Jason Wessel <jason.wessel@windriver.com>,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org
+ Guan Xuetao <gxt@pku.edu.cn>, Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Paul Burton <paulburton@kernel.org>, Vineet Gupta <vgupta@synopsys.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Douglas Anderson <dianders@chromium.org>,
+ =?UTF-8?Q?Ralf_B=c3=a4chle?= <ralf@linux-mips.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Mark Salter <msalter@redhat.com>,
+ Jason Wessel <jason.wessel@windriver.com>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changes to v3:
-- Collected more architectual Acks and Reviewed-by
-- Fixed compilation on sparc64
+> Changes to v3:
+> - Collected more architectual Acks and Reviewed-by
 
-Changes to v2:
-- Removed excessive pr_cont("\n") (nits by Senozhatsky)
-- Leave backtrace debugging messages with pr_debug()
-  (noted by Russell King and Will Deacon)
-- Correct microblaze_unwind_inner() declaration
-  (Thanks to Michal Simek and kbuild test robot)
-- Fix copy'n'paste typo in show_stack_loglvl() for sparc
-  (kbuild robot)
-- Fix backtrace output on xtensa
-  (Thanks Max Filippov)
-- Add loglevel to show_stack() on s390 (kbuild robot)
-- Collected all Reviewed-by and Acked-by (thanks!)
+* I suggest to avoid a typo in this description.
 
-v2: https://lore.kernel.org/linux-riscv/20200316143916.195608-1-dima@arista.com/
-v1: https://lore.kernel.org/linux-riscv/20191106030542.868541-1-dima@arista.com/
+* Please separate the tag =E2=80=9CPATCH=E2=80=9D from the version descrip=
+tor in the subject.
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
+Documentation/process/submitting-patches.rst?id=3D50cc09c18985eacbbd666acf=
+d7be2391394733f5#n709
 
-Add log level argument to show_stack().
-Done in three stages:
-1. Introducing show_stack_loglvl() for every architecture
-2. Migrating old users with an explicit log level
-3. Renaming show_stack_loglvl() into show_stack()
-
-Justification:
-o It's a design mistake to move a business-logic decision
-  into platform realization detail.
-o I have currently two patches sets that would benefit from this work:
-  Removing console_loglevel jumps in sysrq driver [1]
-  Hung task warning before panic [2] - suggested by Tetsuo (but he
-  probably didn't realise what it would involve).
-o While doing (1), (2) the backtraces were adjusted to headers
-  and other messages for each situation - so there won't be a situation
-  when the backtrace is printed, but the headers are missing because
-  they have lesser log level (or the reverse).
-o As the result in (2) plays with console_loglevel for kdb are removed.
-
-The least important for upstream, but maybe still worth to note that
-every company I've worked in so far had an off-list patch to print
-backtrace with the needed log level (but only for the architecture they
-cared about).
-If you have other ideas how you will benefit from show_stack() with
-a log level - please, reply to this cover letter.
-
-See also discussion on v1:
-https://lore.kernel.org/linux-riscv/20191106083538.z5nlpuf64cigxigh@pathway.suse.cz/
-
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-
-Thanks,
-Dmitry
-
-[1]: https://lore.kernel.org/lkml/20190528002412.1625-1-dima@arista.com/T/#u
-[2]: https://lkml.kernel.org/r/41fd7652-df1f-26f6-aba0-b87ebae07db6@i-love.sakura.ne.jp
-
-Dmitry Safonov (50):
-  kallsyms/printk: Add loglvl to print_ip_sym()
-  alpha: Add show_stack_loglvl()
-  arc: Add show_stack_loglvl()
-  arm/asm: Add loglvl to c_backtrace()
-  arm: Add loglvl to unwind_backtrace()
-  arm: Add loglvl to dump_backtrace()
-  arm: Wire up dump_backtrace_{entry,stm}
-  arm: Add show_stack_loglvl()
-  arm64: Add loglvl to dump_backtrace()
-  arm64: Add show_stack_loglvl()
-  c6x: Add show_stack_loglvl()
-  csky: Add show_stack_loglvl()
-  h8300: Add show_stack_loglvl()
-  hexagon: Add show_stack_loglvl()
-  ia64: Pass log level as arg into ia64_do_show_stack()
-  ia64: Add show_stack_loglvl()
-  m68k: Add show_stack_loglvl()
-  microblaze: Add loglvl to microblaze_unwind_inner()
-  microblaze: Add loglvl to microblaze_unwind()
-  microblaze: Add show_stack_loglvl()
-  mips: Add show_stack_loglvl()
-  nds32: Add show_stack_loglvl()
-  nios2: Add show_stack_loglvl()
-  openrisc: Add show_stack_loglvl()
-  parisc: Add show_stack_loglvl()
-  powerpc: Add show_stack_loglvl()
-  riscv: Add show_stack_loglvl()
-  s390: Add show_stack_loglvl()
-  sh: Add loglvl to dump_mem()
-  sh: Remove needless printk()
-  sh: Add loglvl to printk_address()
-  sh: Add loglvl to show_trace()
-  sh: Add show_stack_loglvl()
-  sparc: Add show_stack_loglvl()
-  um/sysrq: Remove needless variable sp
-  um: Add show_stack_loglvl()
-  unicore32: Remove unused pmode argument in c_backtrace()
-  unicore32: Add loglvl to c_backtrace()
-  unicore32: Add show_stack_loglvl()
-  x86: Add missing const qualifiers for log_lvl
-  x86: Add show_stack_loglvl()
-  xtensa: Add loglvl to show_trace()
-  xtensa: Add show_stack_loglvl()
-  sysrq: Use show_stack_loglvl()
-  x86/amd_gart: Print stacktrace for a leak with KERN_ERR
-  power: Use show_stack_loglvl()
-  kdb: Don't play with console_loglevel
-  sched: Print stack trace with KERN_INFO
-  kernel: Use show_stack_loglvl()
-  kernel: Rename show_stack_loglvl() => show_stack()
-
- arch/alpha/kernel/traps.c            | 22 +++++++--------
- arch/arc/include/asm/bug.h           |  3 ++-
- arch/arc/kernel/stacktrace.c         | 17 +++++++-----
- arch/arc/kernel/troubleshoot.c       |  2 +-
- arch/arm/include/asm/bug.h           |  3 ++-
- arch/arm/include/asm/traps.h         |  3 ++-
- arch/arm/include/asm/unwind.h        |  3 ++-
- arch/arm/kernel/traps.c              | 39 +++++++++++++++------------
- arch/arm/kernel/unwind.c             |  5 ++--
- arch/arm/lib/backtrace-clang.S       |  9 +++++--
- arch/arm/lib/backtrace.S             | 14 +++++++---
- arch/arm64/include/asm/stacktrace.h  |  3 ++-
- arch/arm64/kernel/process.c          |  2 +-
- arch/arm64/kernel/traps.c            | 17 ++++++------
- arch/c6x/kernel/traps.c              | 16 ++++++-----
- arch/csky/kernel/dumpstack.c         |  9 ++++---
- arch/csky/kernel/ptrace.c            |  4 +--
- arch/h8300/kernel/traps.c            | 12 ++++-----
- arch/hexagon/kernel/traps.c          | 25 ++++++++---------
- arch/ia64/include/asm/ptrace.h       |  1 -
- arch/ia64/kernel/mca.c               |  2 +-
- arch/ia64/kernel/process.c           | 17 ++++++------
- arch/m68k/kernel/traps.c             | 13 ++++-----
- arch/microblaze/include/asm/unwind.h |  3 ++-
- arch/microblaze/kernel/stacktrace.c  |  4 +--
- arch/microblaze/kernel/traps.c       | 12 ++++-----
- arch/microblaze/kernel/unwind.c      | 40 +++++++++++++++++-----------
- arch/mips/kernel/traps.c             | 35 ++++++++++++------------
- arch/nds32/kernel/traps.c            | 15 ++++++-----
- arch/nios2/kernel/traps.c            | 17 ++++++------
- arch/openrisc/kernel/traps.c         | 12 +++++----
- arch/parisc/kernel/traps.c           | 24 ++++++++---------
- arch/powerpc/kernel/process.c        | 15 ++++++-----
- arch/powerpc/kernel/stacktrace.c     |  2 +-
- arch/riscv/kernel/stacktrace.c       |  9 ++++---
- arch/s390/kernel/dumpstack.c         | 13 ++++-----
- arch/sh/include/asm/kdebug.h         |  6 +++--
- arch/sh/include/asm/processor_32.h   |  2 +-
- arch/sh/kernel/dumpstack.c           | 36 ++++++++++++-------------
- arch/sh/kernel/process_32.c          |  2 +-
- arch/sh/kernel/process_64.c          |  3 +--
- arch/sh/kernel/traps.c               |  4 +--
- arch/sh/mm/fault.c                   |  2 +-
- arch/sparc/kernel/process_32.c       | 10 +++----
- arch/sparc/kernel/process_64.c       |  2 +-
- arch/sparc/kernel/traps_64.c         |  9 ++++---
- arch/um/drivers/mconsole_kern.c      |  2 +-
- arch/um/kernel/sysrq.c               | 23 ++++++++--------
- arch/unicore32/kernel/setup.h        |  2 +-
- arch/unicore32/kernel/traps.c        | 34 +++++++++++------------
- arch/unicore32/lib/backtrace.S       | 24 +++++++++++------
- arch/x86/include/asm/stacktrace.h    |  2 +-
- arch/x86/kernel/amd_gart_64.c        |  2 +-
- arch/x86/kernel/dumpstack.c          |  9 ++++---
- arch/xtensa/kernel/traps.c           | 22 ++++++++-------
- drivers/base/power/main.c            |  2 +-
- drivers/tty/sysrq.c                  |  2 +-
- include/linux/kallsyms.h             |  4 +--
- include/linux/sched/debug.h          |  3 ++-
- kernel/debug/kdb/kdb_bt.c            | 15 ++++++-----
- kernel/locking/lockdep.c             |  4 +--
- kernel/locking/rtmutex-debug.c       |  2 +-
- kernel/sched/core.c                  |  8 +++---
- kernel/trace/ftrace.c                |  8 +++---
- lib/dump_stack.c                     |  2 +-
- tools/include/linux/kallsyms.h       |  2 +-
- 66 files changed, 375 insertions(+), 315 deletions(-)
-
--- 
-2.26.0
-
+Regards,
+Markus
