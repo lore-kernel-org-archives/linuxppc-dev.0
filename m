@@ -2,87 +2,64 @@ Return-Path: <SRS0=VIHX=6D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0447FC38A30
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 09:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DBDDC38A30
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 11:55:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A62CD21473
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 09:57:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="GMo5yCAo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A62CD21473
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8315D214D8
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 11:55:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8315D214D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 494lcB2fX8zDrJq
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 19:57:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 494pF656f7zDrHF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 21:55:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.231;
+ helo=out01.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=GMo5yCAo; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494lYZ2ldmzDqsQ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 19:54:58 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 494lYR3Xc3z9tyDn;
- Sun, 19 Apr 2020 11:54:51 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=GMo5yCAo; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nAxBIwYGtWFH; Sun, 19 Apr 2020 11:54:51 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 494lYR2Jrbz9tyDm;
- Sun, 19 Apr 2020 11:54:51 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1587290091; bh=SLDSEP4XrdF5pJ0VblHWXGRy2Y2Yp8jccdJto8CbGTc=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=GMo5yCAoAVsWdEb2nyZuGs/NcpmrR+c2viuYh+CDDCjDG1lIiDMq2G0pmSZt72ixe
- Nk4oU7rpwicZO+eB/vvr2dnukKPFj//Ec4hCZumhU5k0eGF6SaCEn/t//2hPYX1I9R
- 8JM1OIFgJImOH1tnT7v7AWgzpBxrn7PMltFf9/5U=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 94BBE8B76F;
- Sun, 19 Apr 2020 11:54:54 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IH0yUOqJJstY; Sun, 19 Apr 2020 11:54:54 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EADAD8B752;
- Sun, 19 Apr 2020 11:54:53 +0200 (CEST)
-Subject: Re: [PATCH 1/2] signal: Factor copy_siginfo_to_external32 from
- copy_siginfo_to_user32
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Christoph Hellwig <hch@lst.de>
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 494pBb3p9yzDqbv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 21:53:41 +1000 (AEST)
+Received: from in02.mta.xmission.com ([166.70.13.52])
+ by out01.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jQ8W1-0003fL-D0; Sun, 19 Apr 2020 05:53:37 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in02.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jQ8Vz-0006Fr-TU; Sun, 19 Apr 2020 05:53:37 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@lst.de>
 References: <20200414070142.288696-1-hch@lst.de>
- <20200414070142.288696-3-hch@lst.de> <87pnc5akhk.fsf@x220.int.ebiederm.org>
- <87k12dakfx.fsf_-_@x220.int.ebiederm.org>
- <c51c6192-2ea4-62d8-dd22-305f7a1e0dd3@c-s.fr>
- <87v9lx3t4j.fsf@x220.int.ebiederm.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <f35ddc94-e046-a807-9f58-04887aefe374@c-s.fr>
-Date: Sun, 19 Apr 2020 11:54:41 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ <87r1wl68gf.fsf@x220.int.ebiederm.org> <20200419081926.GA12539@lst.de>
+Date: Sun, 19 Apr 2020 06:50:32 -0500
+In-Reply-To: <20200419081926.GA12539@lst.de> (Christoph Hellwig's message of
+ "Sun, 19 Apr 2020 10:19:26 +0200")
+Message-ID: <87o8rn3d9z.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <87v9lx3t4j.fsf@x220.int.ebiederm.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-XM-SPF: eid=1jQ8Vz-0006Fr-TU; ; ; mid=<87o8rn3d9z.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX1++Xt8JJKQGcbPJViucMNdTMbptPpl2UTk=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: remove set_fs calls from the exec and coredump code v2
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,7 +71,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-kernel@vger.kernel.org,
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
  Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  Jeremy Kerr <jk@ozlabs.org>
@@ -102,54 +79,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Christoph Hellwig <hch@lst.de> writes:
 
+> On Fri, Apr 17, 2020 at 05:41:52PM -0500, Eric W. Biederman wrote:
+>> > this series gets rid of playing with the address limit in the exec and
+>> > coredump code.  Most of this was fairly trivial, the biggest changes are
+>> > those to the spufs coredump code.
+>> >
+>> > Changes since v1:
+>> >  - properly spell NUL
+>> >  - properly handle the compat siginfo case in ELF coredumps
+>> 
+>> Quick question is exec from a kernel thread within the scope of what you
+>> are looking at?
+>> 
+>> There is a set_fs(USER_DS) in flush_old_exec whose sole purpose appears
+>> to be to allow exec from kernel threads.  Where the kernel threads
+>> run with set_fs(KERNEL_DS) until they call exec.
+>
+> This series doesn't really look at that area.  But I don't think exec
+> from a kernel thread makes any sense, and cleaning up how to set the
+> initial USER_DS vs KERNEL_DS state is something I'll eventually get to,
+> it seems like a major mess at the moment.
 
-Le 18/04/2020 à 13:55, Eric W. Biederman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> Le 17/04/2020 à 23:09, Eric W. Biederman a écrit :
->>>
->>> To remove the use of set_fs in the coredump code there needs to be a
->>> way to convert a kernel siginfo to a userspace compat siginfo.
->>>
->>> Call that function copy_siginfo_to_compat and factor it out of
->>> copy_siginfo_to_user32.
->>
->> I find it a pitty to do that.
->>
->> The existing function could have been easily converted to using
->> user_access_begin() + user_access_end() and use unsafe_put_user() to copy to
->> userspace to avoid copying through a temporary structure on the stack.
->>
->> With your change, it becomes impossible to do that.
-> 
-> I don't follow.  You don't like temporary structures in the coredump
-> code or temporary structures in copy_siginfo_to_user32?
+Fair enough.  I just wanted to make certain that it is on people's radar
+that when the kernel exec's init the arguments are read from kernel
+memory and the set_fs(USER_DS) in flush_old_exec() that makes that not
+work later.
 
-In copy_siginfo_to_user32()
+It is subtle and easy to miss.  So I figured I would mention it since
+I have been staring at the exec code a lot lately.
 
-> 
-> A temporary structure in copy_siginfo_to_user is pretty much required
-> so that it can be zeroed to guarantee we don't pass a structure with
-> holes to userspace.
-
-Why ? We can zeroize the user structure directly, either with 
-clear_user() or with some not yet existing unsafe_clear_user() or 
-equivalent.
-
-> 
-> The implementation of copy_siginfo_to_user32 used to use the equivalent
-> of user_access_begin() and user_access_end() and the code was a mess
-> that was very difficult to reason about.  I recall their being holes
-> in the structure that were being copied to userspace.
-> 
-> Meanwhile if you are going to set all of the bytes a cache hot temporary
-> structure is quite cheap.
-
-But how can we be sure it is cache hot ? As we are using memset() to 
-zeroize it, it won't be loaded from memory as it will use dcbz 
-instruction, but at some point in time it will get flushed back to 
-memory, that's consuming anyway. Unless we invalidate it after the copy, 
-but that becomes complex.
-
-Christophe
+Eric
