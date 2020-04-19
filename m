@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8742C38A30
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 20:26:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 564A9C38A30
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 20:56:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B3C02075E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 20:26:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B3C02075E
+	by mail.kernel.org (Postfix) with ESMTPS id BFB0021473
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Apr 2020 20:56:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFB0021473
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4951ZQ60YZzDqkW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 06:26:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4952FC08xSzDqmf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 06:56:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=3vb1=6d=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,12 +27,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4951XB4JMtzDqcV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 06:24:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4952CM6NpYzDqhl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 06:55:11 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 207359] MegaRAID SAS 9361 controller hang/reset
-Date: Sun, 19 Apr 2020 20:24:39 +0000
+Date: Sun, 19 Apr 2020 20:55:08 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -41,14 +41,14 @@ X-Bugzilla-Component: PPC-64
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: gyakovlev@gentoo.org
+X-Bugzilla-Who: cam@neo-zeon.de
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-207359-206035-ymbl5gPD3Y@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-207359-206035-GnVxMzlkah@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-207359-206035@https.bugzilla.kernel.org/>
 References: <bug-207359-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -73,17 +73,11 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D207359
 
-gyakovlev@gentoo.org changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |gyakovlev@gentoo.org
-
---- Comment #1 from gyakovlev@gentoo.org ---
-In my case I see similar problem on same motherboard but with aacraid driver
-(microsemi one)
-
-https://bugzilla.kernel.org/show_bug.cgi?id=3D206123
+--- Comment #2 from Cameron (cam@neo-zeon.de) ---
+Looking at bug 206123 above, it's worth noting that the amd64 box I'm using=
+ for
+comparison has SATA disks, though this is probably still a PPC specific iss=
+ue.
 
 --=20
 You are receiving this mail because:
