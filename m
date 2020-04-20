@@ -2,40 +2,79 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A14BC3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 04:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BA11C3815B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 04:35:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 642C120735
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 04:11:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 642C120735
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8F55A206DD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 04:35:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G5bHaG36"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F55A206DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495Ctw5vj3zDqn5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:11:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495DQj2K6RzDqnD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:35:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=libc.org
- (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
- envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=libc.org
-Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
- [216.12.86.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=G5bHaG36; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495CrX51LVzDqlJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 14:09:30 +1000 (AEST)
-Date: Mon, 20 Apr 2020 00:09:26 -0400
-From: Rich Felker <dalias@libc.org>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495DN64gPlzDqD4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 14:33:26 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id ay1so3496132plb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2020 21:33:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=/SU6oEkGmAQk0odZCe5iksWkWXpw1rmuYB3XbYdsaiI=;
+ b=G5bHaG36ijsBNBKpG/3HaCrTY+ZacEzo7C3n7s0AK+Er4XbP6cMmThvL2l542sG2U/
+ CBY1Nlg6B2kHTN3IHyYnfikKxgxj4O+8JwmUCdZZMwVS4vAGpm+B1+kiVMPSGacuC69H
+ uC/OW0sMhlntGu4oicKjPHnwXiNxMRu7BTczRiT4KcoyKI8bPpyvm6VEumuDCYCD2IP8
+ YboDZcP4XTFf5jDY0mus/xCH/ekhM7puT0gS32l6UhbaMlH/Sjsu4gj5J76dAZa3SixV
+ CCOVZV+9GjqbEOsnU/QKwJyjfJSjZ/9Zs7Q1pMopgZ5DDARQLbn3Sqa6ThUP+h4Pj4CS
+ kaMg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=/SU6oEkGmAQk0odZCe5iksWkWXpw1rmuYB3XbYdsaiI=;
+ b=uHEatImIw59JBJdT21dO9P4sbYM7gjM9liXmUnyOXrdT4phUqA3jOF/DctOgLfpLM0
+ V039cVZhGaNxcEOxLDBJicmL5DHNWB2Zd/KI2b3GVQH3MIpo8hJOvG8tsriFuWpqfRAd
+ S+E0Uw5xFlbVxAGd+hU3S5voBFH99FHXZ33zvfbmumC9crj4I8f5paE/aq0iyGU61U+J
+ FrhSGeSgHfULN50X/v3O46sIuJq8t7uM1f7SfHr8IzRA0b/ifEkcS2ya3RRSzDTkhnGj
+ ndvVksxHbZ6N8zUcaDP4ESm0SVkGTLfZUnqAotdeoQFg4qizBXPPp4qeyz0vTOSqadMJ
+ N44Q==
+X-Gm-Message-State: AGi0PuZAZ2wNR4WW1IACn/fHVpefbDl8gbypOc2flK/nDfELpSJbrgUB
+ DRn1VtsCFx6JvFdzAVFib9w=
+X-Google-Smtp-Source: APiQypIXHLzTzY/Qh3MIsu+pH5hF6id8O/cnX7Wfi4Xm/YIeT8paufHl8HNKcBlATNKaxDVJqO65uQ==
+X-Received: by 2002:a17:90a:a591:: with SMTP id
+ b17mr19624411pjq.90.1587357202797; 
+ Sun, 19 Apr 2020 21:33:22 -0700 (PDT)
+Received: from localhost ([203.185.249.170])
+ by smtp.gmail.com with ESMTPSA id s10sm12459863pjp.13.2020.04.19.21.33.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 19 Apr 2020 21:33:22 -0700 (PDT)
+Date: Mon, 20 Apr 2020 14:31:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
 Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Message-ID: <20200420040926.GA11469@brightrain.aerifal.cx>
+To: Rich Felker <dalias@libc.org>
 References: <20200415225539.GL11469@brightrain.aerifal.cx>
  <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
  <20200416153756.GU11469@brightrain.aerifal.cx>
@@ -46,11 +85,12 @@ References: <20200415225539.GL11469@brightrain.aerifal.cx>
  <1587344003.daumxvs1kh.astroid@bobo.none>
  <20200420013412.GZ11469@brightrain.aerifal.cx>
  <1587348538.l1ioqml73m.astroid@bobo.none>
+ <20200420040926.GA11469@brightrain.aerifal.cx>
+In-Reply-To: <20200420040926.GA11469@brightrain.aerifal.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1587348538.l1ioqml73m.astroid@bobo.none>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+Message-Id: <1587356128.aslvdnmtbw.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,71 +109,91 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 20, 2020 at 12:32:21PM +1000, Nicholas Piggin wrote:
-> Excerpts from Rich Felker's message of April 20, 2020 11:34 am:
-> > On Mon, Apr 20, 2020 at 11:10:25AM +1000, Nicholas Piggin wrote:
-> >> Excerpts from Rich Felker's message of April 17, 2020 4:31 am:
-> >> > Note that because lr is clobbered we need at least once normally
-> >> > call-clobbered register that's not syscall clobbered to save lr in.
-> >> > Otherwise stack frame setup is required to spill it.
-> >> 
-> >> The kernel would like to use r9-r12 for itself. We could do with fewer 
-> >> registers, but we have some delay establishing the stack (depends on a
-> >> load which depends on a mfspr), and entry code tends to be quite store
-> >> heavy whereas on the caller side you have r1 set up (modulo stack 
-> >> updates), and the system call is a long delay during which time the 
-> >> store queue has significant time to drain.
-> >> 
-> >> My feeling is it would be better for kernel to have these scratch 
-> >> registers.
-> > 
-> > If your new kernel syscall mechanism requires the caller to make a
-> > whole stack frame it otherwise doesn't need and spill registers to it,
-> > it becomes a lot less attractive. Some of those 90 cycles saved are
-> > immediately lost on the userspace side, plus you either waste icache
-> > at the call point or require the syscall to go through a
-> > userspace-side helper function that performs the spill and restore.
-> 
-> You would be surprised how few cycles that takes on a high end CPU. Some 
-> might be a couple of %. I am one for counting cycles mind you, I'm not 
-> being flippant about it. If we can come up with something faster I'd be 
-> up for it.
+Excerpts from Rich Felker's message of April 20, 2020 2:09 pm:
+> On Mon, Apr 20, 2020 at 12:32:21PM +1000, Nicholas Piggin wrote:
+>> Excerpts from Rich Felker's message of April 20, 2020 11:34 am:
+>> > On Mon, Apr 20, 2020 at 11:10:25AM +1000, Nicholas Piggin wrote:
+>> >> Excerpts from Rich Felker's message of April 17, 2020 4:31 am:
+>> >> > Note that because lr is clobbered we need at least once normally
+>> >> > call-clobbered register that's not syscall clobbered to save lr in.
+>> >> > Otherwise stack frame setup is required to spill it.
+>> >>=20
+>> >> The kernel would like to use r9-r12 for itself. We could do with fewe=
+r=20
+>> >> registers, but we have some delay establishing the stack (depends on =
+a
+>> >> load which depends on a mfspr), and entry code tends to be quite stor=
+e
+>> >> heavy whereas on the caller side you have r1 set up (modulo stack=20
+>> >> updates), and the system call is a long delay during which time the=20
+>> >> store queue has significant time to drain.
+>> >>=20
+>> >> My feeling is it would be better for kernel to have these scratch=20
+>> >> registers.
+>> >=20
+>> > If your new kernel syscall mechanism requires the caller to make a
+>> > whole stack frame it otherwise doesn't need and spill registers to it,
+>> > it becomes a lot less attractive. Some of those 90 cycles saved are
+>> > immediately lost on the userspace side, plus you either waste icache
+>> > at the call point or require the syscall to go through a
+>> > userspace-side helper function that performs the spill and restore.
+>>=20
+>> You would be surprised how few cycles that takes on a high end CPU. Some=
+=20
+>> might be a couple of %. I am one for counting cycles mind you, I'm not=20
+>> being flippant about it. If we can come up with something faster I'd be=20
+>> up for it.
+>=20
+> If the cycle count is trivial then just do it on the kernel side.
 
-If the cycle count is trivial then just do it on the kernel side.
+The cycle count for user is, because you have r1 ready. Kernel does not=20
+have its stack ready, it has to mfspr rX ; ld rY,N(rX); to get stack to=20
+save into.
 
-> > The right way to do this is to have the kernel preserve enough
-> > registers that userspace can avoid having any spills. It doesn't have
-> > to preserve everything, probably just enough to save lr. (BTW are
-> 
-> Again, the problem is the kernel doesn't have its dependencies 
-> immediately ready to spill, and spilling (may be) more costly 
-> immediately after the call because we're doing a lot of stores.
-> 
-> I could try measure this. Unfortunately our pipeline simulator tool 
-> doesn't model system calls properly so it's hard to see what's happening 
-> across the user/kernel horizon, I might check if that can be improved
-> or I can hack it by putting some isync in there or something.
+Which is also wasted work for a userspace.
 
-I think it's unlikely to make any real difference to the total number
-of cycles spent which side it happens on, but putting it on the kernel
-side makes it easier to avoid wasting size/icache at each syscall
-site.
+Now that I think about it, no stack frame is even required! lr is saved=20
+into the caller's stack when its clobbered with an asm, just as when=20
+it's used for a function call.
 
-> > syscall arg registers still preserved? If not, this is a major cost on
-> > the userspace side, since any call point that has to loop-and-retry
-> > (e.g. futex) now needs to make its own place to store the original
-> > values.)
-> 
-> Powerpc system calls never did. We could have scv preserve them, but 
-> you'd still need to restore r3. We could make an ABI which does not
-> clobber r3 but puts the return value in r9, say. I'd like to see what
-> the user side code looks like to take advantage of such a thing though.
+>> > The right way to do this is to have the kernel preserve enough
+>> > registers that userspace can avoid having any spills. It doesn't have
+>> > to preserve everything, probably just enough to save lr. (BTW are
+>>=20
+>> Again, the problem is the kernel doesn't have its dependencies=20
+>> immediately ready to spill, and spilling (may be) more costly=20
+>> immediately after the call because we're doing a lot of stores.
+>>=20
+>> I could try measure this. Unfortunately our pipeline simulator tool=20
+>> doesn't model system calls properly so it's hard to see what's happening=
+=20
+>> across the user/kernel horizon, I might check if that can be improved
+>> or I can hack it by putting some isync in there or something.
+>=20
+> I think it's unlikely to make any real difference to the total number
+> of cycles spent which side it happens on, but putting it on the kernel
+> side makes it easier to avoid wasting size/icache at each syscall
+> site.
+>=20
+>> > syscall arg registers still preserved? If not, this is a major cost on
+>> > the userspace side, since any call point that has to loop-and-retry
+>> > (e.g. futex) now needs to make its own place to store the original
+>> > values.)
+>>=20
+>> Powerpc system calls never did. We could have scv preserve them, but=20
+>> you'd still need to restore r3. We could make an ABI which does not
+>> clobber r3 but puts the return value in r9, say. I'd like to see what
+>> the user side code looks like to take advantage of such a thing though.
+>=20
+> Oh wow, I hadn't realized that, but indeed the code we have now is
+> allowing for the kernel to clobber them all. So at least this isn't
+> getting any worse I guess. I think it was a very poor choice of
+> behavior though and a disadvantage vs what other archs do (some of
+> them preserve all registers; others preserve only normally call-saved
+> ones plus the syscall arg ones and possibly a few other specials).
 
-Oh wow, I hadn't realized that, but indeed the code we have now is
-allowing for the kernel to clobber them all. So at least this isn't
-getting any worse I guess. I think it was a very poor choice of
-behavior though and a disadvantage vs what other archs do (some of
-them preserve all registers; others preserve only normally call-saved
-ones plus the syscall arg ones and possibly a few other specials).
+Well, we could change it. Does the generated code improve significantly
+we take those clobbers away?
 
-Rich
+Thanks,
+Nick
