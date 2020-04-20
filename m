@@ -2,89 +2,73 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8613C3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31F9AC3815B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:39:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5DB7420775
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:29:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="DnvEUFzS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DB7420775
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id DFF83206B9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 14:39:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFF83206B9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495TbK4h8CzDqsN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 00:29:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495TqY3lBXzDqsw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 00:39:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::841; helo=mail-qt1-x841.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=217.72.192.73; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.a=rsa-sha256
- header.s=google header.b=DnvEUFzS; dkim-atps=neutral
-Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com
- [IPv6:2607:f8b0:4864:20::841])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495TX94MnszDqbs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 00:26:14 +1000 (AEST)
-Received: by mail-qt1-x841.google.com with SMTP id w29so8564369qtv.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 07:26:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=x4haHkUujR1fKPz5RIOI82+KmuZk6e+W1yh47eNmIvQ=;
- b=DnvEUFzSch8BOWv/K7yUwrGGEukS5excCJecSvcapVOhdy/OFYe7Y9x1bGe8SeT916
- l1+1chsImNg3ZkGKpfN6ahvWi6toqC2h9IrP5AAGTN0GSjdGn3qsRFRJ+RJKyRIC9tu1
- Dj3ea0wViCiibWw2vLnH2xAQFEOjXLO8KUs1T46qoBzPcqk7/mrvO1+D2/LejHD1ICpo
- KoyvCsqeLxeoDgKdlRyHMBD+KBeYlPJHqA50tfN8jzW6UL/Xp60Ax2PqCOWTXHM9g3GG
- cbNMSaz+pl+PNBKPTXdiSGvlo1iEHh3BDrH71SvZZsVGfYckGoh6BGUSunvfhu/heiMK
- xWhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=x4haHkUujR1fKPz5RIOI82+KmuZk6e+W1yh47eNmIvQ=;
- b=MLQr/blGjLtEikrlAT2n1HGiCreGdRG8/CmoOI/TZPEF4JOTKXoJW+lPIZf2ulw1qf
- CtDxHBkItlPZGWYRV4wta96YowdZVpHlFOcbJlROSU0h2UdmtVsulXYoeuWtHQIZ6g6Y
- Brau5uiAkbzk11NZTWfzoZoXbTUK7ROSlx3zVK93C1peJM8OKMItRhwVUfrUit8RYL0w
- F929hIw4maJlkrCZIkGOgt6VncZE7Y3ikETd02pCm/889MjW+torJkicpLsDWaNHVhMw
- BvnGkuNvFvIbtxOxXfBku2s2s/iRv9lc/PxmmNxFjYZqtuqqVTKd08rEIuD1A+tQ44K2
- GrqQ==
-X-Gm-Message-State: AGi0PuYSf9X55oriEgXM0fgUgeQv/LHeP0tofXuGFpXI8QRacRBmeMht
- EMgg/pI2wQ2CHc9ZlGMKMUivkg==
-X-Google-Smtp-Source: APiQypK9hXIJAT9p6UDuSW0Ke/HoSOO0StxcY8aUeQ8xLhHHYW6L8ucFNnBF0yisbryde+2cyEFxTQ==
-X-Received: by 2002:ac8:76da:: with SMTP id q26mr15821003qtr.168.1587392770907; 
- Mon, 20 Apr 2020 07:26:10 -0700 (PDT)
-Received: from [192.168.1.153] (pool-71-184-117-43.bstnma.fios.verizon.net.
- [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id p1sm665290qkd.23.2020.04.20.07.26.07
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 20 Apr 2020 07:26:09 -0700 (PDT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [PATCH 15/21] mm: memmap_init: iterate over memblock regions
- rather that check each PFN
-From: Qian Cai <cai@lca.pw>
-In-Reply-To: <20200412194859.12663-16-rppt@kernel.org>
-Date: Mon, 20 Apr 2020 10:26:06 -0400
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <CF6E407F-17DC-427C-8203-21979FB882EF@lca.pw>
-References: <20200412194859.12663-1-rppt@kernel.org>
- <20200412194859.12663-16-rppt@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>,
- Baoquan He <bhe@redhat.com>
-X-Mailer: Apple Mail (2.3608.80.23.2.2)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495TkZ288FzDqlm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 00:35:16 +1000 (AEST)
+Received: from mail-qt1-f169.google.com ([209.85.160.169]) by
+ mrelayeu.kundenserver.de (mreue108 [212.227.15.145]) with ESMTPSA (Nemesis)
+ id 1N8GEY-1jDDlH1rTU-014FOt for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr
+ 2020 16:35:11 +0200
+Received: by mail-qt1-f169.google.com with SMTP id w24so8550628qts.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 07:35:10 -0700 (PDT)
+X-Gm-Message-State: AGi0PuaysmT0acvOW6ysswbHEaNu9sHro+4APBZozI2rd5rIkTNHDNAX
+ ptz5zwbiDBYCxw2nfpvm0vbLhwyG50j0QPIQGYg=
+X-Google-Smtp-Source: APiQypJ8+eSyM92GKz+tgktc3MN8Tu0mYjJI8QaeKzhQGr6nLHXQdvHnLZbXBCSy5i2jRKmsTpsr3bDsRZBUFnm0wII=
+X-Received: by 2002:ac8:6757:: with SMTP id n23mr16212594qtp.304.1587393309871; 
+ Mon, 20 Apr 2020 07:35:09 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200420030538.101696-1-wenhu.wang@vivo.com>
+In-Reply-To: <20200420030538.101696-1-wenhu.wang@vivo.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 20 Apr 2020 16:34:53 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1ErZh6teKEC8srU5E1WmXxtTgQppt1yDoYmO7huw4gqA@mail.gmail.com>
+Message-ID: <CAK8P3a1ErZh6teKEC8srU5E1WmXxtTgQppt1yDoYmO7huw4gqA@mail.gmail.com>
+Subject: Re: [PATCH v2,
+ RESEND] misc: new driver sram_uapi for user level SRAM access
+To: Wang Wenhu <wenhu.wang@vivo.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:W43FMOZC8GNxc8XRjIqPK/y7reIccZgcirU90SxBIBTKvVFY6ko
+ r7Qgc8GCi9tcloIKqmgG1Ga3+h39q92gUQIwwclBEFs9UsHXeJMbU/v6RDp2qMotjtyGC4i
+ HLWvXvmJKD7PgBs0QDC/GAQAoHYItAy0SUQrH3FThb1YlqAmLr5VulRwxsmHRwFff8LsScn
+ WWwOyXQuawoOPy0fCnWdg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:lMlmaC4iy6c=:rzN2AeJB5fUFaE6l9rI9B6
+ mxX8pFHPtrzSDc+S06YMqyjlsd4xz+aIcTlxTg1O4hqP6wWJhTWfeJ3ANcentleyZIOxYIgTS
+ aBPmw7IxHRDG3bQ2QKqx+14vJRhFDnQ0fFMKTGvOdhYiWSCzNTo4JzuTh9v3hVnYL9qgIt0pr
+ 3dtAlpegf2mKNGPwuJNUIC/ra7iEcNXxfiAj/yX8ncUXWVUmb30XVumGgRuJ1qfqMkBhtEc2K
+ /OSgQOhACzMaLaYW4CW/OBii2ITOL/+qwPrYQOBWM8LWhaB9DXY25cQyUGD/bZzP3ItwtbUFS
+ nKoB+gN7ciQRQGMTRuVomVX+KZt+1uc9E1g7x0KVjkmV46G2TEMfB4Dv7ww2FmKY70/j3Lj28
+ E40einPLkc7IZAyDB9AYQE5issQXG3ddsyoPZCKzYPlvOzBPofNT6BQZqDY+zPJcvM28hQpCQ
+ 3qORS5oSG5se+io5vTfWFdC7EJo81fWVqE+Kib5gzRTiTrJajs+bCu3nbDCc3+zFID4oNo+lz
+ RPOFOkFw8S01OjwD6A8+LhJZAjAePyk1trh41xjnUFBx5WivjGJbnhad0LAKaXdqzNQW0r0lK
+ 2dICkCRnqrkcYghpG8byWaY+bgDuMt39EABGV6Yrv54SmpBdLEupDDelq1cQaYyoi0pVTP77y
+ qo5evJ/jCEZFlQBgC/8NgV3ix/ZmgTmfg4HvrSiJ6bSEOM/1pN4pXoWDmp4UqOXbRbpog84Sa
+ 5XL74LpX8h5SXmeRgJ13yX47/c4VIMmdv1nAoS8cb9+ZIC5HJ8ViuE/V+zWgsrLo6MWg68sBM
+ TyUse0L0Ky5OnJJhL0Tl8HvboPxXf8wx8VQ4JsCXz/uyScv5Is=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,161 +80,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
- linux-csky@vger.kernel.org, linux-parisc@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-riscv@lists.infradead.org, Greg Ungerer <gerg@linux-m68k.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- Brian Cain <bcain@codeaurora.org>, Jonathan Corbet <corbet@lwn.net>,
- linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Mike Rapoport <rppt@linux.ibm.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-arm-kernel@lists.infradead.org, Mark Salter <msalter@redhat.com>,
- Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- Hoan Tran <Hoan@os.amperecomputing.com>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Nick Hu <nickhu@andestech.com>,
- Linux-MM <linux-mm@kvack.org>, Vineet Gupta <vgupta@synopsys.com>,
- LKML <linux-kernel@vger.kernel.org>, openrisc@lists.librecores.org,
- Richard Weinberger <richard@nod.at>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Rob Herring <robh@kernel.org>, gregkh <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Scott Wood <oss@buserror.net>, kernel@vivo.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-> On Apr 12, 2020, at 3:48 PM, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> From: Baoquan He <bhe@redhat.com>
->=20
-> When called during boot the memmap_init_zone() function checks if each =
-PFN
-> is valid and actually belongs to the node being initialized using
-> early_pfn_valid() and early_pfn_in_nid().
->=20
-> Each such check may cost up to O(log(n)) where n is the number of =
-memory
-> banks, so for large amount of memory overall time spent in =
-early_pfn*()
-> becomes substantial.
->=20
-> Since the information is anyway present in memblock, we can iterate =
-over
-> memblock memory regions in memmap_init() and only call =
-memmap_init_zone()
-> for PFN ranges that are know to be valid and in the appropriate node.
->=20
-> Signed-off-by: Baoquan He <bhe@redhat.com>
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+On Mon, Apr 20, 2020 at 5:06 AM Wang Wenhu <wenhu.wang@vivo.com> wrote:
+>
+> A generic User-Kernel interface that allows a misc device created
+> by it to support file-operations of ioctl and mmap to access SRAM
+> memory from user level. Different kinds of SRAM alloction and free
+> APIs could be registered by specific SRAM hardware level driver to
+> the available list and then be chosen by users to allocate and map
+> SRAM memory from user level.
+>
+> It is extremely helpful for the user space applications that require
+> high performance memory accesses, such as embedded networking devices
+> that would process data in user space, and PowerPC e500 is a case.
+>
+> Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
 > ---
-> mm/page_alloc.c | 26 ++++++++++++++++----------
-> 1 file changed, 16 insertions(+), 10 deletions(-)
->=20
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 7f6a3081edb8..c43ce8709457 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -5995,14 +5995,6 @@ void __meminit memmap_init_zone(unsigned long =
-size, int nid, unsigned long zone,
-> 		 * function.  They do not exist on hotplugged memory.
-> 		 */
-> 		if (context =3D=3D MEMMAP_EARLY) {
-> -			if (!early_pfn_valid(pfn)) {
-> -				pfn =3D next_pfn(pfn);
-> -				continue;
-> -			}
-> -			if (!early_pfn_in_nid(pfn, nid)) {
-> -				pfn++;
-> -				continue;
-> -			}
+> Changes since v1: addressed comments from Arnd
+>  * Changed the ioctl cmd definitions using _IO micros
+>  * Export interfaces for HW-SRAM drivers to register apis to available list
+>  * Modified allocation alignment to PAGE_SIZE
+>  * Use phys_addr_t as type of SRAM resource size and offset
+>  * Support compat_ioctl
+>  * Misc device name:sram
 
-This causes a compilation warning from Clang,
+Looks much better already.
 
-mm/page_alloc.c:5917:39: warning: unused function 'next_pfn' =
-[-Wunused-function]
-static inline __meminit unsigned long next_pfn(unsigned long pfn)
+> Note: From this on, the SRAM_UAPI driver is independent to any hardware
+> drivers, so I would only commit the patch itself as v2, while the v1 of
+> it was wrapped together with patches for Freescale L2-Cache-SRAM device.
+> Then after, I'd create patches for Freescale L2-Cache-SRAM device as
+> another series.
 
-This should fix it,
+What I meant to suggest was actually to tie it more closely to
+the code we already have in drivers/misc/sram.c, which already
+has some form of abstraction.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d469384c9ca7..b48336e20bdc 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5912,23 +5912,6 @@ overlap_memmap_init(unsigned long zone, unsigned =
-long *pfn)
- 	return false;
- }
-=20
--#ifdef CONFIG_SPARSEMEM
--/* Skip PFNs that belong to non-present sections */
--static inline __meminit unsigned long next_pfn(unsigned long pfn)
--{
--	const unsigned long section_nr =3D pfn_to_section_nr(++pfn);
--
--	if (present_section_nr(section_nr))
--		return pfn;
--	return section_nr_to_pfn(next_present_section_nr(section_nr));
--}
--#else
--static inline __meminit unsigned long next_pfn(unsigned long pfn)
--{
--	return pfn++;
--}
--#endif
--
- /*
-  * Initially all pages are reserved - free ones are freed
-  * up by memblock_free_all() once the early boot process is
-
-> 			if (overlap_memmap_init(zone, &pfn))
-> 				continue;
-> 			if (defer_init(nid, pfn, end_pfn))
-> @@ -6118,9 +6110,23 @@ static void __meminit =
-zone_init_free_lists(struct zone *zone)
-> }
->=20
-> void __meminit __weak memmap_init(unsigned long size, int nid,
-> -				  unsigned long zone, unsigned long =
-start_pfn)
-> +				  unsigned long zone,
-> +				  unsigned long range_start_pfn)
-> {
-> -	memmap_init_zone(size, nid, zone, start_pfn, MEMMAP_EARLY, =
-NULL);
-> +	unsigned long start_pfn, end_pfn;
-> +	unsigned long range_end_pfn =3D range_start_pfn + size;
-> +	int i;
+> +static int __init sram_uapi_init(void)
+> +{
+> +       int ret;
 > +
-> +	for_each_mem_pfn_range(i, nid, &start_pfn, &end_pfn, NULL) {
-> +		start_pfn =3D clamp(start_pfn, range_start_pfn, =
-range_end_pfn);
-> +		end_pfn =3D clamp(end_pfn, range_start_pfn, =
-range_end_pfn);
+> +       INIT_LIST_HEAD(&sram_api_list);
+> +       mutex_init(&sram_api_list_lock);
 > +
-> +		if (end_pfn > start_pfn) {
-> +			size =3D end_pfn - start_pfn;
-> +			memmap_init_zone(size, nid, zone, start_pfn,
-> +					 MEMMAP_EARLY, NULL);
-> +		}
-> +	}
-> }
->=20
-> static int zone_batchsize(struct zone *zone)
-> --=20
-> 2.25.1
->=20
->=20
+> +       ret = misc_register(&sram_uapi_miscdev);
+> +       if (ret)
+> +               pr_err("failed to register sram uapi misc device\n");
 
+The mutex and listhead are already initialized, so this can
+be a one-line function
+
+    return misc_register(&sram_uapi_miscdev);
+
+> --- /dev/null
+> +++ b/include/linux/sram_uapi.h
+
+The ioctl definitions need to be in include/uapi/linux/
+
+> @@ -0,0 +1,28 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef __SRAM_UAPI_H
+> +#define __SRAM_UAPI_H
+> +
+> +/* Set SRAM type to be accessed */
+> +#define SRAM_UAPI_IOC_SET_SRAM_TYPE    _IOW('S', 0, __u32)
+> +
+> +/* Allocate resource from SRAM */
+> +#define SRAM_UAPI_IOC_ALLOC            _IOWR('S', 1, struct res_info)
+> +
+> +/* Free allocated resource of SRAM */
+> +#define SRAM_UAPI_IOC_FREE             _IOW('S', 2, struct res_info)
+
+struct res_info needs to also be defined here, so user applications can
+see the definition, and it has to use __u64, not phys_addr_t, to ensure
+the API does not depend on kernel configuraiton.
+
+        Arnd
