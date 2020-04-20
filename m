@@ -2,55 +2,113 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C589C3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 17:29:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD520C38A30
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 17:47:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 197E720782
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 17:29:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 197E720782
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=libc.org
+	by mail.kernel.org (Postfix) with ESMTPS id 34F5A20857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 17:47:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hQCSXdDp";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hQCSXdDp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34F5A20857
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495Yc33wRlzDqsG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 03:29:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495Z0b1ZF2zDqjJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 03:47:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=eesposit@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=libc.org
- (client-ip=216.12.86.13; helo=brightrain.aerifal.cx;
- envelope-from=dalias@libc.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=libc.org
-Received: from brightrain.aerifal.cx (216-12-86-13.cv.mvl.ntelos.net
- [216.12.86.13])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=hQCSXdDp; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=hQCSXdDp; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
+ [207.211.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495YY65PHgzDqYK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 03:27:20 +1000 (AEST)
-Date: Mon, 20 Apr 2020 13:27:15 -0400
-From: Rich Felker <dalias@libc.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Message-ID: <20200420172715.GC11469@brightrain.aerifal.cx>
-References: <20200416153756.GU11469@brightrain.aerifal.cx>
- <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
- <20200416175932.GZ11469@brightrain.aerifal.cx>
- <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
- <20200416183151.GA11469@brightrain.aerifal.cx>
- <1587344003.daumxvs1kh.astroid@bobo.none>
- <20200420013412.GZ11469@brightrain.aerifal.cx>
- <1587348538.l1ioqml73m.astroid@bobo.none>
- <20200420040926.GA11469@brightrain.aerifal.cx>
- <1587356128.aslvdnmtbw.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495SvX4JxfzDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 23:58:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587391077;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=pK26z2Uz8J+xMXGm08XY3fCeYfVumTWEKpq3I9uMJ70=;
+ b=hQCSXdDpVOG0mefk3CCL4YQ1Cx6SU+9tCQGoFrdEt6Wy8JGpB+t3GJrbO5AwGywm1vI++w
+ hR3Z+s3VuUW7AW3fQtN5jPIyG6M5KbugnGSwCYtOndUF2V7nOb9ui/e4EiQTMcV2fFnBz1
+ i2M4F6L/9YjaAdLdrqqmaPf0PkT7lRY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587391077;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=pK26z2Uz8J+xMXGm08XY3fCeYfVumTWEKpq3I9uMJ70=;
+ b=hQCSXdDpVOG0mefk3CCL4YQ1Cx6SU+9tCQGoFrdEt6Wy8JGpB+t3GJrbO5AwGywm1vI++w
+ hR3Z+s3VuUW7AW3fQtN5jPIyG6M5KbugnGSwCYtOndUF2V7nOb9ui/e4EiQTMcV2fFnBz1
+ i2M4F6L/9YjaAdLdrqqmaPf0PkT7lRY=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-405-mEQr_dY9MziBGz2QcAwBYA-1; Mon, 20 Apr 2020 09:57:54 -0400
+X-MC-Unique: mEQr_dY9MziBGz2QcAwBYA-1
+Received: by mail-wr1-f70.google.com with SMTP id i10so5725042wrq.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 06:57:54 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:subject:to:cc:references:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=pK26z2Uz8J+xMXGm08XY3fCeYfVumTWEKpq3I9uMJ70=;
+ b=OaZNL3loFunJcEiczS5db7dacAK9ME665aStC1iFtUHtmSlhXf5MxRU5LtaRARXixr
+ RHO0zJNCaMa94PkvxPd8Yr1+mQ9ns8bemUpmDjumgA0IeEXA2LFtaZoT4d+Tanrg8NmL
+ w5N0hfJDcQaLlwpmUC8+5ntkhyd+1OrHVuVM9+qSqFRZ6a9KdV4rMZ38ZTdM5YyePhCj
+ 8Ipfx+AHqf6G86/RRPPtDIlFgZBpTGOw5PBVH93XFiI5tVNUUqjZwBbkW3gviAO2YNL9
+ rgZUYp2YB66TKBmMNl0Y6pShE23FtZ6meZuViX3hXWO0lQjdbh9ojggvHVW3uLBz0oKo
+ UWrw==
+X-Gm-Message-State: AGi0PuZ8SYYaSf5cY+j8zjgZUInIT5dC9TZ1rKYfOCkiyd9KNF7Jo9EU
+ 1zHhDsmK7pptBrzVk8Qt+PIpB5mI+8/fSrzf+4jDF3oCVwYdO1LHjdg3JSycJgW6arHPHiklHrY
+ ZRljoZEeC3jCeS7MFSNhzXANBKw==
+X-Received: by 2002:a7b:cf2b:: with SMTP id m11mr16860448wmg.147.1587391073765; 
+ Mon, 20 Apr 2020 06:57:53 -0700 (PDT)
+X-Google-Smtp-Source: APiQypKZBYixV5ajKWzxEAUUh742/WPOg+S3dMK8bDyvyM4eMw8EIY0hxy1C7QN16yJpeFB4fL8+FQ==
+X-Received: by 2002:a7b:cf2b:: with SMTP id m11mr16860432wmg.147.1587391073551; 
+ Mon, 20 Apr 2020 06:57:53 -0700 (PDT)
+Received: from localhost.localdomain ([194.230.155.102])
+ by smtp.gmail.com with ESMTPSA id l5sm1432890wmi.22.2020.04.20.06.57.49
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 20 Apr 2020 06:57:52 -0700 (PDT)
+From: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+Subject: Re: [PATCH 6/8] simplefs: add file creation functions
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20200414124304.4470-1-eesposit@redhat.com>
+ <20200414124304.4470-7-eesposit@redhat.com>
+ <20200414125626.GC720679@kroah.com>
+Message-ID: <f371bcc0-266a-cb0b-3bde-fed336b8c9b5@redhat.com>
+Date: Mon, 20 Apr 2020 15:57:48 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1587356128.aslvdnmtbw.astroid@bobo.none>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <20200414125626.GC720679@kroah.com>
+Content-Language: en-US
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Tue, 21 Apr 2020 03:37:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,105 +120,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-dev@lists.llvm.org, libc-alpha@sourceware.org,
- linuxppc-dev@lists.ozlabs.org,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>, musl@lists.openwall.com
+Cc: Song Liu <songliubraving@fb.com>, linux-usb@vger.kernel.org,
+ bpf@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>,
+ David Airlie <airlied@linux.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, dri-devel@lists.freedesktop.org,
+ "J. Bruce Fields" <bfields@fieldses.org>,
+ Joseph Qi <joseph.qi@linux.alibaba.com>, Hugh Dickins <hughd@google.com>,
+ Paul Mackerras <paulus@samba.org>, John Johansen <john.johansen@canonical.com>,
+ netdev@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+ Christoph Hellwig <hch@lst.de>, Andrew Donnellan <ajd@linux.ibm.com>,
+ Matthew Garrett <matthew.garrett@nebula.com>, linux-efi@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, Daniel Borkmann <daniel@iogearbox.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, linux-rdma@vger.kernel.org,
+ Mark Fasheh <mark@fasheh.com>, Anton Vorontsov <anton@enomsg.org>,
+ John Fastabend <john.fastabend@gmail.com>, James Morris <jmorris@namei.org>,
+ Ard Biesheuvel <ardb@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Doug Ledford <dledford@redhat.com>, oprofile-list@lists.sf.net,
+ Yonghong Song <yhs@fb.com>, Ian Kent <raven@themaw.net>,
+ Andrii Nakryiko <andriin@fb.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
+ Thomas Zimmermann <tzimmermann@suse.de>, Vasily Gorbik <gor@linux.ibm.com>,
+ Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, autofs@vger.kernel.org,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Maxime Ripard <mripard@kernel.org>, linux-fsdevel@vger.kernel.org,
+ "Manoj N. Kumar" <manoj@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>,
+ Jakub Kicinski <kuba@kernel.org>, KP Singh <kpsingh@chromium.org>,
+ Trond Myklebust <trond.myklebust@hammerspace.com>,
+ "Matthew R. Ochs" <mrochs@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>, Felipe Balbi <balbi@kernel.org>,
+ linux-nfs@vger.kernel.org, Iurii Zaikin <yzaikin@google.com>,
+ linux-scsi@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-mm@kvack.org, linux-s390@vger.kernel.org,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Anna Schumaker <anna.schumaker@netapp.com>,
+ Luis Chamberlain <mcgrof@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
+ Jeremy Kerr <jk@ozlabs.org>, Daniel Vetter <daniel@ffwll.ch>,
+ Colin Cross <ccross@android.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>, linuxppc-dev@lists.ozlabs.org,
+ Martin KaFai Lau <kafai@fb.com>, Joel Becker <jlbec@evilplan.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 20, 2020 at 02:31:58PM +1000, Nicholas Piggin wrote:
-> Excerpts from Rich Felker's message of April 20, 2020 2:09 pm:
-> > On Mon, Apr 20, 2020 at 12:32:21PM +1000, Nicholas Piggin wrote:
-> >> Excerpts from Rich Felker's message of April 20, 2020 11:34 am:
-> >> > On Mon, Apr 20, 2020 at 11:10:25AM +1000, Nicholas Piggin wrote:
-> >> >> Excerpts from Rich Felker's message of April 17, 2020 4:31 am:
-> >> >> > Note that because lr is clobbered we need at least once normally
-> >> >> > call-clobbered register that's not syscall clobbered to save lr in.
-> >> >> > Otherwise stack frame setup is required to spill it.
-> >> >> 
-> >> >> The kernel would like to use r9-r12 for itself. We could do with fewer 
-> >> >> registers, but we have some delay establishing the stack (depends on a
-> >> >> load which depends on a mfspr), and entry code tends to be quite store
-> >> >> heavy whereas on the caller side you have r1 set up (modulo stack 
-> >> >> updates), and the system call is a long delay during which time the 
-> >> >> store queue has significant time to drain.
-> >> >> 
-> >> >> My feeling is it would be better for kernel to have these scratch 
-> >> >> registers.
-> >> > 
-> >> > If your new kernel syscall mechanism requires the caller to make a
-> >> > whole stack frame it otherwise doesn't need and spill registers to it,
-> >> > it becomes a lot less attractive. Some of those 90 cycles saved are
-> >> > immediately lost on the userspace side, plus you either waste icache
-> >> > at the call point or require the syscall to go through a
-> >> > userspace-side helper function that performs the spill and restore.
-> >> 
-> >> You would be surprised how few cycles that takes on a high end CPU. Some 
-> >> might be a couple of %. I am one for counting cycles mind you, I'm not 
-> >> being flippant about it. If we can come up with something faster I'd be 
-> >> up for it.
-> > 
-> > If the cycle count is trivial then just do it on the kernel side.
+
+
+On 4/14/20 2:56 PM, Greg Kroah-Hartman wrote:
+> On Tue, Apr 14, 2020 at 02:43:00PM +0200, Emanuele Giuseppe Esposito wrote:
+>> A bunch of code is duplicated between debugfs and tracefs, unify it to the
+>> simplefs library.
+>>
+>> The code is very similar, except that dentry and inode creation are unified
+>> into a single function (unlike start_creating in debugfs and tracefs, which
+>> only takes care of dentries).  This adds an output parameter to the creation
+>> functions, but pushes all error recovery into fs/simplefs.c.
+>>
+>> Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+>> ---
+>>   fs/simplefs.c            | 150 +++++++++++++++++++++++++++++++++++++++
+>>   include/linux/simplefs.h |  19 +++++
+>>   2 files changed, 169 insertions(+)
 > 
-> The cycle count for user is, because you have r1 ready. Kernel does not 
-> have its stack ready, it has to mfspr rX ; ld rY,N(rX); to get stack to 
-> save into.
+> What's wrong with libfs, isn't that supposed to be for these types of
+> "common" filesystem interactions?
 > 
-> Which is also wasted work for a userspace.
-> 
-> Now that I think about it, no stack frame is even required! lr is saved 
-> into the caller's stack when its clobbered with an asm, just as when 
-> it's used for a function call.
+> Why create a whole "new" fs for this?
 
-No. If there is a non-clobbered register, lr can be moved to the
-non-clobbered register rather than saved to the stack. However it
-looks like (1) gcc doesn't take advantage of that possibility, but (2)
-the caller already arranged for there to be space on the stack to save
-lr, so the cost is only one store and one load, not any stack
-adjustment or other frame setup. So it's probably not a really big
-deal. However, just adding "lr" clobber to existing syscall in musl
-increased the size of a simple syscall function (getuid) from 20 bytes
-to 36 bytes.
+I assume you meant a new file. These new functions are used only by a 
+few filesystems, and I didn't want to include them in vmlinux 
+unconditionally, so I introduced simplefs.c and CONFIG_SIMPLEFS instead 
+of extending libfs.c. In this way only fs that need this code like 
+debugfs and tracefs will load it.
 
-> >> > syscall arg registers still preserved? If not, this is a major cost on
-> >> > the userspace side, since any call point that has to loop-and-retry
-> >> > (e.g. futex) now needs to make its own place to store the original
-> >> > values.)
-> >> 
-> >> Powerpc system calls never did. We could have scv preserve them, but 
-> >> you'd still need to restore r3. We could make an ABI which does not
-> >> clobber r3 but puts the return value in r9, say. I'd like to see what
-> >> the user side code looks like to take advantage of such a thing though.
-> > 
-> > Oh wow, I hadn't realized that, but indeed the code we have now is
-> > allowing for the kernel to clobber them all. So at least this isn't
-> > getting any worse I guess. I think it was a very poor choice of
-> > behavior though and a disadvantage vs what other archs do (some of
-> > them preserve all registers; others preserve only normally call-saved
-> > ones plus the syscall arg ones and possibly a few other specials).
-> 
-> Well, we could change it. Does the generated code improve significantly
-> we take those clobbers away?
+Thank you,
 
-I'd have to experiment a bit more to see. It's not going to help at
-all in functions which are pure syscall wrappers that just do the
-syscall and return, since the arg regs are dead after the syscall
-anyway (the caller must assume they were clobbered). But where
-syscalls are inlined and used in a loop, like a futex wait, it might
-make a nontrivial difference.
+Emanuele
 
-Unfortunately even if you did change it for the new scv mechanism, it
-would be hard to take advantage of the change while also supporting
-sc, unless we used a helper function that just did scv directly, but
-saved/restored all the arg regs when using the legacy sc mechanism.
-Just inlining the hwcap conditional and clobbering more regs in one
-code path than in the other likely would not help; gcc won't
-shrink-wrap the clobbered/non-clobbered paths separately, and even if
-it did, when this were inlined somewhere like a futex loop, it'd end
-up having to lift the conditional out of the loop to be very
-advantageous, then making the code much larger by producing two copies
-of the loop. So I think just behaving similarly to the old sc method
-is probably the best option we have...
-
-Rich
