@@ -2,50 +2,52 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90637C55183
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:52:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F04C54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:03:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D69D2084D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:52:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D69D2084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id F386E2078C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:03:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F386E2078C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495gQV5NjYzDqyx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 07:52:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495ggR5NzGzDqsl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 08:03:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=jonathan.derrick@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495gNR6MHjzDqmb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 07:50:15 +1000 (AEST)
-Received: from lwn.net (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id 632E4823;
- Mon, 20 Apr 2020 21:43:17 +0000 (UTC)
-Date: Mon, 20 Apr 2020 15:43:16 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Subject: Re: [PATCH v2 00/33] Documentation fixes for Kernel 5.8
-Message-ID: <20200420154316.28e42905@lwn.net>
-In-Reply-To: <cover.1586881715.git.mchehab+huawei@kernel.org>
-References: <cover.1586881715.git.mchehab+huawei@kernel.org>
-Organization: LWN.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495gdQ363PzDqsK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 08:01:22 +1000 (AEST)
+IronPort-SDR: HSLa0KY0EqYZpP2YnzYlDsBwGT0JrMN3ZzM5XIt4FPULDl6rx5rCwTA51K49UodXsYWutANwc9
+ vDCDHaY1qaFw==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Apr 2020 15:01:09 -0700
+IronPort-SDR: v2mUQIi7v4D2xKtxr60yP70J2b/UTKidQjQWc+qcN/GLGbMyj6G/H9MxT9qEkCptVqixd2RvNN
+ D8D5syiZFlVQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.72,407,1580803200"; d="scan'208";a="455848311"
+Received: from unknown (HELO nsgsw-wilsonpoint.lm.intel.com) ([10.232.116.102])
+ by fmsmga005.fm.intel.com with ESMTP; 20 Apr 2020 15:01:07 -0700
+From: Jon Derrick <jonathan.derrick@intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v2 0/2] Honoring Native AER/DPC Host Bridges
+Date: Mon, 20 Apr 2020 15:37:08 -0600
+Message-Id: <1587418630-13562-1-git-send-email-jonathan.derrick@intel.com>
+X-Mailer: git-send-email 1.8.3.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,59 +59,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
- dri-devel@lists.freedesktop.org, linux-unionfs@vger.kernel.org,
- linux-mm@kvack.org, netdev@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux1394-devel@lists.sourceforge.net, kvmarm@lists.cs.columbia.edu,
- linux-arch@vger.kernel.org, Rob Herring <robh@kernel.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>, linux-rdma@vger.kernel.org,
- Kishon Vijay Abraham I <kishon@ti.com>, linux-rockchip@lists.infradead.org,
- Matthias Kaehlcke <mka@chromium.org>, Sandeep Maheswaram <sanm@codeaurora.org>,
- linux-media@vger.kernel.org, devicetree@vger.kernel.org,
- linux-afs@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- ecryptfs@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Stephen Boyd <swboyd@chromium.org>, Maxime Ripard <maxime@cerno.tech>,
- linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org,
- Matthias Brugger <mbrugger@suse.com>, Yuti Amonkar <yamonkar@cadence.com>,
- linux-ide@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
- freedreno@lists.freedesktop.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org,
- linux-crypto@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ocfs2-devel@oss.oracle.com
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ Rajat Jain <rajatja@google.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Frederick Lawler <fred@fredlawl.com>, Sam Bobroff <sbobroff@linux.ibm.com>,
+ linux-pci@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Alex Williamson <alex.williamson@redhat.com>, "Patel,
+ Mayurkumar" <mayurkumar.patel@intel.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Keith Busch <kbusch@kernel.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Jon Derrick <jonathan.derrick@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Apr 2020 18:48:26 +0200
-Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
+The two patches here force AER and DPC to honor the Host Bridge's Native
+AER/DPC settings. This is under the assumption that when these bits are set,
+that Firmware-First AER/DPC should not be in use for these ports. This
+assumption seems to be true in ACPI, which explicitly clears these capability
+settings in the host bridge if the service cannot be negotiated with _OSC.
 
-> Patches 1 to 5 contain changes to the documentation toolset:
-> 
-> - The first 3 patches help to reduce a lot the number of reported
->   kernel-doc issues, by making the tool more smart.
-> 
-> - Patches 4 and 5 are meant to partially address the PDF
->   build, with now requires Sphinx version 2.4 or upper.
-> 
-> The remaining patches fix broken references detected by
-> this tool:
-> 
->         ./scripts/documentation-file-ref-check
-> 
-> and address other random errors due to tags being mis-interpreted
-> or mis-used.
-> 
-> They are independent each other, but some may depend on
-> the kernel-doc improvements.
-> 
-> PS.: Due to the large number of C/C, I opted to keep a smaller
-> set of C/C at this first e-mail (only e-mails with "L:" tag from
-> MAINTAINERS file).
+This also fixes an issue I've seen in a few platforms whose BIOS and/or switch
+firmware leaves DPC preconfigured. In these cases, the kernel DPC driver cannot
+bind a handler to the interrupt and could result in unmanaged DPC link down
+events.
 
-OK, I've applied this set, minus #17 which was applied elsewhere.
+Jon Derrick (2):
+  PCI/AER: Allow Native AER Host Bridges to use AER
+  PCI/DPC: Allow Native DPC Host Bridges to use DPC
 
-Thanks,
+ drivers/pci/pcie/aer.c          | 3 +++
+ drivers/pci/pcie/dpc.c          | 3 ++-
+ drivers/pci/pcie/portdrv_core.c | 3 ++-
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-jon
+-- 
+1.8.3.1
+
