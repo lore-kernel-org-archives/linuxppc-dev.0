@@ -2,65 +2,115 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C1DC3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:02:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D43CC38A30
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:07:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD9D7206F6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:02:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7D7AF2145D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:07:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LnzLHOGL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD9D7206F6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZOywSWr1";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZOywSWr1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D7AF2145D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495ZKh5qSXzDqlD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 04:02:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495ZQw5hJ9zDqtY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 04:07:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=pbonzini@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=LnzLHOGL; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=ZOywSWr1; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZOywSWr1; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [207.211.31.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495Tb36TvWzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 00:28:47 +1000 (AEST)
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
- [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E7A96205C9;
- Mon, 20 Apr 2020 14:28:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1587392924;
- bh=Xfhmbt3oILrMnmMSAOk0kNM8XdFhuXm9MUCUSzShG8g=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=LnzLHOGL3SfYzz4pLofCJ1ROQjqVMmfWQwIeMijgCZdRKOiLZgnrpkFWugSMer61U
- SUy1vwyCeMyLufrPfYFn9wMKcSES/m+B4D/DjqcEiwhebOFIg8iwdCJThhBrgF45My
- mDtP1iFIfm+kWnwF33LB3q5mplaFnA9YYIC790Wo=
-Date: Mon, 20 Apr 2020 16:28:42 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495TjN0QlGzDqYb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 00:34:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587393253;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=/BICmOxm1sDjBE0Fw16pReYLCBtQ7NAWk0hypsbt5YE=;
+ b=ZOywSWr14gk+8Ffl2h37HhuXqUVXYAqhbWrZPLNSPVGPDHG+t2W0wX5imCXn4T2sdv+SiL
+ sUnGdYZ/B/3mNIbW1EJfjJhunZuNrr4ouVWFZxwF+bqYVngRYg6Q6GM/K23THaOkBlHiru
+ VbMaY4m2Ow4XLm3AJ2QxDvWJJ0+uLR0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587393253;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=/BICmOxm1sDjBE0Fw16pReYLCBtQ7NAWk0hypsbt5YE=;
+ b=ZOywSWr14gk+8Ffl2h37HhuXqUVXYAqhbWrZPLNSPVGPDHG+t2W0wX5imCXn4T2sdv+SiL
+ sUnGdYZ/B/3mNIbW1EJfjJhunZuNrr4ouVWFZxwF+bqYVngRYg6Q6GM/K23THaOkBlHiru
+ VbMaY4m2Ow4XLm3AJ2QxDvWJJ0+uLR0=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-47-uLt8BeTVOv-94d3DwdwwoA-1; Mon, 20 Apr 2020 10:34:11 -0400
+X-MC-Unique: uLt8BeTVOv-94d3DwdwwoA-1
+Received: by mail-wm1-f72.google.com with SMTP id j5so4242791wmi.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 07:34:11 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=/BICmOxm1sDjBE0Fw16pReYLCBtQ7NAWk0hypsbt5YE=;
+ b=CmKZ7S1AsWgpQGM18AjaSJL2MDW0IfWC07MCl2gEwH7neDDvZp7DrZQqsy5rwyDja+
+ KWO+09TgdmwxI77E7bFfgemdajaCUwFemdVMQQYQ5HOaDESg1ty3Du2GKMsJ02Ge8Dft
+ ziqKTWNePuUHMZ/4RZ/ebQSHAeBvJywhW1xDdRctFe8KjnSwmyyMpxTezrdvtx9uiz5L
+ 2X6ZzSRlqvJ1yjmI6it+xEdXYI5xE1b+AE0g/sn0m1wLkbHD66Tp4nx9B2xXyXUZsRFd
+ az/WWAitDAv+P+E75ikffuOXSWjIdiLcYCquQsA96m05i3g5QhMWbe9tRZ9MW43FirXT
+ WGkg==
+X-Gm-Message-State: AGi0PuaGbVC77lo9OOJfGg1+umcOUu/YqHwOqDcfdAwv6/ps9/i7HV7A
+ EBrpxsmk8Mnwart7NQzj9YXv6Y5OTaIqXgntGk8S9227M2z4vUI7n8MIv9lEakK2NhQwN+tSi1t
+ aLBeFaDveAouHY74ybBbQcTt0hQ==
+X-Received: by 2002:a5d:6689:: with SMTP id l9mr10607587wru.261.1587393190518; 
+ Mon, 20 Apr 2020 07:33:10 -0700 (PDT)
+X-Google-Smtp-Source: APiQypIE3DMH5xFDwGNUfVPw+X70x/SDiUNUfiLWd0azjzp9qQ2tZy+YP/738/NNIg43An+9cygOww==
+X-Received: by 2002:a5d:6689:: with SMTP id l9mr10607487wru.261.1587393190204; 
+ Mon, 20 Apr 2020 07:33:10 -0700 (PDT)
+Received: from ?IPv6:2001:b07:6468:f312:199a:e5ab:a38c:544c?
+ ([2001:b07:6468:f312:199a:e5ab:a38c:544c])
+ by smtp.gmail.com with ESMTPSA id l5sm1432000wrm.66.2020.04.20.07.33.05
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 20 Apr 2020 07:33:09 -0700 (PDT)
 Subject: Re: [PATCH 6/8] simplefs: add file creation functions
-Message-ID: <20200420142842.GA4125486@kroah.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Emanuele Giuseppe Esposito <eesposit@redhat.com>
 References: <20200414124304.4470-1-eesposit@redhat.com>
  <20200414124304.4470-7-eesposit@redhat.com>
  <20200414125626.GC720679@kroah.com>
  <f371bcc0-266a-cb0b-3bde-fed336b8c9b5@redhat.com>
+ <20200420142842.GA4125486@kroah.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <7d7a9ccc-022d-f60d-d28a-f063ab9494bc@redhat.com>
+Date: Mon, 20 Apr 2020 16:33:04 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f371bcc0-266a-cb0b-3bde-fed336b8c9b5@redhat.com>
+In-Reply-To: <20200420142842.GA4125486@kroah.com>
+Content-Language: en-US
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Tue, 21 Apr 2020 03:37:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,7 +142,7 @@ Cc: Song Liu <songliubraving@fb.com>, linux-usb@vger.kernel.org,
  Yonghong Song <yhs@fb.com>, Ian Kent <raven@themaw.net>,
  Andrii Nakryiko <andriin@fb.com>, Alexey Dobriyan <adobriyan@gmail.com>,
  "Serge E. Hallyn" <serge@hallyn.com>, Robert Richter <rric@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, Vasily Gorbik <gor@linux.ibm.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Vasily Gorbik <gor@linux.ibm.com>,
  Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
  "James E.J. Bottomley" <jejb@linux.ibm.com>, autofs@vger.kernel.org,
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -110,9 +160,9 @@ Cc: Song Liu <songliubraving@fb.com>, linux-usb@vger.kernel.org,
  Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
  linux-kernel@vger.kernel.org, Anna Schumaker <anna.schumaker@netapp.com>,
  Luis Chamberlain <mcgrof@kernel.org>, Chuck Lever <chuck.lever@oracle.com>,
- Jeremy Kerr <jk@ozlabs.org>, Daniel Vetter <daniel@ffwll.ch>,
+ Jeremy Kerr <jk@ozlabs.org>, Thomas Zimmermann <tzimmermann@suse.de>,
  Colin Cross <ccross@android.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
  Mike Kravetz <mike.kravetz@oracle.com>, linuxppc-dev@lists.ozlabs.org,
  Martin KaFai Lau <kafai@fb.com>, Joel Becker <jlbec@evilplan.org>,
  Alexander Viro <viro@zeniv.linux.org.uk>
@@ -120,40 +170,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 20, 2020 at 03:57:48PM +0200, Emanuele Giuseppe Esposito wrote:
-> 
-> 
-> On 4/14/20 2:56 PM, Greg Kroah-Hartman wrote:
-> > On Tue, Apr 14, 2020 at 02:43:00PM +0200, Emanuele Giuseppe Esposito wrote:
-> > > A bunch of code is duplicated between debugfs and tracefs, unify it to the
-> > > simplefs library.
-> > > 
-> > > The code is very similar, except that dentry and inode creation are unified
-> > > into a single function (unlike start_creating in debugfs and tracefs, which
-> > > only takes care of dentries).  This adds an output parameter to the creation
-> > > functions, but pushes all error recovery into fs/simplefs.c.
-> > > 
-> > > Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-> > > ---
-> > >   fs/simplefs.c            | 150 +++++++++++++++++++++++++++++++++++++++
-> > >   include/linux/simplefs.h |  19 +++++
-> > >   2 files changed, 169 insertions(+)
-> > 
-> > What's wrong with libfs, isn't that supposed to be for these types of
-> > "common" filesystem interactions?
-> > 
-> > Why create a whole "new" fs for this?
-> 
-> I assume you meant a new file. These new functions are used only by a few
-> filesystems, and I didn't want to include them in vmlinux unconditionally,
-> so I introduced simplefs.c and CONFIG_SIMPLEFS instead of extending libfs.c.
-> In this way only fs that need this code like debugfs and tracefs will load
-> it.
+On 20/04/20 16:28, Greg Kroah-Hartman wrote:
+>> I assume you meant a new file. These new functions are used only by a few
+>> filesystems, and I didn't want to include them in vmlinux unconditionally,
+>> so I introduced simplefs.c and CONFIG_SIMPLEFS instead of extending libfs.c.
+>> In this way only fs that need this code like debugfs and tracefs will load
+>> it.
+> Nothing "loads it", why not just make these libfs functions instead?  As
+> the difference between the two is not obvious at all, please don't make
+> things confusing.
 
-Nothing "loads it", why not just make these libfs functions instead?  As
-the difference between the two is not obvious at all, please don't make
-things confusing.
+I think Emanuele meant "will link it" not "will load it".
 
-thanks,
+Emanuele, you can just move everything to libfs.c and get rid of
+CONFIG_SIMPLEFS too.  "Do less" is not an offer you want to turn down!
 
-greg k-h
+Thanks,
+
+Paolo
+
