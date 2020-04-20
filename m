@@ -6,75 +6,76 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DB9FC3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:49:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47ABEC3815B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 19:43:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0193720782
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 18:49:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7082220782
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 19:43:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="mElte6N0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0193720782
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SGUjdIGc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7082220782
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495bN703WyzDqsR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 04:49:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495cYh0F6NzDqxL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 05:43:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::241;
+ helo=mail-lj1-x241.google.com; envelope-from=anders.roxell@linaro.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=mElte6N0; dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=SGUjdIGc; dkim-atps=neutral
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
+ [IPv6:2a00:1450:4864:20::241])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495b585ZnrzDqf3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 04:36:44 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 495b503pj3z9v1wC;
- Mon, 20 Apr 2020 20:36:36 +0200 (CEST)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=mElte6N0; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id MPKpTbbYNkbL; Mon, 20 Apr 2020 20:36:36 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 495b502ZKlz9v1wB;
- Mon, 20 Apr 2020 20:36:36 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1587407796; bh=qMCWmidWya99gg6Q9nNxrRFY2dxmlKGgTGtCjPV46ko=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=mElte6N0Q74iZLfMvS80vDJSzcD4dXQnwemYMOkj7VmS7ycdVj1hOPedZIUa7ZaeW
- WadjW80Spq7BHO2ql3bh48vQoErE8r/vBZoaZfOBP4NO2aDN362kbyBRsJV80t2/+1
- twjQFdtDh2XO3dGBRn7ADbQQT0pdWDIxlqz58WBw=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4AF558B78A;
- Mon, 20 Apr 2020 20:36:36 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 8vf0K5BZC3Ic; Mon, 20 Apr 2020 20:36:36 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DED7E8B77E;
- Mon, 20 Apr 2020 20:36:35 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B5056657AE; Mon, 20 Apr 2020 18:36:35 +0000 (UTC)
-Message-Id: <3911a86d6b5bfa7ad88cd7c82416fbe6bb47e793.1587407777.git.christophe.leroy@c-s.fr>
-In-Reply-To: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/5] powerpc: Replace _ALIGN_DOWN() by ALIGN_DOWN()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 20 Apr 2020 18:36:35 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495cWq5B79zDqtS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 05:41:22 +1000 (AEST)
+Received: by mail-lj1-x241.google.com with SMTP id l19so8878246lje.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 12:41:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=2l71BXESRMVZaog60N632QcNtn1RLZhkN10c7KV873A=;
+ b=SGUjdIGc0NzdTIccHzsf7n7fl2lCU8m0WmuBQvva6nXnCETcqGsNI8UGF3WQCa5QPP
+ 46a6qbi4W2A/3pf+uHmYD+pqX60/53YJwMs5wSkkCjHIHnhUv/OcrOdjYjVwFrqHrsGI
+ LbEhEP+vVxT1hxgGbOjfp5sV7UwWSTCSz7CzC7PbgIOdqfZ4D4sjVxIfSBQat6ZUli+a
+ qa9REduBLytNHJOTAEcI9W6Zhuy01qusIKY6Vjvv7J2yQyLd4e9iPDoDeGVK/w7/16b/
+ 3IE+Rr5FLIPzkimLAJDyV+qSELQgKYryzNsV/kvfdvKCQftVMco0jSQgQ0fnwm0YApnQ
+ Qg3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=2l71BXESRMVZaog60N632QcNtn1RLZhkN10c7KV873A=;
+ b=cVcRu4XMVdB5CD54tmib5cRAd80212d2CiLyudEwh3bhECe+pI5LuxMouCwnWbulwl
+ zxVHOTaPADLWVeDQAYnXolZb/8b7e3V183t2wCaU0QQ3YiCwSEGwpzkM/042Fedegr+/
+ RdbOg+CxVBk8s2mUFUAxg2NulSUiUxD9n/XRPPeopKA9elMaEbsQwlQ4Yav8rHjP14cj
+ doNMNGIutXWOgWyUTV3jcK2Gt6+hZoMhcTU32KwU6O1T9I8BCzk+fh9Yrh/UU7EeuAxV
+ DYJDtxWA2AbB5YnAhzCUvIAPkizs4720rbWapocs51HeO91AkS9+C37DbHRE72qWMcO2
+ lyHA==
+X-Gm-Message-State: AGi0PuZfH1XA08QDzPTMn80WsTLa2F3pk8RR4IVVqUYKGmLNgi0y70mk
+ w/PFKO8pm0AaHjEeR/othohYQhZFyIMvnyD8NsISZw==
+X-Google-Smtp-Source: APiQypI2gK//YEp6YVbgwTm4k+wnVZZ/iGHVGrqFsiNhRq6u3vM+M+1e1iwmrTKmDRc1k1kiyjmzBeruQcOKYL6X1kk=
+X-Received: by 2002:a05:651c:30b:: with SMTP id
+ a11mr10981389ljp.164.1587411674963; 
+ Mon, 20 Apr 2020 12:41:14 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200417185049.275845-1-mike.kravetz@oracle.com>
+ <20200417185049.275845-4-mike.kravetz@oracle.com>
+In-Reply-To: <20200417185049.275845-4-mike.kravetz@oracle.com>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Mon, 20 Apr 2020 21:41:04 +0200
+Message-ID: <CADYN=9Koefrq9H1Y82Q8nMNbeyN4tzhEfvDu5u=sVFjFZCYorA@mail.gmail.com>
+Subject: Re: [PATCH v3 3/4] hugetlbfs: remove hugetlb_add_hstate() warning for
+ existing hstate
+To: Mike Kravetz <mike.kravetz@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,281 +87,285 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Mina Almasry <almasrymina@google.com>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Longpeng <longpeng2@huawei.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Vasily Gorbik <gor@linux.ibm.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Nitesh Narayan Lal <nitesh@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-_ALIGN_DOWN() is specific to powerpc
-ALIGN_DOWN() is generic and does the same
+On Fri, 17 Apr 2020 at 20:52, Mike Kravetz <mike.kravetz@oracle.com> wrote:
+>
+> The routine hugetlb_add_hstate prints a warning if the hstate already
+> exists.  This was originally done as part of kernel command line
+> parsing.  If 'hugepagesz=' was specified more than once, the warning
+>         pr_warn("hugepagesz= specified twice, ignoring\n");
+> would be printed.
+>
+> Some architectures want to enable all huge page sizes.  They would
+> call hugetlb_add_hstate for all supported sizes.  However, this was
+> done after command line processing and as a result hstates could have
+> already been created for some sizes.  To make sure no warning were
+> printed, there would often be code like:
+>         if (!size_to_hstate(size)
+>                 hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT)
+>
+> The only time we want to print the warning is as the result of command
+> line processing.  So, remove the warning from hugetlb_add_hstate and
+> add it to the single arch independent routine processing "hugepagesz=".
+> After this, calls to size_to_hstate() in arch specific code can be
+> removed and hugetlb_add_hstate can be called without worrying about
+> warning messages.
+>
+> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+> Acked-by: Mina Almasry <almasrymina@google.com>
 
-Replace _ALIGN_DOWN() by ALIGN_DOWN()
+When I build an arm64 kernel on today's next-20200420 and ran that in
+qemu I got the following output [1]:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +-
- arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +-
- arch/powerpc/kernel/pci_64.c                 |  2 +-
- arch/powerpc/kernel/prom.c                   |  6 +++---
- arch/powerpc/kernel/prom_init.c              |  8 ++++----
- arch/powerpc/mm/book3s64/hash_tlb.c          |  4 ++--
- arch/powerpc/mm/init_64.c                    |  4 ++--
- arch/powerpc/platforms/powernv/opal-fadump.c |  2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c    |  2 +-
- arch/powerpc/platforms/ps3/mm.c              | 14 +++++++-------
- arch/powerpc/platforms/pseries/rtas-fadump.c |  2 +-
- 11 files changed, 24 insertions(+), 24 deletions(-)
+...
+[  311.326817][    T1] kobject: 'drivers' ((____ptrval____)):
+kobject_add_internal: parent: 'coresight', set: '<NULL>'
+[  311.331513][    T1] kobject: 'drivers' ((____ptrval____)): kobject_uevent_env
+[  311.334514][    T1] kobject: 'drivers' ((____ptrval____)):
+kobject_uevent_env: filter function caused the event to drop!
+[  311.340127][    T1] bus: 'coresight': registered
+[  311.342228][    T1] initcall coresight_init+0x0/0x64 returned 0
+after 27343 usecs
+[  311.349740][    T1] calling  debug_traps_init+0x0/0xa4 @ 1
+[  311.352138][    T1] initcall debug_traps_init+0x0/0xa4 returned 0
+after 0 usecs
+[  311.355550][    T1] calling  reserve_memblock_reserved_regions+0x0/0x374 @ 1
+[  311.364913][    T1] initcall
+reserve_memblock_reserved_regions+0x0/0x374 returned 0 after 7812
+usecs
+[  311.368937][    T1] calling  aarch32_alloc_vdso_pages+0x0/0x1d0 @ 1
+[  311.371819][    T1] initcall aarch32_alloc_vdso_pages+0x0/0x1d0
+returned 0 after 0 usecs
+[  311.375608][    T1] calling  vdso_init+0x0/0x52c @ 1
+[  311.378092][    T1] initcall vdso_init+0x0/0x52c returned 0 after 0 usecs
+[  311.381386][    T1] calling  arch_hw_breakpoint_init+0x0/0x178 @ 1
+[  311.384007][    T1] hw-breakpoint: found 6 breakpoint and 4
+watchpoint registers.
+[  311.388120][    T1] initcall arch_hw_breakpoint_init+0x0/0x178
+returned 0 after 3906 usecs
+[  311.391924][    T1] calling  asids_update_limit+0x0/0x110 @ 1
+[  311.394390][    T1] ASID allocator initialised with 65536 entries
+[  311.397427][    T1] initcall asids_update_limit+0x0/0x110 returned
+0 after 3906 usecs
+[  311.400749][    T1] calling  hugetlbpage_init+0x0/0x7c @ 1
+[  311.403581][    T1] Unexpected kernel BRK exception at EL1
+[  311.405771][    T1] Internal error: ptrace BRK handler: f20003e8
+[#1] PREEMPT SMP
+[  311.408759][    T1] Modules linked in:
+[  311.410514][    T1] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G
+        T 5.7.0-rc2-next-20200420-03722-ge4ba9b47e4ed #1
+[  311.415175][    T1] Hardware name: linux,dummy-virt (DT)
+[  311.417466][    T1] pstate: 80400005 (Nzcv daif +PAN -UAO)
+[  311.419887][    T1] pc : hugetlb_add_hstate+0x68/0x4f0
+[  311.422171][    T1] lr : hugetlb_add_hstate+0x68/0x4f0
+[  311.424354][    T1] sp : ffff000069c07c60
+[  311.426124][    T1] x29: ffff000069c07c60 x28: ffff00006a7f8058
+[  311.428754][    T1] x27: 0000000000000000 x26: ffffa00013f56950
+[  311.431376][    T1] x25: ffffa000141b8000 x24: ffff00006a7f8040
+[  311.433987][    T1] x23: 1fffe0000d380fae x22: 00000000fffffff8
+[  311.436574][    T1] x21: 0000000100000000 x20: ffffa000141b8000
+[  311.439167][    T1] x19: ec632d51be3d2507 x18: 0000000000001a68
+[  311.441763][    T1] x17: 00000000000013e0 x16: 0000000000001a94
+[  311.444386][    T1] x15: 0000000000001a68 x14: 6573752036303933
+[  311.447034][    T1] x13: 2072657466612030 x12: 00000000000025b0
+[  311.449639][    T1] x11: 00000000f1f1f1f1 x10: 0000000041b58ab3
+[  311.452238][    T1] x9 : ffffa000139a833c x8 : 1ffff40002bf2c23
+[  311.454849][    T1] x7 : ffff940002bf2c23 x6 : ffffa00015f9611b
+[  311.457480][    T1] x5 : ffff00006a7f8040 x4 : 0000000000000000
+[  311.460124][    T1] x3 : ffffa000139fd98c x2 : 00000000fffffff8
+[  311.462737][    T1] x1 : ffff00006a7f8040 x0 : 0000000000000000
+[  311.465322][    T1] Call trace:
+[  311.466818][    T1]  hugetlb_add_hstate+0x68/0x4f0
+[  311.468934][    T1]  hugetlbpage_init+0x34/0x7c
+[  311.470934][    T1]  do_one_initcall+0x480/0xa40
+[  311.472996][    T1]  kernel_init_freeable+0x7a0/0x968
+[  311.475224][    T1]  kernel_init+0x20/0x1f8
+[  311.477078][    T1]  ret_from_fork+0x10/0x18
+[  311.479053][    T1] Code: 972762be 7100fedf 54000069 97276197 (d4207d00)
+[  311.482106][    T1] _warn_unseeded_randomness: 18 callbacks suppressed
+[  311.482255][    T1] random: get_random_bytes called from
+print_oops_end_marker+0x48/0x80 with crng_init=0
+[  311.482321][    T1] ---[ end trace 60df362baad50718 ]---
+[  311.491423][    T1] Kernel panic - not syncing: Fatal exception
+[  311.494038][    T1] ---[ end Kernel panic - not syncing: Fatal exception ]---
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 7549393c4c43..53b5c93eaf5d 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -195,7 +195,7 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #endif
- 
- #ifdef CONFIG_KASAN_VMALLOC
--#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#define VMALLOC_END	ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
- #else
- #define VMALLOC_END	ioremap_bot
- #endif
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index b04ba257fddb..5b4d4c4297e1 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -116,7 +116,7 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
- #endif
- 
- #ifdef CONFIG_KASAN_VMALLOC
--#define VMALLOC_END	_ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
-+#define VMALLOC_END	ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
- #else
- #define VMALLOC_END	ioremap_bot
- #endif
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index f83d1f69b1dd..e5d05af5a9af 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -130,7 +130,7 @@ static int pcibios_map_phb_io_space(struct pci_controller *hose)
- 	unsigned long size_page;
- 	unsigned long io_virt_offset;
- 
--	phys_page = _ALIGN_DOWN(hose->io_base_phys, PAGE_SIZE);
-+	phys_page = ALIGN_DOWN(hose->io_base_phys, PAGE_SIZE);
- 	size_page = _ALIGN_UP(hose->pci_io_size, PAGE_SIZE);
- 
- 	/* Make sure IO area address is clear */
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 6620f37abe73..10b5d5eafd34 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -96,7 +96,7 @@ static inline int overlaps_initrd(unsigned long start, unsigned long size)
- 	if (!initrd_start)
- 		return 0;
- 
--	return	(start + size) > _ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
-+	return	(start + size) > ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
- 			start <= _ALIGN_UP(initrd_end, PAGE_SIZE);
- #else
- 	return 0;
-@@ -623,9 +623,9 @@ static void __init early_reserve_mem(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- 	/* Then reserve the initrd, if any */
- 	if (initrd_start && (initrd_end > initrd_start)) {
--		memblock_reserve(_ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
-+		memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
- 			_ALIGN_UP(initrd_end, PAGE_SIZE) -
--			_ALIGN_DOWN(initrd_start, PAGE_SIZE));
-+			ALIGN_DOWN(initrd_start, PAGE_SIZE));
- 	}
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 806be751c336..4cf5958eebd4 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1500,7 +1500,7 @@ static unsigned long __init alloc_down(unsigned long size, unsigned long align,
- 
- 	if (highmem) {
- 		/* Carve out storage for the TCE table. */
--		addr = _ALIGN_DOWN(alloc_top_high - size, align);
-+		addr = ALIGN_DOWN(alloc_top_high - size, align);
- 		if (addr <= alloc_bottom)
- 			return 0;
- 		/* Will we bump into the RMO ? If yes, check out that we
-@@ -1518,9 +1518,9 @@ static unsigned long __init alloc_down(unsigned long size, unsigned long align,
- 		goto bail;
- 	}
- 
--	base = _ALIGN_DOWN(alloc_top - size, align);
-+	base = ALIGN_DOWN(alloc_top - size, align);
- 	for (; base > alloc_bottom;
--	     base = _ALIGN_DOWN(base - 0x100000, align))  {
-+	     base = ALIGN_DOWN(base - 0x100000, align))  {
- 		prom_debug("    trying: 0x%lx\n\r", base);
- 		addr = (unsigned long)prom_claim(base, size, 0);
- 		if (addr != PROM_ERROR && addr != 0)
-@@ -1586,7 +1586,7 @@ static void __init reserve_mem(u64 base, u64 size)
- 	 * have our terminator with "size" set to 0 since we are
- 	 * dumb and just copy this entire array to the boot params
- 	 */
--	base = _ALIGN_DOWN(base, PAGE_SIZE);
-+	base = ALIGN_DOWN(base, PAGE_SIZE);
- 	top = _ALIGN_UP(top, PAGE_SIZE);
- 	size = top - base;
- 
-diff --git a/arch/powerpc/mm/book3s64/hash_tlb.c b/arch/powerpc/mm/book3s64/hash_tlb.c
-index 4a70d8dd39cd..2242d022b620 100644
---- a/arch/powerpc/mm/book3s64/hash_tlb.c
-+++ b/arch/powerpc/mm/book3s64/hash_tlb.c
-@@ -196,7 +196,7 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
- 	int hugepage_shift;
- 	unsigned long flags;
- 
--	start = _ALIGN_DOWN(start, PAGE_SIZE);
-+	start = ALIGN_DOWN(start, PAGE_SIZE);
- 	end = _ALIGN_UP(end, PAGE_SIZE);
- 
- 	BUG_ON(!mm->pgd);
-@@ -238,7 +238,7 @@ void flush_tlb_pmd_range(struct mm_struct *mm, pmd_t *pmd, unsigned long addr)
- 	pte_t *start_pte;
- 	unsigned long flags;
- 
--	addr = _ALIGN_DOWN(addr, PMD_SIZE);
-+	addr = ALIGN_DOWN(addr, PMD_SIZE);
- 	/*
- 	 * Note: Normally, we should only ever use a batch within a
- 	 * PTE locked section. This violates the rule, but will work
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 4002ced3596f..c7ce4ec5060e 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -203,7 +203,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
- 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
- 
- 	/* Align to the page size of the linear mapping. */
--	start = _ALIGN_DOWN(start, page_size);
-+	start = ALIGN_DOWN(start, page_size);
- 
- 	pr_debug("vmemmap_populate %lx..%lx, node %d\n", start, end, node);
- 
-@@ -292,7 +292,7 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
- 	unsigned long alt_start = ~0, alt_end = ~0;
- 	unsigned long base_pfn;
- 
--	start = _ALIGN_DOWN(start, page_size);
-+	start = ALIGN_DOWN(start, page_size);
- 	if (altmap) {
- 		alt_start = altmap->base_pfn;
- 		alt_end = altmap->base_pfn + altmap->reserve +
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-index d361d37d975f..9a360ced663b 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.c
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -671,7 +671,7 @@ void __init opal_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node)
- 	 * Firmware supports 32-bit field for size. Align it to PAGE_SIZE
- 	 * and request firmware to copy multiple kernel boot memory regions.
- 	 */
--	fadump_conf->max_copy_size = _ALIGN_DOWN(U32_MAX, PAGE_SIZE);
-+	fadump_conf->max_copy_size = ALIGN_DOWN(U32_MAX, PAGE_SIZE);
- 
- 	/*
- 	 * Check if dump has been initiated on last reboot.
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 57d3a6af1d52..276b011cd45d 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -264,7 +264,7 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
- 		if (!r->parent || !pnv_pci_is_m64(phb, r))
- 			continue;
- 
--		start = _ALIGN_DOWN(r->start - base, sgsz);
-+		start = ALIGN_DOWN(r->start - base, sgsz);
- 		end = _ALIGN_UP(r->end - base, sgsz);
- 		for (segno = start / sgsz; segno < end / sgsz; segno++) {
- 			if (pe_bitmap)
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 423be34f0f5f..71ed37f7f475 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -263,7 +263,7 @@ static int ps3_mm_region_create(struct mem_region *r, unsigned long size)
- 	int result;
- 	u64 muid;
- 
--	r->size = _ALIGN_DOWN(size, 1 << PAGE_SHIFT_16M);
-+	r->size = ALIGN_DOWN(size, 1 << PAGE_SHIFT_16M);
- 
- 	DBG("%s:%d requested  %lxh\n", __func__, __LINE__, size);
- 	DBG("%s:%d actual     %llxh\n", __func__, __LINE__, r->size);
-@@ -394,7 +394,7 @@ static struct dma_chunk * dma_find_chunk(struct ps3_dma_region *r,
- 	unsigned long bus_addr, unsigned long len)
- {
- 	struct dma_chunk *c;
--	unsigned long aligned_bus = _ALIGN_DOWN(bus_addr, 1 << r->page_size);
-+	unsigned long aligned_bus = ALIGN_DOWN(bus_addr, 1 << r->page_size);
- 	unsigned long aligned_len = _ALIGN_UP(len+bus_addr-aligned_bus,
- 					      1 << r->page_size);
- 
-@@ -423,7 +423,7 @@ static struct dma_chunk *dma_find_chunk_lpar(struct ps3_dma_region *r,
- 	unsigned long lpar_addr, unsigned long len)
- {
- 	struct dma_chunk *c;
--	unsigned long aligned_lpar = _ALIGN_DOWN(lpar_addr, 1 << r->page_size);
-+	unsigned long aligned_lpar = ALIGN_DOWN(lpar_addr, 1 << r->page_size);
- 	unsigned long aligned_len = _ALIGN_UP(len + lpar_addr - aligned_lpar,
- 					      1 << r->page_size);
- 
-@@ -775,7 +775,7 @@ static int dma_sb_map_area(struct ps3_dma_region *r, unsigned long virt_addr,
- 	struct dma_chunk *c;
- 	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
- 		: virt_addr;
--	unsigned long aligned_phys = _ALIGN_DOWN(phys_addr, 1 << r->page_size);
-+	unsigned long aligned_phys = ALIGN_DOWN(phys_addr, 1 << r->page_size);
- 	unsigned long aligned_len = _ALIGN_UP(len + phys_addr - aligned_phys,
- 					      1 << r->page_size);
- 	*bus_addr = dma_sb_lpar_to_bus(r, ps3_mm_phys_to_lpar(phys_addr));
-@@ -830,7 +830,7 @@ static int dma_ioc0_map_area(struct ps3_dma_region *r, unsigned long virt_addr,
- 	struct dma_chunk *c;
- 	unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
- 		: virt_addr;
--	unsigned long aligned_phys = _ALIGN_DOWN(phys_addr, 1 << r->page_size);
-+	unsigned long aligned_phys = ALIGN_DOWN(phys_addr, 1 << r->page_size);
- 	unsigned long aligned_len = _ALIGN_UP(len + phys_addr - aligned_phys,
- 					      1 << r->page_size);
- 
-@@ -889,7 +889,7 @@ static int dma_sb_unmap_area(struct ps3_dma_region *r, dma_addr_t bus_addr,
- 	c = dma_find_chunk(r, bus_addr, len);
- 
- 	if (!c) {
--		unsigned long aligned_bus = _ALIGN_DOWN(bus_addr,
-+		unsigned long aligned_bus = ALIGN_DOWN(bus_addr,
- 			1 << r->page_size);
- 		unsigned long aligned_len = _ALIGN_UP(len + bus_addr
- 			- aligned_bus, 1 << r->page_size);
-@@ -926,7 +926,7 @@ static int dma_ioc0_unmap_area(struct ps3_dma_region *r,
- 	c = dma_find_chunk(r, bus_addr, len);
- 
- 	if (!c) {
--		unsigned long aligned_bus = _ALIGN_DOWN(bus_addr,
-+		unsigned long aligned_bus = ALIGN_DOWN(bus_addr,
- 							1 << r->page_size);
- 		unsigned long aligned_len = _ALIGN_UP(len + bus_addr
- 						      - aligned_bus,
-diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
-index 70c3013fdd07..81343908ed33 100644
---- a/arch/powerpc/platforms/pseries/rtas-fadump.c
-+++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
-@@ -506,7 +506,7 @@ void __init rtas_fadump_dt_scan(struct fw_dump *fadump_conf, u64 node)
- 	fadump_conf->fadump_supported	= 1;
- 
- 	/* Firmware supports 64-bit value for size, align it to pagesize. */
--	fadump_conf->max_copy_size = _ALIGN_DOWN(U64_MAX, PAGE_SIZE);
-+	fadump_conf->max_copy_size = ALIGN_DOWN(U64_MAX, PAGE_SIZE);
- 
- 	/*
- 	 * The 'ibm,kernel-dump' rtas node is present only if there is
--- 
-2.25.0
+If I revert this patch I can't see the problem anymore...
 
+Any idea what happens?
+
+This is the kernel.config [1] I'm using, its from an allmodconfig kernel build
+
+Cheers,
+Anders
+[1] https://people.linaro.org/~anders.roxell/output-next-20200420.log
+[2] https://builds.tuxbuild.com/U7ufblLydTsSvle27GSPAA/kernel.config
+
+
+> ---
+>  arch/arm64/mm/hugetlbpage.c   | 16 ++++------------
+>  arch/powerpc/mm/hugetlbpage.c |  3 +--
+>  arch/riscv/mm/hugetlbpage.c   |  2 +-
+>  arch/sparc/mm/init_64.c       | 19 ++++---------------
+>  arch/x86/mm/hugetlbpage.c     |  2 +-
+>  mm/hugetlb.c                  |  9 ++++++---
+>  6 files changed, 17 insertions(+), 34 deletions(-)
+>
+> diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+> index f706b821aba6..21fa98b51e00 100644
+> --- a/arch/arm64/mm/hugetlbpage.c
+> +++ b/arch/arm64/mm/hugetlbpage.c
+> @@ -441,22 +441,14 @@ void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>         clear_flush(vma->vm_mm, addr, ptep, pgsize, ncontig);
+>  }
+>
+> -static void __init add_huge_page_size(unsigned long size)
+> -{
+> -       if (size_to_hstate(size))
+> -               return;
+> -
+> -       hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
+> -}
+> -
+>  static int __init hugetlbpage_init(void)
+>  {
+>  #ifdef CONFIG_ARM64_4K_PAGES
+> -       add_huge_page_size(PUD_SIZE);
+> +       hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
+>  #endif
+> -       add_huge_page_size(CONT_PMD_SIZE);
+> -       add_huge_page_size(PMD_SIZE);
+> -       add_huge_page_size(CONT_PTE_SIZE);
+> +       hugetlb_add_hstate(CONT_PMD_SHIFT - PAGE_SHIFT);
+> +       hugetlb_add_hstate(PMD_SHIFT - PAGE_SHIFT);
+> +       hugetlb_add_hstate(CONT_PTE_SHIFT - PAGE_SHIFT);
+>
+>         return 0;
+>  }
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 2c3fa0a7787b..4d5ed1093615 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -584,8 +584,7 @@ static int __init add_huge_page_size(unsigned long long size)
+>         if (!arch_hugetlb_valid_size((unsigned long)size))
+>                 return -EINVAL;
+>
+> -       if (!size_to_hstate(size))
+> -               hugetlb_add_hstate(shift - PAGE_SHIFT);
+> +       hugetlb_add_hstate(shift - PAGE_SHIFT);
+>         return 0;
+>  }
+>
+> diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
+> index 4e5d7e9f0eef..932dadfdca54 100644
+> --- a/arch/riscv/mm/hugetlbpage.c
+> +++ b/arch/riscv/mm/hugetlbpage.c
+> @@ -26,7 +26,7 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+>  static __init int gigantic_pages_init(void)
+>  {
+>         /* With CONTIG_ALLOC, we can allocate gigantic pages at runtime */
+> -       if (IS_ENABLED(CONFIG_64BIT) && !size_to_hstate(1UL << PUD_SHIFT))
+> +       if (IS_ENABLED(CONFIG_64BIT))
+>                 hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
+>         return 0;
+>  }
+> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> index 4618f96fd30f..ae819a16d07a 100644
+> --- a/arch/sparc/mm/init_64.c
+> +++ b/arch/sparc/mm/init_64.c
+> @@ -325,23 +325,12 @@ static void __update_mmu_tsb_insert(struct mm_struct *mm, unsigned long tsb_inde
+>  }
+>
+>  #ifdef CONFIG_HUGETLB_PAGE
+> -static void __init add_huge_page_size(unsigned long size)
+> -{
+> -       unsigned int order;
+> -
+> -       if (size_to_hstate(size))
+> -               return;
+> -
+> -       order = ilog2(size) - PAGE_SHIFT;
+> -       hugetlb_add_hstate(order);
+> -}
+> -
+>  static int __init hugetlbpage_init(void)
+>  {
+> -       add_huge_page_size(1UL << HPAGE_64K_SHIFT);
+> -       add_huge_page_size(1UL << HPAGE_SHIFT);
+> -       add_huge_page_size(1UL << HPAGE_256MB_SHIFT);
+> -       add_huge_page_size(1UL << HPAGE_2GB_SHIFT);
+> +       hugetlb_add_hstate(HPAGE_64K_SHIFT - PAGE_SHIFT);
+> +       hugetlb_add_hstate(HPAGE_SHIFT - PAGE_SHIFT);
+> +       hugetlb_add_hstate(HPAGE_256MB_SHIFT - PAGE_SHIFT);
+> +       hugetlb_add_hstate(HPAGE_2GB_SHIFT - PAGE_SHIFT);
+>
+>         return 0;
+>  }
+> diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+> index 937d640a89e3..cf5781142716 100644
+> --- a/arch/x86/mm/hugetlbpage.c
+> +++ b/arch/x86/mm/hugetlbpage.c
+> @@ -195,7 +195,7 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+>  static __init int gigantic_pages_init(void)
+>  {
+>         /* With compaction or CMA we can allocate gigantic pages at runtime */
+> -       if (boot_cpu_has(X86_FEATURE_GBPAGES) && !size_to_hstate(1UL << PUD_SHIFT))
+> +       if (boot_cpu_has(X86_FEATURE_GBPAGES))
+>                 hugetlb_add_hstate(PUD_SHIFT - PAGE_SHIFT);
+>         return 0;
+>  }
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index b2d276408cec..0e6eb755ae94 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -3222,8 +3222,7 @@ static int __init hugetlb_init(void)
+>                 }
+>
+>                 default_hstate_size = HPAGE_SIZE;
+> -               if (!size_to_hstate(default_hstate_size))
+> -                       hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
+> +               hugetlb_add_hstate(HUGETLB_PAGE_ORDER);
+>         }
+>         default_hstate_idx = hstate_index(size_to_hstate(default_hstate_size));
+>         if (default_hstate_max_huge_pages) {
+> @@ -3268,7 +3267,6 @@ void __init hugetlb_add_hstate(unsigned int order)
+>         unsigned long i;
+>
+>         if (size_to_hstate(PAGE_SIZE << order)) {
+> -               pr_warn("hugepagesz= specified twice, ignoring\n");
+>                 return;
+>         }
+>         BUG_ON(hugetlb_max_hstate >= HUGE_MAX_HSTATE);
+> @@ -3343,6 +3341,11 @@ static int __init hugepagesz_setup(char *s)
+>                 return 0;
+>         }
+>
+> +       if (size_to_hstate(size)) {
+> +               pr_warn("HugeTLB: hugepagesz %s specified twice, ignoring\n", s);
+> +               return 0;
+> +       }
+> +
+>         hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
+>         return 1;
+>  }
+> --
+> 2.25.2
+>
