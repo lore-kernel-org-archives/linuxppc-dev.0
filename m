@@ -2,81 +2,79 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLACK,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F2DAC3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 13:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F080C3815B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 13:58:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D46392070B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 13:56:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D46392070B
+	by mail.kernel.org (Postfix) with ESMTPS id 397CB20724
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 13:58:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 397CB20724
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495SsK2kFrzDqpp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 23:56:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495Sw36pmBzDqqW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 23:58:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495RJf6K5YzDqd3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 22:46:10 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03KCZlaQ003448; Mon, 20 Apr 2020 08:46:02 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495RJc1bjLzDqfF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 22:46:07 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03KCWjK0051078; Mon, 20 Apr 2020 08:45:53 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30gc2vxyvb-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30gcbed6yr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Apr 2020 08:46:02 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03KCcnlp012366;
- Mon, 20 Apr 2020 08:46:02 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30gc2vxyv2-1
+ Mon, 20 Apr 2020 08:45:53 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03KCWmXu051170;
+ Mon, 20 Apr 2020 08:45:52 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30gcbed6xw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Apr 2020 08:46:02 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03KCeZ4k025281;
- Mon, 20 Apr 2020 12:46:01 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma03dal.us.ibm.com with ESMTP id 30fs66cptx-1
+ Mon, 20 Apr 2020 08:45:52 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03KCdt3A020512;
+ Mon, 20 Apr 2020 12:45:51 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma04wdc.us.ibm.com with ESMTP id 30fs660jnt-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Apr 2020 12:46:01 +0000
+ Mon, 20 Apr 2020 12:45:51 +0000
 Received: from b03ledav002.gho.boulder.ibm.com
  (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03KCjxVD65143198
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03KCjoQN59244996
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 20 Apr 2020 12:45:59 GMT
+ Mon, 20 Apr 2020 12:45:50 GMT
 Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CA4B513604F;
- Mon, 20 Apr 2020 12:45:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 18966136053;
+ Mon, 20 Apr 2020 12:45:50 +0000 (GMT)
 Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B2282136055;
- Mon, 20 Apr 2020 12:45:55 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4D509136059;
+ Mon, 20 Apr 2020 12:45:46 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.51.43])
  by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 20 Apr 2020 12:45:55 +0000 (GMT)
+ Mon, 20 Apr 2020 12:45:45 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH v3 16/22] powerpc/kvm/book3s: Avoid using rmap to protect
- parallel page table update.
-Date: Mon, 20 Apr 2020 18:14:28 +0530
-Message-Id: <20200420124434.47330-17-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v3 14/22] powerpc/kvm/book3s: Use find_kvm_host_pte in h_enter
+Date: Mon, 20 Apr 2020 18:14:26 +0530
+Message-Id: <20200420124434.47330-15-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.25.3
 In-Reply-To: <20200420124434.47330-1-aneesh.kumar@linux.ibm.com>
 References: <20200420124434.47330-1-aneesh.kumar@linux.ibm.com>
@@ -87,11 +85,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-20_04:2020-04-20,
  2020-04-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 priorityscore=1501
- impostorscore=0 phishscore=0 spamscore=0 malwarescore=0 mlxlogscore=999
- lowpriorityscore=0 suspectscore=8 bulkscore=0 clxscore=1015 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004200110
+ mlxscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 mlxlogscore=877
+ clxscore=1015 suspectscore=0 malwarescore=0 spamscore=0 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004200110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,128 +101,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- kirill@shutemov.name, leonardo@linux.ibm.com
+Cc: leonardo@linux.ibm.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ npiggin@gmail.com, kirill@shutemov.name
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We now depend on kvm->mmu_lock
+Since kvmppc_do_h_enter can get called in realmode use low level
+arch_spin_lock which is safe to be called in realmode.
 
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/kvm/book3s_64_vio_hv.c | 38 +++++++----------------------
- 1 file changed, 9 insertions(+), 29 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_hv.c |  5 ++---
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 22 ++++++----------------
+ 2 files changed, 8 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index acc3ce570be7..167029e57c8f 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -74,8 +74,8 @@ struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm *kvm,
- EXPORT_SYMBOL_GPL(kvmppc_find_table);
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--static long kvmppc_rm_tce_to_ua(struct kvm *kvm, unsigned long tce,
--		unsigned long *ua, unsigned long **prmap)
-+static long kvmppc_rm_tce_to_ua(struct kvm *kvm,
-+				unsigned long tce, unsigned long *ua)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 121146f5a331..9d48173a8b77 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -281,11 +281,10 @@ static long kvmppc_virtmode_do_h_enter(struct kvm *kvm, unsigned long flags,
  {
- 	unsigned long gfn = tce >> PAGE_SHIFT;
- 	struct kvm_memory_slot *memslot;
-@@ -87,9 +87,6 @@ static long kvmppc_rm_tce_to_ua(struct kvm *kvm, unsigned long tce,
- 	*ua = __gfn_to_hva_memslot(memslot, gfn) |
- 		(tce & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
+ 	long ret;
  
--	if (prmap)
--		*prmap = &memslot->arch.rmap[gfn - memslot->base_gfn];
--
- 	return 0;
- }
- 
-@@ -116,7 +113,7 @@ static long kvmppc_rm_tce_validate(struct kvmppc_spapr_tce_table *stt,
- 	if (iommu_tce_check_gpa(stt->page_shift, gpa))
- 		return H_PARAMETER;
- 
--	if (kvmppc_rm_tce_to_ua(stt->kvm, tce, &ua, NULL))
-+	if (kvmppc_rm_tce_to_ua(stt->kvm, tce, &ua))
- 		return H_TOO_HARD;
- 
- 	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
-@@ -411,7 +408,7 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 		return ret;
- 
- 	dir = iommu_tce_direction(tce);
--	if ((dir != DMA_NONE) && kvmppc_rm_tce_to_ua(vcpu->kvm, tce, &ua, NULL))
-+	if ((dir != DMA_NONE) && kvmppc_rm_tce_to_ua(vcpu->kvm, tce, &ua))
- 		return H_PARAMETER;
- 
- 	entry = ioba >> stt->page_shift;
-@@ -488,7 +485,6 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	struct kvmppc_spapr_tce_table *stt;
- 	long i, ret = H_SUCCESS;
- 	unsigned long tces, entry, ua = 0;
--	unsigned long *rmap = NULL;
+-	/* Protect linux PTE lookup from page table destruction */
+-	rcu_read_lock_sched();	/* this disables preemption too */
++	preempt_disable();
+ 	ret = kvmppc_do_h_enter(kvm, flags, pte_index, pteh, ptel,
+ 				kvm->mm->pgd, false, pte_idx_ret);
+-	rcu_read_unlock_sched();
++	preempt_enable();
+ 	if (ret == H_TOO_HARD) {
+ 		/* this can't happen */
+ 		pr_err("KVM: Oops, kvmppc_h_enter returned too hard!\n");
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 03f8347de48b..83e987fecf97 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -210,7 +210,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	pte_t *ptep;
+ 	unsigned int writing;
  	unsigned long mmu_seq;
- 	bool prereg = false;
- 	struct kvmppc_spapr_tce_iommu_table *stit;
-@@ -530,7 +526,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+-	unsigned long rcbits, irq_flags = 0;
++	unsigned long rcbits;
+ 
+ 	if (kvm_is_radix(kvm))
+ 		return H_FUNCTION;
+@@ -248,17 +248,9 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 
+ 	/* Translate to host virtual address */
+ 	hva = __gfn_to_hva_memslot(memslot, gfn);
+-	/*
+-	 * If we had a page table table change after lookup, we would
+-	 * retry via mmu_notifier_retry.
+-	 */
+-	if (!realmode)
+-		local_irq_save(irq_flags);
+-	/*
+-	 * If called in real mode we have MSR_EE = 0. Otherwise
+-	 * we disable irq above.
+-	 */
+-	ptep = __find_linux_pte(pgdir, hva, NULL, &hpage_shift);
++
++	arch_spin_lock(&kvm->mmu_lock.rlock.raw_lock);
++	ptep = find_kvm_host_pte(kvm, mmu_seq, hva, &hpage_shift);
+ 	if (ptep) {
+ 		pte_t pte;
+ 		unsigned int host_pte_size;
+@@ -272,8 +264,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		 * to <= host page size, if host is using hugepage
  		 */
- 		struct mm_iommu_table_group_mem_t *mem;
- 
--		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce_list, &ua, NULL))
-+		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce_list, &ua))
- 			return H_TOO_HARD;
- 
- 		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
-@@ -546,23 +542,9 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 		 * We do not require memory to be preregistered in this case
- 		 * so lock rmap and do __find_linux_pte_or_hugepte().
- 		 */
--		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
--			return H_TOO_HARD;
--
--		rmap = (void *) vmalloc_to_phys(rmap);
--		if (WARN_ON_ONCE_RM(!rmap))
-+		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce_list, &ua))
- 			return H_TOO_HARD;
- 
--		/*
--		 * Synchronize with the MMU notifier callbacks in
--		 * book3s_64_mmu_hv.c (kvm_unmap_hva_range_hv etc.).
--		 * While we have the rmap lock, code running on other CPUs
--		 * cannot finish unmapping the host real page that backs
--		 * this guest real page, so we are OK to access the host
--		 * real page.
--		 */
--		lock_rmap(rmap);
--
- 		arch_spin_lock(&kvm->mmu_lock.rlock.raw_lock);
- 		if (kvmppc_rm_ua_to_hpa(vcpu, mmu_seq, ua, &tces)) {
- 			ret = H_TOO_HARD;
-@@ -582,7 +564,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 		unsigned long tce = be64_to_cpu(((u64 *)tces)[i]);
- 
- 		ua = 0;
--		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce, &ua, NULL)) {
-+		if (kvmppc_rm_tce_to_ua(vcpu->kvm, tce, &ua)) {
- 			ret = H_PARAMETER;
- 			goto invalidate_exit;
+ 		if (host_pte_size < psize) {
+-			if (!realmode)
+-				local_irq_restore(flags);
++			arch_spin_unlock(&kvm->mmu_lock.rlock.raw_lock);
+ 			return H_PARAMETER;
  		}
-@@ -607,10 +589,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 		iommu_tce_kill_rm(stit->tbl, entry, npages);
+ 		pte = kvmppc_read_update_linux_pte(ptep, writing);
+@@ -287,8 +278,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 			pa |= gpa & ~PAGE_MASK;
+ 		}
+ 	}
+-	if (!realmode)
+-		local_irq_restore(irq_flags);
++	arch_spin_unlock(&kvm->mmu_lock.rlock.raw_lock);
  
- unlock_exit:
--	if (rmap)
--		unlock_rmap(rmap);
--
--	arch_spin_unlock(&kvm->mmu_lock.rlock.raw_lock);
-+	if (!prereg)
-+		arch_spin_unlock(&kvm->mmu_lock.rlock.raw_lock);
- 	return ret;
- }
- 
+ 	ptel &= HPTE_R_KEY | HPTE_R_PP0 | (psize-1);
+ 	ptel |= pa;
 -- 
 2.25.3
 
