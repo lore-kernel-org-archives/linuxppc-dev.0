@@ -2,73 +2,54 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38448C55181
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B84EC55181
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:19:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E98CC2078C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:11:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E98CC2078C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C892520782
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:19:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C892520782
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=port70.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495fWQ0FlYzDqLZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 07:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495fjD5vVGzDqf3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 07:19:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=port70.net (client-ip=81.7.13.123; helo=port70.net;
+ envelope-from=nsz@port70.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495fPg5ZfFzDqLZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 07:06:14 +1000 (AEST)
-Received: by mail-ot1-f68.google.com with SMTP id c3so9404567otp.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 14:06:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=uB24L/EHWMUmjNtmjWGehiMAvY3CkKcJfhSvIbdPK9U=;
- b=WJ+tX/vrxyx2JoMv4y6DZVNFJ2gkg/imETbxKuClk8t5rLpTurlI3S1P1g+X4qTd37
- uFJ4SBWcdsRkq5fwqbVbJf8E8Rbd4M9hjVmokES6ng6ehZKFiJ/y74rfQ0tZECPzrdI5
- AEeH3CuitlJx4T8ZFuWBSwLzOjKpDmHChnZjw+DVOytbWNo9Y0oo1ZDA9ZKkS9mhCjbG
- 0J8K7g/2Diy8muWTjQyvyk/nwipcgHQ64e+XWjMoIb23IX2mqDLkJSndcuDL/JGRyBpP
- cmf12zGQfXbaoDB8N12zzt5BAirIWw6j5Rh1VBdxj13+3pLaTwvekbz70sKhPzhwItif
- 4ZZQ==
-X-Gm-Message-State: AGi0PuZ2N6vOu2TBkv3dpy+5OHCnjDh6AUBZkQlSDewkQFjn+ownLt9i
- 0tQBysmMhCd23KwsthdeVg==
-X-Google-Smtp-Source: APiQypJ61QuLn0gRFwjv7tBbNaZhcCNVOe5uH4hWnq+9Kov3OqipkZNTDsd+9hUszKj/zQnlos6E3g==
-X-Received: by 2002:a05:6830:1b65:: with SMTP id
- d5mr10613823ote.141.1587416771097; 
- Mon, 20 Apr 2020 14:06:11 -0700 (PDT)
-Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id 33sm205505otn.50.2020.04.20.14.06.09
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 20 Apr 2020 14:06:10 -0700 (PDT)
-Received: (nullmailer pid 28621 invoked by uid 1000);
- Mon, 20 Apr 2020 21:06:09 -0000
-Date: Mon, 20 Apr 2020 16:06:09 -0500
-From: Rob Herring <robh@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v8 6/7] ASoC: dt-bindings: fsl_easrc: Add document for
- EASRC
-Message-ID: <20200420210609.GA28583@bogus>
-References: <cover.1586845137.git.shengjiu.wang@nxp.com>
- <396a73da2a2fa8b77d0b773d321500b3e504d919.1586845138.git.shengjiu.wang@nxp.com>
+ dmarc=none (p=none dis=none) header.from=port70.net
+Received: from port70.net (port70.net [81.7.13.123])
+ by lists.ozlabs.org (Postfix) with ESMTP id 495fg91Y6SzDqHY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 07:17:56 +1000 (AEST)
+Received: by port70.net (Postfix, from userid 1002)
+ id CC62DABEC0BA; Mon, 20 Apr 2020 23:17:51 +0200 (CEST)
+Date: Mon, 20 Apr 2020 23:17:51 +0200
+From: Szabolcs Nagy <nsz@port70.net>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
+Message-ID: <20200420211751.GF23945@port70.net>
+Mail-Followup-To: Nicholas Piggin <npiggin@gmail.com>,
+ Rich Felker <dalias@libc.org>,
+ Nicholas Piggin via Libc-alpha <libc-alpha@sourceware.org>,
+ libc-dev@lists.llvm.org, linuxppc-dev@lists.ozlabs.org,
+ musl@lists.openwall.com
+References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
+ <20200415225539.GL11469@brightrain.aerifal.cx>
+ <1586994952.nnxigedbu2.astroid@bobo.none>
+ <20200416095800.GC23945@port70.net>
+ <1587341904.1r83vbudyf.astroid@bobo.none>
+ <20200420012904.GY11469@brightrain.aerifal.cx>
+ <1587348046.pwnfbo52iq.astroid@bobo.none>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <396a73da2a2fa8b77d0b773d321500b3e504d919.1586845138.git.shengjiu.wang@nxp.com>
+In-Reply-To: <1587348046.pwnfbo52iq.astroid@bobo.none>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,24 +62,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- robh+dt@kernel.org, perex@perex.cz, nicoleotsuka@gmail.com, broonie@kernel.org,
- festevam@gmail.com, linux-kernel@vger.kernel.org
+Cc: libc-dev@lists.llvm.org, Rich Felker <dalias@libc.org>,
+ Nicholas Piggin via Libc-alpha <libc-alpha@sourceware.org>,
+ linuxppc-dev@lists.ozlabs.org, musl@lists.openwall.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Apr 2020 14:56:06 +0800, Shengjiu Wang wrote:
-> EASRC (Enhanced Asynchronous Sample Rate Converter) is a new
-> IP module found on i.MX8MN.
+* Nicholas Piggin <npiggin@gmail.com> [2020-04-20 12:08:36 +1000]:
+> Excerpts from Rich Felker's message of April 20, 2020 11:29 am:
+> > Also, allowing patching of executable pages is generally frowned upon
+> > these days because W^X is a desirable hardening property.
 > 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  .../devicetree/bindings/sound/fsl,easrc.yaml  | 101 ++++++++++++++++++
->  1 file changed, 101 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/sound/fsl,easrc.yaml
-> 
+> Right, it would want be write-protected after being patched.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+"frowned upon" means that users may have to update
+their security policy setting in pax, selinux, apparmor,
+seccomp bpf filters and who knows what else that may
+monitor and flag W&X mprotect.
+
+libc update can break systems if the new libc does W&X.
