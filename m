@@ -2,78 +2,61 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D0FAC54FCF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 11:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D52A7C54FCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 11:58:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 815412071C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 11:54:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 815412071C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+	by mail.kernel.org (Postfix) with ESMTPS id DDD3A206D4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 11:58:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bHfiqdDK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDD3A206D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495Q9K5NZ8zDqkX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:54:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495QG51rpvzDqlp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 21:58:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=loongson.cn;
- envelope-from=maobibo@loongson.cn; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=loongson.cn
-X-Greylist: delayed 550 seconds by postgrey-1.36 at bilbo;
- Mon, 20 Apr 2020 20:43:53 AEST
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
- by lists.ozlabs.org (Postfix) with ESMTP id 495NbZ24K3zDqlW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 20:43:51 +1000 (AEST)
-Received: from [10.20.42.25] (unknown [10.20.42.25])
- by mail.loongson.cn (Coremail) with SMTP id AQAAf9Dxj9xHep1eHB0qAA--.15S3;
- Mon, 20 Apr 2020 18:32:40 +0800 (CST)
-Subject: Re: [PATCH 7/7] KVM: MIPS: clean up redundant kvm_run parameters in
- assembly
-To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>, pbonzini@redhat.com,
- tsbogend@alpha.franken.de, paulus@ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, borntraeger@de.ibm.com, frankja@linux.ibm.com,
- david@redhat.com, cohuck@redhat.com, heiko.carstens@de.ibm.com,
- gor@linux.ibm.com, sean.j.christopherson@intel.com, vkuznets@redhat.com,
- wanpengli@tencent.com, jmattson@google.com, joro@8bytes.org,
- tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
- hpa@zytor.com, maz@kernel.org, james.morse@arm.com,
- julien.thierry.kdev@gmail.com, suzuki.poulose@arm.com,
- christoffer.dall@arm.com, peterx@redhat.com, thuth@redhat.com
-References: <20200419075106.16248-1-tianjia.zhang@linux.alibaba.com>
- <20200419075106.16248-8-tianjia.zhang@linux.alibaba.com>
-From: maobibo <maobibo@loongson.cn>
-Message-ID: <0b110e7f-9d08-496e-158e-8c3ff7307423@loongson.cn>
-Date: Mon, 20 Apr 2020 18:32:39 +0800
-User-Agent: Mozilla/5.0 (X11; Linux mips64; rv:45.0) Gecko/20100101
- Thunderbird/45.4.0
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=bHfiqdDK; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495Q9v68j1zDqM2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 21:55:15 +1000 (AEST)
+Received: from quaco.ghostprotocols.net (unknown [179.97.37.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A316821D94;
+ Mon, 20 Apr 2020 11:55:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1587383713;
+ bh=6KKSQV6faZ745OFDvokah3grYP2cw2qu7+02fvjxjD0=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=bHfiqdDKRXH5Q3e1QJx4+xcS9Bxq2CALxGivVp6wh1PXGCNLEZSg2ImPyZEK+AtP/
+ DwWuKEJBxyklocYIYNpA3swrHqeZk93ahQ0BiXG/wDQuk7imBZ9TLOVZQTBE8I3OlS
+ EywAoF14MVzEGBc6uontYp5yJjWAy86CLWpGqjOM=
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 21/60] perf expr: Add expr_ prefix for parse_ctx and parse_id
+Date: Mon, 20 Apr 2020 08:52:37 -0300
+Message-Id: <20200420115316.18781-22-acme@kernel.org>
+X-Mailer: git-send-email 2.21.1
+In-Reply-To: <20200420115316.18781-1-acme@kernel.org>
+References: <20200420115316.18781-1-acme@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20200419075106.16248-8-tianjia.zhang@linux.alibaba.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID: AQAAf9Dxj9xHep1eHB0qAA--.15S3
-X-Coremail-Antispam: 1UD129KBjvJXoW3WrWrJr1kWw4ruF1kArW7twb_yoW7CFWUpF
- n7C3WDua1IqrWUK34xArsY9F4aqrs8Kr17ua4UJFWYqw1YqF1rtFs2krZ8Ar98Cr1F93Wf
- ZF9YqFn8Crs2ywUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9jb7Iv0xC_Kw4lb4IE77IF4wAFF20E14v26rWj6s0DM7CY07I2
- 0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
- A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xII
- jxv20xvEc7CjxVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4
- vEx4A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
- F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r
- 4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvEwIxGrwACI402YVCY1x02628vn2kIc2xK
- xwCYjI0SjxkI62AI1cAE67vIY487MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r
- 1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CE
- b7AF67AKxVWrXVW8Jr1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42
- IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6rW3Jr0E3s1l
- IxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvf
- C2KfnxnUUI43ZEXa7IU56KZtUUUUU==
-X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
-X-Mailman-Approved-At: Mon, 20 Apr 2020 21:52:33 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,157 +68,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org,
- kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
- linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Jin Yao <yao.jin@linux.intel.com>,
+ Kan Liang <kan.liang@linux.intel.com>, Andi Kleen <ak@linux.intel.com>,
+ Clark Williams <williams@redhat.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, Joe Mario <jmario@redhat.com>,
+ Namhyung Kim <namhyung@kernel.org>, Michael Petlan <mpetlan@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Jiri Olsa <jolsa@kernel.org>
 
+Adding expr_ prefix for parse_ctx and parse_id, to straighten out the
+expr* namespace.
 
-On 04/19/2020 03:51 PM, Tianjia Zhang wrote:
-> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
-> structure. Earlier than historical reasons, many kvm-related function
-> parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
-> This patch does a unified cleanup of these remaining redundant parameters.
-> 
-> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
-> ---
->  arch/mips/include/asm/kvm_host.h |  4 ++--
->  arch/mips/kvm/entry.c            | 15 +++++----------
->  arch/mips/kvm/mips.c             |  3 ++-
->  arch/mips/kvm/trap_emul.c        |  2 +-
->  arch/mips/kvm/vz.c               |  2 +-
->  5 files changed, 11 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-> index 971439297cea..db915c55166d 100644
-> --- a/arch/mips/include/asm/kvm_host.h
-> +++ b/arch/mips/include/asm/kvm_host.h
-> @@ -310,7 +310,7 @@ struct kvm_mmu_memory_cache {
->  #define KVM_MIPS_GUEST_TLB_SIZE	64
->  struct kvm_vcpu_arch {
->  	void *guest_ebase;
-> -	int (*vcpu_run)(struct kvm_run *run, struct kvm_vcpu *vcpu);
-> +	int (*vcpu_run)(struct kvm_vcpu *vcpu);
->  
->  	/* Host registers preserved across guest mode execution */
->  	unsigned long host_stack;
-> @@ -821,7 +821,7 @@ int kvm_mips_emulation_init(struct kvm_mips_callbacks **install_callbacks);
->  /* Debug: dump vcpu state */
->  int kvm_arch_vcpu_dump_regs(struct kvm_vcpu *vcpu);
->  
-> -extern int kvm_mips_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu);
-> +extern int kvm_mips_handle_exit(struct kvm_vcpu *vcpu);
->  
->  /* Building of entry/exception code */
->  int kvm_mips_entry_setup(void);
-> diff --git a/arch/mips/kvm/entry.c b/arch/mips/kvm/entry.c
-> index 16e1c93b484f..e3f29af3b6cd 100644
-> --- a/arch/mips/kvm/entry.c
-> +++ b/arch/mips/kvm/entry.c
-> @@ -204,7 +204,7 @@ static inline void build_set_exc_base(u32 **p, unsigned int reg)
->   * Assemble the start of the vcpu_run function to run a guest VCPU. The function
->   * conforms to the following prototype:
->   *
-> - * int vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu);
-> + * int vcpu_run(struct kvm_vcpu *vcpu);
->   *
->   * The exit from the guest and return to the caller is handled by the code
->   * generated by kvm_mips_build_ret_to_host().
-> @@ -217,8 +217,7 @@ void *kvm_mips_build_vcpu_run(void *addr)
->  	unsigned int i;
->  
->  	/*
-> -	 * A0: run
-> -	 * A1: vcpu
-> +	 * A0: vcpu
->  	 */
->  
->  	/* k0/k1 not being used in host kernel context */
-> @@ -237,10 +236,10 @@ void *kvm_mips_build_vcpu_run(void *addr)
->  	kvm_mips_build_save_scratch(&p, V1, K1);
->  
->  	/* VCPU scratch register has pointer to vcpu */
-> -	UASM_i_MTC0(&p, A1, scratch_vcpu[0], scratch_vcpu[1]);
-> +	UASM_i_MTC0(&p, A0, scratch_vcpu[0], scratch_vcpu[1]);
->  
->  	/* Offset into vcpu->arch */
-> -	UASM_i_ADDIU(&p, K1, A1, offsetof(struct kvm_vcpu, arch));
-> +	UASM_i_ADDIU(&p, K1, A0, offsetof(struct kvm_vcpu, arch));
->  
->  	/*
->  	 * Save the host stack to VCPU, used for exception processing
-> @@ -628,10 +627,7 @@ void *kvm_mips_build_exit(void *addr)
->  	/* Now that context has been saved, we can use other registers */
->  
->  	/* Restore vcpu */
-> -	UASM_i_MFC0(&p, S1, scratch_vcpu[0], scratch_vcpu[1]);
-> -
-> -	/* Restore run (vcpu->run) */
-> -	UASM_i_LW(&p, S0, offsetof(struct kvm_vcpu, run), S1);
-> +	UASM_i_MFC0(&p, S0, scratch_vcpu[0], scratch_vcpu[1]);
->  
->  	/*
->  	 * Save Host level EPC, BadVaddr and Cause to VCPU, useful to process
-> @@ -793,7 +789,6 @@ void *kvm_mips_build_exit(void *addr)
->  	 * with this in the kernel
->  	 */
->  	uasm_i_move(&p, A0, S0);
-> -	uasm_i_move(&p, A1, S1);
->  	UASM_i_LA(&p, T9, (unsigned long)kvm_mips_handle_exit);
->  	uasm_i_jalr(&p, RA, T9);
->  	 UASM_i_ADDIU(&p, SP, SP, -CALLFRAME_SIZ);
+There's no functional change.
 
-I suggest keeping asm code untouched, the change for c code is much easier to understand, however I do not see obvious advantage to remove one redundant function parameter :) 
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jin Yao <yao.jin@linux.intel.com>
+Cc: Joe Mario <jmario@redhat.com>
+Cc: Kajol Jain <kjain@linux.ibm.com>
+Cc: Kan Liang <kan.liang@linux.intel.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Petlan <mpetlan@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lore.kernel.org/lkml/20200401203340.31402-2-kjain@linux.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/tests/expr.c       |  4 ++--
+ tools/perf/util/expr.c        | 10 +++++-----
+ tools/perf/util/expr.h        | 12 ++++++------
+ tools/perf/util/expr.y        |  6 +++---
+ tools/perf/util/stat-shadow.c |  2 +-
+ 5 files changed, 17 insertions(+), 17 deletions(-)
 
-
-regards
-bibo,mao
-
-
-> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-> index 9710477a9827..32850470c037 100644
-> --- a/arch/mips/kvm/mips.c
-> +++ b/arch/mips/kvm/mips.c
-> @@ -1186,8 +1186,9 @@ static void kvm_mips_set_c0_status(void)
->  /*
->   * Return value is in the form (errcode<<2 | RESUME_FLAG_HOST | RESUME_FLAG_NV)
->   */
-> -int kvm_mips_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
-> +int kvm_mips_handle_exit(struct kvm_vcpu *vcpu)
->  {
-> +	struct kvm_run *run = vcpu->run;
->  	u32 cause = vcpu->arch.host_cp0_cause;
->  	u32 exccode = (cause >> CAUSEB_EXCCODE) & 0x1f;
->  	u32 __user *opc = (u32 __user *) vcpu->arch.pc;
-> diff --git a/arch/mips/kvm/trap_emul.c b/arch/mips/kvm/trap_emul.c
-> index d822f3aee3dc..04c864cc356a 100644
-> --- a/arch/mips/kvm/trap_emul.c
-> +++ b/arch/mips/kvm/trap_emul.c
-> @@ -1238,7 +1238,7 @@ static int kvm_trap_emul_vcpu_run(struct kvm_vcpu *vcpu)
->  	 */
->  	kvm_mips_suspend_mm(cpu);
->  
-> -	r = vcpu->arch.vcpu_run(vcpu->run, vcpu);
-> +	r = vcpu->arch.vcpu_run(vcpu);
->  
->  	/* We may have migrated while handling guest exits */
->  	cpu = smp_processor_id();
-> diff --git a/arch/mips/kvm/vz.c b/arch/mips/kvm/vz.c
-> index 94f1d23828e3..c5878fa0636d 100644
-> --- a/arch/mips/kvm/vz.c
-> +++ b/arch/mips/kvm/vz.c
-> @@ -3152,7 +3152,7 @@ static int kvm_vz_vcpu_run(struct kvm_vcpu *vcpu)
->  	kvm_vz_vcpu_load_tlb(vcpu, cpu);
->  	kvm_vz_vcpu_load_wired(vcpu);
->  
-> -	r = vcpu->arch.vcpu_run(vcpu->run, vcpu);
-> +	r = vcpu->arch.vcpu_run(vcpu);
->  
->  	kvm_vz_vcpu_save_wired(vcpu);
->  
-> 
+diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
+index 28313e59d6f6..ea10fc4412c4 100644
+--- a/tools/perf/tests/expr.c
++++ b/tools/perf/tests/expr.c
+@@ -6,7 +6,7 @@
+ #include <string.h>
+ #include <linux/zalloc.h>
+ 
+-static int test(struct parse_ctx *ctx, const char *e, double val2)
++static int test(struct expr_parse_ctx *ctx, const char *e, double val2)
+ {
+ 	double val;
+ 
+@@ -22,7 +22,7 @@ int test__expr(struct test *t __maybe_unused, int subtest __maybe_unused)
+ 	const char **other;
+ 	double val;
+ 	int i, ret;
+-	struct parse_ctx ctx;
++	struct expr_parse_ctx ctx;
+ 	int num_other;
+ 
+ 	expr__ctx_init(&ctx);
+diff --git a/tools/perf/util/expr.c b/tools/perf/util/expr.c
+index fd192ddf93c1..c8ccc548a585 100644
+--- a/tools/perf/util/expr.c
++++ b/tools/perf/util/expr.c
+@@ -11,7 +11,7 @@ extern int expr_debug;
+ #endif
+ 
+ /* Caller must make sure id is allocated */
+-void expr__add_id(struct parse_ctx *ctx, const char *name, double val)
++void expr__add_id(struct expr_parse_ctx *ctx, const char *name, double val)
+ {
+ 	int idx;
+ 
+@@ -21,13 +21,13 @@ void expr__add_id(struct parse_ctx *ctx, const char *name, double val)
+ 	ctx->ids[idx].val = val;
+ }
+ 
+-void expr__ctx_init(struct parse_ctx *ctx)
++void expr__ctx_init(struct expr_parse_ctx *ctx)
+ {
+ 	ctx->num_ids = 0;
+ }
+ 
+ static int
+-__expr__parse(double *val, struct parse_ctx *ctx, const char *expr,
++__expr__parse(double *val, struct expr_parse_ctx *ctx, const char *expr,
+ 	      int start)
+ {
+ 	YY_BUFFER_STATE buffer;
+@@ -52,7 +52,7 @@ __expr__parse(double *val, struct parse_ctx *ctx, const char *expr,
+ 	return ret;
+ }
+ 
+-int expr__parse(double *final_val, struct parse_ctx *ctx, const char *expr)
++int expr__parse(double *final_val, struct expr_parse_ctx *ctx, const char *expr)
+ {
+ 	return __expr__parse(final_val, ctx, expr, EXPR_PARSE) ? -1 : 0;
+ }
+@@ -75,7 +75,7 @@ int expr__find_other(const char *expr, const char *one, const char ***other,
+ 		     int *num_other)
+ {
+ 	int err, i = 0, j = 0;
+-	struct parse_ctx ctx;
++	struct expr_parse_ctx ctx;
+ 
+ 	expr__ctx_init(&ctx);
+ 	err = __expr__parse(NULL, &ctx, expr, EXPR_OTHER);
+diff --git a/tools/perf/util/expr.h b/tools/perf/util/expr.h
+index 9377538f4097..b9e53f2b5844 100644
+--- a/tools/perf/util/expr.h
++++ b/tools/perf/util/expr.h
+@@ -5,19 +5,19 @@
+ #define EXPR_MAX_OTHER 20
+ #define MAX_PARSE_ID EXPR_MAX_OTHER
+ 
+-struct parse_id {
++struct expr_parse_id {
+ 	const char *name;
+ 	double val;
+ };
+ 
+-struct parse_ctx {
++struct expr_parse_ctx {
+ 	int num_ids;
+-	struct parse_id ids[MAX_PARSE_ID];
++	struct expr_parse_id ids[MAX_PARSE_ID];
+ };
+ 
+-void expr__ctx_init(struct parse_ctx *ctx);
+-void expr__add_id(struct parse_ctx *ctx, const char *id, double val);
+-int expr__parse(double *final_val, struct parse_ctx *ctx, const char *expr);
++void expr__ctx_init(struct expr_parse_ctx *ctx);
++void expr__add_id(struct expr_parse_ctx *ctx, const char *id, double val);
++int expr__parse(double *final_val, struct expr_parse_ctx *ctx, const char *expr);
+ int expr__find_other(const char *expr, const char *one, const char ***other,
+ 		int *num_other);
+ 
+diff --git a/tools/perf/util/expr.y b/tools/perf/util/expr.y
+index 4720cbe79357..cd17486c1c5d 100644
+--- a/tools/perf/util/expr.y
++++ b/tools/perf/util/expr.y
+@@ -15,7 +15,7 @@
+ %define api.pure full
+ 
+ %parse-param { double *final_val }
+-%parse-param { struct parse_ctx *ctx }
++%parse-param { struct expr_parse_ctx *ctx }
+ %parse-param {void *scanner}
+ %lex-param {void* scanner}
+ 
+@@ -39,14 +39,14 @@
+ 
+ %{
+ static void expr_error(double *final_val __maybe_unused,
+-		       struct parse_ctx *ctx __maybe_unused,
++		       struct expr_parse_ctx *ctx __maybe_unused,
+ 		       void *scanner,
+ 		       const char *s)
+ {
+ 	pr_debug("%s\n", s);
+ }
+ 
+-static int lookup_id(struct parse_ctx *ctx, char *id, double *val)
++static int lookup_id(struct expr_parse_ctx *ctx, char *id, double *val)
+ {
+ 	int i;
+ 
+diff --git a/tools/perf/util/stat-shadow.c b/tools/perf/util/stat-shadow.c
+index 03ecb8cd0eec..1ad5c5be7e97 100644
+--- a/tools/perf/util/stat-shadow.c
++++ b/tools/perf/util/stat-shadow.c
+@@ -729,7 +729,7 @@ static void generic_metric(struct perf_stat_config *config,
+ 			   struct runtime_stat *st)
+ {
+ 	print_metric_t print_metric = out->print_metric;
+-	struct parse_ctx pctx;
++	struct expr_parse_ctx pctx;
+ 	double ratio, scale;
+ 	int i;
+ 	void *ctxp = out->ctx;
+-- 
+2.21.1
 
