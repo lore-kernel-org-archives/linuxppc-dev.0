@@ -2,23 +2,23 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F04C54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ECBAC54FCC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:05:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F386E2078C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:03:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F386E2078C
+	by mail.kernel.org (Postfix) with ESMTPS id 24B822078C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 22:05:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24B822078C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495ggR5NzGzDqsl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 08:03:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495gjT2w5rzDqwV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 08:05:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
  envelope-from=jonathan.derrick@intel.com; receiver=<UNKNOWN>)
@@ -27,27 +27,29 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495gdQ363PzDqsK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 08:01:22 +1000 (AEST)
-IronPort-SDR: HSLa0KY0EqYZpP2YnzYlDsBwGT0JrMN3ZzM5XIt4FPULDl6rx5rCwTA51K49UodXsYWutANwc9
- vDCDHaY1qaFw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495gdR41QbzDqsK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 08:01:31 +1000 (AEST)
+IronPort-SDR: 91eEeghQaPUhiykkqBR32DZrtSqddqKvaUcjooa6aJ0ZiTaf9IVineWthj2DhwT54T2oZlTgI3
+ XbSTrd4CS3Ug==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Apr 2020 15:01:09 -0700
-IronPort-SDR: v2mUQIi7v4D2xKtxr60yP70J2b/UTKidQjQWc+qcN/GLGbMyj6G/H9MxT9qEkCptVqixd2RvNN
- D8D5syiZFlVQ==
+ 20 Apr 2020 15:01:11 -0700
+IronPort-SDR: B5K5EbZN/GSr4XUuymvuYRrd7HCa5RqMAPti5a6kXncsbreRaatYMRh8I0XZNELFVQPRkBhfRk
+ 7rLmNZUQ5B5Q==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,407,1580803200"; d="scan'208";a="455848311"
+X-IronPort-AV: E=Sophos;i="5.72,407,1580803200"; d="scan'208";a="455848343"
 Received: from unknown (HELO nsgsw-wilsonpoint.lm.intel.com) ([10.232.116.102])
- by fmsmga005.fm.intel.com with ESMTP; 20 Apr 2020 15:01:07 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 20 Apr 2020 15:01:09 -0700
 From: Jon Derrick <jonathan.derrick@intel.com>
 To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: [PATCH v2 0/2] Honoring Native AER/DPC Host Bridges
-Date: Mon, 20 Apr 2020 15:37:08 -0600
-Message-Id: <1587418630-13562-1-git-send-email-jonathan.derrick@intel.com>
+Subject: [PATCH v2 1/2] PCI/AER: Allow Native AER Host Bridges to use AER
+Date: Mon, 20 Apr 2020 15:37:09 -0600
+Message-Id: <1587418630-13562-2-git-send-email-jonathan.derrick@intel.com>
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1587418630-13562-1-git-send-email-jonathan.derrick@intel.com>
+References: <1587418630-13562-1-git-send-email-jonathan.derrick@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,26 +78,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The two patches here force AER and DPC to honor the Host Bridge's Native
-AER/DPC settings. This is under the assumption that when these bits are set,
-that Firmware-First AER/DPC should not be in use for these ports. This
-assumption seems to be true in ACPI, which explicitly clears these capability
-settings in the host bridge if the service cannot be negotiated with _OSC.
+Some platforms have a mix of ports whose capabilities can be negotiated
+by _OSC, and some ports which are not described by ACPI and instead
+managed by Native drivers. The existing Firmware-First HEST model can
+incorrectly tag these Native, Non-ACPI ports as Firmware-First managed
+ports by advertising the HEST Global Flag and matching the type and
+class of the port (aer_hest_parse).
 
-This also fixes an issue I've seen in a few platforms whose BIOS and/or switch
-firmware leaves DPC preconfigured. In these cases, the kernel DPC driver cannot
-bind a handler to the interrupt and could result in unmanaged DPC link down
-events.
+If the port requests Native AER through the Host Bridge's capability
+settings, the AER driver should honor those settings and allow the port
+to bind. This patch changes the definition of Firmware-First to exclude
+ports whose Host Bridges request Native AER.
 
-Jon Derrick (2):
-  PCI/AER: Allow Native AER Host Bridges to use AER
-  PCI/DPC: Allow Native DPC Host Bridges to use DPC
+Signed-off-by: Jon Derrick <jonathan.derrick@intel.com>
+---
+ drivers/pci/pcie/aer.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- drivers/pci/pcie/aer.c          | 3 +++
- drivers/pci/pcie/dpc.c          | 3 ++-
- drivers/pci/pcie/portdrv_core.c | 3 ++-
- 3 files changed, 7 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index f4274d3..30fbd1f 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -314,6 +314,9 @@ int pcie_aer_get_firmware_first(struct pci_dev *dev)
+ 	if (pcie_ports_native)
+ 		return 0;
+ 
++	if (pci_find_host_bridge(dev->bus)->native_aer)
++		return 0;
++
+ 	if (!dev->__aer_firmware_first_valid)
+ 		aer_set_firmware_first(dev);
+ 	return dev->__aer_firmware_first;
 -- 
 1.8.3.1
 
