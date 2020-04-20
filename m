@@ -2,25 +2,26 @@ Return-Path: <SRS0=UNki=6E=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71C44C3815B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 05:31:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B88AC3815B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 05:38:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 634EA2078C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 05:31:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C3FA02078C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 05:38:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Ag7VOzN1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 634EA2078C
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="IDpwaVO2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3FA02078C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 495FfZ6nWPzDqrq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 15:31:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 495Fpf51QhzDqlZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2020 15:38:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,50 +30,56 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=Ag7VOzN1; dkim-atps=neutral
+ header.s=mail header.b=IDpwaVO2; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495FcZ0S1TzDqXN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 15:29:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 495FmN2N3PzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2020 15:36:04 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 495FcL6jl8z9tyFs;
- Mon, 20 Apr 2020 07:29:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 495FmC2y0Cz9tyFs;
+ Mon, 20 Apr 2020 07:35:55 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Ag7VOzN1; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=IDpwaVO2; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id coY7kJFwUjD2; Mon, 20 Apr 2020 07:29:06 +0200 (CEST)
+ with ESMTP id eED5noZUcD5x; Mon, 20 Apr 2020 07:35:55 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 495FcL5cffz9tyPW;
- Mon, 20 Apr 2020 07:29:06 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 495FmC1W0Lz9tyFq;
+ Mon, 20 Apr 2020 07:35:55 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1587360546; bh=DnqzhiA+IaW5xuJfVomwFkoL8ZBx0w5rMRBGNBy6CLc=;
- h=From:Subject:To:Cc:Date:From;
- b=Ag7VOzN12Cn5ZCTJ2J+vS5DP0NZirygKuCR3A3BJTy37g6pfSDIRWUgdVLNDtyRHR
- R1ngIcN6wxwjXSWj+OBsCzYdI078JDC2TxAFQL9cX334DtOIY/vSXGZSBfbMqMDqRV
- m7nlw7rf5oAGtpeFmD+M72WGD3HzZl221HVG3XAE=
+ t=1587360955; bh=gbvV/0yUNCxbrnMP2PABrPUQIbZfdpXkHJe2K9NCY3M=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=IDpwaVO2uqNHZ1HQUx5DEwfo4UyoPWPh4v68CJhUA2BF960jS/IUU2ak/iFHymki1
+ 6Q7Ul/t15W0eiGSL5e1zXDWNRDdEjWfxj3EXY9MkQTXpdqqn+fNxRe+wXnYsCi6buC
+ xn3Amae/bvKFx459VMc+QYMFumRdZNDKMdRf+/SM=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A457B8B776;
- Mon, 20 Apr 2020 07:29:11 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A68D8B776;
+ Mon, 20 Apr 2020 07:36:00 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 0mrwI7OTJd6B; Mon, 20 Apr 2020 07:29:11 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7057B8B752;
- Mon, 20 Apr 2020 07:29:11 +0200 (CEST)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 2C2596578B; Mon, 20 Apr 2020 05:29:11 +0000 (UTC)
-Message-Id: <0231963e81d6e72ff725212c14f4011d2ee36a9e.1587360530.git.christophe.leroy@c-s.fr>
+ with ESMTP id 5Pu0Xd3vKtx1; Mon, 20 Apr 2020 07:35:59 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 02DC88B752;
+ Mon, 20 Apr 2020 07:35:58 +0200 (CEST)
+Subject: Re: [PATCH] powerpc/8xx: Fix STRICT_KERNEL_RWX startup test failure
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: Fix STRICT_KERNEL_RWX startup test failure
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 20 Apr 2020 05:29:11 +0000 (UTC)
+References: <0231963e81d6e72ff725212c14f4011d2ee36a9e.1587360530.git.christophe.leroy@c-s.fr>
+Message-ID: <37627d56-6338-768a-d82a-397c55974607@c-s.fr>
+Date: Mon, 20 Apr 2020 07:35:53 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
+MIME-Version: 1.0
+In-Reply-To: <0231963e81d6e72ff725212c14f4011d2ee36a9e.1587360530.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,55 +96,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-WRITE_RO lkdtm test works.
 
-But when selecting CONFIG_DEBUG_RODATA_TEST, the kernel reports
-	rodata_test: test data was not read only
 
-This is because when rodata test runs, there are still old entries
-in TLB.
+Le 20/04/2020 à 07:29, Christophe Leroy a écrit :
+> WRITE_RO lkdtm test works.
+> 
+> But when selecting CONFIG_DEBUG_RODATA_TEST, the kernel reports
+> 	rodata_test: test data was not read only
+> 
+> This is because when rodata test runs, there are still old entries
+> in TLB.
+> 
+> Flush TLB after setting kernel pages RO or NX.
+> 
+> Fixes: d5f17ee96447 ("powerpc/8xx: don't disable large TLBs with CONFIG_STRICT_KERNEL_RWX")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   arch/powerpc/kvm/Makefile    | 2 +-
 
-Flush TLB after setting kernel pages RO or NX.
+Oops, this change shouldn't be there. Will send v2.
 
-Fixes: d5f17ee96447 ("powerpc/8xx: don't disable large TLBs with CONFIG_STRICT_KERNEL_RWX")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kvm/Makefile    | 2 +-
- arch/powerpc/mm/nohash/8xx.c | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+>   arch/powerpc/mm/nohash/8xx.c | 3 +++
+>   2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-index 2bfeaa13befb..906707d15810 100644
---- a/arch/powerpc/kvm/Makefile
-+++ b/arch/powerpc/kvm/Makefile
-@@ -135,4 +135,4 @@ obj-$(CONFIG_KVM_BOOK3S_32) += kvm.o
- obj-$(CONFIG_KVM_BOOK3S_64_PR) += kvm-pr.o
- obj-$(CONFIG_KVM_BOOK3S_64_HV) += kvm-hv.o
- 
--obj-y += $(kvm-book3s_64-builtin-objs-y)
-+obj-$(CONFIG_KVM_BOOK3S_64) += $(kvm-book3s_64-builtin-objs-y)
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index 3189308dece4..d83a12c5bc7f 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -185,6 +185,7 @@ void mmu_mark_initmem_nx(void)
- 			mmu_mapin_ram_chunk(etext8, einittext8, PAGE_KERNEL);
- 		}
- 	}
-+	_tlbil_all();
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
-@@ -199,6 +200,8 @@ void mmu_mark_rodata_ro(void)
- 				      ~(LARGE_PAGE_SIZE_8M - 1)));
- 	mmu_patch_addis(&patch__dtlbmiss_romem_top, -__pa(_sinittext));
- 
-+	_tlbil_all();
-+
- 	/* Update page tables for PTDUMP and BDI */
- 	mmu_mapin_ram_chunk(0, sinittext, __pgprot(0));
- 	mmu_mapin_ram_chunk(0, etext, PAGE_KERNEL_ROX);
--- 
-2.25.0
 
+Christophe
