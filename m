@@ -2,77 +2,70 @@ Return-Path: <SRS0=D6Rn=6F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F967C54FC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 15:34:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C47EC54FC9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 15:47:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F27DC206F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 15:34:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F27DC206F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id 8720D206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 15:47:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="r3qQheJU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8720D206D6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49670J4tXmzDqxq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 01:34:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=146.101.78.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4967H70gxVzDqyh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 01:47:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+e7bbf23787eeed0e081a+6085+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ACULAB.COM
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [146.101.78.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=r3qQheJU; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4966wf4TvSzDqCt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 01:31:14 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-207-VaQp-6MpPG-eBPDVYu-BhQ-1; Tue, 21 Apr 2020 16:31:09 +0100
-X-MC-Unique: VaQp-6MpPG-eBPDVYu-BhQ-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Tue, 21 Apr 2020 16:31:08 +0100
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Tue, 21 Apr 2020 16:31:08 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Adhemerval Zanella' <adhemerval.zanella@linaro.org>, Rich Felker
- <dalias@libc.org>
-Subject: RE: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Thread-Topic: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Thread-Index: AQHWFrDQYjTVYCQ8pUCZ1j4rC1JkAqiDgXJggAAsaqmAAAZyMA==
-Date: Tue, 21 Apr 2020 15:31:08 +0000
-Message-ID: <bc3d8d98e5d64f9e8407290c68b21ed2@AcuMS.aculab.com>
-References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
- <20200415225539.GL11469@brightrain.aerifal.cx>
- <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
- <20200416153756.GU11469@brightrain.aerifal.cx>
- <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
- <20200416175932.GZ11469@brightrain.aerifal.cx>
- <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
- <20200416183151.GA11469@brightrain.aerifal.cx>
- <1587344003.daumxvs1kh.astroid@bobo.none>
- <b77fa2dc769d42e1a3e68f5edf90d250@AcuMS.aculab.com>
- <20200421143941.GJ11469@brightrain.aerifal.cx>
- <960127e0-57a0-55b4-f309-ae0a675c7756@linaro.org>
-In-Reply-To: <960127e0-57a0-55b4-f309-ae0a675c7756@linaro.org>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49679S1S0ZzDqCq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 01:42:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=M+lKMnYIZCJjdpSfmKJPca0gy/kojUsogLgvWnMrPbo=; b=r3qQheJUy6ga9lnOYbcf2jyYTg
+ kcT85N77pDPOJfgr64+TxhT36j3UlwIp3pKINnroh7cas1zeXShucffrPUuKGDKTY13gEYcs54SWa
+ gHAes7lZa4Td276HzQLfq4Yaxoz1jnT6Ldc+CaxQj31OOw3QRzbzlXG5Wk8fGDJD0/0q21tqcnIAL
+ 24/aNHJD4ch9AZw/l4V622lP+3YMgFDN397HAgwIIzmWyZ1lpY9OR3H/hipwHZHClPSMxGe1LwAro
+ GRZZWzIxaOufOy2F0PQ4JsXhkbQEk53jzpfKgij6AIarOf3/EsPOZ8oFPC6V17yE+F1hIfkU8OqFM
+ ObMBXadA==;
+Received: from [2001:4bb8:191:e12c:c70:4a89:bc61:3] (helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jQv2H-0007pu-QS; Tue, 21 Apr 2020 15:42:10 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 1/7] powerpc/spufs: simplify spufs core dumping
+Date: Tue, 21 Apr 2020 17:41:58 +0200
+Message-Id: <20200421154204.252921-2-hch@lst.de>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20200421154204.252921-1-hch@lst.de>
+References: <20200421154204.252921-1-hch@lst.de>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,67 +77,654 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
- "libc-alpha@sourceware.org" <libc-alpha@sourceware.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- 'Nicholas Piggin' <npiggin@gmail.com>,
- "musl@lists.openwall.com" <musl@lists.openwall.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Jeremy Kerr <jk@ozlabs.org>, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Eric W . Biederman" <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-RnJvbTogQWRoZW1lcnZhbCBaYW5lbGxhDQo+IFNlbnQ6IDIxIEFwcmlsIDIwMjAgMTY6MDENCj4g
-DQo+IE9uIDIxLzA0LzIwMjAgMTE6MzksIFJpY2ggRmVsa2VyIHdyb3RlOg0KPiA+IE9uIFR1ZSwg
-QXByIDIxLCAyMDIwIGF0IDEyOjI4OjI1UE0gKzAwMDAsIERhdmlkIExhaWdodCB3cm90ZToNCj4g
-Pj4gRnJvbTogTmljaG9sYXMgUGlnZ2luDQo+ID4+PiBTZW50OiAyMCBBcHJpbCAyMDIwIDAyOjEw
-DQo+ID4+IC4uLg0KPiA+Pj4+PiBZZXMsIGJ1dCBkb2VzIGl0IHJlYWxseSBtYXR0ZXIgdG8gb3B0
-aW1pemUgdGhpcyBzcGVjaWZpYyB1c2FnZSBjYXNlDQo+ID4+Pj4+IGZvciBzaXplPyBnbGliYywg
-Zm9yIGluc3RhbmNlLCB0cmllcyB0byBsZXZlcmFnZSB0aGUgc3lzY2FsbCBtZWNoYW5pc20NCj4g
-Pj4+Pj4gYnkgYWRkaW5nIHNvbWUgY29tcGxleCBwcmUtcHJvY2Vzc29yIGFzbSBkaXJlY3RpdmVz
-LiAgSXQgb3B0aW1pemVzDQo+ID4+Pj4+IHRoZSBzeXNjYWxsIGNvZGUgc2l6ZSBpbiBtb3N0IGNh
-c2VzLiAgRm9yIGluc3RhbmNlLCBraWxsIGluIHN0YXRpYyBjYXNlDQo+ID4+Pj4+IGdlbmVyYXRl
-cyBvbiB4ODZfNjQ6DQo+ID4+Pj4+DQo+ID4+Pj4+IDAwMDAwMDAwMDAwMDAwMDAgPF9fa2lsbD46
-DQo+ID4+Pj4+ICAgIDA6ICAgYjggM2UgMDAgMDAgMDAgICAgICAgICAgbW92ICAgICQweDNlLCVl
-YXgNCj4gPj4+Pj4gICAgNTogICAwZiAwNSAgICAgICAgICAgICAgICAgICBzeXNjYWxsDQo+ID4+
-Pj4+ICAgIDc6ICAgNDggM2QgMDEgZjAgZmYgZmYgICAgICAgY21wICAgICQweGZmZmZmZmZmZmZm
-ZmYwMDEsJXJheA0KPiA+Pj4+PiAgICBkOiAgIDBmIDgzIDAwIDAwIDAwIDAwICAgICAgIGphZSAg
-ICAxMyA8X19raWxsKzB4MTM+DQo+ID4+DQo+ID4+IEhtbW0uLi4gdGhhdCBjbXAgKyBqYWUgaXMg
-dW5uZWNlc3NhcnkgaGVyZS4NCj4gPg0KPiA+IEl0J3Mgbm90Li4gUmF0aGVyIHRoZSBvYmpkdW1w
-IHdhcyBqdXN0IG1pc3Rha2VubHkgZG9uZSB3aXRob3V0IC1yIHNvDQo+ID4gaXQgbG9va3MgbGlr
-ZSBhIG5vcCBqdW1wIHJhdGhlciB0aGFuIGEgY29uZGl0aW9uYWwgdGFpbCBjYWxsIHRvIHRoZQ0K
-PiA+IGZ1bmN0aW9uIHRoYXQgc2V0cyBlcnJuby4NCj4gPg0KPiANCj4gSW5kZWVkLCB0aGUgb3V0
-cHV0IHdpdGggLXIgaXM6DQo+IA0KPiAwMDAwMDAwMDAwMDAwMDAwIDxfX2tpbGw+Og0KPiAgICAw
-OiAgIGI4IDNlIDAwIDAwIDAwICAgICAgICAgIG1vdiAgICAkMHgzZSwlZWF4DQo+ICAgIDU6ICAg
-MGYgMDUgICAgICAgICAgICAgICAgICAgc3lzY2FsbA0KPiAgICA3OiAgIDQ4IDNkIDAxIGYwIGZm
-IGZmICAgICAgIGNtcCAgICAkMHhmZmZmZmZmZmZmZmZmMDAxLCVyYXgNCj4gICAgZDogICAwZiA4
-MyAwMCAwMCAwMCAwMCAgICAgICBqYWUgICAgMTMgPF9fa2lsbCsweDEzPg0KPiAgICAgICAgICAg
-ICAgICAgICAgICAgICBmOiBSX1g4Nl82NF9QTFQzMiAgICAgICBfX3N5c2NhbGxfZXJyb3ItMHg0
-DQo+ICAgMTM6ICAgYzMgICAgICAgICAgICAgICAgICAgICAgcmV0cQ0KDQpZZXMsIEkgcHJvYmFi
-bHkgc2hvdWxkIGhhdmUgcmVtZW1iZXJlZCBpdCBsb29rZWQgbGlrZSB0aGF0IDotKQ0KLi4uDQo+
-ID4+IEkgYWxzbyBzdXNwZWN0IGl0IGdldHMgcHJlZGljdGVkIHZlcnkgYmFkbHkuDQo+ID4NCj4g
-PiBJIGRvdWJ0IHRoYXQuIFRoaXMgaXMgYSB2ZXJ5IHN0YW5kYXJkIGlkaW9tIGFuZCB0aGUgc2l6
-ZSBvZiB0aGUgb2Zmc2V0DQo+ID4gKHdoaWNoIGlzIG5lY2Vzc2FyaWx5IDMyLWJpdCBiZWNhdXNl
-IGl0IGhhcyBhIHJlbG9jYXRpb24gb24gaXQpIGlzDQo+ID4gb3J0aG9nb25hbCB0byB0aGUgY29u
-ZGl0aW9uIG9uIHRoZSBqdW1wLg0KDQpZZXMsIGl0IG9ubHkgZ2V0cyBtaXNwcmVkaWN0ZWQgYXMg
-YmFkbHkgYXMgYW55IG90aGVyIGNvbmRpdGlvbmFsIGp1bXAuDQpJIGJlbGlldmUgbW9kZXJuIGlu
-dGVsIHg4NiB3aWxsIHJhbmRvbWx5IHByZWRpY3QgaXQgdGFrZW4gKHJlZ2FyZGxlc3MNCm9mIHRo
-ZSBkaXJlY3Rpb24pIGFuZCB0aGVuIGhpdCBhIFRMQiBmYXVsdCBvbiB0ZXh0LnVubGlrZWx5IDot
-KQ0KDQo+ID4gRldJVyBhIHN5c2NhbGwgbGlrZSBraWxsIHRha2VzIGdsb2JhbCBrZXJuZWwtc2lk
-ZSBsb2NrcyB0byBiZSBhYmxlIHRvDQo+ID4gYWRkcmVzcyBhIHRhcmdldCBwcm9jZXNzIGJ5IHBp
-ZCwgYW5kIHRoZSByYXRlIG9mIG1lYW5pbmdmdWwgY2FsbHMgeW91DQo+ID4gY2FuIG1ha2UgdG8g
-aXQgaXMgdmVyeSBsb3cgKHNpbmNlIGl0J3MgYm91bmRlZCBieSB0aW1lIGZvciB0YXJnZXQNCj4g
-PiBwcm9jZXNzIHRvIGFjdCBvbiB0aGUgc2lnbmFsKS4gVHJ5aW5nIHRvIG9wdGltaXplIGl0IGZv
-ciBzcGVlZCBpcw0KPiA+IHBvaW50bGVzcywgYW5kIGV2ZW4gc2l6ZSBpc24ndCBpbXBvcnRhbnQg
-bG9jYWxseSAoYWx0aG91Z2ggaW4NCj4gPiBhZ2dyZWdhdGUsIGxvdHMgb2Ygd2FzdGVkIHNtYWxs
-IHNpemUgY2FuIGFkZCB1cCB0byBtb3JlIHBhZ2VzID0gbW9yZQ0KPiA+IFRMQiBlbnRyaWVzID0g
-Li4uKS4NCj4gDQo+IEkgYWdyZWUgYW5kIEkgd291bGQgcHJlZmVyIHRvIGZvY3VzIG9uIGNvZGUg
-c2ltcGxpY2l0eSB0byBoYXZlIGENCj4gcGxhdGZvcm0gbmV1dHJhbCB3YXkgdG8gaGFuZGxlIGVy
-cm9yIGFuZCBsZXQgdGhlIGNvbXBpbGVyIG9wdGltaXplDQo+IGl0IHRoYW4gbWVzc3kgd2l0aCBh
-c3NlbWJseSBtYWNyb3MgdG8gc3F1ZWV6ZSB0aGlzIGtpbmQgb2YNCj4gbWljcm8tb3B0aW1pemF0
-aW9ucy4NCg0Kc3lzY2FsbCBlbnRyeSBkb2VzIGdldCBtaWNyby1vcHRpbWlzZWQuDQpSZWFsIHNw
-ZWVkLXVwcyBjYW4gcHJvYmFibHkgYmUgZm91bmQgYnkgb3B0aW1pc2luZyBvdGhlciBwbGFjZXMu
-DQpJJ3ZlIGEgcGF0Y2ggaSBuZWVkIHRvIHJlc3VtYml0IHRoYXQgc2hvdWxkIGltcHJvdmUgdGhl
-IHJlYWRpbmcNCm9mIGlvdltdIGZyb20gdXNlciBzcGFjZS4NCg0KCURhdmlkDQoNCi0NClJlZ2lz
-dGVyZWQgQWRkcmVzcyBMYWtlc2lkZSwgQnJhbWxleSBSb2FkLCBNb3VudCBGYXJtLCBNaWx0b24g
-S2V5bmVzLCBNSzEgMVBULCBVSw0KUmVnaXN0cmF0aW9uIE5vOiAxMzk3Mzg2IChXYWxlcykNCg==
+Replace the coredump ->read method with a ->dump method that must call
+dump_emit itself.  That way we avoid a buffer allocation an messing with
+set_fs() to call into code that is intended to deal with user buffers.
+For the ->get case we can now use a small on-stack buffer and avoid
+memory allocations as well.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Jeremy Kerr <jk@ozlabs.org>
+---
+ arch/powerpc/platforms/cell/spufs/coredump.c |  87 ++----
+ arch/powerpc/platforms/cell/spufs/file.c     | 273 ++++++++++---------
+ arch/powerpc/platforms/cell/spufs/spufs.h    |   3 +-
+ 3 files changed, 170 insertions(+), 193 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
+index 8b3296b62f65..3b75e8f60609 100644
+--- a/arch/powerpc/platforms/cell/spufs/coredump.c
++++ b/arch/powerpc/platforms/cell/spufs/coredump.c
+@@ -21,22 +21,6 @@
+ 
+ #include "spufs.h"
+ 
+-static ssize_t do_coredump_read(int num, struct spu_context *ctx, void *buffer,
+-				size_t size, loff_t *off)
+-{
+-	u64 data;
+-	int ret;
+-
+-	if (spufs_coredump_read[num].read)
+-		return spufs_coredump_read[num].read(ctx, buffer, size, off);
+-
+-	data = spufs_coredump_read[num].get(ctx);
+-	ret = snprintf(buffer, size, "0x%.16llx", data);
+-	if (ret >= size)
+-		return size;
+-	return ++ret; /* count trailing NULL */
+-}
+-
+ static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
+ {
+ 	int i, sz, total = 0;
+@@ -118,58 +102,43 @@ int spufs_coredump_extra_notes_size(void)
+ static int spufs_arch_write_note(struct spu_context *ctx, int i,
+ 				  struct coredump_params *cprm, int dfd)
+ {
+-	loff_t pos = 0;
+-	int sz, rc, total = 0;
+-	const int bufsz = PAGE_SIZE;
+-	char *name;
+-	char fullname[80], *buf;
++	size_t sz = spufs_coredump_read[i].size;
++	char fullname[80];
+ 	struct elf_note en;
+-	size_t skip;
+-
+-	buf = (void *)get_zeroed_page(GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
++	size_t ret;
+ 
+-	name = spufs_coredump_read[i].name;
+-	sz = spufs_coredump_read[i].size;
+-
+-	sprintf(fullname, "SPU/%d/%s", dfd, name);
++	sprintf(fullname, "SPU/%d/%s", dfd, spufs_coredump_read[i].name);
+ 	en.n_namesz = strlen(fullname) + 1;
+ 	en.n_descsz = sz;
+ 	en.n_type = NT_SPU;
+ 
+ 	if (!dump_emit(cprm, &en, sizeof(en)))
+-		goto Eio;
+-
++		return -EIO;
+ 	if (!dump_emit(cprm, fullname, en.n_namesz))
+-		goto Eio;
+-
++		return -EIO;
+ 	if (!dump_align(cprm, 4))
+-		goto Eio;
+-
+-	do {
+-		rc = do_coredump_read(i, ctx, buf, bufsz, &pos);
+-		if (rc > 0) {
+-			if (!dump_emit(cprm, buf, rc))
+-				goto Eio;
+-			total += rc;
+-		}
+-	} while (rc == bufsz && total < sz);
+-
+-	if (rc < 0)
+-		goto out;
+-
+-	skip = roundup(cprm->pos - total + sz, 4) - cprm->pos;
+-	if (!dump_skip(cprm, skip))
+-		goto Eio;
+-
+-	rc = 0;
+-out:
+-	free_page((unsigned long)buf);
+-	return rc;
+-Eio:
+-	free_page((unsigned long)buf);
+-	return -EIO;
++		return -EIO;
++
++	if (spufs_coredump_read[i].dump) {
++		ret = spufs_coredump_read[i].dump(ctx, cprm);
++		if (ret < 0)
++			return ret;
++	} else {
++		char buf[32];
++
++		ret = snprintf(buf, sizeof(buf), "0x%.16llx",
++			       spufs_coredump_read[i].get(ctx));
++		if (ret >= sizeof(buf))
++			return sizeof(buf);
++
++		/* count trailing the NULL: */
++		if (!dump_emit(cprm, buf, ret + 1))
++			return -EIO;
++	}
++
++	if (!dump_skip(cprm, roundup(cprm->pos - ret + sz, 4) - cprm->pos))
++		return -EIO;
++	return 0;
+ }
+ 
+ int spufs_coredump_extra_notes_write(struct coredump_params *cprm)
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index c0f950a3f4e1..0f8c3d692af0 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -9,6 +9,7 @@
+ 
+ #undef DEBUG
+ 
++#include <linux/coredump.h>
+ #include <linux/fs.h>
+ #include <linux/ioctl.h>
+ #include <linux/export.h>
+@@ -129,6 +130,14 @@ static ssize_t spufs_attr_write(struct file *file, const char __user *buf,
+ 	return ret;
+ }
+ 
++static ssize_t spufs_dump_emit(struct coredump_params *cprm, void *buf,
++		size_t size)
++{
++	if (!dump_emit(cprm, buf, size))
++		return -EIO;
++	return size;
++}
++
+ #define DEFINE_SPUFS_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)	\
+ static int __fops ## _open(struct inode *inode, struct file *file)	\
+ {									\
+@@ -172,12 +181,9 @@ spufs_mem_release(struct inode *inode, struct file *file)
+ }
+ 
+ static ssize_t
+-__spufs_mem_read(struct spu_context *ctx, char __user *buffer,
+-			size_t size, loff_t *pos)
++spufs_mem_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	char *local_store = ctx->ops->get_ls(ctx);
+-	return simple_read_from_buffer(buffer, size, pos, local_store,
+-					LS_SIZE);
++	return spufs_dump_emit(cprm, ctx->ops->get_ls(ctx), LS_SIZE);
+ }
+ 
+ static ssize_t
+@@ -190,7 +196,8 @@ spufs_mem_read(struct file *file, char __user *buffer,
+ 	ret = spu_acquire(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_mem_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, ctx->ops->get_ls(ctx),
++				      LS_SIZE);
+ 	spu_release(ctx);
+ 
+ 	return ret;
+@@ -459,12 +466,10 @@ spufs_regs_open(struct inode *inode, struct file *file)
+ }
+ 
+ static ssize_t
+-__spufs_regs_read(struct spu_context *ctx, char __user *buffer,
+-			size_t size, loff_t *pos)
++spufs_regs_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	return simple_read_from_buffer(buffer, size, pos,
+-				      lscsa->gprs, sizeof lscsa->gprs);
++	return spufs_dump_emit(cprm, ctx->csa.lscsa->gprs,
++			       sizeof(ctx->csa.lscsa->gprs));
+ }
+ 
+ static ssize_t
+@@ -482,7 +487,8 @@ spufs_regs_read(struct file *file, char __user *buffer,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_regs_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, ctx->csa.lscsa->gprs,
++				      sizeof(ctx->csa.lscsa->gprs));
+ 	spu_release_saved(ctx);
+ 	return ret;
+ }
+@@ -517,12 +523,10 @@ static const struct file_operations spufs_regs_fops = {
+ };
+ 
+ static ssize_t
+-__spufs_fpcr_read(struct spu_context *ctx, char __user * buffer,
+-			size_t size, loff_t * pos)
++spufs_fpcr_dump(struct spu_context *ctx, struct coredump_params *cprm)
+ {
+-	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	return simple_read_from_buffer(buffer, size, pos,
+-				      &lscsa->fpcr, sizeof(lscsa->fpcr));
++	return spufs_dump_emit(cprm, &ctx->csa.lscsa->fpcr,
++			       sizeof(ctx->csa.lscsa->fpcr));
+ }
+ 
+ static ssize_t
+@@ -535,7 +539,8 @@ spufs_fpcr_read(struct file *file, char __user * buffer,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_fpcr_read(ctx, buffer, size, pos);
++	ret = simple_read_from_buffer(buffer, size, pos, &ctx->csa.lscsa->fpcr,
++				      sizeof(ctx->csa.lscsa->fpcr));
+ 	spu_release_saved(ctx);
+ 	return ret;
+ }
+@@ -967,28 +972,26 @@ spufs_signal1_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static ssize_t __spufs_signal1_read(struct spu_context *ctx, char __user *buf,
+-			size_t len, loff_t *pos)
++static ssize_t spufs_signal1_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	int ret = 0;
+-	u32 data;
++	if (!ctx->csa.spu_chnlcnt_RW[3])
++		return 0;
++	return spufs_dump_emit(cprm, &ctx->csa.spu_chnldata_RW[3],
++			       sizeof(ctx->csa.spu_chnldata_RW[3]));
++}
+ 
+-	if (len < 4)
++static ssize_t __spufs_signal1_read(struct spu_context *ctx, char __user *buf,
++			size_t len)
++{
++	if (len < sizeof(ctx->csa.spu_chnldata_RW[3]))
+ 		return -EINVAL;
+-
+-	if (ctx->csa.spu_chnlcnt_RW[3]) {
+-		data = ctx->csa.spu_chnldata_RW[3];
+-		ret = 4;
+-	}
+-
+-	if (!ret)
+-		goto out;
+-
+-	if (copy_to_user(buf, &data, 4))
++	if (!ctx->csa.spu_chnlcnt_RW[3])
++		return 0;
++	if (copy_to_user(buf, &ctx->csa.spu_chnldata_RW[3],
++			 sizeof(ctx->csa.spu_chnldata_RW[3])))
+ 		return -EFAULT;
+-
+-out:
+-	return ret;
++	return sizeof(ctx->csa.spu_chnldata_RW[3]);
+ }
+ 
+ static ssize_t spufs_signal1_read(struct file *file, char __user *buf,
+@@ -1000,7 +1003,7 @@ static ssize_t spufs_signal1_read(struct file *file, char __user *buf,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_signal1_read(ctx, buf, len, pos);
++	ret = __spufs_signal1_read(ctx, buf, len);
+ 	spu_release_saved(ctx);
+ 
+ 	return ret;
+@@ -1104,28 +1107,26 @@ spufs_signal2_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static ssize_t __spufs_signal2_read(struct spu_context *ctx, char __user *buf,
+-			size_t len, loff_t *pos)
++static ssize_t spufs_signal2_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	int ret = 0;
+-	u32 data;
++	if (!ctx->csa.spu_chnlcnt_RW[4])
++		return 0;
++	return spufs_dump_emit(cprm, &ctx->csa.spu_chnldata_RW[4],
++			       sizeof(ctx->csa.spu_chnldata_RW[4]));
++}
+ 
+-	if (len < 4)
++static ssize_t __spufs_signal2_read(struct spu_context *ctx, char __user *buf,
++			size_t len)
++{
++	if (len < sizeof(ctx->csa.spu_chnldata_RW[4]))
+ 		return -EINVAL;
+-
+-	if (ctx->csa.spu_chnlcnt_RW[4]) {
+-		data =  ctx->csa.spu_chnldata_RW[4];
+-		ret = 4;
+-	}
+-
+-	if (!ret)
+-		goto out;
+-
+-	if (copy_to_user(buf, &data, 4))
++	if (!ctx->csa.spu_chnlcnt_RW[4])
++		return 0;
++	if (copy_to_user(buf, &ctx->csa.spu_chnldata_RW[4],
++			 sizeof(ctx->csa.spu_chnldata_RW[4])))
+ 		return -EFAULT;
+-
+-out:
+-	return ret;
++	return sizeof(ctx->csa.spu_chnldata_RW[4]);
+ }
+ 
+ static ssize_t spufs_signal2_read(struct file *file, char __user *buf,
+@@ -1137,7 +1138,7 @@ static ssize_t spufs_signal2_read(struct file *file, char __user *buf,
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+-	ret = __spufs_signal2_read(ctx, buf, len, pos);
++	ret = __spufs_signal2_read(ctx, buf, len);
+ 	spu_release_saved(ctx);
+ 
+ 	return ret;
+@@ -1961,18 +1962,13 @@ static const struct file_operations spufs_caps_fops = {
+ 	.release	= single_release,
+ };
+ 
+-static ssize_t __spufs_mbox_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static ssize_t spufs_mbox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	u32 data;
+-
+-	/* EOF if there's no entry in the mbox */
+ 	if (!(ctx->csa.prob.mb_stat_R & 0x0000ff))
+ 		return 0;
+-
+-	data = ctx->csa.prob.pu_mb_R;
+-
+-	return simple_read_from_buffer(buf, len, pos, &data, sizeof data);
++	return spufs_dump_emit(cprm, &ctx->csa.prob.pu_mb_R,
++			       sizeof(ctx->csa.prob.pu_mb_R));
+ }
+ 
+ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+@@ -1988,7 +1984,12 @@ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_mbox_info_read(ctx, buf, len, pos);
++	/* EOF if there's no entry in the mbox */
++	if (ctx->csa.prob.mb_stat_R & 0x0000ff) {
++		ret = simple_read_from_buffer(buf, len, pos,
++				&ctx->csa.prob.pu_mb_R,
++				sizeof(ctx->csa.prob.pu_mb_R));
++	}
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2001,18 +2002,13 @@ static const struct file_operations spufs_mbox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_ibox_info_read(struct spu_context *ctx,
+-				char __user *buf, size_t len, loff_t *pos)
++static ssize_t spufs_ibox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
+ {
+-	u32 data;
+-
+-	/* EOF if there's no entry in the ibox */
+ 	if (!(ctx->csa.prob.mb_stat_R & 0xff0000))
+ 		return 0;
+-
+-	data = ctx->csa.priv2.puint_mb_R;
+-
+-	return simple_read_from_buffer(buf, len, pos, &data, sizeof data);
++	return spufs_dump_emit(cprm, &ctx->csa.priv2.puint_mb_R,
++			       sizeof(ctx->csa.priv2.puint_mb_R));
+ }
+ 
+ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+@@ -2028,7 +2024,12 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_ibox_info_read(ctx, buf, len, pos);
++	/* EOF if there's no entry in the ibox */
++	if (ctx->csa.prob.mb_stat_R & 0xff0000) {
++		ret = simple_read_from_buffer(buf, len, pos,
++				&ctx->csa.priv2.puint_mb_R,
++				sizeof(ctx->csa.priv2.puint_mb_R));
++	}
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2041,21 +2042,16 @@ static const struct file_operations spufs_ibox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static size_t spufs_wbox_info_cnt(struct spu_context *ctx)
+ {
+-	int i, cnt;
+-	u32 data[4];
+-	u32 wbox_stat;
+-
+-	wbox_stat = ctx->csa.prob.mb_stat_R;
+-	cnt = 4 - ((wbox_stat & 0x00ff00) >> 8);
+-	for (i = 0; i < cnt; i++) {
+-		data[i] = ctx->csa.spu_mailbox_data[i];
+-	}
++	return (4 - ((ctx->csa.prob.mb_stat_R & 0x00ff00) >> 8)) * sizeof(u32);
++}
+ 
+-	return simple_read_from_buffer(buf, len, pos, &data,
+-				cnt * sizeof(u32));
++static ssize_t spufs_wbox_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	return spufs_dump_emit(cprm, &ctx->csa.spu_mailbox_data,
++			spufs_wbox_info_cnt(ctx));
+ }
+ 
+ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+@@ -2071,7 +2067,8 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_wbox_info_read(ctx, buf, len, pos);
++	ret = simple_read_from_buffer(buf, len, pos, &ctx->csa.spu_mailbox_data,
++				      spufs_wbox_info_cnt(ctx));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2084,36 +2081,42 @@ static const struct file_operations spufs_wbox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_dma_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static void __spufs_dma_info_read(struct spu_context *ctx,
++		struct spu_dma_info *info)
+ {
+-	struct spu_dma_info info;
+-	struct mfc_cq_sr *qp, *spuqp;
+ 	int i;
+ 
+-	info.dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
+-	info.dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
+-	info.dma_info_status = ctx->csa.spu_chnldata_RW[24];
+-	info.dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
+-	info.dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
++	info->dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
++	info->dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
++	info->dma_info_status = ctx->csa.spu_chnldata_RW[24];
++	info->dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
++	info->dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
++
+ 	for (i = 0; i < 16; i++) {
+-		qp = &info.dma_info_command_data[i];
+-		spuqp = &ctx->csa.priv2.spuq[i];
++		struct mfc_cq_sr *qp = &info->dma_info_command_data[i];
++		struct mfc_cq_sr *spuqp = &ctx->csa.priv2.spuq[i];
+ 
+ 		qp->mfc_cq_data0_RW = spuqp->mfc_cq_data0_RW;
+ 		qp->mfc_cq_data1_RW = spuqp->mfc_cq_data1_RW;
+ 		qp->mfc_cq_data2_RW = spuqp->mfc_cq_data2_RW;
+ 		qp->mfc_cq_data3_RW = spuqp->mfc_cq_data3_RW;
+ 	}
++}
++
++static ssize_t spufs_dma_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	struct spu_dma_info info;
+ 
+-	return simple_read_from_buffer(buf, len, pos, &info,
+-				sizeof info);
++	__spufs_dma_info_read(ctx, &info);
++	return spufs_dump_emit(cprm, &info, sizeof(info));
+ }
+ 
+ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 			      size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_dma_info info;
+ 	int ret;
+ 
+ 	if (!access_ok(buf, len))
+@@ -2123,7 +2126,8 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_dma_info_read(ctx, buf, len, pos);
++	__spufs_dma_info_read(ctx, &info);
++	ret = simple_read_from_buffer(buf, len, pos, &info, sizeof(info));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2136,48 +2140,53 @@ static const struct file_operations spufs_dma_info_fops = {
+ 	.llseek = no_llseek,
+ };
+ 
+-static ssize_t __spufs_proxydma_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static void __spufs_proxydma_info_read(struct spu_context *ctx,
++	struct spu_proxydma_info *info)
+ {
+-	struct spu_proxydma_info info;
+-	struct mfc_cq_sr *qp, *puqp;
+-	int ret = sizeof info;
+ 	int i;
+ 
+-	if (len < ret)
+-		return -EINVAL;
+-
+-	if (!access_ok(buf, len))
+-		return -EFAULT;
++	info->proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
++	info->proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
++	info->proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
+ 
+-	info.proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
+-	info.proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
+-	info.proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
+ 	for (i = 0; i < 8; i++) {
+-		qp = &info.proxydma_info_command_data[i];
+-		puqp = &ctx->csa.priv2.puq[i];
++		struct mfc_cq_sr *qp = &info->proxydma_info_command_data[i];
++		struct mfc_cq_sr *puqp = &ctx->csa.priv2.puq[i];
+ 
+ 		qp->mfc_cq_data0_RW = puqp->mfc_cq_data0_RW;
+ 		qp->mfc_cq_data1_RW = puqp->mfc_cq_data1_RW;
+ 		qp->mfc_cq_data2_RW = puqp->mfc_cq_data2_RW;
+ 		qp->mfc_cq_data3_RW = puqp->mfc_cq_data3_RW;
+ 	}
++}
++
++static ssize_t spufs_proxydma_info_dump(struct spu_context *ctx,
++		struct coredump_params *cprm)
++{
++	struct spu_proxydma_info info;
+ 
+-	return simple_read_from_buffer(buf, len, pos, &info,
+-				sizeof info);
++	__spufs_proxydma_info_read(ctx, &info);
++	return spufs_dump_emit(cprm, &info, sizeof(info));
+ }
+ 
+ static ssize_t spufs_proxydma_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_proxydma_info info;
+ 	int ret;
+ 
++	if (len < sizeof(info))
++		return -EINVAL;
++	if (!access_ok(buf, len))
++		return -EFAULT;
++
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_proxydma_info_read(ctx, buf, len, pos);
++	__spufs_proxydma_info_read(ctx, &info);
++	ret = simple_read_from_buffer(buf, len, pos, &info, sizeof(info));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+@@ -2625,23 +2634,23 @@ const struct spufs_tree_descr spufs_dir_debug_contents[] = {
+ };
+ 
+ const struct spufs_coredump_reader spufs_coredump_read[] = {
+-	{ "regs", __spufs_regs_read, NULL, sizeof(struct spu_reg128[128])},
+-	{ "fpcr", __spufs_fpcr_read, NULL, sizeof(struct spu_reg128) },
++	{ "regs", spufs_regs_dump, NULL, sizeof(struct spu_reg128[128])},
++	{ "fpcr", spufs_fpcr_dump, NULL, sizeof(struct spu_reg128) },
+ 	{ "lslr", NULL, spufs_lslr_get, 19 },
+ 	{ "decr", NULL, spufs_decr_get, 19 },
+ 	{ "decr_status", NULL, spufs_decr_status_get, 19 },
+-	{ "mem", __spufs_mem_read, NULL, LS_SIZE, },
+-	{ "signal1", __spufs_signal1_read, NULL, sizeof(u32) },
++	{ "mem", spufs_mem_dump, NULL, LS_SIZE, },
++	{ "signal1", spufs_signal1_dump, NULL, sizeof(u32) },
+ 	{ "signal1_type", NULL, spufs_signal1_type_get, 19 },
+-	{ "signal2", __spufs_signal2_read, NULL, sizeof(u32) },
++	{ "signal2", spufs_signal2_dump, NULL, sizeof(u32) },
+ 	{ "signal2_type", NULL, spufs_signal2_type_get, 19 },
+ 	{ "event_mask", NULL, spufs_event_mask_get, 19 },
+ 	{ "event_status", NULL, spufs_event_status_get, 19 },
+-	{ "mbox_info", __spufs_mbox_info_read, NULL, sizeof(u32) },
+-	{ "ibox_info", __spufs_ibox_info_read, NULL, sizeof(u32) },
+-	{ "wbox_info", __spufs_wbox_info_read, NULL, 4 * sizeof(u32)},
+-	{ "dma_info", __spufs_dma_info_read, NULL, sizeof(struct spu_dma_info)},
+-	{ "proxydma_info", __spufs_proxydma_info_read,
++	{ "mbox_info", spufs_mbox_info_dump, NULL, sizeof(u32) },
++	{ "ibox_info", spufs_ibox_info_dump, NULL, sizeof(u32) },
++	{ "wbox_info", spufs_wbox_info_dump, NULL, 4 * sizeof(u32)},
++	{ "dma_info", spufs_dma_info_dump, NULL, sizeof(struct spu_dma_info)},
++	{ "proxydma_info", spufs_proxydma_info_dump,
+ 			   NULL, sizeof(struct spu_proxydma_info)},
+ 	{ "object-id", NULL, spufs_object_id_get, 19 },
+ 	{ "npc", NULL, spufs_npc_get, 19 },
+diff --git a/arch/powerpc/platforms/cell/spufs/spufs.h b/arch/powerpc/platforms/cell/spufs/spufs.h
+index 413c89afe112..1ba4d884febf 100644
+--- a/arch/powerpc/platforms/cell/spufs/spufs.h
++++ b/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -337,8 +337,7 @@ void spufs_dma_callback(struct spu *spu, int type);
+ extern struct spu_coredump_calls spufs_coredump_calls;
+ struct spufs_coredump_reader {
+ 	char *name;
+-	ssize_t (*read)(struct spu_context *ctx,
+-			char __user *buffer, size_t size, loff_t *pos);
++	ssize_t (*dump)(struct spu_context *ctx, struct coredump_params *cprm);
+ 	u64 (*get)(struct spu_context *ctx);
+ 	size_t size;
+ };
+-- 
+2.26.1
 
