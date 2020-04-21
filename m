@@ -2,54 +2,76 @@ Return-Path: <SRS0=D6Rn=6F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 754A1C54FC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B293C54FCC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:35:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4DD9206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:29:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4DD9206D5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 98FEA206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:35:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98FEA206D5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4968Cz6gG2zDqgr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 02:29:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4968M53T8VzDqGg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 02:35:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4967T05gw5zDqQJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 01:55:47 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 03LFtMkQ010973;
- Tue, 21 Apr 2020 10:55:22 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 03LFtG0c010964;
- Tue, 21 Apr 2020 10:55:16 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 21 Apr 2020 10:55:16 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Joel Stanley <joel@jms.id.au>
-Subject: Re: [PATCH 2/5] powerpc: Replace _ALIGN_DOWN() by ALIGN_DOWN()
-Message-ID: <20200421155516.GT26902@gate.crashing.org>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
- <3911a86d6b5bfa7ad88cd7c82416fbe6bb47e793.1587407777.git.christophe.leroy@c-s.fr>
- <CACPK8XfqnqgkXcBzp=nqd=AJX1MK05eTNiyOdaEuRu3_6RsXSQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CACPK8XfqnqgkXcBzp=nqd=AJX1MK05eTNiyOdaEuRu3_6RsXSQ@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+ dmarc=pass (p=none dis=none) header.from=ACULAB.COM
+X-Greylist: delayed 12666 seconds by postgrey-1.36 at bilbo;
+ Wed, 22 Apr 2020 02:30:36 AEST
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4968F83SNGzDq9V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 02:30:34 +1000 (AEST)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-156-5eyjsxuYMtSx9GxPPKhO9g-1; Tue, 21 Apr 2020 13:28:26 +0100
+X-MC-Unique: 5eyjsxuYMtSx9GxPPKhO9g-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Tue, 21 Apr 2020 13:28:26 +0100
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Tue, 21 Apr 2020 13:28:26 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Nicholas Piggin' <npiggin@gmail.com>, Adhemerval Zanella
+ <adhemerval.zanella@linaro.org>, Rich Felker <dalias@libc.org>
+Subject: RE: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
+Thread-Topic: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
+Thread-Index: AQHWFrDQYjTVYCQ8pUCZ1j4rC1JkAqiDgXJg
+Date: Tue, 21 Apr 2020 12:28:25 +0000
+Message-ID: <b77fa2dc769d42e1a3e68f5edf90d250@AcuMS.aculab.com>
+References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
+ <20200415225539.GL11469@brightrain.aerifal.cx>
+ <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
+ <20200416153756.GU11469@brightrain.aerifal.cx>
+ <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
+ <20200416175932.GZ11469@brightrain.aerifal.cx>
+ <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
+ <20200416183151.GA11469@brightrain.aerifal.cx>
+ <1587344003.daumxvs1kh.astroid@bobo.none>
+In-Reply-To: <1587344003.daumxvs1kh.astroid@bobo.none>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
+MIME-Version: 1.0
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,39 +83,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Cc: "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
+ "libc-alpha@sourceware.org" <libc-alpha@sourceware.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "musl@lists.openwall.com" <musl@lists.openwall.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+RnJvbTogTmljaG9sYXMgUGlnZ2luDQo+IFNlbnQ6IDIwIEFwcmlsIDIwMjAgMDI6MTANCi4uLg0K
+PiA+PiBZZXMsIGJ1dCBkb2VzIGl0IHJlYWxseSBtYXR0ZXIgdG8gb3B0aW1pemUgdGhpcyBzcGVj
+aWZpYyB1c2FnZSBjYXNlDQo+ID4+IGZvciBzaXplPyBnbGliYywgZm9yIGluc3RhbmNlLCB0cmll
+cyB0byBsZXZlcmFnZSB0aGUgc3lzY2FsbCBtZWNoYW5pc20NCj4gPj4gYnkgYWRkaW5nIHNvbWUg
+Y29tcGxleCBwcmUtcHJvY2Vzc29yIGFzbSBkaXJlY3RpdmVzLiAgSXQgb3B0aW1pemVzDQo+ID4+
+IHRoZSBzeXNjYWxsIGNvZGUgc2l6ZSBpbiBtb3N0IGNhc2VzLiAgRm9yIGluc3RhbmNlLCBraWxs
+IGluIHN0YXRpYyBjYXNlDQo+ID4+IGdlbmVyYXRlcyBvbiB4ODZfNjQ6DQo+ID4+DQo+ID4+IDAw
+MDAwMDAwMDAwMDAwMDAgPF9fa2lsbD46DQo+ID4+ICAgIDA6ICAgYjggM2UgMDAgMDAgMDAgICAg
+ICAgICAgbW92ICAgICQweDNlLCVlYXgNCj4gPj4gICAgNTogICAwZiAwNSAgICAgICAgICAgICAg
+ICAgICBzeXNjYWxsDQo+ID4+ICAgIDc6ICAgNDggM2QgMDEgZjAgZmYgZmYgICAgICAgY21wICAg
+ICQweGZmZmZmZmZmZmZmZmYwMDEsJXJheA0KPiA+PiAgICBkOiAgIDBmIDgzIDAwIDAwIDAwIDAw
+ICAgICAgIGphZSAgICAxMyA8X19raWxsKzB4MTM+DQoNCkhtbW0uLi4gdGhhdCBjbXAgKyBqYWUg
+aXMgdW5uZWNlc3NhcnkgaGVyZS4NCkl0IGlzIGFsc28gYSAzMmJpdCBvZmZzZXQganVtcC4NCkkg
+YWxzbyBzdXNwZWN0IGl0IGdldHMgcHJlZGljdGVkIHZlcnkgYmFkbHkuDQoNCj4gPj4gICAxMzog
+ICBjMyAgICAgICAgICAgICAgICAgICAgICByZXRxDQo+ID4+DQo+ID4+IFdoaWxlIG9uIG11c2w6
+DQo+ID4+DQo+ID4+IDAwMDAwMDAwMDAwMDAwMDAgPGtpbGw+Og0KPiA+PiAgICAwOgk0OCA4MyBl
+YyAwOCAgICAgICAgICAJc3ViICAgICQweDgsJXJzcA0KPiA+PiAgICA0Ogk0OCA2MyBmZiAgICAg
+ICAgICAgICAJbW92c2xxICVlZGksJXJkaQ0KPiA+PiAgICA3Ogk0OCA2MyBmNiAgICAgICAgICAg
+ICAJbW92c2xxICVlc2ksJXJzaQ0KPiA+PiAgICBhOgliOCAzZSAwMCAwMCAwMCAgICAgICAJbW92
+ICAgICQweDNlLCVlYXgNCj4gPj4gICAgZjoJMGYgMDUgICAgICAgICAgICAgICAgCXN5c2NhbGwN
+Cj4gPj4gICAxMToJNDggODkgYzcgICAgICAgICAgICAgCW1vdiAgICAlcmF4LCVyZGkNCj4gPj4g
+ICAxNDoJZTggMDAgMDAgMDAgMDAgICAgICAgCWNhbGxxICAxOSA8a2lsbCsweDE5Pg0KPiA+PiAg
+IDE5Ogk1YSAgICAgICAgICAgICAgICAgICAJcG9wICAgICVyZHgNCj4gPj4gICAxYToJYzMgICAg
+ICAgICAgICAgICAgICAgCXJldHENCj4gPg0KPiA+IFdvdyB0aGF0J3Mgc29tZSBleHRyYW9yZGlu
+YXJpbHkgYmFkIGNvZGVnZW4gZ29pbmcgb24gYnkgZ2NjLi4uIFRoZQ0KPiA+IHNpZ24tZXh0ZW5z
+aW9uIGlzIHNlbWFudGljYWxseSBuZWVkZWQgYW5kIEkgZG9uJ3Qgc2VlIGEgZ29vZCB3YXkNCj4g
+PiBhcm91bmQgaXQgKGdsaWJjJ3MgYXNtIGlzIGtpbmRhIGEgaGFjayB0YWtpbmcgYWR2YW50YWdl
+IG9mIGtlcm5lbCBub3QNCj4gPiBsb29raW5nIGF0IGhpZ2ggYml0cywgSSB0aGluayksIGJ1dCB0
+aGUgZ3JhdHVpdG91cyBzdGFjayBhZGp1c3RtZW50DQo+ID4gYW5kIHJlZnVzYWwgdG8gZ2VuZXJh
+dGUgYSB0YWlsIGNhbGwgaXNuJ3QuIEknbGwgc2VlIGlmIHdlIGNhbiB0cmFjaw0KPiA+IGRvd24g
+d2hhdCdzIGdvaW5nIG9uIGFuZCBnZXQgaXQgZml4ZWQuDQoNCkEgc3VpdGFibGUgY2FzdCBtaWdo
+dCBnZXQgcmlkIG9mIHRoZSBzaWduIGV4dGVuc2lvbi4NClBvc3NpYmx5IGp1c3QgKHVuc2lnbmVk
+IGludCkuDQoNCglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3MgTGFrZXNpZGUsIEJyYW1s
+ZXkgUm9hZCwgTW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQVCwgVUsNClJlZ2lzdHJh
+dGlvbiBObzogMTM5NzM4NiAoV2FsZXMpDQo=
 
-On Tue, Apr 21, 2020 at 01:04:05AM +0000, Joel Stanley wrote:
-> On Mon, 20 Apr 2020 at 18:38, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> > _ALIGN_DOWN() is specific to powerpc
-> > ALIGN_DOWN() is generic and does the same
-> >
-> > Replace _ALIGN_DOWN() by ALIGN_DOWN()
-> 
-> This one is a bit less obvious. It becomes (leaving the typeof's alone
-> for clarity):
-> 
-> -((addr)&(~((typeof(addr))(size)-1)))
-> +((((addr) - ((size) - 1)) + ((typeof(addr))(size) - 1)) &
-> ~((typeof(addr))(size)-1))
-> 
-> Which I assume the compiler will sort out?
-
-[ This is line-wrapped, something in your mailer?  Took me a bit to figure
-  out the - and + are diff -u things :-) ]
-
-In the common case where size is a constant integer power of two, the
-compiler will have no problem with this.  But why do so complicated?
-
-Why are the casts there, btw?
-
-
-Segher
