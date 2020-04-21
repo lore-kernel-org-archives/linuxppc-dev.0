@@ -2,92 +2,76 @@ Return-Path: <SRS0=D6Rn=6F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C84B1C54FCC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:47:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31845C54FC9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:55:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85B1D20679
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:47:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85B1D20679
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DA422206A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:55:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA422206A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4965y85Bg9zDqPC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 00:47:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49667G4DjPzDqL5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 00:55:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=de.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@de.ibm.com;
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.232;
+ helo=out02.mta.xmission.com; envelope-from=ebiederm@xmission.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=de.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4964yG0qCpzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 00:02:29 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03LDYjog146036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 10:02:26 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30gcbfhqge-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 10:02:23 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
- Tue, 21 Apr 2020 15:01:30 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 21 Apr 2020 15:01:21 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03LE24dv53608476
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Apr 2020 14:02:04 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0AFD5A4057;
- Tue, 21 Apr 2020 14:02:04 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2FEB3A405B;
- Tue, 21 Apr 2020 14:02:03 +0000 (GMT)
-Received: from thinkpad (unknown [9.145.65.41])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 21 Apr 2020 14:02:03 +0000 (GMT)
-Date: Tue, 21 Apr 2020 16:02:01 +0200
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Mike Kravetz <mike.kravetz@oracle.com>
-Subject: Re: [PATCH v3 0/4] Clean up hugetlb boot command line processing
-In-Reply-To: <20200417185049.275845-1-mike.kravetz@oracle.com>
-References: <20200417185049.275845-1-mike.kravetz@oracle.com>
-X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4964yZ18HWzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 00:02:43 +1000 (AEST)
+Received: from in02.mta.xmission.com ([166.70.13.52])
+ by out02.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jQtTv-0005xC-GY; Tue, 21 Apr 2020 08:02:35 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in02.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jQtTt-0001fg-Qr; Tue, 21 Apr 2020 08:02:35 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Hildenbrand <david@redhat.com>
+References: <20200414064031.GB4247@MiWiFi-R3L-srv>
+ <86e96214-7053-340b-5c1a-ff97fb94d8e0@redhat.com>
+ <20200414092201.GD4247@MiWiFi-R3L-srv>
+ <ad060c8a-8afe-3858-0a4f-27ff54ef4c68@redhat.com>
+ <20200414143912.GE4247@MiWiFi-R3L-srv>
+ <0085f460-b0c7-b25f-36a7-fa3bafaab6fe@redhat.com>
+ <20200415023524.GG4247@MiWiFi-R3L-srv>
+ <18cf6afd-c651-25c7-aca3-3ca3c0e07547@redhat.com>
+ <20200416140247.GA12723@MiWiFi-R3L-srv>
+ <4e1546eb-4416-dc6d-d549-62d1cecccbc8@redhat.com>
+ <20200416143634.GH4247@MiWiFi-R3L-srv>
+ <2525cc9c-3566-6275-105b-7f4af8f980bc@redhat.com>
+ <9a4eb1d7-33bf-8707-9c0c-1ca657c3e502@redhat.com>
+Date: Tue, 21 Apr 2020 08:59:27 -0500
+In-Reply-To: <9a4eb1d7-33bf-8707-9c0c-1ca657c3e502@redhat.com> (David
+ Hildenbrand's message of "Tue, 21 Apr 2020 15:29:37 +0200")
+Message-ID: <87a735548w.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 20042114-4275-0000-0000-000003C3FB90
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20042114-4276-0000-0000-000038D9805D
-Message-Id: <20200421160201.0ddb9763@thinkpad>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-21_05:2020-04-20,
- 2020-04-21 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 phishscore=0
- lowpriorityscore=0 adultscore=0 priorityscore=1501 mlxlogscore=999
- clxscore=1015 suspectscore=0 malwarescore=0 spamscore=0 impostorscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004210108
+Content-Type: text/plain
+X-XM-SPF: eid=1jQtTt-0001fg-Qr; ; ; mid=<87a735548w.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX1+XPCnvTWzC4ci/zsgEXcGATbogYgI8il0=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: [PATCH 1/3] kexec: Prevent removal of memory in use by a loaded
+ kexec image
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,89 +83,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Will Deacon <will@kernel.org>, Mina Almasry <almasrymina@google.com>,
- linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>, Longpeng <longpeng2@huawei.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Nitesh Narayan Lal <nitesh@redhat.com>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: piliu@redhat.com, Baoquan He <bhe@redhat.com>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Bhupesh Sharma <bhsharma@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org,
+ Russell King - ARM Linux admin <linux@armlinux.org.uk>, linux-mm@kvack.org,
+ James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 17 Apr 2020 11:50:45 -0700
-Mike Kravetz <mike.kravetz@oracle.com> wrote:
+David Hildenbrand <david@redhat.com> writes:
 
-> v3 -
->    Used weak attribute method of defining arch_hugetlb_valid_size.
->      This eliminates changes to arch specific hugetlb.h files (Peter)
->    Updated documentation (Peter, Randy)
->    Fixed handling of implicitly specified gigantic page preallocation
->      in existing code and removed documentation of such.  There is now
->      no difference between handling of gigantic and non-gigantic pages.
->      (Peter, Nitesh).
->      This requires the most review as there is a small change to
->      undocumented behavior.  See patch 4 commit message for details.
->    Added Acks and Reviews (Mina, Peter)
-> 
-> v2 -
->    Fix build errors with patch 1 (Will)
->    Change arch_hugetlb_valid_size arg to unsigned long and remove
->      irrelevant 'extern' keyword (Christophe)
->    Documentation and other misc changes (Randy, Christophe, Mina)
->    Do not process command line options if !hugepages_supported()
->      (Dave, but it sounds like we may want to additional changes to
->       hugepages_supported() for x86?  If that is needed I would prefer
->       a separate patch.)
-> 
-> Longpeng(Mike) reported a weird message from hugetlb command line processing
-> and proposed a solution [1].  While the proposed patch does address the
-> specific issue, there are other related issues in command line processing.
-> As hugetlbfs evolved, updates to command line processing have been made to
-> meet immediate needs and not necessarily in a coordinated manner.  The result
-> is that some processing is done in arch specific code, some is done in arch
-> independent code and coordination is problematic.  Semantics can vary between
-> architectures.
-> 
-> The patch series does the following:
-> - Define arch specific arch_hugetlb_valid_size routine used to validate
->   passed huge page sizes.
-> - Move hugepagesz= command line parsing out of arch specific code and into
->   an arch independent routine.
-> - Clean up command line processing to follow desired semantics and
->   document those semantics.
-> 
-> [1] https://lore.kernel.org/linux-mm/20200305033014.1152-1-longpeng2@huawei.com
-> 
-> Mike Kravetz (4):
->   hugetlbfs: add arch_hugetlb_valid_size
->   hugetlbfs: move hugepagesz= parsing to arch independent code
->   hugetlbfs: remove hugetlb_add_hstate() warning for existing hstate
->   hugetlbfs: clean up command line processing
-> 
->  .../admin-guide/kernel-parameters.txt         |  40 ++--
->  Documentation/admin-guide/mm/hugetlbpage.rst  |  35 ++++
->  arch/arm64/mm/hugetlbpage.c                   |  30 +--
->  arch/powerpc/mm/hugetlbpage.c                 |  30 +--
->  arch/riscv/mm/hugetlbpage.c                   |  24 +--
->  arch/s390/mm/hugetlbpage.c                    |  24 +--
->  arch/sparc/mm/init_64.c                       |  43 +---
->  arch/x86/mm/hugetlbpage.c                     |  23 +--
->  include/linux/hugetlb.h                       |   2 +-
->  mm/hugetlb.c                                  | 190 +++++++++++++++---
->  10 files changed, 271 insertions(+), 170 deletions(-)
-> 
+>>> ACPI SRAT is embeded into efi, need read out the rsdp pointer. If we don't
+>>> pass the efi, it won't get the SRAT table correctly, if I remember
+>>> correctly. Yeah, I remeber kvm guest can get memory hotplugged with
+>>> ACPI only, this won't happen on bare metal though. Need check carefully. 
+>>> I have been using kvm guest with uefi firmwire recently.
+>> 
+>> Yeah, I can imagine that bare metal is different. kvm only uses ACPI.
+>> 
+>> I'm also asking because of virtio-mem. Memory added via virtio-mem is
+>> not part of any efi tables or whatsoever. So I assume the kexec kernel
+>> will not detect it automatically (good!), instead load the virtio-mem
+>> driver and let it add memory back to the system.
+>> 
+>> I should probably play with kexec and virtio-mem once I have some spare
+>> cycles ... to find out what's broken and needs to be addressed :)
+>
+> FWIW, I just gave virtio-mem and kexec/kdump a try.
+>
+> a) kdump seems to work. Memory added by virtio-mem is getting dumped.
+> The kexec kernel only uses memory in the crash region. The virtio-mem
+> driver properly bails out due to is_kdump_kernel().
+>
+> b) "kexec -s -l" seems to work fine. For now, the kernel does not seem
+> to get placed on virtio-mem memory (pure luck due to the left-to-right
+> search). Memory added by virtio-mem is not getting added to the e820
+> map. Once the virtio-mem driver comes back up in the kexec kernel, the
+> right memory is readded.
 
-Looks good and works fine for s390, thanks for cleaning up!
+This sounds like a bug.
 
-Acked-by: Gerald Schaefer <gerald.schaefer@de.ibm.com> # s390
+> c) "kexec -c -l" does not work properly. All memory added by virtio-mem
+> is added to the e820 map, which is wrong. Memory that should not be
+> touched will be touched by the kexec kernel. I assume kexec-tools just
+> goes ahead and adds anything it can find in /proc/iomem (or
+> /sys/firmware/memmap/) to the e820 map of the new kernel.
+>
+> Due to c), I assume all hotplugged memory (e.g., ACPI DIMMs) is
+> similarly added to the e820 map and, therefore, won't be able to be
+> onlined MOVABLE easily.
+
+This sounds like correct behavior to me.  If you add memory to the
+system it is treated as memory to the system.
+
+If we need to make it a special kind of memory with special rules we can
+have some kind of special marking for the memory.  But hotplugged is not
+in itself a sufficient criteria to say don't use this as normal memory.
+
+If take a huge server and I plug in an extra dimm it is just memory.
+
+For a similarly huge server I might want to have memory that the system
+booted with unpluggable, in case hardware error reporting notices
+a dimm generating a lot of memory errors.
+
+Now perhaps virtualization needs a special tier of memory that should
+only be used for cases where the memory is easily movable.
+
+I am not familiar with virtio-mem but my skim of the initial design
+is that virtio-mem was not designed to be such a special tier of memory.
+Perhaps something has changed?
+https://lists.gnu.org/archive/html/qemu-devel/2017-06/msg03870.html
+
+
+> At least for virtio-mem, I would either have to
+> a) Not support "kexec -c -l". A viable option if we would be planning on
+> not supporting it either way in the long term. I could block this
+> in-kernel somehow eventually.
+
+No.
+
+> b) Teach kexec-tools to leave virtio-mem added memory alone. E.g., by
+> indicating it in /proc/iomem in a special way ("System RAM
+> (hotplugged)"/"System RAM (virtio-mem)").
+
+How does the kernel memory allocator treat this memory?
+
+The logic is simple.  If the kernel memory allocator treats that memory
+as ordinary memory available for all uses it should be presented as
+ordinary memory available for all uses.
+
+If the kernel memory allocator treats that memory as special memory
+only available for uses that we can easily free later and give back to
+the system.  AKA it is special and not oridinary memory we should mark
+it as such.
+
+Eric
+
+p.s.  Please excuse me for jumping in I may be missing some important
+context, but what I read when I saw this message in my inbox just seemed
+very wrong.
+
 
