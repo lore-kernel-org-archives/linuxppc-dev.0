@@ -2,76 +2,62 @@ Return-Path: <SRS0=D6Rn=6F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B293C54FCC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:35:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6457FC54FCC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:58:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98FEA206D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:35:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98FEA206D5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id B7E8F206D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 16:58:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qB58J7Cd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7E8F206D9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4968M53T8VzDqGg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 02:35:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4968sS1qN5zDqxc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 02:58:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ACULAB.COM
-X-Greylist: delayed 12666 seconds by postgrey-1.36 at bilbo;
- Wed, 22 Apr 2020 02:30:36 AEST
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=qB58J7Cd; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4968F83SNGzDq9V
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 02:30:34 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-156-5eyjsxuYMtSx9GxPPKhO9g-1; Tue, 21 Apr 2020 13:28:26 +0100
-X-MC-Unique: 5eyjsxuYMtSx9GxPPKhO9g-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Tue, 21 Apr 2020 13:28:26 +0100
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Tue, 21 Apr 2020 13:28:26 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Nicholas Piggin' <npiggin@gmail.com>, Adhemerval Zanella
- <adhemerval.zanella@linaro.org>, Rich Felker <dalias@libc.org>
-Subject: RE: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Thread-Topic: [musl] Powerpc Linux 'scv' system call ABI proposal take 2
-Thread-Index: AQHWFrDQYjTVYCQ8pUCZ1j4rC1JkAqiDgXJg
-Date: Tue, 21 Apr 2020 12:28:25 +0000
-Message-ID: <b77fa2dc769d42e1a3e68f5edf90d250@AcuMS.aculab.com>
-References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
- <20200415225539.GL11469@brightrain.aerifal.cx>
- <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
- <20200416153756.GU11469@brightrain.aerifal.cx>
- <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
- <20200416175932.GZ11469@brightrain.aerifal.cx>
- <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
- <20200416183151.GA11469@brightrain.aerifal.cx>
- <1587344003.daumxvs1kh.astroid@bobo.none>
-In-Reply-To: <1587344003.daumxvs1kh.astroid@bobo.none>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4968n26f9czDqrM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 02:54:46 +1000 (AEST)
+Received: from mail.kernel.org (ip5f5ad4d8.dynamic.kabel-deutschland.de
+ [95.90.212.216])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id EF7A32072D;
+ Tue, 21 Apr 2020 16:54:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1587488084;
+ bh=I+poV6aWdrEtdHBUr6m4gEt4rVr2SFuzXvvDAKP9Sho=;
+ h=From:To:Cc:Subject:Date:From;
+ b=qB58J7CdaJxDgs3IwR1BILA82/V832qHRtvohLy/Kb2dIF+RDago1sOUyA3wcPGJm
+ THLL/xW1xsSn7snwNLctffrsALp7GFFpR5aKSAh6XUVIxbQC8PeapfYgVMPAaXblew
+ /vob6Aoa4APmTstwu4eEJlbcEEo5polgmbJysOSA=
+Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
+ (envelope-from <mchehab@kernel.org>)
+ id 1jQwAU-00CmDK-0s; Tue, 21 Apr 2020 18:54:42 +0200
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Subject: [PATCH v2 00/29] fs: convert remaining docs to ReST file format
+Date: Tue, 21 Apr 2020 18:54:11 +0200
+Message-Id: <cover.1587487612.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.25.2
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,47 +69,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
- "libc-alpha@sourceware.org" <libc-alpha@sourceware.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "musl@lists.openwall.com" <musl@lists.openwall.com>
+Cc: linux-usb@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ Amir Goldstein <amir73il@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
+ Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, codalist@coda.cs.cmu.edu,
+ coda@cs.cmu.edu, linux-cachefs@redhat.com,
+ Alexey Dobriyan <adobriyan@gmail.com>, Joel Becker <jlbec@evilplan.org>,
+ Jan Harkes <jaharkes@cs.cmu.edu>, David Howells <dhowells@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Darrick J. Wong" <darrick.wong@oracle.com>, Jeff Layton <jlayton@kernel.org>,
+ linux-kernel@vger.kernel.org, linux-xfs@vger.kernel.org,
+ Jeremy Kerr <jk@ozlabs.org>, Jan Kara <jack@suse.com>,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-RnJvbTogTmljaG9sYXMgUGlnZ2luDQo+IFNlbnQ6IDIwIEFwcmlsIDIwMjAgMDI6MTANCi4uLg0K
-PiA+PiBZZXMsIGJ1dCBkb2VzIGl0IHJlYWxseSBtYXR0ZXIgdG8gb3B0aW1pemUgdGhpcyBzcGVj
-aWZpYyB1c2FnZSBjYXNlDQo+ID4+IGZvciBzaXplPyBnbGliYywgZm9yIGluc3RhbmNlLCB0cmll
-cyB0byBsZXZlcmFnZSB0aGUgc3lzY2FsbCBtZWNoYW5pc20NCj4gPj4gYnkgYWRkaW5nIHNvbWUg
-Y29tcGxleCBwcmUtcHJvY2Vzc29yIGFzbSBkaXJlY3RpdmVzLiAgSXQgb3B0aW1pemVzDQo+ID4+
-IHRoZSBzeXNjYWxsIGNvZGUgc2l6ZSBpbiBtb3N0IGNhc2VzLiAgRm9yIGluc3RhbmNlLCBraWxs
-IGluIHN0YXRpYyBjYXNlDQo+ID4+IGdlbmVyYXRlcyBvbiB4ODZfNjQ6DQo+ID4+DQo+ID4+IDAw
-MDAwMDAwMDAwMDAwMDAgPF9fa2lsbD46DQo+ID4+ICAgIDA6ICAgYjggM2UgMDAgMDAgMDAgICAg
-ICAgICAgbW92ICAgICQweDNlLCVlYXgNCj4gPj4gICAgNTogICAwZiAwNSAgICAgICAgICAgICAg
-ICAgICBzeXNjYWxsDQo+ID4+ICAgIDc6ICAgNDggM2QgMDEgZjAgZmYgZmYgICAgICAgY21wICAg
-ICQweGZmZmZmZmZmZmZmZmYwMDEsJXJheA0KPiA+PiAgICBkOiAgIDBmIDgzIDAwIDAwIDAwIDAw
-ICAgICAgIGphZSAgICAxMyA8X19raWxsKzB4MTM+DQoNCkhtbW0uLi4gdGhhdCBjbXAgKyBqYWUg
-aXMgdW5uZWNlc3NhcnkgaGVyZS4NCkl0IGlzIGFsc28gYSAzMmJpdCBvZmZzZXQganVtcC4NCkkg
-YWxzbyBzdXNwZWN0IGl0IGdldHMgcHJlZGljdGVkIHZlcnkgYmFkbHkuDQoNCj4gPj4gICAxMzog
-ICBjMyAgICAgICAgICAgICAgICAgICAgICByZXRxDQo+ID4+DQo+ID4+IFdoaWxlIG9uIG11c2w6
-DQo+ID4+DQo+ID4+IDAwMDAwMDAwMDAwMDAwMDAgPGtpbGw+Og0KPiA+PiAgICAwOgk0OCA4MyBl
-YyAwOCAgICAgICAgICAJc3ViICAgICQweDgsJXJzcA0KPiA+PiAgICA0Ogk0OCA2MyBmZiAgICAg
-ICAgICAgICAJbW92c2xxICVlZGksJXJkaQ0KPiA+PiAgICA3Ogk0OCA2MyBmNiAgICAgICAgICAg
-ICAJbW92c2xxICVlc2ksJXJzaQ0KPiA+PiAgICBhOgliOCAzZSAwMCAwMCAwMCAgICAgICAJbW92
-ICAgICQweDNlLCVlYXgNCj4gPj4gICAgZjoJMGYgMDUgICAgICAgICAgICAgICAgCXN5c2NhbGwN
-Cj4gPj4gICAxMToJNDggODkgYzcgICAgICAgICAgICAgCW1vdiAgICAlcmF4LCVyZGkNCj4gPj4g
-ICAxNDoJZTggMDAgMDAgMDAgMDAgICAgICAgCWNhbGxxICAxOSA8a2lsbCsweDE5Pg0KPiA+PiAg
-IDE5Ogk1YSAgICAgICAgICAgICAgICAgICAJcG9wICAgICVyZHgNCj4gPj4gICAxYToJYzMgICAg
-ICAgICAgICAgICAgICAgCXJldHENCj4gPg0KPiA+IFdvdyB0aGF0J3Mgc29tZSBleHRyYW9yZGlu
-YXJpbHkgYmFkIGNvZGVnZW4gZ29pbmcgb24gYnkgZ2NjLi4uIFRoZQ0KPiA+IHNpZ24tZXh0ZW5z
-aW9uIGlzIHNlbWFudGljYWxseSBuZWVkZWQgYW5kIEkgZG9uJ3Qgc2VlIGEgZ29vZCB3YXkNCj4g
-PiBhcm91bmQgaXQgKGdsaWJjJ3MgYXNtIGlzIGtpbmRhIGEgaGFjayB0YWtpbmcgYWR2YW50YWdl
-IG9mIGtlcm5lbCBub3QNCj4gPiBsb29raW5nIGF0IGhpZ2ggYml0cywgSSB0aGluayksIGJ1dCB0
-aGUgZ3JhdHVpdG91cyBzdGFjayBhZGp1c3RtZW50DQo+ID4gYW5kIHJlZnVzYWwgdG8gZ2VuZXJh
-dGUgYSB0YWlsIGNhbGwgaXNuJ3QuIEknbGwgc2VlIGlmIHdlIGNhbiB0cmFjaw0KPiA+IGRvd24g
-d2hhdCdzIGdvaW5nIG9uIGFuZCBnZXQgaXQgZml4ZWQuDQoNCkEgc3VpdGFibGUgY2FzdCBtaWdo
-dCBnZXQgcmlkIG9mIHRoZSBzaWduIGV4dGVuc2lvbi4NClBvc3NpYmx5IGp1c3QgKHVuc2lnbmVk
-IGludCkuDQoNCglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3MgTGFrZXNpZGUsIEJyYW1s
-ZXkgUm9hZCwgTW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQVCwgVUsNClJlZ2lzdHJh
-dGlvbiBObzogMTM5NzM4NiAoV2FsZXMpDQo=
+This patch series convert the remaining files under Documentation/filesystems
+to the ReST file format (except for dax.txt and patch-lookup.txt). 
+
+It is based on linux-next (next-2020021).
+
+PS.: I opted to add mainly ML from the output of get_maintainers.pl to the c/c
+list of patch 00/34, because  otherwise the number of c/c would be too many,
+with would very likely cause ML servers to reject it.
+
+The results of those changes (together with other changes from my pending
+doc patches) are available at:
+
+   https://www.infradead.org/~mchehab/kernel_docs/filesystems/index.html
+
+And the series is also on my git tree:
+
+  https://git.linuxtv.org/mchehab/experimental.git/log/?h=fs_docs
+
+If you prefer, feel free to merge the patches via the filesystems git tree(s).
+
+- 
+
+v2:
+
+   - Removed dax.txt, in order to prevent a merge conflict with a dax patchset;
+   - Removed patch-lookup.txt conversion, due to patch-lookup.rst.
+     (I'll revisit this on some future)
+   - Removed a patch that was already merged;
+   - Added some Acked-by.
+
+
+Mauro Carvalho Chehab (29):
+  docs: filesystems: convert caching/object.txt to ReST
+  docs: filesystems: convert caching/fscache.txt to ReST format
+  docs: filesystems: caching/netfs-api.txt: convert it to ReST
+  docs: filesystems: caching/operations.txt: convert it to ReST
+  docs: filesystems: caching/cachefiles.txt: convert to ReST
+  docs: filesystems: caching/backend-api.txt: convert it to ReST
+  docs: filesystems: convert cifs/cifsroot.txt to ReST
+  docs: filesystems: convert configfs.txt to ReST
+  docs: filesystems: convert automount-support.txt to ReST
+  docs: filesystems: convert coda.txt to ReST
+  docs: filesystems: convert devpts.txt to ReST
+  docs: filesystems: convert dnotify.txt to ReST
+  docs: filesystems: convert fiemap.txt to ReST
+  docs: filesystems: convert files.txt to ReST
+  docs: filesystems: convert fuse-io.txt to ReST
+  docs: filesystems: convert locks.txt to ReST
+  docs: filesystems: convert mandatory-locking.txt to ReST
+  docs: filesystems: convert mount_api.txt to ReST
+  docs: filesystems: convert quota.txt to ReST
+  docs: filesystems: convert seq_file.txt to ReST
+  docs: filesystems: convert sharedsubtree.txt to ReST
+  docs: filesystems: split spufs.txt into 3 separate files
+  docs: filesystems: convert spufs/spu_create.txt to ReST
+  docs: filesystems: convert spufs/spufs.txt to ReST
+  docs: filesystems: convert spufs/spu_run.txt to ReST
+  docs: filesystems: convert sysfs-pci.txt to ReST
+  docs: filesystems: convert sysfs-tagging.txt to ReST
+  docs: filesystems: convert xfs-delayed-logging-design.txt to ReST
+  docs: filesystems: convert xfs-self-describing-metadata.txt to ReST
+
+ Documentation/admin-guide/sysctl/kernel.rst   |    2 +-
+ ...ount-support.txt => automount-support.rst} |   23 +-
+ .../{backend-api.txt => backend-api.rst}      |  165 +-
+ .../{cachefiles.txt => cachefiles.rst}        |  139 +-
+ Documentation/filesystems/caching/fscache.rst |  565 ++++++
+ Documentation/filesystems/caching/fscache.txt |  448 -----
+ Documentation/filesystems/caching/index.rst   |   14 +
+ .../caching/{netfs-api.txt => netfs-api.rst}  |  172 +-
+ .../caching/{object.txt => object.rst}        |   43 +-
+ .../{operations.txt => operations.rst}        |   45 +-
+ .../cifs/{cifsroot.txt => cifsroot.rst}       |   56 +-
+ Documentation/filesystems/coda.rst            | 1670 ++++++++++++++++
+ Documentation/filesystems/coda.txt            | 1676 -----------------
+ .../{configfs/configfs.txt => configfs.rst}   |  129 +-
+ Documentation/filesystems/devpts.rst          |   36 +
+ Documentation/filesystems/devpts.txt          |   26 -
+ .../filesystems/{dnotify.txt => dnotify.rst}  |   11 +-
+ .../filesystems/{fiemap.txt => fiemap.rst}    |  133 +-
+ .../filesystems/{files.txt => files.rst}      |   15 +-
+ .../filesystems/{fuse-io.txt => fuse-io.rst}  |    6 +
+ Documentation/filesystems/index.rst           |   23 +
+ .../filesystems/{locks.txt => locks.rst}      |   14 +-
+ ...tory-locking.txt => mandatory-locking.rst} |   25 +-
+ .../{mount_api.txt => mount_api.rst}          |  329 ++--
+ Documentation/filesystems/proc.rst            |    2 +-
+ .../filesystems/{quota.txt => quota.rst}      |   41 +-
+ .../{seq_file.txt => seq_file.rst}            |   61 +-
+ .../{sharedsubtree.txt => sharedsubtree.rst}  |  394 ++--
+ Documentation/filesystems/spufs/index.rst     |   13 +
+ .../filesystems/spufs/spu_create.rst          |  131 ++
+ Documentation/filesystems/spufs/spu_run.rst   |  138 ++
+ .../{spufs.txt => spufs/spufs.rst}            |  304 +--
+ .../{sysfs-pci.txt => sysfs-pci.rst}          |   23 +-
+ .../{sysfs-tagging.txt => sysfs-tagging.rst}  |   22 +-
+ ...ign.txt => xfs-delayed-logging-design.rst} |   65 +-
+ ...a.txt => xfs-self-describing-metadata.rst} |  182 +-
+ Documentation/iio/iio_configfs.rst            |    2 +-
+ Documentation/usb/gadget_configfs.rst         |    4 +-
+ MAINTAINERS                                   |   14 +-
+ fs/cachefiles/Kconfig                         |    4 +-
+ fs/coda/Kconfig                               |    2 +-
+ fs/configfs/inode.c                           |    2 +-
+ fs/configfs/item.c                            |    2 +-
+ fs/fscache/Kconfig                            |    8 +-
+ fs/fscache/cache.c                            |    8 +-
+ fs/fscache/cookie.c                           |    2 +-
+ fs/fscache/object.c                           |    4 +-
+ fs/fscache/operation.c                        |    2 +-
+ fs/locks.c                                    |    2 +-
+ include/linux/configfs.h                      |    2 +-
+ include/linux/fs_context.h                    |    2 +-
+ include/linux/fscache-cache.h                 |    4 +-
+ include/linux/fscache.h                       |   42 +-
+ include/linux/lsm_hooks.h                     |    2 +-
+ 54 files changed, 3844 insertions(+), 3405 deletions(-)
+ rename Documentation/filesystems/{automount-support.txt => automount-support.rst} (92%)
+ rename Documentation/filesystems/caching/{backend-api.txt => backend-api.rst} (87%)
+ rename Documentation/filesystems/caching/{cachefiles.txt => cachefiles.rst} (90%)
+ create mode 100644 Documentation/filesystems/caching/fscache.rst
+ delete mode 100644 Documentation/filesystems/caching/fscache.txt
+ create mode 100644 Documentation/filesystems/caching/index.rst
+ rename Documentation/filesystems/caching/{netfs-api.txt => netfs-api.rst} (91%)
+ rename Documentation/filesystems/caching/{object.txt => object.rst} (95%)
+ rename Documentation/filesystems/caching/{operations.txt => operations.rst} (90%)
+ rename Documentation/filesystems/cifs/{cifsroot.txt => cifsroot.rst} (72%)
+ create mode 100644 Documentation/filesystems/coda.rst
+ delete mode 100644 Documentation/filesystems/coda.txt
+ rename Documentation/filesystems/{configfs/configfs.txt => configfs.rst} (87%)
+ create mode 100644 Documentation/filesystems/devpts.rst
+ delete mode 100644 Documentation/filesystems/devpts.txt
+ rename Documentation/filesystems/{dnotify.txt => dnotify.rst} (90%)
+ rename Documentation/filesystems/{fiemap.txt => fiemap.rst} (70%)
+ rename Documentation/filesystems/{files.txt => files.rst} (95%)
+ rename Documentation/filesystems/{fuse-io.txt => fuse-io.rst} (95%)
+ rename Documentation/filesystems/{locks.txt => locks.rst} (91%)
+ rename Documentation/filesystems/{mandatory-locking.txt => mandatory-locking.rst} (91%)
+ rename Documentation/filesystems/{mount_api.txt => mount_api.rst} (79%)
+ rename Documentation/filesystems/{quota.txt => quota.rst} (81%)
+ rename Documentation/filesystems/{seq_file.txt => seq_file.rst} (92%)
+ rename Documentation/filesystems/{sharedsubtree.txt => sharedsubtree.rst} (72%)
+ create mode 100644 Documentation/filesystems/spufs/index.rst
+ create mode 100644 Documentation/filesystems/spufs/spu_create.rst
+ create mode 100644 Documentation/filesystems/spufs/spu_run.rst
+ rename Documentation/filesystems/{spufs.txt => spufs/spufs.rst} (57%)
+ rename Documentation/filesystems/{sysfs-pci.txt => sysfs-pci.rst} (92%)
+ rename Documentation/filesystems/{sysfs-tagging.txt => sysfs-tagging.rst} (72%)
+ rename Documentation/filesystems/{xfs-delayed-logging-design.txt => xfs-delayed-logging-design.rst} (97%)
+ rename Documentation/filesystems/{xfs-self-describing-metadata.txt => xfs-self-describing-metadata.rst} (83%)
+
+-- 
+2.25.2
+
 
