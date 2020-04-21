@@ -2,109 +2,92 @@ Return-Path: <SRS0=D6Rn=6F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00764C54FC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:41:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C84B1C54FCC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:47:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5712D206D4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:41:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="YGLRkvXM";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="OzpHEZaD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5712D206D4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 85B1D20679
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2020 14:47:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85B1D20679
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4965qL4DmtzDqDl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 00:41:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4965y85Bg9zDqPC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 00:47:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=eesposit@redhat.com;
+ smtp.mailfrom=de.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@de.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=YGLRkvXM; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=OzpHEZaD; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
+ dmarc=none (p=none dis=none) header.from=de.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4964s66hWCzDqfy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 23:58:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587477479;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=HdQnJbrJQhcdgn4KZAPJXioNX2auoHhY5SDkJ449hT8=;
- b=YGLRkvXM48UfylPsSVx3XHwdqWO1NZx7KRp2Y8QY4yMDni/Z2ShRCqn6wY5VH2T7il8uF1
- L9WC6NTwhxomceUO7QK28aY+vW5Dx0+lOwcGzM44CUg6pE/NpE+bkPQiL8m7ReFwTs6V58
- N3Xqb4qd7K10wbE5FjXoK1u+KXeQNi4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1587477480;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=HdQnJbrJQhcdgn4KZAPJXioNX2auoHhY5SDkJ449hT8=;
- b=OzpHEZaDMfKc6plZq3wKxtL+vPptfgy8ax153apofFnCShT5N5JqlktXOSYOseh5h/YCfD
- 1bgm4qfG5WZuHhWS/w4j3ng3gnIUkmOg8CwJtP5Fwho64GM1M+WqBky2WxJL2cJtiMpvKg
- Lwqtx6AXYuM8/nukJzkpIe5JwBYvvsE=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-223-2l33L_KSMUi11To8cRq7Yw-1; Tue, 21 Apr 2020 09:57:58 -0400
-X-MC-Unique: 2l33L_KSMUi11To8cRq7Yw-1
-Received: by mail-wr1-f71.google.com with SMTP id p16so7523084wro.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 06:57:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=jPnP4qV6sDaGZ2bSbejYPzydlvKfgMg0o/pB9q3go8E=;
- b=SWvpWI0s5ReqTZdDWglGAJqXTcwVNGxbZNkLTN9IBbGWRY60S7igbnRvNMgaiQZz4H
- LaHdFY2QsUqHeHOl7xdhLhsGmBgDNvEHgwTjsCUOSx+eedrMYBR+Dq7xo4RRT8lsgdTP
- KFyCVsrQRixWtglpZCZp9/5Bo9Rt4w3A3Rl2MELI1E4erfUUqcAU45nuoe/VrlZOZl8d
- kQ1zLih7/ONIcXkCGLecF582poLSYha/F3Z5PFzvQOQhUMlB+Xdungg59ftKAnCPidah
- iJtQCE99eghoJJBrQPVWaNAHhTYv/5qs6VCaKetjgd84VNdgtM0J3kpHD2oTudcIsusY
- qzxQ==
-X-Gm-Message-State: AGi0PuYaKGsDp9u3Y6R/9TzN0TfeE2RHgL0Lcg3M/0nJ8Nf4VBEdMsBd
- YL/WWqixKUu6X5K4U+l7Wcw5C4Yl/Ca4NMFCIa4VKE648dt6vsdgyQ6NqdF/GwP323HksdD82nJ
- aXhDLKEugpkek/+6l7KJZvbqCZQ==
-X-Received: by 2002:a05:600c:da:: with SMTP id
- u26mr5188172wmm.48.1587477474538; 
- Tue, 21 Apr 2020 06:57:54 -0700 (PDT)
-X-Google-Smtp-Source: APiQypImms4WydeI5+8l3z5lWKRrEMa+0XfWFGcGeKI2hzBQZu8YXbxqfuv1YC/rok2n8KUUpE7+Vg==
-X-Received: by 2002:a05:600c:da:: with SMTP id
- u26mr5188144wmm.48.1587477474268; 
- Tue, 21 Apr 2020 06:57:54 -0700 (PDT)
-Received: from localhost.localdomain.com ([194.230.155.194])
- by smtp.gmail.com with ESMTPSA id f23sm3562989wml.4.2020.04.21.06.57.52
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 21 Apr 2020 06:57:53 -0700 (PDT)
-From: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-To: linux-fsdevel@vger.kernel.org
-Subject: [PATCH v2 7/7] tracefs: switch to simplefs inode creation API
-Date: Tue, 21 Apr 2020 15:57:41 +0200
-Message-Id: <20200421135741.30657-5-eesposit@redhat.com>
-X-Mailer: git-send-email 2.25.2
-In-Reply-To: <20200421135119.30007-1-eesposit@redhat.com>
-References: <20200421135119.30007-1-eesposit@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4964yG0qCpzDqKH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 00:02:29 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03LDYjog146036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 10:02:26 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30gcbfhqge-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2020 10:02:23 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
+ Tue, 21 Apr 2020 15:01:30 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 21 Apr 2020 15:01:21 +0100
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03LE24dv53608476
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 21 Apr 2020 14:02:04 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0AFD5A4057;
+ Tue, 21 Apr 2020 14:02:04 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2FEB3A405B;
+ Tue, 21 Apr 2020 14:02:03 +0000 (GMT)
+Received: from thinkpad (unknown [9.145.65.41])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 21 Apr 2020 14:02:03 +0000 (GMT)
+Date: Tue, 21 Apr 2020 16:02:01 +0200
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+To: Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH v3 0/4] Clean up hugetlb boot command line processing
+In-Reply-To: <20200417185049.275845-1-mike.kravetz@oracle.com>
+References: <20200417185049.275845-1-mike.kravetz@oracle.com>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 20042114-4275-0000-0000-000003C3FB90
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20042114-4276-0000-0000-000038D9805D
+Message-Id: <20200421160201.0ddb9763@thinkpad>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-21_05:2020-04-20,
+ 2020-04-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 mlxlogscore=999
+ clxscore=1015 suspectscore=0 malwarescore=0 spamscore=0 impostorscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004210108
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,157 +99,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, David Airlie <airlied@linux.ie>,
- dri-devel@lists.freedesktop.org, Christoph Hellwig <hch@lst.de>,
- Andrew Donnellan <ajd@linux.ibm.com>,
- Emanuele Giuseppe Esposito <eesposit@redhat.com>, linux-scsi@vger.kernel.org,
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- Daniel Vetter <daniel@ffwll.ch>, Arnd Bergmann <arnd@arndb.de>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, "Manoj N. Kumar" <manoj@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- "Matthew R. Ochs" <mrochs@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>,
- John Johansen <john.johansen@canonical.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Joel Becker <jlbec@evilplan.org>
+Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Mina Almasry <almasrymina@google.com>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Longpeng <longpeng2@huawei.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Nitesh Narayan Lal <nitesh@redhat.com>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no semantic change intended; the code in the libfs.c
-functions in fact was derived from debugfs and tracefs code.
+On Fri, 17 Apr 2020 11:50:45 -0700
+Mike Kravetz <mike.kravetz@oracle.com> wrote:
 
-Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
----
- fs/tracefs/inode.c | 86 ++++------------------------------------------
- 1 file changed, 7 insertions(+), 79 deletions(-)
+> v3 -
+>    Used weak attribute method of defining arch_hugetlb_valid_size.
+>      This eliminates changes to arch specific hugetlb.h files (Peter)
+>    Updated documentation (Peter, Randy)
+>    Fixed handling of implicitly specified gigantic page preallocation
+>      in existing code and removed documentation of such.  There is now
+>      no difference between handling of gigantic and non-gigantic pages.
+>      (Peter, Nitesh).
+>      This requires the most review as there is a small change to
+>      undocumented behavior.  See patch 4 commit message for details.
+>    Added Acks and Reviews (Mina, Peter)
+> 
+> v2 -
+>    Fix build errors with patch 1 (Will)
+>    Change arch_hugetlb_valid_size arg to unsigned long and remove
+>      irrelevant 'extern' keyword (Christophe)
+>    Documentation and other misc changes (Randy, Christophe, Mina)
+>    Do not process command line options if !hugepages_supported()
+>      (Dave, but it sounds like we may want to additional changes to
+>       hugepages_supported() for x86?  If that is needed I would prefer
+>       a separate patch.)
+> 
+> Longpeng(Mike) reported a weird message from hugetlb command line processing
+> and proposed a solution [1].  While the proposed patch does address the
+> specific issue, there are other related issues in command line processing.
+> As hugetlbfs evolved, updates to command line processing have been made to
+> meet immediate needs and not necessarily in a coordinated manner.  The result
+> is that some processing is done in arch specific code, some is done in arch
+> independent code and coordination is problematic.  Semantics can vary between
+> architectures.
+> 
+> The patch series does the following:
+> - Define arch specific arch_hugetlb_valid_size routine used to validate
+>   passed huge page sizes.
+> - Move hugepagesz= command line parsing out of arch specific code and into
+>   an arch independent routine.
+> - Clean up command line processing to follow desired semantics and
+>   document those semantics.
+> 
+> [1] https://lore.kernel.org/linux-mm/20200305033014.1152-1-longpeng2@huawei.com
+> 
+> Mike Kravetz (4):
+>   hugetlbfs: add arch_hugetlb_valid_size
+>   hugetlbfs: move hugepagesz= parsing to arch independent code
+>   hugetlbfs: remove hugetlb_add_hstate() warning for existing hstate
+>   hugetlbfs: clean up command line processing
+> 
+>  .../admin-guide/kernel-parameters.txt         |  40 ++--
+>  Documentation/admin-guide/mm/hugetlbpage.rst  |  35 ++++
+>  arch/arm64/mm/hugetlbpage.c                   |  30 +--
+>  arch/powerpc/mm/hugetlbpage.c                 |  30 +--
+>  arch/riscv/mm/hugetlbpage.c                   |  24 +--
+>  arch/s390/mm/hugetlbpage.c                    |  24 +--
+>  arch/sparc/mm/init_64.c                       |  43 +---
+>  arch/x86/mm/hugetlbpage.c                     |  23 +--
+>  include/linux/hugetlb.h                       |   2 +-
+>  mm/hugetlb.c                                  | 190 +++++++++++++++---
+>  10 files changed, 271 insertions(+), 170 deletions(-)
+> 
 
-diff --git a/fs/tracefs/inode.c b/fs/tracefs/inode.c
-index 370eb38ff1ad..bceaa4f45da2 100644
---- a/fs/tracefs/inode.c
-+++ b/fs/tracefs/inode.c
-@@ -308,57 +308,6 @@ static struct file_system_type trace_fs_type =3D {
- };
- MODULE_ALIAS_FS("tracefs");
-=20
--static struct dentry *start_creating(const char *name, struct dentry *pare=
-nt)
--{
--=09struct dentry *dentry;
--=09int error;
--
--=09pr_debug("tracefs: creating file '%s'\n",name);
--
--=09error =3D simple_pin_fs(&tracefs, &trace_fs_type);
--=09if (error)
--=09=09return ERR_PTR(error);
--
--=09/* If the parent is not specified, we create it in the root.
--=09 * We need the root dentry to do this, which is in the super
--=09 * block. A pointer to that is in the struct vfsmount that we
--=09 * have around.
--=09 */
--=09if (!parent)
--=09=09parent =3D tracefs.mount->mnt_root;
--
--=09inode_lock(parent->d_inode);
--=09if (unlikely(IS_DEADDIR(parent->d_inode)))
--=09=09dentry =3D ERR_PTR(-ENOENT);
--=09else
--=09=09dentry =3D lookup_one_len(name, parent, strlen(name));
--=09if (!IS_ERR(dentry) && dentry->d_inode) {
--=09=09dput(dentry);
--=09=09dentry =3D ERR_PTR(-EEXIST);
--=09}
--
--=09if (IS_ERR(dentry)) {
--=09=09inode_unlock(parent->d_inode);
--=09=09simple_release_fs(&tracefs);
--=09}
--
--=09return dentry;
--}
--
--static struct dentry *failed_creating(struct dentry *dentry)
--{
--=09inode_unlock(dentry->d_parent->d_inode);
--=09dput(dentry);
--=09simple_release_fs(&tracefs);
--=09return NULL;
--}
--
--static struct dentry *end_creating(struct dentry *dentry)
--{
--=09inode_unlock(dentry->d_parent->d_inode);
--=09return dentry;
--}
--
- /**
-  * tracefs_create_file - create a file in the tracefs filesystem
-  * @name: a pointer to a string containing the name of the file to create.
-@@ -395,49 +344,28 @@ struct dentry *tracefs_create_file(const char *name, =
-umode_t mode,
- =09if (security_locked_down(LOCKDOWN_TRACEFS))
- =09=09return NULL;
-=20
--=09if (!(mode & S_IFMT))
--=09=09mode |=3D S_IFREG;
--=09BUG_ON(!S_ISREG(mode));
--=09dentry =3D start_creating(name, parent);
--
-+=09dentry =3D simplefs_create_file(&tracefs, &trace_fs_type,
-+=09=09=09=09      name, mode, parent, data, &inode);
- =09if (IS_ERR(dentry))
- =09=09return NULL;
-=20
--=09inode =3D tracefs_get_inode(dentry->d_sb);
--=09if (unlikely(!inode))
--=09=09return failed_creating(dentry);
--
--=09inode->i_mode =3D mode;
- =09inode->i_fop =3D fops ? fops : &tracefs_file_operations;
--=09inode->i_private =3D data;
--=09d_instantiate(dentry, inode);
--=09fsnotify_create(dentry->d_parent->d_inode, dentry);
--=09return end_creating(dentry);
-+=09return simplefs_finish_dentry(dentry, inode);
- }
-=20
- static struct dentry *__create_dir(const char *name, struct dentry *parent=
-,
- =09=09=09=09   const struct inode_operations *ops)
- {
--=09struct dentry *dentry =3D start_creating(name, parent);
-+=09struct dentry *dentry;
- =09struct inode *inode;
-=20
-+=09dentry =3D simplefs_create_dir(&tracefs, &trace_fs_type,
-+=09=09=09=09     name, 0755, parent, &inode);
- =09if (IS_ERR(dentry))
- =09=09return NULL;
-=20
--=09inode =3D tracefs_get_inode(dentry->d_sb);
--=09if (unlikely(!inode))
--=09=09return failed_creating(dentry);
--
--=09inode->i_mode =3D S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO;
- =09inode->i_op =3D ops;
--=09inode->i_fop =3D &simple_dir_operations;
--
--=09/* directory inodes start off with i_nlink =3D=3D 2 (for "." entry) */
--=09inc_nlink(inode);
--=09d_instantiate(dentry, inode);
--=09inc_nlink(dentry->d_parent->d_inode);
--=09fsnotify_mkdir(dentry->d_parent->d_inode, dentry);
--=09return end_creating(dentry);
-+=09return simplefs_finish_dentry(dentry, inode);
- }
-=20
- /**
---=20
-2.25.2
+Looks good and works fine for s390, thanks for cleaning up!
+
+Acked-by: Gerald Schaefer <gerald.schaefer@de.ibm.com> # s390
 
