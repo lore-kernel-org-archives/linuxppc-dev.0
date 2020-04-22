@@ -2,55 +2,65 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-11.7 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3065BC55185
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 11:15:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9AE3C55185
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 12:25:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB62020781
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 11:15:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB62020781
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 343C520882
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 12:25:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 343C520882
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496dBs2rfLzDqcX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 21:15:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 496flG4vhnzDq6N
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 22:24:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=vbabka@suse.cz;
- receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=linutronix.de
+ (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
+ envelope-from=tip-bot2@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496d924QkLzDqYC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 21:13:42 +1000 (AEST)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 6DE4AAE6D;
- Wed, 22 Apr 2020 11:13:36 +0000 (UTC)
-Subject: Re: ppc64 early slub caches have zero random value
-To: Nicolai Stange <nstange@suse.de>
-References: <20200417165304.GF25468@kitsune.suse.cz>
- <8c93960b-587e-a576-91b8-666f106f8b60@suse.cz> <871rohz0zk.fsf@suse.de>
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <ec2e236a-0b9d-b4dd-10d4-1585efdcc515@suse.cz>
-Date: Wed, 22 Apr 2020 13:13:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496fb93slczDqGP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 22:17:51 +1000 (AEST)
+Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tip-bot2@linutronix.de>)
+ id 1jREJr-0007u5-50; Wed, 22 Apr 2020 14:17:35 +0200
+Received: from [127.0.1.1] (localhost [IPv6:::1])
+ by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id 627A51C04CD;
+ Wed, 22 Apr 2020 14:17:29 +0200 (CEST)
+Date: Wed, 22 Apr 2020 12:17:29 -0000
+From: "tip-bot2 for Jiri Olsa" <tip-bot2@linutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip: perf/core] perf expr: Add expr_ prefix for parse_ctx and
+ parse_id
+In-Reply-To: <20200401203340.31402-2-kjain@linux.ibm.com>
+References: <20200401203340.31402-2-kjain@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <871rohz0zk.fsf@suse.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Message-ID: <158755784901.28353.11635773468936681149.tip-bot2@tip-bot2>
+X-Mailer: tip-git-log-daemon
+Robot-ID: <tip-bot2.linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from
+ these emails
+Precedence: bulk
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
-Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,116 +69,213 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, Theodore Ts'o <tytso@mit.edu>,
- Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Andy Lutomirski <luto@kernel.org>,
- =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+Reply-To: linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Jin Yao <yao.jin@linux.intel.com>,
+ Kan Liang <kan.liang@linux.intel.com>, Andi Kleen <ak@linux.intel.com>,
+ x86 <x86@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Anju T Sudhakar <anju@linux.vnet.ibm.com>,
+ Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, Joe Mario <jmario@redhat.com>,
+ Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Michael Petlan <mpetlan@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Jiri Olsa <jolsa@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/21/20 10:39 AM, Nicolai Stange wrote:
-> Hi
-> 
-> [adding some drivers/char/random folks + LKML to CC]
-> 
-> Vlastimil Babka <vbabka@suse.cz> writes:
-> 
->> On 4/17/20 6:53 PM, Michal Suchánek wrote:
->>> Hello,
->>
->> Hi, thanks for reproducing on latest upstream!
->>
->>> instrumenting the kernel with the following patch
->>> 
->>> ---
->>>  mm/slub.c | 1 +
->>>  1 file changed, 1 insertion(+)
->>> 
->>> diff --git a/mm/slub.c b/mm/slub.c
->>> index d6787bbe0248..d40995d5f8ff 100644
->>> --- a/mm/slub.c
->>> +++ b/mm/slub.c
->>> @@ -3633,6 +3633,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
->>>  	s->flags = kmem_cache_flags(s->size, flags, s->name, s->ctor);
->>>  #ifdef CONFIG_SLAB_FREELIST_HARDENED
->>>  	s->random = get_random_long();
->>> +	pr_notice("Creating cache %s with s->random=%ld\n", s->name, s->random);
->>>  #endif
->>>  
->>>  	if (!calculate_sizes(s, -1))
->>> 
->>> I get:
->>> 
->>> [    0.000000] random: get_random_u64 called from kmem_cache_open+0x3c/0x5b0
->> with crng_init=0
->>> [    0.000000] Creating cache kmem_cache_node with s->random=0
->>> [    0.000000] Creating cache kmem_cache with s->random=0
->>> [    0.000000] Creating cache kmalloc-8 with s->random=0
->>> [    0.000000] Creating cache kmalloc-16 with s->random=0
->>> [    0.000000] Creating cache kmalloc-32 with s->random=0
->>> [    0.000000] Creating cache kmalloc-64 with s->random=0
->>> [    0.000000] Creating cache kmalloc-96 with s->random=0
->>> [    0.000000] Creating cache kmalloc-128 with s->random=0
->>> [    0.000000] Creating cache kmalloc-192 with s->random=-682532147323126958
->>> 
->>> The earliest caches created invariably end up with s->random of zero.
+The following commit has been merged into the perf/core branch of tip:
 
-I have also realized that the rest of the early created caches is initialized
-with albeit non-zero, but in fact deterministically same same sequence values.
+Commit-ID:     aecce63e2b98f28606b063949cca06facf215d6c
+Gitweb:        https://git.kernel.org/tip/aecce63e2b98f28606b063949cca06facf215d6c
+Author:        Jiri Olsa <jolsa@kernel.org>
+AuthorDate:    Thu, 02 Apr 2020 02:03:34 +05:30
+Committer:     Arnaldo Carvalho de Melo <acme@redhat.com>
+CommitterDate: Thu, 16 Apr 2020 12:19:13 -03:00
 
->> It seems that reliably it's the first 8 calls get_random_u64(), which sounds
->> more like some off-by-X bug than a genuine lack entropy that would become fixed
->> in the meanwhile?
->>
->>> This is a problem for crash which does not recognize these as randomized
->>> and fails to read them. While this can be addressed in crash is it
->>> intended to create caches with zero random value in the kernel?
->>
->> Definitely not. The question is more likely what guarantees we have with
->> crng_init=0. Probably we can't expect cryptographically strong randomness, but
->> zeroes still do look like a bug to me?
->>
->>> This is broken at least in the 5.4~5.7 range but it is not clear if this
->>> ever worked. All examples of earlier kernels I have at hand use slab mm.
->>> 
->>> Thanks
->>> 
->>> Michal
->>>
-> 
-> FWIW, I've seen something similar in a slightly different context,
-> c.f. [1].
-> 
-> Basically, the issue is that on anything but x86_64 (and perhaps arm64
-> IIRC), arch_get_random_long() is unavailable and thus, get_random_u64()
-> falls through to that batched extract_crng() extraction. That is, it
-> extracts eight random longs from the chacha20 based RNG at once and
-> batches them up for consumption by the current and subsequent
-> get_random_u64() invocations. Which is in line with your observation
-> that get_random_u64() returned zero exactly eight times in a row.
-> 
-> The fact that extract_crng() actually extracted eight successive zero
-> values surprised me though. But from looking at chacha20_block(), called
-> from _extract_crng() with the primary_crng instance's state buffer as
-> input, it seems like a zeroed state buffer gets identity transformed and
-> that all this fancy shifting and rolling and whatnot in chacha_permute()
-> would have no effect at all. So I suppose that the primary_crng's state
-> buffer is still zeroed out at that point during boot.
+perf expr: Add expr_ prefix for parse_ctx and parse_id
 
-Looks so, thanks for explanation. So there's simply no entropy and the kmalloc-X
-caches have deterministic s->random. Zeroes are just more obvious and may fail
-e.g. to prevent detection for random corruptions (so we should still fix
-those?), while for an attacker anything predictable is bad, and I don't know
-what to do about it. If we were to e.g. reseed the early created kmalloc caches
-later where crng is fully inited, we would have to basically "stop the world"
-and rewrite existing freelists.
+Adding expr_ prefix for parse_ctx and parse_id, to straighten out the
+expr* namespace.
 
-> Thanks,
-> 
-> Nicolai
-> 
-> [1] https://lkml.kernel.org/r/87d08rbbg9.fsf@suse.de
-> 
+There's no functional change.
 
+Signed-off-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jin Yao <yao.jin@linux.intel.com>
+Cc: Joe Mario <jmario@redhat.com>
+Cc: Kajol Jain <kjain@linux.ibm.com>
+Cc: Kan Liang <kan.liang@linux.intel.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Petlan <mpetlan@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lore.kernel.org/lkml/20200401203340.31402-2-kjain@linux.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/tests/expr.c       |  4 ++--
+ tools/perf/util/expr.c        | 10 +++++-----
+ tools/perf/util/expr.h        | 12 ++++++------
+ tools/perf/util/expr.y        |  6 +++---
+ tools/perf/util/stat-shadow.c |  2 +-
+ 5 files changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
+index 28313e5..ea10fc4 100644
+--- a/tools/perf/tests/expr.c
++++ b/tools/perf/tests/expr.c
+@@ -6,7 +6,7 @@
+ #include <string.h>
+ #include <linux/zalloc.h>
+ 
+-static int test(struct parse_ctx *ctx, const char *e, double val2)
++static int test(struct expr_parse_ctx *ctx, const char *e, double val2)
+ {
+ 	double val;
+ 
+@@ -22,7 +22,7 @@ int test__expr(struct test *t __maybe_unused, int subtest __maybe_unused)
+ 	const char **other;
+ 	double val;
+ 	int i, ret;
+-	struct parse_ctx ctx;
++	struct expr_parse_ctx ctx;
+ 	int num_other;
+ 
+ 	expr__ctx_init(&ctx);
+diff --git a/tools/perf/util/expr.c b/tools/perf/util/expr.c
+index fd192dd..c8ccc54 100644
+--- a/tools/perf/util/expr.c
++++ b/tools/perf/util/expr.c
+@@ -11,7 +11,7 @@ extern int expr_debug;
+ #endif
+ 
+ /* Caller must make sure id is allocated */
+-void expr__add_id(struct parse_ctx *ctx, const char *name, double val)
++void expr__add_id(struct expr_parse_ctx *ctx, const char *name, double val)
+ {
+ 	int idx;
+ 
+@@ -21,13 +21,13 @@ void expr__add_id(struct parse_ctx *ctx, const char *name, double val)
+ 	ctx->ids[idx].val = val;
+ }
+ 
+-void expr__ctx_init(struct parse_ctx *ctx)
++void expr__ctx_init(struct expr_parse_ctx *ctx)
+ {
+ 	ctx->num_ids = 0;
+ }
+ 
+ static int
+-__expr__parse(double *val, struct parse_ctx *ctx, const char *expr,
++__expr__parse(double *val, struct expr_parse_ctx *ctx, const char *expr,
+ 	      int start)
+ {
+ 	YY_BUFFER_STATE buffer;
+@@ -52,7 +52,7 @@ __expr__parse(double *val, struct parse_ctx *ctx, const char *expr,
+ 	return ret;
+ }
+ 
+-int expr__parse(double *final_val, struct parse_ctx *ctx, const char *expr)
++int expr__parse(double *final_val, struct expr_parse_ctx *ctx, const char *expr)
+ {
+ 	return __expr__parse(final_val, ctx, expr, EXPR_PARSE) ? -1 : 0;
+ }
+@@ -75,7 +75,7 @@ int expr__find_other(const char *expr, const char *one, const char ***other,
+ 		     int *num_other)
+ {
+ 	int err, i = 0, j = 0;
+-	struct parse_ctx ctx;
++	struct expr_parse_ctx ctx;
+ 
+ 	expr__ctx_init(&ctx);
+ 	err = __expr__parse(NULL, &ctx, expr, EXPR_OTHER);
+diff --git a/tools/perf/util/expr.h b/tools/perf/util/expr.h
+index 9377538..b9e53f2 100644
+--- a/tools/perf/util/expr.h
++++ b/tools/perf/util/expr.h
+@@ -5,19 +5,19 @@
+ #define EXPR_MAX_OTHER 20
+ #define MAX_PARSE_ID EXPR_MAX_OTHER
+ 
+-struct parse_id {
++struct expr_parse_id {
+ 	const char *name;
+ 	double val;
+ };
+ 
+-struct parse_ctx {
++struct expr_parse_ctx {
+ 	int num_ids;
+-	struct parse_id ids[MAX_PARSE_ID];
++	struct expr_parse_id ids[MAX_PARSE_ID];
+ };
+ 
+-void expr__ctx_init(struct parse_ctx *ctx);
+-void expr__add_id(struct parse_ctx *ctx, const char *id, double val);
+-int expr__parse(double *final_val, struct parse_ctx *ctx, const char *expr);
++void expr__ctx_init(struct expr_parse_ctx *ctx);
++void expr__add_id(struct expr_parse_ctx *ctx, const char *id, double val);
++int expr__parse(double *final_val, struct expr_parse_ctx *ctx, const char *expr);
+ int expr__find_other(const char *expr, const char *one, const char ***other,
+ 		int *num_other);
+ 
+diff --git a/tools/perf/util/expr.y b/tools/perf/util/expr.y
+index 4720cbe..cd17486 100644
+--- a/tools/perf/util/expr.y
++++ b/tools/perf/util/expr.y
+@@ -15,7 +15,7 @@
+ %define api.pure full
+ 
+ %parse-param { double *final_val }
+-%parse-param { struct parse_ctx *ctx }
++%parse-param { struct expr_parse_ctx *ctx }
+ %parse-param {void *scanner}
+ %lex-param {void* scanner}
+ 
+@@ -39,14 +39,14 @@
+ 
+ %{
+ static void expr_error(double *final_val __maybe_unused,
+-		       struct parse_ctx *ctx __maybe_unused,
++		       struct expr_parse_ctx *ctx __maybe_unused,
+ 		       void *scanner,
+ 		       const char *s)
+ {
+ 	pr_debug("%s\n", s);
+ }
+ 
+-static int lookup_id(struct parse_ctx *ctx, char *id, double *val)
++static int lookup_id(struct expr_parse_ctx *ctx, char *id, double *val)
+ {
+ 	int i;
+ 
+diff --git a/tools/perf/util/stat-shadow.c b/tools/perf/util/stat-shadow.c
+index 03ecb8c..1ad5c5b 100644
+--- a/tools/perf/util/stat-shadow.c
++++ b/tools/perf/util/stat-shadow.c
+@@ -729,7 +729,7 @@ static void generic_metric(struct perf_stat_config *config,
+ 			   struct runtime_stat *st)
+ {
+ 	print_metric_t print_metric = out->print_metric;
+-	struct parse_ctx pctx;
++	struct expr_parse_ctx pctx;
+ 	double ratio, scale;
+ 	int i;
+ 	void *ctxp = out->ctx;
