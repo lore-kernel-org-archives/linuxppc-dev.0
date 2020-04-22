@@ -2,42 +2,42 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B977C55189
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 10:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C50DC55189
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 10:27:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C518A208E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 10:21:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F11A92076B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 10:27:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DCkjrSXv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C518A208E4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DSL8vQuS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F11A92076B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496c0G1fNrzDqjj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 20:21:02 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 496c7x2jYyzDqhF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 20:27:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496bx11RlNzDqR2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 20:18:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496c3k2FYXzDqX2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 20:24:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=DCkjrSXv; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 496bx06Zr6z8t9Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 20:18:12 +1000 (AEST)
+ header.s=default header.b=DSL8vQuS; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 496c3h6Qpvz8t9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 20:24:00 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 496bx04xmMz9sV0; Wed, 22 Apr 2020 20:18:12 +1000 (AEST)
+ id 496c3h5kszz9sTJ; Wed, 22 Apr 2020 20:24:00 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
@@ -46,34 +46,34 @@ Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=DCkjrSXv; dkim-atps=neutral
+ header.s=default header.b=DSL8vQuS; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 496bx03QHFz9sTy;
- Wed, 22 Apr 2020 20:18:12 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 496c3h2hQLz9sT3;
+ Wed, 22 Apr 2020 20:23:59 +1000 (AEST)
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
  [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 8CE1B2075A;
- Wed, 22 Apr 2020 10:18:09 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id A5F6820784;
+ Wed, 22 Apr 2020 10:23:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1587550690;
- bh=ha+CAQ7iEhlPF52xa10ZLaHKRCJQ1ZS6XYdgwGYgaWw=;
+ s=default; t=1587551037;
+ bh=sByr9sNSa2X3ngNDdrYK6UPMYpAcHLw7TEu1niD7Wpc=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=DCkjrSXvni1A9F5d+K4eJ792g+miATOzt4tNRGV/CGV5RAOeBShKzy3hrWLfzv+6e
- snAK/LB3XCv6M+SLBLyKk/7JYtnWXlMX8ePTyLF2mPcTduWEwxdjtdPhjmeT3yx54P
- cR544kNxjmI7C+oUpl87vFhRgVl1qGS/gbKW8Ww0=
+ b=DSL8vQuSLwNgjcaLUpUC1nBDqcqVTZD7Ky5hSo+2gSGqbj+mg7X8FYlgfAV+U85xj
+ dvDQGOv5eF8i0wefh7hZk9VPJRaImSkcFaeJwiyyvy30qB0GRiWmr/4Bgz+J4NoLea
+ jbO1gJXVFcnuvLCm8NupxcGs+LR56oHidGrj/p5o=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 5.4 054/118] KVM: PPC: Book3S HV: Fix H_CEDE return code for
+Subject: [PATCH 5.6 076/166] KVM: PPC: Book3S HV: Fix H_CEDE return code for
  nested guests
-Date: Wed, 22 Apr 2020 11:56:55 +0200
-Message-Id: <20200422095040.897701454@linuxfoundation.org>
+Date: Wed, 22 Apr 2020 11:56:43 +0200
+Message-Id: <20200422095057.006842072@linuxfoundation.org>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200422095031.522502705@linuxfoundation.org>
-References: <20200422095031.522502705@linuxfoundation.org>
+In-Reply-To: <20200422095047.669225321@linuxfoundation.org>
+References: <20200422095047.669225321@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -145,10 +145,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 36abbe3c346df..e2183fed947d4 100644
+index 2cefd071b8483..c0c43a7338304 100644
 --- a/arch/powerpc/kvm/book3s_hv.c
 +++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3623,6 +3623,7 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
+@@ -3616,6 +3616,7 @@ int kvmhv_p9_guest_entry(struct kvm_vcpu *vcpu, u64 time_limit,
  		if (trap == BOOK3S_INTERRUPT_SYSCALL && !vcpu->arch.nested &&
  		    kvmppc_get_gpr(vcpu, 3) == H_CEDE) {
  			kvmppc_nested_cede(vcpu);
