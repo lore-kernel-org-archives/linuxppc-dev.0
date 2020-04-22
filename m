@@ -2,49 +2,104 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E815FC5518B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 16:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA0A2C55185
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 17:01:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CC2D20706
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 16:55:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CC2D20706
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=namei.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9DA7520776
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 17:01:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MYqyVkvM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DA7520776
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496mkp5JVrzDqpp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 02:54:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 496msp4LdbzDqcJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 03:01:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=namei.org
- (client-ip=65.99.196.166; helo=namei.org; envelope-from=jmorris@namei.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=namei.org
-Received: from namei.org (namei.org [65.99.196.166])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=MYqyVkvM; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496mf15XY1zDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 02:50:47 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
- by namei.org (8.14.4/8.14.4) with ESMTP id 03MGo4UJ013061;
- Wed, 22 Apr 2020 16:50:04 GMT
-Date: Thu, 23 Apr 2020 02:50:04 +1000 (AEST)
-From: James Morris <jmorris@namei.org>
-To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Subject: Re: [PATCH v2 2/7] libfs: wrap simple_pin_fs/simple_release_fs
- arguments in a struct
-In-Reply-To: <20200421135119.30007-3-eesposit@redhat.com>
-Message-ID: <alpine.LRH.2.21.2004230246380.12318@namei.org>
-References: <20200421135119.30007-1-eesposit@redhat.com>
- <20200421135119.30007-3-eesposit@redhat.com>
-User-Agent: Alpine 2.21 (LRH 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496mnl22MZzDqcJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 02:57:30 +1000 (AEST)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03MGmbre004744;
+ Wed, 22 Apr 2020 16:56:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=LFL7+e4rirW/BkUxDvX7Q/JJpL0GDaD2BXrkYZ/Jcqw=;
+ b=MYqyVkvMM2l3bcO0sT1OP4Def5zhIfw/QdGlifi1bpsPSISeIps2HlN6swempAZOHxXU
+ Xuwr7UsHf04EjB4t+Bx9Iryi2BwAf30Z4vB0a0cmU9iZJLT2BhOnDAlxqqp8uH5BLXmm
+ yLz0SYoMr3BnkdKC1onkAb1OOYCfyVsD6yoveKI8U5apJsHviWgi1LC2od6TwBZfhW1s
+ 8mVD64RprsPOCCsEabcXnkybmZn0gbNZlHNE3QhzDHsievUxgYz9ZV/pJVdke7G4VMta
+ Pr6NAwDyxeSmgA9PCwLd2+I+VrpMva1Va6GkzI8Go+hHrYfD6lzFVPuAQgtNlWxdAUD9 1w== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by userp2130.oracle.com with ESMTP id 30grpgrh3f-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Apr 2020 16:56:25 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03MGmInv111640;
+ Wed, 22 Apr 2020 16:56:24 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+ by userp3030.oracle.com with ESMTP id 30gb1jxhcr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Apr 2020 16:56:24 +0000
+Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 03MGu7au024097;
+ Wed, 22 Apr 2020 16:56:07 GMT
+Received: from [192.168.2.157] (/71.63.128.209)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 22 Apr 2020 09:56:07 -0700
+Subject: Re: [PATCH v3 3/4] hugetlbfs: remove hugetlb_add_hstate() warning for
+ existing hstate
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-doc@vger.kernel.org
+References: <20200417185049.275845-1-mike.kravetz@oracle.com>
+ <20200417185049.275845-4-mike.kravetz@oracle.com>
+ <87blnj4x9p.fsf@linux.ibm.com>
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Message-ID: <d39a33da-6095-c616-6bff-6af8795922d1@oracle.com>
+Date: Wed, 22 Apr 2020 09:56:03 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <87blnj4x9p.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9599
+ signatures=668686
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ suspectscore=0 spamscore=0
+ mlxlogscore=999 mlxscore=0 malwarescore=0 bulkscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004220126
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9599
+ signatures=668686
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
+ mlxscore=0
+ lowpriorityscore=0 adultscore=0 suspectscore=0 bulkscore=0 clxscore=1011
+ malwarescore=0 phishscore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004220126
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,42 +111,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, David Airlie <airlied@linux.ie>,
- dri-devel@lists.freedesktop.org, Christoph Hellwig <hch@lst.de>,
- Andrew Donnellan <ajd@linux.ibm.com>, linux-scsi@vger.kernel.org,
- "Serge E. Hallyn" <serge@hallyn.com>, Daniel Vetter <daniel@ffwll.ch>,
- Arnd Bergmann <arnd@arndb.de>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, linux-fsdevel@vger.kernel.org,
- "Manoj N. Kumar" <manoj@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- "Matthew R. Ochs" <mrochs@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>,
- John Johansen <john.johansen@canonical.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- linux-security-module@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
- Frederic Barrat <fbarrat@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Joel Becker <jlbec@evilplan.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
+ Mina Almasry <almasrymina@google.com>, Jonathan Corbet <corbet@lwn.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Longpeng <longpeng2@huawei.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Nitesh Narayan Lal <nitesh@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ "David S.Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Apr 2020, Emanuele Giuseppe Esposito wrote:
-
-> Simplify passing the count and mount to simple_pin_fs and
-> simple_release_fs by wrapping them in the simple_fs struct,
-> in preparation for adding more high level operations to
-> fs/libfs.c
+On 4/22/20 3:42 AM, Aneesh Kumar K.V wrote:
+> Mike Kravetz <mike.kravetz@oracle.com> writes:
 > 
-> There is no functional change intended.
+>> The routine hugetlb_add_hstate prints a warning if the hstate already
+>> exists.  This was originally done as part of kernel command line
+>> parsing.  If 'hugepagesz=' was specified more than once, the warning
+>> 	pr_warn("hugepagesz= specified twice, ignoring\n");
+>> would be printed.
+>>
+>> Some architectures want to enable all huge page sizes.  They would
+>> call hugetlb_add_hstate for all supported sizes.  However, this was
+>> done after command line processing and as a result hstates could have
+>> already been created for some sizes.  To make sure no warning were
+>> printed, there would often be code like:
+>> 	if (!size_to_hstate(size)
+>> 		hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT)
+>>
+>> The only time we want to print the warning is as the result of command
+>> line processing.
 > 
-> Signed-off-by: Emanuele Giuseppe Esposito <eesposit@redhat.com>
+> Does this patch break hugepages=x command line? I haven't tested this
+> yet. But one of the details w.r.t. skipping that hugetlb_add_hstate is
+> to make sure we can configure the max_huge_pages. 
+> 
 
+Are you asking about hugepages=x being the only option on the command line?
+If so, then the behavior is not changed.  This will result in x pages of
+default huge page size being allocated.  Where default huge page size is of
+course architecture dependent.  On an x86 VM,
 
-Reviewed-by: James Morris <jamorris@linux.microsoft.com>
+[    0.040474] Kernel command line: BOOT_IMAGE=/vmlinuz-5.6.0-mm1+ root=/dev/mapper/fedora_new--host-root ro rd.lvm.lv=fedora_new-host/root rd.lvm.lv=fedora_new-host/swap console=tty0 console=ttyS0,115200 audit=0 transparent_hugepage=always hugepages=128
+[    0.332618] HugeTLB registered 1.00 GiB page size, pre-allocated 0 pages
+[    0.333245] HugeTLB registered 2.00 MiB page size, pre-allocated 128 pages
 
+BTW - Here are the command line options I tested on x86 with this series.
+
+No errors or warnings
+---------------------
+hugepages=128
+hugepagesz=2M hugepages=128
+default_hugepagesz=2M hugepages=128
+hugepages=128 default_hugepagesz=2M
+hugepagesz=1G hugepages=2
+hugepages=2 default_hugepagesz=1G
+default_hugepagesz=1G hugepages=2
+hugepages=128 hugepagesz=1G hugepages=2
+hugepagesz=1G hugepages=2 hugepagesz=2M hugepages=128
+default_hugepagesz=2M hugepages=128 hugepagesz=1G hugepages=2
+hugepages=128 default_hugepagesz=2M hugepagesz=1G hugepages=2
+hugepages=2 default_hugepagesz=1G hugepagesz=2M hugepages=128
+default_hugepagesz=1G hugepages=2 hugepagesz=2M hugepages=128
+default_hugepagesz=2M hugepagesz=2M hugepages=128
+default_hugepagesz=2M hugepagesz=1G hugepages=2 hugepagesz=2M hugepages=128
+
+Error or warning
+----------------
+hugepages=128 hugepagesz=2M hugepages=256
+hugepagesz=2M hugepages=128 hugepagesz=2M hugepages=256
+default_hugepagesz=2M hugepages=128 hugepagesz=2M hugepages=256
+hugepages=128 hugepages=256
+hugepagesz=2M hugepages=128 hugepages=2 default_hugepagesz=1G
 
 -- 
-James Morris
-<jmorris@namei.org>
-
+Mike Kravetz
