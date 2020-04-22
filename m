@@ -2,64 +2,64 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.7 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C98C4C55189
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 12:43:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5D15C55185
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 13:04:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 320DC2084D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 12:43:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 320DC2084D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 43DE3206EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 13:04:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43DE3206EC
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496g8W1vlXzDqFv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 22:43:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linutronix.de
- (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
- envelope-from=tip-bot2@linutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 496gcY61y0zDqcS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 23:04:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.45;
+ helo=out30-45.freemail.mail.aliyun.com;
+ envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.alibaba.com
+Received: from out30-45.freemail.mail.aliyun.com
+ (out30-45.freemail.mail.aliyun.com [115.124.30.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496fy61XffzDqdc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 22:34:22 +1000 (AEST)
-Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tip-bot2@linutronix.de>)
- id 1jREJp-0007tb-DZ; Wed, 22 Apr 2020 14:17:33 +0200
-Received: from [127.0.1.1] (localhost [IPv6:::1])
- by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id E355D1C0813;
- Wed, 22 Apr 2020 14:17:28 +0200 (CEST)
-Date: Wed, 22 Apr 2020 12:17:28 -0000
-From: "tip-bot2 for Jiri Olsa" <tip-bot2@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip: perf/core] perf expr: Add expr_scanner_ctx object
-In-Reply-To: <20200401203340.31402-3-kjain@linux.ibm.com>
-References: <20200401203340.31402-3-kjain@linux.ibm.com>
-MIME-Version: 1.0
-Message-ID: <158755784848.28353.17588548435578970529.tip-bot2@tip-bot2>
-X-Mailer: tip-git-log-daemon
-Robot-ID: <tip-bot2.linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from
- these emails
-Precedence: bulk
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496gTv5G8yzDqZ1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 22:58:26 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R511e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04357;
+ MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=37; SR=0;
+ TI=SMTPD_---0TwKEIDQ_1587560295; 
+Received: from localhost(mailfrom:tianjia.zhang@linux.alibaba.com
+ fp:SMTPD_---0TwKEIDQ_1587560295) by smtp.aliyun-inc.com(127.0.0.1);
+ Wed, 22 Apr 2020 20:58:15 +0800
+From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+To: pbonzini@redhat.com, tsbogend@alpha.franken.de, paulus@ozlabs.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, borntraeger@de.ibm.com,
+ frankja@linux.ibm.com, david@redhat.com, cohuck@redhat.com,
+ heiko.carstens@de.ibm.com, gor@linux.ibm.com,
+ sean.j.christopherson@intel.com, vkuznets@redhat.com,
+ wanpengli@tencent.com, jmattson@google.com, joro@8bytes.org,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
+ hpa@zytor.com, maz@kernel.org, james.morse@arm.com,
+ julien.thierry.kdev@gmail.com, suzuki.poulose@arm.com,
+ christoffer.dall@arm.com, peterx@redhat.com, thuth@redhat.com
+Subject: [PATCH v2 5/7] KVM: PPC: clean up redundant kvm_run parameters in
+ assembly
+Date: Wed, 22 Apr 2020 20:58:08 +0800
+Message-Id: <20200422125810.34847-6-tianjia.zhang@linux.alibaba.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200422125810.34847-1-tianjia.zhang@linux.alibaba.com>
+References: <20200422125810.34847-1-tianjia.zhang@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -68,134 +68,243 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: linux-kernel@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Jin Yao <yao.jin@linux.intel.com>,
- Kan Liang <kan.liang@linux.intel.com>, Andi Kleen <ak@linux.intel.com>,
- x86 <x86@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>, Joe Mario <jmario@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Michael Petlan <mpetlan@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Jiri Olsa <jolsa@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, tianjia.zhang@linux.alibaba.com,
+ kvm@vger.kernel.org, linux-mips@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvmarm@lists.cs.columbia.edu, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The following commit has been merged into the perf/core branch of tip:
+In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
+structure. Earlier than historical reasons, many kvm-related function
+parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
+This patch does a unified cleanup of these remaining redundant parameters.
 
-Commit-ID:     871f9f599db8d9d2387c0717e712af405290edea
-Gitweb:        https://git.kernel.org/tip/871f9f599db8d9d2387c0717e712af405290edea
-Author:        Jiri Olsa <jolsa@kernel.org>
-AuthorDate:    Thu, 02 Apr 2020 02:03:35 +05:30
-Committer:     Arnaldo Carvalho de Melo <acme@redhat.com>
-CommitterDate: Thu, 16 Apr 2020 12:19:13 -03:00
-
-perf expr: Add expr_scanner_ctx object
-
-Add the expr_scanner_ctx object to hold user data for the expr scanner.
-Currently it holds only start_token, Kajol Jain will use it to hold 24x7
-runtime param.
-
-Signed-off-by: Jiri Olsa <jolsa@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jin Yao <yao.jin@linux.intel.com>
-Cc: Joe Mario <jmario@redhat.com>
-Cc: Kajol Jain <kjain@linux.ibm.com>
-Cc: Kan Liang <kan.liang@linux.intel.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Petlan <mpetlan@redhat.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lore.kernel.org/lkml/20200401203340.31402-3-kjain@linux.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 ---
- tools/perf/util/expr.c |  6 ++++--
- tools/perf/util/expr.h |  4 ++++
- tools/perf/util/expr.l | 10 +++++-----
- 3 files changed, 13 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h    |  2 +-
+ arch/powerpc/kvm/book3s_interrupts.S  | 17 ++++++++---------
+ arch/powerpc/kvm/book3s_pr.c          |  9 ++++-----
+ arch/powerpc/kvm/booke.c              |  9 ++++-----
+ arch/powerpc/kvm/booke_interrupts.S   |  9 ++++-----
+ arch/powerpc/kvm/bookehv_interrupts.S | 10 +++++-----
+ 6 files changed, 26 insertions(+), 30 deletions(-)
 
-diff --git a/tools/perf/util/expr.c b/tools/perf/util/expr.c
-index c8ccc54..c3382d5 100644
---- a/tools/perf/util/expr.c
-+++ b/tools/perf/util/expr.c
-@@ -3,7 +3,6 @@
- #include <assert.h>
- #include "expr.h"
- #include "expr-bison.h"
--#define YY_EXTRA_TYPE int
- #include "expr-flex.h"
- 
- #ifdef PARSER_DEBUG
-@@ -30,11 +29,14 @@ static int
- __expr__parse(double *val, struct expr_parse_ctx *ctx, const char *expr,
- 	      int start)
- {
-+	struct expr_scanner_ctx scanner_ctx = {
-+		.start_token = start,
-+	};
- 	YY_BUFFER_STATE buffer;
- 	void *scanner;
- 	int ret;
- 
--	ret = expr_lex_init_extra(start, &scanner);
-+	ret = expr_lex_init_extra(&scanner_ctx, &scanner);
- 	if (ret)
- 		return ret;
- 
-diff --git a/tools/perf/util/expr.h b/tools/perf/util/expr.h
-index b9e53f2..0938ad1 100644
---- a/tools/perf/util/expr.h
-+++ b/tools/perf/util/expr.h
-@@ -15,6 +15,10 @@ struct expr_parse_ctx {
- 	struct expr_parse_id ids[MAX_PARSE_ID];
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index ccf66b3a4c1d..0a056c64c317 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -59,7 +59,7 @@ enum xlate_readwrite {
  };
  
-+struct expr_scanner_ctx {
-+	int start_token;
-+};
-+
- void expr__ctx_init(struct expr_parse_ctx *ctx);
- void expr__add_id(struct expr_parse_ctx *ctx, const char *id, double val);
- int expr__parse(double *final_val, struct expr_parse_ctx *ctx, const char *expr);
-diff --git a/tools/perf/util/expr.l b/tools/perf/util/expr.l
-index eaad292..2582c24 100644
---- a/tools/perf/util/expr.l
-+++ b/tools/perf/util/expr.l
-@@ -76,13 +76,13 @@ sym		[0-9a-zA-Z_\.:@]+
- symbol		{spec}*{sym}*{spec}*{sym}*
+ extern int kvmppc_vcpu_run(struct kvm_vcpu *vcpu);
+-extern int __kvmppc_vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu);
++extern int __kvmppc_vcpu_run(struct kvm_vcpu *vcpu);
+ extern void kvmppc_handler_highmem(void);
  
- %%
--	{
--		int start_token;
-+	struct expr_scanner_ctx *sctx = expr_get_extra(yyscanner);
+ extern void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
+index f7ad99d972ce..0eff749d8027 100644
+--- a/arch/powerpc/kvm/book3s_interrupts.S
++++ b/arch/powerpc/kvm/book3s_interrupts.S
+@@ -55,8 +55,7 @@
+  ****************************************************************************/
  
--		start_token = expr_get_extra(yyscanner);
-+	{
-+		int start_token = sctx->start_token;
+ /* Registers:
+- *  r3: kvm_run pointer
+- *  r4: vcpu pointer
++ *  r3: vcpu pointer
+  */
+ _GLOBAL(__kvmppc_vcpu_run)
  
--		if (start_token) {
--			expr_set_extra(NULL, yyscanner);
-+		if (sctx->start_token) {
-+			sctx->start_token = 0;
- 			return start_token;
- 		}
+@@ -68,8 +67,8 @@ kvm_start_entry:
+ 	/* Save host state to the stack */
+ 	PPC_STLU r1, -SWITCH_FRAME_SIZE(r1)
+ 
+-	/* Save r3 (kvm_run) and r4 (vcpu) */
+-	SAVE_2GPRS(3, r1)
++	/* Save r3 (vcpu) */
++	SAVE_GPR(3, r1)
+ 
+ 	/* Save non-volatile registers (r14 - r31) */
+ 	SAVE_NVGPRS(r1)
+@@ -82,11 +81,11 @@ kvm_start_entry:
+ 	PPC_STL	r0, _LINK(r1)
+ 
+ 	/* Load non-volatile guest state from the vcpu */
+-	VCPU_LOAD_NVGPRS(r4)
++	VCPU_LOAD_NVGPRS(r3)
+ 
+ kvm_start_lightweight:
+ 	/* Copy registers into shadow vcpu so we can access them in real mode */
+-	mr	r3, r4
++	mr	r4, r3
+ 	bl	FUNC(kvmppc_copy_to_svcpu)
+ 	nop
+ 	REST_GPR(4, r1)
+@@ -191,10 +190,10 @@ after_sprg3_load:
+ 	PPC_STL	r31, VCPU_GPR(R31)(r7)
+ 
+ 	/* Pass the exit number as 3rd argument to kvmppc_handle_exit */
+-	lwz	r5, VCPU_TRAP(r7)
++	lwz	r4, VCPU_TRAP(r7)
+ 
+-	/* Restore r3 (kvm_run) and r4 (vcpu) */
+-	REST_2GPRS(3, r1)
++	/* Restore r3 (vcpu) */
++	REST_GPR(3, r1)
+ 	bl	FUNC(kvmppc_handle_exit_pr)
+ 
+ 	/* If RESUME_GUEST, get back in the loop */
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index ef54f917bdaf..01c8fe5abe0d 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1151,9 +1151,9 @@ static int kvmppc_exit_pr_progint(struct kvm_vcpu *vcpu, unsigned int exit_nr)
+ 	return r;
+ }
+ 
+-int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+-			  unsigned int exit_nr)
++int kvmppc_handle_exit_pr(struct kvm_vcpu *vcpu, unsigned int exit_nr)
+ {
++	struct kvm_run *run = vcpu->run;
+ 	int r = RESUME_HOST;
+ 	int s;
+ 
+@@ -1826,7 +1826,6 @@ static void kvmppc_core_vcpu_free_pr(struct kvm_vcpu *vcpu)
+ 
+ static int kvmppc_vcpu_run_pr(struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_run *run = vcpu->run;
+ 	int ret;
+ #ifdef CONFIG_ALTIVEC
+ 	unsigned long uninitialized_var(vrsave);
+@@ -1834,7 +1833,7 @@ static int kvmppc_vcpu_run_pr(struct kvm_vcpu *vcpu)
+ 
+ 	/* Check if we can run the vcpu at all */
+ 	if (!vcpu->arch.sane) {
+-		run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
++		vcpu->run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
+ 		ret = -EINVAL;
+ 		goto out;
  	}
+@@ -1861,7 +1860,7 @@ static int kvmppc_vcpu_run_pr(struct kvm_vcpu *vcpu)
+ 
+ 	kvmppc_fix_ee_before_entry();
+ 
+-	ret = __kvmppc_vcpu_run(run, vcpu);
++	ret = __kvmppc_vcpu_run(vcpu);
+ 
+ 	kvmppc_clear_debug(vcpu);
+ 
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 26b3f5900b72..942039aae598 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -732,12 +732,11 @@ int kvmppc_core_check_requests(struct kvm_vcpu *vcpu)
+ 
+ int kvmppc_vcpu_run(struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_run *run = vcpu->run;
+ 	int ret, s;
+ 	struct debug_reg debug;
+ 
+ 	if (!vcpu->arch.sane) {
+-		run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
++		vcpu->run->exit_reason = KVM_EXIT_INTERNAL_ERROR;
+ 		return -EINVAL;
+ 	}
+ 
+@@ -779,7 +778,7 @@ int kvmppc_vcpu_run(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.pgdir = vcpu->kvm->mm->pgd;
+ 	kvmppc_fix_ee_before_entry();
+ 
+-	ret = __kvmppc_vcpu_run(run, vcpu);
++	ret = __kvmppc_vcpu_run(vcpu);
+ 
+ 	/* No need for guest_exit. It's done in handle_exit.
+ 	   We also get here with interrupts enabled. */
+@@ -983,9 +982,9 @@ static int kvmppc_resume_inst_load(struct kvm_vcpu *vcpu,
+  *
+  * Return value is in the form (errcode<<2 | RESUME_FLAG_HOST | RESUME_FLAG_NV)
+  */
+-int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+-                       unsigned int exit_nr)
++int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
+ {
++	struct kvm_run *run = vcpu->run;
+ 	int r = RESUME_HOST;
+ 	int s;
+ 	int idx;
+diff --git a/arch/powerpc/kvm/booke_interrupts.S b/arch/powerpc/kvm/booke_interrupts.S
+index 2e56ab5a5f55..6fa82efe833b 100644
+--- a/arch/powerpc/kvm/booke_interrupts.S
++++ b/arch/powerpc/kvm/booke_interrupts.S
+@@ -237,7 +237,7 @@ _GLOBAL(kvmppc_resume_host)
+ 	/* Switch to kernel stack and jump to handler. */
+ 	LOAD_REG_ADDR(r3, kvmppc_handle_exit)
+ 	mtctr	r3
+-	lwz	r3, HOST_RUN(r1)
++	mr	r3, r4
+ 	lwz	r2, HOST_R2(r1)
+ 	mr	r14, r4 /* Save vcpu pointer. */
+ 
+@@ -337,15 +337,14 @@ heavyweight_exit:
+ 
+ 
+ /* Registers:
+- *  r3: kvm_run pointer
+- *  r4: vcpu pointer
++ *  r3: vcpu pointer
+  */
+ _GLOBAL(__kvmppc_vcpu_run)
+ 	stwu	r1, -HOST_STACK_SIZE(r1)
+-	stw	r1, VCPU_HOST_STACK(r4)	/* Save stack pointer to vcpu. */
++	stw	r1, VCPU_HOST_STACK(r3)	/* Save stack pointer to vcpu. */
+ 
+ 	/* Save host state to stack. */
+-	stw	r3, HOST_RUN(r1)
++	mr	r4, r3
+ 	mflr	r3
+ 	stw	r3, HOST_STACK_LR(r1)
+ 	mfcr	r5
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index c577ba4b3169..8262c14fc9e6 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -434,9 +434,10 @@ _GLOBAL(kvmppc_resume_host)
+ #endif
+ 
+ 	/* Switch to kernel stack and jump to handler. */
+-	PPC_LL	r3, HOST_RUN(r1)
++	mr	r3, r4
+ 	mr	r5, r14 /* intno */
+ 	mr	r14, r4 /* Save vcpu pointer. */
++	mr	r4, r5
+ 	bl	kvmppc_handle_exit
+ 
+ 	/* Restore vcpu pointer and the nonvolatiles we used. */
+@@ -525,15 +526,14 @@ heavyweight_exit:
+ 	blr
+ 
+ /* Registers:
+- *  r3: kvm_run pointer
+- *  r4: vcpu pointer
++ *  r3: vcpu pointer
+  */
+ _GLOBAL(__kvmppc_vcpu_run)
+ 	stwu	r1, -HOST_STACK_SIZE(r1)
+-	PPC_STL	r1, VCPU_HOST_STACK(r4)	/* Save stack pointer to vcpu. */
++	PPC_STL	r1, VCPU_HOST_STACK(r3)	/* Save stack pointer to vcpu. */
+ 
+ 	/* Save host state to stack. */
+-	PPC_STL	r3, HOST_RUN(r1)
++	mr	r4, r3
+ 	mflr	r3
+ 	mfcr	r5
+ 	PPC_STL	r3, HOST_STACK_LR(r1)
+-- 
+2.17.1
+
