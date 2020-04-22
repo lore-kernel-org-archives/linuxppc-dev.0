@@ -2,90 +2,64 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EB06C5518C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:52:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB44EC5518C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 08:13:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72A852076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:52:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W3Cliahb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72A852076B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5CEB320575
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 08:13:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CEB320575
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=deneb.enyo.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496XhN1bmLzDqxh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 17:52:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 496Y9J6zrkzDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 18:13:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=deneb.enyo.de (client-ip=37.24.231.21; helo=albireo.enyo.de;
+ envelope-from=fw@deneb.enyo.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=W3Cliahb; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+ dmarc=none (p=none dis=none) header.from=deneb.enyo.de
+Received: from albireo.enyo.de (albireo.enyo.de [37.24.231.21])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496Xbr5m8czDqyc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 17:48:06 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id v63so655215pfb.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 00:48:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
- :content-transfer-encoding;
- bh=fkHafghrwTH69QABDa7HOzAi+OOBPXW15p/HuB4SG4Y=;
- b=W3CliahbaoJyZ9KuwM58l1sJavK2vyEt7BUcBb49KCVw7AV0UWQQCozmeyAadR+1K2
- MlP7akJnMuSRLEDrAC5HFBGwIevoPLh2/RyW3BMaSMGrLQKC9f9LnXjQi1AsGHOuQg7U
- tkYWycXW1kHSAQsLXCGNqhrg5X8eM2O8kCV2OYf+nBRbHVGw8V4ZzNSSrkMc3SF6QyhS
- aWDBC2UzkNz0YPL1BLWjUoD+s1PV9/QZrWCwGMnrhIHlmiLBKabDNYRsEcZLpgVneLXb
- YV1G/k/l6UIbbX7zxxBDHga19alMACxQtDyAAfeBdqJ6BQqmWlNxE/wPhZiprfraDZlo
- PIbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=fkHafghrwTH69QABDa7HOzAi+OOBPXW15p/HuB4SG4Y=;
- b=KngPmrvO/A7oNgqxgtinMnyaS/4spWRY0zRVGzbuQ5e8fuvspgBxtJ1AErfEVyvs+U
- nSX/mz8pu0gYK89IWnfKvM9ad8b4gaZEnw4lxNfGV67LQ8LXfP8fwavEhZPP86yWqXXF
- 4yyyOU0vyPyg2xZUWxXclFMlQF1p2Y/wXcj0r8cjVD4i+5ofumEwEvzlZjvP0J2mXuXS
- xMHlqU+JjaOlQkYVLgDfpfvyRCcL7Le7sMQr34RTAcpydygXNpSajejx5W6JKO0Mssky
- NKneoUy65F68UCgUkRRQkWHpx3yu4/4/CXPStFBzNeqzEk+6J4DTWrhyh4W9WTWsVF8n
- cEPQ==
-X-Gm-Message-State: AGi0PubYKrX7Bx02Yyw9Wt6l+YDadUV/qh3i8Es1ZayyyekaQ/rNajh6
- LCnCc8BdG+paWqWcyar9E/ENMpcJ
-X-Google-Smtp-Source: APiQypJkwim7sUfowtNQlJR0B4/tdOEnXTysW+HxOziZvqi+ghG1+bX4PD10LdfN9b7KDX4NlnJ45w==
-X-Received: by 2002:a63:67c7:: with SMTP id
- b190mr25766385pgc.289.1587541684920; 
- Wed, 22 Apr 2020 00:48:04 -0700 (PDT)
-Received: from localhost ([203.185.249.170])
- by smtp.gmail.com with ESMTPSA id n23sm4533387pjq.18.2020.04.22.00.48.03
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 22 Apr 2020 00:48:04 -0700 (PDT)
-Date: Wed, 22 Apr 2020 17:45:33 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/book3s64/kuap: SPRN_AMR modification need CSI
- instructions before and after
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-References: <20200419135359.731325-1-aneesh.kumar@linux.ibm.com>
- <1587341611.capj46kr99.astroid@bobo.none>
- <1587345091.ewst0wvt61.astroid@bobo.none>
- <87y2qqhc2w.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87y2qqhc2w.fsf@mpe.ellerman.id.au>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496Y7P1TJQzDq6y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 18:11:59 +1000 (AEST)
+Received: from [172.17.203.2] (helo=deneb.enyo.de)
+ by albireo.enyo.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ id 1jRAU2-00070u-5A; Wed, 22 Apr 2020 08:11:50 +0000
+Received: from fw by deneb.enyo.de with local (Exim 4.92)
+ (envelope-from <fw@deneb.enyo.de>)
+ id 1jRAU2-0005jd-0R; Wed, 22 Apr 2020 10:11:50 +0200
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [musl] Re: Powerpc Linux 'scv' system call ABI proposal take 2
+References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
+ <20200415225539.GL11469@brightrain.aerifal.cx>
+ <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
+ <20200416153756.GU11469@brightrain.aerifal.cx>
+ <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
+ <20200416175932.GZ11469@brightrain.aerifal.cx>
+ <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
+ <20200416183151.GA11469@brightrain.aerifal.cx>
+ <1587344003.daumxvs1kh.astroid@bobo.none>
+ <b77fa2dc769d42e1a3e68f5edf90d250@AcuMS.aculab.com>
+ <20200421143941.GJ11469@brightrain.aerifal.cx>
+ <960127e0-57a0-55b4-f309-ae0a675c7756@linaro.org>
+ <1587536988.ivnp421w2w.astroid@bobo.none>
+ <874ktcng8z.fsf@mid.deneb.enyo.de>
+ <1587540390.vde84z8edw.astroid@bobo.none>
+Date: Wed, 22 Apr 2020 10:11:49 +0200
+In-Reply-To: <1587540390.vde84z8edw.astroid@bobo.none> (Nicholas Piggin's
+ message of "Wed, 22 Apr 2020 17:31:07 +1000")
+Message-ID: <87imhslz22.fsf@mid.deneb.enyo.de>
 MIME-Version: 1.0
-Message-Id: <1587541260.w3jfzesvph.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,38 +71,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Rich Felker <dalias@libc.org>,
+ "libc-alpha@sourceware.org" <libc-alpha@sourceware.org>,
+ musl@lists.openwall.com, David Laight <David.Laight@ACULAB.COM>,
+ Adhemerval Zanella <adhemerval.zanella@linaro.org>,
+ "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Michael Ellerman's message of April 20, 2020 5:04 pm:
-> Nicholas Piggin <npiggin@gmail.com> writes:
->> Excerpts from Nicholas Piggin's message of April 20, 2020 10:17 am:
->>> Excerpts from Aneesh Kumar K.V's message of April 19, 2020 11:53 pm:
->>>> As per the ISA, context synchronizing instructions is needed before an=
-d after
->>>> SPRN_AMR update. Use isync before and the CSI after is implied by the =
-rfid
->>>> that we will use to switch to a new context.
->>>=20
->>> Not entirely sure if we need this. This will restore AMR to more=20
->>> permissive, so if it executes ahead of a stray load from this
->>> context, it won't make it fault.
->=20
-> I thought we'd convinced ourselves it didn't matter in practice due to
-> the proximity of the entry/exit.
+* Nicholas Piggin:
 
-I don't remember exactly. We can always drop the isync from the side=20
-that pairs with an entry or exit.
+> So I would be disinclined to use SIGSYS unless there are no other better 
+> signal types, and we don't want to use SIGILL for some good reason -- is 
+> there a good reason to add complexity for userspace by differentiating 
+> these two situations?
 
-If we drop it from the other side, what it means in theory is it could=20
-float past some of the accesses we're doing in the interrupt context=20
-that we thought were protected. So we won't take faults, but it's=20
-possible we would let through a user access.
-
-I think it's likey that we'd end up executing the mtspr before anything=20
-much can take advantage of it, but you never know, and I guess the=20
-problem is it becomes impossile to audit and be sure.
-
-Thanks,
-Nick
+No, SIGILL seems fine to me.  scv 0 and scv 1 could well be considered
+different instructions eventually (with different mnemonics).
