@@ -2,96 +2,92 @@ Return-Path: <SRS0=lKFn=6G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17D7BC5518A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FDE5C55189
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:50:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75B79206A1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:35:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hdIN63Os"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75B79206A1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 25B612070B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 07:50:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25B612070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 496XKQ3MyVzDr1V
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 17:35:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=npiggin@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 496XfM1pl3zDr30
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2020 17:50:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=hdIN63Os; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496XHC6HZtzDqwn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 17:33:41 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id g6so660457pgs.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 00:33:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=oGcRKkgkVr4JcI1ibH9gwtLZOypiwzpP4gH9dSaU7iQ=;
- b=hdIN63OsFGxhd5ipGu4ysZTGX8oyPNhB+PjKGiRBkP0qpRbvyu+72iyJRPYJ83m3mL
- zL/BRO1HfL5WuAHmFV6ajhMbSCup8Q/39Am9KyTc5XkhCMCTzmgbrSGqQj/+RBtCxvn0
- glrFXDGBaM1Fhpd3VeIquTcTOTmUkQKDB+Wu7ftzfczaUriHEHRU6PHbgSfbqwuapwhy
- yMZ5Hi8QcV1p+KlumN1chA4AzMzO6R3aTrFrrJECb+blzfTUXUWFedFdHAkYK3TNjinA
- IoAXJzILlpepKL/e84ywiJKQ71QcP6tdYKdKObS+DQ/Swnm7/7B+38zIrHmze4+4KQK0
- 4qyQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=oGcRKkgkVr4JcI1ibH9gwtLZOypiwzpP4gH9dSaU7iQ=;
- b=qHRfuu7dGhO+zPbL+/DrQJ+lk0FAyc6/eBZsYlfRzlcsccqEd250oSDcHUnWgRkfjq
- E4Hg5L7zwfqzyLjo+ApVl/kGLbagA6RPrxvEiccANLuphsrQ2TMS6QNL4ouTw9yB6zJU
- jPkqdNDY9M2E6rtaxt1DwpksSagmsBqJ9guAFBC0t31OilFldne2CN+TliwjfZ4qXt5X
- xTNfcj9F3Uc9pn3jHFHD9rN6fzPP1/QlpIfQ6USmdolGbzA/7DsPm/APRvgLDMQhtwX/
- ps9B7Eh8cqM1lI/mHrvz3irOo2G3F0yMhqN3JyRrQHYSjEwnfAVI18Edy5I2mpNJr7WC
- Qltw==
-X-Gm-Message-State: AGi0PubJv4rKgxKMt3vdGn+avhsHaL8RON/R98GqVWG+F7WdjOf7p81o
- AWkKkFoV3KLIOC8q21va2wCDxgZ2
-X-Google-Smtp-Source: APiQypIn1uMRP3SnZ423g+QJntQbuuVv7pdNNC5Eob68blIs9swJ39ifzY1cOI/a2YG9MS0NijIB+g==
-X-Received: by 2002:a62:25c6:: with SMTP id l189mr26325614pfl.28.1587540818374; 
- Wed, 22 Apr 2020 00:33:38 -0700 (PDT)
-Received: from localhost ([203.185.249.170])
- by smtp.gmail.com with ESMTPSA id d18sm4563910pfq.177.2020.04.22.00.33.37
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 22 Apr 2020 00:33:37 -0700 (PDT)
-Date: Wed, 22 Apr 2020 17:31:07 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [musl] Re: Powerpc Linux 'scv' system call ABI proposal take 2
-To: Florian Weimer <fw@deneb.enyo.de>
-References: <1586931450.ub4c8cq8dj.astroid@bobo.none>
- <20200415225539.GL11469@brightrain.aerifal.cx>
- <c2612908-67f7-cceb-d121-700dea096016@linaro.org>
- <20200416153756.GU11469@brightrain.aerifal.cx>
- <4b2a7a56-dd2b-1863-50e5-2f4cdbeef47c@linaro.org>
- <20200416175932.GZ11469@brightrain.aerifal.cx>
- <4f824a37-e660-8912-25aa-fde88d4b79f3@linaro.org>
- <20200416183151.GA11469@brightrain.aerifal.cx>
- <1587344003.daumxvs1kh.astroid@bobo.none>
- <b77fa2dc769d42e1a3e68f5edf90d250@AcuMS.aculab.com>
- <20200421143941.GJ11469@brightrain.aerifal.cx>
- <960127e0-57a0-55b4-f309-ae0a675c7756@linaro.org>
- <1587536988.ivnp421w2w.astroid@bobo.none> <874ktcng8z.fsf@mid.deneb.enyo.de>
-In-Reply-To: <874ktcng8z.fsf@mid.deneb.enyo.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 496Xbm1Pj2zDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 17:48:03 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03M7W2S6071883
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 03:48:01 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30gj24jpc8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2020 03:48:01 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 22 Apr 2020 08:47:06 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 22 Apr 2020 08:47:03 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 03M7kmZL56164836
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Apr 2020 07:46:48 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 68AFF4C04A;
+ Wed, 22 Apr 2020 07:47:55 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 025154C04E;
+ Wed, 22 Apr 2020 07:47:55 +0000 (GMT)
+Received: from localhost (unknown [9.85.75.81])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 22 Apr 2020 07:47:54 +0000 (GMT)
+Date: Wed, 22 Apr 2020 13:17:49 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] powerpc/module_64: Fix _mcount() stub
+To: linuxppc-dev@lists.ozlabs.org
+References: <cover.1587488954.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1587488954.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Message-Id: <1587540390.vde84z8edw.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
+User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 20042207-0020-0000-0000-000003CC600F
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20042207-0021-0000-0000-000022255A8D
+Message-Id: <1587541539.h4m94di1xc.naveen@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-22_02:2020-04-21,
+ 2020-04-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=803 clxscore=1015
+ impostorscore=0 mlxscore=0 suspectscore=0 bulkscore=0 malwarescore=0
+ phishscore=0 adultscore=0 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004220057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,33 +99,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "libc-alpha@sourceware.org" <libc-alpha@sourceware.org>,
- musl@lists.openwall.com, David Laight <David.Laight@ACULAB.COM>,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>,
- "libc-dev@lists.llvm.org" <libc-dev@lists.llvm.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Qian Cai <cai@lca.pw>, Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Florian Weimer's message of April 22, 2020 5:15 pm:
-> * Nicholas Piggin:
+Naveen N. Rao wrote:
+> This series addresses the crash reported by Qian Cai on ppc64le with=20
+> -mprofile-kernel here:
+> https://lore.kernel.org/r/15AC5B0E-A221-4B8C-9039-FA96B8EF7C88@lca.pw
 >=20
->> Another option would be to use a different signal. I don't see that any=20
->> are more suitable.
->=20
-> SIGSYS comes to my mind.  But I don't know how exclusively it is
-> associated with seccomp these days.
+> While fixing patch_instruction() should address the crash, we should=20
+> still change the default stub we setup for _mcount() for cases where a=20
+> kernel is built without ftrace.
 
-SIGSYS is entirely seccomp now. There looks like a single obscure MIPS=20
-user of it in Linux that's not seccomp, but it would be entirely new for=20
-powerpc (or any of the common platforms, arm, x86 etc).
+I notice that I didn't write that properly yesterday. I meant that this=20
+is required for cases where ftrace gets disabled for any reason,=20
+resulting in the default calls to _mcount() remaining in the kernel=20
+modules.
 
-So I would be disinclined to use SIGSYS unless there are no other better=20
-signal types, and we don't want to use SIGILL for some good reason -- is=20
-there a good reason to add complexity for userspace by differentiating=20
-these two situations?
+- Naveen
 
-Thanks,
-Nick
