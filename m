@@ -2,59 +2,45 @@ Return-Path: <SRS0=TQUW=6H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF05AC55185
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 03:19:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79E50C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 04:43:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99B0B2073A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 03:19:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99B0B2073A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
+	by mail.kernel.org (Postfix) with ESMTPS id BAF2D2071C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 04:43:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAF2D2071C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4972b11GyczDr2J
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 13:19:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.alibaba.com (client-ip=47.88.44.36;
- helo=out4436.biz.mail.alibaba.com;
- envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.alibaba.com
-Received: from out4436.biz.mail.alibaba.com (out4436.biz.mail.alibaba.com
- [47.88.44.36])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4974S53KSGzDqlw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 14:43:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4972Vb3FmkzDqjX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 13:15:19 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R351e4; CH=green; DM=||false|;
- DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e07484;
- MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=36; SR=0;
- TI=SMTPD_---0TwNry4Z_1587611689; 
-Received: from 30.27.118.66(mailfrom:tianjia.zhang@linux.alibaba.com
- fp:SMTPD_---0TwNry4Z_1587611689) by smtp.aliyun-inc.com(127.0.0.1);
- Thu, 23 Apr 2020 11:14:51 +0800
-Subject: Re: [PATCH v2 1/7] KVM: s390: clean up redundant 'kvm_run' parameters
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
- Cornelia Huck <cohuck@redhat.com>
-References: <20200422125810.34847-1-tianjia.zhang@linux.alibaba.com>
- <20200422125810.34847-2-tianjia.zhang@linux.alibaba.com>
- <20200422154543.2efba3dd.cohuck@redhat.com>
- <dc5e0fa3-558b-d606-bda9-ed281cf9e9ae@de.ibm.com>
-From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
-Message-ID: <ed11e51e-7861-a93d-ac9f-ae81f94630b0@linux.alibaba.com>
-Date: Thu, 23 Apr 2020 11:14:49 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4974Q41t9VzDqyp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 14:41:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4974Q31Llkz9sSx;
+ Thu, 23 Apr 2020 14:41:31 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc: dt_cpu_ftrs: Set current thread fscr bits
+Date: Thu, 23 Apr 2020 14:40:56 +1000
+Message-Id: <20200423044057.5517-1-alistair@popple.id.au>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <dc5e0fa3-558b-d606-bda9-ed281cf9e9ae@de.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,77 +52,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wanpengli@tencent.com, kvm@vger.kernel.org, david@redhat.com,
- heiko.carstens@de.ibm.com, peterx@redhat.com, linux-mips@vger.kernel.org,
- hpa@zytor.com, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
- frankja@linux.ibm.com, maz@kernel.org, joro@8bytes.org, x86@kernel.org,
- mingo@redhat.com, julien.thierry.kdev@gmail.com, thuth@redhat.com,
- gor@linux.ibm.com, suzuki.poulose@arm.com, kvm-ppc@vger.kernel.org,
- bp@alien8.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- jmattson@google.com, tsbogend@alpha.franken.de, christoffer.dall@arm.com,
- sean.j.christopherson@intel.com, linux-kernel@vger.kernel.org,
- james.morse@arm.com, pbonzini@redhat.com, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, oohall@gmail.com, npiggin@gmail.com,
+ Alistair Popple <alistair@popple.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Setting the FSCR bit directly in the SPR only sets it for the initial
+boot and early init of the kernel. When the init process is started it
+gets copied from the current thread_struct which does not reflect any
+changes made during CPU feature detection. This patch ensures the
+current thread_struct state is updated to match FSCR after feature
+detection is complete.
 
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On 2020/4/22 23:58, Christian Borntraeger wrote:
-> 
-> 
-> On 22.04.20 15:45, Cornelia Huck wrote:
->> On Wed, 22 Apr 2020 20:58:04 +0800
->> Tianjia Zhang <tianjia.zhang@linux.alibaba.com> wrote:
->>
->>> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
->>> structure. Earlier than historical reasons, many kvm-related function
->>
->> s/Earlier than/For/ ?
->>
->>> parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
->>> This patch does a unified cleanup of these remaining redundant parameters.
->>>
->>> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
->>> ---
->>>   arch/s390/kvm/kvm-s390.c | 37 ++++++++++++++++++++++---------------
->>>   1 file changed, 22 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
->>> index e335a7e5ead7..d7bb2e7a07ff 100644
->>> --- a/arch/s390/kvm/kvm-s390.c
->>> +++ b/arch/s390/kvm/kvm-s390.c
->>> @@ -4176,8 +4176,9 @@ static int __vcpu_run(struct kvm_vcpu *vcpu)
->>>   	return rc;
->>>   }
->>>   
->>> -static void sync_regs_fmt2(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
->>> +static void sync_regs_fmt2(struct kvm_vcpu *vcpu)
->>>   {
->>> +	struct kvm_run *kvm_run = vcpu->run;
->>>   	struct runtime_instr_cb *riccb;
->>>   	struct gs_cb *gscb;
->>>   
->>> @@ -4235,7 +4236,7 @@ static void sync_regs_fmt2(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
->>>   		}
->>>   		if (vcpu->arch.gs_enabled) {
->>>   			current->thread.gs_cb = (struct gs_cb *)
->>> -						&vcpu->run->s.regs.gscb;
->>> +						&kvm_run->s.regs.gscb;
->>
->> Not sure if these changes (vcpu->run-> => kvm_run->) are really worth
->> it. (It seems they amount to at least as much as the changes advertised
->> in the patch description.)
->>
->> Other opinions?
-> 
-> Agreed. It feels kind of random. Maybe just do the first line (move kvm_run from the
-> function parameter list into the variable declaration)? Not sure if this is better.
-> 
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 36bc0d5c4f3a..dede8f0b678f 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -169,6 +169,7 @@ static int __init feat_try_enable_unknown(struct dt_cpu_feature *f)
+ 		u64 fscr = mfspr(SPRN_FSCR);
+ 		fscr |= 1UL << f->fscr_bit_nr;
+ 		mtspr(SPRN_FSCR, fscr);
++		current->thread.fscr |= 1UL << f->fscr_bit_nr;
+ 	} else {
+ 		/* Does not have a known recipe */
+ 		return 0;
+@@ -204,6 +205,7 @@ static int __init feat_enable(struct dt_cpu_feature *f)
+ 			u64 fscr = mfspr(SPRN_FSCR);
+ 			fscr |= 1UL << f->fscr_bit_nr;
+ 			mtspr(SPRN_FSCR, fscr);
++			current->thread.fscr |= 1UL << f->fscr_bit_nr;
+ 		}
+ 	}
+ 
+-- 
+2.20.1
 
-Why not, `kvm_run` is equivalent to `vcpu->run`, which is also part of 
-the cleanup, or do you mean to put this change in another patch?
-
-Thanks,
-Tianjia
