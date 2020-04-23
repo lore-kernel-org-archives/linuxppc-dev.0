@@ -2,36 +2,36 @@ Return-Path: <SRS0=TQUW=6H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C221C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0ACBC55186
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 11:01:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67EDF2074F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:58:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67EDF2074F
+	by mail.kernel.org (Postfix) with ESMTPS id 403BB20704
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 11:01:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 403BB20704
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497DnJ28mLzDqv8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 20:58:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497Dr30XwqzDr0p
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 21:01:07 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497Dhr6xqKzDqt3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:54:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497Dhz2qWhzDqt0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:54:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 497Dhr6Ntjz8t44
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:54:52 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 497Dhz11Z6z9BL0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:54:59 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 497Dhr5pBXz9sSt; Thu, 23 Apr 2020 20:54:52 +1000 (AEST)
+ id 497Dhz08h5z9sT2; Thu, 23 Apr 2020 20:54:59 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
@@ -42,63 +42,65 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 497Dhr1X2lz9sSd
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 20:54:51 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 497Dhy2xxnz9sSt
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 20:54:58 +1000 (AEST)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03NAXHSx048977
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 06:54:49 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30jsput4dr-1
+ 03NAXI2J049030
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 06:54:56 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30jsput4jn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 06:54:48 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2020 06:54:56 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <psampat@linux.ibm.com>;
- Thu, 23 Apr 2020 11:54:10 +0100
-Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Thu, 23 Apr 2020 11:54:05 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 23 Apr 2020 11:54:06 +0100
+ Thu, 23 Apr 2020 11:54:02 +0100
 Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
  [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 03NAsgs665667426
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 03NArhSW62652870
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Apr 2020 10:54:42 GMT
+ Thu, 23 Apr 2020 10:53:43 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1CD094204B;
- Thu, 23 Apr 2020 10:54:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9B08A42042;
+ Thu, 23 Apr 2020 10:54:50 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E466A42041;
- Thu, 23 Apr 2020 10:54:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id AE08E4203F;
+ Thu, 23 Apr 2020 10:54:47 +0000 (GMT)
 Received: from pratiks-thinkpad.ibmuc.com (unknown [9.79.176.162])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 23 Apr 2020 10:54:39 +0000 (GMT)
+ Thu, 23 Apr 2020 10:54:47 +0000 (GMT)
 From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, 
  skiboot@lists.ozlabs.org, oohall@gmail.com, ego@linux.vnet.ibm.com,
  linuxram@us.ibm.com, pratik.r.sampat@gmail.com, psampat@linux.ibm.com
-Subject: [PATCH v8 0/3] Support for Self Save API in OPAL
-Date: Thu, 23 Apr 2020 16:24:35 +0530
+Subject: [PATCH v8 2/3] API to verify the STOP API and image compatibility
+Date: Thu, 23 Apr 2020 16:24:37 +0530
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200423105438.29034-1-psampat@linux.ibm.com>
+References: <20200423105438.29034-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 20042310-0008-0000-0000-00000375F5D5
+x-cbid: 20042310-0016-0000-0000-00000309D1F0
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20042310-0009-0000-0000-00004A97C294
-Message-Id: <20200423105438.29034-1-psampat@linux.ibm.com>
+x-cbparentid: 20042310-0017-0000-0000-0000336DF305
+Message-Id: <20200423105438.29034-3-psampat@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-23_07:2020-04-22,
  2020-04-23 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  phishscore=0 adultscore=0
  mlxlogscore=999 clxscore=1015 priorityscore=1501 impostorscore=0
- spamscore=0 bulkscore=4 malwarescore=0 mlxscore=0 suspectscore=0
- lowpriorityscore=4 classifier=spam adjust=0 reason=mlx scancount=1
+ spamscore=0 bulkscore=0 malwarescore=0 mlxscore=0 suspectscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2004230082
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,284 +117,302 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v7: https://lists.ozlabs.org/pipermail/skiboot/2020-April/016763.html
-Changelog
-v6 --> v7
-1. Simplified approach. Instead of advertising support bitmask for
-   each SPR, advertising support only for the presence of the new
-   self-save API Complete design specification is detailed below
-   in the cover-leter.
-2. Patch re-organization, move introducing self-save [2] after STOP
-   API versioning [3].
+From: Prem Shanker Jha <premjha2@in.ibm.com>
 
-Background
-==========
+Commit defines a new API primarily intended for OPAL to determine
+cpu register save API's compatibility with HOMER layout and
+self save restore. It can help OPAL determine if version of
+API integrated with OPAL is different from hostboot.
 
-The power management framework on POWER systems include core idle
-states that lose context. Deep idle states namely "winkle" on POWER8
-and "stop4" and "stop5" on POWER9 can be entered by a CPU to save
-different levels of power, as a consequence of which all the
-hypervisor resources such as SPRs and SCOMs are lost.
+Change-Id: Ic0de45a336cfb8b6b6096a10ac1cd3ffbaa44fc0
+Reviewed-on: http://rchgit01.rchland.ibm.com/gerrit1/77612
+Tested-by: FSP CI Jenkins <fsp-CI-jenkins+hostboot@us.ibm.com>
+Tested-by: Jenkins Server <pfd-jenkins+hostboot@us.ibm.com>
+Tested-by: Hostboot CI <hostboot-ci+hostboot@us.ibm.com>
+Reviewed-by: RANGANATHPRASAD G. BRAHMASAMUDRA <prasadbgr@in.ibm.com>
+Reviewed-by: Gregory S Still <stillgs@us.ibm.com>
+Reviewed-by: Jennifer A Stofer <stofer@us.ibm.com>
+Reviewed-on: http://rchgit01.rchland.ibm.com/gerrit1/77614
+Tested-by: Jenkins OP Build CI <op-jenkins+hostboot@us.ibm.com>
+Tested-by: Jenkins OP HW <op-hw-jenkins+hostboot@us.ibm.com>
+Reviewed-by: Daniel M Crowell <dcrowell@us.ibm.com>
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+---
+ include/p9_stop_api.H                    | 25 ++++++++++
+ libpore/p9_cpu_reg_restore_instruction.H |  7 ++-
+ libpore/p9_hcd_memmap_base.H             |  7 +++
+ libpore/p9_stop_api.C                    | 58 +++++++++++++++++++++++-
+ libpore/p9_stop_api.H                    | 26 ++++++++++-
+ libpore/p9_stop_util.H                   | 20 ++++----
+ 6 files changed, 130 insertions(+), 13 deletions(-)
 
-For most SPRs, saving and restoration of content for SPRs and SCOMs
-is handled by the hypervisor kernel prior to entering an post exit
-from an idle state respectively. However, there is a small set of
-critical SPRs and XSCOMs that are expected to contain sane values even
-before the control is transferred to the hypervisor kernel at system
-reset vector.
-
-For this purpose, microcode firmware provides a mechanism to restore
-values on certain SPRs. The communication mechanism between the
-hypervisor kernel and the microcode is a standard interface called
-sleep-winkle-engine (SLW) on Power8 and Stop-API on Power9 which is
-abstracted by OPAL calls from the hypervisor kernel. The Stop-API
-provides an interface known as the self-restore API, to which the SPR
-number and a predefined value to be restored on wake-up from a deep
-stop state is supplied.
-
-
-Motivation to introduce a new Stop-API
-======================================
-
-The self-restore API expects not just the SPR number but also the
-value with which the SPR is restored. This is good for those SPRs such
-as HSPRG0 whose values do not change at runtime, since for them, the
-kernel can invoke the self-restore API at boot time once the values of
-these SPRs are determined.
-
-However, there are use-cases where-in the value to be saved cannot be
-known or cannot be updated in the layer it currently is.
-The shortcomings and the new use-cases which cannot be served by the
-existing self-restore API, serves as motivation for a new API:
-
-Shortcoming1:
-------------
-In a special wakeup scenario when a CPU is woken up in stop4/5 and
-after the task is done, the HCODE puts it back to stop. The value of
-PSSCR is passed to the HCODE via the self-restore API. The kernel
-currently provides the value of the deepest stop state due to being
-conservative. Thus if a core that was in stop4 was woken up due to
-special wakeup, the HCODE will now put it back to stop5 thus increasing
-the subsequent wakeup latency to ~200us.
-
-Shortcoming2:
-------------
-The value of LPCR is dynamic based on if the CPU is entered a stop
-state during cpu idle versus cpu hotplug.
-Today, an additional self-restore call is made before entering
-CPU-Hotplug to clear the PECE1 bit in stop-API so that if we are
-woken up by a special wakeup on an offlined CPU, we go back to stop
-with the the bit cleared.
-There is a overhead of an extra call
-
-New Use-case:
--------------
-In the case where the hypervisor is running on an
-ultravisor environment, the boot time is too late in the cycle to make
-the self-restore API calls, as these cannot be invoked from an
-non-secure context anymore
-
-To address these shortcomings, the firmware provides another API known
-as the self-save API. The self-save API only takes the SPR number as a
-parameter and will ensure that on wakeup from a deep-stop state the
-SPR is restored with the value that it contained prior to entering the
-deep-stop.
-
-Contrast between self-save and self-restore APIs
-================================================
-
-		  Before entering
-                  deep idle     |---------------|
-                  ------------> | HCODE A       |                
-                  |             |---------------|
-   |---------|    |
-   |   CPU   |----|
-   |---------|    |             
-                  |             |---------------|
-                  |------------>| HCODE B       |
-                  On waking up  |---------------|
-                from deep idle
-
-When a self-restore API is invoked, the HCODE inserts instructions
-into "HCODE B" region of the above figure to restore the content of
-the SPR to the said value. The "HCODE B" region gets executed soon
-after the CPU wakes up from a deep idle state, thus executing the
-inserted instructions, thereby restoring the contents of the SPRs to
-the required values.
-
-When a self-save API is invoked, the HCODE inserts instructions into
-the "HCODE A" region of the above figure to save the content of the
-SPR into some location in memory. It also inserts instructions into
-the "HCODE B" region to restore the content of the SPR to the
-corresponding value saved in the memory by the instructions in "HCODE
-A" region.
-
-Thus, in contrast with self-restore, the self-save API *does not* need
-a value to be passed to it, since it ensures that the value of SPR
-before entering deep stop is saved, and subsequently the same value is
-restored.
-
-Self-save and self-restore are complementary features since,
-self-restore can help in restoring a different value in the SPR on
-wakeup from a deep-idle state than what it had before entering the
-deep idle state. This was used in POWER8 for HSPRG0 to distinguish a
-wakeup from Winkle vs Fastsleep.
-
-Limitations of self-save
-========================
-Ideally all SPRs should be available for self-save, but HID0 is very
-tricky to implement in microcode due to various endianess quirks.
-Couple of implementation schemes were buggy and hence HID0 was left
-out to be self-restore only.
-
-The fallout of this limitation is as follows:
-
-* In Non PEF environment, no issue. Linux will use self-restore for
-  HID0 as it does today and no functional impact.
-
-* In PEF environment, the HID0 restore value is decided by OPAL during
-  boot and it is setup for LE hypervisor with radix MMU. This is the
-  default and current working configuration of a PEF environment.
-  However if there is a change, then HV Linux will try to change the
-  HID0 value to something different than what OPAL decided, at which
-  time deep-stop states will be disabled under this new PEF
-  environment.
-
-A simple and workable design is achieved by scoping the power
-management deep-stop state support only to a known default PEF
-environment. Any deviation will affect *only* deep stop-state support
-(stop4,5) in that environment and not have any functional impediment
-to the environment itself.
-
-In future, if there is a need to support changing of HID0 to various
-values under PEF environment and support deep-stop states, it can be
-worked out via an ultravisor call or improve the microcode design to
-include HID0 in self-save.  These future scheme would be an extension
-and does not break or make the current implementation scheme
-redundant.
-
-Design Choices
-==============
-
-Presenting the design choices in front of us:
-
-Design-Choice 1:
-----------------
-Only expose one of self-save or self-restore for all the SPRs. Prefer
-Self-save
-
-Pros:
-   - Simplifies the design heavily, since the Kernel can unambiguously
-   make one API call for all the SPRs on discovering the presence of
-   the API type.
-
-Cons:
-    - Breaks backward compatibility if OPAL always chooses to expose
-      only the self-save API as the older kernels assume the existence
-      of self-restore.
-
-    - The set of SPRs supported by self-save and self-restore are not
-      identical. Eg: HID0 is not supported by self-save API. PSSCR
-      support via self-restore is not robust during special-wakeup.
-
-    - As discussed above, self-save and self-restore are
-      complementary. Thus OPAL apriory choosing one over the other for
-      all SPRs takes away the flexibility from the kernel.
-
-
-Design-Choice 2:
-----------------
-Expose two arrays of SPRs: One set of SPRs that are supported by
-self-save. Another set of SPRs supported by self-restore. These two
-sets do not intersect. Further, if an SPR is supported by both
-self-save and self-restore APIs, expose it only via self-save.
-
-Pros:
-     - For an SPR the choice for the kernel is unambiguous.
-
-Cons:
-    - Breaks backward compatibility if OPAL always chooses to expose
-      the legacy SPRs only via the self-save API as the older kernels
-      assume the existence of self-restore.
-
-    - By making the decision early on, we take away the flexibility
-       from the kernel to use an API of its choice for an SPR.
-
-
-Design-Choice 3
----------------
-Expose two arrays of SPRs. One set of SPRs that are supported by
-self-save API. Another set of SPRs supported by self-restore API. Let
-the kernel choose which API to invoke. Even if it wants to always
-prefer self-save over self-restore, let that be kernel's choice.
-
-Pros:
-     - Keeps the design flexible to allow the kernel to take a
-       decision based on its functional and performance requirements.
-       Thus, the kernel for instance can make a choice to invoke
-       self-restore API (when available) for SPRs whose values do not
-       evolve at runtime, and invoke the self-save API (when
-       available)
-       for SPRs whose values will change during runtime.
-
-     - Design is backward compatible with older kernels.
-
-Cons:
-     - The Kernel code will have additional complexity for parsing two
-     lists of SPRs and making a choice w.r.t invocation of a specific
-     stop-api.
-
-Design-Choice 4
-===============
-Expose only the availability of the self-save feature not the subsequent
-SPR list. The kernel will have to make a hard choice of preference,
-although can still have fallback available.
-This makes the design although less flexible for the kernel however
-keeps it simple while still adhering to correctness and backward
-compatibility.
-
-Patches Organization
-====================
-Design choice 4 has been chosen as an implementation to demonstrate in
-this patch series.
-
-Patch 1:
-Commit adds support calling into the self save firmware API.
-Also adds abstraction for making platform agnostic calls.
-
-Patch 2:
-Commit adds API to determine the version of the STOP API. This helps
-to identify support for self save in the firmware
-
-Patch 3:
-commit adds wrappers for the self save api for which an opal call can
-be made. The commit also advertises the self-save feature if the STOP
-API versions are consistent with the firmware.
-
-
-Pratik Rajesh Sampat (1):
-  Self save API integration
-
-Prem Shanker Jha (2):
-  Self Save: Introducing Support for SPR Self Save
-  API to verify the STOP API and image compatibility
-
- doc/opal-api/opal-slw-self-save-reg-181.rst |  51 ++
- doc/opal-api/opal-slw-set-reg-100.rst       |   5 +
- doc/power-management.rst                    |  48 +
- hw/slw.c                                    | 106 +++
- include/opal-api.h                          |   3 +-
- include/p9_stop_api.H                       | 122 ++-
- include/skiboot.h                           |   3 +
- libpore/p9_cpu_reg_restore_instruction.H    |  11 +-
- libpore/p9_hcd_memmap_base.H                |   7 +
- libpore/p9_stop_api.C                       | 964 +++++++++++---------
- libpore/p9_stop_api.H                       | 141 ++-
- libpore/p9_stop_data_struct.H               |   4 +-
- libpore/p9_stop_util.H                      |  27 +-
- 13 files changed, 1060 insertions(+), 432 deletions(-)
- create mode 100644 doc/opal-api/opal-slw-self-save-reg-181.rst
-
+diff --git a/include/p9_stop_api.H b/include/p9_stop_api.H
+index 9d3bc1e5..cb5ffd6f 100644
+--- a/include/p9_stop_api.H
++++ b/include/p9_stop_api.H
+@@ -107,6 +107,7 @@ typedef enum
+     STOP_SAVE_FAIL                       = 14,  // for internal failure within firmware.
+     STOP_SAVE_SPR_ENTRY_MISSING          =  15,
+     STOP_SAVE_SPR_BIT_POS_RESERVE        =  16,
++    STOP_SAVE_API_IMG_INCOMPATIBLE       =  18,
+ } StopReturnCode_t;
+ 
+ /**
+@@ -161,6 +162,14 @@ typedef enum
+ 
+ } ScomSection_t;
+ 
++/**
++ * @brief   versions pertaining relvant to STOP API.
++ */
++typedef enum
++{
++    STOP_API_VER            =   0x00,
++    STOP_API_VER_CONTROL    =   0x02,
++} VersionList_t;
+ 
+ 
+ /**
+@@ -192,6 +201,14 @@ typedef enum
+     BIT_POS_USPRG1      =   30,
+ } SprBitPositionList_t;
+ 
++typedef enum
++{
++    SMF_SUPPORT_MISSING_IN_HOMER         =   0x01,
++    SELF_SUPPORT_MISSING_FOR_LE_HYP      =   0x02,
++    IPL_RUNTIME_CPU_SAVE_VER_MISMATCH    =   0x04,
++    SELF_RESTORE_VER_MISMATCH            =   0x08,
++} VersionIncompList_t;
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -230,6 +247,14 @@ StopReturnCode_t p9_stop_save_scom( void* const   i_pImage,
+                                     const ScomOperation_t i_operation,
+                                     const ScomSection_t i_section );
+ 
++/**
++ * @brief       verifies if API is compatible of current HOMER image.
++ * @param[in]   i_pImage        points to the start of HOMER image of P9 chip.
++ * @param[out]  o_inCompVector  list of incompatibilities found.
++ * @return      STOP_SAVE_SUCCESS if if API succeeds, error code otherwise.
++ */
++StopReturnCode_t proc_stop_api_discover_capability( void* const i_pImage, uint64_t* o_inCompVector );
++
+ #ifdef __cplusplus
+ } // extern "C"
+ };  // namespace stopImageSection ends
+diff --git a/libpore/p9_cpu_reg_restore_instruction.H b/libpore/p9_cpu_reg_restore_instruction.H
+index d69a4212..5f168855 100644
+--- a/libpore/p9_cpu_reg_restore_instruction.H
++++ b/libpore/p9_cpu_reg_restore_instruction.H
+@@ -5,7 +5,7 @@
+ /*                                                                        */
+ /* OpenPOWER HostBoot Project                                             */
+ /*                                                                        */
+-/* Contributors Listed Below - COPYRIGHT 2015,2018                        */
++/* Contributors Listed Below - COPYRIGHT 2015,2020                        */
+ /* [+] International Business Machines Corp.                              */
+ /*                                                                        */
+ /*                                                                        */
+@@ -69,6 +69,11 @@ enum
+     OPCODE_18           =   18,
+     SELF_SAVE_FUNC_ADD  =   0x2300,
+     SELF_SAVE_OFFSET    =   0x180,
++    SKIP_SPR_REST_INST  =   0x4800001c, //b . +0x01c
++    MFLR_R30            =   0x7fc802a6,
++    SKIP_SPR_SELF_SAVE  =   0x3bff0020, //addi r31 r31, 0x20
++    MTLR_INST           =   0x7fc803a6,  //mtlr r30
++    BRANCH_BE_INST      =   0x48000020,
+ };
+ 
+ #define MR_R0_TO_R10            0x7c0a0378UL //mr r10 r0
+diff --git a/libpore/p9_hcd_memmap_base.H b/libpore/p9_hcd_memmap_base.H
+index 000fafef..ddb56728 100644
+--- a/libpore/p9_hcd_memmap_base.H
++++ b/libpore/p9_hcd_memmap_base.H
+@@ -444,6 +444,13 @@ HCD_CONST(CME_QUAD_PSTATE_SIZE,                 HALF_KB)
+ 
+ HCD_CONST(CME_REGION_SIZE,                      (64 * ONE_KB))
+ 
++
++// HOMER compatibility
++
++HCD_CONST(STOP_API_CPU_SAVE_VER,                0x02)
++HCD_CONST(SELF_SAVE_RESTORE_VER,                0x02)
++HCD_CONST(SMF_SUPPORT_SIGNATURE_OFFSET,         0x1300)
++HCD_CONST(SMF_SELF_SIGNATURE,                   (0x5f534d46))
+ // Debug
+ 
+ HCD_CONST(CPMR_TRACE_REGION_OFFSET,             (512 * ONE_KB))
+diff --git a/libpore/p9_stop_api.C b/libpore/p9_stop_api.C
+index 2d9bb549..10e050a1 100644
+--- a/libpore/p9_stop_api.C
++++ b/libpore/p9_stop_api.C
+@@ -5,7 +5,7 @@
+ /*                                                                        */
+ /* OpenPOWER HostBoot Project                                             */
+ /*                                                                        */
+-/* Contributors Listed Below - COPYRIGHT 2015,2018                        */
++/* Contributors Listed Below - COPYRIGHT 2015,2020                        */
+ /* [+] International Business Machines Corp.                              */
+ /*                                                                        */
+ /*                                                                        */
+@@ -1828,6 +1828,62 @@ StopReturnCode_t proc_stop_init_self_save(  void* const i_pImage, const uint32_t
+     return l_rc;
+ }
+ 
++StopReturnCode_t proc_stop_api_discover_capability( void* const i_pImage, uint64_t * o_inCompVector )
++{
++    StopReturnCode_t l_rc       =   STOP_SAVE_SUCCESS;
++    uint64_t l_incompVector     =   0;
++    uint32_t l_tempWord         =   0;
++    *o_inCompVector             =   0;
++
++    do
++    {
++        if( !i_pImage )
++        {
++            l_rc    =   STOP_SAVE_ARG_INVALID_IMG;
++            break;
++        }
++
++        l_tempWord      =
++                *(uint32_t*)((uint8_t*)i_pImage + CPMR_HOMER_OFFSET + SMF_SUPPORT_SIGNATURE_OFFSET);
++
++        if( l_tempWord != SWIZZLE_4_BYTE(SMF_SELF_SIGNATURE) )
++        {
++            l_incompVector  |=  SMF_SUPPORT_MISSING_IN_HOMER;
++        }
++
++        l_tempWord      =   *(uint32_t *)((uint8_t *)i_pImage + CPMR_HOMER_OFFSET + CPMR_HEADER_SIZE );
++
++        if( l_tempWord != SWIZZLE_4_BYTE(BRANCH_BE_INST) )
++        {
++            l_incompVector  |=  SELF_SUPPORT_MISSING_FOR_LE_HYP;
++        }
++
++        l_tempWord      =   *(uint8_t *)((uint8_t *)i_pImage + CPMR_HOMER_OFFSET + CPMR_SELF_RESTORE_VER_BYTE );
++
++        if( l_tempWord < SELF_SAVE_RESTORE_VER )
++        {
++            l_incompVector  |=  SELF_RESTORE_VER_MISMATCH;
++        }
++
++        l_tempWord      =   *(uint8_t *)((uint8_t *)i_pImage + CPMR_HOMER_OFFSET + CPMR_STOP_API_VER_BYTE );
++
++        if( l_tempWord < STOP_API_CPU_SAVE_VER )
++        {
++            l_incompVector  |=  IPL_RUNTIME_CPU_SAVE_VER_MISMATCH;
++        }
++
++        *o_inCompVector     =   l_incompVector;
++
++        if( l_incompVector )
++        {
++            l_rc    =  STOP_SAVE_API_IMG_INCOMPATIBLE;
++        }
++
++    }while(0);
++
++    return l_rc;
++}
++
+ #ifdef __cplusplus
+ } //namespace stopImageSection ends
+ 
+diff --git a/libpore/p9_stop_api.H b/libpore/p9_stop_api.H
+index 3f6420ff..983a3845 100644
+--- a/libpore/p9_stop_api.H
++++ b/libpore/p9_stop_api.H
+@@ -5,7 +5,7 @@
+ /*                                                                        */
+ /* OpenPOWER HostBoot Project                                             */
+ /*                                                                        */
+-/* Contributors Listed Below - COPYRIGHT 2015,2018                        */
++/* Contributors Listed Below - COPYRIGHT 2015,2020                        */
+ /* [+] International Business Machines Corp.                              */
+ /*                                                                        */
+ /*                                                                        */
+@@ -114,6 +114,7 @@ typedef enum
+     STOP_SAVE_FAIL                       =  14,  // for internal failure within firmware.
+     STOP_SAVE_SPR_ENTRY_MISSING          =  15,
+     STOP_SAVE_SPR_BIT_POS_RESERVE        =  16,
++    STOP_SAVE_API_IMG_INCOMPATIBLE       =  18,
+ } StopReturnCode_t;
+ 
+ /**
+@@ -198,6 +199,21 @@ typedef enum
+     BIT_POS_USPRG1      =   30,
+ } SprBitPositionList_t;
+ 
++/**
++ * @brief   List of major incompatibilities between API version.
++ * @note    STOP APIs assumes a specific HOMER layout, certain
++ * level of CME-SGPE hcode and certain version of self-save restore
++ * binary. A mismatch can break STOP function.
++ */
++
++typedef enum
++{
++    SMF_SUPPORT_MISSING_IN_HOMER         =   0x01,
++    SELF_SUPPORT_MISSING_FOR_LE_HYP      =   0x02,
++    IPL_RUNTIME_CPU_SAVE_VER_MISMATCH    =   0x04,
++    SELF_RESTORE_VER_MISMATCH            =   0x08,
++} VersionIncompList_t;
++
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -341,6 +357,14 @@ StopReturnCode_t proc_stop_save_cpureg(  void* const i_pImage,
+  */
+ StopReturnCode_t proc_stop_init_self_save(  void* const i_pImage, const uint32_t i_corePos );
+ 
++/**
++ * @brief       verifies if API is compatible of current HOMER image.
++ * @param[in]   i_pImage        points to the start of HOMER image of P9 chip.
++ * @param[out]  o_inCompVector  list of incompatibilities found.
++ * @return      STOP_SAVE_SUCCESS if if API succeeds, error code otherwise.
++ */
++StopReturnCode_t proc_stop_api_discover_capability( void* const i_pImage, uint64_t* o_inCompVector );
++
+ #ifdef __cplusplus
+ } // extern "C"
+ };  // namespace stopImageSection ends
+diff --git a/libpore/p9_stop_util.H b/libpore/p9_stop_util.H
+index 79b4e959..1328a54b 100644
+--- a/libpore/p9_stop_util.H
++++ b/libpore/p9_stop_util.H
+@@ -72,18 +72,18 @@ namespace stopImageSection
+     ( (((WORD) >> 8) & 0x00FF) | (((WORD) << 8) & 0xFF00) )
+ 
+ #define SWIZZLE_4_BYTE(WORD) \
+-    ( (((WORD) >> 24) & 0x000000FF) | (((WORD) >>  8) & 0x0000FF00) | \
+-      (((WORD) <<  8) & 0x00FF0000) | (((WORD) << 24) & 0xFF000000) )
++    ( (((WORD) & 0x000000FF) << 24) | (((WORD) & 0x0000FF00) <<  8) | \
++      (((WORD) & 0x00FF0000) >>  8) | (((WORD) & 0xFF000000) >> 24) )
+ 
+ #define SWIZZLE_8_BYTE(WORD) \
+-    ( (((WORD) >> 56) & 0x00000000000000FF) |  \
+-      (((WORD) >> 40) & 0x000000000000FF00)| \
+-      (((WORD) >> 24) & 0x0000000000FF0000) |  \
+-      (((WORD) >>  8) & 0x00000000FF000000) |  \
+-      (((WORD) <<  8) & 0x000000FF00000000) |  \
+-      (((WORD) << 24) & 0x0000FF0000000000) | \
+-      (((WORD) << 40) & 0x00FF000000000000) |  \
+-      (((WORD) << 56) & 0xFF00000000000000) )
++    ( (((WORD) & 0x00000000000000ffULL) << 56) | \
++      (((WORD) & 0x000000000000ff00ULL) << 40) | \
++      (((WORD) & 0x0000000000ff0000ULL) << 24) | \
++      (((WORD) & 0x00000000ff000000ULL) <<  8) | \
++      (((WORD) & 0x000000ff00000000ULL) >>  8) | \
++      (((WORD) & 0x0000ff0000000000ULL) >> 24) | \
++      (((WORD) & 0x00ff000000000000ULL) >> 40) | \
++      (((WORD) & 0xff00000000000000ULL) >> 56) )
+ #endif
+ 
+ /**
 -- 
 2.25.1
 
