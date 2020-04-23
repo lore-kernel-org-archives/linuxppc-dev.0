@@ -2,90 +2,94 @@ Return-Path: <SRS0=TQUW=6H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45E77C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2F82C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:42:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B36FD20724
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:04:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B36FD20724
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 15D7020776
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 10:42:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fBDzYVCC";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="D64zb5mU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15D7020776
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497CZQ3lJKzDr2p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 20:04:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 497DQ11HQxzDr4h
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 20:42:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=cohuck@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=fBDzYVCC; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=D64zb5mU; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [207.211.31.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497CXQ1kq0zDq99
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:02:29 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03NA1obY041578; Thu, 23 Apr 2020 06:02:23 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30k3xu8pt7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Apr 2020 06:02:22 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03NA1IxE011806;
- Thu, 23 Apr 2020 10:02:22 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma04wdc.us.ibm.com with ESMTP id 30fs66rjyb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Apr 2020 10:02:22 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03NA2Lu051183928
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Apr 2020 10:02:21 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4FC4A13604F;
- Thu, 23 Apr 2020 10:02:21 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9B5A613605D;
- Thu, 23 Apr 2020 10:02:20 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.35.140])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 23 Apr 2020 10:02:20 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 6E5122E301B; Thu, 23 Apr 2020 15:32:13 +0530 (IST)
-Date: Thu, 23 Apr 2020 15:32:13 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: Re: [PATCH v5 0/5] Track and expose idle PURR and SPURR ticks
-Message-ID: <20200423100213.GA23192@in.ibm.com>
-References: <1586249263-14048-1-git-send-email-ego@linux.vnet.ibm.com>
- <04b5e2fa-089f-93c9-cde9-33a930455bb2@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497DMp1JNczDqn4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:40:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587638402;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+r/PR2FbN4xLG8Nok2HJ4M/QJoOCF0Nk3Bss40sN0xs=;
+ b=fBDzYVCCqW1GoVdwQp91lZNHO5HeSb4pWmnedQElmzSBpXNLACkopal9QJXMg2pm3UJ3L+
+ +XpkN+whgwN7VBTpJK1UvxiK45oP99p+B8qza+MQOhVUymFMokiZwcpFQjGqIFVo6cUp8p
+ SeCWD8j9VoIYkfaBgy55TAtxYAumP9s=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1587638403;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=+r/PR2FbN4xLG8Nok2HJ4M/QJoOCF0Nk3Bss40sN0xs=;
+ b=D64zb5mUuClCOZLfeOMJgwZ99CnRt7q6LOCXz7o0h+sfBTu7ZQGcFEGYPekx56oW4T/gOc
+ P7tYORp7vOUy1BQQZuvlLPFUXgDAzrfvCEztjgOw7mkzwDJU/2fHrl7ZSZfAejZgkc4Yy5
+ T7JvN5XL6AJRsuOpV/+cnAlpwkZdANk=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-246-AkzxH94nMVKFKkFx37Ew_w-1; Thu, 23 Apr 2020 06:39:20 -0400
+X-MC-Unique: AkzxH94nMVKFKkFx37Ew_w-1
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 07DD5835B41;
+ Thu, 23 Apr 2020 10:39:17 +0000 (UTC)
+Received: from gondolin (ovpn-112-121.ams2.redhat.com [10.36.112.121])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 11C6260608;
+ Thu, 23 Apr 2020 10:39:03 +0000 (UTC)
+Date: Thu, 23 Apr 2020 12:39:01 +0200
+From: Cornelia Huck <cohuck@redhat.com>
+To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+Subject: Re: [PATCH v2 1/7] KVM: s390: clean up redundant 'kvm_run' parameters
+Message-ID: <20200423123901.72a4c6a4.cohuck@redhat.com>
+In-Reply-To: <5e1e126d-f1b0-196c-594b-4289d0afb9a8@linux.alibaba.com>
+References: <20200422125810.34847-1-tianjia.zhang@linux.alibaba.com>
+ <20200422125810.34847-2-tianjia.zhang@linux.alibaba.com>
+ <20200422154543.2efba3dd.cohuck@redhat.com>
+ <dc5e0fa3-558b-d606-bda9-ed281cf9e9ae@de.ibm.com>
+ <20200422180403.03f60b0c.cohuck@redhat.com>
+ <5e1e126d-f1b0-196c-594b-4289d0afb9a8@linux.alibaba.com>
+Organization: Red Hat GmbH
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <04b5e2fa-089f-93c9-cde9-33a930455bb2@linux.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-23_07:2020-04-22,
- 2020-04-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 mlxscore=0
- impostorscore=0 adultscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
- malwarescore=0 mlxlogscore=999 lowpriorityscore=0 suspectscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004230073
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,120 +101,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+Cc: wanpengli@tencent.com, kvm@vger.kernel.org, david@redhat.com,
+ heiko.carstens@de.ibm.com, peterx@redhat.com, linux-mips@vger.kernel.org,
+ hpa@zytor.com, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ frankja@linux.ibm.com, maz@kernel.org, joro@8bytes.org, x86@kernel.org,
+ Christian Borntraeger <borntraeger@de.ibm.com>, mingo@redhat.com,
+ julien.thierry.kdev@gmail.com, thuth@redhat.com, gor@linux.ibm.com,
+ suzuki.poulose@arm.com, kvm-ppc@vger.kernel.org, bp@alien8.de,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, jmattson@google.com,
+ tsbogend@alpha.franken.de, christoffer.dall@arm.com,
+ sean.j.christopherson@intel.com, linux-kernel@vger.kernel.org,
+ james.morse@arm.com, pbonzini@redhat.com, vkuznets@redhat.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 20, 2020 at 03:46:35PM -0700, Tyrel Datwyler wrote:
-> On 4/7/20 1:47 AM, Gautham R. Shenoy wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Thu, 23 Apr 2020 11:01:43 +0800
+Tianjia Zhang <tianjia.zhang@linux.alibaba.com> wrote:
+
+> On 2020/4/23 0:04, Cornelia Huck wrote:
+> > On Wed, 22 Apr 2020 17:58:04 +0200
+> > Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+> >   
+> >> On 22.04.20 15:45, Cornelia Huck wrote:  
+> >>> On Wed, 22 Apr 2020 20:58:04 +0800
+> >>> Tianjia Zhang <tianjia.zhang@linux.alibaba.com> wrote:
+> >>>      
+> >>>> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
+> >>>> structure. Earlier than historical reasons, many kvm-related function  
+> >>>
+> >>> s/Earlier than/For/ ?
+> >>>      
+> >>>> parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
+> >>>> This patch does a unified cleanup of these remaining redundant parameters.
+> >>>>
+> >>>> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+> >>>> ---
+> >>>>   arch/s390/kvm/kvm-s390.c | 37 ++++++++++++++++++++++---------------
+> >>>>   1 file changed, 22 insertions(+), 15 deletions(-)
+> >>>>
+> >>>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> >>>> index e335a7e5ead7..d7bb2e7a07ff 100644
+> >>>> --- a/arch/s390/kvm/kvm-s390.c
+> >>>> +++ b/arch/s390/kvm/kvm-s390.c
+> >>>> @@ -4176,8 +4176,9 @@ static int __vcpu_run(struct kvm_vcpu *vcpu)
+> >>>>   	return rc;
+> >>>>   }
+> >>>>   
+> >>>> -static void sync_regs_fmt2(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >>>> +static void sync_regs_fmt2(struct kvm_vcpu *vcpu)
+> >>>>   {
+> >>>> +	struct kvm_run *kvm_run = vcpu->run;
+> >>>>   	struct runtime_instr_cb *riccb;
+> >>>>   	struct gs_cb *gscb;
+> >>>>   
+> >>>> @@ -4235,7 +4236,7 @@ static void sync_regs_fmt2(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >>>>   		}
+> >>>>   		if (vcpu->arch.gs_enabled) {
+> >>>>   			current->thread.gs_cb = (struct gs_cb *)
+> >>>> -						&vcpu->run->s.regs.gscb;
+> >>>> +						&kvm_run->s.regs.gscb;  
+> >>>
+> >>> Not sure if these changes (vcpu->run-> => kvm_run->) are really worth
+> >>> it. (It seems they amount to at least as much as the changes advertised
+> >>> in the patch description.)
+> >>>
+> >>> Other opinions?  
+> >>
+> >> Agreed. It feels kind of random. Maybe just do the first line (move kvm_run from the
+> >> function parameter list into the variable declaration)? Not sure if this is better.
+> >>  
 > > 
-> > Hi,
-> > 
-> > This is the fifth version of the patches to track and expose idle PURR
-> > and SPURR ticks. These patches are required by tools such as lparstat
-> > to compute system utilization for capacity planning purposes.
-> > 
-> > The previous versions can be found here:
-> > v4: https://lkml.org/lkml/2020/3/27/323
-> > v3: https://lkml.org/lkml/2020/3/11/331
-> > v2: https://lkml.org/lkml/2020/2/21/21
-> > v1: https://lore.kernel.org/patchwork/cover/1159341/
-> > 
-> > They changes from v4 are:
-> > 
-> >    - As suggested by Naveen, moved the functions read_this_idle_purr()
-> >      and read_this_idle_spurr() from Patch 2 and Patch 3 respectively
-> >      to Patch 4 where it is invoked.
-> > 
-> >    - Dropped Patch 6 which cached the values of purr, spurr,
-> >      idle_purr, idle_spurr in order to minimize the number of IPIs
-> >      sent.
-> > 
-> >    - Updated the dates for the idle_purr, idle_spurr in the
-> >      Documentation Patch 5.
-> > 
-> > Motivation:
-> > ===========
-> > On PSeries LPARs, the data centers planners desire a more accurate
-> > view of system utilization per resource such as CPU to plan the system
-> > capacity requirements better. Such accuracy can be obtained by reading
-> > PURR/SPURR registers for CPU resource utilization.
-> > 
-> > Tools such as lparstat which are used to compute the utilization need
-> > to know [S]PURR ticks when the cpu was busy or idle. The [S]PURR
-> > counters are already exposed through sysfs.  We already account for
-> > PURR ticks when we go to idle so that we can update the VPA area. This
-> > patchset extends support to account for SPURR ticks when idle, and
-> > expose both via per-cpu sysfs files.
-> > 
-> > These patches are required for enhancement to the lparstat utility
-> > that compute the CPU utilization based on PURR and SPURR which can be
-> > found here :
-> > https://groups.google.com/forum/#!topic/powerpc-utils-devel/fYRo69xO9r4
-> > 
-> > 
-> > With the patches, when lparstat is run on a LPAR running CPU-Hogs,
-> > =========================================================================
-> > sudo ./src/lparstat -E 1 3
-> > 
-> > System Configuration
-> > type=Dedicated mode=Capped smt=8 lcpu=2 mem=4834112 kB cpus=0 ent=2.00 
-> > 
-> > ---Actual---                 -Normalized-
-> > %busy  %idle   Frequency     %busy  %idle
-> > ------ ------  ------------- ------ ------
-> > 1  99.99   0.00  3.35GHz[111%] 110.99   0.00
-> > 2 100.00   0.00  3.35GHz[111%] 111.01   0.00
-> > 3 100.00   0.00  3.35GHz[111%] 111.00   0.00
-> > 
-> > With patches, when lparstat is run on and idle LPAR
-> > =========================================================================
-> > System Configuration
-> > type=Dedicated mode=Capped smt=8 lcpu=2 mem=4834112 kB cpus=0 ent=2.00 
-> > ---Actual---                 -Normalized-
-> > %busy  %idle   Frequency     %busy  %idle
-> > ------ ------  ------------- ------ ------
-> > 1   0.15  99.84  2.17GHz[ 72%]   0.11  71.89
-> > 2   0.24  99.76  2.11GHz[ 70%]   0.18  69.82
-> > 3   0.24  99.75  2.11GHz[ 70%]   0.18  69.81
-> > 
-> > Gautham R. Shenoy (5):
-> >   powerpc: Move idle_loop_prolog()/epilog() functions to header file
-> >   powerpc/idle: Store PURR snapshot in a per-cpu global variable
-> >   powerpc/pseries: Account for SPURR ticks on idle CPUs
-> >   powerpc/sysfs: Show idle_purr and idle_spurr for every CPU
-> >   Documentation: Document sysfs interfaces purr, spurr, idle_purr,
-> >     idle_spurr
-> > 
-> >  Documentation/ABI/testing/sysfs-devices-system-cpu | 39 +++++++++
-> >  arch/powerpc/include/asm/idle.h                    | 93 ++++++++++++++++++++++
-> >  arch/powerpc/kernel/sysfs.c                        | 82 ++++++++++++++++++-
-> >  arch/powerpc/platforms/pseries/setup.c             |  8 +-
-> >  drivers/cpuidle/cpuidle-pseries.c                  | 39 ++-------
-> >  5 files changed, 224 insertions(+), 37 deletions(-)
-> >  create mode 100644 arch/powerpc/include/asm/idle.h
-> > 
+> > There's more in this patch that I cut... but I think just moving
+> > kvm_run from the parameter list would be much less disruptive.
+> >   
 > 
-> Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+> I think there are two kinds of code(`vcpu->run->` and `kvm_run->`), but 
+> there will be more disruptive, not less.
 
-Thanks for reviewing the patches.
+I just fail to see the benefit; sure, kvm_run-> is convenient, but the
+current code is just fine, and any rework should be balanced against
+the cost (e.g. cluttering git annotate).
 
-> 
-> Any chance this is going to be merged in the near future? There is a patchset to
-> update lparstat in the powerpc-utils package to calculate PURR/SPURR cpu
-> utilization that I would like to merge, but have been holding off to make sure
-> we are synced with this proposed patchset.
-
-Michael, could you please consider this for 5.8 ?
-
---
-Thanks and Regards
-gautham.
