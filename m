@@ -2,63 +2,62 @@ Return-Path: <SRS0=TQUW=6H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8DB9C54FCB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 12:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3769FC54FCB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 14:50:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F57C2074F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 12:34:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F57C2074F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id A00532074F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 14:50:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ru1gOba4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A00532074F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497GvC66d2zDqNS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2020 22:33:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497Kx63sbwzDqg1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 00:50:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.126; helo=mga18.intel.com;
- envelope-from=sakari.ailus@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=ru1gOba4; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497DDD1Y8SzDqBc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 20:33:31 +1000 (AEST)
-IronPort-SDR: St6lJdFz3bdfo/pRuTj19WtqymIml1y3Un+vgNY9vjbE3osP4Me/MNjl0Ld59eYX7Dd1mmZX+9
- NZXBj052il+Q==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Apr 2020 03:32:15 -0700
-IronPort-SDR: Tbx4AP8Zju7uVt+bsFFBuorEKEDp+DufEyq0utUZQmn5wkfXhsC5SmipnzOBUDHfLSF+NGOyYH
- O/V5r9IH1k5g==
-X-IronPort-AV: E=Sophos;i="5.73,307,1583222400"; d="scan'208";a="247718369"
-Received: from paasikivi.fi.intel.com ([10.237.72.42])
- by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Apr 2020 03:32:10 -0700
-Received: by paasikivi.fi.intel.com (Postfix, from userid 1000)
- id 158F7204C6; Thu, 23 Apr 2020 13:32:08 +0300 (EEST)
-Date: Thu, 23 Apr 2020 13:32:08 +0300
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 04/29] staging: media: ipu3: use vmap instead of
- reimplementing it
-Message-ID: <20200423103207.GO5381@paasikivi.fi.intel.com>
-References: <20200414131348.444715-1-hch@lst.de>
- <20200414131348.444715-5-hch@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200414131348.444715-5-hch@lst.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Thu, 23 Apr 2020 22:31:03 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497KqV6SxJzDqxc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 00:45:58 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id C1C2F2074F;
+ Thu, 23 Apr 2020 14:45:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1587653156;
+ bh=ANqknJSxVOzlNxsyyTwkD/70QAGgpY8SByw/9DBpl70=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=ru1gOba4KuQhYQr69+Ue5CA1nHDc7RKD/v/hHPrWGOixDUP3cqFyHcd++D4/E742t
+ Ap80b1l07EsIu1XQXZrcVjBSVaSNCd6G0gy0URpbdN6XEqvGk8l63iEEfm/gHfMVf7
+ BfTnRVXjYEi0ngQ/lbcBcNZPgG3kp2ZBjNxTXCXM=
+Date: Thu, 23 Apr 2020 15:45:53 +0100
+From: Mark Brown <broonie@kernel.org>
+To: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ Timur Tabi <timur@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Takashi Iwai <tiwai@suse.com>, Colin King <colin.king@canonical.com>
+In-Reply-To: <20200423083922.8159-1-colin.king@canonical.com>
+References: <20200423083922.8159-1-colin.king@canonical.com>
+Subject: Re: [PATCH][next] ASoC: fsl_easrc: fix spelling mistake "prefitler"
+ -> "prefilter"
+Message-Id: <158765314784.33774.8027671793681805498.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,32 +69,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, David Airlie <airlied@linux.ie>,
- dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- "K. Y. Srinivasan" <kys@microsoft.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>,
- x86@kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Laura Abbott <labbott@redhat.com>, Nitin Gupta <ngupta@vflare.org>,
- Haiyang Zhang <haiyangz@microsoft.com>, linaro-mm-sig@lists.linaro.org,
- bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org,
- Minchan Kim <minchan@kernel.org>, iommu@lists.linux-foundation.org,
- Daniel Vetter <daniel@ffwll.ch>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 14, 2020 at 03:13:23PM +0200, Christoph Hellwig wrote:
-> Just use vmap instead of messing with vmalloc internals.
+On Thu, 23 Apr 2020 09:39:22 +0100, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> There is a spelling mistake in a deb_dbg message, fix it.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  sound/soc/fsl/fsl_easrc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> [...]
+
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.8
 
 Thanks!
 
-Acked-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+[1/1] ASoC: fsl_easrc: fix spelling mistake "prefitler" -> "prefilter"
+      commit: 76ec4aea9fd8117f064caa63ee6f7fbcb70eeb2c
 
--- 
-Sakari Ailus
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
