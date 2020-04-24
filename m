@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2D42C55186
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF4DC55186
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:27:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8559B20700
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:24:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8559B20700
+	by mail.kernel.org (Postfix) with ESMTPS id 99AED20700
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:27:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99AED20700
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497lzY38hjzDrHn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 17:24:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497m2q6tzDzDqQS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 17:27:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
@@ -29,52 +29,52 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497lfS0x4fzDqx5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 17:09:35 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03O73QpI033247; Fri, 24 Apr 2020 03:09:28 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497lfY1rvqzDr9y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 17:09:41 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03O62tQL098379; Fri, 24 Apr 2020 03:09:34 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30kk5t53nb-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30jrj7nksg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 03:09:28 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03O73StW033296;
- Fri, 24 Apr 2020 03:09:28 -0400
+ Fri, 24 Apr 2020 03:09:33 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03O6xGl4101141;
+ Fri, 24 Apr 2020 03:09:33 -0400
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30kk5t53mp-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30jrj7nkrr-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 03:09:27 -0400
+ Fri, 24 Apr 2020 03:09:33 -0400
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03O76xLX004077;
- Fri, 24 Apr 2020 07:09:26 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma03ams.nl.ibm.com with ESMTP id 30fs658u03-1
+ by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03O77AwY004432;
+ Fri, 24 Apr 2020 07:09:31 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03ams.nl.ibm.com with ESMTP id 30fs658u07-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 07:09:26 +0000
+ Fri, 24 Apr 2020 07:09:31 +0000
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
  [9.149.105.59])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03O79NvA55443520
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03O79Sa512714432
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 24 Apr 2020 07:09:23 GMT
+ Fri, 24 Apr 2020 07:09:28 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 43B28A4059;
- Fri, 24 Apr 2020 07:09:23 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D2737A404D;
+ Fri, 24 Apr 2020 07:09:28 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E2A4A404D;
- Fri, 24 Apr 2020 07:09:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 081DBA4057;
+ Fri, 24 Apr 2020 07:09:27 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.85.95.110])
  by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 24 Apr 2020 07:09:21 +0000 (GMT)
+ Fri, 24 Apr 2020 07:09:26 +0000 (GMT)
 From: Balamuruhan S <bala24@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [RFC PATCH v2 5/7] powerpc/ppc-opcode: reuse raw instruction macros
- to stringify
-Date: Fri, 24 Apr 2020 12:38:51 +0530
-Message-Id: <20200424070853.443969-6-bala24@linux.ibm.com>
+Subject: [RFC PATCH v2 7/7] powerpc/selftest: reuse ppc-opcode macros to avoid
+ redundancy
+Date: Fri, 24 Apr 2020 12:38:53 +0530
+Message-Id: <20200424070853.443969-8-bala24@linux.ibm.com>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200424070853.443969-1-bala24@linux.ibm.com>
 References: <20200424070853.443969-1-bala24@linux.ibm.com>
@@ -82,14 +82,14 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-24_02:2020-04-23,
+ definitions=2020-04-24_01:2020-04-23,
  2020-04-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- lowpriorityscore=0 adultscore=0 mlxscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 suspectscore=1 impostorscore=0 malwarescore=0
- mlxlogscore=858 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2004240052
+ bulkscore=0 spamscore=0
+ malwarescore=0 mlxscore=0 lowpriorityscore=0 priorityscore=1501
+ adultscore=0 mlxlogscore=857 phishscore=0 suspectscore=1 clxscore=1015
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004240040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,269 +108,141 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Wrap existing stringify macros to reuse raw instruction encoding macros that
-are newly added.
+Avoid redefining macros to encode ppc instructions instead reuse it from
+ppc-opcode.h, Makefile changes are necessary to compile memcmp_64.S with
+__ASSEMBLY__ defined from selftests.
 
 Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 220 +++++++++-----------------
- 1 file changed, 71 insertions(+), 149 deletions(-)
+ .../selftests/powerpc/stringloops/Makefile    | 34 ++++++++++++++----
+ .../powerpc/stringloops/asm/asm-const.h       |  1 +
+ .../powerpc/stringloops/asm/ppc-opcode.h      | 36 +------------------
+ 3 files changed, 29 insertions(+), 42 deletions(-)
+ create mode 120000 tools/testing/selftests/powerpc/stringloops/asm/asm-const.h
+ mode change 100644 => 120000 tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 6b9a891884be..34584df0ebc4 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -778,166 +778,92 @@
- 						___PPC_RA(a))
+diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
+index 7fc0623d85c3..efe76c5a5b94 100644
+--- a/tools/testing/selftests/powerpc/stringloops/Makefile
++++ b/tools/testing/selftests/powerpc/stringloops/Makefile
+@@ -1,26 +1,44 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # The loops are all 64-bit code
+-CFLAGS += -I$(CURDIR)
++GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
++CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) -I$(CURDIR)/../include
  
- /* Deal with instructions that older assemblers aren't aware of */
--#define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
--#define	PPC_COPY(a, b)		stringify_in_c(.long PPC_INST_COPY | \
--					___PPC_RA(a) | ___PPC_RB(b))
--#define PPC_DARN(t, l)		stringify_in_c(.long PPC_INST_DARN |  \
--						___PPC_RT(t)	   |  \
--						(((l) & 0x3) << 16))
--#define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
--					__PPC_RA(a) | __PPC_RB(b))
--#define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
--					__PPC_RA(a) | __PPC_RB(b))
--#define PPC_LQARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LQARX | \
--					___PPC_RT(t) | ___PPC_RA(a) | \
--					___PPC_RB(b) | __PPC_EH(eh))
--#define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LDARX | \
--					___PPC_RT(t) | ___PPC_RA(a) | \
--					___PPC_RB(b) | __PPC_EH(eh))
--#define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LWARX | \
--					___PPC_RT(t) | ___PPC_RA(a) | \
--					___PPC_RB(b) | __PPC_EH(eh))
--#define PPC_STQCX(t, a, b)	stringify_in_c(.long PPC_INST_STQCX | \
--					___PPC_RT(t) | ___PPC_RA(a) | \
--					___PPC_RB(b))
--#define PPC_MADDHD(t, a, b, c)	stringify_in_c(.long PPC_INST_MADDHD | \
--					___PPC_RT(t) | ___PPC_RA(a)  | \
--					___PPC_RB(b) | ___PPC_RC(c))
--#define PPC_MADDHDU(t, a, b, c)	stringify_in_c(.long PPC_INST_MADDHDU | \
--					___PPC_RT(t) | ___PPC_RA(a)   | \
--					___PPC_RB(b) | ___PPC_RC(c))
--#define PPC_MADDLD(t, a, b, c)	stringify_in_c(.long PPC_INST_MADDLD | \
--					___PPC_RT(t) | ___PPC_RA(a)  | \
--					___PPC_RB(b) | ___PPC_RC(c))
--#define PPC_MSGSND(b)		stringify_in_c(.long PPC_INST_MSGSND | \
--					___PPC_RB(b))
--#define PPC_MSGSYNC		stringify_in_c(.long PPC_INST_MSGSYNC)
--#define PPC_MSGCLR(b)		stringify_in_c(.long PPC_INST_MSGCLR | \
--					___PPC_RB(b))
--#define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_INST_MSGSNDP | \
--					___PPC_RB(b))
--#define PPC_MSGCLRP(b)		stringify_in_c(.long PPC_INST_MSGCLRP | \
--					___PPC_RB(b))
--#define PPC_PASTE(a, b)		stringify_in_c(.long PPC_INST_PASTE | \
--					___PPC_RA(a) | ___PPC_RB(b))
--#define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
--					__PPC_RA(a) | __PPC_RS(s))
--#define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
--					__PPC_RA(a) | __PPC_RS(s))
--#define PPC_POPCNTW(a, s)	stringify_in_c(.long PPC_INST_POPCNTW | \
--					__PPC_RA(a) | __PPC_RS(s))
--#define PPC_RFCI		stringify_in_c(.long PPC_INST_RFCI)
--#define PPC_RFDI		stringify_in_c(.long PPC_INST_RFDI)
--#define PPC_RFMCI		stringify_in_c(.long PPC_INST_RFMCI)
--#define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_INST_TLBILX | \
--					__PPC_T_TLB(t) | __PPC_RA0(a) | __PPC_RB(b))
-+#define	PPC_CP_ABORT		stringify_in_c(.long PPC_RAW_CP_ABORT)
-+#define	PPC_COPY(a, b)		stringify_in_c(.long PPC_RAW_COPY(a, b))
-+#define PPC_DARN(t, l)		stringify_in_c(.long PPC_RAW_DARN(t, l))
-+#define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_RAW_DCBAL(a, b))
-+#define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_RAW_DCBZL(a, b))
-+#define PPC_LQARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LQARX(t, a, b, eh))
-+#define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LDARX(t, a, b, eh))
-+#define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_RAW_LWARX(t, a, b, eh))
-+#define PPC_STQCX(t, a, b)	stringify_in_c(.long PPC_RAW_STQCX(t, a, b))
-+#define PPC_MADDHD(t, a, b, c)	stringify_in_c(.long PPC_RAW_MADDHD(t, a, b, c))
-+#define PPC_MADDHDU(t, a, b, c)	stringify_in_c(.long PPC_RAW_MADDHDU(t, a, b, c))
-+#define PPC_MADDLD(t, a, b, c)	stringify_in_c(.long PPC_RAW_MADDLD(t, a, b, c))
-+#define PPC_MSGSND(b)		stringify_in_c(.long PPC_RAW_MSGSND(b))
-+#define PPC_MSGSYNC		stringify_in_c(.long PPC_RAW_MSGSYNC)
-+#define PPC_MSGCLR(b)		stringify_in_c(.long PPC_RAW_MSGCLR(b))
-+#define PPC_MSGSNDP(b)		stringify_in_c(.long PPC_RAW_MSGSNDP(b))
-+#define PPC_MSGCLRP(b)		stringify_in_c(.long PPC_RAW_MSGCLRP(b))
-+#define PPC_PASTE(a, b)		stringify_in_c(.long PPC_RAW_PASTE(a, b))
-+#define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_RAW_POPCNTB(a, s))
-+#define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_RAW_POPCNTD(a, s))
-+#define PPC_POPCNTW(a, s)	stringify_in_c(.long PPC_RAW_POPCNTW(a, s))
-+#define PPC_RFCI		stringify_in_c(.long PPC_RAW_RFCI)
-+#define PPC_RFDI		stringify_in_c(.long PPC_RAW_RFDI)
-+#define PPC_RFMCI		stringify_in_c(.long PPC_RAW_RFMCI)
-+#define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_RAW_TLBILX(t, a, b))
- #define PPC_TLBILX_ALL(a, b)	PPC_TLBILX(0, a, b)
- #define PPC_TLBILX_PID(a, b)	PPC_TLBILX(1, a, b)
- #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
--#define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
--					__PPC_WC(w))
--#define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
--					       ___PPC_RB(a) | ___PPC_RS(lp))
--#define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
--				stringify_in_c(.long PPC_INST_TLBIE | \
--					___PPC_RB(rb) | ___PPC_RS(rs) | \
--					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
--					___PPC_R(r))
-+#define PPC_WAIT(w)		stringify_in_c(.long PPC_RAW_WAIT(w))
-+#define PPC_TLBIE(lp, a) 	stringify_in_c(.long PPC_RAW_TLBIE(lp, a))
-+#define	PPC_TLBIE_5(rb, rs, ric, prs, r) \
-+				stringify_in_c(.long PPC_RAW_TLBIE_5(rb, rs, ric, prs, r))
- #define	PPC_TLBIEL(rb,rs,ric,prs,r) \
--				stringify_in_c(.long PPC_INST_TLBIEL | \
--					___PPC_RB(rb) | ___PPC_RS(rs) | \
--					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
--					___PPC_R(r))
--#define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
--					__PPC_RA0(a) | __PPC_RB(b))
--#define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
--					__PPC_RA0(a) | __PPC_RB(b))
--
--#define PPC_ERATWE(s, a, w)	stringify_in_c(.long PPC_INST_ERATWE | \
--					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
--#define PPC_ERATRE(s, a, w)	stringify_in_c(.long PPC_INST_ERATRE | \
--					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
--#define PPC_ERATILX(t, a, b)	stringify_in_c(.long PPC_INST_ERATILX | \
--					__PPC_T_TLB(t) | __PPC_RA0(a) | \
--					__PPC_RB(b))
--#define PPC_ERATIVAX(s, a, b)	stringify_in_c(.long PPC_INST_ERATIVAX | \
--					__PPC_RS(s) | __PPC_RA0(a) | __PPC_RB(b))
--#define PPC_ERATSX(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX | \
--					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
--#define PPC_ERATSX_DOT(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX_DOT | \
--					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
--#define PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_INST_SLBFEE | \
--					__PPC_RT(t) | __PPC_RB(b))
--#define __PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_INST_SLBFEE |	\
--					       ___PPC_RT(t) | ___PPC_RB(b))
--#define PPC_ICBT(c,a,b)		stringify_in_c(.long PPC_INST_ICBT | \
--				       __PPC_CT(c) | __PPC_RA0(a) | __PPC_RB(b))
-+				stringify_in_c(.long PPC_RAW_TLBIEL(rb, rs, ric, prs, r))
-+#define PPC_TLBSRX_DOT(a, b)	stringify_in_c(.long PPC_RAW_TLBSRX_DOT(a, b))
-+#define PPC_TLBIVAX(a, b)	stringify_in_c(.long PPC_RAW_TLBIVAX(a, b))
+ EXTRA_SOURCES := ../harness.c
+ 
+ build_32bit = $(shell if ($(CC) $(CFLAGS) -m32 -o /dev/null memcmp.c >/dev/null 2>&1) then echo "1"; fi)
+ 
++ifneq ($(build_32bit),1)
+ TEST_GEN_PROGS := memcmp_64 strlen
++TEST_GEN_FILES := memcmp.o memcmp_64.o memcmp_64
++MEMCMP := $(OUTPUT)/memcmp.o
++MEMCMP_64 := $(OUTPUT)/memcmp_64.o
++HARNESS :=  $(OUTPUT)/../harness.o
++CFLAGS += -m64 -maltivec
+ 
+-$(OUTPUT)/memcmp_64: memcmp.c
+-$(OUTPUT)/memcmp_64: CFLAGS += -m64 -maltivec
++OVERRIDE_TARGETS := 1
++include ../../lib.mk
+ 
+-ifeq ($(build_32bit),1)
++$(OUTPUT)/memcmp_64: $(MEMCMP_64) $(MEMCMP) $(HARNESS)
++	$(CC) $(CFLAGS) memcmp.o memcmp_64.o ../harness.o -o memcmp_64
 +
-+#define PPC_ERATWE(s, a, w)	stringify_in_c(.long PPC_RAW_ERATWE(s, a, w))
-+#define PPC_ERATRE(s, a, w)	stringify_in_c(.long PPC_RAW_ERATRE(a, a, w))
-+#define PPC_ERATILX(t, a, b)	stringify_in_c(.long PPC_RAW_ERATILX(t, a, b))
-+#define PPC_ERATIVAX(s, a, b)	stringify_in_c(.long PPC_RAW_ERATIVAX(s, a, b))
-+#define PPC_ERATSX(t, a, w)	stringify_in_c(.long PPC_RAW_ERATSX(t, a, w))
-+#define PPC_ERATSX_DOT(t, a, w)	stringify_in_c(.long PPC_RAW_ERATSX_DOT(t, a, w))
-+#define PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_RAW_SLBFEE_DOT(t, b))
-+#define __PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long __PPC_RAW_SLBFEE_DOT(t, b))
-+#define PPC_ICBT(c, a, b)	stringify_in_c(.long PPC_RAW_ICBT(c, a, b))
- /* PASemi instructions */
--#define LBZCIX(t,a,b)		stringify_in_c(.long PPC_INST_LBZCIX | \
--				       __PPC_RT(t) | __PPC_RA(a) | __PPC_RB(b))
--#define STBCIX(s,a,b)		stringify_in_c(.long PPC_INST_STBCIX | \
--				       __PPC_RS(s) | __PPC_RA(a) | __PPC_RB(b))
--#define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
--					       VSX_XX1((s), a, b))
--#define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
--					       VSX_XX1((s), a, b))
--#define MFVRD(a, t)		stringify_in_c(.long PPC_INST_MFVSRD | \
--					       VSX_XX1((t)+32, a, R0))
--#define MTVRD(t, a)		stringify_in_c(.long PPC_INST_MTVSRD | \
--					       VSX_XX1((t)+32, a, R0))
--#define VPMSUMW(t, a, b)	stringify_in_c(.long PPC_INST_VPMSUMW | \
--					       VSX_XX3((t), a, b))
--#define VPMSUMD(t, a, b)	stringify_in_c(.long PPC_INST_VPMSUMD | \
--					       VSX_XX3((t), a, b))
--#define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
--					       VSX_XX3((t), a, b))
--#define XXSWAPD(t, a)		stringify_in_c(.long PPC_INST_XXSWAPD | \
--					       VSX_XX3((t), a, a))
--#define XVCPSGNDP(t, a, b)	stringify_in_c(.long (PPC_INST_XVCPSGNDP | \
--					       VSX_XX3((t), (a), (b))))
-+#define LBZCIX(t, a, b)		stringify_in_c(.long PPC_RAW_LBZCIX(t, a, b))
-+#define STBCIX(s, a, b)		stringify_in_c(.long PPC_RAW_STBCIX(s, a, b))
-+#define STXVD2X(s, a, b)	stringify_in_c(.long PPC_RAW_STXVD2X(s, a, b))
-+#define LXVD2X(s, a, b)		stringify_in_c(.long PPC_RAW_LXVD2X(s, a, b))
-+#define MFVRD(a, t)		stringify_in_c(.long PPC_RAW_MFVRD(a, t))
-+#define MTVRD(t, a)		stringify_in_c(.long PPC_RAW_MTVRD(t, a))
-+#define VPMSUMW(t, a, b)	stringify_in_c(.long PPC_RAW_VPMSUMW(t, a, b))
-+#define VPMSUMD(t, a, b)	stringify_in_c(.long PPC_RAW_VPMSUMD(t, a, b))
-+#define XXLOR(t, a, b)		stringify_in_c(.long PPC_RAW_XXLOR(t, a, b))
-+#define XXSWAPD(t, a)		stringify_in_c(.long PPC_RAW_XXSWAPD(t, a))
-+#define XVCPSGNDP(t, a, b)	stringify_in_c(.long (PPC_RAW_XVCPSGNDP(t, a, b)))
- 
- #define VPERMXOR(vrt, vra, vrb, vrc)				\
--	stringify_in_c(.long (PPC_INST_VPERMXOR |		\
--			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
--			      ___PPC_RB(vrb) | (((vrc) & 0x1f) << 6)))
-+	stringify_in_c(.long (PPC_RAW_VPERMXOR(vrt, vra, vrb, vrc)))
- 
--#define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
--#define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
--#define PPC_WINKLE		stringify_in_c(.long PPC_INST_WINKLE)
-+#define PPC_NAP			stringify_in_c(.long PPC_RAW_NAP)
-+#define PPC_SLEEP		stringify_in_c(.long PPC_RAW_SLEEP)
-+#define PPC_WINKLE		stringify_in_c(.long PPC_RAW_WINKLE)
- 
--#define PPC_STOP		stringify_in_c(.long PPC_INST_STOP)
-+#define PPC_STOP		stringify_in_c(.long PPC_RAW_STOP)
- 
- /* BHRB instructions */
--#define PPC_CLRBHRB		stringify_in_c(.long PPC_INST_CLRBHRB)
--#define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_INST_BHRBE | \
--						__PPC_RT(r) | \
--							(((n) & 0x3ff) << 11))
-+#define PPC_CLRBHRB		stringify_in_c(.long PPC_RAW_CLRBHRB)
-+#define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_RAW_MFBHRBE(r, n))
- 
- /* Transactional memory instructions */
--#define TRECHKPT		stringify_in_c(.long PPC_INST_TRECHKPT)
--#define TRECLAIM(r)		stringify_in_c(.long PPC_INST_TRECLAIM \
--					       | __PPC_RA(r))
--#define TABORT(r)		stringify_in_c(.long PPC_INST_TABORT \
--					       | __PPC_RA(r))
-+#define TRECHKPT		stringify_in_c(.long PPC_RAW_TRECHKPT)
-+#define TRECLAIM(r)		stringify_in_c(.long PPC_RAW_TRECLAIM(r))
-+#define TABORT(r)		stringify_in_c(.long PPC_RAW_TABORT(r))
- 
- /* book3e thread control instructions */
--#define MTTMR(tmr, r)		stringify_in_c(.long PPC_INST_MTTMR | \
--					       TMRN(tmr) | ___PPC_RS(r))
--#define MFTMR(tmr, r)		stringify_in_c(.long PPC_INST_MFTMR | \
--					       TMRN(tmr) | ___PPC_RT(r))
-+#define MTTMR(tmr, r)		stringify_in_c(.long PPC_RAW_MTTMR(tmr, r))
-+#define MFTMR(tmr, r)		stringify_in_c(.long PPC_RAW_MFTMR(tmr, r))
- 
- /* Coprocessor instructions */
--#define PPC_ICSWX(s, a, b)	stringify_in_c(.long PPC_INST_ICSWX |	\
--					       ___PPC_RS(s) |		\
--					       ___PPC_RA(a) |		\
--					       ___PPC_RB(b))
--#define PPC_ICSWEPX(s, a, b)	stringify_in_c(.long PPC_INST_ICSWEPX | \
--					       ___PPC_RS(s) |		\
--					       ___PPC_RA(a) |		\
--					       ___PPC_RB(b))
--
--#define PPC_SLBIA(IH)	stringify_in_c(.long PPC_INST_SLBIA | \
--				       ((IH & 0x7) << 21))
-+#define PPC_ICSWX(s, a, b)	stringify_in_c(.long PPC_RAW_ICSWX(s, a, b))
-+#define PPC_ICSWEPX(s, a, b)	stringify_in_c(.long PPC_RAW_ICSWEPX(s, a, b))
++$(MEMCMP_64): memcmp_64.S
++	$(CC) $(CFLAGS) -D__ASSEMBLY__ -o memcmp_64.o -c memcmp_64.S
 +
-+#define PPC_SLBIA(IH)	stringify_in_c(.long PPC_RAW_SLBIA(IH))
++$(MEMCMP): memcmp.c
++	$(CC) $(CFLAGS) -o memcmp.o -c memcmp.c
++
++$(HARNESS): $(EXTRA_SOURCES)
++	$(CC) $(CFLAGS) -DGIT_VERSION='"$(GIT_VERSION)"' -o ../harness.o -c $(EXTRA_SOURCES)
++else
+ $(OUTPUT)/memcmp_32: memcmp.c
+ $(OUTPUT)/memcmp_32: CFLAGS += -m32
  
- /*
-  * These may only be used on ISA v3.0 or later (aka. CPU_FTR_ARCH_300, radix
-@@ -949,12 +875,8 @@
- #define PPC_RADIX_INVALIDATE_ERAT_USER	PPC_SLBIA(3)
- #define PPC_RADIX_INVALIDATE_ERAT_GUEST	PPC_SLBIA(6)
+ TEST_GEN_PROGS += memcmp_32
+ endif
  
--#define VCMPEQUD_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUD | \
+-$(OUTPUT)/strlen: strlen.c string.c
+-
+-ifeq ($(build_32bit),1)
++ifneq ($(build_32bit),1)
++$(OUTPUT)/strlen: string.c
++else
+ $(OUTPUT)/strlen_32: strlen.c
+ $(OUTPUT)/strlen_32: CFLAGS += -m32
+ 
+@@ -30,6 +48,8 @@ endif
+ ASFLAGS = $(CFLAGS)
+ 
+ top_srcdir = ../../../../..
++ifeq ($(build_32bit),1)
+ include ../../lib.mk
++endif
+ 
+ $(TEST_GEN_PROGS): $(EXTRA_SOURCES)
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/asm-const.h b/tools/testing/selftests/powerpc/stringloops/asm/asm-const.h
+new file mode 120000
+index 000000000000..18d8be13e67f
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/asm/asm-const.h
+@@ -0,0 +1 @@
++../../../../../../arch/powerpc/include/asm/asm-const.h
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
+deleted file mode 100644
+index 3edd1a1d9128..000000000000
+--- a/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- * Copyright 2009 Freescale Semiconductor, Inc.
+- *
+- * provides masks and opcode images for use by code generation, emulation
+- * and for instructions that older assemblers might not know about
+- */
+-#ifndef _ASM_POWERPC_PPC_OPCODE_H
+-#define _ASM_POWERPC_PPC_OPCODE_H
+-
+-
+-#  define stringify_in_c(...)	__VA_ARGS__
+-#  define ASM_CONST(x)		x
+-
+-
+-#define PPC_INST_VCMPEQUD_RC		0x100000c7
+-#define PPC_INST_VCMPEQUB_RC		0x10000006
+-
+-#define __PPC_RC21     (0x1 << 10)
+-
+-/* macros to insert fields into opcodes */
+-#define ___PPC_RA(a)	(((a) & 0x1f) << 16)
+-#define ___PPC_RB(b)	(((b) & 0x1f) << 11)
+-#define ___PPC_RS(s)	(((s) & 0x1f) << 21)
+-#define ___PPC_RT(t)	___PPC_RS(t)
+-
+-#define VCMPEQUD_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUD_RC | \
 -			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
 -			      ___PPC_RB(vrb) | __PPC_RC21)
-+#define VCMPEQUD_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_RAW_VCMPEQUD_RC(vrt, vra, vrb))
- 
--#define VCMPEQUB_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUB | \
+-
+-#define VCMPEQUB_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUB_RC | \
 -			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
 -			      ___PPC_RB(vrb) | __PPC_RC21)
-+#define VCMPEQUB_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_RAW_VCMPEQUB_RC(vrt, vra, vrb))
- 
- #endif /* _ASM_POWERPC_PPC_OPCODE_H */
+-
+-#endif /* _ASM_POWERPC_PPC_OPCODE_H */
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
+new file mode 120000
+index 000000000000..f9b1f27ac335
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
+@@ -0,0 +1 @@
++../../../../../../arch/powerpc/include/asm/ppc-opcode.h
+\ No newline at end of file
 -- 
 2.24.1
 
