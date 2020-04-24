@@ -2,88 +2,56 @@ Return-Path: <SRS0=4/q6=6I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50B92C2BA19
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 01:22:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91283C2BA19
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 02:50:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F5AE20CC7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 01:22:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="Q/DLVAJC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F5AE20CC7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 09E8E206ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 02:49:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09E8E206ED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vivo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497bxb6GJ7zDr0P
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 11:22:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497dts0v8jzDr6y
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 12:49:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=vivo.com (client-ip=59.111.176.16; helo=m17616.mail.qiye.163.com;
+ envelope-from=wenhu.wang@vivo.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::f44; helo=mail-qv1-xf44.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.a=rsa-sha256
- header.s=google header.b=Q/DLVAJC; dkim-atps=neutral
-Received: from mail-qv1-xf44.google.com (mail-qv1-xf44.google.com
- [IPv6:2607:f8b0:4864:20::f44])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=vivo.com
+Received: from m17616.mail.qiye.163.com (m17616.mail.qiye.163.com
+ [59.111.176.16])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497btB0h0nzDr0P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 11:19:12 +1000 (AEST)
-Received: by mail-qv1-xf44.google.com with SMTP id q2so3949204qvd.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2020 18:19:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=SUP7E1nq+cKtFXB8QAyHzXNO2cyYABhbrmdhR2MmyC4=;
- b=Q/DLVAJCeX/Awi0Hc6KKmUmbG51xyXLF8LUKl6nLau8tooYpUA2jsnWXUYNHYP85SP
- mJCaCEt0G7kdEwJ7ac83ITr52wnusSpG1SCAuJ8RO6FcJFsH37UMN4jLSDQT0TG/8siJ
- 1RrvspvPj56apmUKxIiAnQTD8JBPeRmXB5m3d402cMl6JnGet6etQVX8Zwq+1tCNnz/6
- 2JVr2fq6/hHLKwNxP1kTx1+OYBttiT9uqV4NxFZc2k7k1mZhcLcThGEjL0vVJlwdA/lA
- eaPGUYjuV7gRrovyopW2aHos9RvofT7Bjk0UDs82QBMmTXgN4xSyuj1wFnrmnopNdVIn
- V69w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
- :content-transfer-encoding:message-id:references:to;
- bh=SUP7E1nq+cKtFXB8QAyHzXNO2cyYABhbrmdhR2MmyC4=;
- b=tUZnsAQsLRbLUk68OJnudltVQ2sPl76bzHqb+m+DkD1s/LqkbLwpfc53p3Vsvrx2sF
- mL49IGdEWxvqyVWortcegGJlBRfcNgmYuT9XiyPpjRiY2QReuhoknGc8+LSSO7Xo6Spe
- C45T/BcAYCma5P3d5CfhZNS/H+e8XYCyvd4xIi6qRr6aR7OGixYC0iCu0u9LCiAYtJxD
- LgAdS8afFEAk7TsOgjkhiX52BbT53cjFgAwzEm6u4i04s8qPsjK9t/+mxlFuGTB4gd9D
- DdVE801f0Cosi4i1bzzSFPEPjZ2bQ98EMTiCvqvpqMyth7/k3N3phUTI5QjZr1vu7FQM
- FEjg==
-X-Gm-Message-State: AGi0PuYKlDRhitOyd/FZ5VKUA4+5uQfl9GVpTI42ZbuR840o4rJHjkTS
- unBz4NLrhrD+O1xlTDIyrGwAHg==
-X-Google-Smtp-Source: APiQypK/+h4GH+yaRh2CUtGPeHw7cEyYMpG5mSrzp2N8xVHNC9ScLgbhOXJSx0UXJKUvZ3ec2Q54pw==
-X-Received: by 2002:a0c:90ef:: with SMTP id p102mr6886256qvp.248.1587691148825; 
- Thu, 23 Apr 2020 18:19:08 -0700 (PDT)
-Received: from [192.168.1.153] (pool-71-184-117-43.bstnma.fios.verizon.net.
- [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id q6sm3031803qte.72.2020.04.23.18.19.07
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 23 Apr 2020 18:19:08 -0700 (PDT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [PATCH 3/3] powerpc/module_64: Use special stub for _mcount()
- with -mprofile-kernel
-From: Qian Cai <cai@lca.pw>
-In-Reply-To: <8affd4298d22099bbd82544fab8185700a6222b1.1587488954.git.naveen.n.rao@linux.vnet.ibm.com>
-Date: Thu, 23 Apr 2020 21:19:07 -0400
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <24465A02-2A34-4980-9B2E-ED5098200522@lca.pw>
-References: <cover.1587488954.git.naveen.n.rao@linux.vnet.ibm.com>
- <8affd4298d22099bbd82544fab8185700a6222b1.1587488954.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-X-Mailer: Apple Mail (2.3608.80.23.2.2)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497dqx3xX8zDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 12:47:21 +1000 (AEST)
+Received: from ubuntu.localdomain (unknown [58.251.74.226])
+ by m17616.mail.qiye.163.com (Hmail) with ESMTPA id 5D17A101EC4;
+ Fri, 24 Apr 2020 10:47:17 +0800 (CST)
+From: Wang Wenhu <wenhu.wang@vivo.com>
+To: gregkh@linuxfoundation.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3, 1/5] powerpc: sysdev: fix compile error for fsl_85xx_l2ctlr
+Date: Thu, 23 Apr 2020 19:45:50 -0700
+Message-Id: <20200424024554.30709-2-wenhu.wang@vivo.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200424024554.30709-1-wenhu.wang@vivo.com>
+References: <20200424024554.30709-1-wenhu.wang@vivo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSVVPTE1LS0tLTEtOTEpCWVdZKFlBSE
+ 83V1ktWUFJV1kJDhceCFlBWTU0KTY6NyQpLjc#WQY+
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Nj46Fyo6TDg5T1YfKC9KOUs#
+ PjNPFE9VSlVKTkNMTUJNT0hMQkpNVTMWGhIXVQweFRMOVQwaFRw7DRINFFUYFBZFWVdZEgtZQVlO
+ Q1VJTkpVTE9VSUlNWVdZCAFZQUhJTkI3Bg++
+X-HM-Tid: 0a71aa150a1a9374kuws5d17a101ec4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,92 +63,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Steven Rostedt <rostedt@goodmis.org>
+Cc: robh@kernel.org, oss@buserror.net, kernel@vivo.com, paulus@samba.org,
+ Wang Wenhu <wenhu.wang@vivo.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Include "linux/of_address.h" to fix the compile error for
+mpc85xx_l2ctlr_of_probe() when compiling fsl_85xx_cache_sram.c.
 
+  CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function ‘mpc85xx_l2ctlr_of_probe’:
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? [-Werror=implicit-function-declaration]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+           ^~~~~~~~
+           pci_iomap
+arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes pointer from integer without a cast [-Werror=int-conversion]
+  l2ctlr = of_iomap(dev->dev.of_node, 0);
+         ^
+cc1: all warnings being treated as errors
+scripts/Makefile.build:267: recipe for target 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
+make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
 
-> On Apr 21, 2020, at 1:35 PM, Naveen N. Rao =
-<naveen.n.rao@linux.vnet.ibm.com> wrote:
->=20
-> Since commit c55d7b5e64265f ("powerpc: Remove STRICT_KERNEL_RWX
-> incompatibility with RELOCATABLE"), powerpc kernels with
-> -mprofile-kernel can crash in certain scenarios with a trace like =
-below:
->=20
->    BUG: Unable to handle kernel instruction fetch (NULL pointer?)
->    Faulting instruction address: 0x00000000
->    Oops: Kernel access of bad area, sig: 11 [#1]
->    LE PAGE_SIZE=3D64K MMU=3DRadix SMP NR_CPUS=3D256 DEBUG_PAGEALLOC =
-NUMA PowerNV
->    <snip>
->    NIP [0000000000000000] 0x0
->    LR [c0080000102c0048] ext4_iomap_end+0x8/0x30 [ext4]
->    Call Trace:
->     iomap_apply+0x20c/0x920 (unreliable)
->     iomap_bmap+0xfc/0x160
->     ext4_bmap+0xa4/0x180 [ext4]
->     bmap+0x4c/0x80
->     jbd2_journal_init_inode+0x44/0x1a0 [jbd2]
->     ext4_load_journal+0x440/0x860 [ext4]
->     ext4_fill_super+0x342c/0x3ab0 [ext4]
->     mount_bdev+0x25c/0x290
->     ext4_mount+0x28/0x50 [ext4]
->     legacy_get_tree+0x4c/0xb0
->     vfs_get_tree+0x4c/0x130
->     do_mount+0xa18/0xc50
->     sys_mount+0x158/0x180
->     system_call+0x5c/0x68
->=20
-> The NIP points to NULL, or a random location (data even), while the LR
-> always points to the LEP of a function (with an offset of 8), =
-indicating
-> that something went wrong with ftrace. However, ftrace is not
-> necessarily active when such crashes occur.
->=20
-> The kernel OOPS sometimes follows a warning from ftrace indicating =
-that
-> some module functions could not be patched with a nop. Other times, if =
-a
-> module is loaded early during boot, instruction patching can fail due =
-to
-> a separate bug, but the error is not reported due to missing error
-> reporting.
->=20
-> In all the above cases when instruction patching fails, ftrace will be
-> disabled but certain kernel module functions will be left with default
-> calls to _mcount(). This is not a problem with ELFv1. However, with
-> -mprofile-kernel, the default stub is problematic since it depends on =
-a
-> valid module TOC in r2. If the kernel (or a different module) calls =
-into
-> a function that does not use the TOC, the function won't have a =
-prologue
-> to setup the module TOC. When that function calls into _mcount(), we
-> will end up in the relocation stub that will use the previous TOC, and
-> end up trying to jump into a random location. =46rom the above trace:
->=20
-> 	iomap_apply+0x20c/0x920 [kernel TOC]
-> 			|
-> 			V
-> 	ext4_iomap_end+0x8/0x30 [no GEP =3D=3D kernel TOC]
-> 			|
-> 			V
-> 		_mcount() stub
-> 	[uses kernel TOC -> random entry]
->=20
-> To address this, let's change over to using the special stub that is
-> used for ftrace_[regs_]caller() for _mcount(). This ensures that we =
-are
-> not dependent on a valid module TOC in r2 for default _mcount()
-> handling.
->=20
-> Reported-by: Qian Cai <cai@lca.pw>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <oss@buserror.net>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Fixes: 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+---
+No changes
+---
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Feel free to add,
+diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+index 2d0af0c517bb..7533572492f0 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
++++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
++#include <linux/of_address.h>
+ #include <asm/io.h>
+ 
+ #include "fsl_85xx_cache_ctlr.h"
+-- 
+2.17.1
 
-Tested-by: Qian Cai <cai@lca.pw>=
