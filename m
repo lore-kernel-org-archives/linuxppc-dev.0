@@ -2,94 +2,92 @@ Return-Path: <SRS0=4/q6=6I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UPPERCASE_50_75,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12EB3C2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:15:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E6A9C2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:17:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDC762075A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:15:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDC762075A
+	by mail.kernel.org (Postfix) with ESMTPS id 016E42076C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 07:17:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 016E42076C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497lmz6dRbzDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 17:15:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497lqV74MpzDqXP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 17:17:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497lfC2fKhzDqnw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 17:09:22 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03O71q4Z122685; Fri, 24 Apr 2020 03:09:16 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30k3xvbfvv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 03:09:16 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03O71rRN122786;
- Fri, 24 Apr 2020 03:09:16 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30k3xvbfv7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 03:09:15 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03O774tA021834;
- Fri, 24 Apr 2020 07:09:14 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 30fs658r4w-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 07:09:13 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497lfF5L6fzDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 17:09:25 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03O72Efb082132
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 03:09:23 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30kppdqsa4-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 03:09:23 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bala24@linux.ibm.com>;
+ Fri, 24 Apr 2020 08:08:55 +0100
+Received: from b06avi18878370.portsmouth.uk.ibm.com (9.149.26.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 24 Apr 2020 08:08:53 +0100
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
  [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 03O7839f64291254
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 03O79HP459703716
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 24 Apr 2020 07:08:03 GMT
+ Fri, 24 Apr 2020 07:09:17 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2889BA4059;
- Fri, 24 Apr 2020 07:09:11 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3BDDEA4051;
+ Fri, 24 Apr 2020 07:09:17 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 52B35A4051;
- Fri, 24 Apr 2020 07:09:09 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 64F1AA404D;
+ Fri, 24 Apr 2020 07:09:15 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.85.95.110])
  by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 24 Apr 2020 07:09:09 +0000 (GMT)
+ Fri, 24 Apr 2020 07:09:15 +0000 (GMT)
 From: Balamuruhan S <bala24@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [RFC PATCH v2 1/7] powerpc/ppc-opcode: introduce PPC_RAW_* macros for
- base instruction encoding
-Date: Fri, 24 Apr 2020 12:38:47 +0530
-Message-Id: <20200424070853.443969-2-bala24@linux.ibm.com>
+Subject: [RFC PATCH v2 3/7] powerpc/bpf_jit: reuse instruction macros from
+ ppc-opcode.h
+Date: Fri, 24 Apr 2020 12:38:49 +0530
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200424070853.443969-1-bala24@linux.ibm.com>
 References: <20200424070853.443969-1-bala24@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
+x-cbid: 20042407-0012-0000-0000-000003AA41E3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 20042407-0013-0000-0000-000021E798E8
+Message-Id: <20200424070853.443969-4-bala24@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-24_02:2020-04-23,
  2020-04-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 mlxscore=0
- impostorscore=0 adultscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
- malwarescore=0 mlxlogscore=608 lowpriorityscore=0 suspectscore=1
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004240048
+ suspectscore=1 phishscore=0
+ priorityscore=1501 clxscore=1015 spamscore=0 malwarescore=0 bulkscore=0
+ mlxscore=0 impostorscore=0 lowpriorityscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
+ definitions=main-2004240048
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,222 +106,225 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce PPC_RAW_* macros to have all the bare encoding of ppc
-instructions. Move `VSX_XX*()` and `TMRN()` macros up to reuse it.
+remove duplicate macro definitions from bpf_jit.h and reuse the macros from
+ppc-opcode.h
 
 Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 183 ++++++++++++++++++++++++--
- 1 file changed, 175 insertions(+), 8 deletions(-)
+ arch/powerpc/net/bpf_jit.h        | 18 +-----------------
+ arch/powerpc/net/bpf_jit32.h      | 10 +++++-----
+ arch/powerpc/net/bpf_jit64.h      |  4 ++--
+ arch/powerpc/net/bpf_jit_comp.c   |  2 +-
+ arch/powerpc/net/bpf_jit_comp64.c | 20 ++++++++++----------
+ 5 files changed, 19 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index c1df75edde44..c5ec2ea283f1 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -428,6 +428,181 @@
- #define __PPC_EH(eh)	0
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index 55d4377ccfae..535d1de4dfee 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -11,6 +11,7 @@
+ #ifndef __ASSEMBLY__
+ 
+ #include <asm/types.h>
++#include <asm/ppc-opcode.h>
+ 
+ #ifdef PPC64_ELF_ABI_v1
+ #define FUNCTION_DESCR_SIZE	24
+@@ -26,7 +27,6 @@
+ #define IMM_H(i)		((uintptr_t)(i)>>16)
+ #define IMM_HA(i)		(((uintptr_t)(i)>>16) +			      \
+ 					(((uintptr_t)(i) & 0x8000) >> 15))
+-#define IMM_L(i)		((uintptr_t)(i) & 0xffff)
+ 
+ #define PLANT_INSTR(d, idx, instr)					      \
+ 	do { if (d) { (d)[idx] = instr; } idx++; } while (0)
+@@ -45,8 +45,6 @@
+ #define PPC_ADDIS(d, a, i)	EMIT(PPC_INST_ADDIS |			      \
+ 				     ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_LIS(r, i)		PPC_ADDIS(r, 0, i)
+-#define PPC_STD(r, base, i)	EMIT(PPC_INST_STD | ___PPC_RS(r) |	      \
+-				     ___PPC_RA(base) | ((i) & 0xfffc))
+ #define PPC_STDX(r, base, b)	EMIT(PPC_INST_STDX | ___PPC_RS(r) |	      \
+ 				     ___PPC_RA(base) | ___PPC_RB(b))
+ #define PPC_STDU(r, base, i)	EMIT(PPC_INST_STDU | ___PPC_RS(r) |	      \
+@@ -62,12 +60,8 @@
+ 
+ #define PPC_LBZ(r, base, i)	EMIT(PPC_INST_LBZ | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | IMM_L(i))
+-#define PPC_LD(r, base, i)	EMIT(PPC_INST_LD | ___PPC_RT(r) |	      \
+-				     ___PPC_RA(base) | ((i) & 0xfffc))
+ #define PPC_LDX(r, base, b)	EMIT(PPC_INST_LDX | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | ___PPC_RB(b))
+-#define PPC_LWZ(r, base, i)	EMIT(PPC_INST_LWZ | ___PPC_RT(r) |	      \
+-				     ___PPC_RA(base) | IMM_L(i))
+ #define PPC_LHZ(r, base, i)	EMIT(PPC_INST_LHZ | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | IMM_L(i))
+ #define PPC_LHBRX(r, base, b)	EMIT(PPC_INST_LHBRX | ___PPC_RT(r) |	      \
+@@ -75,16 +69,8 @@
+ #define PPC_LDBRX(r, base, b)	EMIT(PPC_INST_LDBRX | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | ___PPC_RB(b))
+ 
+-#define PPC_BPF_LDARX(t, a, b, eh) EMIT(PPC_INST_LDARX | ___PPC_RT(t) |	      \
+-					___PPC_RA(a) | ___PPC_RB(b) |	      \
+-					__PPC_EH(eh))
+-#define PPC_BPF_LWARX(t, a, b, eh) EMIT(PPC_INST_LWARX | ___PPC_RT(t) |	      \
+-					___PPC_RA(a) | ___PPC_RB(b) |	      \
+-					__PPC_EH(eh))
+ #define PPC_BPF_STWCX(s, a, b)	EMIT(PPC_INST_STWCX | ___PPC_RS(s) |	      \
+ 					___PPC_RA(a) | ___PPC_RB(b))
+-#define PPC_BPF_STDCX(s, a, b)	EMIT(PPC_INST_STDCX | ___PPC_RS(s) |	      \
+-					___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_CMPWI(a, i)		EMIT(PPC_INST_CMPWI | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_CMPDI(a, i)		EMIT(PPC_INST_CMPDI | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_CMPW(a, b)		EMIT(PPC_INST_CMPW | ___PPC_RA(a) |	      \
+@@ -100,8 +86,6 @@
+ 
+ #define PPC_SUB(d, a, b)	EMIT(PPC_INST_SUB | ___PPC_RT(d) |	      \
+ 				     ___PPC_RB(a) | ___PPC_RA(b))
+-#define PPC_ADD(d, a, b)	EMIT(PPC_INST_ADD | ___PPC_RT(d) |	      \
+-				     ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_MULD(d, a, b)	EMIT(PPC_INST_MULLD | ___PPC_RT(d) |	      \
+ 				     ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_MULW(d, a, b)	EMIT(PPC_INST_MULLW | ___PPC_RT(d) |	      \
+diff --git a/arch/powerpc/net/bpf_jit32.h b/arch/powerpc/net/bpf_jit32.h
+index 4ec2a9f14f84..753c244a7cf9 100644
+--- a/arch/powerpc/net/bpf_jit32.h
++++ b/arch/powerpc/net/bpf_jit32.h
+@@ -76,13 +76,13 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+ 			PPC_LBZ(r, r, IMM_L(i)); } } while(0)
+ 
+-#define PPC_LD_OFFS(r, base, i) do { if ((i) < 32768) PPC_LD(r, base, i);     \
++#define PPC_LD_OFFS(r, base, i) do { if ((i) < 32768) EMIT(PPC_RAW_LD(r, base, i));     \
+ 		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+-			PPC_LD(r, r, IMM_L(i)); } } while(0)
++			EMIT(PPC_RAW_LD(r, r, IMM_L(i))); } } while(0)
+ 
+-#define PPC_LWZ_OFFS(r, base, i) do { if ((i) < 32768) PPC_LWZ(r, base, i);   \
++#define PPC_LWZ_OFFS(r, base, i) do { if ((i) < 32768) EMIT(PPC_RAW_LWZ(r, base, i));   \
+ 		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+-			PPC_LWZ(r, r, IMM_L(i)); } } while(0)
++			EMIT(PPC_RAW_LWZ(r, r, IMM_L(i))); } } while(0)
+ 
+ #define PPC_LHZ_OFFS(r, base, i) do { if ((i) < 32768) PPC_LHZ(r, base, i);   \
+ 		else {	PPC_ADDIS(r, base, IMM_HA(i));			      \
+@@ -118,7 +118,7 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ #define PPC_NTOHS_OFFS(r, base, i)	PPC_LHZ_OFFS(r, base, i)
  #endif
  
-+/* Base instruction encoding */
-+#define PPC_RAW_CP_ABORT		(PPC_INST_CP_ABORT)
-+#define PPC_RAW_COPY(a, b)		(PPC_INST_COPY | ___PPC_RA(a) | \
-+						___PPC_RB(b))
-+#define PPC_RAW_DARN(t, l)		(PPC_INST_DARN | ___PPC_RT(t) | \
-+						(((l) & 0x3) << 16))
-+#define PPC_RAW_DCBAL(a, b)		(PPC_INST_DCBAL | __PPC_RA(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_DCBZL(a, b)		(PPC_INST_DCBZL | __PPC_RA(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_LQARX(t, a, b, eh)	(PPC_INST_LQARX | ___PPC_RT(t) | \
-+						___PPC_RA(a) | \
-+						___PPC_RB(b) | __PPC_EH(eh))
-+#define PPC_RAW_LDARX(t, a, b, eh)	(PPC_INST_LDARX | ___PPC_RT(t) | \
-+						___PPC_RA(a) | \
-+						___PPC_RB(b) | __PPC_EH(eh))
-+#define PPC_RAW_LWARX(t, a, b, eh)	(PPC_INST_LWARX | \
-+						___PPC_RT(t) | ___PPC_RA(a) | \
-+						___PPC_RB(b) | __PPC_EH(eh))
-+#define PPC_RAW_STQCX(t, a, b)		(PPC_INST_STQCX | \
-+						___PPC_RT(t) | ___PPC_RA(a) | \
-+						___PPC_RB(b))
-+#define PPC_RAW_MADDHD(t, a, b, c)	(PPC_INST_MADDHD | \
-+						___PPC_RT(t) | ___PPC_RA(a) | \
-+						___PPC_RB(b) | ___PPC_RC(c))
-+#define PPC_RAW_MADDHDU(t, a, b, c)	(PPC_INST_MADDHDU | \
-+						___PPC_RT(t) | ___PPC_RA(a) | \
-+						___PPC_RB(b) | ___PPC_RC(c))
-+#define PPC_RAW_MADDLD(t, a, b, c)	(PPC_INST_MADDLD | \
-+						___PPC_RT(t) | ___PPC_RA(a) | \
-+						___PPC_RB(b) | ___PPC_RC(c))
-+#define PPC_RAW_MSGSND(b)		(PPC_INST_MSGSND | ___PPC_RB(b))
-+#define PPC_RAW_MSGSYNC			(PPC_INST_MSGSYNC)
-+#define PPC_RAW_MSGCLR(b)		(PPC_INST_MSGCLR | ___PPC_RB(b))
-+#define PPC_RAW_MSGSNDP(b)		(PPC_INST_MSGSNDP | ___PPC_RB(b))
-+#define PPC_RAW_MSGCLRP(b)		(PPC_INST_MSGCLRP | ___PPC_RB(b))
-+#define PPC_RAW_PASTE(a, b)		(PPC_INST_PASTE | ___PPC_RA(a) | \
-+						___PPC_RB(b))
-+#define PPC_RAW_POPCNTB(a, s)		(PPC_INST_POPCNTB | __PPC_RA(a) | \
-+						__PPC_RS(s))
-+#define PPC_RAW_POPCNTD(a, s)		(PPC_INST_POPCNTD | __PPC_RA(a) | \
-+						__PPC_RS(s))
-+#define PPC_RAW_POPCNTW(a, s)		(PPC_INST_POPCNTW | __PPC_RA(a) | \
-+						__PPC_RS(s))
-+#define PPC_RAW_RFCI			(PPC_INST_RFCI)
-+#define PPC_RAW_RFDI			(PPC_INST_RFDI)
-+#define PPC_RAW_RFMCI			(PPC_INST_RFMCI)
-+#define PPC_RAW_TLBILX(t, a, b)		(PPC_INST_TLBILX | \
-+						__PPC_T_TLB(t) | \
-+						__PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_WAIT(w)			(PPC_INST_WAIT | __PPC_WC(w))
-+#define PPC_RAW_TLBIE(lp, a)		(PPC_INST_TLBIE | ___PPC_RB(a) | \
-+						___PPC_RS(lp))
-+#define PPC_RAW_TLBIE_5(rb, rs, ric, prs, r) \
-+					(PPC_INST_TLBIE | \
-+						___PPC_RB(rb) | \
-+						___PPC_RS(rs) | \
-+						___PPC_RIC(ric) | \
-+						___PPC_PRS(prs) | \
-+						___PPC_R(r))
-+#define PPC_RAW_TLBIEL(rb, rs, ric, prs, r) \
-+					(PPC_INST_TLBIEL | \
-+						___PPC_RB(rb) | \
-+						___PPC_RS(rs) | \
-+						___PPC_RIC(ric) | \
-+						___PPC_PRS(prs) | \
-+						___PPC_R(r))
-+#define PPC_RAW_TLBSRX_DOT(a, b)	(PPC_INST_TLBSRX_DOT | \
-+						__PPC_RA0(a) | __PPC_RB(b))
-+#define PPC_RAW_TLBIVAX(a, b)		(PPC_INST_TLBIVAX | \
-+						__PPC_RA0(a) | __PPC_RB(b))
-+#define PPC_RAW_ERATWE(s, a, w)		(PPC_INST_ERATWE | \
-+						__PPC_RS(s) | __PPC_RA(a) | \
-+						__PPC_WS(w))
-+#define PPC_RAW_ERATRE(s, a, w)		(PPC_INST_ERATRE | \
-+						__PPC_RS(s) | __PPC_RA(a) | \
-+						__PPC_WS(w))
-+#define PPC_RAW_ERATILX(t, a, b)	(PPC_INST_ERATILX | \
-+						__PPC_T_TLB(t) | \
-+						__PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_ERATIVAX(s, a, b)	(PPC_INST_ERATIVAX | \
-+						__PPC_RS(s) | __PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_ERATSX(t, a, w)		(PPC_INST_ERATSX | \
-+						__PPC_RS(t) | __PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_ERATSX_DOT(t, a, w)	(PPC_INST_ERATSX_DOT | \
-+						__PPC_RS(t) | __PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_SLBFEE_DOT(t, b)	(PPC_INST_SLBFEE | \
-+						__PPC_RT(t) | __PPC_RB(b))
-+#define __PPC_RAW_SLBFEE_DOT(t, b)	(PPC_INST_SLBFEE |      \
-+						___PPC_RT(t) | ___PPC_RB(b))
-+#define PPC_RAW_ICBT(c, a, b)		(PPC_INST_ICBT | \
-+						__PPC_CT(c) | __PPC_RA0(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_LBZCIX(t, a, b)		(PPC_INST_LBZCIX | \
-+						__PPC_RT(t) | __PPC_RA(a) | \
-+						__PPC_RB(b))
-+#define PPC_RAW_STBCIX(s, a, b)		(PPC_INST_STBCIX | \
-+						__PPC_RS(s) | __PPC_RA(a) | \
-+						__PPC_RB(b))
-+/*
-+ * Define what the VSX XX1 form instructions will look like, then add
-+ * the 128 bit load store instructions based on that.
-+ */
-+#define VSX_XX1(s, a, b)		(__PPC_XS(s) | __PPC_RA(a) | \
-+						__PPC_RB(b))
-+#define VSX_XX3(t, a, b)		(__PPC_XT(t) | __PPC_XA(a) | \
-+						__PPC_XB(b))
-+#define PPC_RAW_STXVD2X(s, a, b)	(PPC_INST_STXVD2X | \
-+						VSX_XX1((s), a, b))
-+#define PPC_RAW_LXVD2X(s, a, b)		(PPC_INST_LXVD2X | \
-+						VSX_XX1((s), a, b))
-+#define PPC_RAW_MFVRD(a, t)		(PPC_INST_MFVSRD | \
-+						VSX_XX1((t) + 32, a, R0))
-+#define PPC_RAW_MTVRD(t, a)		(PPC_INST_MTVSRD | \
-+						VSX_XX1((t) + 32, a, R0))
-+#define PPC_RAW_VPMSUMW(t, a, b)	(PPC_INST_VPMSUMW | \
-+						VSX_XX3((t), a, b))
-+#define PPC_RAW_VPMSUMD(t, a, b)	(PPC_INST_VPMSUMD | \
-+						VSX_XX3((t), a, b))
-+#define PPC_RAW_XXLOR(t, a, b)		(PPC_INST_XXLOR | \
-+						VSX_XX3((t), a, b))
-+#define PPC_RAW_XXSWAPD(t, a)		(PPC_INST_XXSWAPD | \
-+						VSX_XX3((t), a, a))
-+#define PPC_RAW_XVCPSGNDP(t, a, b)	((PPC_INST_XVCPSGNDP | \
-+						VSX_XX3((t), (a), (b))))
-+#define PPC_RAW_VPERMXOR(vrt, vra, vrb, vrc) \
-+					((PPC_INST_VPERMXOR | \
-+						___PPC_RT(vrt) | \
-+						___PPC_RA(vra) | \
-+						___PPC_RB(vrb) | \
-+						(((vrc) & 0x1f) << 6)))
-+#define PPC_RAW_NAP			(PPC_INST_NAP)
-+#define PPC_RAW_SLEEP			(PPC_INST_SLEEP)
-+#define PPC_RAW_WINKLE			(PPC_INST_WINKLE)
-+#define PPC_RAW_STOP			(PPC_INST_STOP)
-+#define PPC_RAW_CLRBHRB			(PPC_INST_CLRBHRB)
-+#define PPC_RAW_MFBHRBE(r, n)		(PPC_INST_BHRBE | \
-+						__PPC_RT(r) | \
-+						(((n) & 0x3ff) << 11))
-+#define PPC_RAW_TRECHKPT		(PPC_INST_TRECHKPT)
-+#define PPC_RAW_TRECLAIM(r)		(PPC_INST_TRECLAIM \
-+						| __PPC_RA(r))
-+#define PPC_RAW_TABORT(r)		(PPC_INST_TABORT \
-+						| __PPC_RA(r))
-+#define TMRN(x)			((((x) & 0x1f) << 16) | (((x) & 0x3e0) << 6))
-+#define PPC_RAW_MTTMR(tmr, r)		(PPC_INST_MTTMR | \
-+						TMRN(tmr) | ___PPC_RS(r))
-+#define PPC_RAW_MFTMR(tmr, r)		(PPC_INST_MFTMR | \
-+						TMRN(tmr) | ___PPC_RT(r))
-+#define PPC_RAW_ICSWX(s, a, b)		(PPC_INST_ICSWX | \
-+						___PPC_RS(s) | \
-+						___PPC_RA(a) | \
-+						___PPC_RB(b))
-+#define PPC_RAW_ICSWEPX(s, a, b)	(PPC_INST_ICSWEPX | \
-+						___PPC_RS(s) | \
-+						___PPC_RA(a) | \
-+						___PPC_RB(b))
-+#define PPC_RAW_SLBIA(IH)		(PPC_INST_SLBIA | \
-+						(((IH) & 0x7) << 21))
-+#define PPC_RAW_VCMPEQUD_RC(vrt, vra, vrb) \
-+					(PPC_INST_VCMPEQUD | \
-+						___PPC_RT(vrt) | \
-+						___PPC_RA(vra) | \
-+						___PPC_RB(vrb) | __PPC_RC21)
-+#define PPC_RAW_VCMPEQUB_RC(vrt, vra, vrb) \
-+					(PPC_INST_VCMPEQUB | \
-+						___PPC_RT(vrt) | \
-+						___PPC_RA(vra) | \
-+						___PPC_RB(vrb) | __PPC_RC21)
-+
- /* Deal with instructions that older assemblers aren't aware of */
- #define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
- #define	PPC_COPY(a, b)		stringify_in_c(.long PPC_INST_COPY | \
-@@ -528,13 +703,6 @@
- 				       __PPC_RT(t) | __PPC_RA(a) | __PPC_RB(b))
- #define STBCIX(s,a,b)		stringify_in_c(.long PPC_INST_STBCIX | \
- 				       __PPC_RS(s) | __PPC_RA(a) | __PPC_RB(b))
--
--/*
-- * Define what the VSX XX1 form instructions will look like, then add
-- * the 128 bit load store instructions based on that.
-- */
--#define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
--#define VSX_XX3(t, a, b)	(__PPC_XT(t) | __PPC_XA(a) | __PPC_XB(b))
- #define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
- 					       VSX_XX1((s), a, b))
- #define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
-@@ -579,7 +747,6 @@
- 					       | __PPC_RA(r))
+-#define PPC_BPF_LL(r, base, i) do { PPC_LWZ(r, base, i); } while(0)
++#define PPC_BPF_LL(r, base, i) do { EMIT(PPC_RAW_LWZ(r, base, i)); } while(0)
+ #define PPC_BPF_STL(r, base, i) do { PPC_STW(r, base, i); } while(0)
+ #define PPC_BPF_STLU(r, base, i) do { PPC_STWU(r, base, i); } while(0)
  
- /* book3e thread control instructions */
--#define TMRN(x)			((((x) & 0x1f) << 16) | (((x) & 0x3e0) << 6))
- #define MTTMR(tmr, r)		stringify_in_c(.long PPC_INST_MTTMR | \
- 					       TMRN(tmr) | ___PPC_RS(r))
- #define MFTMR(tmr, r)		stringify_in_c(.long PPC_INST_MFTMR | \
+diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
+index cf3a7e337f02..c144a3777158 100644
+--- a/arch/powerpc/net/bpf_jit64.h
++++ b/arch/powerpc/net/bpf_jit64.h
+@@ -73,14 +73,14 @@ static const int b2p[] = {
+ 					PPC_LI(b2p[TMP_REG_2], (i));	      \
+ 					PPC_LDX(r, base, b2p[TMP_REG_2]);     \
+ 				} else					      \
+-					PPC_LD(r, base, i);		      \
++					EMIT(PPC_RAW_LD(r, base, i));	      \
+ 				} while(0)
+ #define PPC_BPF_STL(r, base, i) do {					      \
+ 				if ((i) % 4) {				      \
+ 					PPC_LI(b2p[TMP_REG_2], (i));	      \
+ 					PPC_STDX(r, base, b2p[TMP_REG_2]);    \
+ 				} else					      \
+-					PPC_STD(r, base, i);		      \
++					EMIT(PPC_RAW_STD(r, base, i));	      \
+ 				} while(0)
+ #define PPC_BPF_STLU(r, base, i) do { PPC_STDU(r, base, i); } while(0)
+ 
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 0acc9d5fb19e..abcf56c00be5 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -134,7 +134,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			/*** ALU ops ***/
+ 		case BPF_ALU | BPF_ADD | BPF_X: /* A += X; */
+ 			ctx->seen |= SEEN_XREG;
+-			PPC_ADD(r_A, r_A, r_X);
++			EMIT(PPC_RAW_ADD(r_A, r_A, r_X));
+ 			break;
+ 		case BPF_ALU | BPF_ADD | BPF_K: /* A += K; */
+ 			if (!K)
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index be3517ef0574..f721fbe6ca4d 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -239,7 +239,7 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+ 	 * if (index >= array->map.max_entries)
+ 	 *   goto out;
+ 	 */
+-	PPC_LWZ(b2p[TMP_REG_1], b2p_bpf_array, offsetof(struct bpf_array, map.max_entries));
++	EMIT(PPC_RAW_LWZ(b2p[TMP_REG_1], b2p_bpf_array, offsetof(struct bpf_array, map.max_entries)));
+ 	PPC_RLWINM(b2p_index, b2p_index, 0, 0, 31);
+ 	PPC_CMPLW(b2p_index, b2p[TMP_REG_1]);
+ 	PPC_BCC(COND_GE, out);
+@@ -260,7 +260,7 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+ 
+ 	/* prog = array->ptrs[index]; */
+ 	PPC_MULI(b2p[TMP_REG_1], b2p_index, 8);
+-	PPC_ADD(b2p[TMP_REG_1], b2p[TMP_REG_1], b2p_bpf_array);
++	EMIT(PPC_RAW_ADD(b2p[TMP_REG_1], b2p[TMP_REG_1], b2p_bpf_array));
+ 	PPC_BPF_LL(b2p[TMP_REG_1], b2p[TMP_REG_1], offsetof(struct bpf_array, ptrs));
+ 
+ 	/*
+@@ -340,7 +340,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 		 */
+ 		case BPF_ALU | BPF_ADD | BPF_X: /* (u32) dst += (u32) src */
+ 		case BPF_ALU64 | BPF_ADD | BPF_X: /* dst += src */
+-			PPC_ADD(dst_reg, dst_reg, src_reg);
++			EMIT(PPC_RAW_ADD(dst_reg, dst_reg, src_reg));
+ 			goto bpf_alu32_trunc;
+ 		case BPF_ALU | BPF_SUB | BPF_X: /* (u32) dst -= (u32) src */
+ 		case BPF_ALU64 | BPF_SUB | BPF_X: /* dst -= src */
+@@ -357,7 +357,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 					PPC_ADDI(dst_reg, dst_reg, IMM_L(imm));
+ 				else {
+ 					PPC_LI32(b2p[TMP_REG_1], imm);
+-					PPC_ADD(dst_reg, dst_reg, b2p[TMP_REG_1]);
++					EMIT(PPC_RAW_ADD(dst_reg, dst_reg, b2p[TMP_REG_1]));
+ 				}
+ 			}
+ 			goto bpf_alu32_trunc;
+@@ -689,9 +689,9 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			PPC_ADDI(b2p[TMP_REG_1], dst_reg, off);
+ 			tmp_idx = ctx->idx * 4;
+ 			/* load value from memory into TMP_REG_2 */
+-			PPC_BPF_LWARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
++			EMIT(PPC_RAW_LWARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0));
+ 			/* add value from src_reg into this */
+-			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
++			EMIT(PPC_RAW_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg));
+ 			/* store result back */
+ 			PPC_BPF_STWCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
+ 			/* we're done if this succeeded */
+@@ -701,9 +701,9 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 		case BPF_STX | BPF_XADD | BPF_DW:
+ 			PPC_ADDI(b2p[TMP_REG_1], dst_reg, off);
+ 			tmp_idx = ctx->idx * 4;
+-			PPC_BPF_LDARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
+-			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
+-			PPC_BPF_STDCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
++			EMIT(PPC_RAW_LDARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0));
++			EMIT(PPC_RAW_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg));
++			EMIT(PPC_RAW_STDCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]));
+ 			PPC_BCC_SHORT(COND_NE, tmp_idx);
+ 			break;
+ 
+@@ -724,7 +724,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			break;
+ 		/* dst = *(u32 *)(ul) (src + off) */
+ 		case BPF_LDX | BPF_MEM | BPF_W:
+-			PPC_LWZ(dst_reg, src_reg, off);
++			EMIT(PPC_RAW_LWZ(dst_reg, src_reg, off));
+ 			if (insn_is_zext(&insn[i + 1]))
+ 				addrs[++i] = ctx->idx * 4;
+ 			break;
 -- 
 2.24.1
 
