@@ -2,26 +2,26 @@ Return-Path: <SRS0=4/q6=6I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D550C55186
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 03:45:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8ED6C2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 05:01:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF73720706
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 03:45:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF73720706
+	by mail.kernel.org (Postfix) with ESMTPS id 6146C2074F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 05:01:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6146C2074F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 497g6L5lLQzDr9H
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 13:44:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 497hpr3xDRzDr8g
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2020 15:01:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sbobroff@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
@@ -29,69 +29,69 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 497g3t0t63zDqWq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 13:42:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 497hlP3gG8zDr8R
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 14:58:40 +1000 (AEST)
 Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03O3gLck027909; Thu, 23 Apr 2020 23:42:36 -0400
+ 03O4jDws001310
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 00:58:38 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30ghu9npbr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Apr 2020 23:42:36 -0400
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30ghu9q29p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 00:58:37 -0400
 Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03O3gZIC028150;
- Thu, 23 Apr 2020 23:42:35 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30ghu9nnbs-1
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03O4nFVN007420
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2020 00:58:37 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30ghu9q299-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Apr 2020 23:42:35 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03O3RjWX003478;
- Fri, 24 Apr 2020 03:32:20 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma01fra.de.ibm.com with ESMTP id 30fs658g0r-1
+ Fri, 24 Apr 2020 00:58:37 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03O4v1Zn012607;
+ Fri, 24 Apr 2020 04:58:35 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma03ams.nl.ibm.com with ESMTP id 30fs658pca-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Apr 2020 03:32:19 +0000
+ Fri, 24 Apr 2020 04:58:35 +0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03O3WHhk000350
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03O4wX2557606222
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 24 Apr 2020 03:32:17 GMT
+ Fri, 24 Apr 2020 04:58:33 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2F8B152050;
- Fri, 24 Apr 2020 03:32:17 +0000 (GMT)
-Received: from [9.199.51.89] (unknown [9.199.51.89])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id D12BA5204E;
- Fri, 24 Apr 2020 03:32:13 +0000 (GMT)
-Subject: Re: [PATCH v3 13/16] powerpc/watchpoint: Prepare handler to handle
- more than one watcnhpoint
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-References: <20200414031659.58875-1-ravi.bangoria@linux.ibm.com>
- <20200414031659.58875-14-ravi.bangoria@linux.ibm.com>
- <67349339-03df-091a-47f0-78c1b14c5981@c-s.fr>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Message-ID: <f571127c-89b0-a333-be71-18f411dc6586@linux.ibm.com>
-Date: Fri, 24 Apr 2020 09:02:12 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ by IMSVA (Postfix) with ESMTP id A17C95204E;
+ Fri, 24 Apr 2020 04:58:33 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4ED7652050;
+ Fri, 24 Apr 2020 04:58:33 +0000 (GMT)
+Received: from osmium.ibmuc.com (unknown [9.206.180.103])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 846C6A0209;
+ Fri, 24 Apr 2020 14:58:27 +1000 (AEST)
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/3] powerpc/rtas: Export rtas_error_rc
+Date: Fri, 24 Apr 2020 14:58:29 +1000
+Message-Id: <e9c245df4a0b1cd1f68171c81e0d9e64a13ab0e9.1587704308.git.sbobroff@linux.ibm.com>
+X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
+In-Reply-To: <cover.1587704308.git.sbobroff@linux.ibm.com>
+References: <cover.1587704308.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <67349339-03df-091a-47f0-78c1b14c5981@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-23_19:2020-04-23,
  2020-04-23 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=695
- suspectscore=0 bulkscore=0 spamscore=0 phishscore=0 adultscore=0
+ mlxlogscore=999
+ suspectscore=1 bulkscore=0 spamscore=0 phishscore=0 adultscore=0
  clxscore=1015 malwarescore=0 priorityscore=1501 lowpriorityscore=0
  mlxscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004240020
+ engine=8.12.0-2003020000 definitions=main-2004240027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,42 +103,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: apopple@linux.ibm.com, mikey@neuling.org,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>, peterz@infradead.org,
- oleg@redhat.com, npiggin@gmail.com, linux-kernel@vger.kernel.org,
- paulus@samba.org, jolsa@kernel.org, fweisbec@gmail.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+Export rtas_error_rc() so that it can be used by other users of
+rtas_call() (which is already exported).
 
->> @@ -101,14 +129,20 @@ static bool is_ptrace_bp(struct perf_event *bp)
->>    */
->>   void arch_unregister_hw_breakpoint(struct perf_event *bp)
->>   {
->> +    int i;
->> +
-> 
-> This declaration should be in the block using it.
-> 
->>       /*
->>        * If the breakpoint is unregistered between a hw_breakpoint_handler()
->>        * and the single_step_dabr_instruction(), then cleanup the breakpoint
->>        * restoration variables to prevent dangling pointers.
->>        * FIXME, this should not be using bp->ctx at all! Sayeth peterz.
->>        */
->> -    if (bp->ctx && bp->ctx->task && bp->ctx->task != ((void *)-1L))
->> -        bp->ctx->task->thread.last_hit_ubp = NULL;
->> +    if (bp->ctx && bp->ctx->task && bp->ctx->task != ((void *)-1L)) {
-> 
-> Add declaration of 'int i' here.
+Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+---
+v3 * New in this version.
 
-How will that help? Keeping declaration at the start of function is also
-common practice and I don't see any recommendation to move them inside
-conditional block.
+ arch/powerpc/include/asm/rtas.h | 1 +
+ arch/powerpc/kernel/rtas.c      | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Thanks,
-Ravi
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 3c1887351c71..7c9e4d3635cf 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -379,6 +379,7 @@ extern int rtas_set_rtc_time(struct rtc_time *rtc_time);
+ 
+ extern unsigned int rtas_busy_delay_time(int status);
+ extern unsigned int rtas_busy_delay(int status);
++extern int rtas_error_rc(int rtas_rc);
+ 
+ extern int early_init_dt_scan_rtas(unsigned long node,
+ 		const char *uname, int depth, void *data);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index c5fa251b8950..238bf112d29a 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -518,7 +518,7 @@ unsigned int rtas_busy_delay(int status)
+ }
+ EXPORT_SYMBOL(rtas_busy_delay);
+ 
+-static int rtas_error_rc(int rtas_rc)
++int rtas_error_rc(int rtas_rc)
+ {
+ 	int rc;
+ 
+@@ -546,6 +546,7 @@ static int rtas_error_rc(int rtas_rc)
+ 	}
+ 	return rc;
+ }
++EXPORT_SYMBOL(rtas_error_rc);
+ 
+ int rtas_get_power_level(int powerdomain, int *level)
+ {
+-- 
+2.22.0.216.g00a2a96fc9
+
