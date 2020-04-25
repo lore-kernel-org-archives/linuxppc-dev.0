@@ -2,74 +2,58 @@ Return-Path: <SRS0=123t=6J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F00FEC54FCB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 18:55:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D211C54FCB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 19:19:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 510CA2072B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 18:55:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="J1HDIxyv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 510CA2072B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id D906020714
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 19:19:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D906020714
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 498gFx4Qg4zDqTG
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 04:55:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de;
- envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 498gnk65RszDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 05:19:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=J1HDIxyv; dkim-atps=neutral
-X-Greylist: delayed 4885 seconds by postgrey-1.36 at bilbo;
- Sun, 26 Apr 2020 04:53:24 AEST
-Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 498gD46n8CzDqRY
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 04:53:23 +1000 (AEST)
-Received: from zn.tnic (p200300EC2F2A1100B46A3E12B0A6AFFD.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f2a:1100:b46a:3e12:b0a6:affd])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 8527F1EC0C84;
- Sat, 25 Apr 2020 20:53:20 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1587840800;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=iTbPHyhUCYp1hsTKDTL6Rkak9xj3g4rssRfqZNkVLdA=;
- b=J1HDIxyv/9Q6KrgTFyzUaS9MzUgSTqUl1CHKzxt9TsfuRWCgenOsqkBAUiSvooHmIFgoYR
- xTFg4Y4kCmZjWDIrRtDZdBKr0CU76/YyCxbHLM8CBk0vP11S/rVp9yFpSmoUqaXMTtJMbC
- uoQ0v7K3Cuy7iuezi+zng5kYLFXuv0o=
-Date: Sat, 25 Apr 2020 20:53:13 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 498gkM4pmbzDqW3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 05:16:11 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 03PJFpQN000983;
+ Sat, 25 Apr 2020 14:15:51 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 03PJFndY000981;
+ Sat, 25 Apr 2020 14:15:49 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Sat, 25 Apr 2020 14:15:49 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH] x86: Fix early boot crash on gcc-10, next try
-Message-ID: <20200425185313.GD24294@zn.tnic>
-References: <CAKwvOdkbcO8RzoafON2mGiSy5P96P5+aY8GySysF2my7q+nTqw@mail.gmail.com>
- <20200422212605.GI26846@zn.tnic>
+Message-ID: <20200425191549.GF17645@gate.crashing.org>
+References: <20200422212605.GI26846@zn.tnic>
  <CAKwvOd=exxhfb8N6=1Q=wBUaYcRDEq3L1+TiHDLz+pxWg8OuwQ@mail.gmail.com>
  <20200423125300.GC26021@zn.tnic> <20200423161126.GD26021@zn.tnic>
  <20200425014657.GA2191784@rani.riverdale.lan>
- <20200425085759.GA24294@zn.tnic>
- <20200425150440.GA470719@rani.riverdale.lan>
- <20200425173140.GB24294@zn.tnic>
- <20200425183701.GE17645@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ <20200425085759.GA24294@zn.tnic> <20200425150440.GA470719@rani.riverdale.lan>
+ <20200425173140.GB24294@zn.tnic> <20200425183701.GE17645@gate.crashing.org>
+ <20200425185313.GD24294@zn.tnic>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200425183701.GE17645@gate.crashing.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200425185313.GD24294@zn.tnic>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,40 +75,26 @@ Cc: Jakub Jelinek <jakub@redhat.com>, jgross@suse.com,
  Arvind Sankar <nivedita@alum.mit.edu>, Ingo Molnar <mingo@redhat.com>,
  Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
  "H. Peter Anvin" <hpa@zytor.com>,
- =?utf-8?Q?Fr=C3=A9d=C3=A9ric_Pierret_=28fepitre=29?=
+ =?iso-8859-1?Q?Fr=E9d=E9ric_Pierret_=28fepitre=29?=
  <frederic.pierret@qubes-os.org>, Thomas Gleixner <tglx@linutronix.de>,
  linuxppc-dev@lists.ozlabs.org, boris.ostrovsky@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 25, 2020 at 01:37:01PM -0500, Segher Boessenkool wrote:
-> That is a lot more typing then
-> 	asm("");
+On Sat, Apr 25, 2020 at 08:53:13PM +0200, Borislav Petkov wrote:
+> On Sat, Apr 25, 2020 at 01:37:01PM -0500, Segher Boessenkool wrote:
+> > That is a lot more typing then
+> > 	asm("");
+> 
+> That's why a macro with a hopefully more descriptive name would be
+> telling more than a mere asm("").
 
-That's why a macro with a hopefully more descriptive name would be
-telling more than a mere asm("").
+My point is that you should explain at *every use* of this why you cannot
+have tail calls *there*.  This is very unusual, after all.
 
-> but more seriously, you probably should explain why you do not want a
-> tail call *anyway*, and in such a comment you can say that is what the
-> asm is for.
+There are *very* few places where you want to prevent tail calls, that's
+why there is no attribute for it.
 
-Yes, the final version will have a comment and the whole spiel. This
-diff is just me polling the maintainers: "do you want this for your arch
-too?" Well, the PPC maintainers only, actually.
 
-The other call in init/main.c would be for everybody.
-
-> I don't see anything that prevents the tailcall in current code either,
-> fwiw.
-
-Right, and I don't see a reason why gcc-10 would do that optimization on
-x86 only but I better ask first.
-
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+Segher
