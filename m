@@ -2,25 +2,26 @@ Return-Path: <SRS0=123t=6J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D74C55185
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 09:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B971C55186
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 10:14:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0197D2064A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 09:09:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E27BC20714
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 10:14:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wLD5NgQE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0197D2064A
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="hK17/an3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E27BC20714
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 498QGh6LCJzDr3B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 19:09:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 498Rhn1zkMzDqjy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2020 20:14:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,53 +30,61 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=wLD5NgQE; dkim-atps=neutral
+ header.s=mail header.b=hK17/an3; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 498Phd5bFFzDqlX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2020 18:43:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 498RfY5ZtLzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2020 20:12:03 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 498PhX4fb7z9txnZ;
- Sat, 25 Apr 2020 10:43:40 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 498RfR00FDz9twsf;
+ Sat, 25 Apr 2020 12:11:59 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=wLD5NgQE; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=hK17/an3; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 24IeR9HxEFg4; Sat, 25 Apr 2020 10:43:40 +0200 (CEST)
+ with ESMTP id EaRh8D-AoUJt; Sat, 25 Apr 2020 12:11:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 498PhX3Zvqz9txnG;
- Sat, 25 Apr 2020 10:43:40 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 498RfQ5xP3z9twsd;
+ Sat, 25 Apr 2020 12:11:58 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1587804220; bh=RUmmSE4SKMielW2ISC19QNrNt3/ueQMF3PWOzmpD06c=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=wLD5NgQEU364Oq0Dsh5gyNoJ/h9Px2P6c/GvG3aevhNNgmq2OXNuRRsrxJHjhIjD5
- Bx7BlbweuoMowx2d9TqJX0D3e99+O8TOipNQ2tOlwPqZ2O4GaIfQGpYmTVfpqs63jC
- G89KicXPTB+i72LZn163n5lDO2YxPQ2+vcjrKxPA=
+ t=1587809518; bh=Ycqm++sE6wseu8ZnZ6WJ/gChHwwR1Hj6R8+Q5MvRdgU=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=hK17/an3/OUj6aRL4Hw4feBOS8rABTc64AoHcEWPW2wNB+eHzKAEXJ4hstErOQzey
+ TJ8w5cvASQhVtOB5i86kwNEBZAkKDK8rjsdvWDrDgqYybdkN+yoZu6HWhXk8Hm6qHh
+ xDWcoY0yYlWoMMgiFk67CXzSpXGhnQLFgF+0T18c=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 943F28B752;
- Sat, 25 Apr 2020 10:43:41 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 251DB8B773;
+ Sat, 25 Apr 2020 12:12:00 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id tBwLwApc7pZa; Sat, 25 Apr 2020 10:43:41 +0200 (CEST)
+ with ESMTP id lPc8G7LqWoVi; Sat, 25 Apr 2020 12:12:00 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3F0DA8B769;
- Sat, 25 Apr 2020 10:43:41 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BC4506587B; Sat, 25 Apr 2020 08:43:40 +0000 (UTC)
-Message-Id: <3ba810ea8f667b9bd94973537d58c8f91d955f3e.1587804057.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1587804057.git.christophe.leroy@c-s.fr>
-References: <cover.1587804057.git.christophe.leroy@c-s.fr>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9847A8B752;
+ Sat, 25 Apr 2020 12:11:59 +0200 (CEST)
+Subject: Re: [PATCH 3/3] powerpc/kprobes: Check return value of
+ patch_instruction()
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>
+References: <cover.1587654213.git.naveen.n.rao@linux.vnet.ibm.com>
+ <3a132ac385340244b8d74179ac7bbbda7bf1f503.1587654213.git.naveen.n.rao@linux.vnet.ibm.com>
+ <e2fae53a-f00b-b692-d638-f75c8f04feb8@c-s.fr>
+ <20200424092202.71cfc549@gandalf.local.home>
+ <1587751684.agx3nt8uvf.naveen@linux.ibm.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 12/13] powerpc/40x: Avoid using r12 in TLB miss handlers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- michal.simek@xilinx.com, arnd@arndb.de
-Date: Sat, 25 Apr 2020 08:43:40 +0000 (UTC)
+Message-ID: <e743c9db-847a-2612-bf36-c23a57a056c5@c-s.fr>
+Date: Sat, 25 Apr 2020 10:11:56 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
+MIME-Version: 1.0
+In-Reply-To: <1587751684.agx3nt8uvf.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,208 +96,184 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Let's reduce the number of registers used in TLB miss handlers.
 
-We have both r9 and r12 available for any temporary use.
 
-r9 is enough, avoid using r12.
+On 04/24/2020 06:26 PM, Naveen N. Rao wrote:
+> Steven Rostedt wrote:
+>> On Thu, 23 Apr 2020 17:41:52 +0200
+>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>> > diff --git a/arch/powerpc/kernel/optprobes.c 
+>>> b/arch/powerpc/kernel/optprobes.c
+>>> > index 024f7aad1952..046485bb0a52 100644
+>>> > --- a/arch/powerpc/kernel/optprobes.c
+>>> > +++ b/arch/powerpc/kernel/optprobes.c
+>>> > @@ -139,52 +139,67 @@ void arch_remove_optimized_kprobe(struct 
+>>> optimized_kprobe *op)
+>>> >       }
+>>> >   }
+>>> > > +#define PATCH_INSN(addr, instr)                             \
+>>> > +do {                                         \
+>>> > +    int rc = patch_instruction((unsigned int *)(addr), 
+>>> instr);         \
+>>> > +    if (rc) {                                 \
+>>> > +        pr_err("%s:%d Error patching instruction at 0x%pK (%pS): 
+>>> %d\n", \
+>>> > +                __func__, __LINE__,                 \
+>>> > +                (void *)(addr), (void *)(addr), rc);         \
+>>> > +        return rc;                             \
+>>> > +    }                                     \
+>>> > +} while (0)
+>>> > +
+>>> I hate this kind of macro which hides the "return".
+>>>
+>>> What about keeping the return action in the caller ?
+>>>
+>>> Otherwise, what about implementing something based on the use of 
+>>> goto, on the same model as unsafe_put_user() for instance ?
+> 
+> Thanks for the review.
+> 
+> I noticed this as a warning from checkpatch.pl, but this looked compact 
+> and correct for use in the two following functions. You'll notice that I 
+> added it just before the two functions this is used in.
+> 
+> I suppose 'goto err' is usable too, but the ftrace code (patch 2) will 
+> end up with more changes. I'm also struggling to see how a 'goto' is 
+> less offensive. I think Steve's suggestion below would be the better way 
+> to go, to make things explicit.
+> 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_40x.S | 70 ++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 37 deletions(-)
+Sure it's be more explicit, but then more lines also. 3 lines for only 
+one really usefull.
 
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index afa93a36437b..804cbd0899ac 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -254,9 +254,9 @@ _ENTRY(saved_ksp_limit)
- 	mtspr	SPRN_SPRG_SCRATCH3, r12
- 	mtspr	SPRN_SPRG_SCRATCH4, r9
- 	mfcr	r11
--	mfspr	r12, SPRN_PID
-+	mfspr	r9, SPRN_PID
- 	mtspr	SPRN_SPRG_SCRATCH6, r11
--	mtspr	SPRN_SPRG_SCRATCH5, r12
-+	mtspr	SPRN_SPRG_SCRATCH5, r9
- 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -279,12 +279,12 @@ _ENTRY(saved_ksp_limit)
- 4:
- 	tophys(r11, r11)
- 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
--	lwz	r12, 0(r11)		/* Get L1 entry */
--	andi.	r9, r12, _PMD_PRESENT	/* Check if it points to a PTE page */
-+	lwz	r11, 0(r11)		/* Get L1 entry */
-+	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
- 	beq	2f			/* Bail if no table */
- 
--	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
--	lwz	r11, 0(r12)		/* Get Linux PTE */
-+	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
-+	lwz	r11, 0(r11)		/* Get Linux PTE */
- #ifdef CONFIG_SWAP
- 	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED
- #else
-@@ -300,13 +300,13 @@ _ENTRY(saved_ksp_limit)
- 	/* Create TLB tag.  This is the faulting address plus a static
- 	 * set of bits.  These are size, valid, E, U0.
- 	*/
--	li	r12, 0x00c0
--	rlwimi	r10, r12, 0, 20, 31
-+	li	r9, 0x00c0
-+	rlwimi	r10, r9, 0, 20, 31
- 
- 	b	finish_tlb_load
- 
- 2:	/* Check for possible large-page pmd entry */
--	rlwinm.	r9, r12, 2, 22, 24
-+	rlwinm.	r9, r11, 2, 22, 24
- 	beq	5f
- 
- 	/* Create TLB tag.  This is the faulting address, plus a static
-@@ -314,7 +314,6 @@ _ENTRY(saved_ksp_limit)
- 	 */
- 	ori	r9, r9, 0x40
- 	rlwimi	r10, r9, 0, 20, 31
--	mr	r11, r12
- 
- 	b	finish_tlb_load
- 
-@@ -322,9 +321,9 @@ _ENTRY(saved_ksp_limit)
- 	/* The bailout.  Restore registers to pre-exception conditions
- 	 * and call the heavyweights to help us out.
- 	 */
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
-@@ -342,9 +341,9 @@ _ENTRY(saved_ksp_limit)
- 	mtspr	SPRN_SPRG_SCRATCH3, r12
- 	mtspr	SPRN_SPRG_SCRATCH4, r9
- 	mfcr	r11
--	mfspr	r12, SPRN_PID
-+	mfspr	r9, SPRN_PID
- 	mtspr	SPRN_SPRG_SCRATCH6, r11
--	mtspr	SPRN_SPRG_SCRATCH5, r12
-+	mtspr	SPRN_SPRG_SCRATCH5, r9
- 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -367,12 +366,12 @@ _ENTRY(saved_ksp_limit)
- 4:
- 	tophys(r11, r11)
- 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
--	lwz	r12, 0(r11)		/* Get L1 entry */
--	andi.	r9, r12, _PMD_PRESENT	/* Check if it points to a PTE page */
-+	lwz	r11, 0(r11)		/* Get L1 entry */
-+	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
- 	beq	2f			/* Bail if no table */
- 
--	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
--	lwz	r11, 0(r12)		/* Get Linux PTE */
-+	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
-+	lwz	r11, 0(r11)		/* Get Linux PTE */
- #ifdef CONFIG_SWAP
- 	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- #else
-@@ -388,13 +387,13 @@ _ENTRY(saved_ksp_limit)
- 	/* Create TLB tag.  This is the faulting address plus a static
- 	 * set of bits.  These are size, valid, E, U0.
- 	*/
--	li	r12, 0x00c0
--	rlwimi	r10, r12, 0, 20, 31
-+	li	r9, 0x00c0
-+	rlwimi	r10, r9, 0, 20, 31
- 
- 	b	finish_tlb_load
- 
- 2:	/* Check for possible large-page pmd entry */
--	rlwinm.	r9, r12, 2, 22, 24
-+	rlwinm.	r9, r11, 2, 22, 24
- 	beq	5f
- 
- 	/* Create TLB tag.  This is the faulting address, plus a static
-@@ -402,7 +401,6 @@ _ENTRY(saved_ksp_limit)
- 	 */
- 	ori	r9, r9, 0x40
- 	rlwimi	r10, r9, 0, 20, 31
--	mr	r11, r12
- 
- 	b	finish_tlb_load
- 
-@@ -410,9 +408,9 @@ _ENTRY(saved_ksp_limit)
- 	/* The bailout.  Restore registers to pre-exception conditions
- 	 * and call the heavyweights to help us out.
- 	 */
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
-@@ -528,7 +526,7 @@ WDTException:
- 	 * miss get to this point to load the TLB.
- 	 * 	r10 - TLB_TAG value
- 	 * 	r11 - Linux PTE
--	 *	r12, r9 - available to use
-+	 *	r9 - available to use
- 	 *	PID - loaded with proper value when we get here
- 	 *	Upon exit, we reload everything and RFI.
- 	 * Actually, it will fit now, but oh well.....a common place
-@@ -537,30 +535,28 @@ WDTException:
- tlb_4xx_index:
- 	.long	0
- finish_tlb_load:
--	/* load the next available TLB index.
--	*/
--	lwz	r9, tlb_4xx_index@l(0)
--	addi	r9, r9, 1
--	andi.	r9, r9, (PPC40X_TLB_SIZE-1)
--	stw	r9, tlb_4xx_index@l(0)
--
--6:
- 	/*
- 	 * Clear out the software-only bits in the PTE to generate the
- 	 * TLB_DATA value.  These are the bottom 2 bits of the RPM, the
- 	 * top 3 bits of the zone field, and M.
- 	 */
--	li	r12, 0x0ce2
--	andc	r11, r11, r12
-+	li	r9, 0x0ce2
-+	andc	r11, r11, r9
+With goto, I would look like:
+
+diff --git a/arch/powerpc/kernel/optprobes.c 
+b/arch/powerpc/kernel/optprobes.c
+index 046485bb0a52..938208f824da 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -139,14 +139,14 @@ void arch_remove_optimized_kprobe(struct 
+optimized_kprobe *op)
+  	}
+  }
+
+-#define PATCH_INSN(addr, instr)						     \
++#define PATCH_INSN(addr, instr, label)						     \
+  do {									     \
+  	int rc = patch_instruction((unsigned int *)(addr), instr);	     \
+  	if (rc) {							     \
+  		pr_err("%s:%d Error patching instruction at 0x%pK (%pS): %d\n", \
+  				__func__, __LINE__,			     \
+  				(void *)(addr), (void *)(addr), rc);	     \
+-		return rc;						     \
++		goto label;						     \
+  	}								     \
+  } while (0)
+
+@@ -159,14 +159,17 @@ static int patch_imm32_load_insns(unsigned int 
+val, kprobe_opcode_t *addr)
+  {
+  	/* addis r4,0,(insn)@h */
+  	PATCH_INSN(addr, PPC_INST_ADDIS | ___PPC_RT(4) |
+-			  ((val >> 16) & 0xffff));
++			  ((val >> 16) & 0xffff), failed);
+  	addr++;
+
+  	/* ori r4,r4,(insn)@l */
+  	PATCH_INSN(addr, PPC_INST_ORI | ___PPC_RA(4) |
+-			  ___PPC_RS(4) | (val & 0xffff));
++			  ___PPC_RS(4) | (val & 0xffff), failed);
+
+  	return 0;
 +
-+	/* load the next available TLB index. */
-+	lwz	r9, tlb_4xx_index@l(0)
-+	addi	r9, r9, 1
-+	andi.	r9, r9, PPC40X_TLB_SIZE - 1
-+	stw	r9, tlb_4xx_index@l(0)
- 
- 	tlbwe	r11, r9, TLB_DATA		/* Load TLB LO */
- 	tlbwe	r10, r9, TLB_TAG		/* Load TLB HI */
- 
- 	/* Done...restore registers and get out of here.
- 	*/
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
--- 
-2.25.0
++failed:
++	return -EFAULT;
+  }
 
+  /*
+@@ -177,29 +180,32 @@ static int patch_imm64_load_insns(unsigned long 
+val, kprobe_opcode_t *addr)
+  {
+  	/* lis r3,(op)@highest */
+  	PATCH_INSN(addr, PPC_INST_ADDIS | ___PPC_RT(3) |
+-			  ((val >> 48) & 0xffff));
++			  ((val >> 48) & 0xffff), failed);
+  	addr++;
+
+  	/* ori r3,r3,(op)@higher */
+  	PATCH_INSN(addr, PPC_INST_ORI | ___PPC_RA(3) |
+-			  ___PPC_RS(3) | ((val >> 32) & 0xffff));
++			  ___PPC_RS(3) | ((val >> 32) & 0xffff), failed);
+  	addr++;
+
+  	/* rldicr r3,r3,32,31 */
+  	PATCH_INSN(addr, PPC_INST_RLDICR | ___PPC_RA(3) |
+-			  ___PPC_RS(3) | __PPC_SH64(32) | __PPC_ME64(31));
++			  ___PPC_RS(3) | __PPC_SH64(32) | __PPC_ME64(31), failed);
+  	addr++;
+
+  	/* oris r3,r3,(op)@h */
+  	PATCH_INSN(addr, PPC_INST_ORIS | ___PPC_RA(3) |
+-			  ___PPC_RS(3) | ((val >> 16) & 0xffff));
++			  ___PPC_RS(3) | ((val >> 16) & 0xffff), failed);
+  	addr++;
+
+  	/* ori r3,r3,(op)@l */
+  	PATCH_INSN(addr, PPC_INST_ORI | ___PPC_RA(3) |
+-			  ___PPC_RS(3) | (val & 0xffff));
++			  ___PPC_RS(3) | (val & 0xffff), failed);
+
+  	return 0;
++
++failed:
++	return -EFAULT;
+  }
+
+  int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct 
+kprobe *p)
+@@ -291,23 +297,8 @@ int arch_prepare_optimized_kprobe(struct 
+optimized_kprobe *op, struct kprobe *p)
+  		goto error;
+  	}
+
+-	rc = patch_instruction(buff + TMPL_CALL_HDLR_IDX, branch_op_callback);
+-	if (rc) {
+-		pr_err("%s:%d: Error patching instruction at 0x%pK: %d\n",
+-				__func__, __LINE__,
+-				(void *)(buff + TMPL_CALL_HDLR_IDX), rc);
+-		rc = -EFAULT;
+-		goto error;
+-	}
+-
+-	rc = patch_instruction(buff + TMPL_EMULATE_IDX, branch_emulate_step);
+-	if (rc) {
+-		pr_err("%s:%d: Error patching instruction at 0x%pK: %d\n",
+-				__func__, __LINE__,
+-				(void *)(buff + TMPL_EMULATE_IDX), rc);
+-		rc = -EFAULT;
+-		goto error;
+-	}
++	PATCH_INSN(buff + TMPL_CALL_HDLR_IDX, branch_op_callback, efault);
++	PATCH_INSN(buff + TMPL_EMULATE_IDX, branch_emulate_step, efault);
+
+  	/*
+  	 * 3. load instruction to be emulated into relevant register, and
+@@ -336,6 +327,8 @@ int arch_prepare_optimized_kprobe(struct 
+optimized_kprobe *op, struct kprobe *p)
+
+  	return 0;
+
++efault:
++	rc = -EFAULT;
+  error:
+  	free_ppc_optinsn_slot(buff, 0);
+  	return rc;
+
+
+Christophe
