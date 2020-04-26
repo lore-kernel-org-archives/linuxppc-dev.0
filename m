@@ -2,60 +2,60 @@ Return-Path: <SRS0=j11g=6K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2458DC54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 11:45:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38204C54FCB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 12:42:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5CF9C2075B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 11:45:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="f6urYhzl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CF9C2075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 60714206CD
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 12:42:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60714206CD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4995gt07BCzDqc5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 21:45:30 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4995f65sz0zDqV5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 21:43:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4996y210dszDqPM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 22:42:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.133;
+ helo=out30-133.freemail.mail.aliyun.com;
+ envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=f6urYhzl; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4995f53mntz9sRf; Sun, 26 Apr 2020 21:43:57 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4995f52sqzz9sSG; Sun, 26 Apr 2020 21:43:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1587901437;
- bh=Tya8Q3SFHiSJr7FWesNjKMbO70lsdJC8sygy5v4GxZY=;
- h=From:To:Subject:Date:From;
- b=f6urYhzlVYD2za8y4BCT36VSC+YJZsBmy66ij/kcqQ1VZP62K3QsrdX/bjx+jdUgs
- 3+Hr8MyT3HgZLr6diwXhZ9VV8pz0NO9b9utUztGjBVyWRytoj7VHGRSGFOsZsNYusg
- KBirScqQkOXbytScVJCnCq85p6hII0/LCp5bg7lGhSereggStRd81UMRJ4t5/OGLj5
- 4VtRLX37pjYgORyjKGRiQCBNESdDNJk9AnbnBJoqqVTCDRcJdQrkDSVSIXcSUIEGW9
- s0zWtbfAuDvCarDa2FIj2uSy/ofWPoNF79apS7Ta4D2onDtF7CekCP8xI9SIQmeHaS
- r41nOkazHyOFw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: Add a test of counting larx/stcx
-Date: Sun, 26 Apr 2020 21:44:10 +1000
-Message-Id: <20200426114410.3917383-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ header.from=linux.alibaba.com
+Received: from out30-133.freemail.mail.aliyun.com
+ (out30-133.freemail.mail.aliyun.com [115.124.30.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4996sv4FljzDq9G
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 22:39:15 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R181e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e01422;
+ MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=37; SR=0;
+ TI=SMTPD_---0TwgXaX9_1587904747; 
+Received: from localhost(mailfrom:tianjia.zhang@linux.alibaba.com
+ fp:SMTPD_---0TwgXaX9_1587904747) by smtp.aliyun-inc.com(127.0.0.1);
+ Sun, 26 Apr 2020 20:39:08 +0800
+From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+To: pbonzini@redhat.com, tsbogend@alpha.franken.de, paulus@ozlabs.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, borntraeger@de.ibm.com,
+ frankja@linux.ibm.com, david@redhat.com, cohuck@redhat.com,
+ heiko.carstens@de.ibm.com, gor@linux.ibm.com,
+ sean.j.christopherson@intel.com, vkuznets@redhat.com,
+ wanpengli@tencent.com, jmattson@google.com, joro@8bytes.org,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
+ hpa@zytor.com, maz@kernel.org, james.morse@arm.com,
+ julien.thierry.kdev@gmail.com, suzuki.poulose@arm.com,
+ christoffer.dall@arm.com, peterx@redhat.com, thuth@redhat.com
+Subject: [PATCH v3 2/7] KVM: arm64: clean up redundant 'kvm_run' parameters
+Date: Sun, 26 Apr 2020 20:39:00 +0800
+Message-Id: <20200426123905.8336-3-tianjia.zhang@linux.alibaba.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200426123905.8336-1-tianjia.zhang@linux.alibaba.com>
+References: <20200426123905.8336-1-tianjia.zhang@linux.alibaba.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,272 +67,401 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-s390@vger.kernel.org, tianjia.zhang@linux.alibaba.com,
+ kvm@vger.kernel.org, linux-mips@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvmarm@lists.cs.columbia.edu, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is based on the count_instructions test.
+In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
+structure. Earlier than historical reasons, many kvm-related function
+parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
+This patch does a unified cleanup of these remaining redundant parameters.
 
-However this one also counts the number of failed stcx's, and in
-conjunction with knowing the size of the stcx loop, can calculate the
-total number of instructions executed even in the face of
-non-deterministic stcx failures.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 ---
- .../testing/selftests/powerpc/pmu/.gitignore  |   1 +
- tools/testing/selftests/powerpc/pmu/Makefile  |   8 +-
- .../selftests/powerpc/pmu/count_stcx_fail.c   | 161 ++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/loop.S    |  35 ++++
- 4 files changed, 203 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
+ arch/arm64/include/asm/kvm_coproc.h | 12 +++++-----
+ arch/arm64/include/asm/kvm_host.h   | 11 ++++-----
+ arch/arm64/include/asm/kvm_mmu.h    |  2 +-
+ arch/arm64/kvm/handle_exit.c        | 36 ++++++++++++++---------------
+ arch/arm64/kvm/sys_regs.c           | 13 +++++------
+ virt/kvm/arm/arm.c                  |  6 ++---
+ virt/kvm/arm/mmio.c                 | 11 +++++----
+ virt/kvm/arm/mmu.c                  |  5 ++--
+ 8 files changed, 46 insertions(+), 50 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/.gitignore b/tools/testing/selftests/powerpc/pmu/.gitignore
-index ff7896903d7b..f69b1e2641a1 100644
---- a/tools/testing/selftests/powerpc/pmu/.gitignore
-+++ b/tools/testing/selftests/powerpc/pmu/.gitignore
-@@ -2,3 +2,4 @@
- count_instructions
- l3_bank_test
- per_event_excludes
-+count_stcx_fail
-diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
-index 19046db995fe..904672fb78dd 100644
---- a/tools/testing/selftests/powerpc/pmu/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/Makefile
-@@ -2,7 +2,7 @@
- noarg:
- 	$(MAKE) -C ../
+diff --git a/arch/arm64/include/asm/kvm_coproc.h b/arch/arm64/include/asm/kvm_coproc.h
+index 0185ee8b8b5e..454373704b8a 100644
+--- a/arch/arm64/include/asm/kvm_coproc.h
++++ b/arch/arm64/include/asm/kvm_coproc.h
+@@ -27,12 +27,12 @@ struct kvm_sys_reg_target_table {
+ void kvm_register_target_sys_reg_table(unsigned int target,
+ 				       struct kvm_sys_reg_target_table *table);
  
--TEST_GEN_PROGS := count_instructions l3_bank_test per_event_excludes
-+TEST_GEN_PROGS := count_instructions count_stcx_fail l3_bank_test per_event_excludes
- EXTRA_SOURCES := ../harness.c event.c lib.c ../utils.c
+-int kvm_handle_cp14_load_store(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_handle_cp14_32(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_handle_cp14_64(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_handle_cp15_32(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_handle_cp15_64(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_handle_sys_reg(struct kvm_vcpu *vcpu, struct kvm_run *run);
++int kvm_handle_cp14_load_store(struct kvm_vcpu *vcpu);
++int kvm_handle_cp14_32(struct kvm_vcpu *vcpu);
++int kvm_handle_cp14_64(struct kvm_vcpu *vcpu);
++int kvm_handle_cp15_32(struct kvm_vcpu *vcpu);
++int kvm_handle_cp15_64(struct kvm_vcpu *vcpu);
++int kvm_handle_sys_reg(struct kvm_vcpu *vcpu);
  
- top_srcdir = ../../../../..
-@@ -13,8 +13,12 @@ all: $(TEST_GEN_PROGS) ebb
- $(TEST_GEN_PROGS): $(EXTRA_SOURCES)
+ #define kvm_coproc_table_init kvm_sys_reg_table_init
+ void kvm_sys_reg_table_init(void);
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+index 32c8a675e5a4..3fab32e4948c 100644
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -481,18 +481,15 @@ u64 __kvm_call_hyp(void *hypfn, ...);
+ void force_vm_exit(const cpumask_t *mask);
+ void kvm_mmu_wp_memory_region(struct kvm *kvm, int slot);
  
- # loop.S can only be built 64-bit
-+$(OUTPUT)/count_instructions: CFLAGS += -m64
- $(OUTPUT)/count_instructions: loop.S count_instructions.c $(EXTRA_SOURCES)
--	$(CC) $(CFLAGS) -m64 -o $@ $^
-+
-+$(OUTPUT)/count_stcx_fail: CFLAGS += -m64
-+$(OUTPUT)/count_stcx_fail: loop.S $(EXTRA_SOURCES)
-+
+-int handle_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		int exception_index);
+-void handle_exit_early(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		       int exception_index);
++int handle_exit(struct kvm_vcpu *vcpu, int exception_index);
++void handle_exit_early(struct kvm_vcpu *vcpu, int exception_index);
  
- $(OUTPUT)/per_event_excludes: ../utils.c
+ /* MMIO helpers */
+ void kvm_mmio_write_buf(void *buf, unsigned int len, unsigned long data);
+ unsigned long kvm_mmio_read_buf(const void *buf, unsigned int len);
  
-diff --git a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-new file mode 100644
-index 000000000000..7b4ac4537702
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-@@ -0,0 +1,161 @@
-+/*
-+ * Copyright 2013, Michael Ellerman, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
+-int kvm_handle_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int io_mem_abort(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		 phys_addr_t fault_ipa);
++int kvm_handle_mmio_return(struct kvm_vcpu *vcpu);
++int io_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa);
+ 
+ int kvm_perf_init(void);
+ int kvm_perf_teardown(void);
+diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
+index 30b0e8d6b895..2ec7b9bb25d3 100644
+--- a/arch/arm64/include/asm/kvm_mmu.h
++++ b/arch/arm64/include/asm/kvm_mmu.h
+@@ -159,7 +159,7 @@ void kvm_free_stage2_pgd(struct kvm *kvm);
+ int kvm_phys_addr_ioremap(struct kvm *kvm, phys_addr_t guest_ipa,
+ 			  phys_addr_t pa, unsigned long size, bool writable);
+ 
+-int kvm_handle_guest_abort(struct kvm_vcpu *vcpu, struct kvm_run *run);
++int kvm_handle_guest_abort(struct kvm_vcpu *vcpu);
+ 
+ void kvm_mmu_free_memory_caches(struct kvm_vcpu *vcpu);
+ 
+diff --git a/arch/arm64/kvm/handle_exit.c b/arch/arm64/kvm/handle_exit.c
+index aacfc55de44c..ec3a66642ea5 100644
+--- a/arch/arm64/kvm/handle_exit.c
++++ b/arch/arm64/kvm/handle_exit.c
+@@ -25,7 +25,7 @@
+ #define CREATE_TRACE_POINTS
+ #include "trace.h"
+ 
+-typedef int (*exit_handle_fn)(struct kvm_vcpu *, struct kvm_run *);
++typedef int (*exit_handle_fn)(struct kvm_vcpu *);
+ 
+ static void kvm_handle_guest_serror(struct kvm_vcpu *vcpu, u32 esr)
+ {
+@@ -33,7 +33,7 @@ static void kvm_handle_guest_serror(struct kvm_vcpu *vcpu, u32 esr)
+ 		kvm_inject_vabt(vcpu);
+ }
+ 
+-static int handle_hvc(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int handle_hvc(struct kvm_vcpu *vcpu)
+ {
+ 	int ret;
+ 
+@@ -50,7 +50,7 @@ static int handle_hvc(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 	return ret;
+ }
+ 
+-static int handle_smc(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int handle_smc(struct kvm_vcpu *vcpu)
+ {
+ 	/*
+ 	 * "If an SMC instruction executed at Non-secure EL1 is
+@@ -69,7 +69,7 @@ static int handle_smc(struct kvm_vcpu *vcpu, struct kvm_run *run)
+  * Guest access to FP/ASIMD registers are routed to this handler only
+  * when the system doesn't support FP/ASIMD.
+  */
+-static int handle_no_fpsimd(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int handle_no_fpsimd(struct kvm_vcpu *vcpu)
+ {
+ 	kvm_inject_undefined(vcpu);
+ 	return 1;
+@@ -87,7 +87,7 @@ static int handle_no_fpsimd(struct kvm_vcpu *vcpu, struct kvm_run *run)
+  * world-switches and schedule other host processes until there is an
+  * incoming IRQ or FIQ to the VM.
+  */
+-static int kvm_handle_wfx(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int kvm_handle_wfx(struct kvm_vcpu *vcpu)
+ {
+ 	if (kvm_vcpu_get_hsr(vcpu) & ESR_ELx_WFx_ISS_WFE) {
+ 		trace_kvm_wfx_arm64(*vcpu_pc(vcpu), true);
+@@ -109,16 +109,16 @@ static int kvm_handle_wfx(struct kvm_vcpu *vcpu, struct kvm_run *run)
+  * kvm_handle_guest_debug - handle a debug exception instruction
+  *
+  * @vcpu:	the vcpu pointer
+- * @run:	access to the kvm_run structure for results
+  *
+  * We route all debug exceptions through the same handler. If both the
+  * guest and host are using the same debug facilities it will be up to
+  * userspace to re-inject the correct exception for guest delivery.
+  *
+- * @return: 0 (while setting run->exit_reason), -1 for error
++ * @return: 0 (while setting vcpu->run->exit_reason), -1 for error
+  */
+-static int kvm_handle_guest_debug(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int kvm_handle_guest_debug(struct kvm_vcpu *vcpu)
+ {
++	struct kvm_run *run = vcpu->run;
+ 	u32 hsr = kvm_vcpu_get_hsr(vcpu);
+ 	int ret = 0;
+ 
+@@ -144,7 +144,7 @@ static int kvm_handle_guest_debug(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 	return ret;
+ }
+ 
+-static int kvm_handle_unknown_ec(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int kvm_handle_unknown_ec(struct kvm_vcpu *vcpu)
+ {
+ 	u32 hsr = kvm_vcpu_get_hsr(vcpu);
+ 
+@@ -155,7 +155,7 @@ static int kvm_handle_unknown_ec(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 	return 1;
+ }
+ 
+-static int handle_sve(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int handle_sve(struct kvm_vcpu *vcpu)
+ {
+ 	/* Until SVE is supported for guests: */
+ 	kvm_inject_undefined(vcpu);
+@@ -193,7 +193,7 @@ void kvm_arm_vcpu_ptrauth_trap(struct kvm_vcpu *vcpu)
+  * Guest usage of a ptrauth instruction (which the guest EL1 did not turn into
+  * a NOP).
+  */
+-static int kvm_handle_ptrauth(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int kvm_handle_ptrauth(struct kvm_vcpu *vcpu)
+ {
+ 	kvm_arm_vcpu_ptrauth_trap(vcpu);
+ 	return 1;
+@@ -238,7 +238,7 @@ static exit_handle_fn kvm_get_exit_handler(struct kvm_vcpu *vcpu)
+  * KVM_EXIT_DEBUG, otherwise userspace needs to complete its
+  * emulation first.
+  */
+-static int handle_trap_exceptions(struct kvm_vcpu *vcpu, struct kvm_run *run)
++static int handle_trap_exceptions(struct kvm_vcpu *vcpu)
+ {
+ 	int handled;
+ 
+@@ -253,7 +253,7 @@ static int handle_trap_exceptions(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 		exit_handle_fn exit_handler;
+ 
+ 		exit_handler = kvm_get_exit_handler(vcpu);
+-		handled = exit_handler(vcpu, run);
++		handled = exit_handler(vcpu);
+ 	}
+ 
+ 	return handled;
+@@ -263,9 +263,10 @@ static int handle_trap_exceptions(struct kvm_vcpu *vcpu, struct kvm_run *run)
+  * Return > 0 to return to guest, < 0 on error, 0 (and set exit_reason) on
+  * proper exit to userspace.
+  */
+-int handle_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		       int exception_index)
++int handle_exit(struct kvm_vcpu *vcpu, int exception_index)
+ {
++	struct kvm_run *run = vcpu->run;
 +
-+#define _GNU_SOURCE
+ 	if (ARM_SERROR_PENDING(exception_index)) {
+ 		u8 hsr_ec = ESR_ELx_EC(kvm_vcpu_get_hsr(vcpu));
+ 
+@@ -291,7 +292,7 @@ int handle_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	case ARM_EXCEPTION_EL1_SERROR:
+ 		return 1;
+ 	case ARM_EXCEPTION_TRAP:
+-		return handle_trap_exceptions(vcpu, run);
++		return handle_trap_exceptions(vcpu);
+ 	case ARM_EXCEPTION_HYP_GONE:
+ 		/*
+ 		 * EL2 has been reset to the hyp-stub. This happens when a guest
+@@ -315,8 +316,7 @@ int handle_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ }
+ 
+ /* For exit types that need handling before we can be preempted */
+-void handle_exit_early(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		       int exception_index)
++void handle_exit_early(struct kvm_vcpu *vcpu, int exception_index)
+ {
+ 	if (ARM_SERROR_PENDING(exception_index)) {
+ 		if (this_cpu_has_cap(ARM64_HAS_RAS_EXTN)) {
+diff --git a/arch/arm64/kvm/sys_regs.c b/arch/arm64/kvm/sys_regs.c
+index 51db934702b6..e5a0d0d676c8 100644
+--- a/arch/arm64/kvm/sys_regs.c
++++ b/arch/arm64/kvm/sys_regs.c
+@@ -2116,7 +2116,7 @@ static const struct sys_reg_desc *find_reg(const struct sys_reg_params *params,
+ 	return bsearch((void *)pval, table, num, sizeof(table[0]), match_sys_reg);
+ }
+ 
+-int kvm_handle_cp14_load_store(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_cp14_load_store(struct kvm_vcpu *vcpu)
+ {
+ 	kvm_inject_undefined(vcpu);
+ 	return 1;
+@@ -2295,7 +2295,7 @@ static int kvm_handle_cp_32(struct kvm_vcpu *vcpu,
+ 	return 1;
+ }
+ 
+-int kvm_handle_cp15_64(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_cp15_64(struct kvm_vcpu *vcpu)
+ {
+ 	const struct sys_reg_desc *target_specific;
+ 	size_t num;
+@@ -2306,7 +2306,7 @@ int kvm_handle_cp15_64(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 				target_specific, num);
+ }
+ 
+-int kvm_handle_cp15_32(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_cp15_32(struct kvm_vcpu *vcpu)
+ {
+ 	const struct sys_reg_desc *target_specific;
+ 	size_t num;
+@@ -2317,14 +2317,14 @@ int kvm_handle_cp15_32(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 				target_specific, num);
+ }
+ 
+-int kvm_handle_cp14_64(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_cp14_64(struct kvm_vcpu *vcpu)
+ {
+ 	return kvm_handle_cp_64(vcpu,
+ 				cp14_64_regs, ARRAY_SIZE(cp14_64_regs),
+ 				NULL, 0);
+ }
+ 
+-int kvm_handle_cp14_32(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_cp14_32(struct kvm_vcpu *vcpu)
+ {
+ 	return kvm_handle_cp_32(vcpu,
+ 				cp14_regs, ARRAY_SIZE(cp14_regs),
+@@ -2382,9 +2382,8 @@ static void reset_sys_reg_descs(struct kvm_vcpu *vcpu,
+ /**
+  * kvm_handle_sys_reg -- handles a mrs/msr trap on a guest sys_reg access
+  * @vcpu: The VCPU pointer
+- * @run:  The kvm_run struct
+  */
+-int kvm_handle_sys_reg(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_sys_reg(struct kvm_vcpu *vcpu)
+ {
+ 	struct sys_reg_params params;
+ 	unsigned long esr = kvm_vcpu_get_hsr(vcpu);
+diff --git a/virt/kvm/arm/arm.c b/virt/kvm/arm/arm.c
+index f5390ac2165b..dbeb20804a75 100644
+--- a/virt/kvm/arm/arm.c
++++ b/virt/kvm/arm/arm.c
+@@ -659,7 +659,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		return ret;
+ 
+ 	if (run->exit_reason == KVM_EXIT_MMIO) {
+-		ret = kvm_handle_mmio_return(vcpu, run);
++		ret = kvm_handle_mmio_return(vcpu);
+ 		if (ret)
+ 			return ret;
+ 	}
+@@ -811,11 +811,11 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		trace_kvm_exit(ret, kvm_vcpu_trap_get_class(vcpu), *vcpu_pc(vcpu));
+ 
+ 		/* Exit types that need handling before we can be preempted */
+-		handle_exit_early(vcpu, run, ret);
++		handle_exit_early(vcpu, ret);
+ 
+ 		preempt_enable();
+ 
+-		ret = handle_exit(vcpu, run, ret);
++		ret = handle_exit(vcpu, ret);
+ 	}
+ 
+ 	/* Tell userspace about in-kernel device output levels */
+diff --git a/virt/kvm/arm/mmio.c b/virt/kvm/arm/mmio.c
+index aedfcff99ac5..41ef5c5dbc62 100644
+--- a/virt/kvm/arm/mmio.c
++++ b/virt/kvm/arm/mmio.c
+@@ -77,9 +77,8 @@ unsigned long kvm_mmio_read_buf(const void *buf, unsigned int len)
+  *			     or in-kernel IO emulation
+  *
+  * @vcpu: The VCPU pointer
+- * @run:  The VCPU run struct containing the mmio data
+  */
+-int kvm_handle_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_mmio_return(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long data;
+ 	unsigned int len;
+@@ -92,6 +91,8 @@ int kvm_handle_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 	vcpu->mmio_needed = 0;
+ 
+ 	if (!kvm_vcpu_dabt_iswrite(vcpu)) {
++		struct kvm_run *run = vcpu->run;
 +
-+#include <stdio.h>
-+#include <stdbool.h>
-+#include <string.h>
-+#include <sys/prctl.h>
-+
-+#include "event.h"
-+#include "utils.h"
-+#include "lib.h"
-+
-+extern void thirty_two_instruction_loop_with_ll_sc(u64 loops, u64 *ll_sc_target);
-+
-+static void setup_event(struct event *e, u64 config, int type, char *name)
-+{
-+	event_init_opts(e, config, type, name);
-+
-+	e->attr.disabled = 1;
-+	e->attr.exclude_kernel = 1;
-+	e->attr.exclude_hv = 1;
-+	e->attr.exclude_idle = 1;
-+}
-+
-+static int do_count_loop(struct event *events, u64 instructions,
-+			 u64 overhead, bool report)
-+{
-+	s64 difference, expected;
-+	double percentage;
-+	u64 dummy;
-+
-+	prctl(PR_TASK_PERF_EVENTS_ENABLE);
-+
-+	/* Run for 1M instructions */
-+	thirty_two_instruction_loop_with_ll_sc(instructions >> 5, &dummy);
-+
-+	prctl(PR_TASK_PERF_EVENTS_DISABLE);
-+
-+	event_read(&events[0]);
-+	event_read(&events[1]);
-+	event_read(&events[2]);
-+
-+	expected = instructions + overhead + (events[2].result.value * 10);
-+	difference = events[0].result.value - expected;
-+	percentage = (double)difference / events[0].result.value * 100;
-+
-+	if (report) {
-+		printf("-----\n");
-+		event_report(&events[0]);
-+		event_report(&events[1]);
-+		event_report(&events[2]);
-+
-+		printf("Looped for %llu instructions, overhead %llu\n", instructions, overhead);
-+		printf("Expected %llu\n", expected);
-+		printf("Actual   %llu\n", events[0].result.value);
-+		printf("Delta    %lld, %f%%\n", difference, percentage);
-+	}
-+
-+	event_reset(&events[0]);
-+	event_reset(&events[1]);
-+	event_reset(&events[2]);
-+
-+	if (difference < 0)
-+		difference = -difference;
-+
-+	/* Tolerate a difference below 0.0001 % */
-+	difference *= 10000 * 100;
-+	if (difference / events[0].result.value)
-+		return -1;
-+
-+	return 0;
-+}
-+
-+/* Count how many instructions it takes to do a null loop */
-+static u64 determine_overhead(struct event *events)
-+{
-+	u64 current, overhead;
-+	int i;
-+
-+	do_count_loop(events, 0, 0, false);
-+	overhead = events[0].result.value;
-+
-+	for (i = 0; i < 100; i++) {
-+		do_count_loop(events, 0, 0, false);
-+		current = events[0].result.value;
-+		if (current < overhead) {
-+			printf("Replacing overhead %llu with %llu\n", overhead, current);
-+			overhead = current;
-+		}
-+	}
-+
-+	return overhead;
-+}
-+
-+#define	PM_MRK_STCX_FAIL	0x03e158
-+#define PM_STCX_FAIL	0x01e058
-+
-+static int test_body(void)
-+{
-+	struct event events[3];
-+	u64 overhead;
-+
-+	setup_event(&events[0], PERF_COUNT_HW_INSTRUCTIONS, PERF_TYPE_HARDWARE, "instructions");
-+	setup_event(&events[1], PERF_COUNT_HW_CPU_CYCLES, PERF_TYPE_HARDWARE, "cycles");
-+	setup_event(&events[2], PM_STCX_FAIL, PERF_TYPE_RAW, "stcx_fail");
-+
-+	if (event_open(&events[0])) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	if (event_open_with_group(&events[1], events[0].fd)) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	if (event_open_with_group(&events[2], events[0].fd)) {
-+		perror("perf_event_open");
-+		return -1;
-+	}
-+
-+	overhead = determine_overhead(events);
-+	printf("Overhead of null loop: %llu instructions\n", overhead);
-+
-+	/* Run for 1Mi instructions */
-+	FAIL_IF(do_count_loop(events, 1000000, overhead, true));
-+
-+	/* Run for 10Mi instructions */
-+	FAIL_IF(do_count_loop(events, 10000000, overhead, true));
-+
-+	/* Run for 100Mi instructions */
-+	FAIL_IF(do_count_loop(events, 100000000, overhead, true));
-+
-+	/* Run for 1Bi instructions */
-+	FAIL_IF(do_count_loop(events, 1000000000, overhead, true));
-+
-+	/* Run for 16Bi instructions */
-+	FAIL_IF(do_count_loop(events, 16000000000, overhead, true));
-+
-+	/* Run for 64Bi instructions */
-+	FAIL_IF(do_count_loop(events, 64000000000, overhead, true));
-+
-+	event_close(&events[0]);
-+	event_close(&events[1]);
-+
-+	return 0;
-+}
-+
-+static int count_ll_sc(void)
-+{
-+	return eat_cpu(test_body);
-+}
-+
-+int main(void)
-+{
-+	return test_harness(count_ll_sc, "count_ll_sc");
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/loop.S b/tools/testing/selftests/powerpc/pmu/loop.S
-index 8cc9b5e2c9de..c52ba09b6fed 100644
---- a/tools/testing/selftests/powerpc/pmu/loop.S
-+++ b/tools/testing/selftests/powerpc/pmu/loop.S
-@@ -41,3 +41,38 @@ FUNC_START(thirty_two_instruction_loop)
- 	subi	r3,r3,1
- 	b	FUNC_NAME(thirty_two_instruction_loop)
- FUNC_END(thirty_two_instruction_loop)
-+
-+FUNC_START(thirty_two_instruction_loop_with_ll_sc)
-+	cmpdi	r3,0
-+	beqlr
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1		# 5
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+1:	ldarx	r6,0,r4		# 10
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1		# 15
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	stdcx.	r6,0,r4
-+	bne-	1b
-+	addi	r5,r5,1		# 20
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1		# 25
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1
-+	addi	r5,r5,1		# 30
-+	subi	r3,r3,1
-+	b	FUNC_NAME(thirty_two_instruction_loop_with_ll_sc)
-+FUNC_END(thirty_two_instruction_loop_with_ll_sc)
+ 		len = kvm_vcpu_dabt_get_as(vcpu);
+ 		data = kvm_mmio_read_buf(run->mmio.data, len);
+ 
+@@ -119,9 +120,9 @@ int kvm_handle_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 	return 0;
+ }
+ 
+-int io_mem_abort(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-		 phys_addr_t fault_ipa)
++int io_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
+ {
++	struct kvm_run *run = vcpu->run;
+ 	unsigned long data;
+ 	unsigned long rt;
+ 	int ret;
+@@ -188,7 +189,7 @@ int io_mem_abort(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		if (!is_write)
+ 			memcpy(run->mmio.data, data_buf, len);
+ 		vcpu->stat.mmio_exit_kernel++;
+-		kvm_handle_mmio_return(vcpu, run);
++		kvm_handle_mmio_return(vcpu);
+ 		return 1;
+ 	}
+ 
+diff --git a/virt/kvm/arm/mmu.c b/virt/kvm/arm/mmu.c
+index e3b9ee268823..c5dc58226b5b 100644
+--- a/virt/kvm/arm/mmu.c
++++ b/virt/kvm/arm/mmu.c
+@@ -1892,7 +1892,6 @@ static void handle_access_fault(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
+ /**
+  * kvm_handle_guest_abort - handles all 2nd stage aborts
+  * @vcpu:	the VCPU pointer
+- * @run:	the kvm_run structure
+  *
+  * Any abort that gets to the host is almost guaranteed to be caused by a
+  * missing second stage translation table entry, which can mean that either the
+@@ -1901,7 +1900,7 @@ static void handle_access_fault(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
+  * space. The distinction is based on the IPA causing the fault and whether this
+  * memory region has been registered as standard RAM by user space.
+  */
+-int kvm_handle_guest_abort(struct kvm_vcpu *vcpu, struct kvm_run *run)
++int kvm_handle_guest_abort(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long fault_status;
+ 	phys_addr_t fault_ipa;
+@@ -1980,7 +1979,7 @@ int kvm_handle_guest_abort(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 		 * of the page size.
+ 		 */
+ 		fault_ipa |= kvm_vcpu_get_hfar(vcpu) & ((1 << 12) - 1);
+-		ret = io_mem_abort(vcpu, run, fault_ipa);
++		ret = io_mem_abort(vcpu, fault_ipa);
+ 		goto out_unlock;
+ 	}
+ 
 -- 
-2.25.1
+2.17.1
 
