@@ -2,25 +2,25 @@ Return-Path: <SRS0=j11g=6K=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8184C2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 07:20:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CEC0C2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 07:29:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C84C206D4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 07:20:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1B2AD206D4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 07:29:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="MlR328Hh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C84C206D4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Re1ECLpO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B2AD206D4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 498znY0rt6zDqCK
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 17:20:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 498zzx26wSzDqDr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2020 17:29:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -28,36 +28,40 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=Re1ECLpO; 
+ dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 498zlP52rqzDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 17:18:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 498zxl3Jd1zDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 17:27:07 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
  :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=gVV5b9PP8/2lQ3gQpFCXt1Bgf0mJTR3lYv79NGJAEks=; b=MlR328Hh4px4NzcShXKyCi53gu
- O9zE7xglbKdVix8zGmxRGFZubjftjlfEH43fv+SOSTvhKsRsnzkymORnknX3aqRIjr54ld6uT/sFw
- rhgoBEYrEDJpqXWUND4aUYkEiB2ptKr31uvh23RMt4StQn26VizPpazlG71bp/Eexr7A1+dDs1iRM
- O0RF3poc9iqFCa1rkkwpq99FACQdTYQsq005u1wommGC5DfZyg4tvvM6Pur7qEf+1V/NRnra5X17+
- 9iPz+fSP3sv2xC8qXnu/wKRor1YOTI86OwZ92QA1um75xqEvLoP6r3HAWqe+CMUB5jFZUMeaxClYc
- 5f0Xq0mw==;
+ bh=CWSwm8Yeluzm8cpwZm/62btaRJCyoviiCLbacfabnGM=; b=Re1ECLpOnjCxMnMxw3nbFwqX2n
+ aoIEpiDwCOhSXjRFQsAtKAUzFPfcZvScmnluhdPrGcpB4A73YnCcAK3X1/Udnt463gXZiWTPz/hdY
+ Zm1qsK/TTQvahB8trR8xHhgpUygnDRg+nIVFpopoPErU2kCehwboKE+gZgzOWx7tGiBfdqF+7XjLQ
+ nXGbVkpLeDiFJyDIB00acjlEnat0Goyv5mEX0AfFgXOl9BLdSgCkmDQwkWJK/Ym/oifDtpOlRDYDp
+ XopgAFXT0HVE//Q7QrX3iZhO0PVRR0c/B26jlIRviJj+L4KI9zh60oN87/iGag0hjjm6rgmN2bu1K
+ JDzqUHOw==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jSbXP-0000Io-H8; Sun, 26 Apr 2020 07:17:15 +0000
-Date: Sun, 26 Apr 2020 00:17:15 -0700
+ Hat Linux)) id 1jSbgY-00048J-Cx; Sun, 26 Apr 2020 07:26:42 +0000
+Date: Sun, 26 Apr 2020 00:26:42 -0700
 From: Christoph Hellwig <hch@infradead.org>
 To: ira.weiny@intel.com
-Subject: Re: [PATCH 2/5] arch/kmap: Remove redundant arch specific kmaps
-Message-ID: <20200426071715.GA22024@infradead.org>
+Subject: Re: [PATCH 4/5] arch/kmap_atomic: Consolidate duplicate code
+Message-ID: <20200426072642.GB22024@infradead.org>
 References: <20200426055406.134198-1-ira.weiny@intel.com>
- <20200426055406.134198-3-ira.weiny@intel.com>
+ <20200426055406.134198-5-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200426055406.134198-3-ira.weiny@intel.com>
+In-Reply-To: <20200426055406.134198-5-ira.weiny@intel.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -89,13 +93,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Apr 25, 2020 at 10:54:03PM -0700, ira.weiny@intel.com wrote:
-> From: Ira Weiny <ira.weiny@intel.com>
-> 
-> The kmap code for all the architectures is almost 100% identical.
-> 
-> Lift the common code to the core.  Use ARCH_HAS_KMAP to indicate if an
-> arch needs a special kmap.
+> diff --git a/arch/arc/mm/highmem.c b/arch/arc/mm/highmem.c
+> index 4db13a6b9f3b..1cae4b911a33 100644
+> --- a/arch/arc/mm/highmem.c
+> +++ b/arch/arc/mm/highmem.c
+> @@ -53,11 +53,10 @@ void *kmap_atomic(struct page *page)
+>  {
+>  	int idx, cpu_idx;
+>  	unsigned long vaddr;
+> +	void *addr = kmap_atomic_fast(page);
+>  
+> -	preempt_disable();
+> -	pagefault_disable();
+> -	if (!PageHighMem(page))
+> -		return page_address(page);
+> +	if (addr)
+> +		return addr;
 
-Can you add a kmap_flush_tlb hook that csky and mips define, and the
-just entirely consolidate the code instead?
+Wouldn't it make sense to just move kmap_atomic itelf to common code,
+and call out to a kmap_atomic_high for the highmem case, following the
+scheme in kmap?  Same for the unmap side.  That might require to support
+kmap_atomic_prot everywhere first, which sounds like a really good
+idea anyway, and would avoid the need for strange workaround in drm.
