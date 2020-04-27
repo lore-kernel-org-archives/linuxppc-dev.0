@@ -2,111 +2,69 @@ Return-Path: <SRS0=vPFq=6L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED853C54FCB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 13:58:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EABDBC54FCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 14:17:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 960B7206BF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 13:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 960B7206BF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3A06F206B6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 14:17:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="osEHPWYd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A06F206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 499mZf4mlDzDqc9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 23:58:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499mMn6n1rzDqD1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:48:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 499mMn2jZhz8sny
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:48:53 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 499mMm4LxLz9sT1; Mon, 27 Apr 2020 23:48:52 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 499n0S3rZXzDqV8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 00:17:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=osEHPWYd; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 499mMl4dXdz9sSq;
- Mon, 27 Apr 2020 23:48:51 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03RDUqgt140807; Mon, 27 Apr 2020 09:48:48 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30metv8g6x-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Apr 2020 09:48:48 -0400
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03RDV3u4141812;
- Mon, 27 Apr 2020 09:48:48 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30metv8g6s-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Apr 2020 09:48:48 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03RDjp3G027970;
- Mon, 27 Apr 2020 13:48:47 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma04dal.us.ibm.com with ESMTP id 30mcu68ecy-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Apr 2020 13:48:47 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03RDmjAN10093286
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Apr 2020 13:48:45 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 76F257805E;
- Mon, 27 Apr 2020 13:48:46 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 545B57805C;
- Mon, 27 Apr 2020 13:48:45 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.85.94.115])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 27 Apr 2020 13:48:45 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 42B5F2E2E25; Mon, 27 Apr 2020 19:18:40 +0530 (IST)
-Date: Mon, 27 Apr 2020 19:18:40 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: Re: [RFC 3/3] powernv/cpuidle : Introduce capability for
- firmware-enabled-stop
-Message-ID: <20200427134840.GE29708@in.ibm.com>
-References: <20200427021027.114582-1-huntbag@linux.vnet.ibm.com>
- <20200427021027.114582-3-huntbag@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 499mw26lVVzDqDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 00:13:22 +1000 (AEST)
+Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com
+ [209.85.160.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6277F206D4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 14:13:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1587996800;
+ bh=Xg8u6B1gRKJJyhc2ghpbZWMsF25bOlRNgkDeAPMsyhQ=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=osEHPWYdXxkYQ78QupC0ZbxmDHM4nKIFYj+hceaPPcun89vocxPgKHy9Qq40zoUbk
+ QrSGQhV62SZsNwG4VYijAjgIkna3Zq5CZv8uSHXvJpUm0nEf2beyNZ5DWzkUmgTNml
+ Q4e1Vc2b+Xxgtf65Jn47m5wnj59udKDIW1tjL3uk=
+Received: by mail-qt1-f178.google.com with SMTP id k12so14338310qtm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 07:13:20 -0700 (PDT)
+X-Gm-Message-State: AGi0PuZGkUlacK7uYFILMjLrjzrhT3trvunCPSBGXFsZCWLySRn2rnRX
+ aS9wOw3Juf08B/d7/6cmYV2KNylvSPZ2cUL65Q==
+X-Google-Smtp-Source: APiQypIvO+0zNT12ohswoL68dXvl6sO1zbOdn5h7ZevGpjPFRFXJndduPs3pSHS2ibmtQnJF8M8fsotgSW9W3De7vbk=
+X-Received: by 2002:ac8:7cba:: with SMTP id z26mr23458821qtv.143.1587996798916; 
+ Mon, 27 Apr 2020 07:13:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200427021027.114582-3-huntbag@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-27_09:2020-04-24,
- 2020-04-27 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxlogscore=999
- priorityscore=1501 phishscore=0 mlxscore=0 adultscore=0 lowpriorityscore=0
- impostorscore=0 clxscore=1015 malwarescore=0 spamscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004270114
+References: <20200420030538.101696-1-wenhu.wang@vivo.com>
+In-Reply-To: <20200420030538.101696-1-wenhu.wang@vivo.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 27 Apr 2020 09:13:06 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqK3fpM_tUjHvAMbNzf_nry_iORLXaQBFC8xDK+mxhHDRQ@mail.gmail.com>
+Message-ID: <CAL_JsqK3fpM_tUjHvAMbNzf_nry_iORLXaQBFC8xDK+mxhHDRQ@mail.gmail.com>
+Subject: Re: [PATCH v2,
+ RESEND] misc: new driver sram_uapi for user level SRAM access
+To: Wang Wenhu <wenhu.wang@vivo.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,140 +76,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, linuxppc-dev@ozlabs.org, oohall@gmail.com,
- psampat@linux.ibm.com
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Scott Wood <oss@buserror.net>, kernel@vivo.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Apr 26, 2020 at 09:10:27PM -0500, Abhishek Goel wrote:
-> This patch introduces the capability for firmware to handle the stop
-> states instead. A bit is set based on the discovery of the feature
-> and correspondingly also the responsibility to handle the stop states.
-> 
-> If Kernel does not know about stop version, it can fallback to opal for
-> idle stop support if firmware-stop-supported property is present.
-> 
-> Earlier this patch was posted as part of this series :
-> https://lkml.org/lkml/2020/3/4/589
-> 
-> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+On Sun, Apr 19, 2020 at 10:06 PM Wang Wenhu <wenhu.wang@vivo.com> wrote:
+>
+> A generic User-Kernel interface that allows a misc device created
+> by it to support file-operations of ioctl and mmap to access SRAM
+> memory from user level. Different kinds of SRAM alloction and free
+> APIs could be registered by specific SRAM hardware level driver to
+> the available list and then be chosen by users to allocate and map
+> SRAM memory from user level.
+>
+> It is extremely helpful for the user space applications that require
+> high performance memory accesses, such as embedded networking devices
+> that would process data in user space, and PowerPC e500 is a case.
+>
+> Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Randy Dunlap <rdunlap@infradead.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
 > ---
-> 
->  v1->v2: This patch is newly added in this series.
-> 
->  arch/powerpc/include/asm/processor.h  |  1 +
->  arch/powerpc/kernel/dt_cpu_ftrs.c     |  8 ++++++++
->  arch/powerpc/platforms/powernv/idle.c | 27 ++++++++++++++++-----------
->  3 files changed, 25 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index 66fa20476d0e..d5c6532b11ef 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -430,6 +430,7 @@ extern unsigned long cpuidle_disable;
->  enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
-> 
->  #define STOP_ENABLE		0x00000001
-> +#define FIRMWARE_STOP_ENABLE	0x00000010
-> 
->  #define STOP_VERSION_P9       0x1
-> 
-> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> index db1a525e090d..ff4a87b79702 100644
-> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> @@ -298,6 +298,13 @@ static int __init feat_enable_idle_stop(struct dt_cpu_feature *f)
->  	return 1;
->  }
-> 
-> +static int __init feat_enable_firmware_stop(struct dt_cpu_feature *f)
-> +{
-> +	stop_dep.cpuidle_prop |= FIRMWARE_STOP_ENABLE;
-> +
-> +	return 1;
-> +}
-> +
->  static int __init feat_enable_mmu_hash(struct dt_cpu_feature *f)
->  {
->  	u64 lpcr;
-> @@ -592,6 +599,7 @@ static struct dt_cpu_feature_match __initdata
->  	{"idle-nap", feat_enable_idle_nap, 0},
->  	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
->  	{"idle-stop", feat_enable_idle_stop, 0},
-> +	{"firmware-stop-supported", feat_enable_firmware_stop, 0},
->  	{"machine-check-power8", feat_enable_mce_power8, 0},
->  	{"performance-monitor-power8", feat_enable_pmu_power8, 0},
->  	{"data-stream-control-register", feat_enable_dscr, CPU_FTR_DSCR},
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 538f0842ac3f..0de5de81902e 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -633,16 +633,6 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->  	unsigned long mmcr0 = 0;
->  	struct p9_sprs sprs = {}; /* avoid false used-uninitialised */
->  	bool sprs_saved = false;
-> -	int rc = 0;
-> -
-> -	/*
-> -	 * Kernel takes decision whether to make OPAL call or not. This logic
-> -	 * will be combined with the logic for BE opal to take decision.
-> -	 */
-> -	if (firmware_stop_supported) {
-> -		rc = opal_cpu_idle(cpu_to_be64(__pa(&srr1)), (uint64_t) psscr);
-> -		goto out;
-> -	}
-> 
->  	if (!(psscr & (PSSCR_EC|PSSCR_ESL))) {
->  		/* EC=ESL=0 case */
-> @@ -835,6 +825,19 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->  	return srr1;
->  }
-> 
-> +static unsigned long power9_firmware_idle_stop(unsigned long psscr, bool mmu_on)
-> +{
-> +	unsigned long srr1;
-> +	int rc;
-> +
-> +	rc = opal_cpu_idle(cpu_to_be64(__pa(&srr1)), (uint64_t) psscr);
-> +
-> +	if (mmu_on)
-> +		mtmsr(MSR_KERNEL);
-> +	return srr1;
-> +
-> +}
-> +
->  #ifdef CONFIG_HOTPLUG_CPU
->  static unsigned long power9_offline_stop(unsigned long psscr)
->  {
-> @@ -1394,9 +1397,11 @@ static int __init pnv_init_idle_states(void)
->  	    !(stop_dep.cpuidle_prop & STOP_ENABLE))
->  		goto out;
-> 
-> -	/* Check for supported version in kernel */
-> +	/* Check for supported version in kernel or fallback to kernel*/
->  	if (stop_dep.stop_version & STOP_VERSION_P9) {
->  		stop_dep.idle_stop = power9_idle_stop;
-> +	} else if (stop_dep.cpuidle_prop & FIRMWARE_STOP_ENABLE) {
-> +		stop_dep.idle_stop = power9_firmware_idle_stop;
+> Changes since v1: addressed comments from Arnd
+>  * Changed the ioctl cmd definitions using _IO micros
+>  * Export interfaces for HW-SRAM drivers to register apis to available list
+>  * Modified allocation alignment to PAGE_SIZE
+>  * Use phys_addr_t as type of SRAM resource size and offset
+>  * Support compat_ioctl
+>  * Misc device name:sram
+>
+> Note: From this on, the SRAM_UAPI driver is independent to any hardware
+> drivers, so I would only commit the patch itself as v2, while the v1 of
+> it was wrapped together with patches for Freescale L2-Cache-SRAM device.
+> Then after, I'd create patches for Freescale L2-Cache-SRAM device as
+> another series.
 
-Ok, so in this patch you first check if the "idle-stop" feature is
-available. Only otherwise you fallback to the OPAL based cpuidle
-driver.
+There's work to add SRAM support to dma-buf heaps[1]. Take a look and
+see if that works for you.
 
-This looks ok to me.
+Rob
 
-
->  	} else {
->  		stop_dep.idle_stop = NULL;
->  		goto out;
-> -- 
-> 2.17.1
-> 
-
---
-Thanks and Regards
-gautham.
+[1] https://lore.kernel.org/lkml/20200424222740.16259-1-afd@ti.com/
