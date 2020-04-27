@@ -2,105 +2,58 @@ Return-Path: <SRS0=vPFq=6L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10F89C54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 02:15:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02D4AC54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 04:15:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B9F05206DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 02:15:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9F05206DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6756F2080C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 04:15:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6756F2080C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 499T0C1RgdzDqY1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 12:15:55 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499StR19TczDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 12:10:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 499Wdv62d0zDqWp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 14:15:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.44;
+ helo=out30-44.freemail.mail.aliyun.com;
+ envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 499StP4jJdz8swh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 12:10:53 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 499StP1kt9z9sSY; Mon, 27 Apr 2020 12:10:53 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=huntbag@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.from=linux.alibaba.com
+Received: from out30-44.freemail.mail.aliyun.com
+ (out30-44.freemail.mail.aliyun.com [115.124.30.44])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 499StN4hq7z9sSK;
- Mon, 27 Apr 2020 12:10:52 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03R23Yr8013757; Sun, 26 Apr 2020 22:10:50 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mhr529ud-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 26 Apr 2020 22:10:50 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03R24q1L016953;
- Sun, 26 Apr 2020 22:10:50 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mhr529tu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 26 Apr 2020 22:10:50 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03R2A5aQ019739;
- Mon, 27 Apr 2020 02:10:48 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04ams.nl.ibm.com with ESMTP id 30mcu6tunj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Apr 2020 02:10:47 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03R2Ajp258327204
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Apr 2020 02:10:45 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 04795A405B;
- Mon, 27 Apr 2020 02:10:45 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 85EF6A405C;
- Mon, 27 Apr 2020 02:10:43 +0000 (GMT)
-Received: from ltc-wspoon6.aus.stglabs.ibm.com (unknown [9.40.193.95])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 27 Apr 2020 02:10:43 +0000 (GMT)
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [RFC 3/3] powernv/cpuidle : Introduce capability for
- firmware-enabled-stop
-Date: Sun, 26 Apr 2020 21:10:27 -0500
-Message-Id: <20200427021027.114582-3-huntbag@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200427021027.114582-1-huntbag@linux.vnet.ibm.com>
-References: <20200427021027.114582-1-huntbag@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-26_11:2020-04-24,
- 2020-04-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- bulkscore=0 spamscore=0 mlxscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 adultscore=0 phishscore=0 mlxlogscore=999
- impostorscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2004270016
+ by lists.ozlabs.org (Postfix) with ESMTPS id 499Wbd1f4nzDqV5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 14:13:16 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R201e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e04407;
+ MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=37; SR=0;
+ TI=SMTPD_---0TwjKU-I_1587960786; 
+Received: from 30.27.118.60(mailfrom:tianjia.zhang@linux.alibaba.com
+ fp:SMTPD_---0TwjKU-I_1587960786) by smtp.aliyun-inc.com(127.0.0.1);
+ Mon, 27 Apr 2020 12:13:08 +0800
+Subject: Re: [PATCH v3 7/7] KVM: MIPS: clean up redundant kvm_run parameters
+ in assembly
+To: Huacai Chen <chenhuacai@gmail.com>
+References: <20200426123905.8336-1-tianjia.zhang@linux.alibaba.com>
+ <20200426123905.8336-8-tianjia.zhang@linux.alibaba.com>
+ <CAAhV-H7tSPFSU143ZfmgitEY1BY7MrBzwvJHve49i+ABQ9quCg@mail.gmail.com>
+From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+Message-ID: <e0826025-6925-fd94-1192-529c9aca1181@linux.alibaba.com>
+Date: Mon, 27 Apr 2020 12:13:06 +0800
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
+MIME-Version: 1.0
+In-Reply-To: <CAAhV-H7tSPFSU143ZfmgitEY1BY7MrBzwvJHve49i+ABQ9quCg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,126 +65,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, npiggin@gmail.com,
- oohall@gmail.com, psampat@linux.ibm.com,
- Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Cc: wanpengli@tencent.com, kvm@vger.kernel.org, david@redhat.com,
+ heiko.carstens@de.ibm.com, Peter Xu <peterx@redhat.com>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>, hpa@zytor.com,
+ kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ frankja@linux.ibm.com, Marc Zyngier <maz@kernel.org>, joro@8bytes.org,
+ x86@kernel.org, borntraeger@de.ibm.com, mingo@redhat.com,
+ julien.thierry.kdev@gmail.com, thuth@redhat.com, gor@linux.ibm.com,
+ suzuki.poulose@arm.com, kvm-ppc@vger.kernel.org,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, jmattson@google.com,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, cohuck@redhat.com,
+ christoffer.dall@arm.com, sean.j.christopherson@intel.com,
+ LKML <linux-kernel@vger.kernel.org>, james.morse@arm.com,
+ Paolo Bonzini <pbonzini@redhat.com>, vkuznets@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch introduces the capability for firmware to handle the stop
-states instead. A bit is set based on the discovery of the feature
-and correspondingly also the responsibility to handle the stop states.
 
-If Kernel does not know about stop version, it can fallback to opal for
-idle stop support if firmware-stop-supported property is present.
 
-Earlier this patch was posted as part of this series :
-https://lkml.org/lkml/2020/3/4/589
+On 2020/4/27 11:51, Huacai Chen wrote:
+> Hi, Tianjia,
+> 
+> On Sun, Apr 26, 2020 at 8:40 PM Tianjia Zhang
+> <tianjia.zhang@linux.alibaba.com> wrote:
+>>
+>> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
+>> structure. Earlier than historical reasons, many kvm-related function
+>> parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
+>> This patch does a unified cleanup of these remaining redundant parameters.
+>>
+>> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+>> ---
+>>   arch/mips/include/asm/kvm_host.h |  4 ++--
+>>   arch/mips/kvm/entry.c            | 15 +++++----------
+>>   arch/mips/kvm/mips.c             |  3 ++-
+>>   arch/mips/kvm/trap_emul.c        |  2 +-
+>>   arch/mips/kvm/vz.c               |  2 +-
+>>   5 files changed, 11 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+>> index 971439297cea..db915c55166d 100644
+>> --- a/arch/mips/include/asm/kvm_host.h
+>> +++ b/arch/mips/include/asm/kvm_host.h
+>> @@ -310,7 +310,7 @@ struct kvm_mmu_memory_cache {
+>>   #define KVM_MIPS_GUEST_TLB_SIZE        64
+>>   struct kvm_vcpu_arch {
+>>          void *guest_ebase;
+>> -       int (*vcpu_run)(struct kvm_run *run, struct kvm_vcpu *vcpu);
+>> +       int (*vcpu_run)(struct kvm_vcpu *vcpu);
+>>
+>>          /* Host registers preserved across guest mode execution */
+>>          unsigned long host_stack;
+>> @@ -821,7 +821,7 @@ int kvm_mips_emulation_init(struct kvm_mips_callbacks **install_callbacks);
+>>   /* Debug: dump vcpu state */
+>>   int kvm_arch_vcpu_dump_regs(struct kvm_vcpu *vcpu);
+>>
+>> -extern int kvm_mips_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu);
+>> +extern int kvm_mips_handle_exit(struct kvm_vcpu *vcpu);
+>>
+>>   /* Building of entry/exception code */
+>>   int kvm_mips_entry_setup(void);
+>> diff --git a/arch/mips/kvm/entry.c b/arch/mips/kvm/entry.c
+>> index 16e1c93b484f..e3f29af3b6cd 100644
+>> --- a/arch/mips/kvm/entry.c
+>> +++ b/arch/mips/kvm/entry.c
+>> @@ -204,7 +204,7 @@ static inline void build_set_exc_base(u32 **p, unsigned int reg)
+>>    * Assemble the start of the vcpu_run function to run a guest VCPU. The function
+>>    * conforms to the following prototype:
+>>    *
+>> - * int vcpu_run(struct kvm_run *run, struct kvm_vcpu *vcpu);
+>> + * int vcpu_run(struct kvm_vcpu *vcpu);
+>>    *
+>>    * The exit from the guest and return to the caller is handled by the code
+>>    * generated by kvm_mips_build_ret_to_host().
+>> @@ -217,8 +217,7 @@ void *kvm_mips_build_vcpu_run(void *addr)
+>>          unsigned int i;
+>>
+>>          /*
+>> -        * A0: run
+>> -        * A1: vcpu
+>> +        * A0: vcpu
+>>           */
+>>
+>>          /* k0/k1 not being used in host kernel context */
+>> @@ -237,10 +236,10 @@ void *kvm_mips_build_vcpu_run(void *addr)
+>>          kvm_mips_build_save_scratch(&p, V1, K1);
+>>
+>>          /* VCPU scratch register has pointer to vcpu */
+>> -       UASM_i_MTC0(&p, A1, scratch_vcpu[0], scratch_vcpu[1]);
+>> +       UASM_i_MTC0(&p, A0, scratch_vcpu[0], scratch_vcpu[1]);
+>>
+>>          /* Offset into vcpu->arch */
+>> -       UASM_i_ADDIU(&p, K1, A1, offsetof(struct kvm_vcpu, arch));
+>> +       UASM_i_ADDIU(&p, K1, A0, offsetof(struct kvm_vcpu, arch));
+>>
+>>          /*
+>>           * Save the host stack to VCPU, used for exception processing
+>> @@ -628,10 +627,7 @@ void *kvm_mips_build_exit(void *addr)
+>>          /* Now that context has been saved, we can use other registers */
+>>
+>>          /* Restore vcpu */
+>> -       UASM_i_MFC0(&p, S1, scratch_vcpu[0], scratch_vcpu[1]);
+>> -
+>> -       /* Restore run (vcpu->run) */
+>> -       UASM_i_LW(&p, S0, offsetof(struct kvm_vcpu, run), S1);
+>> +       UASM_i_MFC0(&p, S0, scratch_vcpu[0], scratch_vcpu[1]);
+>>
+>>          /*
+>>           * Save Host level EPC, BadVaddr and Cause to VCPU, useful to process
+>> @@ -793,7 +789,6 @@ void *kvm_mips_build_exit(void *addr)
+>>           * with this in the kernel
+>>           */
+>>          uasm_i_move(&p, A0, S0);
+>> -       uasm_i_move(&p, A1, S1);
+>>          UASM_i_LA(&p, T9, (unsigned long)kvm_mips_handle_exit);
+>>          uasm_i_jalr(&p, RA, T9);
+>>           UASM_i_ADDIU(&p, SP, SP, -CALLFRAME_SIZ);
+> I think uasm_i_move(&p, K1, S1) in kvm_mips_build_ret_from_exit() and
+> UASM_i_MTC0(&p, S1, scratch_vcpu[0], scratch_vcpu[1]) in
+> kvm_mips_build_ret_to_guest() should also be changed.
+> 
 
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
+Your statement is correct, this is my omission, I will fix it in the 
+next version of the patch, thanks for your review.
 
- v1->v2: This patch is newly added in this series.
+Thanks and best,
+Tianjia
 
- arch/powerpc/include/asm/processor.h  |  1 +
- arch/powerpc/kernel/dt_cpu_ftrs.c     |  8 ++++++++
- arch/powerpc/platforms/powernv/idle.c | 27 ++++++++++++++++-----------
- 3 files changed, 25 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 66fa20476d0e..d5c6532b11ef 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -430,6 +430,7 @@ extern unsigned long cpuidle_disable;
- enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
- 
- #define STOP_ENABLE		0x00000001
-+#define FIRMWARE_STOP_ENABLE	0x00000010
- 
- #define STOP_VERSION_P9       0x1
- 
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index db1a525e090d..ff4a87b79702 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -298,6 +298,13 @@ static int __init feat_enable_idle_stop(struct dt_cpu_feature *f)
- 	return 1;
- }
- 
-+static int __init feat_enable_firmware_stop(struct dt_cpu_feature *f)
-+{
-+	stop_dep.cpuidle_prop |= FIRMWARE_STOP_ENABLE;
-+
-+	return 1;
-+}
-+
- static int __init feat_enable_mmu_hash(struct dt_cpu_feature *f)
- {
- 	u64 lpcr;
-@@ -592,6 +599,7 @@ static struct dt_cpu_feature_match __initdata
- 	{"idle-nap", feat_enable_idle_nap, 0},
- 	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
- 	{"idle-stop", feat_enable_idle_stop, 0},
-+	{"firmware-stop-supported", feat_enable_firmware_stop, 0},
- 	{"machine-check-power8", feat_enable_mce_power8, 0},
- 	{"performance-monitor-power8", feat_enable_pmu_power8, 0},
- 	{"data-stream-control-register", feat_enable_dscr, CPU_FTR_DSCR},
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 538f0842ac3f..0de5de81902e 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -633,16 +633,6 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	unsigned long mmcr0 = 0;
- 	struct p9_sprs sprs = {}; /* avoid false used-uninitialised */
- 	bool sprs_saved = false;
--	int rc = 0;
--
--	/*
--	 * Kernel takes decision whether to make OPAL call or not. This logic
--	 * will be combined with the logic for BE opal to take decision.
--	 */
--	if (firmware_stop_supported) {
--		rc = opal_cpu_idle(cpu_to_be64(__pa(&srr1)), (uint64_t) psscr);
--		goto out;
--	}
- 
- 	if (!(psscr & (PSSCR_EC|PSSCR_ESL))) {
- 		/* EC=ESL=0 case */
-@@ -835,6 +825,19 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	return srr1;
- }
- 
-+static unsigned long power9_firmware_idle_stop(unsigned long psscr, bool mmu_on)
-+{
-+	unsigned long srr1;
-+	int rc;
-+
-+	rc = opal_cpu_idle(cpu_to_be64(__pa(&srr1)), (uint64_t) psscr);
-+
-+	if (mmu_on)
-+		mtmsr(MSR_KERNEL);
-+	return srr1;
-+
-+}
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static unsigned long power9_offline_stop(unsigned long psscr)
- {
-@@ -1394,9 +1397,11 @@ static int __init pnv_init_idle_states(void)
- 	    !(stop_dep.cpuidle_prop & STOP_ENABLE))
- 		goto out;
- 
--	/* Check for supported version in kernel */
-+	/* Check for supported version in kernel or fallback to kernel*/
- 	if (stop_dep.stop_version & STOP_VERSION_P9) {
- 		stop_dep.idle_stop = power9_idle_stop;
-+	} else if (stop_dep.cpuidle_prop & FIRMWARE_STOP_ENABLE) {
-+		stop_dep.idle_stop = power9_firmware_idle_stop;
- 	} else {
- 		stop_dep.idle_stop = NULL;
- 		goto out;
--- 
-2.17.1
-
+>> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+>> index 9710477a9827..32850470c037 100644
+>> --- a/arch/mips/kvm/mips.c
+>> +++ b/arch/mips/kvm/mips.c
+>> @@ -1186,8 +1186,9 @@ static void kvm_mips_set_c0_status(void)
+>>   /*
+>>    * Return value is in the form (errcode<<2 | RESUME_FLAG_HOST | RESUME_FLAG_NV)
+>>    */
+>> -int kvm_mips_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
+>> +int kvm_mips_handle_exit(struct kvm_vcpu *vcpu)
+>>   {
+>> +       struct kvm_run *run = vcpu->run;
+>>          u32 cause = vcpu->arch.host_cp0_cause;
+>>          u32 exccode = (cause >> CAUSEB_EXCCODE) & 0x1f;
+>>          u32 __user *opc = (u32 __user *) vcpu->arch.pc;
+>> diff --git a/arch/mips/kvm/trap_emul.c b/arch/mips/kvm/trap_emul.c
+>> index d822f3aee3dc..04c864cc356a 100644
+>> --- a/arch/mips/kvm/trap_emul.c
+>> +++ b/arch/mips/kvm/trap_emul.c
+>> @@ -1238,7 +1238,7 @@ static int kvm_trap_emul_vcpu_run(struct kvm_vcpu *vcpu)
+>>           */
+>>          kvm_mips_suspend_mm(cpu);
+>>
+>> -       r = vcpu->arch.vcpu_run(vcpu->run, vcpu);
+>> +       r = vcpu->arch.vcpu_run(vcpu);
+>>
+>>          /* We may have migrated while handling guest exits */
+>>          cpu = smp_processor_id();
+>> diff --git a/arch/mips/kvm/vz.c b/arch/mips/kvm/vz.c
+>> index 94f1d23828e3..c5878fa0636d 100644
+>> --- a/arch/mips/kvm/vz.c
+>> +++ b/arch/mips/kvm/vz.c
+>> @@ -3152,7 +3152,7 @@ static int kvm_vz_vcpu_run(struct kvm_vcpu *vcpu)
+>>          kvm_vz_vcpu_load_tlb(vcpu, cpu);
+>>          kvm_vz_vcpu_load_wired(vcpu);
+>>
+>> -       r = vcpu->arch.vcpu_run(vcpu->run, vcpu);
+>> +       r = vcpu->arch.vcpu_run(vcpu);
+>>
+>>          kvm_vz_vcpu_save_wired(vcpu);
+>>
+>> --
+>> 2.17.1
+>>
+> 
+> Regards,
+> Huacai
+> 
