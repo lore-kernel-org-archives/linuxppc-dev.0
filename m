@@ -7,72 +7,72 @@ X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81952C54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 05:45:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F53CC54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 05:46:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE9602075B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 05:45:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C1A5A2075B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 05:46:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RKVWEZ2i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE9602075B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tPyEDsKY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1A5A2075B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 499YdS3V3WzDqWN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 15:45:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 499YgQ4YnqzDqc2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 15:46:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d42;
- helo=mail-io1-xd42.google.com; envelope-from=chenhuacai@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::144;
+ helo=mail-il1-x144.google.com; envelope-from=chenhuacai@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=RKVWEZ2i; dkim-atps=neutral
-Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
- [IPv6:2607:f8b0:4864:20::d42])
+ header.s=20161025 header.b=tPyEDsKY; dkim-atps=neutral
+Received: from mail-il1-x144.google.com (mail-il1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499VyS4LxtzDqV5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 13:44:27 +1000 (AEST)
-Received: by mail-io1-xd42.google.com with SMTP id b12so17306295ion.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 20:44:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 499YGs1W7GzDq6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 15:28:51 +1000 (AEST)
+Received: by mail-il1-x144.google.com with SMTP id r2so15528386ilo.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 22:28:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=aQq0CUnQfujiDDnJvRHgF4LcjSyfQt3UEj7L50b98/A=;
- b=RKVWEZ2ioRL+cte2OumCaEGfBNi/Ob4AKIpk4K5KD00rj0JDK1PZIS7gzPvJXBAwXD
- wEDKZYPg+Iwxfg3u6Qu2tHISBcIuoeMiAheln22UZOiycsdQ0HMoswEn0IMGDShJmzQk
- 1SCN3h1Ol/griaEytviyKiCcTm+lE555t9lIv5tWcUb5za9Ic35WNIaCEsYbLHrTQ1Fu
- 0l4ku6FDE+jmz7sQl3r2fP1tZYb2z9gLkiQqPBHbXGY2DfDYDrYJr2pLEETcwtCZxioW
- tTPAGa9UZBCCSkNrIf8UWpHNoocAvTroQLIVShq/A0Z5rdQcfaDZA8EIjVuRUWnEivXS
- UDcw==
+ :cc; bh=WaGkkmN4y0RTKMJdi8EzfBOVXmmyYE1h1oyexRBOoJs=;
+ b=tPyEDsKYUyeukcQPidA1eBsK2tO/iOQHFUyMGCqupigUFO6XFt/HeabZznvUO2PtIP
+ duxbrxm/RKCdsfGptzRSELZbQtoHBeXtXJzRtIyjTsi875Vz6sIbrU1P1YN8jB0DEBEk
+ 8HXzzuGowdAlTBweokfr/ecURx3Qc+4g8IKSc4Tlhgko7OFScEnyvij3Dhd2/O1mimMj
+ d2izVMbpsqH6WoJRLGLFR/pwKOFnXrtsxQCo+LIPg3euZTHB8LAhZ5aKh05e0lMbJbYT
+ 6woc+0WVk0Ft2y0zUtyXh4/Z5DY8pKpZO95TWgZepk6wuxUmzAy6Dr662CldNqsyyyYq
+ 8Uvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=aQq0CUnQfujiDDnJvRHgF4LcjSyfQt3UEj7L50b98/A=;
- b=E1sSFaw3ywhamsYAYCpNwWKGVuvOe3g8oYOUtDPN9J9OKLXzGBfO6qW/E+jvROln4F
- PBBNZituAOzWi505Qnw8YLU3bWBuQCpVTP93u9voTfXaHa2a/LU9uTejdu2Yo534M642
- 9mHG4yMCdV2I1Kvg1kczOqJEZx6oUCDMQJS9nGT64wSzAcwhqlSk41cRLQr5bYeU4D3d
- iqG9r+lQMq7Q87TkMBb84SetCwVneDXUaYfJ7Q/jjQ8EfhkfbsI9TKZYUTFnJuyRl6qx
- Q2d42yZJniVyXnmnsXvBalnCRBydfKslL1JSvegmNpwpV9U/TxYb1UqzCOx27M8Ari8m
- NLMg==
-X-Gm-Message-State: AGi0PuZRm18ibVbkxAR90+qD12XGtq8gA4zTWBXQbBBGV5+9ntPjqN8Z
- oCuzch2AZBBdmo1eWSqK6YVr1Hdlhj7SeR1CSo0=
-X-Google-Smtp-Source: APiQypLX3afqSM1QWAKv61iq3HlPwMPQmqlnAsESamTCfsmhHfuQWhrkAz+NtraNDJj1UyhtF31EjwCvfUn58THeneA=
-X-Received: by 2002:a6b:7317:: with SMTP id e23mr19071605ioh.72.1587959064357; 
- Sun, 26 Apr 2020 20:44:24 -0700 (PDT)
+ bh=WaGkkmN4y0RTKMJdi8EzfBOVXmmyYE1h1oyexRBOoJs=;
+ b=rZhcWUtQYXjkXW1ICR0xMcdCyFXoeIovEURe0MGnfgDu2eBuRLWglGH4Q9q49knrek
+ Z8dvRgoxK0rT522reCytNAtDHPnhoQHRglfA4eDbLSVvU4z/dQO9uBq9hu2Zo9fCJVv/
+ PvePyMOFqP2A9WYZeNoMHaZtQCnBQjjNlb89lCf+eFn7C7nb6+8IRF8xNvwVzqAv4A8M
+ b/SrS6ajxKrM7dBYy04RBCKaUHt8PBs+2c+7hDDo5ORXbqNQaUKn6O8l39wo9UjbMFGX
+ yLVy+g6Jg+jQxTOBSLEf/loBXtiojkM4l5qM3Gv7G1shNKjRItvzpb8QWnIaPCa7697N
+ wqMw==
+X-Gm-Message-State: AGi0PuYGOwPmySZTp0ujrgRfxlovvBxo6n9Onfrz03pl8NYqgXlIpRRa
+ YH8S6taCwFAPLWSS8omdUA480Pj06fiXJnTBeuw=
+X-Google-Smtp-Source: APiQypJJ3gTkYymjZHG1lOAkRRLWHriIgaVysG1xMH8dflioRXle0xcd0ALG5nbb4/ZZdse7BjsYmeI7nNLAHsuc+NY=
+X-Received: by 2002:a92:cece:: with SMTP id z14mr18885492ilq.147.1587965329004; 
+ Sun, 26 Apr 2020 22:28:49 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200426123905.8336-1-tianjia.zhang@linux.alibaba.com>
- <20200426123905.8336-8-tianjia.zhang@linux.alibaba.com>
-In-Reply-To: <20200426123905.8336-8-tianjia.zhang@linux.alibaba.com>
+References: <20200427043514.16144-1-tianjia.zhang@linux.alibaba.com>
+ <20200427043514.16144-8-tianjia.zhang@linux.alibaba.com>
+In-Reply-To: <20200427043514.16144-8-tianjia.zhang@linux.alibaba.com>
 From: Huacai Chen <chenhuacai@gmail.com>
-Date: Mon, 27 Apr 2020 11:51:51 +0800
-Message-ID: <CAAhV-H7tSPFSU143ZfmgitEY1BY7MrBzwvJHve49i+ABQ9quCg@mail.gmail.com>
-Subject: Re: [PATCH v3 7/7] KVM: MIPS: clean up redundant kvm_run parameters
+Date: Mon, 27 Apr 2020 13:36:16 +0800
+Message-ID: <CAAhV-H5vifJfV+HjJS2UpW-56tdsXFA6VYhaf3xi92POxuPTyg@mail.gmail.com>
+Subject: Re: [PATCH v4 7/7] KVM: MIPS: clean up redundant kvm_run parameters
  in assembly
 To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -107,24 +107,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, Tianjia,
+Reviewed-by: Huacai Chen <chenhc@lemote.com>
 
-On Sun, Apr 26, 2020 at 8:40 PM Tianjia Zhang
+On Mon, Apr 27, 2020 at 12:35 PM Tianjia Zhang
 <tianjia.zhang@linux.alibaba.com> wrote:
 >
 > In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
-> structure. Earlier than historical reasons, many kvm-related function
-> parameters retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time.
-> This patch does a unified cleanup of these remaining redundant parameters.
+> structure. For historical reasons, many kvm-related function parameters
+> retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time. This
+> patch does a unified cleanup of these remaining redundant parameters.
 >
 > Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
 > ---
 >  arch/mips/include/asm/kvm_host.h |  4 ++--
->  arch/mips/kvm/entry.c            | 15 +++++----------
+>  arch/mips/kvm/entry.c            | 21 ++++++++-------------
 >  arch/mips/kvm/mips.c             |  3 ++-
 >  arch/mips/kvm/trap_emul.c        |  2 +-
 >  arch/mips/kvm/vz.c               |  2 +-
->  5 files changed, 11 insertions(+), 15 deletions(-)
+>  5 files changed, 14 insertions(+), 18 deletions(-)
 >
 > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
 > index 971439297cea..db915c55166d 100644
@@ -149,7 +149,7 @@ On Sun, Apr 26, 2020 at 8:40 PM Tianjia Zhang
 >  /* Building of entry/exception code */
 >  int kvm_mips_entry_setup(void);
 > diff --git a/arch/mips/kvm/entry.c b/arch/mips/kvm/entry.c
-> index 16e1c93b484f..e3f29af3b6cd 100644
+> index 16e1c93b484f..1083f35361ea 100644
 > --- a/arch/mips/kvm/entry.c
 > +++ b/arch/mips/kvm/entry.c
 > @@ -204,7 +204,7 @@ static inline void build_set_exc_base(u32 **p, unsigned int reg)
@@ -204,10 +204,26 @@ On Sun, Apr 26, 2020 at 8:40 PM Tianjia Zhang
 >         UASM_i_LA(&p, T9, (unsigned long)kvm_mips_handle_exit);
 >         uasm_i_jalr(&p, RA, T9);
 >          UASM_i_ADDIU(&p, SP, SP, -CALLFRAME_SIZ);
-I think uasm_i_move(&p, K1, S1) in kvm_mips_build_ret_from_exit() and
-UASM_i_MTC0(&p, S1, scratch_vcpu[0], scratch_vcpu[1]) in
-kvm_mips_build_ret_to_guest() should also be changed.
-
+> @@ -835,7 +830,7 @@ static void *kvm_mips_build_ret_from_exit(void *addr)
+>          * guest, reload k1
+>          */
+>
+> -       uasm_i_move(&p, K1, S1);
+> +       uasm_i_move(&p, K1, S0);
+>         UASM_i_ADDIU(&p, K1, K1, offsetof(struct kvm_vcpu, arch));
+>
+>         /*
+> @@ -869,8 +864,8 @@ static void *kvm_mips_build_ret_to_guest(void *addr)
+>  {
+>         u32 *p = addr;
+>
+> -       /* Put the saved pointer to vcpu (s1) back into the scratch register */
+> -       UASM_i_MTC0(&p, S1, scratch_vcpu[0], scratch_vcpu[1]);
+> +       /* Put the saved pointer to vcpu (s0) back into the scratch register */
+> +       UASM_i_MTC0(&p, S0, scratch_vcpu[0], scratch_vcpu[1]);
+>
+>         /* Load up the Guest EBASE to minimize the window where BEV is set */
+>         UASM_i_LW(&p, T0, offsetof(struct kvm_vcpu_arch, guest_ebase), K1);
 > diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
 > index 9710477a9827..32850470c037 100644
 > --- a/arch/mips/kvm/mips.c
@@ -252,6 +268,3 @@ kvm_mips_build_ret_to_guest() should also be changed.
 > --
 > 2.17.1
 >
-
-Regards,
-Huacai
