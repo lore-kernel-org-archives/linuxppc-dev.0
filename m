@@ -2,56 +2,89 @@ Return-Path: <SRS0=vPFq=6L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-4.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A74C54FD0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 06:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF90C54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 07:01:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B8D52072D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 06:33:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B8D52072D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id D8B792075B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 07:01:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IL2IJv0C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8B792075B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 499Zjv1ZYgzDqG8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 16:33:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 499bL351hMzDqcW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 17:01:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044;
+ helo=mail-pj1-x1044.google.com; envelope-from=nicoleotsuka@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=IL2IJv0C; dkim-atps=neutral
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com
+ [IPv6:2607:f8b0:4864:20::1044])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499Zgz4FhdzDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 16:32:13 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id CC6CE200E40;
- Mon, 27 Apr 2020 08:32:08 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A391F200F97;
- Mon, 27 Apr 2020 08:32:04 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 881D4402E6;
- Mon, 27 Apr 2020 14:31:59 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH v2] ASoC: fsl_esai: Disable exception interrupt before
+ by lists.ozlabs.org (Postfix) with ESMTPS id 499bHj5PRSzDqSt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 16:59:45 +1000 (AEST)
+Received: by mail-pj1-x1044.google.com with SMTP id a7so7056809pju.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2020 23:59:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=WNj7owPD+ZbRnStugkoSGfUDDLECau6V6cMguxLHseM=;
+ b=IL2IJv0CwAvaTDLiqlc/43W1WRn+mgpJHcQ8lcGu5IP5LESVReGp34dPTQGf6e0LZa
+ 3rCwR8nNmXOAEkd7Qzy7NviBN1004OJr8Pb5pMjqmfp3qpJihUZhwd7nyTcdErdOInIe
+ uT/acoJunK3/lzcWSYlr70GlAd1cL4+5aQRsO6ogXJBgfPAl7j9pz2uqOwVdBWbYe0q6
+ lbHRELStH3w+8HvL6IraAq8odymfgvcnvKnG15I3pwiOqF/UTkx28z5RWu01Jb8zRX6u
+ 8N7Ya3TKyfDwMXJcwDdk6fA1JUwRLmFDLFLl41eCmhPhg6qDStbEFse06rD8j62TGsit
+ h9Ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=WNj7owPD+ZbRnStugkoSGfUDDLECau6V6cMguxLHseM=;
+ b=txiajBNjB6BqP6UfQVI9l0TtU7mNvBFUFC3WVQ9sw0mkwGxdUgRNqCvp1cNYOAAIgw
+ C2/kWsilbOhXvHTHO48PyhUNHDHCZQ2egsAbm4NyXTIiQCUrZNh2VoLcw71P72GWZMlw
+ h0soSss4J96eOdGWCaDnBmLap4TYdraTzreu3UzbA540amDm8P6XzIFLLzZq9mgVwtUX
+ 03BqWUeQZpe6/z/2mLAyAkVveANqMmw9kNutj1jLdhQX2xHu0LxpO2gkkWr6wE3tyhBF
+ SWEJXMCQvyuASC3SGC1tM7udk1ABqlwrlbIl9r4C470HGT8R130N1IgArVMjDYa7Xq+r
+ KfUQ==
+X-Gm-Message-State: AGi0PubDpP8WWmbqXjbfnz6dH5WQBLeFpEhXxRGSnaitcU4enveD/sJg
+ NbcH1BggOS/9+74Gjipm240=
+X-Google-Smtp-Source: APiQypK642idgdGmw8QuDMMdid04wPSy9FsGffFOvsU2o0XwcfqVKE56jYsP/DglCL+LJ7YRbhEZMA==
+X-Received: by 2002:a17:902:9895:: with SMTP id
+ s21mr249837plp.158.1587970781619; 
+ Sun, 26 Apr 2020 23:59:41 -0700 (PDT)
+Received: from Asurada (c-73-162-191-63.hsd1.ca.comcast.net. [73.162.191.63])
+ by smtp.gmail.com with ESMTPSA id
+ h9sm11317108pfo.129.2020.04.26.23.59.40
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sun, 26 Apr 2020 23:59:41 -0700 (PDT)
+Date: Sun, 26 Apr 2020 23:59:34 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v2] ASoC: fsl_esai: Disable exception interrupt before
  scheduling tasklet
-Date: Mon, 27 Apr 2020 14:23:21 +0800
-Message-Id: <a8f2ad955aac9e52587beedc1133b3efbe746895.1587968824.git.shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+Message-ID: <20200427065934.GA2236@Asurada>
+References: <a8f2ad955aac9e52587beedc1133b3efbe746895.1587968824.git.shengjiu.wang@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8f2ad955aac9e52587beedc1133b3efbe746895.1587968824.git.shengjiu.wang@nxp.com>
+User-Agent: Mutt/1.5.22 (2013-10-16)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,39 +96,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, perex@perex.cz,
+ broonie@kernel.org, festevam@gmail.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Disable exception interrupt before scheduling tasklet, otherwise if
-the tasklet isn't handled immediately, there will be endless xrun
-interrupt.
+On Mon, Apr 27, 2020 at 02:23:21PM +0800, Shengjiu Wang wrote:
+> Disable exception interrupt before scheduling tasklet, otherwise if
+> the tasklet isn't handled immediately, there will be endless xrun
+> interrupt.
+> 
+> Fixes: 7ccafa2b3879 ("ASoC: fsl_esai: recover the channel swap after xrun")
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Fixes: 7ccafa2b3879 ("ASoC: fsl_esai: recover the channel swap after xrun")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
-changes in v2
-- Disable exception interrupt instead of remove tasklet.
-
- sound/soc/fsl/fsl_esai.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index c7a49d03463a..84290be778f0 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -87,6 +87,10 @@ static irqreturn_t esai_isr(int irq, void *devid)
- 	if ((saisr & (ESAI_SAISR_TUE | ESAI_SAISR_ROE)) &&
- 	    esai_priv->reset_at_xrun) {
- 		dev_dbg(&pdev->dev, "reset module for xrun\n");
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
-+				   ESAI_xCR_xEIE_MASK, 0);
-+		regmap_update_bits(esai_priv->regmap, REG_ESAI_RCR,
-+				   ESAI_xCR_xEIE_MASK, 0);
- 		tasklet_schedule(&esai_priv->task);
- 	}
- 
--- 
-2.21.0
-
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
