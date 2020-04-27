@@ -2,25 +2,25 @@ Return-Path: <SRS0=vPFq=6L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0662AC7C8A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 12:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6844AC54FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 13:13:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72A7220656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 12:09:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CFBE320728
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 13:13:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="jN69zCDJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72A7220656
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TGwGFnbh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFBE320728
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 499k9K5t4zzDqHj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 22:09:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 499lZm6SdSzDqTJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2020 23:13:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +28,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=jN69zCDJ; dkim-atps=neutral
+ header.s=default header.b=TGwGFnbh; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499k63416zzDqWm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 22:06:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 499lV45HJHzDq63
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:09:16 +1000 (AEST)
 Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2234020656;
- Mon, 27 Apr 2020 12:06:47 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 643F22074F;
+ Mon, 27 Apr 2020 13:09:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1587989208;
- bh=1m16fC0Omj/UN4RkPHjzbywpoiVoVofm7ryYwBegEAM=;
+ s=default; t=1587992953;
+ bh=F2J5+tCyCW2blznWC3DoSWefBae/flCTMt9vpZT3jpQ=;
  h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=jN69zCDJKrqExjNLOR8Cbwymi5eN2AbzM0CHbDsx9suR47QUg2Kmq/xQtMCIrmouI
- A0hNeOLjfGU7p+9Tp0NrRed2toBUVtjjfiYffuiLdgIthDizhLhHZmoi3knnz3ly0/
- orJbiLE9HH6OSI5kbYpwwJT2Cu+9wth6kcm+Lu0A=
-Date: Mon, 27 Apr 2020 13:06:46 +0100
+ b=TGwGFnbhgQsP++okUZdhRpPetk91J/pmzJ3IZb7o7KWrWLNaye1tT9g9iFKbb6HOP
+ R5Mz+EMS9WZ7ajlO028s1+ZYpR1BABPxXrJI7jV5I2HqBFQPiUdJXuMna/DYWGF0NI
+ 2/8/qwkasN9awJw28hjtggcP5QFH8Wi/l08yoROs=
+Date: Mon, 27 Apr 2020 14:09:11 +0100
 From: Mark Brown <broonie@kernel.org>
-To: festevam@gmail.com, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com,
- timur@kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>,
- alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz
-In-Reply-To: <a8f2ad955aac9e52587beedc1133b3efbe746895.1587968824.git.shengjiu.wang@nxp.com>
-References: <a8f2ad955aac9e52587beedc1133b3efbe746895.1587968824.git.shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2] ASoC: fsl_esai: Disable exception interrupt before
- scheduling tasklet
-Message-Id: <158798920600.35547.13024845856873705018.b4-ty@kernel.org>
+To: perex@perex.cz, timur@kernel.org, alsa-devel@alsa-project.org,
+ tiwai@suse.com, festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>,
+ Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, lgirdwood@gmail.com
+In-Reply-To: <d23c939f1c9eeb3fce34b6c34d44e2d6156f663a.1587799355.git.shengjiu.wang@nxp.com>
+References: <d23c939f1c9eeb3fce34b6c34d44e2d6156f663a.1587799355.git.shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v2] ASoC: fsl_easrc: Check for null pointer before
+ dereferencing "ctx" in fsl_easrc_hw_free()
+Message-Id: <158799293953.30174.7045413410563193676.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,25 +72,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Apr 2020 14:23:21 +0800, Shengjiu Wang wrote:
-> Disable exception interrupt before scheduling tasklet, otherwise if
-> the tasklet isn't handled immediately, there will be endless xrun
-> interrupt.
+On Sat, 25 Apr 2020 15:19:29 +0800, Shengjiu Wang wrote:
+> The patch 955ac624058f: "ASoC: fsl_easrc: Add EASRC ASoC CPU DAI
+> drivers" from Apr 16, 2020, leads to the following Smatch complaint:
 > 
-> Fixes: 7ccafa2b3879 ("ASoC: fsl_esai: recover the channel swap after xrun")
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> sound/soc/fsl/fsl_easrc.c:1529 fsl_easrc_hw_free()
+> warn: variable dereferenced before check 'ctx' (see line 1527)
+> 
+> sound/soc/fsl/fsl_easrc.c
+>   1526          struct fsl_asrc_pair *ctx = runtime->private_data;
+>   1527          struct fsl_easrc_ctx_priv *ctx_priv = ctx->private;
+>                                                       ^^^^^
+> Dereference
 > 
 > [...]
 
 Applied to
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.7
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.8
 
 Thanks!
 
-[1/1] ASoC: fsl_esai: Disable exception interrupt before scheduling tasklet
-      commit: 1fecbb71fe0e46b886f84e3b6decca6643c3af6d
+[1/1] ASoC: fsl_easrc: Check for null pointer before dereferencing "ctx" in fsl_easrc_hw_free()
+      commit: f3fc1ea011f09156886e8f4beb240ea814f2197a
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
