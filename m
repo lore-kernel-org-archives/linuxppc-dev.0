@@ -2,59 +2,61 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60035C83000
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38E3FC83000
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:07:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12B61206D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:56:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12B61206D7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9DD86206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:07:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="OXiAX4v3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DD86206D6
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BKqj1C2vzDqjH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 21:56:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.75.45; helo=9.mo178.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 9.mo178.mail-out.ovh.net (9.mo178.mail-out.ovh.net
- [46.105.75.45])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BL3q1Zp3zDqpL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 22:07:03 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BKnd2T16zDqfr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 21:54:35 +1000 (AEST)
-Received: from player788.ha.ovh.net (unknown [10.108.35.223])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id 8D2669C20F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:36:24 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player788.ha.ovh.net (Postfix) with ESMTPSA id CB95811DB8A3D;
- Tue, 28 Apr 2020 11:36:22 +0000 (UTC)
-Subject: Re: [PATCH] powerpc: Add interrupt mode information in /proc/cpuinfo
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <20200427140644.332815-1-clg@kaod.org>
- <87v9ljg9dz.fsf@mpe.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <fb54a4f3-21cf-7167-97ec-c1d005d6c343@kaod.org>
-Date: Tue, 28 Apr 2020 13:36:20 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
-MIME-Version: 1.0
-In-Reply-To: <87v9ljg9dz.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 1528972073821047741
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedugdegudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejkeekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BL1N5h6yzDqlV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 22:04:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=OXiAX4v3; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1023)
+ id 49BL1M6wGwz9sSX; Tue, 28 Apr 2020 22:04:55 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1588075495; bh=mQaL0dNlw7pvZD2irMmg/vOkZrvHKgvORLsAa9jZbwU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=OXiAX4v3r2OpdzAIA7yqGju8GgordMTliwZOsaVy1nYlxsLovY8BF8soLE2xtEQmo
+ ixPXs14E9V7/bf+dQgUOviu/YR5M0zSvZiDvj2upRTsmS/mNLk8SGfWql+mzK2YoVv
+ W59U/nxFeKHoXidJsYTbNv17pkjU1qM0Du1TibEtyj359VpHFqoh/eF1ZtyuRhwvhX
+ gDOwH7VYh2WrEtT5vKHPNdbb8UhrsptCSjXNOb3qUxecO4Orzchqdlw58z09vl8CQC
+ oh0feGG52IB6RSAs5uW8vy0ICvSOK19DyGc4WJLcBKf2h/JEAC/dQeiXfdojWH6oGX
+ Qq6bOiifFbCkA==
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [RFC PATCH] powerpc/spufs: fix copy_to_user while atomic
+Date: Tue, 28 Apr 2020 20:02:07 +0800
+Message-Id: <20200428120207.15728-1-jk@ozlabs.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200427200626.1622060-2-hch@lst.de>
+References: <20200427200626.1622060-2-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,96 +68,280 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/28/20 1:03 PM, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
->> PowerNV and pSeries machines can run using the XIVE or XICS interrupt
->> mode. Report this information in /proc/cpuinfo :
->>
->>     timebase    : 512000000
->>     platform    : PowerNV
->>     model       : 9006-22C
->>     machine     : PowerNV 9006-22C
->>     firmware    : OPAL
->>     MMU         : Radix
->>     IRQ         : XIVE
-> 
-> Hmmmm, I dunno. At what point do we stop putting random non CPU-related
-> things in cpuinfo? :)
+Currently, we may perform a copy_to_user (through
+simple_read_from_buffer()) while holding a context's register_lock,
+while accessing the context save area.
 
-True. 
+This change uses a temporary buffers for the context save area data,
+which we then pass to simple_read_from_buffer.
 
-> The IRQ mode is (reasonably) easily discovered in sys, eg:
-> 
->   $ cat /sys/kernel/irq/*/chip_name | grep -m 1 XIVE
->   XIVE-IRQ
-> 
-> vs:
-> 
->   $ cat /sys/kernel/irq/*/chip_name | grep -m 1 XICS
->   XICS
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+---
 
+Christoph - this fixes the copy_to_user while atomic, hopefully with
+only minimal distruption to your series.
 
-That's good enough for error reporting
+---
+ arch/powerpc/platforms/cell/spufs/file.c | 110 +++++++++++++++--------
+ 1 file changed, 74 insertions(+), 36 deletions(-)
 
-Thanks.
-
-C.
-
-> 
-> cheers
-> 
->> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
->> index 3bc188da82ba..39ef3394038d 100644
->> --- a/arch/powerpc/platforms/powernv/setup.c
->> +++ b/arch/powerpc/platforms/powernv/setup.c
->> @@ -196,14 +196,18 @@ static void pnv_show_cpuinfo(struct seq_file *m)
->>  		model = of_get_property(root, "model", NULL);
->>  	seq_printf(m, "machine\t\t: PowerNV %s\n", model);
->>  	if (firmware_has_feature(FW_FEATURE_OPAL))
->> -		seq_printf(m, "firmware\t: OPAL\n");
->> +		seq_puts(m, "firmware\t: OPAL\n");
->>  	else
->> -		seq_printf(m, "firmware\t: BML\n");
->> +		seq_puts(m, "firmware\t: BML\n");
->>  	of_node_put(root);
->>  	if (radix_enabled())
->> -		seq_printf(m, "MMU\t\t: Radix\n");
->> +		seq_puts(m, "MMU\t\t: Radix\n");
->>  	else
->> -		seq_printf(m, "MMU\t\t: Hash\n");
->> +		seq_puts(m, "MMU\t\t: Hash\n");
->> +	if (xive_enabled())
->> +		seq_puts(m, "IRQ\t\t: XIVE\n");
->> +	else
->> +		seq_puts(m, "IRQ\t\t: XICS\n");
->>  }
->>  
->>  static void pnv_prepare_going_down(void)
->> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
->> index 0c8421dd01ab..d248fca67797 100644
->> --- a/arch/powerpc/platforms/pseries/setup.c
->> +++ b/arch/powerpc/platforms/pseries/setup.c
->> @@ -95,9 +95,13 @@ static void pSeries_show_cpuinfo(struct seq_file *m)
->>  	seq_printf(m, "machine\t\t: CHRP %s\n", model);
->>  	of_node_put(root);
->>  	if (radix_enabled())
->> -		seq_printf(m, "MMU\t\t: Radix\n");
->> +		seq_puts(m, "MMU\t\t: Radix\n");
->>  	else
->> -		seq_printf(m, "MMU\t\t: Hash\n");
->> +		seq_puts(m, "MMU\t\t: Hash\n");
->> +	if (xive_enabled())
->> +		seq_puts(m, "IRQ\t\t: XIVE\n");
->> +	else
->> +		seq_puts(m, "IRQ\t\t: XICS\n");
->>  }
->>  
->>  /* Initialize firmware assisted non-maskable interrupts if
->> -- 
->> 2.25.3
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index c0f950a3f4e1..c62d77ddaf7d 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1978,8 +1978,9 @@ static ssize_t __spufs_mbox_info_read(struct spu_context *ctx,
+ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+-	int ret;
+ 	struct spu_context *ctx = file->private_data;
++	u32 stat, data;
++	int ret;
+ 
+ 	if (!access_ok(buf, len))
+ 		return -EFAULT;
+@@ -1988,11 +1989,16 @@ static ssize_t spufs_mbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_mbox_info_read(ctx, buf, len, pos);
++	stat = ctx->csa.prob.mb_stat_R;
++	data = ctx->csa.prob.pu_mb_R;
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+-	return ret;
++	/* EOF if there's no entry in the mbox */
++	if (!(stat & 0x0000ff))
++		return 0;
++
++	return simple_read_from_buffer(buf, len, pos, &data, sizeof(data));
+ }
+ 
+ static const struct file_operations spufs_mbox_info_fops = {
+@@ -2019,6 +2025,7 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	u32 stat, data;
+ 	int ret;
+ 
+ 	if (!access_ok(buf, len))
+@@ -2028,11 +2035,16 @@ static ssize_t spufs_ibox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_ibox_info_read(ctx, buf, len, pos);
++	stat = ctx->csa.prob.mb_stat_R;
++	data = ctx->csa.priv2.puint_mb_R;
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+-	return ret;
++	/* EOF if there's no entry in the ibox */
++	if (!(stat & 0xff0000))
++		return 0;
++
++	return simple_read_from_buffer(buf, len, pos, &data, sizeof(data));
+ }
+ 
+ static const struct file_operations spufs_ibox_info_fops = {
+@@ -2041,6 +2053,11 @@ static const struct file_operations spufs_ibox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
++static size_t spufs_wbox_info_cnt(struct spu_context *ctx)
++{
++	return (4 - ((ctx->csa.prob.mb_stat_R & 0x00ff00) >> 8)) * sizeof(u32);
++}
++
+ static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+ 			char __user *buf, size_t len, loff_t *pos)
+ {
+@@ -2049,7 +2066,7 @@ static ssize_t __spufs_wbox_info_read(struct spu_context *ctx,
+ 	u32 wbox_stat;
+ 
+ 	wbox_stat = ctx->csa.prob.mb_stat_R;
+-	cnt = 4 - ((wbox_stat & 0x00ff00) >> 8);
++	cnt = spufs_wbox_info_cnt(ctx);
+ 	for (i = 0; i < cnt; i++) {
+ 		data[i] = ctx->csa.spu_mailbox_data[i];
+ 	}
+@@ -2062,7 +2079,8 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
+-	int ret;
++	u32 data[ARRAY_SIZE(ctx->csa.spu_mailbox_data)];
++	int ret, count;
+ 
+ 	if (!access_ok(buf, len))
+ 		return -EFAULT;
+@@ -2071,11 +2089,13 @@ static ssize_t spufs_wbox_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_wbox_info_read(ctx, buf, len, pos);
++	count = spufs_wbox_info_cnt(ctx);
++	memcpy(&data, &ctx->csa.spu_mailbox_data, sizeof(data));
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+-	return ret;
++	return simple_read_from_buffer(buf, len, pos, &data,
++				count * sizeof(u32));
+ }
+ 
+ static const struct file_operations spufs_wbox_info_fops = {
+@@ -2084,20 +2104,19 @@ static const struct file_operations spufs_wbox_info_fops = {
+ 	.llseek  = generic_file_llseek,
+ };
+ 
+-static ssize_t __spufs_dma_info_read(struct spu_context *ctx,
+-			char __user *buf, size_t len, loff_t *pos)
++static void ___spufs_dma_info_read(struct spu_context *ctx,
++		struct spu_dma_info *info)
+ {
+-	struct spu_dma_info info;
+ 	struct mfc_cq_sr *qp, *spuqp;
+ 	int i;
+ 
+-	info.dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
+-	info.dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
+-	info.dma_info_status = ctx->csa.spu_chnldata_RW[24];
+-	info.dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
+-	info.dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
++	info->dma_info_type = ctx->csa.priv2.spu_tag_status_query_RW;
++	info->dma_info_mask = ctx->csa.lscsa->tag_mask.slot[0];
++	info->dma_info_status = ctx->csa.spu_chnldata_RW[24];
++	info->dma_info_stall_and_notify = ctx->csa.spu_chnldata_RW[25];
++	info->dma_info_atomic_command_status = ctx->csa.spu_chnldata_RW[27];
+ 	for (i = 0; i < 16; i++) {
+-		qp = &info.dma_info_command_data[i];
++		qp = &info->dma_info_command_data[i];
+ 		spuqp = &ctx->csa.priv2.spuq[i];
+ 
+ 		qp->mfc_cq_data0_RW = spuqp->mfc_cq_data0_RW;
+@@ -2105,6 +2124,14 @@ static ssize_t __spufs_dma_info_read(struct spu_context *ctx,
+ 		qp->mfc_cq_data2_RW = spuqp->mfc_cq_data2_RW;
+ 		qp->mfc_cq_data3_RW = spuqp->mfc_cq_data3_RW;
+ 	}
++}
++
++static ssize_t __spufs_dma_info_read(struct spu_context *ctx,
++			char __user *buf, size_t len, loff_t *pos)
++{
++	struct spu_dma_info info;
++
++	___spufs_dma_info_read(ctx, &info);
+ 
+ 	return simple_read_from_buffer(buf, len, pos, &info,
+ 				sizeof info);
+@@ -2114,6 +2141,7 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 			      size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_dma_info info;
+ 	int ret;
+ 
+ 	if (!access_ok(buf, len))
+@@ -2123,11 +2151,12 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_dma_info_read(ctx, buf, len, pos);
++	___spufs_dma_info_read(ctx, &info);
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+-	return ret;
++	return simple_read_from_buffer(buf, len, pos, &info,
++				sizeof(info));
+ }
+ 
+ static const struct file_operations spufs_dma_info_fops = {
+@@ -2136,13 +2165,31 @@ static const struct file_operations spufs_dma_info_fops = {
+ 	.llseek = no_llseek,
+ };
+ 
++static void ___spufs_proxydma_info_read(struct spu_context *ctx,
++	struct spu_proxydma_info *info)
++{
++	int i;
++
++	info->proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
++	info->proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
++	info->proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
++
++	for (i = 0; i < 8; i++) {
++		struct mfc_cq_sr *qp = &info->proxydma_info_command_data[i];
++		struct mfc_cq_sr *puqp = &ctx->csa.priv2.puq[i];
++
++		qp->mfc_cq_data0_RW = puqp->mfc_cq_data0_RW;
++		qp->mfc_cq_data1_RW = puqp->mfc_cq_data1_RW;
++		qp->mfc_cq_data2_RW = puqp->mfc_cq_data2_RW;
++		qp->mfc_cq_data3_RW = puqp->mfc_cq_data3_RW;
++	}
++}
++
+ static ssize_t __spufs_proxydma_info_read(struct spu_context *ctx,
+ 			char __user *buf, size_t len, loff_t *pos)
+ {
+ 	struct spu_proxydma_info info;
+-	struct mfc_cq_sr *qp, *puqp;
+ 	int ret = sizeof info;
+-	int i;
+ 
+ 	if (len < ret)
+ 		return -EINVAL;
+@@ -2150,18 +2197,7 @@ static ssize_t __spufs_proxydma_info_read(struct spu_context *ctx,
+ 	if (!access_ok(buf, len))
+ 		return -EFAULT;
+ 
+-	info.proxydma_info_type = ctx->csa.prob.dma_querytype_RW;
+-	info.proxydma_info_mask = ctx->csa.prob.dma_querymask_RW;
+-	info.proxydma_info_status = ctx->csa.prob.dma_tagstatus_R;
+-	for (i = 0; i < 8; i++) {
+-		qp = &info.proxydma_info_command_data[i];
+-		puqp = &ctx->csa.priv2.puq[i];
+-
+-		qp->mfc_cq_data0_RW = puqp->mfc_cq_data0_RW;
+-		qp->mfc_cq_data1_RW = puqp->mfc_cq_data1_RW;
+-		qp->mfc_cq_data2_RW = puqp->mfc_cq_data2_RW;
+-		qp->mfc_cq_data3_RW = puqp->mfc_cq_data3_RW;
+-	}
++	___spufs_proxydma_info_read(ctx, &info);
+ 
+ 	return simple_read_from_buffer(buf, len, pos, &info,
+ 				sizeof info);
+@@ -2171,17 +2207,19 @@ static ssize_t spufs_proxydma_info_read(struct file *file, char __user *buf,
+ 				   size_t len, loff_t *pos)
+ {
+ 	struct spu_context *ctx = file->private_data;
++	struct spu_proxydma_info info;
+ 	int ret;
+ 
+ 	ret = spu_acquire_saved(ctx);
+ 	if (ret)
+ 		return ret;
+ 	spin_lock(&ctx->csa.register_lock);
+-	ret = __spufs_proxydma_info_read(ctx, buf, len, pos);
++	___spufs_proxydma_info_read(ctx, &info);
+ 	spin_unlock(&ctx->csa.register_lock);
+ 	spu_release_saved(ctx);
+ 
+-	return ret;
++	return simple_read_from_buffer(buf, len, pos, &info,
++				sizeof(info));
+ }
+ 
+ static const struct file_operations spufs_proxydma_info_fops = {
+-- 
+2.17.1
 
