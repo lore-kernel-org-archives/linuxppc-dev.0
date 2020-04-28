@@ -2,86 +2,96 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5948C83000
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 01:04:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB733C83000
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 01:14:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35E1F20737
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 01:04:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 37BCF20731
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 01:14:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oQNJmiw4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35E1F20737
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=cs-cmu-edu.20150623.gappssmtp.com header.i=@cs-cmu-edu.20150623.gappssmtp.com header.b="OX9cephv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37BCF20731
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=cs.cmu.edu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BgJF5yTPzDqw8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:03:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BgXs4YhFzDqyq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:14:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=andrew.cmu.edu (client-ip=2607:f8b0:4864:20::844;
+ helo=mail-qt1-x844.google.com; envelope-from=jaharkes@andrew.cmu.edu;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=cs.cmu.edu
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oQNJmiw4; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+ unprotected) header.d=cs-cmu-edu.20150623.gappssmtp.com
+ header.i=@cs-cmu-edu.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=OX9cephv; dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BgGK1ZnjzDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 11:02:16 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id 18so254305pfv.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 18:02:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=hoHhaE9rJgMcBbU516mloJZ88i5m7onu7oPT7IreNEc=;
- b=oQNJmiw4ZnOn/Q5jI0RtCg0Pa+TGGX8Z/P9gFkTcJjp3kATOKE2lZa3mRiI3cQZc3X
- n5ELM6aB45vHAxMXOKPWEPTB81OGkwlscpVoMcv+1V4o2WQVB51z6QslE7aYJA+IiiSX
- 12TrsWRQ9BIShARh25om4JCRnSm2+qUaHe5BjSjfkj+64ht2FaGNMvj1nKbMpSCps4Pk
- OFGQVw6MRMdDhkSY3N8RC2hPDmY8uhABeRCExH2f8tX9OP7iUG30eXPOTf8PZnOhxvpc
- ke8fke+pg0msRE6eDfICRwhRZZzO2s6wSfhmn26Sjg9Oaz0dYGN2zsvcIVgpWA8dhiaZ
- 4I+A==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BWng4VKQzDqjX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 05:25:15 +1000 (AEST)
+Received: by mail-qt1-x844.google.com with SMTP id 71so18282781qtc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 12:25:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=cs-cmu-edu.20150623.gappssmtp.com; s=20150623;
+ h=date:from:to:cc:subject:message-id:mail-followup-to:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=vip41qUVMKBqTzEGULB2fq8TW2WA+09ehaEg4M6b7gA=;
+ b=OX9cephvVUT6NSDLm2aPp0wg7GbJRFkTlOE6HtLl4AbVbrBiWitjfdPqKFn2uTTlo6
+ RZZdVY5cYJ+X7nFP4U5wwIm17XpQi5lJMGdnsrRRWdXhllecGup4mn011MRDxqd3PaX1
+ pXXo7vzr8OqmVOdwIAIy9lxu/ZmUvfEliPItaLNfxjqDftU0dYHi4Rqi6laIoRZoWuq6
+ QUwdoT7Qegg/09sur7Wia9CP4DHAidc5klwQee/5ecVGpPPKoPvyQ94BuQk8ERNSDOBw
+ I9n2PPZxuM4t/KRY1hbRe5t/i6EWjpMK7w0MzwXDgyzGwrJciJy1oRw5ZNA/A4Ib1xiv
+ Z8wA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=hoHhaE9rJgMcBbU516mloJZ88i5m7onu7oPT7IreNEc=;
- b=EU/KPoH+MLPyzo0chcFQtyDN6/yFXoJStZhDG3kO6LZIaYIm0sb5HqntajI/K4S4/Y
- wIZc6XBAv3I4tGTHh69sFS6JsXZQXqZiPZWG2nsHsfxKfFCKssNWlFF3/h78BkbHlPrA
- CvwaadYRj6zFoNzw3GoM0pCZTK8UQ4uo03kLtdLqSjx2xm8NxZi4paZOqEeOytJgGppx
- EfBUgg8sjbz2aAKEGB+4LEp04lDLOVld06ePeIL/nXIprL9TYeL3NnXHc4avLcjuj1bk
- WJCG4OGNrZmQZnn8kAD7iXrDO1ksNftzjdAUseU0k4Tp00bB08DLKUB7gPeZ83pp9s7d
- zZ6g==
-X-Gm-Message-State: AGi0PuYoDYwgNohVCBi/gIKf5MNekc5jo3203HBV3Q95YvZT/V9AYD2U
- tRIPD0ED3cMhIndX6MvbQy8=
-X-Google-Smtp-Source: APiQypLu7ImvCf59D8zDjdNyBso1TUo8EWcqF5tTk81mMmfAV2aMrDZqsSarWOabUZA5tSGoXyg24g==
-X-Received: by 2002:a63:1645:: with SMTP id 5mr3380003pgw.145.1588122132637;
- Tue, 28 Apr 2020 18:02:12 -0700 (PDT)
-Received: from localhost ([203.220.177.17])
- by smtp.gmail.com with ESMTPSA id p189sm16518953pfp.135.2020.04.28.18.02.11
+ h=x-gm-message-state:date:from:to:cc:subject:message-id
+ :mail-followup-to:references:mime-version:content-disposition
+ :in-reply-to:user-agent;
+ bh=vip41qUVMKBqTzEGULB2fq8TW2WA+09ehaEg4M6b7gA=;
+ b=IKYMidZpnjlKH/xE28lMiW04CP1vOojmedXzlZK8T8Lgu4cf3LT/bLHu7VplbRu2SE
+ ZKCqWr33l495wJoSeB5i7Gig1M0jVOd3wRUIt6DC73p+qVM58HI5/F3A+uWtTLRn5Hn4
+ y2V7N3p0TYQmkOhe9Psv23vo7PlTZ2S1fLj4KxnL98ljdOBfeMlc50NUmWvMkf+Ddmta
+ 7wKw4PG6bKbaSU7eRlGNId10RHvesry5+m9omzSmXdGYGGKthUP0tQw1A0o+SW2wse3a
+ +shJdlzex3vNWedc07BTxj3Afy3jdhO/MAULHpmep5EtJYca759wUdhBlBMxRWHrqYiO
+ ai6Q==
+X-Gm-Message-State: AGi0PuYjJwdc2eKpgLYVgdrgO20rO8i1gdL0IKeZjRklzbWA/W3HXHpU
+ OYhMmVaG1d07BNAjWcGGMBEWqg==
+X-Google-Smtp-Source: APiQypIhJhTV5HGwJH/cgQxWAhYS/uXm9mZJikUijUM58zV+qHDsER/fp3y62V6/MA+IjGf4ymv/JQ==
+X-Received: by 2002:ac8:1a2b:: with SMTP id v40mr30279995qtj.170.1588101910910; 
+ Tue, 28 Apr 2020 12:25:10 -0700 (PDT)
+Received: from cs.cmu.edu (tunnel29655-pt.tunnel.tserv13.ash1.ipv6.he.net.
+ [2001:470:7:582::2])
+ by smtp.gmail.com with ESMTPSA id y9sm14261631qkb.41.2020.04.28.12.25.09
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 28 Apr 2020 18:02:12 -0700 (PDT)
-Date: Wed, 29 Apr 2020 10:57:16 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2] powerpc/64: BE option to use ELFv2 ABI for big endian
- kernels
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <20200428112517.1402927-1-npiggin@gmail.com>
- <20200428234046.GP17645@gate.crashing.org>
-In-Reply-To: <20200428234046.GP17645@gate.crashing.org>
+ Tue, 28 Apr 2020 12:25:10 -0700 (PDT)
+Date: Tue, 28 Apr 2020 15:25:07 -0400
+From: Jan Harkes <jaharkes@cs.cmu.edu>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH v3 00/29] Convert files to ReST - part 2
+Message-ID: <20200428192317.7h5d2wiqmy7y473r@cs.cmu.edu>
+Mail-Followup-To: Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ linux-kernel@vger.kernel.org, linux-cachefs@redhat.com,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-xfs@vger.kernel.org, linux-usb@vger.kernel.org
+References: <cover.1588021877.git.mchehab+huawei@kernel.org>
+ <20200428130128.22c4b973@lwn.net>
 MIME-Version: 1.0
-Message-Id: <1588121596.7zej1imag0.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200428130128.22c4b973@lwn.net>
+User-Agent: NeoMutt/20180716
+X-Mailman-Approved-At: Wed, 29 Apr 2020 11:13:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,54 +103,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-xfs@vger.kernel.org,
+ linux-cachefs@redhat.com, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Segher Boessenkool's message of April 29, 2020 9:40 am:
-> Hi!
->=20
-> On Tue, Apr 28, 2020 at 09:25:17PM +1000, Nicholas Piggin wrote:
->> +config BUILD_BIG_ENDIAN_ELF_V2
->> +	bool "Build big-endian kernel using ELFv2 ABI (EXPERIMENTAL)"
->> +	depends on PPC64 && CPU_BIG_ENDIAN && EXPERT
->> +	default n
->> +	select BUILD_ELF_V2
->> +	help
->> +	  This builds the kernel image using the ELFv2 ABI, which has a
->> +	  reduced stack overhead and faster function calls. This does not
->> +	  affect the userspace ABIs.
->> +
->> +	  ELFv2 is the standard ABI for little-endian, but for big-endian
->> +	  this is an experimental option that is less tested (kernel and
->> +	  toolchain). This requires gcc 4.9 or newer and binutils 2.24 or
->> +	  newer.
->=20
-> Is it clear that this is only for 64-bit?  Maybe this text should fit
-> that in somewhere?
+On Tue, Apr 28, 2020 at 03:09:51PM -0400, Jonathan Corbet wrote:
+> So I'm happy to merge this set, but there is one thing that worries me a
+> bit... 
+> 
+> >  fs/coda/Kconfig                               |    2 +-
+> 
+> I'd feel a bit better if I could get an ack or two from filesystem folks
+> before I venture that far out of my own yard...what say you all?
 
-Don't know if it's necessary, the option only appears when 64-bit is
-selected.
+I acked the Coda parts on the first iteration of this patch. I have no
+problem with you merging them.
 
-> It's not obvious to people who do not already know that ELFv2 is just
-> the (nick-)name of a particular ABI, not a new kind of ELF (it is just
-> version 1 ELF in fact), and that ABI is for 64-bit Power only.
-
-I blame toolchain for -mabi=3Delfv2 ! And also some blame on ABI document=20
-which is called ELF V2 ABI rather than ELF ABI V2 which would have been=20
-unambiguous.
-
-Kernel mostly gets it right (in the code I didn't write), and uses these
-
-#if defined(_CALL_ELF) && _CALL_ELF =3D=3D 2
-#define PPC64_ELF_ABI_v2
-#else
-#define PPC64_ELF_ABI_v1
-#endif
-
-I can go through and change all my stuff and config options to ELF_ABI_v2.
-
-Thanks,
-Nick
-
+Jan
