@@ -2,130 +2,82 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDA68C83006
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:51:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81869C83008
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:22:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B952206D6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:51:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EDE4D206F0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:22:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="Ub28NzMS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B952206D6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="dIvGN/2E"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDE4D206F0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BM361x5szDqq0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 22:51:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BMl22Nw5zDq67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 23:22:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=web.de
- (client-ip=212.227.15.14; helo=mout.web.de;
- envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=web.de
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
- header.s=dbaedf251592 header.b=Ub28NzMS; 
- dkim-atps=neutral
-Received: from mout.web.de (mout.web.de [212.227.15.14])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=dIvGN/2E; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BM090PFYzDqC9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 22:48:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1588078121;
- bh=cVRxkewCwLbyGmT+e+SDme+h7qxwhmCuxLtN1DGzOx8=;
- h=X-UI-Sender-Class:To:Cc:Subject:From:Date;
- b=Ub28NzMS2FRTeoViFQirC6cYlXTEBtDYvz7s2g0jiJoeu5lGOaebPeRegnFJ9OSv4
- 1oqggg4pubTcVb/lLkM65jlMtIoCshmDWSUY6G/jzwnvwFEofJJD8reOAkdsSQSIln
- U0gFYACB4EQ74hegSNV1o4k5seVN0pH5H0aES8ME=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([93.131.179.255]) by smtp.web.de (mrweb003
- [213.165.67.108]) with ESMTPSA (Nemesis) id 0M09eO-1jAvRM3dcK-00uK2a; Tue, 28
- Apr 2020 14:48:40 +0200
-To: Raghavendra Rao Ananta <rananta@codeaurora.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] tty: hvc: Fix data abort due to race in hvc_open
-From: Markus Elfring <Markus.Elfring@web.de>
-Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
- 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 FEE=
-Message-ID: <831bf548-a461-6160-f878-ee0f4c5c311b@web.de>
-Date: Tue, 28 Apr 2020 14:48:38 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:MMV+XvpaLIeRZ2eZZYodlSVmMQSZbSkKlQhZbckuLNjsHQNTRXN
- yrzo6yoJrUfsms49+ojGNJ8NPsb948KRzoPpV60VnsUDtuSdJPLk1bePk+O3nQbfVS9W6q3
- Ukz3nyz2HArTli7LWdhA8Kz4uQU5+IbTAeMh5jzAC19h7yCJl9LFh3VEwAxTdUj2QKGrwoL
- EtVZNnELnM41TAr/A8KBA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:NqLrGmxt7C4=:DNfRtqesgPfJMm0w887iik
- 2WcPVD5XtsOqqj+8nLVXocTFRIG/JN5430GowEHjXX9c5lN30OZ4m7YzgpzMrzaSg7wKeB56j
- ShSKF62/srEDPRksjK0V7FAg5lx3YD7br9i06q8vCKzy0R6Hbnd8ZGibq56Y4NqUPSD7+JXq9
- FB5eWGuY4vArc0xAw4/q+OhoEwo/gUbCMoUTarixDGJFsNhNXq8zN8Muj0fmpRvBhgbZmSr1A
- nh6pnuc8jQPClinBH1RhapgGbffw+MZgUbgQNxzd1VE1EqlEXbOfmmnUHct61E3cG7GAD58ci
- Dx1b1f1g898NrvpFUo3MnDaVSeUnwsaKljS+wYf/9z8AJCwMAtQqdTLukicmSLvKQWsfKt/d7
- rcFNWSXio/vZOiS5RLePe7k6aoesDtpnNsS/OPJ8dRl3XZUrMZxgDzbea3qKztS0qHpv72QPt
- MhZJtlcZvdQi2U9QDDxQXHh/K/ZoyJyPkpbDjNHRLG/xvCcfuxwOT7PUlzP1GtK0YrB7DWPlx
- fjnGLpDKzxJwtI47cG42iMMu8THLI6flHi7B+rLHqvR6Nxh7zkcfwJu9XuB+CiJ4qQSsusDTR
- IELtmv/AoAlnT+4S47BX/gRAzz7NGj4HHXliNzZTNcbo9c+X0v/PMVyhK0l2lcpY92HVn5RMy
- KXCTMudALM7Y4LCy/g548LCMoT0a+oZUU8mC7OkIuX3RwfDE1uVcW9pEyu2srNGfaXGMaSkQX
- XmqA6ze+2dMfXdCW4ZQCtVVeZlHqWJiHVglo4twMTn7SVFu0wR+RKQ7VTe8fFm3dvbqX55nK0
- UULXEwYQYfqmGAteiVa1kV6rsO/xk162wYdd/O9S5jE4nuzqEJdQ7OfMO/mBZPaQwXMpXqgbF
- bOTwQoNKk163APhX38R4JVx3gmpXE6j7wAEsqKQwD0kh2XlE8H9blFQbszvWROjKKpr7CNjrt
- 5s8FBKhfAxWwHqE9DCDvMIjC31DZdIJr1JdXYE/j220DnSNkaZ+No/San8gE18X60EpYWyKtt
- SlbMDOfSR+i400kAjN2jEX45k2yq8U3gORt11Uzmh6wlez4ux5xurBbCbO1/GJT+QFxRK6mk/
- BdlQPbbZGwCnlfWZXM982JgKCdcrb+LMLBplQfqTozwMiQ/baJzz1MHn5PBoHCFotYauEg5xc
- DAaoo79aneMvxB4PC0l5WGsxx5SrvELkHMEVn8vXWNfgqPtD/UJYwJXZihWL2a5TBlF42r1tn
- EaPoWRPC/Wg7MoaIH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BMcQ6FFSzDqqY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 23:16:52 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49BMcH316rz9v099;
+ Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=dIvGN/2E; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id u-Z4vwJfTzCx; Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49BMcH1p7Zz9tyb5;
+ Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1588079807; bh=cY2GLqK/++8NNjXMzRS7Sd3wJCUx6gk6wPlGW3FvvFA=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=dIvGN/2EhXoIvhxefomhBI8AgSzhup8n/XbKOOjBmkwWGFEp6bFiYFj5YCXRFAxtu
+ 0u06v/8wBlWar5kuc9nWLzlkT2yLrwnF38S/w0bYyzLoEJEfHGRfDhPyWOvs2ZfXLX
+ upGxVGv9nlM9cAeakU8Pf/DHcf4TFm7YGDwMZy34=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C01B98B82D;
+ Tue, 28 Apr 2020 15:16:48 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id XoZxHab3Yzw2; Tue, 28 Apr 2020 15:16:48 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C1328B82C;
+ Tue, 28 Apr 2020 15:16:48 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 3E044658AD; Tue, 28 Apr 2020 13:16:48 +0000 (UTC)
+Message-Id: <0d2201efe3c7727f2acc718aefd7c5bb22c66c57.1588079622.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1588079622.git.christophe.leroy@c-s.fr>
+References: <cover.1588079622.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v8 2/8] powerpc/vdso: Remove __kernel_datapage_offset and
+ simplify __get_datapage()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ nathanl@linux.ibm.com
+Date: Tue, 28 Apr 2020 13:16:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -137,33 +89,258 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Melnychenko <andrew@daynix.com>, linux-kernel@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>
+Cc: linux-arch@vger.kernel.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
+ luto@kernel.org, tglx@linutronix.de, vincenzo.frascino@arm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> Hence, serialize hvc_open and check if tty->private_data is NULL before
-> proceeding ahead.
+The VDSO datapage and the text pages are always located immediately
+next to each other, so it can be hardcoded without an indirection
+through __kernel_datapage_offset
 
-How do you think about to add the tag =E2=80=9CFixes=E2=80=9D because of a=
-djustments
-for the data synchronisation?
+In order to ease things, move the data page in front like other
+arches, that way there is no need to know the size of the library
+to locate the data page.
 
+Before:
+clock-getres-realtime-coarse:    vdso: 714 nsec/call
+clock-gettime-realtime-coarse:    vdso: 792 nsec/call
+clock-gettime-realtime:    vdso: 1243 nsec/call
 
-=E2=80=A6
-> +++ b/drivers/tty/hvc/hvc_console.c
-=E2=80=A6
-@@ -384,6 +394,8 @@ static int hvc_open(struct tty_struct *tty, struct fil=
-e * filp)
-=E2=80=A6
-> +out:
-> +	mutex_unlock(&hvc_open_mutex);
->  	return rc;
->  }
+After:
+clock-getres-realtime-coarse:    vdso: 699 nsec/call
+clock-gettime-realtime-coarse:    vdso: 784 nsec/call
+clock-gettime-realtime:    vdso: 1231 nsec/call
 
-I suggest to use the label =E2=80=9Cunlock=E2=80=9D instead.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v7:
+- Moved the removal of the tmp param of __get_datapage()
+in a subsequent patch
+- Included the addition of the offset param to __get_datapage()
+in the further preparatory patch
+---
+ arch/powerpc/include/asm/vdso_datapage.h |  8 ++--
+ arch/powerpc/kernel/vdso.c               | 53 ++++--------------------
+ arch/powerpc/kernel/vdso32/datapage.S    |  3 --
+ arch/powerpc/kernel/vdso32/vdso32.lds.S  |  7 +---
+ arch/powerpc/kernel/vdso64/datapage.S    |  3 --
+ arch/powerpc/kernel/vdso64/vdso64.lds.S  |  7 +---
+ 6 files changed, 16 insertions(+), 65 deletions(-)
 
-Regards,
-Markus
+diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
+index b9ef6cf50ea5..11886467dfdf 100644
+--- a/arch/powerpc/include/asm/vdso_datapage.h
++++ b/arch/powerpc/include/asm/vdso_datapage.h
+@@ -118,10 +118,12 @@ extern struct vdso_data *vdso_data;
+ 
+ .macro get_datapage ptr, tmp
+ 	bcl	20, 31, .+4
++999:
+ 	mflr	\ptr
+-	addi	\ptr, \ptr, (__kernel_datapage_offset - (.-4))@l
+-	lwz	\tmp, 0(\ptr)
+-	add	\ptr, \tmp, \ptr
++#if CONFIG_PPC_PAGE_SHIFT > 14
++	addis	\ptr, \ptr, (_vdso_datapage - 999b)@ha
++#endif
++	addi	\ptr, \ptr, (_vdso_datapage - 999b)@l
+ .endm
+ 
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index f38f26e844b6..d33fa22ddbed 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -190,7 +190,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	 * install_special_mapping or the perf counter mmap tracking code
+ 	 * will fail to recognise it as a vDSO (since arch_vma_name fails).
+ 	 */
+-	current->mm->context.vdso_base = vdso_base;
++	current->mm->context.vdso_base = vdso_base + PAGE_SIZE;
+ 
+ 	/*
+ 	 * our vma flags don't have VM_WRITE so by default, the process isn't
+@@ -482,42 +482,6 @@ static __init void vdso_setup_trampolines(struct lib32_elfinfo *v32,
+ 	vdso32_rt_sigtramp = find_function32(v32, "__kernel_sigtramp_rt32");
+ }
+ 
+-static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
+-				       struct lib64_elfinfo *v64)
+-{
+-#ifdef CONFIG_VDSO32
+-	Elf32_Sym *sym32;
+-#endif
+-#ifdef CONFIG_PPC64
+-	Elf64_Sym *sym64;
+-
+-       	sym64 = find_symbol64(v64, "__kernel_datapage_offset");
+-	if (sym64 == NULL) {
+-		printk(KERN_ERR "vDSO64: Can't find symbol "
+-		       "__kernel_datapage_offset !\n");
+-		return -1;
+-	}
+-	*((int *)(vdso64_kbase + sym64->st_value - VDSO64_LBASE)) =
+-		(vdso64_pages << PAGE_SHIFT) -
+-		(sym64->st_value - VDSO64_LBASE);
+-#endif /* CONFIG_PPC64 */
+-
+-#ifdef CONFIG_VDSO32
+-	sym32 = find_symbol32(v32, "__kernel_datapage_offset");
+-	if (sym32 == NULL) {
+-		printk(KERN_ERR "vDSO32: Can't find symbol "
+-		       "__kernel_datapage_offset !\n");
+-		return -1;
+-	}
+-	*((int *)(vdso32_kbase + (sym32->st_value - VDSO32_LBASE))) =
+-		(vdso32_pages << PAGE_SHIFT) -
+-		(sym32->st_value - VDSO32_LBASE);
+-#endif
+-
+-	return 0;
+-}
+-
+-
+ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
+ 				      struct lib64_elfinfo *v64)
+ {
+@@ -618,9 +582,6 @@ static __init int vdso_setup(void)
+ 	if (vdso_do_find_sections(&v32, &v64))
+ 		return -1;
+ 
+-	if (vdso_fixup_datapage(&v32, &v64))
+-		return -1;
+-
+ 	if (vdso_fixup_features(&v32, &v64))
+ 		return -1;
+ 
+@@ -761,26 +722,26 @@ static int __init vdso_init(void)
+ 	vdso32_pagelist = kcalloc(vdso32_pages + 2, sizeof(struct page *),
+ 				  GFP_KERNEL);
+ 	BUG_ON(vdso32_pagelist == NULL);
++	vdso32_pagelist[0] = virt_to_page(vdso_data);
+ 	for (i = 0; i < vdso32_pages; i++) {
+ 		struct page *pg = virt_to_page(vdso32_kbase + i*PAGE_SIZE);
+ 		get_page(pg);
+-		vdso32_pagelist[i] = pg;
++		vdso32_pagelist[i + 1] = pg;
+ 	}
+-	vdso32_pagelist[i++] = virt_to_page(vdso_data);
+-	vdso32_pagelist[i] = NULL;
++	vdso32_pagelist[i + 1] = NULL;
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+ 	vdso64_pagelist = kcalloc(vdso64_pages + 2, sizeof(struct page *),
+ 				  GFP_KERNEL);
+ 	BUG_ON(vdso64_pagelist == NULL);
++	vdso64_pagelist[0] = virt_to_page(vdso_data);
+ 	for (i = 0; i < vdso64_pages; i++) {
+ 		struct page *pg = virt_to_page(vdso64_kbase + i*PAGE_SIZE);
+ 		get_page(pg);
+-		vdso64_pagelist[i] = pg;
++		vdso64_pagelist[i + 1] = pg;
+ 	}
+-	vdso64_pagelist[i++] = virt_to_page(vdso_data);
+-	vdso64_pagelist[i] = NULL;
++	vdso64_pagelist[i + 1] = NULL;
+ #endif /* CONFIG_PPC64 */
+ 
+ 	get_page(virt_to_page(vdso_data));
+diff --git a/arch/powerpc/kernel/vdso32/datapage.S b/arch/powerpc/kernel/vdso32/datapage.S
+index 217bb630f8f9..5513a4f8253e 100644
+--- a/arch/powerpc/kernel/vdso32/datapage.S
++++ b/arch/powerpc/kernel/vdso32/datapage.S
+@@ -13,9 +13,6 @@
+ #include <asm/vdso_datapage.h>
+ 
+ 	.text
+-	.global	__kernel_datapage_offset;
+-__kernel_datapage_offset:
+-	.long	0
+ 
+ /*
+  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
+diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+index 5206c2eb2a1d..6cf729612268 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
++++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+@@ -4,6 +4,7 @@
+  * library
+  */
+ #include <asm/vdso.h>
++#include <asm/page.h>
+ 
+ #ifdef __LITTLE_ENDIAN__
+ OUTPUT_FORMAT("elf32-powerpcle", "elf32-powerpcle", "elf32-powerpcle")
+@@ -15,6 +16,7 @@ ENTRY(_start)
+ 
+ SECTIONS
+ {
++	PROVIDE(_vdso_datapage = . - PAGE_SIZE);
+ 	. = VDSO32_LBASE + SIZEOF_HEADERS;
+ 
+ 	.hash          	: { *(.hash) }			:text
+@@ -138,11 +140,6 @@ VERSION
+ {
+ 	VDSO_VERSION_STRING {
+ 	global:
+-		/*
+-		 * Has to be there for the kernel to find
+-		 */
+-		__kernel_datapage_offset;
+-
+ 		__kernel_get_syscall_map;
+ #ifndef CONFIG_PPC_BOOK3S_601
+ 		__kernel_gettimeofday;
+diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
+index 067247d3efb9..03bb72c440dc 100644
+--- a/arch/powerpc/kernel/vdso64/datapage.S
++++ b/arch/powerpc/kernel/vdso64/datapage.S
+@@ -13,9 +13,6 @@
+ #include <asm/vdso_datapage.h>
+ 
+ 	.text
+-.global	__kernel_datapage_offset;
+-__kernel_datapage_offset:
+-	.long	0
+ 
+ /*
+  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
+diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+index 256fb9720298..f58c7e2e9cbd 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
++++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+@@ -4,6 +4,7 @@
+  * library
+  */
+ #include <asm/vdso.h>
++#include <asm/page.h>
+ 
+ #ifdef __LITTLE_ENDIAN__
+ OUTPUT_FORMAT("elf64-powerpcle", "elf64-powerpcle", "elf64-powerpcle")
+@@ -15,6 +16,7 @@ ENTRY(_start)
+ 
+ SECTIONS
+ {
++	PROVIDE(_vdso_datapage = . - PAGE_SIZE);
+ 	. = VDSO64_LBASE + SIZEOF_HEADERS;
+ 
+ 	.hash		: { *(.hash) }			:text
+@@ -138,11 +140,6 @@ VERSION
+ {
+ 	VDSO_VERSION_STRING {
+ 	global:
+-		/*
+-		 * Has to be there for the kernel to find
+-		 */
+-		__kernel_datapage_offset;
+-
+ 		__kernel_get_syscall_map;
+ 		__kernel_gettimeofday;
+ 		__kernel_clock_gettime;
+-- 
+2.25.0
+
