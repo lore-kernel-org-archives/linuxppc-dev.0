@@ -2,96 +2,89 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FCE1C83002
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 01:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C892DC83002
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 01:52:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16DB4206D6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 01:51:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 69999206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 01:52:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="OTEWS7wo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16DB4206D6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tMY7Nqx0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69999206D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B4P875K9zDqX8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:51:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B4R864jYzDqlD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:52:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
- envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=hjl.tools@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=OTEWS7wo; 
- dkim-atps=neutral
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=tMY7Nqx0; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B4LT2CFnzDq8F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 11:48:49 +1000 (AEST)
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
- by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03S1gijB194611;
- Tue, 28 Apr 2020 01:48:40 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=to : cc : subject :
- from : references : date : in-reply-to : message-id : mime-version :
- content-type; s=corp-2020-01-29;
- bh=fhKLJ893u690XV8dqxeEV2iPiR/BZuKXc4gcS8Su49A=;
- b=OTEWS7wobXNvL6ztC23ac1S7DbFNM8Ej6DW478gagXbdTjjJnHJCWOhhfdfFWkl54JK7
- 3P9OZPCsoespgzCfKYi2tHzrO93QHHg2Sc9OYrGoGKn5c+f3J4VdkmMtYHRNqydAkXqK
- lbDthbiOvV/RN/hofR84NXm5t0RG+dCMHqwGFCNqhRnEakk6Pn/XeOTIeoD5oZIsEZR5
- k/jxbcu1mFo9fmdXhb4vmxPUkVIZN/hP+s0xWj7oMiZ2F6ZzwAEVnDSHyoX7NO7HWcoZ
- nlUURMHRcnUt5bPhkn7c7YIXWVP5dwmBsCRjRLzw08TKcyfks6fNxQZTEP6qIDghanh9 Gg== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
- by aserp2120.oracle.com with ESMTP id 30nucfvyjd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Apr 2020 01:48:40 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
- by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03S1lqxv056035;
- Tue, 28 Apr 2020 01:48:39 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by userp3020.oracle.com with ESMTP id 30mxwxgby7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Apr 2020 01:48:39 +0000
-Received: from abhmp0011.oracle.com (abhmp0011.oracle.com [141.146.116.17])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 03S1mcNR031134;
- Tue, 28 Apr 2020 01:48:38 GMT
-Received: from ca-mkp.ca.oracle.com (/10.159.214.123)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Mon, 27 Apr 2020 18:48:38 -0700
-To: Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: Re: [PATCH] ibmvfc: don't send implicit logouts prior to NPIV login
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-References: <20200427214824.6890-1-tyreld@linux.ibm.com>
-Date: Mon, 27 Apr 2020 21:48:34 -0400
-In-Reply-To: <20200427214824.6890-1-tyreld@linux.ibm.com> (Tyrel Datwyler's
- message of "Mon, 27 Apr 2020 16:48:24 -0500")
-Message-ID: <yq1368o9y8d.fsf@oracle.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1.92 (gnu/linux)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B4Ln2xp8zDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 11:49:04 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id s18so6875033pgl.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 18:49:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=vloW/Le5uTQWcHYDSa4UBFwJd+x/1yJE7+IrW0Uir68=;
+ b=tMY7Nqx0yqobkZe58YFhx1OG8yv4pf1IV9qs+bvamO0ssZ2DNHnvG9NWFBdyJ9zDhq
+ 3NhdKMcuGNglY0QeMweyW3U2rebJhB5xvUW03S8hTpb2axpkIL4LmSie7xv3Bz62ZwM1
+ 2BMffB9lJb7ZswTHs481noJ5CUOIo//yGyCBf6lVS0VEEeSowKcgM/eOn9EdY2nFKUkq
+ OuxDgnm0HxCUwwMHMvGyGKQwpiGmQzpwRM23EMdJHC83mqrQ09+TuyCh8iShhOD/Uad0
+ QE8Zuj8UnFf0Ani8mhF33kVeWYBepv5F7VAhs2ZOz2yfKR8tuVrSbpNaAa/3885mDRi5
+ uMAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=vloW/Le5uTQWcHYDSa4UBFwJd+x/1yJE7+IrW0Uir68=;
+ b=WpiQERMqsW+eUPzxcxueKSKF9XrGyq6yk7u2fiRqUm8vbi6d21zDSQoG9agzDv67Kf
+ A80MfU7EF2D5QBU2/EFC7QZQ5PDwCF8LZiIMSL3JhZ2J3GXEYxkisWbbjyn4odBwWigo
+ Q2NB0Cxtfp78FcMIpVIQXR2yGM4SKeIKPMYMgoB+iIMqltGFWp+xJ9YbuCJGll46rQh7
+ 7Or0aritPb5ratjG6TLRkmxOJKjr7GE80EJU++UXqM+gx/gwLyfkfggdZw4H9kQY1vST
+ MW2d+/GwID0XyctXWbSDW80i8ZjwJ9mjIurBvU+O55VL+NcD73VnYPDVUMHz6uUL824o
+ 4lsw==
+X-Gm-Message-State: AGi0PuafYHAqjNjE5goU8zAp+vCf1nFv1s+IFQ9qi8czWUp2PrYx+P/K
+ Okv6u4zneYUHpISDJyPVIpQ=
+X-Google-Smtp-Source: APiQypIrs/KyEZGo9isIYbNHduvrckXj0XCrJMMoQhBOT/pJSBv9dMK3h8aO2de9vySF1HvRt3aMWg==
+X-Received: by 2002:a63:f958:: with SMTP id q24mr6909810pgk.338.1588038542846; 
+ Mon, 27 Apr 2020 18:49:02 -0700 (PDT)
+Received: from gnu-cfl-2.localdomain (c-69-181-90-243.hsd1.ca.comcast.net.
+ [69.181.90.243])
+ by smtp.gmail.com with ESMTPSA id t188sm11667641pgb.80.2020.04.27.18.49.01
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 27 Apr 2020 18:49:01 -0700 (PDT)
+Received: from gnu-cfl-2.localdomain (localhost [IPv6:::1])
+ by gnu-cfl-2.localdomain (Postfix) with ESMTP id 9E060C034D;
+ Mon, 27 Apr 2020 18:49:00 -0700 (PDT)
+From: "H.J. Lu" <hjl.tools@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] Discard .note.gnu.property sections in generic NOTES
+Date: Mon, 27 Apr 2020 18:49:00 -0700
+Message-Id: <20200428014900.407098-2-hjl.tools@gmail.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200428014900.407098-1-hjl.tools@gmail.com>
+References: <20200428014900.407098-1-hjl.tools@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9604
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
- spamscore=0 bulkscore=0
- suspectscore=0 mlxlogscore=999 phishscore=0 malwarescore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004280012
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9604
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 clxscore=1011
- priorityscore=1501
- mlxlogscore=999 impostorscore=0 suspectscore=0 malwarescore=0
- lowpriorityscore=0 mlxscore=0 spamscore=0 adultscore=0 phishscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004280011
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,26 +96,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- james.bottomley@hansenpartnership.com, Brian King <brking@linux.vnet.ibm.com>,
- brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Yu-cheng Yu <yu-cheng.yu@intel.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Mackerras <paulus@samba.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Borislav Petkov <bp@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+With the command-line option, -mx86-used-note=yes, the x86 assembler
+in binutils 2.32 and above generates a program property note in a note
+section, .note.gnu.property, to encode used x86 ISAs and features.  But
+kernel linker script only contains a single NOTE segment:
 
-Tyrel,
+PHDRS {
+ text PT_LOAD FLAGS(5);
+ data PT_LOAD FLAGS(6);
+ percpu PT_LOAD FLAGS(6);
+ init PT_LOAD FLAGS(7);
+ note PT_NOTE FLAGS(0);
+}
+SECTIONS
+{
+...
+ .notes : AT(ADDR(.notes) - 0xffffffff80000000) { __start_notes = .; KEEP(*(.not
+e.*)) __stop_notes = .; } :text :note
+...
+}
 
-> Commit ed830385a2b1 ("scsi: ibmvfc: Avoid loss of all paths during SVC
-> node reboot") introduced a regression where when the client resets or
-> re-enables its CRQ with the hypervisor there is a chance that if the
-> server side doesn't issue its INIT handshake quick enough the client
-> can issue an Implicit Logout prior to doing an NPIV Login. The server
-> treats this scenario as a protocol violation and closes the CRQ on its
-> end forcing the client through a reset that gets the client host state
-> and next host action out of agreement leading to a BUG assert.
+The NOTE segment generated by kernel linker script is aligned to 4 bytes.
+But .note.gnu.property section must be aligned to 8 bytes on x86-64 and
+we get
 
-Applied to 5.7/scsi-fixes, thanks!
+[hjl@gnu-skx-1 linux]$ readelf -n vmlinux
 
+Displaying notes found in: .notes
+  Owner                Data size Description
+  Xen                  0x00000006 Unknown note type: (0x00000006)
+   description data: 6c 69 6e 75 78 00
+  Xen                  0x00000004 Unknown note type: (0x00000007)
+   description data: 32 2e 36 00
+  xen-3.0              0x00000005 Unknown note type: (0x006e6558)
+   description data: 08 00 00 00 03
+readelf: Warning: note with invalid namesz and/or descsz found at offset 0x50
+readelf: Warning:  type: 0xffffffff, namesize: 0x006e6558, descsize:
+0x80000000, alignment: 8
+[hjl@gnu-skx-1 linux]$
+
+Since note.gnu.property section in kernel image is never used, this patch
+discards .note.gnu.property sections in kernel linker script by adding
+
+/DISCARD/ : {
+  *(.note.gnu.property)
+}
+
+before kernel NOTE segment in generic NOTES.
+
+Signed-off-by: H.J. Lu <hjl.tools@gmail.com>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+---
+ include/asm-generic/vmlinux.lds.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 71e387a5fe90..95cd678428f4 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -833,7 +833,14 @@
+ #define TRACEDATA
+ #endif
+ 
++/*
++ * Discard .note.gnu.property sections which are unused and have
++ * different alignment requirement from kernel note sections.
++ */
+ #define NOTES								\
++	/DISCARD/ : {							\
++		*(.note.gnu.property)					\
++	}								\
+ 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
+ 		__start_notes = .;					\
+ 		KEEP(*(.note.*))					\
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+2.25.4
+
