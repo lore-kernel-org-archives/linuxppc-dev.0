@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 003ADC83004
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:16:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0564C83004
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:18:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 695F2206D6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:16:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 695F2206D6
+	by mail.kernel.org (Postfix) with ESMTPS id 6F316206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:18:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F316206D6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B6J11Hr5zDqj4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:16:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B6LD2B5xzDqht
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:18:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=rqso=6m=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,13 +28,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B6Fk5VJJzDqbY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:14:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B6Ft4xnkzDqbC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:14:58 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
  automatically loaded when CONFIG_I2C_POWERMAC=y is set
-Date: Tue, 28 Apr 2020 03:14:47 +0000
+Date: Tue, 28 Apr 2020 03:14:56 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -44,13 +44,13 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: VERIFIED
+X-Bugzilla-Status: CLOSED
 X-Bugzilla-Resolution: CODE_FIX
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: bug_status
-Message-ID: <bug-199471-206035-SXmMpFAVRT@https.bugzilla.kernel.org/>
+Message-ID: <bug-199471-206035-mNGM1JF3hG@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
 References: <bug-199471-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -79,10 +79,7 @@ Michael Ellerman (michael@ellerman.id.au) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|RESOLVED                    |VERIFIED
-
---- Comment #26 from Michael Ellerman (michael@ellerman.id.au) ---
-OK thanks all.
+             Status|VERIFIED                    |CLOSED
 
 --=20
 You are receiving this mail because:
