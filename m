@@ -2,85 +2,103 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3BDBC83002
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 02:55:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C857C83007
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 02:57:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5AFAB206D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 02:55:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JyuqkA+m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5AFAB206D9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B80662073C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 02:57:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B80662073C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B5q21gKpzDqpr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:55:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B5sL6V09zDr15
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 12:57:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=jniethe5@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sbobroff@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=JyuqkA+m; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B4dw1s8WzDqTQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 12:02:12 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id k18so7721217pll.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 19:02:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=w9+RugxpgeNAIGB1cFnhuKwhTigTcAXeuTyuKeGVHO8=;
- b=JyuqkA+mv9uHsXSiTbZ/GXnw4YJhQHo4433uJ/BIcjguyu88RaZ8OIqscJpzvfefrW
- YoEtxb8+bzIBS8KUaPtAKfHnyzwdgPJ93hxLZ6a5r+mx9ALm2PxxDzpUB98HspxUZu44
- DjAQKwpygFFtx63xDDNNAYUNURv6sZfNuXwZYcUHkP0DhtKFyd/d4uFiQzhvcNwZ3tsH
- 75MLPfe21jzWbIre4FehSjZktuQIc3LQQRgY3VRSOTq5JGz/unoisxVVf9B4ihYzFb/b
- flLkJQVyAmVbHBvSCRNnJTj9GP3ZK15CLn+29lfiK81SMGtbAYOOZvdz4yBtCvem/k8J
- +/jA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=w9+RugxpgeNAIGB1cFnhuKwhTigTcAXeuTyuKeGVHO8=;
- b=QDVxW271KhgEAqAeXHwAufP6J+b6iwexfzjlPs80zkp4cwjr5Vg4VdXgIZWF1EvusR
- /P0ra2nJ9d/Uj48vaQB+bd5hE7tQp1/dfRg6ooYWCGl6ke8Lfh2C4Cy54Txb5NC18usY
- sRoqgr1JZ6c7+hZm8lKNgMSuivFaK4F5cwMnMnmahIUK9C0z1agMLUFm3frrT/yxkFaH
- C0Jz4fYzMS98XGQWYppO6nDJkZhwiUylfq6lXuFnKbqHfRlrjM3/JqYrstg86rSURYnF
- MFNnB9ge23T+0KL/svRyfQqEwa7X/Zh8RSqJPDIwUAOXfRXIwGv1pYduap6RgJ5irKO4
- D++A==
-X-Gm-Message-State: AGi0PubHNqJPMFZxe154TwcMl0mblYz159k8CRy7G4R+fBU3pd+YSugz
- j7XZ4NOHBSsSCa8OIpi+TOpWvxAX/B4=
-X-Google-Smtp-Source: APiQypJXoT9622liJnhzJTyTgMXiOn6Is5mv4C1wVB3PURsbUYReiJdUpx0yfLC4vgJylQUJ84if7w==
-X-Received: by 2002:a17:90a:7482:: with SMTP id
- p2mr1959707pjk.151.1588039329776; 
- Mon, 27 Apr 2020 19:02:09 -0700 (PDT)
-Received: from localhost.localdomain
- (180-150-65-4.b49641.syd.nbn.aussiebb.net. [180.150.65.4])
- by smtp.gmail.com with ESMTPSA id o68sm13666642pfb.206.2020.04.27.19.02.04
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 27 Apr 2020 19:02:09 -0700 (PDT)
-From: Jordan Niethe <jniethe5@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 28/28] powerpc sstep: Add support for prefixed fixed-point
- arithmetic
-Date: Tue, 28 Apr 2020 11:58:14 +1000
-Message-Id: <20200428015814.15380-29-jniethe5@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200428015814.15380-1-jniethe5@gmail.com>
-References: <20200428015814.15380-1-jniethe5@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B5CB3KnTzDqWM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 12:27:33 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03S232Ib152071
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 22:27:29 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30mguvfwvu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 22:27:29 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03S238kX152323
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 22:27:29 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30mguvfwux-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 27 Apr 2020 22:27:29 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03S2K7ZB014031;
+ Tue, 28 Apr 2020 02:27:26 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma03ams.nl.ibm.com with ESMTP id 30mcu5n2s1-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 28 Apr 2020 02:27:26 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 03S2QFPE656098
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 28 Apr 2020 02:26:15 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E5A5BA4055;
+ Tue, 28 Apr 2020 02:27:23 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 92AB1A4040;
+ Tue, 28 Apr 2020 02:27:23 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 28 Apr 2020 02:27:23 +0000 (GMT)
+Received: from osmium (unknown [9.206.152.45])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 706FFA01AE;
+ Tue, 28 Apr 2020 12:27:17 +1000 (AEST)
+Date: Tue, 28 Apr 2020 12:27:20 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH v3 1/3] powerpc/rtas: Export rtas_error_rc
+Message-ID: <20200428022719.GA28815@osmium>
+References: <cover.1587704308.git.sbobroff@linux.ibm.com>
+ <e9c245df4a0b1cd1f68171c81e0d9e64a13ab0e9.1587704308.git.sbobroff@linux.ibm.com>
+ <874kt8lve8.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
+Content-Disposition: inline
+In-Reply-To: <874kt8lve8.fsf@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-27_17:2020-04-27,
+ 2020-04-27 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ lowpriorityscore=0 clxscore=1015 mlxlogscore=999 mlxscore=0 suspectscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 phishscore=0 spamscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004280014
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,57 +110,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au, npiggin@gmail.com, bala24@linux.ibm.com,
- Jordan Niethe <jniethe5@gmail.com>, dja@axtens.net
+Cc: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds emulation support for the following prefixed Fixed-Point
-Arithmetic instructions:
-  * Prefixed Add Immediate (paddi)
 
-Reviewed-by: Balamuruhan S <bala24@linux.ibm.com>
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
----
-v3: Since we moved the prefixed loads/stores into the load/store switch
-statement it no longer makes sense to have paddi in there, so move it
-out.
----
- arch/powerpc/lib/sstep.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index d3ae0a36975f..ea419f65285b 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1337,6 +1337,26 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 
- 	switch (opcode) {
- #ifdef __powerpc64__
-+	case 1:
-+		prefix_r = word & (1ul << 20);
-+		ra = (suffix >> 16) & 0x1f;
-+		rd = (suffix >> 21) & 0x1f;
-+		op->reg = rd;
-+		op->val = regs->gpr[rd];
-+		suffixopcode = suffix >> 26;
-+		prefixtype = (word >> 24) & 0x3;
-+		switch (prefixtype) {
-+		case 2:
-+			if (prefix_r && ra)
-+				return 0;
-+			switch (suffixopcode) {
-+			case 14:	/* paddi */
-+				op->type = COMPUTE | PREFIXED;
-+				op->val = mlsd_8lsd_ea(word, suffix, regs);
-+				goto compute_done;
-+			}
-+		}
-+		break;
- 	case 2:		/* tdi */
- 		if (rd & trap_compare(regs->gpr[ra], (short) word))
- 			goto trap;
--- 
-2.17.1
+On Fri, Apr 24, 2020 at 11:07:43AM -0500, Nathan Lynch wrote:
+> Sam Bobroff <sbobroff@linux.ibm.com> writes:
+> > Export rtas_error_rc() so that it can be used by other users of
+> > rtas_call() (which is already exported).
+>=20
+> This will do the right thing for your ibm,configure-pe use case in patch
+> 2, but the -900x =3D> errno translations in rtas_error_rc() appear
+> tailored for the indicator- and sensor-related calls that currently use
+> it. From my reading of PAPR+, the meaning of a -900x RTAS status word
+> depends on the call. For example, -9002 commonly means "not authorized",
+> which we would typically translate to -EPERM, but rtas_error_rc() would
+> translate it to -ENODEV.
+>=20
+> Also the semantics of -9001 as a return value seem to vary a bit.
+>=20
+> So I don't think rtas_error_rc() should be advertised as a generically
+> useful facility in its current form.
+>=20
+> (I have had some thoughts about how firmware/hypervisor call status can
+> be translated to meaningful Linux error values without tedious switch
+> statements, which I'm happy to expand on if anyone is interested, but I
+> don't want to hijack your submission for that discussion.)
+
+Ah, interesting.
+
+I'll do another version as you suggest.
+
+Cheers,
+Sam.
+
+--AhhlLboLdkugWU4S
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAl6nlH8ACgkQMX8w6AQl
+/iKtowf8DYrHxzCoUjW3zXcK8sx/k0cDfWpW8TnxXcRXoYuT/qezxf4AXqpxIQrH
+Mar/ro2cVsKYryC6xwp6FhdLYQ+zIKEy2/Rr3eIIfh+WcmYQswAtl8tXlWWxAQ8Z
+yYJDoA26lgUnkW8uk2z9W1fKyLelyKi7Vl8LQGYYQfm01MJ/xwVNQ5wsjlCwCqUc
+ODkHWp+XjGDab4m1apB/V7hXYQUUAKgffhYr7ni8waJ0DsCKX3d+oPfDZEP32pjz
+NRtOMhTRAq6XePNgx9ACpPXcAMmcYHU4ckD4sdDq7t0ms6fd/MWGbaTNQGTn7O/u
+eWy8QXeq41Jz+NDUO0CPc5pgK1LMDw==
+=B5t4
+-----END PGP SIGNATURE-----
+
+--AhhlLboLdkugWU4S--
 
