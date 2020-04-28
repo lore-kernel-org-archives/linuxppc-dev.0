@@ -2,56 +2,82 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05E64C83004
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F7BEC83004
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:36:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C4FE206B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:34:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C4FE206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=hisilicon.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1D7C3206B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:36:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="VhkNNjnj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D7C3206B8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B9M94kMczDqwB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 15:34:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B9PV1FdSzDqxW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 15:36:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=hisilicon.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ smtp.mailfrom=mg.codeaurora.org (client-ip=104.130.122.27;
+ helo=mail27.static.mailgun.info;
+ envelope-from=bounce+ee6c0f.be9e4a-linuxppc-dev=lists.ozlabs.org@mg.codeaurora.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=codeaurora.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org
+ header.a=rsa-sha256 header.s=smtp header.b=VhkNNjnj; 
+ dkim-atps=neutral
+Received: from mail27.static.mailgun.info (mail27.static.mailgun.info
+ [104.130.122.27])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B51c1gCPzDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 12:19:09 +1000 (AEST)
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 76E57BEF60CBAFF6AC79;
- Tue, 28 Apr 2020 10:19:02 +0800 (CST)
-Received: from [10.65.58.147] (10.65.58.147) by DGGEMS408-HUB.china.huawei.com
- (10.3.19.208) with Microsoft SMTP Server id 14.3.487.0;
- Tue, 28 Apr 2020 10:19:00 +0800
-Subject: Re: [PATCH v4] pci: Make return value of pcie_capability_read*()
- consistent
-To: Bjorn Helgaas <helgaas@kernel.org>, Saheed Bolarinwa
- <refactormyself@gmail.com>
-References: <20200427181304.GA214573@google.com>
-From: Yicong Yang <yangyicong@hisilicon.com>
-Message-ID: <4cc16e59-d346-5523-5072-eebe77d06a08@hisilicon.com>
-Date: Tue, 28 Apr 2020 10:19:08 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101
- Thunderbird/45.7.1
+ by lists.ozlabs.org (Postfix) with UTF8SMTPS id 49B6Vv6zqjzDqfL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:26:15 +1000 (AEST)
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org;
+ q=dns/txt; 
+ s=smtp; t=1588044375; h=Content-Transfer-Encoding: MIME-Version:
+ Message-Id: Date: Subject: Cc: To: From: Sender;
+ bh=uBTJbgxt0fS4b6DB2Cfh8WGOYVEJj4RGd0cXafUjCe4=;
+ b=VhkNNjnjNo+aQQpYY8PrhjYMLQtVywXdN9bI7+QYCeapQf+qWpy0xBKG1HokiGzD5tT1vea5
+ 9WeT7cYKNrqQzvENMAmSCCW2s96ROfkjy1bMIEIRNcAbFwN/OlJJ1q2+ri9VQ86oHye+tE1f
+ uf1UTmqmiJK2w95ISI4IT7jvg+w=
+X-Mailgun-Sending-Ip: 104.130.122.27
+X-Mailgun-Sid: WyI5ZmEyMiIsICJsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZyIsICJiZTllNGEiXQ==
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
+ by mxa.mailgun.org with ESMTP id 5ea7a252.7f72debfa500-smtp-out-n03;
+ Tue, 28 Apr 2020 03:26:10 -0000 (UTC)
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+ id 7788BC432C2; Tue, 28 Apr 2020 03:26:10 +0000 (UTC)
+Received: from rananta-linux.qualcomm.com (i-global254.qualcomm.com
+ [199.106.103.254])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+ (No client certificate requested) (Authenticated sender: rananta)
+ by smtp.codeaurora.org (Postfix) with ESMTPSA id 84D46C433D2;
+ Tue, 28 Apr 2020 03:26:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 84D46C433D2
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
+ dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
+ spf=none smtp.mailfrom=rananta@codeaurora.org
+From: Raghavendra Rao Ananta <rananta@codeaurora.org>
+To: gregkh@linuxfoundation.org,
+	jslaby@suse.com,
+	andrew@daynix.com
+Subject: [PATCH] tty: hvc: Fix data abort due to race in hvc_open
+Date: Mon, 27 Apr 2020 20:26:01 -0700
+Message-Id: <20200428032601.22127-1-rananta@codeaurora.org>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-In-Reply-To: <20200427181304.GA214573@google.com>
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.65.58.147]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Tue, 28 Apr 2020 15:31:28 +1000
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 28 Apr 2020 15:31:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,135 +89,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-pci@vger.kernel.org,
- skhan@linuxfoundation.org, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, bjorn@helgaas.com, linuxppc-dev@lists.ozlabs.org
+Cc: rananta@codeaurora.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2020/4/28 2:13, Bjorn Helgaas wrote:
->
-> I'm starting to think we're approaching this backwards.  I searched
-> for PCIBIOS_FUNC_NOT_SUPPORTED, PCIBIOS_BAD_VENDOR_ID, and the other
-> error values.  Almost every use is a *return* in a config accessor.
-> There are very, very few *tests* for these values.
+Potentially, hvc_open() can be called in parallel when two tasks calls
+open() on /dev/hvcX. In such a scenario, if the hp->ops->notifier_add()
+callback in the function fails, where it sets the tty->driver_data to
+NULL, the parallel hvc_open() can see this NULL and cause a memory abort.
+Hence, serialize hvc_open and check if tty->private_data is NULL before
+proceeding ahead.
 
-If we have certain reasons to reserve PCI_BIOS* error to identify PCI errors
-in PCI drivers, maybe redefine the PCI_BIOS* to generic error codes can solve
-the issues, and no need to call pcibios_err_to_errno() to do the conversion.
-Few changes may be made to current codes. One possible patch may
-look like below. Otherwise, maybe convert all PCI_BIOS* errors to generic error
-codes is a better idea.
+The issue can be easily reproduced by launching two tasks simultaneously
+that does nothing but open() and close() on /dev/hvcX.
+For example:
+$ ./simple_open_close /dev/hvc0 & ./simple_open_close /dev/hvc0 &
 
-Not sure it's the best way or not. Just FYI.
+Signed-off-by: Raghavendra Rao Ananta <rananta@codeaurora.org>
+---
+ drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 83ce1cd..843987c 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -675,14 +675,18 @@ static inline bool pci_dev_msi_enabled(struct pci_dev *pci_dev) { return false;
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 436cc51c92c3..ebe26fe5ac09 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -75,6 +75,8 @@ static LIST_HEAD(hvc_structs);
+  */
+ static DEFINE_MUTEX(hvc_structs_mutex);
  
- /* Error values that may be returned by PCI functions */
- #define PCIBIOS_SUCCESSFUL		0x00
--#define PCIBIOS_FUNC_NOT_SUPPORTED	0x81
--#define PCIBIOS_BAD_VENDOR_ID		0x83
--#define PCIBIOS_DEVICE_NOT_FOUND	0x86
--#define PCIBIOS_BAD_REGISTER_NUMBER	0x87
--#define PCIBIOS_SET_FAILED		0x88
--#define PCIBIOS_BUFFER_TOO_SMALL	0x89
--
--/* Translate above to generic errno for passing back through non-PCI code */
-+#define PCIBIOS_FUNC_NOT_SUPPORTED	-ENOENT
-+#define PCIBIOS_BAD_VENDOR_ID		-ENOTTY
-+#define PCIBIOS_DEVICE_NOT_FOUND	-ENODEV
-+#define PCIBIOS_BAD_REGISTER_NUMBER	-EFAULT
-+#define PCIBIOS_SET_FAILED		-EIO
-+#define PCIBIOS_BUFFER_TOO_SMALL	-ENOSPC
-+
-+/**
-+ * Translate above to generic errno for passing back through non-PCI code
-+ *
-+ * Deprecated. Use the PCIBIOS_* directly without a translation.
-+ */
- static inline int pcibios_err_to_errno(int err)
++/* Mutex to serialize hvc_open */
++static DEFINE_MUTEX(hvc_open_mutex);
+ /*
+  * This value is used to assign a tty->index value to a hvc_struct based
+  * upon order of exposure via hvc_probe(), when we can not match it to
+@@ -346,16 +348,24 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
+  */
+ static int hvc_open(struct tty_struct *tty, struct file * filp)
  {
- 	if (err <= PCIBIOS_SUCCESSFUL)
-@@ -690,17 +694,12 @@ static inline int pcibios_err_to_errno(int err)
+-	struct hvc_struct *hp = tty->driver_data;
++	struct hvc_struct *hp;
+ 	unsigned long flags;
+ 	int rc = 0;
  
- 	switch (err) {
- 	case PCIBIOS_FUNC_NOT_SUPPORTED:
--		return -ENOENT;
- 	case PCIBIOS_BAD_VENDOR_ID:
--		return -ENOTTY;
- 	case PCIBIOS_DEVICE_NOT_FOUND:
--		return -ENODEV;
- 	case PCIBIOS_BAD_REGISTER_NUMBER:
--		return -EFAULT;
- 	case PCIBIOS_SET_FAILED:
--		return -EIO;
- 	case PCIBIOS_BUFFER_TOO_SMALL:
--		return -ENOSPC;
-+		return err;
- 	}
++	mutex_lock(&hvc_open_mutex);
++
++	hp = tty->driver_data;
++	if (!hp) {
++		rc = -EIO;
++		goto out;
++	}
++
+ 	spin_lock_irqsave(&hp->port.lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->port.count++ > 0) {
+ 		spin_unlock_irqrestore(&hp->port.lock, flags);
+ 		hvc_kick();
+-		return 0;
++		goto out;
+ 	} /* else count == 0 */
+ 	spin_unlock_irqrestore(&hp->port.lock, flags);
  
- 	return -ERANGE;
-
-
->
-> For example, the only tests for PCIBIOS_FUNC_NOT_SUPPORTED are in
-> xen_pcibios_err_to_errno() and pcibios_err_to_errno(), i.e., we're
-> just converting that value to -ENOENT or the Xen-specific thing.
->
-> So I think the best approach might be to remove the PCIBIOS_* error
-> values completely and replace them with the corresponding values from
-> pcibios_err_to_errno().  For example, a part of the patch would look
-> like this:
->
-> diff --git a/arch/mips/pci/ops-emma2rh.c b/arch/mips/pci/ops-emma2rh.c
-> index 65f47344536c..d4d9c902c147 100644
-> --- a/arch/mips/pci/ops-emma2rh.c
-> +++ b/arch/mips/pci/ops-emma2rh.c
-> @@ -100,7 +100,7 @@ static int pci_config_read(struct pci_bus *bus, unsigned int devfn, int where,
->  		break;
->  	default:
->  		emma2rh_out32(EMMA2RH_PCI_IWIN0_CTR, backup_win0);
-> -		return PCIBIOS_FUNC_NOT_SUPPORTED;
-> +		return -ENOENT;
->  	}
->  
->  	emma2rh_out32(EMMA2RH_PCI_IWIN0_CTR, backup_win0);
-> @@ -149,7 +149,7 @@ static int pci_config_write(struct pci_bus *bus, unsigned int devfn, int where,
->  		break;
->  	default:
->  		emma2rh_out32(EMMA2RH_PCI_IWIN0_CTR, backup_win0);
-> -		return PCIBIOS_FUNC_NOT_SUPPORTED;
-> +		return -ENOENT;
->  	}
->  	*(volatile u32 *)(base + (PCI_FUNC(devfn) << 8) +
->  			  (where & 0xfffffffc)) = data;
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 83ce1cdf5676..f95637a8d391 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -675,7 +675,6 @@ static inline bool pci_dev_msi_enabled(struct pci_dev *pci_dev) { return false;
->  
->  /* Error values that may be returned by PCI functions */
->  #define PCIBIOS_SUCCESSFUL		0x00
-> -#define PCIBIOS_FUNC_NOT_SUPPORTED	0x81
->  #define PCIBIOS_BAD_VENDOR_ID		0x83
->  #define PCIBIOS_DEVICE_NOT_FOUND	0x86
->  #define PCIBIOS_BAD_REGISTER_NUMBER	0x87
-> @@ -689,8 +688,6 @@ static inline int pcibios_err_to_errno(int err)
->  		return err; /* Assume already errno */
->  
->  	switch (err) {
-> -	case PCIBIOS_FUNC_NOT_SUPPORTED:
-> -		return -ENOENT;
->  	case PCIBIOS_BAD_VENDOR_ID:
->  		return -ENOTTY;
->  	case PCIBIOS_DEVICE_NOT_FOUND:
-> .
->
-
+@@ -384,6 +394,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	/* Force wakeup of the polling thread */
+ 	hvc_kick();
+ 
++out:
++	mutex_unlock(&hvc_open_mutex);
+ 	return rc;
+ }
+ 
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
