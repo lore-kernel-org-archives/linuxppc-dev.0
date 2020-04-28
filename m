@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75509C83000
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FBC5C83000
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:29:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27392206E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:27:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D280C206D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:29:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Fl7+m4bb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27392206E2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="BBzGvZ8k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D280C206D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BMrg0bLDzDqsl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 23:27:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BMvQ4G5MzDqpf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 23:29:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -30,54 +30,54 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
- header.s=mail header.b=Fl7+m4bb; dkim-atps=neutral
+ header.s=mail header.b=BBzGvZ8k; dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BMcQ69rHzDqnn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 23:16:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BMcQ6H1DzDqr6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 23:16:54 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49BMcG41Jtz9tybJ;
- Tue, 28 Apr 2020 15:16:46 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49BMcK4Mfpz9v0D7;
+ Tue, 28 Apr 2020 15:16:49 +0200 (CEST)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Fl7+m4bb; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=BBzGvZ8k; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uIz63dX7-ku9; Tue, 28 Apr 2020 15:16:46 +0200 (CEST)
+ with ESMTP id X5Vvr4pVF-Uy; Tue, 28 Apr 2020 15:16:49 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49BMcG2nQLz9tyb5;
- Tue, 28 Apr 2020 15:16:46 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49BMcK3FSkz9v0D5;
+ Tue, 28 Apr 2020 15:16:49 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1588079806; bh=sfGFxmiLk0piqyU/qQus80qwW8Tg3vU9asN8yDMG0JY=;
+ t=1588079809; bh=WKIJIRaf8oXkf9VgP9fXf8zvNImGk/BdmYQq2UVHkpg=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Fl7+m4bbU165gi0s1j0/TPjeQIyhi3APMnncj4+C1KBSUr+OXdWZU6JpCMOfUWvQY
- dXOe4Wk2KN8njzGH+0tgxZ/N4yyo/L1WBDFyfzQm9qLjud/ssAwiUHdj/Vt8EIYfQu
- Z4qNsStArGnOAce4a2o28Y4bpfhDLGVLVIU/2AwU=
+ b=BBzGvZ8k5MkcBDY21UwgDiYY3heRye8kpjdyWbxYMe0uMznI9X58y0+5UD01ucImS
+ 5kNhWHi4oz6Wc6jOZyqRJOsN2zKjBeH+eZ9mOJA0+6MFBvlNqM/XBR3KiFSiKSf3vL
+ 4N6vdo22QwgExfcx4hb6g9bGVGd1flBMusfoblKM=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E131F8B82D;
- Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DEFD58B814;
+ Tue, 28 Apr 2020 15:16:50 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id eVZeeN4QO31o; Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+ with ESMTP id 3yNGiFGztxKf; Tue, 28 Apr 2020 15:16:50 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 70CEB8B82E;
- Tue, 28 Apr 2020 15:16:47 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F5158B82D;
+ Tue, 28 Apr 2020 15:16:50 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 37A0E658AD; Tue, 28 Apr 2020 13:16:47 +0000 (UTC)
-Message-Id: <e13d95312e0b9792556b19b4bb8955cc1ff19fc7.1588079622.git.christophe.leroy@c-s.fr>
+ id 577D0658AD; Tue, 28 Apr 2020 13:16:50 +0000 (UTC)
+Message-Id: <d2751eb1f030d22607f63ddd4cd510e6d5a529c7.1588079622.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1588079622.git.christophe.leroy@c-s.fr>
 References: <cover.1588079622.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 1/8] powerpc/vdso64: Switch from __get_datapage() to
- get_datapage inline macro
+Subject: [PATCH v8 4/8] powerpc/processor: Move cpu_relax() into
+ asm/vdso/processor.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  nathanl@linux.ibm.com
-Date: Tue, 28 Apr 2020 13:16:47 +0000 (UTC)
+Date: Tue, 28 Apr 2020 13:16:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,155 +96,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On the same way as already done on PPC32, drop __get_datapage()
-function and use get_datapage inline macro instead.
+cpu_relax() need to be in asm/vdso/processor.h to be used by
+the C VDSO generic library.
 
-See commit ec0895f08f99 ("powerpc/vdso32: inline __get_datapage()")
+Move it there.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/vdso64/cacheflush.S   |  9 ++++----
- arch/powerpc/kernel/vdso64/datapage.S     | 28 +++--------------------
- arch/powerpc/kernel/vdso64/gettimeofday.S |  8 +++----
- 3 files changed, 11 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/processor.h      | 10 ++--------
+ arch/powerpc/include/asm/vdso/processor.h | 23 +++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 8 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/vdso/processor.h
 
-diff --git a/arch/powerpc/kernel/vdso64/cacheflush.S b/arch/powerpc/kernel/vdso64/cacheflush.S
-index 526f5ba2593e..cab14324242b 100644
---- a/arch/powerpc/kernel/vdso64/cacheflush.S
-+++ b/arch/powerpc/kernel/vdso64/cacheflush.S
-@@ -8,6 +8,7 @@
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/vdso.h>
-+#include <asm/vdso_datapage.h>
- #include <asm/asm-offsets.h>
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bfa336fbcfeb..8390503c44a2 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -6,6 +6,8 @@
+  * Copyright (C) 2001 PPC 64 Team, IBM Corp
+  */
  
- 	.text
-@@ -24,14 +25,12 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
-   .cfi_startproc
- 	mflr	r12
-   .cfi_register lr,r12
--	mr	r11,r3
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r10, r0
- 	mtlr	r12
--	mr	r10,r3
++#include <vdso/processor.h>
++
+ #include <asm/reg.h>
  
- 	lwz	r7,CFG_DCACHE_BLOCKSZ(r10)
- 	addi	r5,r7,-1
--	andc	r6,r11,r5		/* round low to line bdy */
-+	andc	r6,r3,r5		/* round low to line bdy */
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5		/* ensure we get enough */
- 	lwz	r9,CFG_DCACHE_LOGBLOCKSZ(r10)
-@@ -48,7 +47,7 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
+ #ifdef CONFIG_VSX
+@@ -63,14 +65,6 @@ extern int _chrp_type;
  
- 	lwz	r7,CFG_ICACHE_BLOCKSZ(r10)
- 	addi	r5,r7,-1
--	andc	r6,r11,r5		/* round low to line bdy */
-+	andc	r6,r3,r5		/* round low to line bdy */
- 	subf	r8,r6,r4		/* compute length */
- 	add	r8,r8,r5
- 	lwz	r9,CFG_ICACHE_LOGBLOCKSZ(r10)
-diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index dc84f5ae3802..067247d3efb9 100644
---- a/arch/powerpc/kernel/vdso64/datapage.S
-+++ b/arch/powerpc/kernel/vdso64/datapage.S
-@@ -10,35 +10,13 @@
- #include <asm/asm-offsets.h>
- #include <asm/unistd.h>
- #include <asm/vdso.h>
-+#include <asm/vdso_datapage.h>
+ #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
  
- 	.text
- .global	__kernel_datapage_offset;
- __kernel_datapage_offset:
- 	.long	0
- 
--V_FUNCTION_BEGIN(__get_datapage)
--  .cfi_startproc
--	/* We don't want that exposed or overridable as we want other objects
--	 * to be able to bl directly to here
--	 */
--	.protected __get_datapage
--	.hidden __get_datapage
+-/* Macros for adjusting thread priority (hardware multi-threading) */
+-#define HMT_very_low()   asm volatile("or 31,31,31   # very low priority")
+-#define HMT_low()	 asm volatile("or 1,1,1	     # low priority")
+-#define HMT_medium_low() asm volatile("or 6,6,6      # medium low priority")
+-#define HMT_medium()	 asm volatile("or 2,2,2	     # medium priority")
+-#define HMT_medium_high() asm volatile("or 5,5,5      # medium high priority")
+-#define HMT_high()	 asm volatile("or 3,3,3	     # high priority")
 -
--	mflr	r0
--  .cfi_register lr,r0
--
--	bcl	20,31,data_page_branch
--data_page_branch:
--	mflr	r3
--	mtlr	r0
--	addi	r3, r3, __kernel_datapage_offset-data_page_branch
--	lwz	r0,0(r3)
--  .cfi_restore lr
--	add	r3,r0,r3
--	blr
--  .cfi_endproc
--V_FUNCTION_END(__get_datapage)
--
- /*
-  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
-  *
-@@ -53,7 +31,7 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_map)
- 	mflr	r12
-   .cfi_register lr,r12
- 	mr	r4,r3
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	mtlr	r12
- 	addi	r3,r3,CFG_SYSCALL_MAP64
- 	cmpldi	cr0,r4,0
-@@ -75,7 +53,7 @@ V_FUNCTION_BEGIN(__kernel_get_tbfreq)
-   .cfi_startproc
- 	mflr	r12
-   .cfi_register lr,r12
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	ld	r3,CFG_TB_TICKS_PER_SEC(r3)
- 	mtlr	r12
- 	crclr	cr0*4+so
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index 1c9a04703250..e54c4ce4d356 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -26,7 +26,7 @@ V_FUNCTION_BEGIN(__kernel_gettimeofday)
+ #ifdef __KERNEL__
  
- 	mr	r11,r3			/* r11 holds tv */
- 	mr	r10,r4			/* r10 holds tz */
--	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+	get_datapage	r3, r0
- 	cmpldi	r11,0			/* check if tv is NULL */
- 	beq	2f
- 	lis	r7,1000000@ha		/* load up USEC_PER_SEC */
-@@ -71,7 +71,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	mflr	r12			/* r12 saves lr */
-   .cfi_register lr,r12
- 	mr	r11,r4			/* r11 saves tp */
--	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
-+	get_datapage	r3, r0
- 	lis	r7,NSEC_PER_SEC@h	/* want nanoseconds */
- 	ori	r7,r7,NSEC_PER_SEC@l
- 	beq	cr5,70f
-@@ -188,7 +188,7 @@ V_FUNCTION_BEGIN(__kernel_clock_getres)
- 
- 	mflr	r12
-   .cfi_register lr,r12
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 	lwz	r5, CLOCK_HRTIMER_RES(r3)
- 	mtlr	r12
- 	li	r3,0
-@@ -221,7 +221,7 @@ V_FUNCTION_BEGIN(__kernel_time)
-   .cfi_register lr,r12
- 
- 	mr	r11,r3			/* r11 holds t */
--	bl	V_LOCAL_FUNC(__get_datapage)
-+	get_datapage	r3, r0
- 
- 	ld	r4,STAMP_XTIME_SEC(r3)
- 
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/include/asm/vdso/processor.h b/arch/powerpc/include/asm/vdso/processor.h
+new file mode 100644
+index 000000000000..39b9beace9ca
+--- /dev/null
++++ b/arch/powerpc/include/asm/vdso/processor.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef __ASM_VDSO_PROCESSOR_H
++#define __ASM_VDSO_PROCESSOR_H
++
++#ifndef __ASSEMBLY__
++
++/* Macros for adjusting thread priority (hardware multi-threading) */
++#define HMT_very_low()		asm volatile("or 31, 31, 31	# very low priority")
++#define HMT_low()		asm volatile("or 1, 1, 1	# low priority")
++#define HMT_medium_low()	asm volatile("or 6, 6, 6	# medium low priority")
++#define HMT_medium()		asm volatile("or 2, 2, 2	# medium priority")
++#define HMT_medium_high()	asm volatile("or 5, 5, 5	# medium high priority")
++#define HMT_high()		asm volatile("or 3, 3, 3	# high priority")
++
++#ifdef CONFIG_PPC64
++#define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
++#else
++#define cpu_relax()	barrier()
++#endif
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __ASM_VDSO_PROCESSOR_H */
 -- 
 2.25.0
 
