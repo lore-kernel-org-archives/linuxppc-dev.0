@@ -2,82 +2,84 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F7BEC83004
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:36:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2809BC83004
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:38:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D7C3206B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:36:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 31044206B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 05:38:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="VhkNNjnj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D7C3206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="p1+bx80w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31044206B8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B9PV1FdSzDqxW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 15:36:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mg.codeaurora.org (client-ip=104.130.122.27;
- helo=mail27.static.mailgun.info;
- envelope-from=bounce+ee6c0f.be9e4a-linuxppc-dev=lists.ozlabs.org@mg.codeaurora.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=codeaurora.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B9RT4hhKzDqxc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 15:38:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org
- header.a=rsa-sha256 header.s=smtp header.b=VhkNNjnj; 
- dkim-atps=neutral
-Received: from mail27.static.mailgun.info (mail27.static.mailgun.info
- [104.130.122.27])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.a=rsa-sha256
+ header.s=mail header.b=p1+bx80w; dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with UTF8SMTPS id 49B6Vv6zqjzDqfL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:26:15 +1000 (AEST)
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org;
- q=dns/txt; 
- s=smtp; t=1588044375; h=Content-Transfer-Encoding: MIME-Version:
- Message-Id: Date: Subject: Cc: To: From: Sender;
- bh=uBTJbgxt0fS4b6DB2Cfh8WGOYVEJj4RGd0cXafUjCe4=;
- b=VhkNNjnjNo+aQQpYY8PrhjYMLQtVywXdN9bI7+QYCeapQf+qWpy0xBKG1HokiGzD5tT1vea5
- 9WeT7cYKNrqQzvENMAmSCCW2s96ROfkjy1bMIEIRNcAbFwN/OlJJ1q2+ri9VQ86oHye+tE1f
- uf1UTmqmiJK2w95ISI4IT7jvg+w=
-X-Mailgun-Sending-Ip: 104.130.122.27
-X-Mailgun-Sid: WyI5ZmEyMiIsICJsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZyIsICJiZTllNGEiXQ==
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
- by mxa.mailgun.org with ESMTP id 5ea7a252.7f72debfa500-smtp-out-n03;
- Tue, 28 Apr 2020 03:26:10 -0000 (UTC)
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
- id 7788BC432C2; Tue, 28 Apr 2020 03:26:10 +0000 (UTC)
-Received: from rananta-linux.qualcomm.com (i-global254.qualcomm.com
- [199.106.103.254])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested) (Authenticated sender: rananta)
- by smtp.codeaurora.org (Postfix) with ESMTPSA id 84D46C433D2;
- Tue, 28 Apr 2020 03:26:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 84D46C433D2
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
- dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org;
- spf=none smtp.mailfrom=rananta@codeaurora.org
-From: Raghavendra Rao Ananta <rananta@codeaurora.org>
-To: gregkh@linuxfoundation.org,
-	jslaby@suse.com,
-	andrew@daynix.com
-Subject: [PATCH] tty: hvc: Fix data abort due to race in hvc_open
-Date: Mon, 27 Apr 2020 20:26:01 -0700
-Message-Id: <20200428032601.22127-1-rananta@codeaurora.org>
-X-Mailer: git-send-email 2.23.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B9Hp6TNfzDqwg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 15:31:50 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49B9Hj705jz9txnl;
+ Tue, 28 Apr 2020 07:31:45 +0200 (CEST)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=p1+bx80w; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id ksRWT-6LYTV5; Tue, 28 Apr 2020 07:31:45 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49B9Hj5L7cz9txmQ;
+ Tue, 28 Apr 2020 07:31:45 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1588051905; bh=L/I6FeppBWpytvPm4oLmvPFKe0s8OVyCqzSRbHYYSwo=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=p1+bx80wcRg8QTc6C/G0PB6UfZDDwQGE+E9ltF+Gz7R7CZqDcbQz3HdXV5QLHk1Zw
+ cVwbahXd2lQqVPNIpwx1ag1juZEY/QbIZwAB0i113g+NZ7ygK9wze7riYxxrc6AzWI
+ KOSGOsxnVKoIClMQny4CDgGezzrgtXeynjxMT2RE=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A189D8B7C5;
+ Tue, 28 Apr 2020 07:31:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id hZ80UDZ0lPgq; Tue, 28 Apr 2020 07:31:46 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D6D078B75F;
+ Tue, 28 Apr 2020 07:31:45 +0200 (CEST)
+Subject: Re: [PATCH 1/2] powerpc: Discard .rela* sections if
+ CONFIG_RELOCATABLE is undefined
+To: "H.J. Lu" <hjl.tools@gmail.com>, linux-kernel@vger.kernel.org
+References: <20200428014900.407098-1-hjl.tools@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <55518443-1ab4-1961-beb5-43e9e41e3227@c-s.fr>
+Date: Tue, 28 Apr 2020 07:31:38 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
+In-Reply-To: <20200428014900.407098-1-hjl.tools@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 28 Apr 2020 15:31:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,78 +91,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rananta@codeaurora.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Yu-cheng Yu <yu-cheng.yu@intel.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Mackerras <paulus@samba.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Borislav Petkov <bp@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Potentially, hvc_open() can be called in parallel when two tasks calls
-open() on /dev/hvcX. In such a scenario, if the hp->ops->notifier_add()
-callback in the function fails, where it sets the tty->driver_data to
-NULL, the parallel hvc_open() can see this NULL and cause a memory abort.
-Hence, serialize hvc_open and check if tty->private_data is NULL before
-proceeding ahead.
+Hi,
 
-The issue can be easily reproduced by launching two tasks simultaneously
-that does nothing but open() and close() on /dev/hvcX.
-For example:
-$ ./simple_open_close /dev/hvc0 & ./simple_open_close /dev/hvc0 &
+Le 28/04/2020 à 03:48, H.J. Lu a écrit :
+> arch/powerpc/kernel/vmlinux.lds.S has
+> 
+>          DISCARDS
+>          /DISCARD/ : {
+>                  *(*.EMB.apuinfo)
+>                  *(.glink .iplt .plt .rela* .comment)
+>                  *(.gnu.version*)
+>                  *(.gnu.attributes)
+>                  *(.eh_frame)
+>          }
+> 
+> Since .rela* sections are needed when CONFIG_RELOCATABLE is defined,
+> change to discard .rela* sections if CONFIG_RELOCATABLE is undefined.
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@codeaurora.org>
----
- drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+Your explanation and especially the subject are unclear.
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 436cc51c92c3..ebe26fe5ac09 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -75,6 +75,8 @@ static LIST_HEAD(hvc_structs);
-  */
- static DEFINE_MUTEX(hvc_structs_mutex);
- 
-+/* Mutex to serialize hvc_open */
-+static DEFINE_MUTEX(hvc_open_mutex);
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-  * upon order of exposure via hvc_probe(), when we can not match it to
-@@ -346,16 +348,24 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
-  */
- static int hvc_open(struct tty_struct *tty, struct file * filp)
- {
--	struct hvc_struct *hp = tty->driver_data;
-+	struct hvc_struct *hp;
- 	unsigned long flags;
- 	int rc = 0;
- 
-+	mutex_lock(&hvc_open_mutex);
-+
-+	hp = tty->driver_data;
-+	if (!hp) {
-+		rc = -EIO;
-+		goto out;
-+	}
-+
- 	spin_lock_irqsave(&hp->port.lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->port.count++ > 0) {
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
- 		hvc_kick();
--		return 0;
-+		goto out;
- 	} /* else count == 0 */
- 	spin_unlock_irqrestore(&hp->port.lock, flags);
- 
-@@ -384,6 +394,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	/* Force wakeup of the polling thread */
- 	hvc_kick();
- 
-+out:
-+	mutex_unlock(&hvc_open_mutex);
- 	return rc;
- }
- 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+ From the subject you understand that you are adding a discard of the 
+.rela* sections if CONFIG_RELOCATABLE is undefined.
+
+But when reading the patch, you see that it is the contrary: you are 
+removing a discard of the .rela* sections if CONFIG_RELOCATABLE is defined.
+
+
+So I think the subject could instead be:
+
+	Only discard .rela* sections when CONFIG_RELOCATABLE is undefined
+
+Or maybe better:
+
+	Keep .rela* sections when CONFIG_RELOCATABLE is defined
+
+And the explanation could be:
+
+	Since .rela* sections are needed when CONFIG_RELOCATABLE
+	is defined, don't discard .rela* sections if
+	CONFIG_RELOCATABLE is defined.
+
+> 
+> Signed-off-by: H.J. Lu <hjl.tools@gmail.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+> ---
+>   arch/powerpc/kernel/vmlinux.lds.S | 5 ++++-
+>   1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+> index 31a0f201fb6f..4ba07734a210 100644
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -366,9 +366,12 @@ SECTIONS
+>   	DISCARDS
+>   	/DISCARD/ : {
+>   		*(*.EMB.apuinfo)
+> -		*(.glink .iplt .plt .rela* .comment)
+> +		*(.glink .iplt .plt .comment)
+>   		*(.gnu.version*)
+>   		*(.gnu.attributes)
+>   		*(.eh_frame)
+> +#ifndef CONFIG_RELOCATABLE
+> +		*(.rela*)
+> +#endif
+>   	}
+>   }
+> 
+
+Christophe
