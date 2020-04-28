@@ -2,99 +2,90 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBC4AC83000
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 21:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3EF8C83000
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 22:32:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FC9320730
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 21:13:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="XrsK8xeo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FC9320730
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4FED0206F0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 22:32:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FED0206F0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BZBS5lTlzDqwF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 07:13:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=XrsK8xeo; 
- dkim-atps=neutral
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Bbx73kndzDqxB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:32:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=julietk@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BYsy5VXVzDqSW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 06:59:17 +1000 (AEST)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03SKrEfT127581;
- Tue, 28 Apr 2020 20:56:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=corp-2020-01-29;
- bh=yafpg0ZcOknBY/UGErpDFCg6X+mq+m/vIF/cVy7REbg=;
- b=XrsK8xeolwpyFzMVP4FN7eFg6N8v21y3lvojPKKtjc9TelN+4v4u0St8L2wCPmMjAlsr
- 3eoJJRP6TEGjNciIrzjM/W8OUs29A+/hNp+5bT1uayN9rUw4C5EFkCnvMaihEusch6OQ
- 0aA8ajw6C08TKnOrVfo3qtyh0fDeoOvwCvvC6FBeDuCDFCXVcnnO7Cct1qx3AGzyTw+0
- 9qMJPo5U7VOPBWqH11AW5kL1jAPNIn4NgYHSqObGclrhOXLW3tNkRyzjwHpydwY1APjC
- Ghe/P2meZhwVKqHDrkS4iScKnvP53SSMXM2ZeqrOV6bOBjUmkS/95BzEt+WFfl608pBF wA== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
- by userp2130.oracle.com with ESMTP id 30p01nrvqj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Apr 2020 20:56:31 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
- by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 03SKpujh172035;
- Tue, 28 Apr 2020 20:56:30 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by userp3020.oracle.com with ESMTP id 30mxx0rr6p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Apr 2020 20:56:30 +0000
-Received: from abhmp0015.oracle.com (abhmp0015.oracle.com [141.146.116.21])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 03SKuQY2015084;
- Tue, 28 Apr 2020 20:56:26 GMT
-Received: from monkey.oracle.com (/71.63.128.209)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Tue, 28 Apr 2020 13:56:26 -0700
-From: Mike Kravetz <mike.kravetz@oracle.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: [PATCH v4 2/4] hugetlbfs: move hugepagesz= parsing to arch
- independent code
-Date: Tue, 28 Apr 2020 13:56:12 -0700
-Message-Id: <20200428205614.246260-3-mike.kravetz@oracle.com>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200428205614.246260-1-mike.kravetz@oracle.com>
-References: <20200428205614.246260-1-mike.kravetz@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BbtZ2h8szDqSN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 08:29:57 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03SLYP5o079475; Tue, 28 Apr 2020 18:29:54 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30pu89bf2r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 28 Apr 2020 18:29:54 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03SMPPHu013332;
+ Tue, 28 Apr 2020 22:29:53 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma02wdc.us.ibm.com with ESMTP id 30mcu6fq5k-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 28 Apr 2020 22:29:53 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03SMTrL549611156
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 28 Apr 2020 22:29:53 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 13E1E124053;
+ Tue, 28 Apr 2020 22:29:53 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 15FB1124052;
+ Tue, 28 Apr 2020 22:29:50 +0000 (GMT)
+Received: from Juliets-MacBook-Pro.local (unknown [9.85.139.36])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Tue, 28 Apr 2020 22:29:49 +0000 (GMT)
+Subject: Re: [PATCH net] ibmvnic: Fall back to 16 H_SEND_SUB_CRQ_INDIRECT
+ entries with old FW
+To: Thomas Falcon <tlfalcon@linux.ibm.com>, netdev@vger.kernel.org
+References: <20200427173343.16626-1-julietk@linux.vnet.ibm.com>
+ <8617ba73-8a05-51c4-e52b-164687cecf07@linux.ibm.com>
+From: Juliet Kim <julietk@linux.vnet.ibm.com>
+Message-ID: <4b58a9ab-99f1-2a58-9d15-00f700a4fbbd@linux.vnet.ibm.com>
+Date: Tue, 28 Apr 2020 17:29:47 -0500
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:68.0)
+ Gecko/20100101 Thunderbird/68.6.0
 MIME-Version: 1.0
+In-Reply-To: <8617ba73-8a05-51c4-e52b-164687cecf07@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9605
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0
- spamscore=0 bulkscore=0
- suspectscore=0 mlxlogscore=999 phishscore=0 malwarescore=0 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004280163
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9605
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
- spamscore=0 clxscore=1011
- phishscore=0 mlxlogscore=999 adultscore=0 priorityscore=1501 mlxscore=0
- suspectscore=0 malwarescore=0 lowpriorityscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004280163
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-28_14:2020-04-28,
+ 2020-04-28 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0
+ mlxlogscore=999 lowpriorityscore=0 impostorscore=0 malwarescore=0
+ phishscore=0 clxscore=1015 adultscore=0 spamscore=0 mlxscore=0
+ priorityscore=1501 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2004280166
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,270 +97,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
- Mina Almasry <almasrymina@google.com>, Jonathan Corbet <corbet@lwn.net>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Longpeng <longpeng2@huawei.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Nitesh Narayan Lal <nitesh@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- "David S . Miller" <davem@davemloft.net>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that architectures provide arch_hugetlb_valid_size(), parsing
-of "hugepagesz=" can be done in architecture independent code.
-Create a single routine to handle hugepagesz= parsing and remove
-all arch specific routines.  We can also remove the interface
-hugetlb_bad_size() as this is no longer used outside arch independent
-code.
 
-This also provides consistent behavior of hugetlbfs command line
-options.  The hugepagesz= option should only be specified once for
-a specific size, but some architectures allow multiple instances.
-This appears to be more of an oversight when code was added by some
-architectures to set up ALL huge pages sizes.
+On 4/28/20 10:35 AM, Thomas Falcon wrote:
+> On 4/27/20 12:33 PM, Juliet Kim wrote:
+>> The maximum entries for H_SEND_SUB_CRQ_INDIRECT has increased on
+>> some platforms from 16 to 128. If Live Partition Mobility is used
+>> to migrate a running OS image from a newer source platform to an
+>> older target platform, then H_SEND_SUB_CRQ_INDIRECT will fail with
+>> H_PARAMETER if 128 entries are queued.
+>>
+>> Fix this by falling back to 16 entries if H_PARAMETER is returned
+>> from the hcall().
+>
+> Thanks for the submission, but I am having a hard time believing that this is what is happening since the driver does not support sending multiple frames per hypervisor call at this time. Even if it were the case, this approach would omit frame data needed by the VF, so the second attempt may still fail. Are there system logs available that show the driver is attempting to send transmissions with greater than 16 descriptors?
+>
+> Thanks,
+>
+> Tom
+>
+>
+I am trying to confirm.
 
-Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
-Acked-by: Mina Almasry <almasrymina@google.com>
-Reviewed-by: Peter Xu <peterx@redhat.com>
-Acked-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>  [s390]
-Acked-by: Will Deacon <will@kernel.org>
----
- arch/arm64/mm/hugetlbpage.c   | 15 ---------------
- arch/powerpc/mm/hugetlbpage.c | 15 ---------------
- arch/riscv/mm/hugetlbpage.c   | 16 ----------------
- arch/s390/mm/hugetlbpage.c    | 18 ------------------
- arch/sparc/mm/init_64.c       | 22 ----------------------
- arch/x86/mm/hugetlbpage.c     | 16 ----------------
- include/linux/hugetlb.h       |  1 -
- mm/hugetlb.c                  | 23 +++++++++++++++++------
- 8 files changed, 17 insertions(+), 109 deletions(-)
+Juliet
 
-diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
-index 069b96ee2aec..f706b821aba6 100644
---- a/arch/arm64/mm/hugetlbpage.c
-+++ b/arch/arm64/mm/hugetlbpage.c
-@@ -476,18 +476,3 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
- 
- 	return false;
- }
--
--static __init int setup_hugepagesz(char *opt)
--{
--	unsigned long ps = memparse(opt, &opt);
--
--	if (arch_hugetlb_valid_size(ps)) {
--		add_huge_page_size(ps);
--		return 1;
--	}
--
--	hugetlb_bad_size();
--	pr_err("hugepagesz: Unsupported page size %lu K\n", ps >> 10);
--	return 0;
--}
--__setup("hugepagesz=", setup_hugepagesz);
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index de54d2a37830..2c3fa0a7787b 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -589,21 +589,6 @@ static int __init add_huge_page_size(unsigned long long size)
- 	return 0;
- }
- 
--static int __init hugepage_setup_sz(char *str)
--{
--	unsigned long long size;
--
--	size = memparse(str, &str);
--
--	if (add_huge_page_size(size) != 0) {
--		hugetlb_bad_size();
--		pr_err("Invalid huge page size specified(%llu)\n", size);
--	}
--
--	return 1;
--}
--__setup("hugepagesz=", hugepage_setup_sz);
--
- static int __init hugetlbpage_init(void)
- {
- 	bool configured = false;
-diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
-index da1f516bc451..4e5d7e9f0eef 100644
---- a/arch/riscv/mm/hugetlbpage.c
-+++ b/arch/riscv/mm/hugetlbpage.c
-@@ -22,22 +22,6 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
- 		return false;
- }
- 
--static __init int setup_hugepagesz(char *opt)
--{
--	unsigned long ps = memparse(opt, &opt);
--
--	if (arch_hugetlb_valid_size(ps)) {
--		hugetlb_add_hstate(ilog2(ps) - PAGE_SHIFT);
--		return 1;
--	}
--
--	hugetlb_bad_size();
--	pr_err("hugepagesz: Unsupported page size %lu M\n", ps >> 20);
--	return 0;
--
--}
--__setup("hugepagesz=", setup_hugepagesz);
--
- #ifdef CONFIG_CONTIG_ALLOC
- static __init int gigantic_pages_init(void)
- {
-diff --git a/arch/s390/mm/hugetlbpage.c b/arch/s390/mm/hugetlbpage.c
-index ac25b207624c..242dfc0d462d 100644
---- a/arch/s390/mm/hugetlbpage.c
-+++ b/arch/s390/mm/hugetlbpage.c
-@@ -261,24 +261,6 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
- 		return false;
- }
- 
--static __init int setup_hugepagesz(char *opt)
--{
--	unsigned long size;
--	char *string = opt;
--
--	size = memparse(opt, &opt);
--	if (arch_hugetlb_valid_size(size)) {
--		hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
--	} else {
--		hugetlb_bad_size();
--		pr_err("hugepagesz= specifies an unsupported page size %s\n",
--			string);
--		return 0;
--	}
--	return 1;
--}
--__setup("hugepagesz=", setup_hugepagesz);
--
- static unsigned long hugetlb_get_unmapped_area_bottomup(struct file *file,
- 		unsigned long addr, unsigned long len,
- 		unsigned long pgoff, unsigned long flags)
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index 2bfe8e22b706..4618f96fd30f 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -397,28 +397,6 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
- 
- 	return true;
- }
--
--static int __init setup_hugepagesz(char *string)
--{
--	unsigned long long hugepage_size;
--	int rc = 0;
--
--	hugepage_size = memparse(string, &string);
--
--	if (!arch_hugetlb_valid_size((unsigned long)hugepage_size)) {
--		hugetlb_bad_size();
--		pr_err("hugepagesz=%llu not supported by MMU.\n",
--			hugepage_size);
--		goto out;
--	}
--
--	add_huge_page_size(hugepage_size);
--	rc = 1;
--
--out:
--	return rc;
--}
--__setup("hugepagesz=", setup_hugepagesz);
- #endif	/* CONFIG_HUGETLB_PAGE */
- 
- void update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t *ptep)
-diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
-index 1c4372bfe782..937d640a89e3 100644
---- a/arch/x86/mm/hugetlbpage.c
-+++ b/arch/x86/mm/hugetlbpage.c
-@@ -191,22 +191,6 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
- 		return false;
- }
- 
--static __init int setup_hugepagesz(char *opt)
--{
--	unsigned long ps = memparse(opt, &opt);
--
--	if (arch_hugetlb_valid_size(ps)) {
--		hugetlb_add_hstate(ilog2(ps) - PAGE_SHIFT);
--	} else {
--		hugetlb_bad_size();
--		printk(KERN_ERR "hugepagesz: Unsupported page size %lu M\n",
--			ps >> 20);
--		return 0;
--	}
--	return 1;
--}
--__setup("hugepagesz=", setup_hugepagesz);
--
- #ifdef CONFIG_CONTIG_ALLOC
- static __init int gigantic_pages_init(void)
- {
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 2eb15f5ab01e..0c13706054ef 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -519,7 +519,6 @@ int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
- int __init __alloc_bootmem_huge_page(struct hstate *h);
- int __init alloc_bootmem_huge_page(struct hstate *h);
- 
--void __init hugetlb_bad_size(void);
- void __init hugetlb_add_hstate(unsigned order);
- bool __init arch_hugetlb_valid_size(unsigned long size);
- struct hstate *size_to_hstate(unsigned long size);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 63ca4241ea87..6a8454bc2917 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -3262,12 +3262,6 @@ bool __init __attribute((weak)) arch_hugetlb_valid_size(unsigned long size)
- 	return size == HPAGE_SIZE;
- }
- 
--/* Should be called on processing a hugepagesz=... option */
--void __init hugetlb_bad_size(void)
--{
--	parsed_valid_hugepagesz = false;
--}
--
- void __init hugetlb_add_hstate(unsigned int order)
- {
- 	struct hstate *h;
-@@ -3337,6 +3331,23 @@ static int __init hugetlb_nrpages_setup(char *s)
- }
- __setup("hugepages=", hugetlb_nrpages_setup);
- 
-+static int __init hugepagesz_setup(char *s)
-+{
-+	unsigned long size;
-+
-+	size = (unsigned long)memparse(s, NULL);
-+
-+	if (!arch_hugetlb_valid_size(size)) {
-+		parsed_valid_hugepagesz = false;
-+		pr_err("HugeTLB: unsupported hugepagesz %s\n", s);
-+		return 0;
-+	}
-+
-+	hugetlb_add_hstate(ilog2(size) - PAGE_SHIFT);
-+	return 1;
-+}
-+__setup("hugepagesz=", hugepagesz_setup);
-+
- static int __init default_hugepagesz_setup(char *s)
- {
- 	unsigned long size;
--- 
-2.25.4
-
+>>
+>> Signed-off-by: Juliet Kim <julietk@linux.vnet.ibm.com>
+>> ---
+>>   drivers/net/ethernet/ibm/ibmvnic.c | 11 +++++++++++
+>>   1 file changed, 11 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+>> index 4bd33245bad6..b66c2f26a427 100644
+>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>> @@ -1656,6 +1656,17 @@ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+>>           lpar_rc = send_subcrq_indirect(adapter, handle_array[queue_num],
+>>                              (u64)tx_buff->indir_dma,
+>>                              (u64)num_entries);
+>> +
+>> +        /* Old firmware accepts max 16 num_entries */
+>> +        if (lpar_rc == H_PARAMETER && num_entries > 16) {
+>> +            tx_crq.v1.n_crq_elem = 16;
+>> +            tx_buff->num_entries = 16;
+>> +            lpar_rc = send_subcrq_indirect(adapter,
+>> +                               handle_array[queue_num],
+>> +                               (u64)tx_buff->indir_dma,
+>> +                               16);
+>> +        }
+>> +
+>>           dma_unmap_single(dev, tx_buff->indir_dma,
+>>                    sizeof(tx_buff->indir_arr), DMA_TO_DEVICE);
+>>       } else {
