@@ -2,50 +2,65 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEDEEC83000
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 19:06:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9DE0C83000
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 20:15:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AA16206A1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 19:06:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AA16206A1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id 5551E206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 20:15:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5551E206D6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BWMM6g8xzDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 05:06:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BXvm08HrzDqsl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 06:15:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
- receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BWGl6fsPzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 05:02:06 +1000 (AEST)
-Received: from lwn.net (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id 9121944A;
- Tue, 28 Apr 2020 19:01:29 +0000 (UTC)
-Date: Tue, 28 Apr 2020 13:01:28 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Subject: Re: [PATCH v3 00/29] Convert files to ReST - part 2
-Message-ID: <20200428130128.22c4b973@lwn.net>
-In-Reply-To: <cover.1588021877.git.mchehab+huawei@kernel.org>
-References: <cover.1588021877.git.mchehab+huawei@kernel.org>
-Organization: LWN.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BXrj2wcLzDqr6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 06:13:08 +1000 (AEST)
+Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
+ (mreue106 [212.227.15.145]) with ESMTPA (Nemesis) id
+ 1MDPqi-1jMP2o3Hzq-00ATWb; Tue, 28 Apr 2020 22:12:36 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: [PATCH] fixup! signal: factor copy_siginfo_to_external32 from
+ copy_siginfo_to_user32
+Date: Tue, 28 Apr 2020 21:56:26 +0200
+Message-Id: <20200428195645.1365019-1-arnd@arndb.de>
+X-Mailer: git-send-email 2.26.0
+In-Reply-To: <20200428074827.GA19846@lst.de>
+References: <20200428074827.GA19846@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8bit
+X-Provags-ID: V03:K1:BfAvDKI9SSwe2+766/MLLDP63p+G4VcCD7Yw0qKaGd8OUqaUT93
+ dwH8xVn4vZsTRFeogGQBryDkMAtZhL/IwptYefT+c2aXPjcEz5uTnU2EG4jQFqC7tXJu6aI
+ zCBIqYyBnd7fw9eQBUeGBrjuXIv5c7SEEMf1FJ2sh6kYQdnfTdA0fGrL+AZjCrwKtkdpY6R
+ 90AVtj8sxaI5oar4YkYug==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:1tDfrCfOWcg=:ovEhwjJ6ujR0mMOB5D8EOH
+ B5zD5kobkoVigp1N2g4eMDKMxOSadhJbGhdEw0CQVDJ1vkyvIv6W+pSeWcNE66pBl4VBGQ/c/
+ bS74pjPam9DQBuT9Y5m2o7J92y8bl98lMWvWSG3m6vh3sE0G5BsPXMP4yPxDL8Qsgxfn2FZQX
+ 6VZORuKsnB4wTAt5gaJTP7b0LoUuz4jt+GQhpbRiSyMqyxCPVtstT8DZ1oL8leQ6gzgO3hHli
+ 2WNSw3PeHQT2e8gQamUauF1zfzvEq1ofp4di5MHNGvDGdQJWJJHk4XR+5JYvcI6N70d2HFt2/
+ 8bgn3YwxpkfetX3aJdVazMk9L6u4q+QbyEW2c27f9EFLLduOeAsAB7aikO//xxpt+7AUAPZhc
+ sDjYu7kiv6OtK006xBC3w3qdcyoYJVCvI2Ce3FscGMbXbs/JKKeZU7iRGvpcNZe/+EuDcz77n
+ /FAI6PG5Bhosqa1rIuEvqljEvQSxMU13CxliZJjllvYWIyaSmUMyfksAxzmxkqaFCmxWA6TuU
+ PKZ4dgBLueswpTEfvx61h9RbqlJgedfW9UQkUrKzDSy5b5V5D0f3FYeE9LaRJ1miBotCfHkys
+ /krTikRNKotidsbOYcjjwzxVclZZaY1h0Ji+ypppPVvqHaxqOwXKQo1r1Nr3EIbr4iOuQgr/W
+ HYpHhTAHcVkyfQ6e2CSlaLXFjSuNiaPcDSd/RV1Wc2yFXrLdoIvFk2SXacgY3mr6Iu4mB4Glt
+ tdEgJv/7xdpAsIUqVwsx42CGS71Mr5aVOmQsOuBw1/BDPITZyd2WFgQNVJsIOHtZ82TlWg2SG
+ ec3W+ApX2f478booY6auUhabsLFhMrGLs2P0XdFUENiaJqXPTk=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,57 +72,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- codalist@coda.cs.cmu.edu, linux-xfs@vger.kernel.org, linux-cachefs@redhat.com,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Jeremy Kerr <jk@ozlabs.org>,
+ linux-kernel@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Apr 2020 23:16:52 +0200
-Mauro Carvalho Chehab <mchehab+huawei@kernel.org> wrote:
+I think I found a way to improve the x32 handling:
 
-> This is the second part of a series I wrote sometime ago where I manually
-> convert lots of files to be properly parsed by Sphinx as ReST files.
-> 
-> As it touches on lot of stuff, this series is based on today's linux-next, 
-> at tag next-20190617.
-> 
-> The first version of this series had 57 patches. The first part with 28 patches
-> were already merged. Right now, there are still ~76  patches pending applying
-> (including this series), and that's because I opted to do ~1 patch per converted
->  directory.
-> 
-> That sounds too much to be send on a single round. So, I'm opting to split
-> it on 3 parts for the conversion, plus a final patch adding orphaned books
-> to existing ones. 
-> 
-> Those patches should probably be good to be merged either by subsystem
-> maintainers or via the docs tree.
+This is a simplification over Christoph's "[PATCH 2/7] signal: factor
+copy_siginfo_to_external32 from copy_siginfo_to_user32", reducing the
+x32 specifics in the common code to a single #ifdef/#endif check, in
+order to keep it more readable for everyone else.
 
-So I'm happy to merge this set, but there is one thing that worries me a
-bit... 
+Christoph, if you like it, please fold into your patch.
 
->  fs/cachefiles/Kconfig                         |    4 +-
->  fs/coda/Kconfig                               |    2 +-
->  fs/configfs/inode.c                           |    2 +-
->  fs/configfs/item.c                            |    2 +-
->  fs/fscache/Kconfig                            |    8 +-
->  fs/fscache/cache.c                            |    8 +-
->  fs/fscache/cookie.c                           |    2 +-
->  fs/fscache/object.c                           |    4 +-
->  fs/fscache/operation.c                        |    2 +-
->  fs/locks.c                                    |    2 +-
->  include/linux/configfs.h                      |    2 +-
->  include/linux/fs_context.h                    |    2 +-
->  include/linux/fscache-cache.h                 |    4 +-
->  include/linux/fscache.h                       |   42 +-
->  include/linux/lsm_hooks.h                     |    2 +-
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Jeremy Kerr <jk@ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: "Eric W . Biederman" <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-fsdevel@vger.kernel.org
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/x86/include/asm/compat.h | 10 ++++++++++
+ arch/x86/kernel/signal.c      | 23 +++++++++++++++++++++++
+ kernel/signal.c               | 15 ++-------------
+ 3 files changed, 35 insertions(+), 13 deletions(-)
 
-I'd feel a bit better if I could get an ack or two from filesystem folks
-before I venture that far out of my own yard...what say you all?
+diff --git a/arch/x86/include/asm/compat.h b/arch/x86/include/asm/compat.h
+index 52e9f3480f69..9341ea3da757 100644
+--- a/arch/x86/include/asm/compat.h
++++ b/arch/x86/include/asm/compat.h
+@@ -214,7 +214,17 @@ static inline bool in_compat_syscall(void)
+ #endif
+ 
+ struct compat_siginfo;
++#ifdef CONFIG_X86_X32_ABI
+ int __copy_siginfo_to_user32(struct compat_siginfo __user *to,
+ 		const kernel_siginfo_t *from, bool x32_ABI);
++#else
++int copy_siginfo_to_user32(struct compat_siginfo __user *to,
++		const kernel_siginfo_t *from);
++static inline int __copy_siginfo_to_user32(struct compat_siginfo __user *to,
++		const kernel_siginfo_t *from, bool x32_ABI)
++{
++	return copy_siginfo_to_user32(to, from);
++}
++#endif
+ 
+ #endif /* _ASM_X86_COMPAT_H */
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 83b74fb38c8f..0e166571d28b 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -511,6 +511,29 @@ static int __setup_rt_frame(int sig, struct ksignal *ksig,
+ }
+ #endif /* CONFIG_X86_32 */
+ 
++#ifdef CONFIG_X86_X32_ABI
++int copy_siginfo_to_user32(struct compat_siginfo __user *to,
++			   const struct kernel_siginfo *from)
++{
++	return __copy_siginfo_to_user32(to, from, in_x32_syscall());
++}
++
++int __copy_siginfo_to_user32(struct compat_siginfo __user *to,
++			     const struct kernel_siginfo *from, bool x32_ABI)
++{
++	struct compat_siginfo new;
++
++	copy_siginfo_to_external32(&new, from);
++	if (x32_ABI && from->si_signo == SIGCHLD) {
++		new._sifields._sigchld_x32._utime = from->si_utime;
++		new._sifields._sigchld_x32._stime = from->si_stime;
++	}
++	if (copy_to_user(to, &new, sizeof(struct compat_siginfo)))
++		return -EFAULT;
++	return 0;
++}
++#endif
++
+ static int x32_setup_rt_frame(struct ksignal *ksig,
+ 			      compat_sigset_t *set,
+ 			      struct pt_regs *regs)
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 1a81602050b4..935facca4860 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -3318,29 +3318,18 @@ void copy_siginfo_to_external32(struct compat_siginfo *to,
+ 	}
+ }
+ 
++#ifndef CONFIG_X86_X32_ABI
+ int copy_siginfo_to_user32(struct compat_siginfo __user *to,
+ 			   const struct kernel_siginfo *from)
+-#if defined(CONFIG_X86_X32_ABI) || defined(CONFIG_IA32_EMULATION)
+-{
+-	return __copy_siginfo_to_user32(to, from, in_x32_syscall());
+-}
+-int __copy_siginfo_to_user32(struct compat_siginfo __user *to,
+-			     const struct kernel_siginfo *from, bool x32_ABI)
+-#endif
+ {
+ 	struct compat_siginfo new;
+ 
+ 	copy_siginfo_to_external32(&new, from);
+-#ifdef CONFIG_X86_X32_ABI
+-	if (x32_ABI && from->si_signo == SIGCHLD) {
+-		new._sifields._sigchld_x32._utime = from->si_utime;
+-		new._sifields._sigchld_x32._stime = from->si_stime;
+-	}
+-#endif
+ 	if (copy_to_user(to, &new, sizeof(struct compat_siginfo)))
+ 		return -EFAULT;
+ 	return 0;
+ }
++#endif
+ 
+ static int post_copy_siginfo_from_user32(kernel_siginfo_t *to,
+ 					 const struct compat_siginfo *from)
+-- 
+2.26.0
 
-Thanks,
-
-jon
