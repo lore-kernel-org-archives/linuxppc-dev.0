@@ -2,98 +2,101 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 694E4C83004
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:50:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C44C2C83004
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 04:19:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19CD3206F0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:50:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19CD3206F0
+	by mail.kernel.org (Postfix) with ESMTPS id 3F88F2064C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 04:19:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F88F2064C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B73C1245zDqvP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:50:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B7hk1HfgzDqwf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 14:19:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=sbobroff@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B6ws3lF2zDqmh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:45:17 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03S3W3Ha041674
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:45:14 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B7fm0MytzDqvd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 14:18:07 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03S44aiX124128; Tue, 28 Apr 2020 00:17:28 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mggtwegh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:45:14 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03S3jDCs069998
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2020 23:45:13 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mggtwefv-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30pd53g8rh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Apr 2020 23:45:13 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03S3il5Q019473;
- Tue, 28 Apr 2020 03:45:11 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04ams.nl.ibm.com with ESMTP id 30mcu6w81b-1
+ Tue, 28 Apr 2020 00:17:28 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03S47gjm130005;
+ Tue, 28 Apr 2020 00:17:27 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30pd53g8pd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 Apr 2020 03:45:11 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03S3j9Au61014114
+ Tue, 28 Apr 2020 00:17:26 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03S45tWP018939;
+ Tue, 28 Apr 2020 04:17:24 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04fra.de.ibm.com with ESMTP id 30mcu58gsm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 28 Apr 2020 04:17:24 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03S4HLNp41943218
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Apr 2020 03:45:09 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E872E42047;
- Tue, 28 Apr 2020 03:45:08 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 922CF4203F;
- Tue, 28 Apr 2020 03:45:08 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 28 Apr 2020 03:45:08 +0000 (GMT)
-Received: from osmium.ibmuc.com (unknown [9.206.152.45])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B8AD5A0267;
- Tue, 28 Apr 2020 13:45:02 +1000 (AEST)
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 1/2] powerpc/eeh: fix pseries_eeh_configure_bridge()
-Date: Tue, 28 Apr 2020 13:45:05 +1000
-Message-Id: <1b0a6010a647dc915816e44845b64d72066676a7.1588045502.git.sbobroff@linux.ibm.com>
-X-Mailer: git-send-email 2.22.0.216.g00a2a96fc9
-In-Reply-To: <cover.1588045502.git.sbobroff@linux.ibm.com>
-References: <cover.1588045502.git.sbobroff@linux.ibm.com>
+ Tue, 28 Apr 2020 04:17:21 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 79F1911C052;
+ Tue, 28 Apr 2020 04:17:21 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6834611C04A;
+ Tue, 28 Apr 2020 04:17:14 +0000 (GMT)
+Received: from [9.199.43.234] (unknown [9.199.43.234])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 28 Apr 2020 04:17:14 +0000 (GMT)
+Subject: Re: [PATCH v3 2/4] hugetlbfs: move hugepagesz= parsing to arch
+ independent code
+To: Mike Kravetz <mike.kravetz@oracle.com>
+References: <20200417185049.275845-1-mike.kravetz@oracle.com>
+ <20200417185049.275845-3-mike.kravetz@oracle.com>
+ <7583dfcc-62d8-2a54-6eef-bcb4e01129b3@gmail.com>
+ <5a380060-38db-b690-1003-678ca0f28f07@oracle.com>
+ <b1f04f9f-fa46-c2a0-7693-4a0679d2a1ee@oracle.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Message-ID: <9c82a0b1-db0e-9b34-88a1-bc810d6b5eec@linux.ibm.com>
+Date: Tue, 28 Apr 2020 09:47:13 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <b1f04f9f-fa46-c2a0-7693-4a0679d2a1ee@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-27_17:2020-04-27,
  2020-04-27 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0
- suspectscore=1 mlxscore=0 lowpriorityscore=0 adultscore=0 phishscore=0
- bulkscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004280024
+ spamscore=0 adultscore=0
+ suspectscore=0 phishscore=0 priorityscore=1501 mlxscore=0 mlxlogscore=999
+ bulkscore=0 lowpriorityscore=0 clxscore=1011 malwarescore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004280027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,52 +108,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
+Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Peter Xu <peterx@redhat.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Mina Almasry <almasrymina@google.com>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Longpeng <longpeng2@huawei.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Vasily Gorbik <gor@linux.ibm.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Nitesh Narayan Lal <nitesh@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
+ linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S.Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If a device is hot unplgged during EEH recovery, it's possible for the
-RTAS call to ibm,configure-pe in pseries_eeh_configure() to return
-parameter error (-3), however negative return values are not checked
-for and this leads to an infinite loop.
+Hi Mike,
 
-Fix this by correctly bailing out on negative values.
+On 28/04/20 12:39 am, Mike Kravetz wrote:
+> On 4/27/20 10:25 AM, Mike Kravetz wrote:
+>> On 4/26/20 10:04 PM, Sandipan Das wrote:
+>>> On 18/04/20 12:20 am, Mike Kravetz wrote:
+>>>> Now that architectures provide arch_hugetlb_valid_size(), parsing
+>>>> of "hugepagesz=" can be done in architecture independent code.
+>>>
+>>> This isn't working as expected on powerpc64.
+>>>
+>>>   [    0.000000] Kernel command line: root=UUID=dc7b49cf-95a2-4996-8e7d-7c64ddc7a6ff hugepagesz=16G hugepages=2 
+>>>   [    0.000000] HugeTLB: huge pages not supported, ignoring hugepagesz = 16G
+>>>   [    0.000000] HugeTLB: huge pages not supported, ignoring hugepages = 2
+>>>   [    0.284177] HugeTLB registered 16.0 MiB page size, pre-allocated 0 pages
+>>>   [    0.284182] HugeTLB registered 16.0 GiB page size, pre-allocated 0 pages
+>>>   [    2.585062]     hugepagesz=16G
+>>>   [    2.585063]     hugepages=2
+>>>
+>>
+>> In the new arch independent version of hugepages_setup, I added the following
+>> code in patch 4 off this series:
+>>
+>>> +	if (!hugepages_supported()) {
+>>> +		pr_warn("HugeTLB: huge pages not supported, ignoring hugepages = %s\n", s);
+>>> +		return 0;
+>>> +	}
+>>> +
+>>
+>> The easy solution is to remove all the hugepages_supported() checks from
+>> command line parsing routines and rely on the later check in hugetlb_init().
+> 
+> Here is a patch to address the issue.  Sorry, as my series breaks all hugetlb
+> command line processing on powerpc.
+> 
+> Sandipan, can you test the following patch?
+> 
 
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
----
-v4 - Just handle the error translation locally, as it's specific to the RTAS call,
-     but log the unaltered code in case it's useful for debugging.
+The following patch does fix the issue. Thanks.
 
- arch/powerpc/platforms/pseries/eeh_pseries.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Tested-by: Sandipan Das <sandipan@linux.ibm.com>
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 893ba3f562c4..04c1ed79bc6e 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -607,6 +607,8 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
- 
- 		if (!ret)
- 			return ret;
-+		if (ret < 0)
-+			break;
- 
- 		/*
- 		 * If RTAS returns a delay value that's above 100ms, cut it
-@@ -627,7 +629,11 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
- 
- 	pr_warn("%s: Unable to configure bridge PHB#%x-PE#%x (%d)\n",
- 		__func__, pe->phb->global_number, pe->addr, ret);
--	return ret;
-+	/* PAPR defines -3 as "Parameter Error" for this function: */
-+	if (ret == -3)
-+		return -EINVAL;
-+	else
-+		return -EIO;
- }
- 
- /**
--- 
-2.22.0.216.g00a2a96fc9
 
+> From 480fe2847361e2a85aeec1fb39fe643bb7100a07 Mon Sep 17 00:00:00 2001
+> From: Mike Kravetz <mike.kravetz@oracle.com>
+> Date: Mon, 27 Apr 2020 11:37:30 -0700
+> Subject: [PATCH] hugetlbfs: fix changes to command line processing
+> 
+> Previously, a check for hugepages_supported was added before processing
+> hugetlb command line parameters.  On some architectures such as powerpc,
+> hugepages_supported() is not set to true until after command line
+> processing.  Therefore, no hugetlb command line parameters would be
+> accepted.
+> 
+> Remove the additional checks for hugepages_supported.  In hugetlb_init,
+> print a warning if !hugepages_supported and command line parameters were
+> specified.
+> 
+> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+> ---
+>  mm/hugetlb.c | 20 ++++----------------
+>  1 file changed, 4 insertions(+), 16 deletions(-)
+> 
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 1075abdb5717..5548e8851b93 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -3212,8 +3212,11 @@ static int __init hugetlb_init(void)
+>  {
+>  	int i;
+>  
+> -	if (!hugepages_supported())
+> +	if (!hugepages_supported()) {
+> +		if (hugetlb_max_hstate || default_hstate_max_huge_pages)
+> +			pr_warn("HugeTLB: huge pages not supported, ignoring associated command-line parameters\n");
+>  		return 0;
+> +	}
+>  
+>  	/*
+>  	 * Make sure HPAGE_SIZE (HUGETLB_PAGE_ORDER) hstate exists.  Some
+> @@ -3315,11 +3318,6 @@ static int __init hugepages_setup(char *s)
+>  	unsigned long *mhp;
+>  	static unsigned long *last_mhp;
+>  
+> -	if (!hugepages_supported()) {
+> -		pr_warn("HugeTLB: huge pages not supported, ignoring hugepages = %s\n", s);
+> -		return 0;
+> -	}
+> -
+>  	if (!parsed_valid_hugepagesz) {
+>  		pr_warn("HugeTLB: hugepages=%s does not follow a valid hugepagesz, ignoring\n", s);
+>  		parsed_valid_hugepagesz = true;
+> @@ -3372,11 +3370,6 @@ static int __init hugepagesz_setup(char *s)
+>  	struct hstate *h;
+>  
+>  	parsed_valid_hugepagesz = false;
+> -	if (!hugepages_supported()) {
+> -		pr_warn("HugeTLB: huge pages not supported, ignoring hugepagesz = %s\n", s);
+> -		return 0;
+> -	}
+> -
+>  	size = (unsigned long)memparse(s, NULL);
+>  
+>  	if (!arch_hugetlb_valid_size(size)) {
+> @@ -3424,11 +3417,6 @@ static int __init default_hugepagesz_setup(char *s)
+>  	unsigned long size;
+>  
+>  	parsed_valid_hugepagesz = false;
+> -	if (!hugepages_supported()) {
+> -		pr_warn("HugeTLB: huge pages not supported, ignoring default_hugepagesz = %s\n", s);
+> -		return 0;
+> -	}
+> -
+>  	if (parsed_default_hugepagesz) {
+>  		pr_err("HugeTLB: default_hugepagesz previously specified, ignoring %s\n", s);
+>  		return 0;
+> 
