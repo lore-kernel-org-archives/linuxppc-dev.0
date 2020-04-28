@@ -2,63 +2,62 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82F26C83002
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 003ADC83004
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:16:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 300462073C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:00:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="I8N3xVH+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 300462073C
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 695F2206D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 03:16:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 695F2206D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49B5ww6wRDzDqpR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:00:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B5lM720zzDqpk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 12:51:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=I8N3xVH+; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49B6J11Hr5zDqj4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 13:16:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=rqso=6m=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49B5lL0BjJz9sRY;
- Tue, 28 Apr 2020 12:51:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1588042319; bh=r5Tvdog+oekyzSzSlTc7HgiNfwz4L1TcZBGr5ZE+R9Y=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=I8N3xVH+hQtt50jVi6Jl7REeiYhE+Ms2nP1zfHzGZCOaJxtALGlwrn+1EedXTMiI/
- 5FhMU67SHJd2vI0nhihcCftizAnuSUxBuMXwXIKH63+aeCRDClv7C0oO3NNphbTbUw
- gO3zmC+2mDlaFpvp24+UUVBJNqeZ/w56gwe29raW3TFZq1Eq3JDGF8Q8MSs5TVl8bG
- XmjXpEADeFeBz3Zkrf9sfMtKLciDNIczRo3QZJ1LU8MHD2CIbJDfCJJn/DXu4dxxsR
- A0g8HIJXHRNy97HlStw9iDlAvS99j3d6NIz39OKFty1f5KF5FMmDorhb2CZhu2smcD
- LnhwwQ0e38M8Q==
-Message-ID: <fc3b45c91e5cd50baa1fec7710f1e64cbe616f77.camel@ozlabs.org>
-Subject: Re: [PATCH 1/5] powerpc/spufs: simplify spufs core dumping
-From: Jeremy Kerr <jk@ozlabs.org>
-To: Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Date: Tue, 28 Apr 2020 10:51:56 +0800
-In-Reply-To: <20200427204953.GY23230@ZenIV.linux.org.uk>
-References: <20200427200626.1622060-1-hch@lst.de>
- <20200427200626.1622060-2-hch@lst.de>
- <20200427204953.GY23230@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49B6Fk5VJJzDqbY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:14:50 +1000 (AEST)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 199471] [Bisected][Regression] windfarm_pm* no longer gets
+ automatically loaded when CONFIG_I2C_POWERMAC=y is set
+Date: Tue, 28 Apr 2020 03:14:47 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: michael@ellerman.id.au
+X-Bugzilla-Status: VERIFIED
+X-Bugzilla-Resolution: CODE_FIX
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status
+Message-ID: <bug-199471-206035-SXmMpFAVRT@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-199471-206035@https.bugzilla.kernel.org/>
+References: <bug-199471-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
+MIME-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,29 +69,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- "Eric W .
- Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Al & Christoph,
+https://bugzilla.kernel.org/show_bug.cgi?id=3D199471
 
-> Again, this really needs fixing.  Preferably - as a separate commit
-> preceding this series, so that it could be
-> backported.  simple_read_from_buffer() is a blocking operation.
+Michael Ellerman (michael@ellerman.id.au) changed:
 
-I'll put together a patch that fixes this.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|RESOLVED                    |VERIFIED
 
-Christoph: I'll do it in a way that matches your changes to the _read
-functions, so hopefully those hunks would just drop from your change,
-leaving only the _dump additions. Would that work?
+--- Comment #26 from Michael Ellerman (michael@ellerman.id.au) ---
+OK thanks all.
 
-Cheers,
-
-
-Jeremy
-
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
