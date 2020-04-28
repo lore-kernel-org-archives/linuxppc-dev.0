@@ -2,60 +2,59 @@ Return-Path: <SRS0=O865=6M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F367C83007
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:50:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60035C83000
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:56:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A2F2206D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:50:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="A3Z9s3IC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A2F2206D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 12B61206D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 11:56:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12B61206D7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BKhS1HRyzDqSt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 21:50:16 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BKqj1C2vzDqjH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2020 21:56:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=46.105.75.45; helo=9.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 9.mo178.mail-out.ovh.net (9.mo178.mail-out.ovh.net
+ [46.105.75.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BKfV5Z7tzDqfZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 21:48:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=A3Z9s3IC; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 49BKfV4G7cz9sSK; Tue, 28 Apr 2020 21:48:34 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 49BKfV3T5mz9sSX; Tue, 28 Apr 2020 21:48:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1588074514;
- bh=2Xt4drwzFdVoeLpaSdh55/L13zgR9vEVW6/4XuF+vMI=;
- h=From:To:Cc:Subject:Date:From;
- b=A3Z9s3IC6Mm4hUr+WF1T2mo5kr9Rc6qWQqzMOfky6XVKvjc5n+VicZ0JE6amXUqhj
- GtfIhPLiu/Hf4wFewBbZ/GxKapOdK0EuRm1dpPlQh2byI3Nb1HqcLfS7DViDpm2+mr
- GvrwGa9FgcGYZqCvT98hg/fTClJvzu7gZzoDd7wOdDZBhsPpysyIU0slQ+QyALRcla
- lwkU+EgZw80sDHQDrVMe2ZiuFKH+2HKMAdBMYRgFxCbYTHUY8GHBSjQl7QS+Q74g9s
- rDw/nDY/vvDgZrT+mEzVvKAOuWknPcf1Qgt4rC/x0W1Y1RegZ0kTGoabxveskhlIyU
- 1mE+X93WnZZbg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/spufs: Add rcu_read_lock() around fcheck()
-Date: Tue, 28 Apr 2020 21:48:11 +1000
-Message-Id: <20200428114811.68436-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BKnd2T16zDqfr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 21:54:35 +1000 (AEST)
+Received: from player788.ha.ovh.net (unknown [10.108.35.223])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 8D2669C20F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 13:36:24 +0200 (CEST)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player788.ha.ovh.net (Postfix) with ESMTPSA id CB95811DB8A3D;
+ Tue, 28 Apr 2020 11:36:22 +0000 (UTC)
+Subject: Re: [PATCH] powerpc: Add interrupt mode information in /proc/cpuinfo
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20200427140644.332815-1-clg@kaod.org>
+ <87v9ljg9dz.fsf@mpe.ellerman.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <fb54a4f3-21cf-7167-97ec-c1d005d6c343@kaod.org>
+Date: Tue, 28 Apr 2020 13:36:20 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
+In-Reply-To: <87v9ljg9dz.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 1528972073821047741
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedugdegudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejkeekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,76 +66,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, hch@lst.de, viro@zeniv.linux.org.uk,
- jk@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the spu coredump code triggers an RCU warning:
+On 4/28/20 1:03 PM, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
+>> PowerNV and pSeries machines can run using the XIVE or XICS interrupt
+>> mode. Report this information in /proc/cpuinfo :
+>>
+>>     timebase    : 512000000
+>>     platform    : PowerNV
+>>     model       : 9006-22C
+>>     machine     : PowerNV 9006-22C
+>>     firmware    : OPAL
+>>     MMU         : Radix
+>>     IRQ         : XIVE
+> 
+> Hmmmm, I dunno. At what point do we stop putting random non CPU-related
+> things in cpuinfo? :)
 
-  =============================
-  WARNING: suspicious RCU usage
-  5.7.0-rc3-01755-g7cd49f0b7ec7 #1 Not tainted
-  -----------------------------
-  include/linux/fdtable.h:95 suspicious rcu_dereference_check() usage!
+True. 
 
-  other info that might help us debug this:
+> The IRQ mode is (reasonably) easily discovered in sys, eg:
+> 
+>   $ cat /sys/kernel/irq/*/chip_name | grep -m 1 XIVE
+>   XIVE-IRQ
+> 
+> vs:
+> 
+>   $ cat /sys/kernel/irq/*/chip_name | grep -m 1 XICS
+>   XICS
 
-  rcu_scheduler_active = 2, debug_locks = 1
-  1 lock held by spu-coredump/1343:
-   #0: c0000007fa22f430 (sb_writers#2){.+.+}-{0:0}, at: .do_coredump+0x1010/0x13c8
 
-  stack backtrace:
-  CPU: 0 PID: 1343 Comm: spu-coredump Not tainted 5.7.0-rc3-01755-g7cd49f0b7ec7 #1
-  Call Trace:
-    .dump_stack+0xec/0x15c (unreliable)
-    .lockdep_rcu_suspicious+0x120/0x144
-    .coredump_next_context+0x148/0x158
-    .spufs_coredump_extra_notes_size+0x54/0x190
-    .elf_coredump_extra_notes_size+0x34/0x50
-    .elf_core_dump+0xe48/0x19d0
-    .do_coredump+0xe50/0x13c8
-    .get_signal+0x864/0xd88
-    .do_notify_resume+0x158/0x3c8
-    .interrupt_exit_user_prepare+0x19c/0x208
-    interrupt_return+0x14/0x1c0
+That's good enough for error reporting
 
-This comes from fcheck_files() via fcheck().
+Thanks.
 
-It's pretty clearly documented that fcheck() must be wrapped with
-rcu_read_lock(), so fix it.
+C.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/cell/spufs/coredump.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index 8b3296b62f65..0fc52cbaa552 100644
---- a/arch/powerpc/platforms/cell/spufs/coredump.c
-+++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -82,13 +82,19 @@ static int match_context(const void *v, struct file *file, unsigned fd)
-  */
- static struct spu_context *coredump_next_context(int *fd)
- {
-+	struct spu_context *ctx;
- 	struct file *file;
- 	int n = iterate_fd(current->files, *fd, match_context, NULL);
- 	if (!n)
- 		return NULL;
- 	*fd = n - 1;
-+
-+	rcu_read_lock();
- 	file = fcheck(*fd);
--	return SPUFS_I(file_inode(file))->i_ctx;
-+	ctx = SPUFS_I(file_inode(file))->i_ctx;
-+	rcu_read_unlock();
-+
-+	return ctx;
- }
- 
- int spufs_coredump_extra_notes_size(void)
--- 
-2.25.1
+> 
+> cheers
+> 
+>> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+>> index 3bc188da82ba..39ef3394038d 100644
+>> --- a/arch/powerpc/platforms/powernv/setup.c
+>> +++ b/arch/powerpc/platforms/powernv/setup.c
+>> @@ -196,14 +196,18 @@ static void pnv_show_cpuinfo(struct seq_file *m)
+>>  		model = of_get_property(root, "model", NULL);
+>>  	seq_printf(m, "machine\t\t: PowerNV %s\n", model);
+>>  	if (firmware_has_feature(FW_FEATURE_OPAL))
+>> -		seq_printf(m, "firmware\t: OPAL\n");
+>> +		seq_puts(m, "firmware\t: OPAL\n");
+>>  	else
+>> -		seq_printf(m, "firmware\t: BML\n");
+>> +		seq_puts(m, "firmware\t: BML\n");
+>>  	of_node_put(root);
+>>  	if (radix_enabled())
+>> -		seq_printf(m, "MMU\t\t: Radix\n");
+>> +		seq_puts(m, "MMU\t\t: Radix\n");
+>>  	else
+>> -		seq_printf(m, "MMU\t\t: Hash\n");
+>> +		seq_puts(m, "MMU\t\t: Hash\n");
+>> +	if (xive_enabled())
+>> +		seq_puts(m, "IRQ\t\t: XIVE\n");
+>> +	else
+>> +		seq_puts(m, "IRQ\t\t: XICS\n");
+>>  }
+>>  
+>>  static void pnv_prepare_going_down(void)
+>> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+>> index 0c8421dd01ab..d248fca67797 100644
+>> --- a/arch/powerpc/platforms/pseries/setup.c
+>> +++ b/arch/powerpc/platforms/pseries/setup.c
+>> @@ -95,9 +95,13 @@ static void pSeries_show_cpuinfo(struct seq_file *m)
+>>  	seq_printf(m, "machine\t\t: CHRP %s\n", model);
+>>  	of_node_put(root);
+>>  	if (radix_enabled())
+>> -		seq_printf(m, "MMU\t\t: Radix\n");
+>> +		seq_puts(m, "MMU\t\t: Radix\n");
+>>  	else
+>> -		seq_printf(m, "MMU\t\t: Hash\n");
+>> +		seq_puts(m, "MMU\t\t: Hash\n");
+>> +	if (xive_enabled())
+>> +		seq_puts(m, "IRQ\t\t: XIVE\n");
+>> +	else
+>> +		seq_puts(m, "IRQ\t\t: XICS\n");
+>>  }
+>>  
+>>  /* Initialize firmware assisted non-maskable interrupts if
+>> -- 
+>> 2.25.3
 
