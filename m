@@ -2,60 +2,70 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5C77C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF1D0C83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:16:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93EC92083B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:13:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WoeR0IMj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93EC92083B
+	by mail.kernel.org (Postfix) with ESMTPS id 4B7D421775
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:16:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B7D421775
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BzVH2cYNzDr8R
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 23:13:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BzY81JLkzDr8R
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 23:16:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.65; helo=mail-wr1-f65.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=WoeR0IMj; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wr1-f65.google.com (mail-wr1-f65.google.com
+ [209.85.221.65])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49ByDZ6tG1zDr4q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 22:16:46 +1000 (AEST)
-Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 72BB621D7B;
- Wed, 29 Apr 2020 12:16:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1588162604;
- bh=vSBPyOKwrmQNqt7kyNkBHr9JqpNBLG1f44P+yYUwAD0=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=WoeR0IMjhESnMKZLgeFQpYaSM1Q0137VRdB9oM2DfU/SAAkdUyrTXqjy5uqkDMB4w
- A8OD0E3zWwQv5BZXvU0pC1x6W2MSkHROGVWsKhh68IOVd1n7tuhS5R+cHwtxzXCZoH
- XZaE67z9A52A2FknRpk/21Qqx9xMcUu4+BgH8q4Q=
-From: Mike Rapoport <rppt@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 20/20] docs/vm: update memory-models documentation
-Date: Wed, 29 Apr 2020 15:11:26 +0300
-Message-Id: <20200429121126.17989-21-rppt@kernel.org>
-X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20200429121126.17989-1-rppt@kernel.org>
-References: <20200429121126.17989-1-rppt@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49ByLz18g8zDr72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 22:22:18 +1000 (AEST)
+Received: by mail-wr1-f65.google.com with SMTP id i10so2244097wrv.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 05:22:18 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=F1Vyi5oIpMniiJ1X1bwh1/7tqzVkkRj08pWhRZE7c+M=;
+ b=glrpvZp7RftOKZXFMuASDt6twJF/p2K78XaX5UrTVthSkbgsL1JYlwG843r/BSYDMq
+ I9N/bIU9ItEZ5TYM7Tkm2LPlNFFv7pQwi2mMUVAoIhliFEHwwrkRZZ9nwspxqKILeRwg
+ A6+PofA95ZP4KahP6Ww9sUURxKbmDiRRUzbwHhpNjUhBXVAe7jPIAcV0n7QB6uXGN4jK
+ a4rxxI+Ppe/9ml3XU9sy3GC44RlBRMmBRJDRIag3B8Jp1oCFMVux3/0U0DAEPyL+JhF3
+ KCL5rLodkcx0x5UN3Y+6XHNvNoyn4yhrV+lCITeIlmDvrRFZ9npNGRpFXc9T7CVOb1Do
+ AlKA==
+X-Gm-Message-State: AGi0Pubx8lwRqDmfW9VV5+pFImpAnu7TZwcH9kfFZQGXdUMOWb3uAFsP
+ uB/p4kctayrwMhk64iSqxtw=
+X-Google-Smtp-Source: APiQypKnWBYUo6BP7xM7bZ+TgaJBDEnHFZi4EuKVmDYQRCUHS4sHLGy0+C//6II7OWTEW5xn6unxsw==
+X-Received: by 2002:a5d:6a8b:: with SMTP id s11mr38386766wru.258.1588162933425; 
+ Wed, 29 Apr 2020 05:22:13 -0700 (PDT)
+Received: from localhost (ip-37-188-130-62.eurotel.cz. [37.188.130.62])
+ by smtp.gmail.com with ESMTPSA id n25sm7497026wmk.9.2020.04.29.05.22.12
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 29 Apr 2020 05:22:12 -0700 (PDT)
+Date: Wed, 29 Apr 2020 14:22:11 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/3] mm/page_alloc: Keep memoryless cpuless node 0
+ offline
+Message-ID: <20200429122211.GD28637@dhcp22.suse.cz>
+References: <20200428093836.27190-1-srikar@linux.vnet.ibm.com>
+ <20200428093836.27190-4-srikar@linux.vnet.ibm.com>
+ <20200428165912.ca1eadefbac56d740e6e8fd1@linux-foundation.org>
+ <20200429014145.GD19958@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200429014145.GD19958@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,69 +77,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
- linux-csky@vger.kernel.org, linux-parisc@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-riscv@lists.infradead.org, Mike Rapoport <rppt@linux.ibm.com>,
- Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
- linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-arm-kernel@lists.infradead.org, Mark Salter <msalter@redhat.com>,
- Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
- uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Qian Cai <cai@lca.pw>, Greentime Hu <green.hu@gmail.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, Hoan Tran <Hoan@os.amperecomputing.com>,
- Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Brian Cain <bcain@codeaurora.org>, Nick Hu <nickhu@andestech.com>,
- linux-mm@kvack.org, Vineet Gupta <vgupta@synopsys.com>,
- linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
- Richard Weinberger <richard@nod.at>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, Mel Gorman <mgorman@suse.de>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mike Rapoport <rppt@linux.ibm.com>
+On Wed 29-04-20 07:11:45, Srikar Dronamraju wrote:
+> > > 
+> > > By marking, N_ONLINE as NODE_MASK_NONE, lets stop assuming that Node 0 is
+> > > always online.
+> > > 
+> > > ...
+> > >
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -116,8 +116,10 @@ EXPORT_SYMBOL(latent_entropy);
+> > >   */
+> > >  nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+> > >  	[N_POSSIBLE] = NODE_MASK_ALL,
+> > > +#ifdef CONFIG_NUMA
+> > > +	[N_ONLINE] = NODE_MASK_NONE,
+> > > +#else
+> > >  	[N_ONLINE] = { { [0] = 1UL } },
+> > > -#ifndef CONFIG_NUMA
+> > >  	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
+> > >  #ifdef CONFIG_HIGHMEM
+> > >  	[N_HIGH_MEMORY] = { { [0] = 1UL } },
+> > 
+> > So on all other NUMA machines, when does node 0 get marked online?
+> > 
+> > This change means that for some time during boot, such machines will
+> > now be running with node 0 marked as offline.  What are the
+> > implications of this?  Will something break?
+> 
+> Till the nodes are detected, marking Node 0 as online tends to be redundant.
+> Because the system doesn't know if its a NUMA or a non-NUMA system.
+> Once we detect the nodes, we online them immediately. Hence I don't see any
+> side-effects or negative implications of this change.
+> 
+> However if I am missing anything, please do let me know.
+> 
+> >From my part, I have tested this on
+> 1. Non-NUMA Single node but CPUs and memory coming from zero node.
+> 2. Non-NUMA Single node but CPUs and memory coming from non-zero node.
+> 3. NUMA Multi node but with CPUs and memory from node 0.
+> 4. NUMA Multi node but with no CPUs and memory from node 0.
 
-to reflect the updates to free_area_init() family of functions.
+Have you tested on something else than ppc? Each arch does the NUMA
+setup separately and this is a big mess. E.g. x86 marks even memory less
+nodes (see init_memory_less_node) as online.
 
-Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
----
- Documentation/vm/memory-model.rst | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+Honestly I have hard time to evaluate the effect of this patch. It makes
+some sense to assume all nodes offline before they get online but this
+is a land mine territory.
 
-diff --git a/Documentation/vm/memory-model.rst b/Documentation/vm/memory-model.rst
-index 58a12376b7df..91228044ed16 100644
---- a/Documentation/vm/memory-model.rst
-+++ b/Documentation/vm/memory-model.rst
-@@ -46,11 +46,10 @@ maps the entire physical memory. For most architectures, the holes
- have entries in the `mem_map` array. The `struct page` objects
- corresponding to the holes are never fully initialized.
- 
--To allocate the `mem_map` array, architecture specific setup code
--should call :c:func:`free_area_init_node` function or its convenience
--wrapper :c:func:`free_area_init`. Yet, the mappings array is not
--usable until the call to :c:func:`memblock_free_all` that hands all
--the memory to the page allocator.
-+To allocate the `mem_map` array, architecture specific setup code should
-+call :c:func:`free_area_init` function. Yet, the mappings array is not
-+usable until the call to :c:func:`memblock_free_all` that hands all the
-+memory to the page allocator.
- 
- If an architecture enables `CONFIG_ARCH_HAS_HOLES_MEMORYMODEL` option,
- it may free parts of the `mem_map` array that do not cover the
+I am also not sure what kind of problem this is going to address. You
+have mentioned numa balancing without many details.
 -- 
-2.26.1
-
+Michal Hocko
+SUSE Labs
