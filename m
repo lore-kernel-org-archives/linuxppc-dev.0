@@ -2,58 +2,76 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 784F1C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:13:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 648CAC83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:16:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 315992085B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:13:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 315992085B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1E9CD2083B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:16:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E9CD2083B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Brqf5RQ9zDr40
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 18:13:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.116.78; helo=8.mo5.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Brvn6TntzDq67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 18:16:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 596 seconds by postgrey-1.36 at bilbo;
- Wed, 29 Apr 2020 18:07:00 AEST
-Received: from 8.mo5.mail-out.ovh.net (8.mo5.mail-out.ovh.net [178.32.116.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BrhN4G4vzDqy6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 18:06:56 +1000 (AEST)
-Received: from player714.ha.ovh.net (unknown [10.110.208.183])
- by mo5.mail-out.ovh.net (Postfix) with ESMTP id 9B06127BB15
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 09:51:31 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player714.ha.ovh.net (Postfix) with ESMTPSA id 32EA111CA9161;
- Wed, 29 Apr 2020 07:51:27 +0000 (UTC)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/3] powerpc/xive: Clear the page tables for the ESB IO mapping
-Date: Wed, 29 Apr 2020 09:51:20 +0200
-Message-Id: <20200429075122.1216388-2-clg@kaod.org>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200429075122.1216388-1-clg@kaod.org>
-References: <20200429075122.1216388-1-clg@kaod.org>
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.130; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Brj54fL6zDqyg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 18:07:37 +1000 (AEST)
+Received: from mail-qt1-f180.google.com ([209.85.160.180]) by
+ mrelayeu.kundenserver.de (mreue010 [212.227.15.129]) with ESMTPSA (Nemesis)
+ id 1M6lUk-1jXXmI2zLa-008NS5 for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr
+ 2020 10:07:28 +0200
+Received: by mail-qt1-f180.google.com with SMTP id c23so1102597qtp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 01:07:28 -0700 (PDT)
+X-Gm-Message-State: AGi0PubVHeyWbc/elNZsP3KXRSR75aKZL4azAKw2jZ4HSwCMSKqb68AF
+ Nw8+gNJuSQRffNkYEfYDCTZptFgv8rJCNDi9BJU=
+X-Google-Smtp-Source: APiQypLfq9vA8PAqfU/YH18U09P0GJiLGEJ7pxzfmyyZ8eMnuqIgB3yzKDt07rPkw8Uw/LGU/qVDLoTi47iZXZD4HCg=
+X-Received: by 2002:ac8:4c8d:: with SMTP id j13mr32077431qtv.142.1588147647641; 
+ Wed, 29 Apr 2020 01:07:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 3603724131002518449
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedvgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefhvffufffkofgjfhggtgfgsehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjedugedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+References: <20200428074827.GA19846@lst.de>
+ <20200428195645.1365019-1-arnd@arndb.de>
+ <20200429064458.GA31717@lst.de>
+In-Reply-To: <20200429064458.GA31717@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 29 Apr 2020 10:07:11 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1YD3RitSLLRsM+e+LwAxg+NS6F071B4zokwEpiL0WvrA@mail.gmail.com>
+Message-ID: <CAK8P3a1YD3RitSLLRsM+e+LwAxg+NS6F071B4zokwEpiL0WvrA@mail.gmail.com>
+Subject: Re: [PATCH] fixup! signal: factor copy_siginfo_to_external32 from
+ copy_siginfo_to_user32
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:N3hfkme1fS21UdqihOw5Rablu5quoME0hXs23YPOHvG8cy9/IaT
+ 2idgPMk7CfFQO2ZUYzZzLby+hAIUgkHS6kMhG+4rfRuhXqYQh0MUSN+Y4eGLHOPYNRZJW73
+ rs9V37rOs2FQLe/6n1GZwT7TVSz/se5dTz43n2Vjji6WmvIly27FoQWQEsK5/aPD0LVjyqM
+ /S38qQVbPgKianbVmRu1A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:SRwpK2rT29E=:mr3/9jcnL12A1Cr9kY3xjt
+ niM5lsbERhr3laVOfA2pU5Jx/fX8ryzqWqmgud2LUGXH81vS6mpwx0F56fWGWCCh3RPhUpYX2
+ oE71wgf7gNCd4Uvjth/T+dzgX8I+L+kulNNzH5dnuT2mf52HOyURzLkXqmZc9AoA8LbUULyLk
+ WYkCVTmJVrARQIsJZsgrAZAagdl7A9ece/nblvu7+3bkdlelJl7ky8j6y2IsmTcWSjDmwmMcm
+ +erxvMZ2ndL1vCqyV626/z6TL84wXvCkrFC+3axm874ciaJy6UuvITLHycG1BVIMYZyzB5PqI
+ v579KcYTfdmWSH5cSh8qoi5hogSnZvbHlqoKLCDUapiTy+PmG3xyQAp4a7KcgRhUM+1te+lag
+ Ua3Rbw+jA01G8qx7yKfB+iKB1TXets9ixJvtqVWdHPhGLnWwSe6PTyiSr8Z2ISyRh1CxAepUO
+ mb7Y3HJ46h7ufV+zMpCBTgZEI7tzK3ASkivxb7iCyExS3BDIExLAGfzoZS+FkJHSIaNGnjXqF
+ hd13sg5ki+fHP+SSmyY69UkZYU9zckGl51p+oYeggBSs1hwAL7iNxm6HlZgoafY+HbU8JZ4sB
+ krARGA1fIILsT/NtZi8gOubMeFChYVMbwGmrME2+hBWsOFcBEmI+eVWmWm7ut2Ben/tj0Zh0F
+ Y+uvrt3+N0RhU906gIP+sB0VtQ7oHD2cIelmfKkG1Cz0ty7Gf61eCKrAmjV4fugZYP0Q5vijb
+ vBvz5aqRWxLAENBMBlrBGz0etYfXpeMBL/0vR8phCEuLM8NDxjRaJF4i9Yjkosbq20JzFyq78
+ CTMNPqVWpPqTCua1uqdfiqyer3meCABbuKn2sMUPKyz3AHDrUY=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,68 +83,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>, stable@vger.kernel.org
+Cc: Jeremy Kerr <jk@ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 1ca3dec2b2df ("powerpc/xive: Prevent page fault issues in the
-machine crash handler") fixed an issue in the FW assisted dump of
-machines using hash MMU and the XIVE interrupt mode under the POWER
-hypervisor. It forced the mapping of the ESB page of interrupts being
-mapped in the Linux IRQ number space to make sure the 'crash kexec'
-sequence worked during such an event. But it didn't handle the
-un-mapping.
+On Wed, Apr 29, 2020 at 8:45 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> On Tue, Apr 28, 2020 at 09:56:26PM +0200, Arnd Bergmann wrote:
+> > I think I found a way to improve the x32 handling:
+> >
+> > This is a simplification over Christoph's "[PATCH 2/7] signal: factor
+> > copy_siginfo_to_external32 from copy_siginfo_to_user32", reducing the
+> > x32 specifics in the common code to a single #ifdef/#endif check, in
+> > order to keep it more readable for everyone else.
+> >
+> > Christoph, if you like it, please fold into your patch.
+>
+> What do you think of this version?  This one always overrides
+> copy_siginfo_to_user32 for the x86 compat case to keep the churn down,
+> and improves the copy_siginfo_to_external32 documentation a bit.
 
-This mapping is now blocking the removal of a passthrough IO adapter
-under the POWER hypervisor because it expects the guest OS to have
-cleared all page table entries related to the adapter. If some are
-still present, the RTAS call which isolates the PCI slot returns error
-9001 "valid outstanding translations".
+Looks good to me. I preferred checking for X32 explicitly (so we can
+find and kill off the #ifdef if we ever remove X32 for good), but there is
+little difference in the end.
 
-Remove these mapping in the IRQ data cleanup routine.
-
-Under KVM, this cleanup is not required because the ESB pages for the
-adapter interrupts are un-mapped from the guest by the hypervisor in
-the KVM XIVE native device. This is now redundant but it's harmless.
-
-Fixes: 1ca3dec2b2df ("powerpc/xive: Prevent page fault issues in the machine crash handler")
-Cc: stable@vger.kernel.org # v5.5+
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/sysdev/xive/common.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index 9603b2830d03..3dbc94cb4380 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -19,6 +19,7 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/msi.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/debugfs.h>
- #include <asm/prom.h>
-@@ -1020,12 +1021,16 @@ EXPORT_SYMBOL_GPL(is_xive_irq);
- void xive_cleanup_irq_data(struct xive_irq_data *xd)
- {
- 	if (xd->eoi_mmio) {
-+		unmap_kernel_range((unsigned long)xd->eoi_mmio,
-+				   1u << xd->esb_shift);
- 		iounmap(xd->eoi_mmio);
- 		if (xd->eoi_mmio == xd->trig_mmio)
- 			xd->trig_mmio = NULL;
- 		xd->eoi_mmio = NULL;
- 	}
- 	if (xd->trig_mmio) {
-+		unmap_kernel_range((unsigned long)xd->trig_mmio,
-+				   1u << xd->esb_shift);
- 		iounmap(xd->trig_mmio);
- 		xd->trig_mmio = NULL;
- 	}
--- 
-2.25.4
-
+         Arnd
