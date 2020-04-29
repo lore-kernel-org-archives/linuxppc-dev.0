@@ -2,56 +2,56 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46445C83004
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45EB8C83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:45:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A05A12073E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:20:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A05A12073E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id A4A1B2072A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:45:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4A1B2072A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+Authentication-Results: mail.kernel.org; spf=tempfail smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Bvfj0NJhzDqKr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 20:20:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BwBg0PvXzDr3j
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 20:44:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.79.203; helo=10.mo68.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
+ envelope-from=wangxiongfeng2@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 8408 seconds by postgrey-1.36 at bilbo;
- Wed, 29 Apr 2020 20:18:44 AEST
-Received: from 10.mo68.mail-out.ovh.net (10.mo68.mail-out.ovh.net
- [46.105.79.203])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+X-Greylist: delayed 927 seconds by postgrey-1.36 at bilbo;
+ Wed, 29 Apr 2020 20:22:23 AEST
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BvcN0k27zDq72
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 20:18:38 +1000 (AEST)
-Received: from player714.ha.ovh.net (unknown [10.110.208.202])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id 5FB58164FC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 09:51:27 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player714.ha.ovh.net (Postfix) with ESMTPSA id E13E411CA9131;
- Wed, 29 Apr 2020 07:51:24 +0000 (UTC)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/3] powerpc/xive: PCI hotplug fixes under PowerVM 
-Date: Wed, 29 Apr 2020 09:51:19 +0200
-Message-Id: <20200429075122.1216388-1-clg@kaod.org>
-X-Mailer: git-send-email 2.25.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Bvhb0m6pzDq6k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 20:22:22 +1000 (AEST)
+Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 3B04ED5A3D1979CF669D;
+ Wed, 29 Apr 2020 18:06:48 +0800 (CST)
+Received: from linux-ibm.site (10.175.102.37) by
+ DGGEMS412-HUB.china.huawei.com (10.3.19.212) with Microsoft SMTP Server id
+ 14.3.487.0; Wed, 29 Apr 2020 18:06:41 +0800
+From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+To: <geoff@infradead.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <wangxiongfeng2@huawei.com>
+Subject: [PATCH] powerpc/ps3: Move static keyword to the front of declaration
+Date: Wed, 29 Apr 2020 18:00:48 +0800
+Message-ID: <1588154448-56759-1-git-send-email-wangxiongfeng2@huawei.com>
+X-Mailer: git-send-email 1.7.12.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 3602598230992980913
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedvgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefhvffufffkofggtgfgsehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjedugedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+X-Originating-IP: [10.175.102.37]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Wed, 29 Apr 2020 20:42:35 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,40 +63,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Move the static keyword to the front of declaration of 'vuart_bus_priv',
+and resolve the following compiler warning that can be seen when
+building with warnings enabled (W=1):
 
-Here are a couple of fixes for PCI hotplug issues for machines running
-under the POWER hypervisor using hash MMU and the XIVE interrupt mode.
+drivers/ps3/ps3-vuart.c:867:1: warning: ‘static’ is not at beginning of declaration [-Wold-style-declaration]
+ } static vuart_bus_priv;
+ ^
 
-Commit 1ca3dec2b2df ("powerpc/xive: Prevent page fault issues in the
-machine crash handler") forced the mapping of the XIVE ESB page and
-this is now blocking the removal of a passthrough IO adapter because
-the PCI isolation fails with "valid outstanding translations". Under
-KVM, the ESB pages for the adapter interrupts are un-mapped from the
-guest by the hypervisor in the KVM XIVE native device. This is is now
-redundant but it's harmless.
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+---
+ drivers/ps3/ps3-vuart.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Last is a fix to disable the XIVE debugfs file when XIVE is disabled.
-
-Thanks,
-
-C.
-
-Cédric Le Goater (3):
-  powerpc/xive: Clear the page tables for the ESB IO mapping
-  powerpc/pci: unmap legacy INTx interrupts of passthrough IO adapters
-  powerpc/xive: Do not expose a debugfs file when XIVE is disabled
-
- arch/powerpc/kernel/pci-hotplug.c |  2 ++
- arch/powerpc/sysdev/xive/common.c | 10 ++++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
+index ddaa5ea..8e80e09 100644
+--- a/drivers/ps3/ps3-vuart.c
++++ b/drivers/ps3/ps3-vuart.c
+@@ -858,13 +858,13 @@ static int ps3_vuart_handle_port_interrupt(struct ps3_system_bus_device *dev)
+ 	return 0;
+ }
+ 
+-struct vuart_bus_priv {
++static struct vuart_bus_priv {
+ 	struct ports_bmp *bmp;
+ 	unsigned int virq;
+ 	struct mutex probe_mutex;
+ 	int use_count;
+ 	struct ps3_system_bus_device *devices[PORT_COUNT];
+-} static vuart_bus_priv;
++} vuart_bus_priv;
+ 
+ /**
+  * ps3_vuart_irq_handler - first stage interrupt handler
 -- 
-2.25.4
+1.7.12.4
 
