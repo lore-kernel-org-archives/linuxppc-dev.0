@@ -2,50 +2,64 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8F05C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 06:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2094AC83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 06:44:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BA19206F0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 06:42:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BA19206F0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3B129206D6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 06:44:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Z4nDe29Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B129206D6
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Bppn6mNRzDr5k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 16:42:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BpsN2PNLzDr6V
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 16:44:40 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BpcK0TRMzDqVk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 16:33:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=Z4nDe29Z; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BpX13RRxzDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 16:29:37 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 15B4768BEB; Wed, 29 Apr 2020 08:29:34 +0200 (CEST)
-Date: Wed, 29 Apr 2020 08:29:33 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] fixup! signal: factor copy_siginfo_to_external32 from
- copy_siginfo_to_user32
-Message-ID: <20200429062933.GB31478@lst.de>
-References: <20200428074827.GA19846@lst.de>
- <20200428195645.1365019-1-arnd@arndb.de>
- <d00b4436-9a97-5e90-2a6f-e79f90be9736@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d00b4436-9a97-5e90-2a6f-e79f90be9736@c-s.fr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49BpcF3W3jz9sSl;
+ Wed, 29 Apr 2020 16:33:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1588141999; bh=3MKZzbOxV7CZNMIIu+rSiDhnp5u7vnphPsD8HQA8wEU=;
+ h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+ b=Z4nDe29ZwLxjR5q8UZrt43rf3HI+UXJI4Qv80xc4hFTm9Ohhfomp65bwGqNZCZAb+
+ WNjaEHfky/Hguil8WFXRH5Eub3FuVzDhKzHVF0dU7iRTbKB1p+pT7oAjM5pL3ODtY4
+ Foo1vHiVPOS9UiCaKAQ/zA7PEt7FG4edcizX/Y/voDxjIsuy4lhqJP5AkaL6ubp3ap
+ 33bx/2otMrJJ/cVRzDrZJpVG2RG5C9zLy0ce78TKCkeHls5PubHHZ4ZoEnghbTnJh/
+ CAhXPrwqOTSk5UK4FObUuxAjZUKfciLaJNbZZnxax30DJeMceYpwc5r5CHErd/bu6s
+ hCQJ4Ya1niVUw==
+Message-ID: <2014678ca837f6aaa4cf23b4ea51e4805146c36d.camel@ozlabs.org>
+Subject: Re: [RFC PATCH] powerpc/spufs: fix copy_to_user while atomic
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Christoph Hellwig <hch@lst.de>
+Date: Wed, 29 Apr 2020 14:33:13 +0800
+In-Reply-To: <20200429061514.GD30946@lst.de>
+References: <20200427200626.1622060-2-hch@lst.de>
+ <20200428120207.15728-1-jk@ozlabs.org> <20200428171133.GA17445@lst.de>
+ <e1ebea36b162e8a3b4b24ecbc1051f8081ff5e53.camel@ozlabs.org>
+ <20200429061514.GD30946@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,19 +71,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- "Eric W . Biederman" <ebiederm@xmission.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Jeremy Kerr <jk@ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Eric W . Biederman" <ebiederm@xmission.com>,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 08:17:22AM +0200, Christophe Leroy wrote:
->>   +#ifndef CONFIG_X86_X32_ABI
->
-> Can it be declared __weak instead of enclosing it in an #ifndef ?
+Hi Christoph,
 
-I really hate the __weak ifdefs.  But my plan was to move to a
-CONFIG_ARCH_COPY_SIGINFO_TO_USER32 and have x86 select it.
+> And another one that should go on top of this one to address Al's other
+> compaint:
+
+Yeah, I was pondering that one. The access_ok() is kinda redundant, but
+it does avoid forcing a SPU context save on those errors.
+
+However, it's not like we really need to optimise for the case of
+invalid addresses from userspace. So, I'll include this change in the
+submission to Michael's tree. Arnd - let me know if you have any
+objections.
+
+Cheers,
+
+
+Jeremy
+
+
