@@ -1,74 +1,61 @@
 Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: **
-X-Spam-Status: No, score=2.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
-	MIME_QP_LONG_LINE,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0628C83000
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:27:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAE7AC83000
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:29:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 64746205C9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:27:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="RPXQvZCR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64746205C9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 7A0B3205C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:29:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A0B3205C9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49C7n75n01zDrC9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 05:27:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::2;
- helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49C7r94JnCzDrBh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 05:29:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
- header.s=strato-dkim-0002 header.b=RPXQvZCR; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=none (no SPF record) smtp.mailfrom=canonical.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=jay.vosburgh@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=canonical.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49C0Qh6FpbzDr2r
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 23:55:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1588168531;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=sRM9IW6qbifN2jy58etkeSC0Giaq0ddRS/7YsNzt/WA=;
- b=RPXQvZCRn1NeD23xZPDl8HWe/W/xINC9uhaXheKgEPCKQkAfML0InnvPPkKQ3L8yRh
- WpWi7DZ5oL8k75l1EllCeNncz+NUChJ2zuVbWcdLKdbHPG0PSvqy20WxUudYSnMM3P1A
- 1Zua7huSIZRXF2zzC8QJumwAuQpT5ul42Rb40O5Vf8AhiXcCXZyLhlSQfYSiS7jzbsin
- OJBVKp++zu4FCTyHNZsRFoI+XAlaOMmU3SKdBFRm2J69nWMvCOttsqnNyRAAtEZyX54i
- ueJg34QputjGTkxGnJMKBoz6aVs+TS9ZOE5MPJt5Gyq8eJVFt5et+RtJeYVPOtv6rat1
- 5SSw==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7aWdxgrpix3BNtxgZMkdjmAvA9mUCF0wx8fHT1jD6"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a01:598:d009:736a:6836:44ca:f3aa:4c6a]
- by smtp.strato.de (RZmta 46.6.2 AUTH) with ESMTPSA id I01247w3TDtSagJ
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
- (Client did not present a certificate);
- Wed, 29 Apr 2020 15:55:28 +0200 (CEST)
-Content-Type: multipart/alternative;
- boundary=Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
-Content-Transfer-Encoding: 7bit
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [RFC PATCH dpss_eth] Don't initialise ports with no PHY
-Date: Wed, 29 Apr 2020 15:55:28 +0200
-Message-Id: <77E4A243-F90A-45A9-B8D3-0F7785C158C7@xenosoft.de>
-References: <20200429131253.GG30459@lunn.ch>
-In-Reply-To: <20200429131253.GG30459@lunn.ch>
-To: Andrew Lunn <andrew@lunn.ch>
-X-Mailer: iPhone Mail (17D50)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49C6j51nM3zDr8H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 04:38:31 +1000 (AEST)
+Received: from 1.general.jvosburgh.us.vpn ([10.172.68.206]
+ helo=famine.localdomain) by youngberry.canonical.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
+ (envelope-from <jay.vosburgh@canonical.com>)
+ id 1jTrbF-0002IP-03; Wed, 29 Apr 2020 18:38:25 +0000
+Received: by famine.localdomain (Postfix, from userid 1000)
+ id 35163630E4; Wed, 29 Apr 2020 11:38:23 -0700 (PDT)
+Received: from famine (localhost [127.0.0.1])
+ by famine.localdomain (Postfix) with ESMTP id 2DA31AC1DB;
+ Wed, 29 Apr 2020 11:38:23 -0700 (PDT)
+From: Jay Vosburgh <jay.vosburgh@canonical.com>
+To: Thomas Falcon <tlfalcon@linux.ibm.com>
+Subject: Re: [PATCH] net/bonding: Do not transition down slave after
+ speed/duplex check
+In-reply-to: <1588183759-7659-1-git-send-email-tlfalcon@linux.ibm.com>
+References: <1588183759-7659-1-git-send-email-tlfalcon@linux.ibm.com>
+Comments: In-reply-to Thomas Falcon <tlfalcon@linux.ibm.com>
+ message dated "Wed, 29 Apr 2020 13:09:19 -0500."
+X-Mailer: MH-E 8.6+git; nmh 1.6; GNU Emacs 27.0.50
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <29483.1588185503.1@famine>
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 29 Apr 2020 11:38:23 -0700
+Message-ID: <29484.1588185503@famine>
 X-Mailman-Approved-At: Thu, 30 Apr 2020 05:24:34 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,60 +68,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: madalin.bacur@nxp.com, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- netdev@vger.kernel.org, oss@buserror.net,
- Darren Stevens <darren@stevens-zone.net>,
- "contact@a-eon.com" <contact@a-eon.com>, mad skateman <madskateman@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, Veaceslav Falico <vfalico@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Andy Gospodarek <andy@greyhouse.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Thomas Falcon <tlfalcon@linux.ibm.com> wrote:
 
---Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
-Content-Type: text/plain;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+>The following behavior has been observed when testing logical partition
+>migration of LACP-bonded VNIC devices in a PowerVM pseries environment.
+>
+>1. When performing the migration, the bond master detects that a slave ha=
+s
+>   lost its link, deactivates the LACP port, and sets the port's
+>   is_enabled flag to false.
+>2. The slave device then updates it's carrier state to off while it reset=
+s
+>   itself. This update triggers a NETDEV_CHANGE notification, which perfo=
+rms
+>   a speed and duplex update. The device does not return a valid speed
+>   and duplex, so the master sets the slave link state to BOND_LINK_FAIL.
+>3. When the slave VNIC device(s) are active again, some operations, such
+>   as setting the port's is_enabled flag, are not performed when transiti=
+oning
+>   the link state back to BOND_LINK_UP from BOND_LINK_FAIL, though the st=
+ate
+>   prior to the speed check was BOND_LINK_DOWN.
 
-Hi Andrew,
+	Just to make sure I'm understanding correctly, in regards to
+"the state prior to the speed check was BOND_LINK_DOWN," do you mean
+that during step 1, the slave link is set to BOND_LINK_DOWN, and then in
+step 2 changed from _DOWN to _FAIL?
 
-You can find some dtb and source files in our kernel package.
+>Affected devices are therefore not utilized in the aggregation though the=
+y
+>are operational. The simplest way to fix this seems to be to restrict the
+>link state change to devices that are currently up and running.
 
-Download: http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X5000.tar.gz
+	This sounds similar to an issue from last fall; can you confirm
+that you're running with a kernel that includes:
 
-Thanks,
-Christian
+1899bb325149 bonding: fix state transition issue in link monitoring
 
-> On 29. Apr 2020, at 15:13, Andrew Lunn <andrew@lunn.ch> wrote:
->=20
-> =EF=BB=BF
->>=20
->> Maybe we have to modify the dtb file.
->=20
-> Hi Christian
->=20
-> Could you point me at the DT file.
->=20
->      Thanks
->    Andrew
+	-J
+	=
 
---Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
-Content-Type: text/html;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 
-<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
-utf-8"></head><body dir=3D"auto">Hi Andrew,<div><br></div><div>You can find s=
-ome dtb and source files in our kernel package.</div><div><br></div><div>Dow=
-nload:&nbsp;<a href=3D"http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X500=
-0.tar.gz">http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X5000.tar.gz</a><=
-/div><div><br></div><div>Thanks,</div><div>Christian<br><div dir=3D"ltr"><br=
-><blockquote type=3D"cite">On 29. Apr 2020, at 15:13, Andrew Lunn &lt;andrew=
-@lunn.ch&gt; wrote:<br><br></blockquote></div><blockquote type=3D"cite"><div=
- dir=3D"ltr">=EF=BB=BF<blockquote type=3D"cite"><span>Maybe we have to modif=
-y the dtb file.</span><br></blockquote><span></span><br><span>Hi Christian</=
-span><br><span></span><br><span>Could you point me at the DT file.</span><br=
-><span></span><br><span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thanks</span><br><spa=
-n> &nbsp; &nbsp;Andrew</span><br></div></blockquote></div></body></html>=
+>CC: Jay Vosburgh <j.vosburgh@gmail.com>
+>CC: Veaceslav Falico <vfalico@gmail.com>
+>CC: Andy Gospodarek <andy@greyhouse.net>
+>Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
+>---
+> drivers/net/bonding/bond_main.c | 3 ++-
+> 1 file changed, 2 insertions(+), 1 deletion(-)
+>
+>diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_m=
+ain.c
+>index 2e70e43c5df5..d840da7cd379 100644
+>--- a/drivers/net/bonding/bond_main.c
+>+++ b/drivers/net/bonding/bond_main.c
+>@@ -3175,7 +3175,8 @@ static int bond_slave_netdev_event(unsigned long ev=
+ent,
+> 		 * speeds/duplex are available.
+> 		 */
+> 		if (bond_update_speed_duplex(slave) &&
+>-		    BOND_MODE(bond) =3D=3D BOND_MODE_8023AD) {
+>+		    BOND_MODE(bond) =3D=3D BOND_MODE_8023AD &&
+>+		    slave->link =3D=3D BOND_LINK_UP) {
+> 			if (slave->last_link_up)
+> 				slave->link =3D BOND_LINK_FAIL;
+> 			else
+>-- =
 
---Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B--
+>2.18.2
+>
+
+---
+	-Jay Vosburgh, jay.vosburgh@canonical.com
