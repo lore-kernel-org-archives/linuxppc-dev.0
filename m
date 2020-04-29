@@ -2,63 +2,63 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05F28C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:40:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B43AC83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:44:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A57782074A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:40:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E4D4A2073E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 11:44:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="m6QUf84E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A57782074A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="VN9jSEoO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4D4A2073E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BxQm0BFkzDqXB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 21:40:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BxW22d6qzDr3k
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 21:44:14 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BxLc5pdnzDr1x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 21:36:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BxSv6jQtzDq77
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 21:42:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=m6QUf84E; 
+ header.a=rsa-sha256 header.s=201909 header.b=VN9jSEoO; 
  dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 49BxSv63jsz9sRY; Wed, 29 Apr 2020 21:42:23 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49BxLb4jYvz9sRY;
- Wed, 29 Apr 2020 21:36:55 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49BxSt4pGzz9sPF;
+ Wed, 29 Apr 2020 21:42:22 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1588160216;
- bh=tHdjCSyj/K2oQz3cXbnPUTYVwYd6v0eaJsUiBnOB+cw=;
+ s=201909; t=1588160543;
+ bh=1tlusSBwGr5U0w6ErMbJb/gNa+IXcP1MkkFVn6Y7ZS4=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=m6QUf84EzHOH984uaj6O8S+mzUl1x3nVlvWVuZVRb/+fSl2CCFYtk9OGM7uUZlhTZ
- 4wp643Qf6KJRN/8MGgfiS4u96DeGwhupDUsrybrUCRDbT77+FEv7YLcrL+G865LC57
- o3DY+4rwvg9VMqL+SusleGZvoVD1+R/e9YANjzNm4MfvQv0bczpCsw0rjljXaQfl10
- 1DQRk42JhA0aJYt1q1wB0yAurELIXgSayCZmiKiklgTuf1s0suqtuarHFeAVGRLMyx
- 51/qeUmut8aortHUu7ftx8+v7Zyi+ct5DxRa4s9IWr5P/UBmaesL1pu2M78/a1WyRv
- 8Bs76ezyPHKLA==
+ b=VN9jSEoOBhTB0p7EzleihEGvDqn7BKfU3Cu5uchJytHan/oluvoCAsbvHah1ywvX6
+ 03PZ0H6jz1OeHzfonu9hVvZStkygHM4752zpFI5LAEZ+RNKl57gC0jM80kll0LzVY6
+ ZnT4PiKsu2ii0Fd4sGYZxGSxVhCMcQMKjhIhqKgkIC/PKNDjzkiz+B7f3ypWbgum0x
+ 0gPTGfbVuuc6J11czz8r+wn2MJb9ZCCWdBmPwgR4NokJJ5rizd0HhGuvaxjpjhqnXb
+ mT5GFrV9GWYM/Mbt8Ijx6t1L++y/J2NdDG/bfDS4iTbvAdJtBPSYIo7yp6FOBvki4G
+ cUWQl8eQ7nvug==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>, acme@kernel.org,
- linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH v7 5/5] powerpc/hv-24x7: Update post_mobility_fixup() to
- handle migration
-In-Reply-To: <20200327063642.26175-6-kjain@linux.ibm.com>
-References: <20200327063642.26175-1-kjain@linux.ibm.com>
- <20200327063642.26175-6-kjain@linux.ibm.com>
-Date: Wed, 29 Apr 2020 21:37:12 +1000
-Message-ID: <877dxyfrpz.fsf@mpe.ellerman.id.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] powerpc/spufs: Add rcu_read_lock() around fcheck()
+In-Reply-To: <20200428135245.GA2827@lst.de>
+References: <20200428114811.68436-1-mpe@ellerman.id.au>
+ <20200428135245.GA2827@lst.de>
+Date: Wed, 29 Apr 2020 21:42:39 +1000
+Message-ID: <875zdifrgw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,75 +72,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, maddy@linux.vnet.ibm.com, peterz@infradead.org,
- yao.jin@linux.intel.com, mingo@kernel.org, kan.liang@linux.intel.com,
- ak@linux.intel.com, alexander.shishkin@linux.intel.com,
- anju@linux.vnet.ibm.com, mamatha4@linux.vnet.ibm.com,
- ravi.bangoria@linux.ibm.com, kjain@linux.ibm.com, jmario@redhat.com,
- namhyung@kernel.org, tglx@linutronix.de, mpetlan@redhat.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org, jolsa@kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, hch@lst.de,
+ viro@zeniv.linux.org.uk, jk@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Kajol Jain <kjain@linux.ibm.com> writes:
-> Function 'read_sys_info_pseries()' is added to get system parameter
-> values like number of sockets and chips per socket.
-> and it gets these details via rtas_call with token
-> "PROCESSOR_MODULE_INFO".
+Christoph Hellwig <hch@lst.de> writes:
+> On Tue, Apr 28, 2020 at 09:48:11PM +1000, Michael Ellerman wrote:
+>> 
+>> This comes from fcheck_files() via fcheck().
+>> 
+>> It's pretty clearly documented that fcheck() must be wrapped with
+>> rcu_read_lock(), so fix it.
 >
-> Incase lpar migrate from one system to another, system
-> parameter details like chips per sockets or number of sockets might
-> change. So, it needs to be re-initialized otherwise, these values
-> corresponds to previous system values.
-> This patch adds a call to 'read_sys_info_pseries()' from
-> 'post-mobility_fixup()' to re-init the physsockets and physchips values.
->
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/mobility.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index b571285f6c14..226accd6218b 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -371,6 +371,18 @@ void post_mobility_fixup(void)
->  	/* Possibly switch to a new RFI flush type */
->  	pseries_setup_rfi_flush();
->  
-> +	/*
-> +	 * Incase lpar migrate from one system to another, system
+> But for this to actually be useful you'd need the rcu read lock until
+> your are done with the file (or got a reference).
 
-In case an LPAR migrates
+Hmm OK. My reasoning was that we were done with the struct file, because
+we return the ctx that's hanging off the inode.
 
-> +	 * parameter details like chips per sockets and number of sockets
-> +	 * might change. So, it needs to be re-initialized otherwise these
-                             ^                                       ^
-                             they need                               the
-> +	 * values corresponds to previous system.
-                  ^
-                  will correspond to the
++	ctx = SPUFS_I(file_inode(file))->i_ctx;
 
-> +	 * Here, adding a call to read_sys_info_pseries() declared in
+But I guess the lifetime of the ctx is not guaranteed if the file goes
+away.
 
-Adding is the wrong tense in a comment. When someone reads the comment
-the code has already been added. Past tense would be right, but really
-the comment shouldn't say what you did, it should say why.
+It looks like the only long lived reference on the ctx is the one
+taken in spufs_new_file() and dropped in spufs_evict_inode().
 
-> +	 * platforms/pseries/pseries.h to re-init the physsockets and
-> +	 * physchips value.
+So if we take a reference to the ctx with the RCU lock held we should be
+safe, I think. But I've definitely exhausted my spufs/vfs knowledge at
+this point.
 
-Call read_sys_info_pseries() to reinitialise the values.
-
-> +	 */
-> +	if (IS_ENABLED(CONFIG_HV_PERF_CTRS) && IS_ENABLED(CONFIG_PPC_RTAS))
-> +		read_sys_info_pseries();
-
-The RTAS check is not needed. pseries always selects RTAS.
-
-You shouldn't need the IS_ENABLED() check here though, do it with an
-empty version in the header when CONFIG_HV_PERF_CTRS is not enabled.
+Something like below.
 
 cheers
+
+
+diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
+index 8b3296b62f65..37c155254cd5 100644
+--- a/arch/powerpc/platforms/cell/spufs/coredump.c
++++ b/arch/powerpc/platforms/cell/spufs/coredump.c
+@@ -82,13 +82,20 @@ static int match_context(const void *v, struct file *file, unsigned fd)
+  */
+ static struct spu_context *coredump_next_context(int *fd)
+ {
++       struct spu_context *ctx;
+        struct file *file;
+        int n = iterate_fd(current->files, *fd, match_context, NULL);
+        if (!n)
+                return NULL;
+        *fd = n - 1;
++
++       rcu_read_lock();
+        file = fcheck(*fd);
+-       return SPUFS_I(file_inode(file))->i_ctx;
++       ctx = SPUFS_I(file_inode(file))->i_ctx;
++       get_spu_context(ctx);
++       rcu_read_unlock();
++
++       return ctx;
+ }
+
+ int spufs_coredump_extra_notes_size(void)
+@@ -99,17 +106,23 @@ int spufs_coredump_extra_notes_size(void)
+        fd = 0;
+        while ((ctx = coredump_next_context(&fd)) != NULL) {
+                rc = spu_acquire_saved(ctx);
+-               if (rc)
++               if (rc) {
++                       put_spu_context(ctx);
+                        break;
++               }
++
+                rc = spufs_ctx_note_size(ctx, fd);
+                spu_release_saved(ctx);
+-               if (rc < 0)
++               if (rc < 0) {
++                       put_spu_context(ctx);
+                        break;
++               }
+
+                size += rc;
+
+                /* start searching the next fd next time */
+                fd++;
++               put_spu_context(ctx);
+        }
+
+        return size;
+
