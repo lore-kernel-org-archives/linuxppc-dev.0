@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 918A4C83001
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 02:13:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47E37C83001
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 02:15:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47B0B2073E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 02:13:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47B0B2073E
+	by mail.kernel.org (Postfix) with ESMTPS id F252320730
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 02:15:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F252320730
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BhrY1QcfzDr2k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 12:13:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Bhtj3PMWzDqyh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 12:15:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=informatik.wtf (client-ip=131.153.2.42;
- helo=h1.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
+ smtp.mailfrom=informatik.wtf (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
- [131.153.2.42])
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Bhdy2ng0zDqyf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Bhdy0ZtmzDqyG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 12:04:22 +1000 (AEST)
 Received: from MTA-14-4.privateemail.com (mta-14.privateemail.com
  [198.54.118.205])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 33B6880A6D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 22:04:18 -0400 (EDT)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 8080A8084E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2020 22:04:17 -0400 (EDT)
 Received: from mta-14.privateemail.com (localhost [127.0.0.1])
- by mta-14.privateemail.com (Postfix) with ESMTP id B562180061;
- Tue, 28 Apr 2020 22:04:14 -0400 (EDT)
+ by mta-14.privateemail.com (Postfix) with ESMTP id 3DFE780053;
+ Tue, 28 Apr 2020 22:04:13 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.249])
- by mta-14.privateemail.com (Postfix) with ESMTPA id 6FCD580063;
- Wed, 29 Apr 2020 02:04:14 +0000 (UTC)
+ by mta-14.privateemail.com (Postfix) with ESMTPA id BA9B680059;
+ Wed, 29 Apr 2020 02:04:12 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@lists.ozlabs.org,
 	kernel-hardening@lists.openwall.com
-Subject: [RFC PATCH v2 4/5] powerpc/lib: Add LKDTM accessor for patching addr
-Date: Tue, 28 Apr 2020 21:05:30 -0500
-Message-Id: <20200429020531.20684-5-cmr@informatik.wtf>
+Subject: [RFC PATCH v2 1/5] powerpc/mm: Introduce temporary mm
+Date: Tue, 28 Apr 2020 21:05:27 -0500
+Message-Id: <20200429020531.20684-2-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.26.1
 In-Reply-To: <20200429020531.20684-1-cmr@informatik.wtf>
 References: <20200429020531.20684-1-cmr@informatik.wtf>
@@ -71,35 +71,134 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When live patching a STRICT_RWX kernel, a mapping is installed at a
-"patching address" with temporary write permissions. Provide a
-LKDTM-only accessor function for this address in preparation for a LKDTM
-test which attempts to "hijack" this mapping by writing to it from
-another CPU.
+x86 supports the notion of a temporary mm which restricts access to
+temporary PTEs to a single CPU. A temporary mm is useful for situations
+where a CPU needs to perform sensitive operations (such as patching a
+STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
+said mappings to other CPUs. A side benefit is that other CPU TLBs do
+not need to be flushed when the temporary mm is torn down.
+
+Mappings in the temporary mm can be set in the userspace portion of the
+address-space.
+
+Interrupts must be disabled while the temporary mm is in use. HW
+breakpoints, which may have been set by userspace as watchpoints on
+addresses now within the temporary mm, are saved and disabled when
+loading the temporary mm. The HW breakpoints are restored when unloading
+the temporary mm. All HW breakpoints are indiscriminately disabled while
+the temporary mm is in use.
+
+Based on x86 implementation:
+
+commit cefa929c034e
+("x86/mm: Introduce temporary mm structs")
 
 Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
 ---
- arch/powerpc/lib/code-patching.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/include/asm/debug.h       |  1 +
+ arch/powerpc/include/asm/mmu_context.h | 54 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/process.c          |  5 +++
+ 3 files changed, 60 insertions(+)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 26f06cdb5d7e..cfbdef90384e 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -46,6 +46,13 @@ int raw_patch_instruction(unsigned int *addr, unsigned int instr)
- static struct mm_struct *patching_mm __ro_after_init;
- static unsigned long patching_addr __ro_after_init;
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index 7756026b95ca..b945bc16c932 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -45,6 +45,7 @@ static inline int debugger_break_match(struct pt_regs *regs) { return 0; }
+ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
  
-+#ifdef CONFIG_LKDTM
-+unsigned long read_cpu_patching_addr(unsigned int cpu)
-+{
-+	return patching_addr;
-+}
-+#endif
++void __get_breakpoint(struct arch_hw_breakpoint *brk);
+ void __set_breakpoint(struct arch_hw_breakpoint *brk);
+ bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 360367c579de..57a8695fe63f 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -10,6 +10,7 @@
+ #include <asm/mmu.h>	
+ #include <asm/cputable.h>
+ #include <asm/cputhreads.h>
++#include <asm/debug.h>
+ 
+ /*
+  * Most if the context management is out of line
+@@ -270,5 +271,58 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
+ 	return 0;
+ }
+ 
++struct temp_mm {
++	struct mm_struct *temp;
++	struct mm_struct *prev;
++	bool is_kernel_thread;
++	struct arch_hw_breakpoint brk;
++};
 +
- void __init poking_init(void)
++static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
++{
++	temp_mm->temp = mm;
++	temp_mm->prev = NULL;
++	temp_mm->is_kernel_thread = false;
++	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
++}
++
++static inline void use_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	temp_mm->is_kernel_thread = current->mm == NULL;
++	if (temp_mm->is_kernel_thread)
++		temp_mm->prev = current->active_mm;
++	else
++		temp_mm->prev = current->mm;
++
++	/*
++	 * Hash requires a non-NULL current->mm to allocate a userspace address
++	 * when handling a page fault. Does not appear to hurt in Radix either.
++	 */
++	current->mm = temp_mm->temp;
++	switch_mm_irqs_off(NULL, temp_mm->temp, current);
++
++	if (ppc_breakpoint_available()) {
++		__get_breakpoint(&temp_mm->brk);
++		if (temp_mm->brk.type != 0)
++			hw_breakpoint_disable();
++	}
++}
++
++static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	if (temp_mm->is_kernel_thread)
++		current->mm = NULL;
++	else
++		current->mm = temp_mm->prev;
++	switch_mm_irqs_off(NULL, temp_mm->prev, current);
++
++	if (ppc_breakpoint_available() && temp_mm->brk.type != 0)
++		__set_breakpoint(&temp_mm->brk);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9c21288f8645..ec4cf890d92c 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -800,6 +800,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+ 	return 0;
+ }
+ 
++void __get_breakpoint(struct arch_hw_breakpoint *brk)
++{
++	memcpy(brk, this_cpu_ptr(&current_brk), sizeof(*brk));
++}
++
+ void __set_breakpoint(struct arch_hw_breakpoint *brk)
  {
- 	spinlock_t *ptl; /* for protecting pte table */
+ 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
 -- 
 2.26.1
 
