@@ -2,69 +2,63 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BCBAC83000
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 14:24:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99FC4C83000
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 14:37:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E447B206F0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 14:24:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 42ED9206F0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 14:37:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="D6j3FH7i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E447B206F0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="r0MyUrcN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42ED9206F0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49C13z5fRBzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 00:24:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+a0a4a731113bfbd7765c+6093+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49C1Lz6jVhzDrB8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 00:37:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=D6j3FH7i; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=r0MyUrcN; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49C0wx5s0nzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 00:18:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=ikRp1jMR1EzFxoc+o3VOCA2gMw8FZkS2U5Oi/2AUBbY=; b=D6j3FH7ivByLMWug4zMS8gt8vs
- G4Igy0iDFTNqxHdTrAQexq30jGCOX8jILBsiQbZpAYQtO1MgsihDdRBm5YtaBgQd/ujc9d9AzhQ7I
- sYevrP9lBud2gYOzdyWzpajhBEjytuRwoxl12BNh7HwiyA6KuTWD5P3e7awgfq8VPlDhCQJ+pN7W/
- nqhzrAnBl2S/kgwYqKWYUYBO54H/Y5g3nPWbmFrsKOjqsrQvlSOMrtyzcDKUZCJilITaZaEpE8GCr
- DvzhHKVgo+GJ0ybB4TvX7cmmNWALoPxda8PopiWIAILoXx03VF1elS0sEB1Rys1RcInokhc+M6ddW
- cZVwqHpw==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jTnWM-0001Yh-RC; Wed, 29 Apr 2020 14:17:06 +0000
-Date: Wed, 29 Apr 2020 07:17:06 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Mike Rapoport <rppt@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49C1HB4dTKzDr95
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 00:34:14 +1000 (AEST)
+Received: from kernel.org (unknown [87.70.161.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 796F52074A;
+ Wed, 29 Apr 2020 14:33:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588170852;
+ bh=WWPVYLJB8cF1eh/bgOa7kKMnwvq4kKVMrtpQ0105+PI=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=r0MyUrcNByfv40BqZMDUz9VgJFeWUeRjo2JW4VKDF1h/7I/qQIsmP3r+XczFilNcB
+ ++CDc2aMtj2e1Vvw7mqelm0S/yNPEGrXgzqXPqqXmHsIltvr+DFp/+T/wSjD9ztS+C
+ LzUl9esAqrKIQvImRO0XfT4341bJ3x0mFvf4a1wc=
+Date: Wed, 29 Apr 2020 17:33:46 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Christoph Hellwig <hch@infradead.org>
 Subject: Re: [PATCH v2 16/20] mm: remove early_pfn_in_nid() and
  CONFIG_NODES_SPAN_OTHER_NODES
-Message-ID: <20200429141706.GA25142@infradead.org>
+Message-ID: <20200429143346.GI14260@kernel.org>
 References: <20200429121126.17989-1-rppt@kernel.org>
  <20200429121126.17989-17-rppt@kernel.org>
+ <20200429141706.GA25142@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200429121126.17989-17-rppt@kernel.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20200429141706.GA25142@infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,14 +104,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 03:11:22PM +0300, Mike Rapoport wrote:
-> From: Mike Rapoport <rppt@linux.ibm.com>
+On Wed, Apr 29, 2020 at 07:17:06AM -0700, Christoph Hellwig wrote:
+> On Wed, Apr 29, 2020 at 03:11:22PM +0300, Mike Rapoport wrote:
+> > From: Mike Rapoport <rppt@linux.ibm.com>
+> > 
+> > The commit f47ac088c406 ("mm: memmap_init: iterate over memblock regions
+> > rather that check each PFN") made early_pfn_in_nid() obsolete and since
+> > CONFIG_NODES_SPAN_OTHER_NODES is only used to pick a stub or a real
+> > implementation of early_pfn_in_nid() it is also not needed anymore.
 > 
-> The commit f47ac088c406 ("mm: memmap_init: iterate over memblock regions
-> rather that check each PFN") made early_pfn_in_nid() obsolete and since
-> CONFIG_NODES_SPAN_OTHER_NODES is only used to pick a stub or a real
-> implementation of early_pfn_in_nid() it is also not needed anymore.
+> I don't think you can quote a commit id for something that hasn't been
+> commited to mainline yet.i
 
-I don't think you can quote a commit id for something that hasn't been
-commited to mainline yet.  Then again I would have just merged this
-patch into the one that obsoleted early_pfn_in_nid anyway.
+Ouch, that was one of the things I've indented to fix in v2...
+
+> Then again I would have just merged this
+> patch into the one that obsoleted early_pfn_in_nid anyway.
+
+I've kept these commits separate to preserve the authorship.
+I'll update the changelog so that it won't mention commit id.
+
+-- 
+Sincerely yours,
+Mike.
