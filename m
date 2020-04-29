@@ -2,138 +2,60 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B5EC83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 12:59:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCF15C83009
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:02:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B78962074A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 12:59:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9168A214D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 13:02:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F1br0ski"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B78962074A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="t6mTPm7t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9168A214D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Bz9R5mgmzDqBM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 22:59:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BzFf4s2bzDr88
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 23:02:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::743;
- helo=mail-qk1-x743.google.com; envelope-from=adhemerval.zanella@linaro.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=F1br0ski; dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=t6mTPm7t; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49ByCm1sJfzDqyS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 22:16:03 +1000 (AEST)
-Received: by mail-qk1-x743.google.com with SMTP id t3so1678026qkg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 05:16:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=to:cc:references:from:autocrypt:subject:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=s6yLkKL2RDPvj0ehntuz6yzYqVw4HJfxBcxm7sr0I1s=;
- b=F1br0skinTh7HBpC7lZCp6OjkBuNJLucEhazcspv/VrXZRfrO4FTng/i68uNqSv6QU
- zQewiY+PHvLs7GLybULIyU7S7zlDq5q0xnE5WYJKb5IGxpwlnJwQc3ZDCuUwA1g+Tr27
- ft7+B2nM4IUQk3ZGxOOSQZN1jexmWuKnK1x1veI+V0HhrJYlFPMXTgV1DtPz0v2RJSEy
- Xm922tltI5SqS2gLRKAboDD4EP2c09+f7R3jVF+40cuLWhzedbsAo5cLTpSDoCYu7xEd
- kK/qOMZlsxBg0pZ0V68oH3ByH7oFlKXjeFx+Q+KN65xQ2SsGaOjKLPAgzSuZmxcRlOqh
- pevw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:to:cc:references:from:autocrypt:subject
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=s6yLkKL2RDPvj0ehntuz6yzYqVw4HJfxBcxm7sr0I1s=;
- b=LILfNGHJ8SjsGFJkqbtH/F1vGIu7z9kTJSlwPVGynBL01/CzcU5q+kn1mQgzxhuzzP
- gYWFOMkI3bZRiLJXKd1kWdtonLgow1AEGM8BCulBun3fN4NtSqDX+fgXBQdD5ZpRe/J2
- stUvLE956Ygf6ytRUaw96nkTXDpFDnuVljtBhYVyMeRxH0IeG+rSc2KjMWeMcMjOrbHU
- 0o/MuSCXlZP75wXt6AiV96FjDt/cc9wYjYjGhOtQCzBaO+VPdIto7mkoVLYeJ89y9dtg
- OSl77I6cDcN1pDlKb/fgqmFiB/s6oh58pnc+BXEbWpeWY/gbU2j8XzWDkr7AyUa4PTcu
- C+5w==
-X-Gm-Message-State: AGi0PubGDEtsiXurkRSDwmaUsfcZXhMVALwC7hmYLCtZincVy1ES8Hv5
- MSJssDREieeoXZZ8npocsRqDFw==
-X-Google-Smtp-Source: APiQypLrOc/ksJ8GwNB1ssNL729PScg2AHLYHn+NrBPRx2MksLAb6IFkcgYbonr5y4Qj2QgN4RVerA==
-X-Received: by 2002:ae9:e8c2:: with SMTP id a185mr31471013qkg.72.1588162559245; 
- Wed, 29 Apr 2020 05:15:59 -0700 (PDT)
-Received: from [192.168.1.4] ([177.194.48.209])
- by smtp.googlemail.com with ESMTPSA id
- q15sm15411689qkn.100.2020.04.29.05.15.56
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 29 Apr 2020 05:15:58 -0700 (PDT)
-To: Nicholas Piggin <npiggin@gmail.com>, Rich Felker <dalias@libc.org>
-References: <1587790194.w180xsw5be.astroid@bobo.none>
- <9371cac5-20bb-0552-2609-0d537f41fecd@c-s.fr>
- <1587810370.tg8ym9yjpc.astroid@bobo.none>
- <976551e8-229e-54c1-8fb2-c5df94b979c3@c-s.fr>
- <1587855423.jug0f1n0b8.astroid@bobo.none>
- <20200425231119.GM11469@brightrain.aerifal.cx>
- <1587872025.rtx2ygrmn0.astroid@bobo.none>
- <e8a9d3d9-18a7-2cb9-db70-74f7b107f744@linaro.org>
- <1588126678.zjwj4d1d90.astroid@bobo.none>
-From: Adhemerval Zanella <adhemerval.zanella@linaro.org>
-Autocrypt: addr=adhemerval.zanella@linaro.org; prefer-encrypt=mutual; keydata=
- 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
-Subject: Re: New powerpc vdso calling convention
-Message-ID: <be2ac7fa-ef57-37a7-2e3f-9746738a2e3a@linaro.org>
-Date: Wed, 29 Apr 2020 09:15:54 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49ByCn3tB6zDqkT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 22:16:05 +1000 (AEST)
+Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9398D21974;
+ Wed, 29 Apr 2020 12:15:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588162563;
+ bh=ctUIy/YXeb4o7EetKtzPouPDDIiPmPpivi+QjUKxJWI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=t6mTPm7tDf6A7Fs1DPVRRbHW9NSUsNbUTBbTB5Mt5W0CY60/S3DgGMfp7O1x4H3dF
+ UQWqU+tdAZsr0ftTrK6xUyuXzR3WiWfBGDM0zN31grCnE9SDwBEA4eeBZHjjz7WsYP
+ EgqQnBLprJoYDC61AEWwct3Qxl5ChjhVms6vDhQM=
+From: Mike Rapoport <rppt@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 17/20] mm: free_area_init: allow defining max_zone_pfn in
+ descending order
+Date: Wed, 29 Apr 2020 15:11:23 +0300
+Message-Id: <20200429121126.17989-18-rppt@kernel.org>
+X-Mailer: git-send-email 2.26.1
+In-Reply-To: <20200429121126.17989-1-rppt@kernel.org>
+References: <20200429121126.17989-1-rppt@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <1588126678.zjwj4d1d90.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -146,210 +68,185 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-alpha@sourceware.org, musl@lists.openwall.com, binutils@sourceware.org,
- Andy Lutomirski <luto@kernel.org>, libc-dev@lists.llvm.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ linux-csky@vger.kernel.org, linux-parisc@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Mike Rapoport <rppt@linux.ibm.com>,
+ Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
+ linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-arm-kernel@lists.infradead.org, Mark Salter <msalter@redhat.com>,
+ Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
+ Qian Cai <cai@lca.pw>, Greentime Hu <green.hu@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>,
+ Guan Xuetao <gxt@pku.edu.cn>, Hoan Tran <Hoan@os.amperecomputing.com>,
+ Michal Simek <monstr@monstr.eu>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Brian Cain <bcain@codeaurora.org>, Nick Hu <nickhu@andestech.com>,
+ linux-mm@kvack.org, Vineet Gupta <vgupta@synopsys.com>,
+ linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+ Richard Weinberger <richard@nod.at>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Mike Rapoport <rppt@linux.ibm.com>
 
+Some architectures (e.g. ARC) have the ZONE_HIGHMEM zone below the
+ZONE_NORMAL. Allowing free_area_init() parse max_zone_pfn array even it is
+sorted in descending order allows using free_area_init() on such
+architectures.
 
-On 28/04/2020 23:39, Nicholas Piggin wrote:
-> Excerpts from Adhemerval Zanella's message of April 27, 2020 11:09 pm:
->>
->>
->> On 26/04/2020 00:41, Nicholas Piggin wrote:
->>> Excerpts from Rich Felker's message of April 26, 2020 9:11 am:
->>>> On Sun, Apr 26, 2020 at 08:58:19AM +1000, Nicholas Piggin wrote:
->>>>> Excerpts from Christophe Leroy's message of April 25, 2020 10:20 pm:
->>>>>>
->>>>>>
->>>>>> Le 25/04/2020 à 12:56, Nicholas Piggin a écrit :
->>>>>>> Excerpts from Christophe Leroy's message of April 25, 2020 5:47 pm:
->>>>>>>>
->>>>>>>>
->>>>>>>> Le 25/04/2020 à 07:22, Nicholas Piggin a écrit :
->>>>>>>>> As noted in the 'scv' thread, powerpc's vdso calling convention does not
->>>>>>>>> match the C ELF ABI calling convention (or the proposed scv convention).
->>>>>>>>> I think we could implement a new ABI by basically duplicating function
->>>>>>>>> entry points with different names.
->>>>>>>>
->>>>>>>> I think doing this is a real good idea.
->>>>>>>>
->>>>>>>> I've been working at porting powerpc VDSO to the GENERIC C VDSO, and the
->>>>>>>> main pitfall has been that our vdso calling convention is not compatible
->>>>>>>> with C calling convention, so we have go through an ASM entry/exit.
->>>>>>>>
->>>>>>>> See https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=171469
->>>>>>>>
->>>>>>>> We should kill this error flag return through CR[SO] and get it the
->>>>>>>> "modern" way like other architectectures implementing the C VDSO: return
->>>>>>>> 0 when successfull, return -err when failed.
->>>>>>>
->>>>>>> Agreed.
->>>>>>>
->>>>>>>>> The ELF v2 ABI convention would suit it well, because the caller already
->>>>>>>>> requires the function address for ctr, so having it in r12 will
->>>>>>>>> eliminate the need for address calculation, which suits the vdso data
->>>>>>>>> page access.
->>>>>>>>>
->>>>>>>>> Is there a need for ELF v1 specific calls as well, or could those just be
->>>>>>>>> deprecated and remain on existing functions or required to use the ELF
->>>>>>>>> v2 calls using asm wrappers?
->>>>>>>>
->>>>>>>> What's ELF v1 and ELF v2 ? Is ELF v1 what PPC32 uses ? If so, I'd say
->>>>>>>> yes, it would be good to have it to avoid going through ASM in the middle.
->>>>>>>
->>>>>>> I'm not sure about PPC32. On PPC64, ELFv2 functions must be called with
->>>>>>> their address in r12 if called at their global entry point. ELFv1 have a
->>>>>>> function descriptor with call address and TOC in it, caller has to load
->>>>>>> the TOC if it's global.
->>>>>>>
->>>>>>> The vdso doesn't have TOC, it has one global address (the vdso data
->>>>>>> page) which it loads by calculating its own address.
->>>>>>>
->>>>>>> The kernel doesn't change the vdso based on whether it's called by a v1
->>>>>>> or v2 userspace (it doesn't really know itself and would have to export
->>>>>>> different functions). glibc has a hack to create something:
->>>>>>>
->>>>>>> # define VDSO_IFUNC_RET(value)                           \
->>>>>>>    ({                                                     \
->>>>>>>      static Elf64_FuncDesc vdso_opd = { .fd_toc = ~0x0 }; \
->>>>>>>      vdso_opd.fd_func = (Elf64_Addr)value;                \
->>>>>>>      &vdso_opd;                                           \
->>>>>>>    })
->>>>>>>
->>>>>>> If we could make something which links more like any other dso with
->>>>>>> ELFv1, that would be good. Otherwise I think v2 is preferable so it
->>>>>>> doesn't have to calculate its own address.
->>>>>>
->>>>>> I see the following in glibc. So looks like PPC32 is like PPC64 elfv1. 
->>>>>> By the way, they are talking about something not completely finished in 
->>>>>> the kernel. Can we finish it ?
->>>>>
->>>>> Possibly can. It seems like a good idea to fix all loose ends if we are 
->>>>> going to add new versions. Will have to check with the toolchain people 
->>>>> to make sure we're doing the right thing.
->>>>
->>>> "ELFv1" and "ELFv2" are PPC64-specific names for the old and new
->>>> version of the ELF psABI for PPC64. They have nothing at all to do
->>>> with PPC32 which is a completely different ABI from either.
->>>
->>> Right, I'm just talking about those comments -- it seems like the kernel 
->>> vdso should contain an .opd section with function descriptors in it for
->>> elfv1 calls, rather than the hack it has now of creating one in the 
->>> caller's .data section.
->>>
->>> But all that function descriptor code is gated by
->>>
->>> #if (defined(__PPC64__) || defined(__powerpc64__)) && _CALL_ELF != 2
->>>
->>> So it seems PPC32 does not use function descriptors but a direct pointer 
->>> to the entry point like PPC64 with ELFv2.
->>
->> Yes, this hack is only for ELFv1.  The missing ODP has not been an issue 
->> or glibc because it has been using the inline assembly to emulate the 
->> functions call since initial vDSO support (INTERNAL_VSYSCALL_CALL_TYPE).
->> It just has become an issue when I added a ifunc optimization to 
->> gettimeofday so it can bypass the libc.so and make plt branch to vDSO 
->> directly.
-> 
-> I can't understand if it's actually a problem for you or not.
-> 
-> Regardless if you can hack around it, it seems to me that if we're going 
-> to add sane calling conventions to the vdso, then we should also just 
-> have a .opd section for it as well, whether or not a particular libc 
-> requires it.
+Add top -> down traversal of max_zone_pfn array in free_area_init() and use
+the latter in ARC node/zone initialization.
 
-The main problem for glibc is the complication of having to handle two
-different calling conventions.  Specially if kernel starts to provide 
-new vDSO symbols with only with the new semantic. 
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+---
+ arch/arc/mm/init.c | 36 +++++++-----------------------------
+ mm/page_alloc.c    | 24 +++++++++++++++++++-----
+ 2 files changed, 26 insertions(+), 34 deletions(-)
 
-But I think it is doable, it will require some internal tinkering on
-how to handle vDSO (to indicate which mechanism to use) which will 
-most likely be powerpc specific.
+diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
+index 0920c969c466..41eb9be1653c 100644
+--- a/arch/arc/mm/init.c
++++ b/arch/arc/mm/init.c
+@@ -63,11 +63,13 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ 
+ 		low_mem_sz = size;
+ 		in_use = 1;
++		memblock_add_node(base, size, 0);
+ 	} else {
+ #ifdef CONFIG_HIGHMEM
+ 		high_mem_start = base;
+ 		high_mem_sz = size;
+ 		in_use = 1;
++		memblock_add_node(base, size, 1);
+ #endif
+ 	}
+ 
+@@ -83,8 +85,7 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+  */
+ void __init setup_arch_memory(void)
+ {
+-	unsigned long zones_size[MAX_NR_ZONES];
+-	unsigned long zones_holes[MAX_NR_ZONES];
++	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
+ 
+ 	init_mm.start_code = (unsigned long)_text;
+ 	init_mm.end_code = (unsigned long)_etext;
+@@ -115,7 +116,6 @@ void __init setup_arch_memory(void)
+ 	 * the crash
+ 	 */
+ 
+-	memblock_add_node(low_mem_start, low_mem_sz, 0);
+ 	memblock_reserve(CONFIG_LINUX_LINK_BASE,
+ 			 __pa(_end) - CONFIG_LINUX_LINK_BASE);
+ 
+@@ -133,22 +133,7 @@ void __init setup_arch_memory(void)
+ 	memblock_dump_all();
+ 
+ 	/*----------------- node/zones setup --------------------------*/
+-	memset(zones_size, 0, sizeof(zones_size));
+-	memset(zones_holes, 0, sizeof(zones_holes));
+-
+-	zones_size[ZONE_NORMAL] = max_low_pfn - min_low_pfn;
+-	zones_holes[ZONE_NORMAL] = 0;
+-
+-	/*
+-	 * We can't use the helper free_area_init(zones[]) because it uses
+-	 * PAGE_OFFSET to compute the @min_low_pfn which would be wrong
+-	 * when our kernel doesn't start at PAGE_OFFSET, i.e.
+-	 * PAGE_OFFSET != CONFIG_LINUX_RAM_BASE
+-	 */
+-	free_area_init_node(0,			/* node-id */
+-			    zones_size,		/* num pages per zone */
+-			    min_low_pfn,	/* first pfn of node */
+-			    zones_holes);	/* holes */
++	max_zone_pfn[ZONE_NORMAL] = max_low_pfn;
+ 
+ #ifdef CONFIG_HIGHMEM
+ 	/*
+@@ -168,20 +153,13 @@ void __init setup_arch_memory(void)
+ 	min_high_pfn = PFN_DOWN(high_mem_start);
+ 	max_high_pfn = PFN_DOWN(high_mem_start + high_mem_sz);
+ 
+-	zones_size[ZONE_NORMAL] = 0;
+-	zones_holes[ZONE_NORMAL] = 0;
+-
+-	zones_size[ZONE_HIGHMEM] = max_high_pfn - min_high_pfn;
+-	zones_holes[ZONE_HIGHMEM] = 0;
+-
+-	free_area_init_node(1,			/* node-id */
+-			    zones_size,		/* num pages per zone */
+-			    min_high_pfn,	/* first pfn of node */
+-			    zones_holes);	/* holes */
++	max_zone_pfn[ZONE_HIGHMEM] = max_high_pfn;
+ 
+ 	high_memory = (void *)(min_high_pfn << PAGE_SHIFT);
+ 	kmap_init();
+ #endif
++
++	free_area_init(max_zone_pfn);
+ }
+ 
+ /*
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d35ca0996a09..98a47f90065a 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -7408,7 +7408,8 @@ static void check_for_memory(pg_data_t *pgdat, int nid)
+ void __init free_area_init(unsigned long *max_zone_pfn)
+ {
+ 	unsigned long start_pfn, end_pfn;
+-	int i, nid;
++	int i, nid, zone;
++	bool descending = false;
+ 
+ 	/* Record where the zone boundaries are */
+ 	memset(arch_zone_lowest_possible_pfn, 0,
+@@ -7418,13 +7419,26 @@ void __init free_area_init(unsigned long *max_zone_pfn)
+ 
+ 	start_pfn = find_min_pfn_with_active_regions();
+ 
++	/*
++	 * Some architecturs, e.g. ARC may have ZONE_HIGHMEM below
++	 * ZONE_NORMAL. For such cases we allow max_zone_pfn sorted in the
++	 * descending order
++	 */
++	if (MAX_NR_ZONES > 1 && max_zone_pfn[0] > max_zone_pfn[1])
++		descending = true;
++
+ 	for (i = 0; i < MAX_NR_ZONES; i++) {
+-		if (i == ZONE_MOVABLE)
++		if (descending)
++			zone = MAX_NR_ZONES - i - 1;
++		else
++			zone = i;
++
++		if (zone == ZONE_MOVABLE)
+ 			continue;
+ 
+-		end_pfn = max(max_zone_pfn[i], start_pfn);
+-		arch_zone_lowest_possible_pfn[i] = start_pfn;
+-		arch_zone_highest_possible_pfn[i] = end_pfn;
++		end_pfn = max(max_zone_pfn[zone], start_pfn);
++		arch_zone_lowest_possible_pfn[zone] = start_pfn;
++		arch_zone_highest_possible_pfn[zone] = end_pfn;
+ 
+ 		start_pfn = end_pfn;
+ 	}
+-- 
+2.26.1
 
-> 
->> Recently on some y2038 refactoring it was suggested to get rid of this 
->> and make gettimeofday call clock_gettime regardless.  But some felt that 
->> the performance degradation was not worth for a symbol that is still used
->> extensibility, so we stuck with the hack.
->>
->> And I think having this synthetic opd entry is not an issue, since for 
->> full relro the program's will be used and correctly set as read-only.
-> 
-> I'm not quite sure what this means, I don't really know how glibc ifunc 
-> works. How do you set r2 if you have no opd?
-
-IFUNC itself is not an issue here, since it just a dynamic relocation that
-instruct the dynamic linker to issue a defined function that provides the
-actual symbol. The problem is symbol resolution for kernel vDSO symbol
-that returns a pointer to the text segment instead of the expected ODP 
-entry.
-
-And currently glibc assumes that kernel vDSO does not use TOC or AUX,
-so it sets a bogus value (~0x0) just to avoid trigger lazy resolution
-in some cases. It makes sense with the current contract that vDSO calls
-should behave as syscall, but lesser the flexibility of kernel 
-implementation.
-
-> 
->> The issue is more for glibc itself, and I wouldn't mind to just remove the
->> gettimeofday and time optimizations and use the default vDSO support
->> (which might increase in function latency though).
->>
->> As Rich has put, it would be simpler to just have powerpc vDSO symbols
->> to have a default function call semantic so we could issue a function
->> call directly.  But for powerpc64, we glibc will need to continue to 
->> support this non-standard call on older kernels and I am not sure if
->> adding new symbols with a different semantic will help much.
-> 
-> Yeah, we will add entry points with default function call semantics.
-> At which point we make the things look like any other dso unless there 
-> is good reason otherwise.
-
-I think the move to make vDSO has the same semantic as an usual DSO is
-the correct one.  I am just pointing out that different than musl, glibc
-already support vDSO for powerpc and changing its interface will most
-likely require more handling in powerpc specific bits.
-
-> 
->> GLibc already hides this powerpc semantic on INTERNAL_VSYSCALL_CALL_TYPE,
->> so internally all syscalls are assumed to have the new semantic (-errno
->> on error, 0 on success). Adding another ELFv1 would require to add
->> more logic to handle multiple symbol version for vDSO setup
->> (sysdeps/unix/sysv/linux/dl-vdso-setup.h), which would mostly likely to
->> require an arch-specific implementation to handle it.
-> 
-> Is it not a build-time choice? The arch can set its own vdso symbol 
-> names AFAIKS.
-
-To enable vDSO support the architecture just need to define the
-correspondent macros with the expected names. For instance, for powerpc:
-
-sysdeps/unix/sysv/linux/powerpc/sysdep.h
-[...]
-195 #if defined(__PPC64__) || defined(__powerpc64__)
-196 #define HAVE_CLOCK_GETRES64_VSYSCALL    "__kernel_clock_getres"
-197 #define HAVE_CLOCK_GETTIME64_VSYSCALL   "__kernel_clock_gettime"
-198 #else
-199 #define HAVE_CLOCK_GETRES_VSYSCALL      "__kernel_clock_getres"
-200 #define HAVE_CLOCK_GETTIME_VSYSCALL     "__kernel_clock_gettime"
-201 #endif
-202 #define HAVE_GETCPU_VSYSCALL            "__kernel_getcpu"
-203 #define HAVE_TIME_VSYSCALL              "__kernel_time"
-204 #define HAVE_GETTIMEOFDAY_VSYSCALL      "__kernel_gettimeofday"
-205 #define HAVE_GET_TBFREQ                 "__kernel_get_tbfreq"
-[...]
-
-GLIBC will create and initialize the vDSO pointers in a arch neutral 
-way, however the vDSO call itself is parametrized to handle the 
-powerpc specific bits (the INTERNAL_VSYSCALL_CALL_TYPE which is called
-by INLINE_SYSCALL_CALL).
-
-> 
-> Thanks,
-> Nick
-> 
