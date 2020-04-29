@@ -2,50 +2,65 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0F54C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 09:44:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E221C83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:09:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E3FE2073E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 09:44:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E3FE2073E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 298322074A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:09:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="H4ditcMH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 298322074A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BtrG6kmnzDr1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:43:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BvPf6NVVzDqNV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 20:09:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Btp8042qzDqyk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 19:42:06 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 8CE8668BFE; Wed, 29 Apr 2020 11:42:01 +0200 (CEST)
-Date: Wed, 29 Apr 2020 11:42:01 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] fixup! signal: factor copy_siginfo_to_external32 from
- copy_siginfo_to_user32
-Message-ID: <20200429094201.GA2557@lst.de>
-References: <20200428074827.GA19846@lst.de>
- <20200428195645.1365019-1-arnd@arndb.de> <20200429064458.GA31717@lst.de>
- <CAK8P3a1YD3RitSLLRsM+e+LwAxg+NS6F071B4zokwEpiL0WvrA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BvKX4XlyzDqsM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 20:05:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=H4ditcMH; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49BvKW4wdfz9sSb;
+ Wed, 29 Apr 2020 20:05:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1588154752;
+ bh=JhIuKNaDYb9HWGfh+wypyl48dzjc/KkCwADeZZZ2UGg=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=H4ditcMHzNrsBH09rZ5gXsG1DgVBpa4Pv3M0QLBCgnejGh+WbH3e7ZVCKpZAkhy7Q
+ NGBj3WOjVzvqCXtZVmRoJqAjTFk8yDcKQ3R7JKPUg3+6fOF9O9sXkT4fYJb7dNCIKg
+ YJltlzD9rM5VqeZTnvk7mNuo3LYQbzVEqVkFbAL/Yxgx7CQ7kJ1hMWh2ogENQFotb1
+ +N/wXLkY1OrUxEMaznIVplqpatglbYJzyB+m5E7o1flLUOwsH8w4iCcJc/wfGso4qp
+ 9JzAoWqQlVFN/lDbDd8p3RzhCS7LFrCFz3Ui3YZFIbyOMLedxaRxDvMYR/soggJRgQ
+ VgSfCyq7bBgUA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balamuruhan S <bala24@linux.ibm.com>
+Subject: Re: [RFC PATCH v2 7/7] powerpc/selftest: reuse ppc-opcode macros to
+ avoid redundancy
+In-Reply-To: <20200424070853.443969-8-bala24@linux.ibm.com>
+References: <20200424070853.443969-1-bala24@linux.ibm.com>
+ <20200424070853.443969-8-bala24@linux.ibm.com>
+Date: Wed, 29 Apr 2020 20:06:05 +1000
+Message-ID: <87k11yfvxu.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAK8P3a1YD3RitSLLRsM+e+LwAxg+NS6F071B4zokwEpiL0WvrA@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,23 +72,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Jeremy Kerr <jk@ozlabs.org>,
- Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>,
- "Eric W . Biederman" <ebiederm@xmission.com>
+Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com,
+ Balamuruhan S <bala24@linux.ibm.com>, paulus@samba.org, sandipan@linux.ibm.com,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 10:07:11AM +0200, Arnd Bergmann wrote:
-> > What do you think of this version?  This one always overrides
-> > copy_siginfo_to_user32 for the x86 compat case to keep the churn down,
-> > and improves the copy_siginfo_to_external32 documentation a bit.
-> 
-> Looks good to me. I preferred checking for X32 explicitly (so we can
-> find and kill off the #ifdef if we ever remove X32 for good), but there is
-> little difference in the end.
+Balamuruhan S <bala24@linux.ibm.com> writes:
+> Avoid redefining macros to encode ppc instructions instead reuse it from
+> ppc-opcode.h, Makefile changes are necessary to compile memcmp_64.S with
+> __ASSEMBLY__ defined from selftests.
+>
+> Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
+> ---
+>  .../selftests/powerpc/stringloops/Makefile    | 34 ++++++++++++++----
+>  .../powerpc/stringloops/asm/asm-const.h       |  1 +
+>  .../powerpc/stringloops/asm/ppc-opcode.h      | 36 +------------------
+>  3 files changed, 29 insertions(+), 42 deletions(-)
+>  create mode 120000 tools/testing/selftests/powerpc/stringloops/asm/asm-const.h
+>  mode change 100644 => 120000 tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
+>
+> diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
+> index 7fc0623d85c3..efe76c5a5b94 100644
+> --- a/tools/testing/selftests/powerpc/stringloops/Makefile
+> +++ b/tools/testing/selftests/powerpc/stringloops/Makefile
+> @@ -1,26 +1,44 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  # The loops are all 64-bit code
+> -CFLAGS += -I$(CURDIR)
+> +GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
+> +CFLAGS += -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CURDIR) -I$(CURDIR)/../include
+>  
+>  EXTRA_SOURCES := ../harness.c
+>  
+>  build_32bit = $(shell if ($(CC) $(CFLAGS) -m32 -o /dev/null memcmp.c >/dev/null 2>&1) then echo "1"; fi)
+>  
+> +ifneq ($(build_32bit),1)
+>  TEST_GEN_PROGS := memcmp_64 strlen
+> +TEST_GEN_FILES := memcmp.o memcmp_64.o memcmp_64
+> +MEMCMP := $(OUTPUT)/memcmp.o
+> +MEMCMP_64 := $(OUTPUT)/memcmp_64.o
+> +HARNESS :=  $(OUTPUT)/../harness.o
+> +CFLAGS += -m64 -maltivec
+>  
+> -$(OUTPUT)/memcmp_64: memcmp.c
+> -$(OUTPUT)/memcmp_64: CFLAGS += -m64 -maltivec
+> +OVERRIDE_TARGETS := 1
+> +include ../../lib.mk
+>  
+> -ifeq ($(build_32bit),1)
+> +$(OUTPUT)/memcmp_64: $(MEMCMP_64) $(MEMCMP) $(HARNESS)
+> +	$(CC) $(CFLAGS) memcmp.o memcmp_64.o ../harness.o -o memcmp_64
+> +
+> +$(MEMCMP_64): memcmp_64.S
+> +	$(CC) $(CFLAGS) -D__ASSEMBLY__ -o memcmp_64.o -c memcmp_64.S
+> +
+> +$(MEMCMP): memcmp.c
+> +	$(CC) $(CFLAGS) -o memcmp.o -c memcmp.c
+> +
+> +$(HARNESS): $(EXTRA_SOURCES)
+> +	$(CC) $(CFLAGS) -DGIT_VERSION='"$(GIT_VERSION)"' -o ../harness.o -c $(EXTRA_SOURCES)
 
-Is there any realistic chance we'll get rid of x32?
+What are you actually trying to do here? Is it just that you need to
+define __ASSEMBLY__ for memcmp_64.S?
+
+What you have breaks the build, it's not respecting $(OUTPUT).
+
+  make[2]: Entering directory '/linux/tools/testing/selftests/powerpc/stringloops'
+  powerpc64le-linux-gnu-gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/include  -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/stringloops -I/linux/tools/testing/selftests/powerpc/stringloops/../include -m64 -maltivec -D__ASSEMBLY__ -o memcmp_64.o -c memcmp_64.S
+  Assembler messages:
+  Fatal error: can't create memcmp_64.o: Read-only file system
+  make[2]: *** [Makefile:25: /output/kselftest/powerpc/stringloops/memcmp_64.o] Error 1
+  powerpc64le-linux-gnu-gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/include  -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/stringloops -I/linux/tools/testing/selftests/powerpc/stringloops/../include -m64 -maltivec -o memcmp.o -c memcmp.c
+  Assembler messages:
+  Fatal error: can't create memcmp.o: Read-only file system
+  make[2]: *** [Makefile:28: /output/kselftest/powerpc/stringloops/memcmp.o] Error 1
+  powerpc64le-linux-gnu-gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/include  -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -I/linux/tools/testing/selftests/powerpc/stringloops -I/linux/tools/testing/selftests/powerpc/stringloops/../include -m64 -maltivec -DGIT_VERSION='"v5.7-rc2-38-g2d7b142b5a96"' -o ../harness.o -c ../harness.c
+  Assembler messages:
+  Fatal error: can't create ../harness.o: Read-only file system
+  make[2]: *** [Makefile:31: /output/kselftest/powerpc/stringloops/../harness.o] Error 1
+
+
+cheers
