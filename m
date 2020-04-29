@@ -1,100 +1,75 @@
 Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Level: **
+X-Spam-Status: No, score=2.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
+	MIME_QP_LONG_LINE,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07A40C83000
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 18:50:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0628C83000
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:27:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D64620661
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 18:50:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D64620661
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 64746205C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 19:27:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="RPXQvZCR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64746205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49C6yk3ZBMzDr9v
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:50:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49C7n75n01zDrC9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 05:27:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
+ smtp.helo=mo6-p01-ob.smtp.rzone.de (client-ip=2a01:238:20a:202:5301::2;
+ helo=mo6-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=RPXQvZCR; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49C6vv5hQFzDr8r
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 04:47:55 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03TI4TjB106070; Wed, 29 Apr 2020 14:47:51 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mhq9y7tp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Apr 2020 14:47:50 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03TIgeJd036414;
- Wed, 29 Apr 2020 14:47:49 -0400
-Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mhq9y7t5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Apr 2020 14:47:49 -0400
-Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
- by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03TIkkTq013599;
- Wed, 29 Apr 2020 18:47:48 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma04wdc.us.ibm.com with ESMTP id 30mcu771hv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Apr 2020 18:47:48 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03TIllcQ27263458
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 29 Apr 2020 18:47:47 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 901FFBE04F;
- Wed, 29 Apr 2020 18:47:47 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 70C69BE054;
- Wed, 29 Apr 2020 18:47:46 +0000 (GMT)
-Received: from oc7186267434.ibm.com (unknown [9.80.239.215])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 29 Apr 2020 18:47:46 +0000 (GMT)
-Subject: Re: [PATCH] net/bonding: Do not transition down slave after
- speed/duplex check
-To: Jay Vosburgh <jay.vosburgh@canonical.com>
-References: <1588183759-7659-1-git-send-email-tlfalcon@linux.ibm.com>
- <29484.1588185503@famine>
-From: Thomas Falcon <tlfalcon@linux.ibm.com>
-Message-ID: <345ca135-6432-a4a0-e681-4822b3575bae@linux.ibm.com>
-Date: Wed, 29 Apr 2020 13:47:45 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
-MIME-Version: 1.0
-In-Reply-To: <29484.1588185503@famine>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49C0Qh6FpbzDr2r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 23:55:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1588168531;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=sRM9IW6qbifN2jy58etkeSC0Giaq0ddRS/7YsNzt/WA=;
+ b=RPXQvZCRn1NeD23xZPDl8HWe/W/xINC9uhaXheKgEPCKQkAfML0InnvPPkKQ3L8yRh
+ WpWi7DZ5oL8k75l1EllCeNncz+NUChJ2zuVbWcdLKdbHPG0PSvqy20WxUudYSnMM3P1A
+ 1Zua7huSIZRXF2zzC8QJumwAuQpT5ul42Rb40O5Vf8AhiXcCXZyLhlSQfYSiS7jzbsin
+ OJBVKp++zu4FCTyHNZsRFoI+XAlaOMmU3SKdBFRm2J69nWMvCOttsqnNyRAAtEZyX54i
+ ueJg34QputjGTkxGnJMKBoz6aVs+TS9ZOE5MPJt5Gyq8eJVFt5et+RtJeYVPOtv6rat1
+ 5SSw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7aWdxgrpix3BNtxgZMkdjmAvA9mUCF0wx8fHT1jD6"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:d009:736a:6836:44ca:f3aa:4c6a]
+ by smtp.strato.de (RZmta 46.6.2 AUTH) with ESMTPSA id I01247w3TDtSagJ
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Wed, 29 Apr 2020 15:55:28 +0200 (CEST)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
 Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-29_09:2020-04-29,
- 2020-04-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- priorityscore=1501 phishscore=0 clxscore=1011 adultscore=0 suspectscore=0
- spamscore=0 lowpriorityscore=0 malwarescore=0 impostorscore=0
- mlxlogscore=999 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004290138
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Mime-Version: 1.0 (1.0)
+Subject: Re: [RFC PATCH dpss_eth] Don't initialise ports with no PHY
+Date: Wed, 29 Apr 2020 15:55:28 +0200
+Message-Id: <77E4A243-F90A-45A9-B8D3-0F7785C158C7@xenosoft.de>
+References: <20200429131253.GG30459@lunn.ch>
+In-Reply-To: <20200429131253.GG30459@lunn.ch>
+To: Andrew Lunn <andrew@lunn.ch>
+X-Mailer: iPhone Mail (17D50)
+X-Mailman-Approved-At: Thu, 30 Apr 2020 05:24:34 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,78 +81,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Veaceslav Falico <vfalico@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Andy Gospodarek <andy@greyhouse.net>
+Cc: madalin.bacur@nxp.com, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ netdev@vger.kernel.org, oss@buserror.net,
+ Darren Stevens <darren@stevens-zone.net>,
+ "contact@a-eon.com" <contact@a-eon.com>, mad skateman <madskateman@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-On 4/29/20 1:38 PM, Jay Vosburgh wrote:
-> Thomas Falcon <tlfalcon@linux.ibm.com> wrote:
->
->> The following behavior has been observed when testing logical partition
->> migration of LACP-bonded VNIC devices in a PowerVM pseries environment.
->>
->> 1. When performing the migration, the bond master detects that a slave has
->>    lost its link, deactivates the LACP port, and sets the port's
->>    is_enabled flag to false.
->> 2. The slave device then updates it's carrier state to off while it resets
->>    itself. This update triggers a NETDEV_CHANGE notification, which performs
->>    a speed and duplex update. The device does not return a valid speed
->>    and duplex, so the master sets the slave link state to BOND_LINK_FAIL.
->> 3. When the slave VNIC device(s) are active again, some operations, such
->>    as setting the port's is_enabled flag, are not performed when transitioning
->>    the link state back to BOND_LINK_UP from BOND_LINK_FAIL, though the state
->>    prior to the speed check was BOND_LINK_DOWN.
-> 	Just to make sure I'm understanding correctly, in regards to
-> "the state prior to the speed check was BOND_LINK_DOWN," do you mean
-> that during step 1, the slave link is set to BOND_LINK_DOWN, and then in
-> step 2 changed from _DOWN to _FAIL?
+--Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Yes, that's what I meant, thanks.
+Hi Andrew,
 
->
->> Affected devices are therefore not utilized in the aggregation though they
->> are operational. The simplest way to fix this seems to be to restrict the
->> link state change to devices that are currently up and running.
-> 	This sounds similar to an issue from last fall; can you confirm
-> that you're running with a kernel that includes:
->
-> 1899bb325149 bonding: fix state transition issue in link monitoring
->
-> 	-J
-> 	
+You can find some dtb and source files in our kernel package.
 
-I think so, but I will confirm ASAP.
+Download: http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X5000.tar.gz
 
-Tom
+Thanks,
+Christian
 
+> On 29. Apr 2020, at 15:13, Andrew Lunn <andrew@lunn.ch> wrote:
+>=20
+> =EF=BB=BF
+>>=20
+>> Maybe we have to modify the dtb file.
+>=20
+> Hi Christian
+>=20
+> Could you point me at the DT file.
+>=20
+>      Thanks
+>    Andrew
 
->> CC: Jay Vosburgh <j.vosburgh@gmail.com>
->> CC: Veaceslav Falico <vfalico@gmail.com>
->> CC: Andy Gospodarek <andy@greyhouse.net>
->> Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
->> ---
->> drivers/net/bonding/bond_main.c | 3 ++-
->> 1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
->> index 2e70e43c5df5..d840da7cd379 100644
->> --- a/drivers/net/bonding/bond_main.c
->> +++ b/drivers/net/bonding/bond_main.c
->> @@ -3175,7 +3175,8 @@ static int bond_slave_netdev_event(unsigned long event,
->> 		 * speeds/duplex are available.
->> 		 */
->> 		if (bond_update_speed_duplex(slave) &&
->> -		    BOND_MODE(bond) == BOND_MODE_8023AD) {
->> +		    BOND_MODE(bond) == BOND_MODE_8023AD &&
->> +		    slave->link == BOND_LINK_UP) {
->> 			if (slave->last_link_up)
->> 				slave->link = BOND_LINK_FAIL;
->> 			else
->> -- 
->> 2.18.2
->>
-> ---
-> 	-Jay Vosburgh, jay.vosburgh@canonical.com
+--Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
+utf-8"></head><body dir=3D"auto">Hi Andrew,<div><br></div><div>You can find s=
+ome dtb and source files in our kernel package.</div><div><br></div><div>Dow=
+nload:&nbsp;<a href=3D"http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X500=
+0.tar.gz">http://www.xenosoft.de/linux-image-5.7-rc3-X1000_X5000.tar.gz</a><=
+/div><div><br></div><div>Thanks,</div><div>Christian<br><div dir=3D"ltr"><br=
+><blockquote type=3D"cite">On 29. Apr 2020, at 15:13, Andrew Lunn &lt;andrew=
+@lunn.ch&gt; wrote:<br><br></blockquote></div><blockquote type=3D"cite"><div=
+ dir=3D"ltr">=EF=BB=BF<blockquote type=3D"cite"><span>Maybe we have to modif=
+y the dtb file.</span><br></blockquote><span></span><br><span>Hi Christian</=
+span><br><span></span><br><span>Could you point me at the DT file.</span><br=
+><span></span><br><span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thanks</span><br><spa=
+n> &nbsp; &nbsp;Andrew</span><br></div></blockquote></div></body></html>=
+
+--Apple-Mail-A08CC779-CEB6-46E8-A6EF-C98E3530669B--
