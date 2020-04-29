@@ -2,77 +2,57 @@ Return-Path: <SRS0=oWcN=6N=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C5AC83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 07:45:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71514C83003
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:05:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E6832076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 07:45:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E6832076B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id E366020787
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 08:05:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E366020787
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BrBz5v81zDr7Z
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 17:44:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49BrfF0CW2zDqym
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 18:05:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kaod.org (client-ip=178.33.109.80; helo=2.mo177.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.131; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 2.mo177.mail-out.ovh.net (2.mo177.mail-out.ovh.net
+ [178.33.109.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Br853G57zDr1j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 17:42:29 +1000 (AEST)
-Received: from mail-qt1-f174.google.com ([209.85.160.174]) by
- mrelayeu.kundenserver.de (mreue010 [212.227.15.129]) with ESMTPSA (Nemesis)
- id 1N95Rn-1j9Ftp4Bzb-0165Yr for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr
- 2020 09:42:23 +0200
-Received: by mail-qt1-f174.google.com with SMTP id c23so1062587qtp.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 00:42:21 -0700 (PDT)
-X-Gm-Message-State: AGi0PubnLJSQ10YV3ArBKUCBWGdEh+Wa0m+z8zJM9DGeOx+1bZpjdgp2
- I7UxZrT7uIj3VcjbP8pss5nko9uhTKH/izb2iyA=
-X-Google-Smtp-Source: APiQypJpUvYWo2LU3ZngNQ2JW3D6wR/VR7VqZhY2dctva2ZkWquiJEYUHe1E74mkf1lS1pWa7NroBC/zYcEQxa9gQho=
-X-Received: by 2002:ac8:4c8d:: with SMTP id j13mr32009866qtv.142.1588146140928; 
- Wed, 29 Apr 2020 00:42:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BrZK1vVWzDqQJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 18:01:36 +1000 (AEST)
+Received: from player714.ha.ovh.net (unknown [10.108.42.167])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id BD67C12A67A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 09:51:39 +0200 (CEST)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player714.ha.ovh.net (Postfix) with ESMTPSA id 7942911CA9174;
+ Wed, 29 Apr 2020 07:51:31 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 2/3] powerpc/pci: unmap legacy INTx interrupts of passthrough
+ IO adapters
+Date: Wed, 29 Apr 2020 09:51:21 +0200
+Message-Id: <20200429075122.1216388-3-clg@kaod.org>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200429075122.1216388-1-clg@kaod.org>
+References: <20200429075122.1216388-1-clg@kaod.org>
 MIME-Version: 1.0
-References: <20200427200626.1622060-2-hch@lst.de>
- <20200428120207.15728-1-jk@ozlabs.org>
- <20200428171133.GA17445@lst.de>
- <e1ebea36b162e8a3b4b24ecbc1051f8081ff5e53.camel@ozlabs.org>
- <20200429061514.GD30946@lst.de>
- <2014678ca837f6aaa4cf23b4ea51e4805146c36d.camel@ozlabs.org>
-In-Reply-To: <2014678ca837f6aaa4cf23b4ea51e4805146c36d.camel@ozlabs.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 29 Apr 2020 09:42:04 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2s3SLw7qehipMCP2m4TG+S089nBiqFfY3c7M2qjVTHWw@mail.gmail.com>
-Message-ID: <CAK8P3a2s3SLw7qehipMCP2m4TG+S089nBiqFfY3c7M2qjVTHWw@mail.gmail.com>
-Subject: Re: [RFC PATCH] powerpc/spufs: fix copy_to_user while atomic
-To: Jeremy Kerr <jk@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:z7fQycAKXx5D5dw6A7SBWd5LlRmqOKeEx1d70AXFtCLEWQJaBLx
- KU/Kj5lTcIiKeFQUMCxMZVSp5k9rPNbh++lki7kyumwmZYWvfeRZEDHD0L8llBPFJmBLkML
- eO9yS0RPb3jqgbquHfN/Vzx/tqlXSaac0kI6aoit/+H9nZN239Iekz2Zi75uIaqD+rO7evC
- l0n/lzdqVUdRX8OtzFnPQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:1blXKvIgckg=:/6FVxq85G2rlsKZHiVvVUz
- 32Gx/0l4rJXh8fnVx7NJA5Fd7b3EUX+YiELt5E4ILRhgQCd7XVFtcRAhtx2NE/UC3ZegXdjTb
- +aJVf/yLfFJC89L5ssqg332a5Mz3Ak/KiQVOizofJhoP9T8wUS42CyDnkyyM2X8VMQpoHTlwg
- 1ewsCZFgm+c8IxzmL87oXRhH8ZY4tNZMtPNDUM+DJK0fcUSyC5fqYSUyvEaTZcURUwlh+Rm6a
- sSxyXCP3ij1LRphPKUj/LERQeT9AlhUwzlP+f9DTjjrXPuTOjewsOCuxIZaoIwEUKlevUh5bP
- ebPJB5FyVFF9BezxBs+Qn9zVuf+q9zia6vjA+cFfv1pqxFLNQMHNvMiouTh/uvLe4DirEnnEH
- YTPDY/snrJKZFs0KAuDbNW2ds8cYZ3lTKXUWHjip411565Y57EGu+LMELDqjqX0+G2PUvBzg3
- VUwpRWFe2vzd3Nk1ADMeIkJjC1etCGKxz+IxURaiNfQpWC8yU92QesKx6i50J/WTDEdlkELBu
- x131SeyRRKk17qyHjpEateOg7Z63lWyeu2+B8zFFv2feX4COflshQFlor2Pw3h790d7GkstcL
- VScC05gsd/GuR3UpyPwLlByey3MG8p7f1Z7rE93xTz1FAawV3CritIbg4AcUoNLzumPVXcy4E
- 1ajqFSU/fGz/TiI/Eeub8M9BI+hBilGYCbbps0E8kFULvDVw3fcFsxWdny0FAU9RuuSAyHUjR
- V8pAoqIa0aespbnYYnmB4wC+VGrk9p02vJwPoyHMVb64k1ZCnpLBX3xF2zOD4B3LDDbNcLjpn
- cm2iWuY4sU3Wa6/eGNhFC7tn2AnaSZQQwwPx5K2t/IdEsfwdwM=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 3605975928489151409
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedvgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffvufffkffojghfgggtgfesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucfkpheptddrtddrtddrtddpkedvrdeigedrvdehtddrudejtdenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejudegrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,33 +64,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
- "Eric W . Biederman" <ebiederm@xmission.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 8:33 AM Jeremy Kerr <jk@ozlabs.org> wrote:
->
-> Hi Christoph,
->
-> > And another one that should go on top of this one to address Al's other
-> > compaint:
->
-> Yeah, I was pondering that one. The access_ok() is kinda redundant, but
-> it does avoid forcing a SPU context save on those errors.
->
-> However, it's not like we really need to optimise for the case of
-> invalid addresses from userspace. So, I'll include this change in the
-> submission to Michael's tree. Arnd - let me know if you have any
-> objections.
+When a passthrough IO adapter is removed from a pseries machine using
+hash MMU and the XIVE interrupt mode, the POWER hypervisor, pHyp,
+expects the guest OS to have cleared all page table entries related to
+the adapter. If some are still present, the RTAS call which isolates
+the PCI slot returns error 9001 "valid outstanding translations" and
+the removal of the IO adapter fails.
 
-Sounds good. A lot of the access_ok() checks in the kernel are redundant
-or wrong, I think it makes a lot of sense to remove these.
+INTx interrupt numbers need special care because Linux maps the
+interrupts automatically in the Linux interrupt number space if they
+are presented in the device tree node describing the IO adapter. These
+interrupts are not un-mapped automatically and in case of an hot-plug
+adapter, the PCI hot-plug layer needs to handle the cleanup to make
+sure that all the page table entries of the XIVE ESB pages are
+cleared.
 
-       Arnd
+Cc: "Oliver O'Halloran" <oohall@gmail.com>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/kernel/pci-hotplug.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index bf83f76563a3..9e9c6befd7ea 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -57,6 +57,8 @@ void pcibios_release_device(struct pci_dev *dev)
+ 	struct pci_controller *phb = pci_bus_to_host(dev->bus);
+ 	struct pci_dn *pdn = pci_get_pdn(dev);
+ 
++	irq_dispose_mapping(dev->irq);
++
+ 	eeh_remove_device(dev);
+ 
+ 	if (phb->controller_ops.release_device)
+-- 
+2.25.4
+
