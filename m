@@ -3,63 +3,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15EA1C83003
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46445C83004
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:20:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C17822073E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:15:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C17822073E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id A05A12073E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 10:20:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A05A12073E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49BvXV1BZnzDr3B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 20:15:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Bvfj0NJhzDqKr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2020 20:20:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.66; helo=mail-ot1-f66.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ot1-f66.google.com (mail-ot1-f66.google.com
- [209.85.210.66])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ smtp.mailfrom=kaod.org (client-ip=46.105.79.203; helo=10.mo68.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 8408 seconds by postgrey-1.36 at bilbo;
+ Wed, 29 Apr 2020 20:18:44 AEST
+Received: from 10.mo68.mail-out.ovh.net (10.mo68.mail-out.ovh.net
+ [46.105.79.203])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49BvVY5Jw6zDqv9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 20:13:38 +1000 (AEST)
-Received: by mail-ot1-f66.google.com with SMTP id j26so1234144ots.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 03:13:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=GAfuhEzVW9yjP9v9ZyOBXMfmtyVV4v9q9d6s8nYURRw=;
- b=Q4dPjXYWICIpF7Atm6hOTiG5wnnYjo0EYa7F9FjbvdRdXiV4otrAwdbMq2hpvpuKIY
- go321Ml8XySX2b/41Oezi5utoMg7BAYTTvgVIDKKTZjaenuRK+jg2HJgJq6w4ucei4lp
- AD5nMCF+ZO/YItnT6XztCD8QdWPMMBBuP8RBJhpHkPkfPTyYfjOr17DSYK9w61KUUt1O
- JCkGIrK9VZn+Gaq3Un2/nR1AFnFrfscFVPnFfPp0T2xMJo7NB+u2RK0OV8c6qOeUrmf/
- 26aFdHb51mnk0/Qvm/pBgWC6r+L23qTVA3OS8tStqoCc617gYuN81Tx1YYu1/ZV7RZfP
- fSAw==
-X-Gm-Message-State: AGi0PuZqO51SEIPHGq0ImY8dBMAsPkBkw6ejkF4fpvRLFBkTJpVHbylS
- /0VGMUFJob2pVFb0oXygp7frFEzdGro5RIjRmtQ=
-X-Google-Smtp-Source: APiQypLNl85RevSy0/DHCOQ/0uIL1S8p+SQGkgEw2+WUCF5vUQENVyz6mpH0BtVc15iBHXl6+3WkdKUTDOHxMtdqO7E=
-X-Received: by 2002:a9d:564:: with SMTP id 91mr25989025otw.250.1588155216129; 
- Wed, 29 Apr 2020 03:13:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49BvcN0k27zDq72
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 20:18:38 +1000 (AEST)
+Received: from player714.ha.ovh.net (unknown [10.110.208.202])
+ by mo68.mail-out.ovh.net (Postfix) with ESMTP id 5FB58164FC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 09:51:27 +0200 (CEST)
+Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
+ (Authenticated sender: clg@kaod.org)
+ by player714.ha.ovh.net (Postfix) with ESMTPSA id E13E411CA9131;
+ Wed, 29 Apr 2020 07:51:24 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 0/3] powerpc/xive: PCI hotplug fixes under PowerVM 
+Date: Wed, 29 Apr 2020 09:51:19 +0200
+Message-Id: <20200429075122.1216388-1-clg@kaod.org>
+X-Mailer: git-send-email 2.25.4
 MIME-Version: 1.0
-References: <1588154448-56759-1-git-send-email-wangxiongfeng2@huawei.com>
-In-Reply-To: <1588154448-56759-1-git-send-email-wangxiongfeng2@huawei.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 29 Apr 2020 12:13:24 +0200
-Message-ID: <CAMuHMdUn357yn5s6x4KRPwSZP1pTqq1PNXW9TqBRnfOXJaxY_Q@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/ps3: Move static keyword to the front of
- declaration
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 3602598230992980913
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedriedvgdduvddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpefhvffufffkofggtgfgsehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjedugedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,39 +63,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 12:07 PM Xiongfeng Wang
-<wangxiongfeng2@huawei.com> wrote:
-> Move the static keyword to the front of declaration of 'vuart_bus_priv',
-> and resolve the following compiler warning that can be seen when
-> building with warnings enabled (W=3D1):
->
-> drivers/ps3/ps3-vuart.c:867:1: warning: =E2=80=98static=E2=80=99 is not a=
-t beginning of declaration [-Wold-style-declaration]
->  } static vuart_bus_priv;
->  ^
->
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Hello,
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Here are a couple of fixes for PCI hotplug issues for machines running
+under the POWER hypervisor using hash MMU and the XIVE interrupt mode.
 
-Gr{oetje,eeting}s,
+Commit 1ca3dec2b2df ("powerpc/xive: Prevent page fault issues in the
+machine crash handler") forced the mapping of the XIVE ESB page and
+this is now blocking the removal of a passthrough IO adapter because
+the PCI isolation fails with "valid outstanding translations". Under
+KVM, the ESB pages for the adapter interrupts are un-mapped from the
+guest by the hypervisor in the KVM XIVE native device. This is is now
+redundant but it's harmless.
 
-                        Geert
+Last is a fix to disable the XIVE debugfs file when XIVE is disabled.
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+Thanks,
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+C.
+
+Cédric Le Goater (3):
+  powerpc/xive: Clear the page tables for the ESB IO mapping
+  powerpc/pci: unmap legacy INTx interrupts of passthrough IO adapters
+  powerpc/xive: Do not expose a debugfs file when XIVE is disabled
+
+ arch/powerpc/kernel/pci-hotplug.c |  2 ++
+ arch/powerpc/sysdev/xive/common.c | 10 ++++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+-- 
+2.25.4
+
