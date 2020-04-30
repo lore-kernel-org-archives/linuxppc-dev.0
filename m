@@ -2,99 +2,65 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B99BBC4724C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:26:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 345DFC47247
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:28:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7404E208CA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:26:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7404E208CA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D803620661
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:28:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="B0M+zAZv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D803620661
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Cgk10q6CzDr2m
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 02:26:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Cgn16XVQzDqXl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 02:28:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=B0M+zAZv; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CgVB4zNLzDqGJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 02:14:55 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03UG2jMZ137070; Thu, 30 Apr 2020 12:14:50 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mggx4qa6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 12:14:49 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03UG4F0n143995;
- Thu, 30 Apr 2020 12:14:49 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30mggx4q9p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 12:14:49 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03UGBFMj030783;
- Thu, 30 Apr 2020 16:14:48 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma02dal.us.ibm.com with ESMTP id 30mcu7ac7g-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 16:14:47 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03UGEjb411666122
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Apr 2020 16:14:45 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A5F47BE04F;
- Thu, 30 Apr 2020 16:14:46 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9E6A5BE054;
- Thu, 30 Apr 2020 16:14:45 +0000 (GMT)
-Received: from oc7186267434.ibm.com (unknown [9.80.239.215])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 30 Apr 2020 16:14:45 +0000 (GMT)
-Subject: Re: [PATCH] net/bonding: Do not transition down slave after
- speed/duplex check
-To: Jay Vosburgh <jay.vosburgh@canonical.com>
-References: <1588183759-7659-1-git-send-email-tlfalcon@linux.ibm.com>
- <29484.1588185503@famine>
-From: Thomas Falcon <tlfalcon@linux.ibm.com>
-Message-ID: <c83cbc94-c567-3366-ffb7-043bd4bba5a9@linux.ibm.com>
-Date: Thu, 30 Apr 2020 11:14:44 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CgYD1ymTzDrBf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 02:18:40 +1000 (AEST)
+Received: from mail.kernel.org (ip5f5ad5c5.dynamic.kabel-deutschland.de
+ [95.90.213.197])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0053B2495E;
+ Thu, 30 Apr 2020 16:18:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588263518;
+ bh=ZBq13Jcm44mbBQFwt73lg+FwJeqOBomSiYK/tB11xow=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=B0M+zAZvp4pFYj3QaAa4+WpzJNksSoQcGWcMhyOfXVIjcX5w5eDBiLXPE0YNoqOtK
+ 17kYO/2NTzPSUP8b4e/NrLZfr5Xpw3h1q7SFP8DcLMmKW3UiKFfn/d2u0Smi1O4F+D
+ kMciKyt9S+csWHmdc11BGIR2SForSbkQg22WyofQ=
+Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
+ (envelope-from <mchehab@kernel.org>)
+ id 1jUBtU-00Axhh-89; Thu, 30 Apr 2020 18:18:36 +0200
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Subject: [PATCH v4 14/19] docs: powerpc: convert vcpudispatch_stats.txt to ReST
+Date: Thu, 30 Apr 2020 18:18:28 +0200
+Message-Id: <ca3e8c71845b81df0814c018da5c6c9386f47070.1588263270.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <cover.1588263270.git.mchehab+huawei@kernel.org>
+References: <cover.1588263270.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <29484.1588185503@famine>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-30_10:2020-04-30,
- 2020-04-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0
- suspectscore=0 mlxscore=0 lowpriorityscore=0 adultscore=0 phishscore=0
- bulkscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004300122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,77 +72,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Veaceslav Falico <vfalico@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Andy Gospodarek <andy@greyhouse.net>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+ Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+- Add a SPDX header;
+- Use standard markup for document title;
+- Adjust identation on lists and add blank lines where
+  needed;
+- Add it to the powerpc index.rst file.
 
-On 4/29/20 1:38 PM, Jay Vosburgh wrote:
-> Thomas Falcon <tlfalcon@linux.ibm.com> wrote:
->
->> The following behavior has been observed when testing logical partition
->> migration of LACP-bonded VNIC devices in a PowerVM pseries environment.
->>
->> 1. When performing the migration, the bond master detects that a slave has
->>    lost its link, deactivates the LACP port, and sets the port's
->>    is_enabled flag to false.
->> 2. The slave device then updates it's carrier state to off while it resets
->>    itself. This update triggers a NETDEV_CHANGE notification, which performs
->>    a speed and duplex update. The device does not return a valid speed
->>    and duplex, so the master sets the slave link state to BOND_LINK_FAIL.
->> 3. When the slave VNIC device(s) are active again, some operations, such
->>    as setting the port's is_enabled flag, are not performed when transitioning
->>    the link state back to BOND_LINK_UP from BOND_LINK_FAIL, though the state
->>    prior to the speed check was BOND_LINK_DOWN.
-> 	Just to make sure I'm understanding correctly, in regards to
-> "the state prior to the speed check was BOND_LINK_DOWN," do you mean
-> that during step 1, the slave link is set to BOND_LINK_DOWN, and then in
-> step 2 changed from _DOWN to _FAIL?
->
->> Affected devices are therefore not utilized in the aggregation though they
->> are operational. The simplest way to fix this seems to be to restrict the
->> link state change to devices that are currently up and running.
-> 	This sounds similar to an issue from last fall; can you confirm
-> that you're running with a kernel that includes:
->
-> 1899bb325149 bonding: fix state transition issue in link monitoring
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> # powerpc
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ Documentation/powerpc/index.rst                 |  1 +
+ ...ispatch_stats.txt => vcpudispatch_stats.rst} | 17 ++++++++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+ rename Documentation/powerpc/{vcpudispatch_stats.txt => vcpudispatch_stats.rst} (94%)
 
-It did not have that fix.  I will patch the kernel and rerun the test.
+diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
+index afe2d5e54db6..748bf483b1c2 100644
+--- a/Documentation/powerpc/index.rst
++++ b/Documentation/powerpc/index.rst
+@@ -31,6 +31,7 @@ powerpc
+     transactional_memory
+     ultravisor
+     vas-api
++    vcpudispatch_stats
+ 
+ .. only::  subproject and html
+ 
+diff --git a/Documentation/powerpc/vcpudispatch_stats.txt b/Documentation/powerpc/vcpudispatch_stats.rst
+similarity index 94%
+rename from Documentation/powerpc/vcpudispatch_stats.txt
+rename to Documentation/powerpc/vcpudispatch_stats.rst
+index e21476bfd78c..5704657a5987 100644
+--- a/Documentation/powerpc/vcpudispatch_stats.txt
++++ b/Documentation/powerpc/vcpudispatch_stats.rst
+@@ -1,5 +1,8 @@
+-VCPU Dispatch Statistics:
+-=========================
++.. SPDX-License-Identifier: GPL-2.0
++
++========================
++VCPU Dispatch Statistics
++========================
+ 
+ For Shared Processor LPARs, the POWER Hypervisor maintains a relatively
+ static mapping of the LPAR processors (vcpus) to physical processor
+@@ -20,25 +23,29 @@ The statistics themselves are available by reading the procfs file
+ a vcpu as represented by the first field, followed by 8 numbers.
+ 
+ The first number corresponds to:
++
+ 1. total vcpu dispatches since the beginning of statistics collection
+ 
+ The next 4 numbers represent vcpu dispatch dispersions:
++
+ 2. number of times this vcpu was dispatched on the same processor as last
+    time
+ 3. number of times this vcpu was dispatched on a different processor core
+    as last time, but within the same chip
+ 4. number of times this vcpu was dispatched on a different chip
+ 5. number of times this vcpu was dispatches on a different socket/drawer
+-(next numa boundary)
++   (next numa boundary)
+ 
+ The final 3 numbers represent statistics in relation to the home node of
+ the vcpu:
++
+ 6. number of times this vcpu was dispatched in its home node (chip)
+ 7. number of times this vcpu was dispatched in a different node
+ 8. number of times this vcpu was dispatched in a node further away (numa
+-distance)
++   distance)
++
++An example output::
+ 
+-An example output:
+     $ sudo cat /proc/powerpc/vcpudispatch_stats
+     cpu0 6839 4126 2683 30 0 6821 18 0
+     cpu1 2515 1274 1229 12 0 2509 6 0
+-- 
+2.25.4
 
-Thanks,
-
-Tom
-
->
-> 	-J
-> 	
->
->> CC: Jay Vosburgh <j.vosburgh@gmail.com>
->> CC: Veaceslav Falico <vfalico@gmail.com>
->> CC: Andy Gospodarek <andy@greyhouse.net>
->> Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
->> ---
->> drivers/net/bonding/bond_main.c | 3 ++-
->> 1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
->> index 2e70e43c5df5..d840da7cd379 100644
->> --- a/drivers/net/bonding/bond_main.c
->> +++ b/drivers/net/bonding/bond_main.c
->> @@ -3175,7 +3175,8 @@ static int bond_slave_netdev_event(unsigned long event,
->> 		 * speeds/duplex are available.
->> 		 */
->> 		if (bond_update_speed_duplex(slave) &&
->> -		    BOND_MODE(bond) == BOND_MODE_8023AD) {
->> +		    BOND_MODE(bond) == BOND_MODE_8023AD &&
->> +		    slave->link == BOND_LINK_UP) {
->> 			if (slave->last_link_up)
->> 				slave->link = BOND_LINK_FAIL;
->> 			else
->> -- 
->> 2.18.2
->>
-> ---
-> 	-Jay Vosburgh, jay.vosburgh@canonical.com
