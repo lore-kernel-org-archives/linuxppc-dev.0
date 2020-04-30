@@ -2,68 +2,84 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E0AC47247
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 18:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29B34C4724C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 18:26:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AFEA62073E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 18:11:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AFEA62073E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
+	by mail.kernel.org (Postfix) with ESMTPS id A27E520836
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 18:26:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A27E520836
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Ck3S2TRhzDrJF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 04:11:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.231;
- helo=out01.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49CkNy1gffzDrHG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 04:26:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=julietk@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=xmission.com
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Ck1Z0lQRzDqnF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 04:09:51 +1000 (AEST)
-Received: from in02.mta.xmission.com ([166.70.13.52])
- by out01.mta.xmission.com with esmtps
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
- (envelope-from <ebiederm@xmission.com>)
- id 1jUDd3-0002vZ-L9; Thu, 30 Apr 2020 12:09:45 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
- helo=x220.xmission.com) by in02.mta.xmission.com with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
- (envelope-from <ebiederm@xmission.com>)
- id 1jUDd2-0000hI-EL; Thu, 30 Apr 2020 12:09:45 -0600
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Hildenbrand <david@redhat.com>
-References: <20200430102908.10107-1-david@redhat.com>
- <20200430102908.10107-3-david@redhat.com>
- <87pnbp2dcz.fsf@x220.int.ebiederm.org>
- <1b49c3be-6e2f-57cb-96f7-f66a8f8a9380@redhat.com>
- <871ro52ary.fsf@x220.int.ebiederm.org>
- <373a6898-4020-4af1-5b3d-f827d705dd77@redhat.com>
-Date: Thu, 30 Apr 2020 13:06:26 -0500
-In-Reply-To: <373a6898-4020-4af1-5b3d-f827d705dd77@redhat.com> (David
- Hildenbrand's message of "Thu, 30 Apr 2020 18:49:39 +0200")
-Message-ID: <875zdg26hp.fsf@x220.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CkLq1MdXzDqB3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 04:24:50 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03UI1RWf042755; Thu, 30 Apr 2020 14:24:46 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30q80r7auu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 14:24:46 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03UILDPL000718;
+ Thu, 30 Apr 2020 18:24:45 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma04dal.us.ibm.com with ESMTP id 30mcu7bcyx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 18:24:45 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03UIOjRS51839290
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 30 Apr 2020 18:24:45 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EAFF628058;
+ Thu, 30 Apr 2020 18:24:44 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 994B928060;
+ Thu, 30 Apr 2020 18:24:44 +0000 (GMT)
+Received: from ltcalpine2-lp16.aus.stglabs.ibm.com (unknown [9.40.195.199])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 30 Apr 2020 18:24:44 +0000 (GMT)
+From: Juliet Kim <julietk@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH net] ibmvnic: Skip fatal error reset after passive init
+Date: Thu, 30 Apr 2020 13:22:11 -0500
+Message-Id: <20200430182211.24211-1-julietk@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.16.4
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1jUDd2-0000hI-EL; ; ; mid=<875zdg26hp.fsf@x220.int.ebiederm.org>;
- ; ; hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
- frm=ebiederm@xmission.com; ; ; spf=neutral
-X-XM-AID: U2FsdGVkX1/0nSmexEm1WkrDW9iKj+jfV8y2wWo/acY=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: [PATCH v2 2/3] mm/memory_hotplug: Introduce MHP_NO_FIRMWARE_MEMMAP
-X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-30_11:2020-04-30,
+ 2020-04-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ priorityscore=1501 mlxscore=0 clxscore=1015 impostorscore=0 phishscore=0
+ bulkscore=0 spamscore=0 lowpriorityscore=0 adultscore=0 mlxlogscore=999
+ suspectscore=1 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004300139
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,165 +91,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: virtio-dev@lists.oasis-open.org, linux-hyperv@vger.kernel.org,
- Michal Hocko <mhocko@suse.com>, Baoquan He <bhe@redhat.com>,
- linux-mm@kvack.org, Wei Yang <richard.weiyang@gmail.com>,
- linux-s390@vger.kernel.org, linux-nvdimm@lists.01.org,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linux-acpi@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>,
- Pankaj Gupta <pankaj.gupta.linux@gmail.com>, xen-devel@lists.xenproject.org,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
+Cc: julietk@linux.vnet.ibm.com, tlfalcon@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-David Hildenbrand <david@redhat.com> writes:
+During MTU change, the following events may happen.
+Client-driven CRQ initialization fails due to partner’s CRQ closed,
+causing client to enqueue a reset task for FATAL_ERROR. Then passive
+(server-driven) CRQ initialization succeeds, causing client to
+release CRQ and enqueue a reset task for failover. If the passive
+CRQ initialization occurs before the FATAL reset task is processed,
+the FATAL error reset task would try to access a CRQ message queue
+that was freed, causing an oops. The problem may be most likely to
+occur during DLPAR add vNIC with a non-default MTU, because the DLPAR
+process will automatically issue a change MTU request.
 
-> On 30.04.20 18:33, Eric W. Biederman wrote:
->> David Hildenbrand <david@redhat.com> writes:
->> 
->>> On 30.04.20 17:38, Eric W. Biederman wrote:
->>>> David Hildenbrand <david@redhat.com> writes:
->>>>
->>>>> Some devices/drivers that add memory via add_memory() and friends (e.g.,
->>>>> dax/kmem, but also virtio-mem in the future) don't want to create entries
->>>>> in /sys/firmware/memmap/ - primarily to hinder kexec from adding this
->>>>> memory to the boot memmap of the kexec kernel.
->>>>>
->>>>> In fact, such memory is never exposed via the firmware memmap as System
->>>>> RAM (e.g., e820), so exposing this memory via /sys/firmware/memmap/ is
->>>>> wrong:
->>>>>  "kexec needs the raw firmware-provided memory map to setup the
->>>>>   parameter segment of the kernel that should be booted with
->>>>>   kexec. Also, the raw memory map is useful for debugging. For
->>>>>   that reason, /sys/firmware/memmap is an interface that provides
->>>>>   the raw memory map to userspace." [1]
->>>>>
->>>>> We don't have to worry about firmware_map_remove() on the removal path.
->>>>> If there is no entry, it will simply return with -EINVAL.
->>>>>
->>>>> [1]
->>>>> https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-firmware-memmap
->>>>
->>>>
->>>> You know what this justification is rubbish, and I have previously
->>>> explained why it is rubbish.
->>>
->>> Actually, no, I don't think it is rubbish. See patch #3 and the cover
->>> letter why this is the right thing to do *for special memory*, *not
->>> ordinary DIMMs*.
->>>
->>> And to be quite honest, I think your response is a little harsh. I don't
->>> recall you replying to my virtio-mem-related comments.
->>>
->>>>
->>>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
->>>>
->>>> This needs to be based on weather the added memory is ultimately normal
->>>> ram or is something special.
->>>
->>> Yes, that's what the caller are expected to decide, see patch #3.
->>>
->>> kexec should try to be as closely as possible to a real reboot - IMHO.
->> 
->> That is very fuzzy in terms of hotplug memory.  The kexec'd kernel
->> should see the hotplugged memory assuming it is ordinary memory.
->> 
->> But kexec is not a reboot although it is quite similar.   Kexec is
->> swapping one running kernel and it's state for another kernel without
->> rebooting.
->
-> I agree (especially regarding the arm64 DIMM hotplug discussion).
-> However, for the two cases
->
-> a) dax/kmem
-> b) virtio-mem
->
-> We really want to let the driver take back control and figure out "what
-> to do with the memory".
+Fix this by not processing fatal error reset if CRQ is passively
+initialized after client-driven CRQ initialization fails.
 
-From reading your v1 cover letter (the description appears missing in
-v2) I see what you are talking about with respect to virtio-mem.
+Signed-off-by: Juliet Kim <julietk@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-So I will count virt-io mem as something different.
-
->>>> Justifying behavior by documentation that does not consider memory
->>>> hotplug is bad thinking.
->>>
->>> Are you maybe confusing this patch series with the arm64 approach? This
->>> is not about ordinary hotplugged DIMMs.
->> 
->> I think I am.
->> 
->> My challenge is that I don't see anything in the description that says
->> this isn't about ordinary hotplugged DIMMs.  All I saw was hotplug
->> memory.
->
-> I'm sorry if that was confusing, I tried to stress that kmem and
-> virtio-mem is special in the description.
->
-> I squeezed a lot of that information into the cover letter and into
-> patch #3.
-
-
->> If the class of memory is different then please by all means let's mark
->> it differently in struct resource so everyone knows it is different.
->> But that difference needs to be more than hotplug.
->> 
->> That difference needs to be the hypervisor loaned us memory and might
->> take it back at any time, or this memory is persistent and so it has
->> these different characteristics so don't use it as ordinary ram.
->
-> Yes, and I think kmem took an excellent approach of explicitly putting
-> that "System RAM" into a resource hierarchy. That "System RAM" won't
-> show up as a root node under /proc/iomem (see patch #3), which already
-> results in kexec-tools to treat it in a special way. I am thinking about
-> doing the same for virtio-mem.
-
-Reading this and your patch cover letters again my concern is that
-the justification seems to be letting the tail wag the dog.
-
-You want kexec-tools to behave in a certain way so you are changing the
-kernel.
-
-Rather it should be change the kernel to clearly reflect reality and if
-you can get away without a change to kexec-tools that is a bonus.
-
->> That information is also useful to other people looking at the system
->> and seeing what is going on.
->> 
->> Just please don't muddle the concepts, or assume that whatever subset of
->> hotplug memory you are dealing with is the only subset.
->
-> I can certainly rephrase the subject/description/comment, stating that
-> this is not to be used for ordinary hotplugged DIMMs - only when the
-> device driver is under control to decide what to do with that memory -
-> especially when kexec'ing.
->
-> (previously, I called this flag MHP_DRIVER_MANAGED, but I think
-> MHP_NO_FIRMWARE_MEMMAP is clearer, we just need a better description)
->
-> Would that make it clearer?
-
-I am not certain, but Andrew Morton deliberately added that
-firmware_map_add_hotplug call.  Which means that there is a reason
-for putting hotplugged memory in the firmware map.
-
-So the justification needs to take that reason into account.  The
-justification can not be it is hotplugged therefore it should not belong
-in the firmware memory map.  Unless you can show that
-firmware_map_add_hotplug that was actually a bug and should be removed.
-But as it has been that way since 2010 that seems like a long shot.
-
-So my question is what is right for the firmware map?
-
-Why does the firmware map support hotplug entries?
-
-Once we have the answers to those questions we can figure out what logic
-the special kinds of memory hotplug need.
-
-Ref: d96ae5309165 ("memory-hotplug: create /sys/firmware/memmap entry for new memory")
-
-Eric
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 4bd33245bad6..3de549c6c693 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -2189,7 +2189,8 @@ static void __ibmvnic_reset(struct work_struct *work)
+ 				rc = do_hard_reset(adapter, rwi, reset_state);
+ 				rtnl_unlock();
+ 			}
+-		} else {
++		} else if (!(rwi->reset_reason == VNIC_RESET_FATAL &&
++				adapter->from_passive_init)) {
+ 			rc = do_reset(adapter, rwi, reset_state);
+ 		}
+ 		kfree(rwi);
+-- 
+2.16.4
 
