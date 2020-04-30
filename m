@@ -2,99 +2,52 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3046C8300A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 11:59:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1CD4C8300A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 13:25:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3138220775
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 11:59:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3138220775
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 945B22076D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 13:25:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 945B22076D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mellanox.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49CYpF6SW4zDr7H
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 21:59:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CYlp6NQ4zDrB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 21:57:26 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03UBW0En100906; Thu, 30 Apr 2020 07:57:14 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30pjxxccg2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 07:57:14 -0400
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03UBWK8l102885;
- Thu, 30 Apr 2020 07:57:13 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30pjxxccfg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 07:57:13 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03UBjnP0030799;
- Thu, 30 Apr 2020 11:57:12 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 30mcu5tf6b-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 11:57:12 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03UBv9VD10092754
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Apr 2020 11:57:09 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C2A2A4054;
- Thu, 30 Apr 2020 11:57:09 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D775FA405C;
- Thu, 30 Apr 2020 11:57:08 +0000 (GMT)
-Received: from localhost (unknown [9.85.120.197])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 30 Apr 2020 11:57:08 +0000 (GMT)
-Date: Thu, 30 Apr 2020 17:27:07 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 7/7] powerpc/selftest: reuse ppc-opcode macros to
- avoid redundancy
-To: Balamuruhan S <bala24@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20200424070853.443969-1-bala24@linux.ibm.com>
- <20200424070853.443969-8-bala24@linux.ibm.com>
- <87k11yfvxu.fsf@mpe.ellerman.id.au>
- <1588169193.tsmipo5v6k.naveen@linux.ibm.com>
- <87y2qdelvm.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87y2qdelvm.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Cbhz34SxzDrFP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 23:25:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=mellanox.com (client-ip=193.47.165.129; helo=mellanox.co.il;
+ envelope-from=maxg@mellanox.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=mellanox.com
+X-Greylist: delayed 397 seconds by postgrey-1.36 at bilbo;
+ Thu, 30 Apr 2020 23:22:05 AEST
+Received: from mellanox.co.il (mail-il-dmz.mellanox.com [193.47.165.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49CbdT6L16zDrD1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 23:22:04 +1000 (AEST)
+Received: from Internal Mail-Server by MTLPINE1 (envelope-from
+ maxg@mellanox.com)
+ with ESMTPS (AES256-SHA encrypted); 30 Apr 2020 16:15:21 +0300
+Received: from mtr-vdi-031.wap.labs.mlnx. (mtr-vdi-031.wap.labs.mlnx
+ [10.209.102.136])
+ by labmailer.mlnx (8.13.8/8.13.8) with ESMTP id 03UDFKRW027016;
+ Thu, 30 Apr 2020 16:15:20 +0300
+From: Max Gurtovoy <maxg@mellanox.com>
+To: hch@lst.de, linux-pci@vger.kernel.org, oohall@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2 v2] powerpc/powernv: Enable and setup PCI P2P
+Date: Thu, 30 Apr 2020 16:15:20 +0300
+Message-Id: <20200430131520.51211-2-maxg@mellanox.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20200430131520.51211-1-maxg@mellanox.com>
+References: <20200430131520.51211-1-maxg@mellanox.com>
 MIME-Version: 1.0
-User-Agent: astroid/v0.15-13-gb675b421 (https://github.com/astroidmail/astroid)
-Message-Id: <1588247640.as3rhyetf4.naveen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
- definitions=2020-04-30_07:2020-04-30,
- 2020-04-30 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- priorityscore=1501 phishscore=0 adultscore=0 malwarescore=0
- impostorscore=0 mlxlogscore=956 bulkscore=0 lowpriorityscore=0 mlxscore=0
- suspectscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2004300092
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,94 +59,313 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com, paulus@samba.org,
- sandipan@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: vladimirk@mellanox.com, clsoto@us.ibm.com, israelr@mellanox.com,
+ shlomin@mellanox.com, fbarrat@linux.ibm.com, Max Gurtovoy <maxg@mellanox.com>,
+ idanw@mellanox.com, aneela@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->> Michael Ellerman wrote:
->>> Balamuruhan S <bala24@linux.ibm.com> writes:
->>>> Avoid redefining macros to encode ppc instructions instead reuse it fr=
-om
->>>> ppc-opcode.h, Makefile changes are necessary to compile memcmp_64.S wi=
-th
->>>> __ASSEMBLY__ defined from selftests.
->>>>
->>>> Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
->>>> ---
->>>>  .../selftests/powerpc/stringloops/Makefile    | 34 ++++++++++++++----
->>>>  .../powerpc/stringloops/asm/asm-const.h       |  1 +
->>>>  .../powerpc/stringloops/asm/ppc-opcode.h      | 36 +-----------------=
+Implement the generic dma_map_resource callback on the PCI controller
+for powernv. This will enable PCI P2P on POWER9 architecture. It will
+allow catching a cross-PHB mmio mapping, which needs to be setup in
+hardware by calling opal. Both the initiator and target PHBs need to be
+configured, so we look for which PHB owns the mmio address being mapped.
+
+Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+[maxg: added CONFIG_PCI_P2PDMA wrappers]
+Signed-off-by: Max Gurtovoy <maxg@mellanox.com>
+---
+
+changes from v1:
+ - remove CONFIG_PCI_P2PDMA around opal_pci_set_p2p decleration
+ - divide pnv_pci_ioda_set_p2p to pnv_pci_ioda_enable_p2p/pnv_pci_ioda_disable_p2p
+ - added pnv_pci_dma_dir_to_opal_p2p static helper
+
+---
+ arch/powerpc/include/asm/opal.h            |   3 +-
+ arch/powerpc/platforms/powernv/opal-call.c |   1 +
+ arch/powerpc/platforms/powernv/pci-ioda.c  | 212 +++++++++++++++++++++++++++--
+ arch/powerpc/platforms/powernv/pci.h       |   9 ++
+ 4 files changed, 213 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9986ac3..362f54b 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -284,7 +284,8 @@ int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
+ 				  uint32_t qtoggle,
+ 				  uint32_t qindex);
+ int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
 -
->>>>  3 files changed, 29 insertions(+), 42 deletions(-)
->>>>  create mode 120000 tools/testing/selftests/powerpc/stringloops/asm/as=
-m-const.h
->>>>  mode change 100644 =3D> 120000 tools/testing/selftests/powerpc/string=
-loops/asm/ppc-opcode.h
->>>>
->>>> diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/to=
-ols/testing/selftests/powerpc/stringloops/Makefile
->>>> index 7fc0623d85c3..efe76c5a5b94 100644
->>>> --- a/tools/testing/selftests/powerpc/stringloops/Makefile
->>>> +++ b/tools/testing/selftests/powerpc/stringloops/Makefile
->>>> @@ -1,26 +1,44 @@
->>>>  # SPDX-License-Identifier: GPL-2.0
->>>>  # The loops are all 64-bit code
->>>> -CFLAGS +=3D -I$(CURDIR)
->>>> +GIT_VERSION =3D $(shell git describe --always --long --dirty || echo =
-"unknown")
->>>> +CFLAGS +=3D -DGIT_VERSION=3D'"$(GIT_VERSION)"' -I$(CURDIR) -I$(CURDIR=
-)/../include
->>>> =20
->>>>  EXTRA_SOURCES :=3D ../harness.c
->>>> =20
->>>>  build_32bit =3D $(shell if ($(CC) $(CFLAGS) -m32 -o /dev/null memcmp.=
-c >/dev/null 2>&1) then echo "1"; fi)
->>>> =20
->>>> +ifneq ($(build_32bit),1)
->>>>  TEST_GEN_PROGS :=3D memcmp_64 strlen
->>>> +TEST_GEN_FILES :=3D memcmp.o memcmp_64.o memcmp_64
->>>> +MEMCMP :=3D $(OUTPUT)/memcmp.o
->>>> +MEMCMP_64 :=3D $(OUTPUT)/memcmp_64.o
->>>> +HARNESS :=3D  $(OUTPUT)/../harness.o
->>>> +CFLAGS +=3D -m64 -maltivec
->>>> =20
->>>> -$(OUTPUT)/memcmp_64: memcmp.c
->>>> -$(OUTPUT)/memcmp_64: CFLAGS +=3D -m64 -maltivec
->>>> +OVERRIDE_TARGETS :=3D 1
->>>> +include ../../lib.mk
->>>> =20
->>>> -ifeq ($(build_32bit),1)
->>>> +$(OUTPUT)/memcmp_64: $(MEMCMP_64) $(MEMCMP) $(HARNESS)
->>>> +	$(CC) $(CFLAGS) memcmp.o memcmp_64.o ../harness.o -o memcmp_64
->>>> +
->>>> +$(MEMCMP_64): memcmp_64.S
->>>> +	$(CC) $(CFLAGS) -D__ASSEMBLY__ -o memcmp_64.o -c memcmp_64.S
->>>> +
->>>> +$(MEMCMP): memcmp.c
->>>> +	$(CC) $(CFLAGS) -o memcmp.o -c memcmp.c
->>>> +
->>>> +$(HARNESS): $(EXTRA_SOURCES)
->>>> +	$(CC) $(CFLAGS) -DGIT_VERSION=3D'"$(GIT_VERSION)"' -o ../harness.o -=
-c $(EXTRA_SOURCES)
->>>=20
->>> What are you actually trying to do here? Is it just that you need to
->>> define __ASSEMBLY__ for memcmp_64.S?
->>
->> Adding __ASSEMBLY__ while building memcmp_64.S would be the goal, so as=20
->> to reuse ppc-opcode.h. However, asm/ppc-opcode.h under stringloops test=20
->> is tiny and doesn't seem to justify the change.
->=20
-> I don't see ppc-opcode.h testing __ASSEMBLY__ though, so I don't think
-> we even need to define it?
-
-Right -- it's rather 'stringify_in_c' which tests it. 'asm/ppc-opcode.h'=20
-under stringloops/ unconditionally defines 'stringify_in_c' this way:
-	#  define stringify_in_c(...)   __VA_ARGS__=20
-
-
-- Naveen
++int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
++			 uint64_t desc, uint16_t pe_number);
+ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
+ 							uint64_t cpu_pir);
+ int64_t opal_imc_counters_start(uint32_t type, uint64_t cpu_pir);
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index 5cd0f52..442d5445c 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -273,6 +273,7 @@ int64_t name(int64_t a0, int64_t a1, int64_t a2, int64_t a3,	\
+ OPAL_CALL(opal_imc_counters_init,		OPAL_IMC_COUNTERS_INIT);
+ OPAL_CALL(opal_imc_counters_start,		OPAL_IMC_COUNTERS_START);
+ OPAL_CALL(opal_imc_counters_stop,		OPAL_IMC_COUNTERS_STOP);
++OPAL_CALL(opal_pci_set_p2p,			OPAL_PCI_SET_P2P);
+ OPAL_CALL(opal_get_powercap,			OPAL_GET_POWERCAP);
+ OPAL_CALL(opal_set_powercap,			OPAL_SET_POWERCAP);
+ OPAL_CALL(opal_get_power_shift_ratio,		OPAL_GET_POWER_SHIFT_RATIO);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 57d3a6a..9ecc576 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3706,18 +3706,208 @@ static void pnv_pci_ioda_dma_bus_setup(struct pci_bus *bus)
+ 	}
+ }
+ 
++#ifdef CONFIG_PCI_P2PDMA
++static DEFINE_MUTEX(p2p_mutex);
++
++static bool pnv_pci_controller_owns_addr(struct pci_controller *hose,
++					 phys_addr_t addr, size_t size)
++{
++	int i;
++
++	/*
++	 * It seems safe to assume the full range is under the same PHB, so we
++	 * can ignore the size.
++	 */
++	for (i = 0; i < ARRAY_SIZE(hose->mem_resources); i++) {
++		struct resource *res = &hose->mem_resources[i];
++
++		if (res->flags && addr >= res->start && addr < res->end)
++			return true;
++	}
++	return false;
++}
++
++/*
++ * find the phb owning a mmio address if not owned locally
++ */
++static struct pnv_phb *pnv_pci_find_owning_phb(struct pci_dev *pdev,
++					       phys_addr_t addr, size_t size)
++{
++	struct pci_controller *hose;
++
++	/* fast path */
++	if (pnv_pci_controller_owns_addr(pdev->bus->sysdata, addr, size))
++		return NULL;
++
++	list_for_each_entry(hose, &hose_list, list_node) {
++		struct pnv_phb *phb = hose->private_data;
++
++		if (phb->type != PNV_PHB_NPU_NVLINK &&
++		    phb->type != PNV_PHB_NPU_OCAPI) {
++			if (pnv_pci_controller_owns_addr(hose, addr, size))
++				return phb;
++		}
++	}
++	return NULL;
++}
++
++static u64 pnv_pci_dma_dir_to_opal_p2p(enum dma_data_direction dir)
++{
++	if (dir == DMA_TO_DEVICE)
++		return OPAL_PCI_P2P_STORE;
++	else if (dir == DMA_FROM_DEVICE)
++		return OPAL_PCI_P2P_LOAD;
++	else if (dir == DMA_BIDIRECTIONAL)
++		return OPAL_PCI_P2P_LOAD | OPAL_PCI_P2P_STORE;
++	else
++		return 0;
++}
++
++static int pnv_pci_ioda_enable_p2p(struct pci_dev *initiator,
++				   struct pnv_phb *phb_target,
++				   enum dma_data_direction dir)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb_init;
++	struct pnv_ioda_pe *pe_init;
++	u64 desc;
++	int rc;
++
++	if (!opal_check_token(OPAL_PCI_SET_P2P))
++		return -ENXIO;
++
++	hose = pci_bus_to_host(initiator->bus);
++	phb_init = hose->private_data;
++
++	pe_init = pnv_ioda_get_pe(initiator);
++	if (!pe_init)
++		return -ENODEV;
++
++	if (!pe_init->tce_bypass_enabled)
++		return -EINVAL;
++
++	/*
++	 * Configuring the initiator's PHB requires to adjust its TVE#1
++	 * setting. Since the same device can be an initiator several times for
++	 * different target devices, we need to keep a reference count to know
++	 * when we can restore the default bypass setting on its TVE#1 when
++	 * disabling. Opal is not tracking PE states, so we add a reference
++	 * count on the PE in linux.
++	 *
++	 * For the target, the configuration is per PHB, so we keep a
++	 * target reference count on the PHB.
++	 */
++	mutex_lock(&p2p_mutex);
++
++	desc = OPAL_PCI_P2P_ENABLE | pnv_pci_dma_dir_to_opal_p2p(dir);
++	/* always go to opal to validate the configuration */
++	rc = opal_pci_set_p2p(phb_init->opal_id, phb_target->opal_id, desc,
++			      pe_init->pe_number);
++	if (rc != OPAL_SUCCESS) {
++		rc = -EIO;
++		goto out;
++	}
++
++	pe_init->p2p_initiator_count++;
++	phb_target->p2p_target_count++;
++
++
++	rc = 0;
++out:
++	mutex_unlock(&p2p_mutex);
++	return rc;
++}
++
++static int pnv_pci_dma_map_resource(struct pci_dev *pdev,
++				    phys_addr_t phys_addr, size_t size,
++				    enum dma_data_direction dir)
++{
++	struct pnv_phb *target_phb;
++
++	target_phb = pnv_pci_find_owning_phb(pdev, phys_addr, size);
++	if (!target_phb)
++		return 0;
++
++	return pnv_pci_ioda_enable_p2p(pdev, target_phb, dir);
++}
++
++static int pnv_pci_ioda_disable_p2p(struct pci_dev *initiator,
++		struct pnv_phb *phb_target)
++{
++	struct pci_controller *hose;
++	struct pnv_phb *phb_init;
++	struct pnv_ioda_pe *pe_init;
++	int rc;
++
++	if (!opal_check_token(OPAL_PCI_SET_P2P))
++		return -ENXIO;
++
++	hose = pci_bus_to_host(initiator->bus);
++	phb_init = hose->private_data;
++
++	pe_init = pnv_ioda_get_pe(initiator);
++	if (!pe_init)
++		return -ENODEV;
++
++	mutex_lock(&p2p_mutex);
++
++	if (!pe_init->p2p_initiator_count || !phb_target->p2p_target_count) {
++		rc = -EINVAL;
++		goto out;
++	}
++
++	if (--pe_init->p2p_initiator_count == 0)
++		pnv_pci_ioda2_set_bypass(pe_init, true);
++
++	if (--phb_target->p2p_target_count == 0) {
++		rc = opal_pci_set_p2p(phb_init->opal_id, phb_target->opal_id,
++				      0, pe_init->pe_number);
++		if (rc != OPAL_SUCCESS) {
++			rc = -EIO;
++			goto out;
++		}
++	}
++
++	rc = 0;
++out:
++	mutex_unlock(&p2p_mutex);
++	return rc;
++}
++
++static void pnv_pci_dma_unmap_resource(struct pci_dev *pdev,
++				       dma_addr_t addr, size_t size,
++				       enum dma_data_direction dir)
++{
++	struct pnv_phb *target_phb;
++	int rc;
++
++	target_phb = pnv_pci_find_owning_phb(pdev, addr, size);
++	if (!target_phb)
++		return;
++
++	rc = pnv_pci_ioda_disable_p2p(pdev, target_phb);
++	if (rc)
++		dev_err(&pdev->dev, "Failed to undo PCI peer-to-peer setup for address %llx: %d\n",
++			addr, rc);
++}
++#endif
++
+ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+-	.dma_dev_setup		= pnv_pci_ioda_dma_dev_setup,
+-	.dma_bus_setup		= pnv_pci_ioda_dma_bus_setup,
+-	.iommu_bypass_supported	= pnv_pci_ioda_iommu_bypass_supported,
+-	.setup_msi_irqs		= pnv_setup_msi_irqs,
+-	.teardown_msi_irqs	= pnv_teardown_msi_irqs,
+-	.enable_device_hook	= pnv_pci_enable_device_hook,
+-	.release_device		= pnv_pci_release_device,
+-	.window_alignment	= pnv_pci_window_alignment,
+-	.setup_bridge		= pnv_pci_setup_bridge,
+-	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+-	.shutdown		= pnv_pci_ioda_shutdown,
++	.dma_dev_setup			= pnv_pci_ioda_dma_dev_setup,
++	.dma_bus_setup			= pnv_pci_ioda_dma_bus_setup,
++	.iommu_bypass_supported		= pnv_pci_ioda_iommu_bypass_supported,
++	.setup_msi_irqs			= pnv_setup_msi_irqs,
++	.teardown_msi_irqs		= pnv_teardown_msi_irqs,
++	.enable_device_hook		= pnv_pci_enable_device_hook,
++	.release_device			= pnv_pci_release_device,
++	.window_alignment		= pnv_pci_window_alignment,
++	.setup_bridge			= pnv_pci_setup_bridge,
++	.reset_secondary_bus		= pnv_pci_reset_secondary_bus,
++	.shutdown			= pnv_pci_ioda_shutdown,
++#ifdef CONFIG_PCI_P2PDMA
++	.dma_direct_map_resource	= pnv_pci_dma_map_resource,
++	.dma_direct_unmap_resource	= pnv_pci_dma_unmap_resource,
++#endif
+ };
+ 
+ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index d3bbdea..5f85d9c 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -79,6 +79,10 @@ struct pnv_ioda_pe {
+ 	struct pnv_ioda_pe	*master;
+ 	struct list_head	slaves;
+ 
++#ifdef CONFIG_PCI_P2PDMA
++	/* PCI peer-to-peer*/
++	int			p2p_initiator_count;
++#endif
+ 	/* Link in list of PE#s */
+ 	struct list_head	list;
+ };
+@@ -168,6 +172,11 @@ struct pnv_phb {
+ 	/* PHB and hub diagnostics */
+ 	unsigned int		diag_data_size;
+ 	u8			*diag_data;
++
++#ifdef CONFIG_PCI_P2PDMA
++	/* PCI peer-to-peer*/
++	int			p2p_target_count;
++#endif
+ };
+ 
+ extern struct pci_ops pnv_pci_ops;
+-- 
+1.8.3.1
 
