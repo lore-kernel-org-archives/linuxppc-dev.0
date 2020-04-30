@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0986BC83001
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:43:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CC20C83001
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:44:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4DA121D7E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:43:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4DA121D7E
+	by mail.kernel.org (Postfix) with ESMTPS id 13EB82073E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:44:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13EB82073E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49CN6c6CXVzDrJl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:43:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49CN8h0WL6zDqys
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:44:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
@@ -29,51 +29,52 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CMxB5gjVzDrB3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:34:54 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03U4XWSZ131674; Thu, 30 Apr 2020 00:34:40 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CMxF2JYDzDrB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:34:56 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03U4Xkbd037027; Thu, 30 Apr 2020 00:34:48 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30pjmm7x6x-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30q7qjev4m-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 00:34:40 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03U4YdMn137574;
- Thu, 30 Apr 2020 00:34:39 -0400
+ Thu, 30 Apr 2020 00:34:48 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03U4YE7X038750;
+ Thu, 30 Apr 2020 00:34:47 -0400
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30pjmm7x69-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30q7qjev43-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 00:34:39 -0400
+ Thu, 30 Apr 2020 00:34:47 -0400
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03U4OntW008380;
- Thu, 30 Apr 2020 04:34:37 GMT
+ by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03U4OjxV008371;
+ Thu, 30 Apr 2020 04:34:45 GMT
 Received: from b06avi18878370.portsmouth.uk.ibm.com
  (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma03ams.nl.ibm.com with ESMTP id 30mcu5srpy-1
+ by ppma03ams.nl.ibm.com with ESMTP id 30mcu5srq9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 04:34:37 +0000
+ Thu, 30 Apr 2020 04:34:45 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
  [9.149.105.60])
  by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 03U4YZIQ50725294
+ id 03U4YgVm63963532
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Apr 2020 04:34:35 GMT
+ Thu, 30 Apr 2020 04:34:43 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ED4A642042;
- Thu, 30 Apr 2020 04:34:34 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DA3354204B;
+ Thu, 30 Apr 2020 04:34:42 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4C4114203F;
- Thu, 30 Apr 2020 04:34:31 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5946142042;
+ Thu, 30 Apr 2020 04:34:39 +0000 (GMT)
 Received: from bangoria.ibmuc.com (unknown [9.199.59.105])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 30 Apr 2020 04:34:31 +0000 (GMT)
+ Thu, 30 Apr 2020 04:34:39 +0000 (GMT)
 From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 To: mpe@ellerman.id.au, mikey@neuling.org
-Subject: [PATCH v4 02/16] powerpc/watchpoint: Add SPRN macros for second DAWR
-Date: Thu, 30 Apr 2020 10:04:03 +0530
-Message-Id: <20200430043417.30948-3-ravi.bangoria@linux.ibm.com>
+Subject: [PATCH v4 04/16] powerpc/watchpoint/ptrace: Return actual num of
+ available watchpoints
+Date: Thu, 30 Apr 2020 10:04:05 +0530
+Message-Id: <20200430043417.30948-5-ravi.bangoria@linux.ibm.com>
 X-Mailer: git-send-email 2.25.3
 In-Reply-To: <20200430043417.30948-1-ravi.bangoria@linux.ibm.com>
 References: <20200430043417.30948-1-ravi.bangoria@linux.ibm.com>
@@ -84,11 +85,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-30_01:2020-04-30,
  2020-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0
- adultscore=0 spamscore=0 impostorscore=0 lowpriorityscore=0 malwarescore=0
- mlxscore=0 mlxlogscore=915 suspectscore=0 clxscore=1015 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2004300030
+ mlxscore=0 spamscore=0
+ priorityscore=1501 bulkscore=0 malwarescore=0 suspectscore=0
+ mlxlogscore=999 lowpriorityscore=0 phishscore=0 adultscore=0
+ impostorscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2004300035
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,35 +110,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Future Power architecture is introducing second DAWR. Add SPRN_ macros
-for the same.
+User can ask for num of available watchpoints(dbginfo.num_data_bps)
+using ptrace(PPC_PTRACE_GETHWDBGINFO). Return actual number of
+available watchpoints on the machine rather than hardcoded 1.
 
 Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 Reviewed-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/reg.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/ptrace/ptrace-noadv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 156ee89fa9be..062e74cf41fd 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -284,6 +284,7 @@
- #define   CTRL_TE	0x00c00000	/* thread enable */
- #define   CTRL_RUNLATCH	0x1
- #define SPRN_DAWR0	0xB4
-+#define SPRN_DAWR1	0xB5
- #define SPRN_RPR	0xBA	/* Relative Priority Register */
- #define SPRN_CIABR	0xBB
- #define   CIABR_PRIV		0x3
-@@ -291,6 +292,7 @@
- #define   CIABR_PRIV_SUPER	2
- #define   CIABR_PRIV_HYPER	3
- #define SPRN_DAWRX0	0xBC
-+#define SPRN_DAWRX1	0xBD
- #define   DAWRX_USER	__MASK(0)
- #define   DAWRX_KERNEL	__MASK(1)
- #define   DAWRX_HYP	__MASK(2)
+diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
+index f87e7c5c3bf3..12962302d6a4 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
++++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
+@@ -44,7 +44,7 @@ void ppc_gethwdinfo(struct ppc_debug_info *dbginfo)
+ 	dbginfo->version = 1;
+ 	dbginfo->num_instruction_bps = 0;
+ 	if (ppc_breakpoint_available())
+-		dbginfo->num_data_bps = 1;
++		dbginfo->num_data_bps = nr_wp_slots();
+ 	else
+ 		dbginfo->num_data_bps = 0;
+ 	dbginfo->num_condition_regs = 0;
 -- 
 2.21.1
 
