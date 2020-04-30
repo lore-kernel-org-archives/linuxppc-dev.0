@@ -2,87 +2,52 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0D85C4724C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 19:01:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 798DBC47247
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 19:03:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B2552073E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 19:01:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="ftYR3vvy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B2552073E
+	by mail.kernel.org (Postfix) with ESMTPS id 343812054F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 19:03:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 343812054F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Cl8d543bzDqQV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 05:01:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ClCb4dqzzDqwg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 05:03:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2a00:1450:4864:20::641;
- helo=mail-ej1-x641.google.com; envelope-from=dan.j.williams@intel.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=jonathan.derrick@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=ftYR3vvy; dkim-atps=neutral
-Received: from mail-ej1-x641.google.com (mail-ej1-x641.google.com
- [IPv6:2a00:1450:4864:20::641])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Cl5m4djPzDr9W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 04:58:35 +1000 (AEST)
-Received: by mail-ej1-x641.google.com with SMTP id a2so5576004ejx.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 11:58:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=VO82Y+ddPqwVbejb8yp1YADHo+TiaduERH1aUXgFNdU=;
- b=ftYR3vvy7y4XQUHnig2EWsnYgRjVl+CPW2em4ftSq034hx6ZoqSueCcso+RG9w8AGa
- w0/+YALKEw0FIaP05V+9C0XKOYuOmd59KAW1siA/r09GzwZUf48N8GmxNx1dxSbliixs
- CuBWjC2ORmo5GZgQNulH0b+ykeGy5IQzQog4ZcfdBGWxbr/kGwbKqiBi3jZCbBsGvnNW
- Q5W2E6yv533qZlcTHc6rxcPndCCEwjOVK0cZ2rz6LGVrs0kCEepYAF9z3xs1VIBjMZtf
- A5p7YNgqSxKHyCub+EuUXAZ2xuX50SSxRFhOGGuo9nNwQKHccsh0XWdv0oNDM0uH1ryy
- dbvg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=VO82Y+ddPqwVbejb8yp1YADHo+TiaduERH1aUXgFNdU=;
- b=hKWjXib/0zABOBXj3fgLJK4+rxs2ptf4vDyAEkAuOH7LS7ZiPHKnuu8UZtNoP5Y5/7
- 4w8GEVDScVqweC2+NtyJYT2T6Liqa5PQng6KxYreQ/yFFpuPUCf7FbIaDsnUCFmVArAT
- dRJ9QWT3ztdVaTCMKVcnw+oif+yB4AnE931cfXiqmnIwGpRRrHpbNu1nySJvxJNzyoCW
- qHW4SJrbdT0ZEaWVKN1jFZVPGLag0cpmCO3AvVVELRuc1lD/Kpsbqn6vmjpSE+UxjVfl
- VuGswPLMntN7wWiICKynozlrrUy4riR/qJJTUZGos7+9yS368TUB7cHf4pOrjR7hExQK
- jrAg==
-X-Gm-Message-State: AGi0PuaQ6BSvveMrj1CCcYNuMRFhYyjZ+TV1XQFJhDzTmUqoandLCmYX
- EsG5Wajb5v6xlFOhMsGxmY+p+pQ4GYFiMUVdEp4bBQ==
-X-Google-Smtp-Source: APiQypLtO6lmgP+/t4n/a1LprqtsF2znfD77bnYaqHJRks9KFzncsFlKVdj99iACRR541U4ie6ERYFDj3Eno6uEUPdw=
-X-Received: by 2002:a17:906:855a:: with SMTP id
- h26mr4305126ejy.56.1588273108788; 
- Thu, 30 Apr 2020 11:58:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200430102908.10107-1-david@redhat.com>
- <20200430102908.10107-3-david@redhat.com>
- <87pnbp2dcz.fsf@x220.int.ebiederm.org>
- <1b49c3be-6e2f-57cb-96f7-f66a8f8a9380@redhat.com>
- <871ro52ary.fsf@x220.int.ebiederm.org>
- <373a6898-4020-4af1-5b3d-f827d705dd77@redhat.com>
- <875zdg26hp.fsf@x220.int.ebiederm.org>
- <b28c9e02-8cf2-33ae-646b-fe50a185738e@redhat.com>
-In-Reply-To: <b28c9e02-8cf2-33ae-646b-fe50a185738e@redhat.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 30 Apr 2020 11:58:16 -0700
-Message-ID: <CAPcyv4j33bwbrFMu2L0knRGRN1RDiC5kbknMNEwo-OFmPSw47w@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] mm/memory_hotplug: Introduce MHP_NO_FIRMWARE_MEMMAP
-To: David Hildenbrand <david@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Cl772ZyCzDr0r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 04:59:41 +1000 (AEST)
+IronPort-SDR: fSGIicWOanAymLpRUwLIP6qYIxgJ9WYj5ZmrVFPGUH7tg0fWD31wArz9mKxDTNs5wIFJBpenp0
+ ajiYOx//5BtA==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Apr 2020 11:59:38 -0700
+IronPort-SDR: Ed+FWXPB3/MF2qsCgTd4joebR2FBMhxVdTEyzI/OAOvXfeDcNp7KT2BZTm4cXqjJfPT7ZdCKVg
+ OutbuaWtcmcw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,336,1583222400"; d="scan'208";a="303360005"
+Received: from unknown (HELO nsgsw-wilsonpoint.lm.intel.com) ([10.232.116.102])
+ by FMSMGA003.fm.intel.com with ESMTP; 30 Apr 2020 11:59:37 -0700
+From: Jon Derrick <jonathan.derrick@intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: [PATCH v3 0/2] PCI/ERR: Allow Native AER/DPC using _OSC
+Date: Thu, 30 Apr 2020 12:46:07 -0600
+Message-Id: <1588272369-2145-1-git-send-email-jonathan.derrick@intel.com>
+X-Mailer: git-send-email 1.8.3.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,114 +59,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: virtio-dev@lists.oasis-open.org, linux-hyperv@vger.kernel.org,
- Michal Hocko <mhocko@suse.com>, Baoquan He <bhe@redhat.com>,
- Linux ACPI <linux-acpi@vger.kernel.org>, Wei Yang <richard.weiyang@gmail.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- virtualization@lists.linux-foundation.org, Linux MM <linux-mm@kvack.org>,
- "Michael S . Tsirkin" <mst@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Pankaj Gupta <pankaj.gupta.linux@gmail.com>,
- xen-devel <xen-devel@lists.xenproject.org>,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ Rajat Jain <rajatja@google.com>, Frederick Lawler <fred@fredlawl.com>,
+ Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Olof Johansson <olof@lixom.net>, Alex Williamson <alex.williamson@redhat.com>,
+ "Patel, Mayurkumar" <mayurkumar.patel@intel.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>,
+ Jon Derrick <jonathan.derrick@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 30, 2020 at 11:44 AM David Hildenbrand <david@redhat.com> wrote:
->
->  >>> If the class of memory is different then please by all means let's mark
-> >>> it differently in struct resource so everyone knows it is different.
-> >>> But that difference needs to be more than hotplug.
-> >>>
-> >>> That difference needs to be the hypervisor loaned us memory and might
-> >>> take it back at any time, or this memory is persistent and so it has
-> >>> these different characteristics so don't use it as ordinary ram.
-> >>
-> >> Yes, and I think kmem took an excellent approach of explicitly putting
-> >> that "System RAM" into a resource hierarchy. That "System RAM" won't
-> >> show up as a root node under /proc/iomem (see patch #3), which already
-> >> results in kexec-tools to treat it in a special way. I am thinking about
-> >> doing the same for virtio-mem.
-> >
-> > Reading this and your patch cover letters again my concern is that
-> > the justification seems to be letting the tail wag the dog.
-> >
-> > You want kexec-tools to behave in a certain way so you are changing the
-> > kernel.
-> >
-> > Rather it should be change the kernel to clearly reflect reality and if
-> > you can get away without a change to kexec-tools that is a bonus.
-> >
->
-> Right, because user space has to have a way to figure out what to do.
->
-> But talking about the firmware memmap, indicating something via a "raw
-> firmware-provided memory map", that is not actually in the "raw
-> firmware-provided memory map" feels wrong to me. (below)
->
->
-> >>> That information is also useful to other people looking at the system
-> >>> and seeing what is going on.
-> >>>
-> >>> Just please don't muddle the concepts, or assume that whatever subset of
-> >>> hotplug memory you are dealing with is the only subset.
-> >>
-> >> I can certainly rephrase the subject/description/comment, stating that
-> >> this is not to be used for ordinary hotplugged DIMMs - only when the
-> >> device driver is under control to decide what to do with that memory -
-> >> especially when kexec'ing.
-> >>
-> >> (previously, I called this flag MHP_DRIVER_MANAGED, but I think
-> >> MHP_NO_FIRMWARE_MEMMAP is clearer, we just need a better description)
-> >>
-> >> Would that make it clearer?
-> >
-> > I am not certain, but Andrew Morton deliberately added that
-> > firmware_map_add_hotplug call.  Which means that there is a reason
-> > for putting hotplugged memory in the firmware map.
-> >
-> > So the justification needs to take that reason into account.  The
-> > justification can not be it is hotplugged therefore it should not belong
-> > in the firmware memory map.  Unless you can show that
-> > firmware_map_add_hotplug that was actually a bug and should be removed.
-> > But as it has been that way since 2010 that seems like a long shot.
-> >
-> > So my question is what is right for the firmware map?
->
-> We have documentation for that since 2008. Andrews patch is from 2010.
->
-> Documentation/ABI/testing/sysfs-firmware-memmap
->
-> It clearly talks about "raw firmware-provided memory map" and why the
-> interface was introduced at all ("on most architectures that
-> firmware-provided memory map is modified afterwards by the kernel itself").
->
-> >
-> > Why does the firmware map support hotplug entries?
->
-> I assume:
->
-> The firmware memmap was added primarily for x86-64 kexec (and still, is
-> mostly used on x86-64 only IIRC). There, we had ACPI hotplug. When DIMMs
-> get hotplugged on real HW, they get added to e820. Same applies to
-> memory added via HyperV balloon (unless memory is unplugged via
-> ballooning and you reboot ... the the e820 is changed as well). I assume
-> we wanted to be able to reflect that, to make kexec look like a real reboot.
+Hi Bjorn & Kuppuswamy,
 
-I can at least say that this breakdown makes sense to me. Traditional
-memory hotplug results in permanent change to the raw firmware memory
-map reported by the host at next reboot. These device-driver-owned
-memory regions really want a hotplug policy per-kernel boot instance
-and should fall back to the default reserved state at reboot (kexec or
-otherwise). When I say hotplug-policy I mean whether the current
-kernel wants to treat the device range as System RAM or leave it as
-device-managed. The intent is that the follow-on kernel needs to
-re-decide the device policy.
+I see a problem in the DPC ECN [1] to _OSC in that it doesn't give us a way to
+determine if firmware supports _OSC DPC negotation, and therefore how to handle
+DPC.
 
->
-> This worked for a while. Then came dax/kmem. Now comes virtio-mem.
->
+Here is the wording of the ECN that implies that Firmware without _OSC DPC
+negotiation support should have the OSPM rely on _OSC AER negotiation when
+determining DPC control:
+
+  PCIe Base Specification suggests that Downstream Port Containment may be
+  controlled either by the Firmware or the Operating System. It also suggests
+  that the Firmware retain ownership of Downstream Port Containment if it also
+  owns AER. When the Firmware owns Downstream Port Containment, it is expected
+  to use the new "Error Disconnect Recover" notification to alert OSPM of a
+  Downstream Port Containment event.
+
+In legacy platforms, as bits in _OSC are reserved prior to implementation, ACPI
+Root Bus enumeration will mark these Host Bridges as without Native DPC
+support, even though the specification implies it's expected that AER _OSC
+negotiation determines DPC control for these platforms. There seems to be a
+need for a way to determine if the DPC control bit in _OSC is supported and
+fallback on AER otherwise.
+
+
+Currently portdrv assumes DPC control if the port has Native AER services:
+
+static int get_port_device_capability(struct pci_dev *dev)
+...
+	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DPC) &&
+	    pci_aer_available() &&
+	    (pcie_ports_dpc_native || (services & PCIE_PORT_SERVICE_AER)))
+		services |= PCIE_PORT_SERVICE_DPC;
+
+Newer firmware may not grant OSPM DPC control, if for instance, it expects to
+use Error Disconnect Recovery. However it looks like ACPI will use DPC services
+via the EDR driver, without binding the full DPC port service driver.
+
+
+If we change portdrv to probe based on host->native_dpc and not AER, then we
+break instances with legacy firmware where OSPM will clear host->native_dpc
+solely due to _OSC bits being reserved:
+
+struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+...
+	if (!(root->osc_control_set & OSC_PCI_EXPRESS_DPC_CONTROL))
+		host_bridge->native_dpc = 0;
+
+
+
+So my assumption instead is that host->native_dpc can be 0 and expect Native
+DPC services if AER is used. In other words, if and only if DPC probe is
+invoked from portdrv, then it needs to rely on the AER dependency. Otherwise it
+should be assumed that ACPI set up DPC via EDR. This covers legacy firmware.
+
+However it seems like that could be trouble with newer firmware that might give
+OSPM control of AER but not DPC, and would result in both Native DPC and EDR
+being in effect.
+
+
+Anyways here are two patches that give control of AER and DPC on the results of
+_OSC. They don't mess with the HEST parser as I expect those to be removed at
+some point. I need these for VMD support which doesn't even rely on _OSC, but I
+suspect this won't be the last effort as we detangle Firmware First.
+
+[1] https://members.pcisig.com/wg/PCI-SIG/document/12888
+
+
+Jon Derrick (2):
+  PCI/AER: Use _OSC to determine Firmware First before HEST
+  PCI/DPC: Use _OSC to determine DPC support
+
+ drivers/pci/pcie/aer.c          | 3 +++
+ drivers/pci/pcie/dpc.c          | 3 ---
+ drivers/pci/pcie/portdrv_core.c | 3 ++-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+-- 
+1.8.3.1
+
