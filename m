@@ -2,82 +2,84 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35C75C83001
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:03:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6D9C83001
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:05:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 74A87206D6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:03:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8CCA72073E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:05:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pyIUvTbe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74A87206D6
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pkVcwzwH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CCA72073E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49CMFP5ZSzzDrF0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:03:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49CMHF5dPwzDrGq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:05:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
- helo=mail-pl1-x644.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
+ helo=mail-pf1-x444.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=pyIUvTbe; dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+ header.s=20161025 header.b=pkVcwzwH; dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CMCW5mfqzDr7b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:02:15 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id c21so1759616plz.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 21:02:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CMCY6VgVzDr7b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:02:17 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id y25so2254985pfn.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2020 21:02:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=806taYgfx/Bxj+McXFMhGNJZb30+0DKm6BcSOyalqSs=;
- b=pyIUvTbeLLucWLqwMaBeiBEy0Ing49bplAb9GBIrfz/va/9nGIcXIrWUdGCMwDY0ly
- mTcPPtxyUIbRNbj3NWxmTpZN//GhxiWbHbq47uue2GqfnQ1P9Rw9ftNf+S35FhRcNRH0
- Ghyp1/ePTANkdJYOlYjn61hiHFbGhTPTyP75nqNgKeYhKmAuyGAKjnBTqiZQoFD2jX3t
- ZRs5UCIbPpSONMpb5VP7o/cCvviQBEknHbh2bW62w9caM4ba6eMNctrqqLAZPJxtH13i
- OjudIFgJSxBmo4jyqdEe0toEUw2yXpz/MLt+Lt6LhjU6XCvfVT23XfuDxKe6wVSIKvQK
- SQyw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=w/RM8l0krhqnM5ryq+OfPq/DX0uqT8SGaEP7lRRaqCg=;
+ b=pkVcwzwHG0pQLGNUswD9t/ilHM3Y6datURKgW9uXVskds66tS1aPry3ShXjL5N9nM6
+ OGhLmpj1S1npjmaDxLAyyS+nF/rATdljcvSDlqf4t7OpBD8kpbEpS8kl7Bp5SDqxHrvO
+ 2QL/4dTUJq290vQjTaTdc2AbWLDE3HEMANNswaztCT25c5LnJWnMCppaMbo105SW0fPu
+ aNmlxEAuA3VNhzxea1dCpYaaRkC/idMzoUd2KQMxDgkU0jvwxSgGdzlqZHH117hz/kfK
+ e1ew++RSFUwIGq0h3VB/sV87umTLFLDFptqb7d66qFDpV3q/f2HAYTZNeT1baAcuxkS5
+ WnLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=806taYgfx/Bxj+McXFMhGNJZb30+0DKm6BcSOyalqSs=;
- b=A7QW6Ua3aZTC7J+SgLmW8abtgu6BRgsZV5PCSa+ri0zU0rMbfMzPdcUe6C2YQaJgew
- L7QMCLTXCPhmK1T+FHVqes63TVq+Mb6LRIa0qV2lbeFRHnLqHPFwboAp4Uip8GoKqGSy
- okiQMpcGj8iFppih/zQkuQI+nZHjG1QoiWcrw33na61k6eHC7qDBchSqLkaJCnGswWrZ
- B0cvuzza+/RpaIn+9yA74Xpf+pEtIdwAaIWiAbB1oVUnxBBUZTOTg27bIx+hvMdw1rFd
- MT4oQOzU517jN1u2JtIGggYz64pEKcjyZNMqhGe7XQazsih6/uhyXBAY1Sao55EdRTik
- xeRA==
-X-Gm-Message-State: AGi0PubjxRBpUkK7qvbBmEpC7nxMggyzfbTOzA8cfgxldSTHeKebfue5
- wjqUddK/pv4+td272mBmpk76QWsJ
-X-Google-Smtp-Source: APiQypJtwj6I38gJyPk3YIsGQ01xdtH1IA0cHdPEw0CQJ9HjEvj+hGOJCDOwkYSLghLDX/GlMSbMNw==
-X-Received: by 2002:a17:90a:840e:: with SMTP id
- j14mr633745pjn.85.1588219331618; 
- Wed, 29 Apr 2020 21:02:11 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=w/RM8l0krhqnM5ryq+OfPq/DX0uqT8SGaEP7lRRaqCg=;
+ b=emvYxMDbkdIJXL/Dh/LbW2482fwm2RZzkuuF/zlqKMixIjorrPiw/04yR1G4zwKOld
+ mJEcRVcQPkpXJoUuzcoRbH3bHhm9fJLV9wSN7lt5Vf7y4ubImvmFL4dgkBqTKK+qJw1z
+ DxSI4htfi7bImrbgcxpLOscQxIKhtFn9RyTsURMEtxItjAb1tJVoJRS1pJq89coyouPX
+ haICGFyUlCeeyxSzyL6pPMBMun0ymq3Yuq9t9zXz6ccFZeqsPN6Lr6aZy8n46bnaMrpY
+ LPVOXloLJHQMJCzoCyeM9Y8Sy7zzdae8+ReLCNshLUP4UvCN6OKmTwNxEaCcSAhgWpY1
+ BwQw==
+X-Gm-Message-State: AGi0PuZwTg0iyGnEwj/umDLfijhFD4aPF8lXUqFDf+JPywAGuC5BFnrX
+ QBcnPgQ9KBjCJls2O703p7rKXLpq
+X-Google-Smtp-Source: APiQypIyy7Lvh0pGGtnU9GqoFZzVBt4XkCdb9OCwSqrJ3IosuGV9kr6jYH5zlrmNHzmyQTlKQQEAhA==
+X-Received: by 2002:aa7:97a6:: with SMTP id d6mr1560725pfq.92.1588219334530;
+ Wed, 29 Apr 2020 21:02:14 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com ([203.220.177.17])
- by smtp.gmail.com with ESMTPSA id b9sm2251890pfp.12.2020.04.29.21.02.08
+ by smtp.gmail.com with ESMTPSA id b9sm2251890pfp.12.2020.04.29.21.02.11
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 29 Apr 2020 21:02:10 -0700 (PDT)
+ Wed, 29 Apr 2020 21:02:13 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 0/2] powerpc/64s: scv support
-Date: Thu, 30 Apr 2020 14:02:00 +1000
-Message-Id: <20200430040202.1735506-1-npiggin@gmail.com>
+Subject: [RFC PATCH 1/2] powerpc/64s/exception: treat NIA below
+ __end_interrupts as soft-masked
+Date: Thu, 30 Apr 2020 14:02:01 +1000
+Message-Id: <20200430040202.1735506-2-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20200430040202.1735506-1-npiggin@gmail.com>
+References: <20200430040202.1735506-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -96,61 +98,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Another round of scv, which is getting closer to done. ABI and
-compatibility / feature testing still not set in stone, but some
-good discussion among the various libcs etc. and it's close enough
-that changes should just be small tweaks to clobbers etc. Posting
-now because there is some interest to prototype userspace support
-which we should do before fixing the ABI.
+The scv instruction causes an interrupt which can enter the kernel with
+MSR[EE]=1, thus allowing interrupts to hit at any time. These must not
+be taken as normal interrupts, because they come from MSR[PR]=0 context,
+and yet the kernel stack is not yet set up and r13 is not set to the
+PACA).
 
-This relies on some of the signal handling and kuap patches I
-already posted, so tree is here:
+Treat this as a soft-masked interrupt regardless of the soft masked
+state. This does not affect behaviour yet, because currently all
+interrupts are taken with MSR[EE]=0.
 
-https://github.com/npiggin/linux/commits/next-test
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 27 ++++++++++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
 
-I have qemu scv support apatches I need to resend, but they're not
-merged yet. POWER9 system simulator should support it, but I have
-not tested the public version:
-
-https://www14.software.ibm.com/support/customercare/sas/f/pwrfs/pwr9/home.html
-
-Thanks,
-Nick
-
-Nicholas Piggin (2):
-  powerpc/64s/exception: treat NIA below __end_interrupts as soft-masked
-  powerpc/64s: system call support for scv/rfscv instructions
-
- Documentation/powerpc/syscall64-abi.rst   |  42 ++++--
- arch/powerpc/include/asm/asm-prototypes.h |   2 +-
- arch/powerpc/include/asm/exception-64s.h  |   6 +
- arch/powerpc/include/asm/head-64.h        |   2 +-
- arch/powerpc/include/asm/ppc-opcode.h     |   2 +
- arch/powerpc/include/asm/ppc_asm.h        |   2 +
- arch/powerpc/include/asm/processor.h      |   2 +-
- arch/powerpc/include/asm/ptrace.h         |   8 +-
- arch/powerpc/include/asm/setup.h          |   4 +-
- arch/powerpc/include/asm/sstep.h          |   1 +
- arch/powerpc/include/asm/vdso.h           |   1 +
- arch/powerpc/kernel/cpu_setup_power.S     |   2 +-
- arch/powerpc/kernel/cputable.c            |   3 +-
- arch/powerpc/kernel/dt_cpu_ftrs.c         |   1 +
- arch/powerpc/kernel/entry_64.S            | 158 +++++++++++++++++++++-
- arch/powerpc/kernel/exceptions-64s.S      | 150 +++++++++++++++++++-
- arch/powerpc/kernel/process.c             |  10 +-
- arch/powerpc/kernel/setup_64.c            |   5 +-
- arch/powerpc/kernel/signal.c              |  19 ++-
- arch/powerpc/kernel/signal_64.c           |  28 +++-
- arch/powerpc/kernel/syscall_64.c          |  32 +++--
- arch/powerpc/kernel/vdso.c                |   2 +
- arch/powerpc/kernel/vdso64/sigtramp.S     |  34 ++++-
- arch/powerpc/kernel/vdso64/vdso64.lds.S   |   1 +
- arch/powerpc/lib/sstep.c                  |  14 ++
- arch/powerpc/perf/callchain_64.c          |   9 +-
- arch/powerpc/platforms/pseries/setup.c    |   8 +-
- arch/powerpc/xmon/xmon.c                  |   1 +
- 28 files changed, 492 insertions(+), 57 deletions(-)
-
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index ef4a90212664..8dfebf6c6a1e 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -508,8 +508,24 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real)
+ 
+ .macro __GEN_COMMON_BODY name
+ 	.if IMASK
++		.if ! ISTACK
++		.error "No support for masked interrupt to use custom stack"
++		.endif
++
++		/* If coming from user, skip soft-mask tests. */
++		andi.	r10,r12,MSR_PR
++		bne	2f
++
++		/* Kernel code running below __end_interrupts is implicitly
++		 * soft-masked */
++		LOAD_HANDLER(r10, __end_interrupts)
++		cmpd	r11,r10
++		li	r10,IMASK
++		blt-	1f
++
++		/* Test the soft mask state against our interrupt's bit */
+ 		lbz	r10,PACAIRQSOFTMASK(r13)
+-		andi.	r10,r10,IMASK
++1:		andi.	r10,r10,IMASK
+ 		/* Associate vector numbers with bits in paca->irq_happened */
+ 		.if IVEC == 0x500 || IVEC == 0xea0
+ 		li	r10,PACA_IRQ_EE
+@@ -540,7 +556,7 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real)
+ 
+ 	.if ISTACK
+ 	andi.	r10,r12,MSR_PR		/* See if coming from user	*/
+-	mr	r10,r1			/* Save r1			*/
++2:	mr	r10,r1			/* Save r1			*/
+ 	subi	r1,r1,INT_FRAME_SIZE	/* alloc frame on kernel stack	*/
+ 	beq-	100f
+ 	ld	r1,PACAKSAVE(r13)	/* kernel stack to use		*/
+@@ -2811,7 +2827,8 @@ masked_interrupt:
+ 	ld	r10,PACA_EXGEN+EX_R10(r13)
+ 	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	ld	r12,PACA_EXGEN+EX_R12(r13)
+-	/* returns to kernel where r13 must be set up, so don't restore it */
++	ld	r13,PACA_EXGEN+EX_R13(r13)
++	/* May return to masked low address where r13 is not set up */
+ 	.if \hsrr
+ 	HRFI_TO_KERNEL
+ 	.else
+@@ -2970,6 +2987,10 @@ EXC_COMMON_BEGIN(ppc64_runlatch_on_trampoline)
+ 
+ USE_FIXED_SECTION(virt_trampolines)
+ 	/*
++	 * All code below __end_interrupts is treated as soft-masked. If
++	 * any code runs here with MSR[EE]=1, it must then cope with pending
++	 * soft interrupt being raised (i.e., by ensuring it is replayed).
++	 *
+ 	 * The __end_interrupts marker must be past the out-of-line (OOL)
+ 	 * handlers, so that they are copied to real address 0x100 when running
+ 	 * a relocatable kernel. This ensures they can be reached from the short
 -- 
 2.23.0
 
