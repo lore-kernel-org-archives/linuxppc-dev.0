@@ -2,65 +2,99 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF8D0C47247
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B99BBC4724C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:26:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 74F6820873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:21:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ILVqWCsi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74F6820873
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7404E208CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 16:26:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7404E208CA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Cgcn2JPbzDrBw
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 02:21:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Cgk10q6CzDr2m
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 02:26:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=mchehab@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=ILVqWCsi; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CgF26gLyzDrBc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 02:04:38 +1000 (AEST)
-Received: from mail.kernel.org (ip5f5ad5c5.dynamic.kabel-deutschland.de
- [95.90.213.197])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DCAAE208DB;
- Thu, 30 Apr 2020 16:04:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1588262676;
- bh=QUfv6scPo1my4zCr4LFZW2U/OmwyKCvSjBoQt0t5VTQ=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ILVqWCsii4IU1ATzx4qBN0ji2HPtDUiD1ypny4cMcn8WIKumlXEoumCQXrWkhGAsS
- oqJiaJ6yjraaA1oh6BASaq3vxmcTqRowqQ4Stn/vU/B81VCie/cvgBBhe1wx+S7UZI
- FfWKvLFp4pUWT9e9zstR2q/MmWx/VeFkjhTEP+sU=
-Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
- (envelope-from <mchehab@kernel.org>)
- id 1jUBfu-00AxEd-5h; Thu, 30 Apr 2020 18:04:34 +0200
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Subject: [PATCH 07/37] docs: networking: convert netconsole.txt to ReST
-Date: Thu, 30 Apr 2020 18:04:02 +0200
-Message-Id: <f6772b566eea20879d82b1a2015fc97b137a5f24.1588261997.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <cover.1588261997.git.mchehab+huawei@kernel.org>
-References: <cover.1588261997.git.mchehab+huawei@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CgVB4zNLzDqGJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 02:14:55 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03UG2jMZ137070; Thu, 30 Apr 2020 12:14:50 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30mggx4qa6-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 12:14:49 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03UG4F0n143995;
+ Thu, 30 Apr 2020 12:14:49 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30mggx4q9p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 12:14:49 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03UGBFMj030783;
+ Thu, 30 Apr 2020 16:14:48 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma02dal.us.ibm.com with ESMTP id 30mcu7ac7g-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 16:14:47 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03UGEjb411666122
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 30 Apr 2020 16:14:45 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A5F47BE04F;
+ Thu, 30 Apr 2020 16:14:46 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9E6A5BE054;
+ Thu, 30 Apr 2020 16:14:45 +0000 (GMT)
+Received: from oc7186267434.ibm.com (unknown [9.80.239.215])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 30 Apr 2020 16:14:45 +0000 (GMT)
+Subject: Re: [PATCH] net/bonding: Do not transition down slave after
+ speed/duplex check
+To: Jay Vosburgh <jay.vosburgh@canonical.com>
+References: <1588183759-7659-1-git-send-email-tlfalcon@linux.ibm.com>
+ <29484.1588185503@famine>
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+Message-ID: <c83cbc94-c567-3366-ffb7-043bd4bba5a9@linux.ibm.com>
+Date: Thu, 30 Apr 2020 11:14:44 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
+In-Reply-To: <29484.1588185503@famine>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-04-30_10:2020-04-30,
+ 2020-04-30 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0
+ suspectscore=0 mlxscore=0 lowpriorityscore=0 adultscore=0 phishscore=0
+ bulkscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004300122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,364 +106,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>,
- Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
- linux-kernel@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, Veaceslav Falico <vfalico@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Andy Gospodarek <andy@greyhouse.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-- add SPDX header;
-- add a document title;
-- mark code blocks and literals as such;
-- mark tables as such;
-- add notes markups;
-- adjust identation, whitespaces and blank lines;
-- add to networking/index.rst.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- .../admin-guide/kernel-parameters.txt         |   2 +-
- Documentation/admin-guide/serial-console.rst  |   2 +-
- Documentation/networking/index.rst            |   1 +
- .../{netconsole.txt => netconsole.rst}        | 125 +++++++++++-------
- drivers/net/Kconfig                           |   4 +-
- drivers/net/ethernet/toshiba/ps3_gelic_net.c  |   2 +-
- drivers/net/ethernet/toshiba/spider_net.c     |   2 +-
- 7 files changed, 84 insertions(+), 54 deletions(-)
- rename Documentation/networking/{netconsole.txt => netconsole.rst} (66%)
+On 4/29/20 1:38 PM, Jay Vosburgh wrote:
+> Thomas Falcon <tlfalcon@linux.ibm.com> wrote:
+>
+>> The following behavior has been observed when testing logical partition
+>> migration of LACP-bonded VNIC devices in a PowerVM pseries environment.
+>>
+>> 1. When performing the migration, the bond master detects that a slave has
+>>    lost its link, deactivates the LACP port, and sets the port's
+>>    is_enabled flag to false.
+>> 2. The slave device then updates it's carrier state to off while it resets
+>>    itself. This update triggers a NETDEV_CHANGE notification, which performs
+>>    a speed and duplex update. The device does not return a valid speed
+>>    and duplex, so the master sets the slave link state to BOND_LINK_FAIL.
+>> 3. When the slave VNIC device(s) are active again, some operations, such
+>>    as setting the port's is_enabled flag, are not performed when transitioning
+>>    the link state back to BOND_LINK_UP from BOND_LINK_FAIL, though the state
+>>    prior to the speed check was BOND_LINK_DOWN.
+> 	Just to make sure I'm understanding correctly, in regards to
+> "the state prior to the speed check was BOND_LINK_DOWN," do you mean
+> that during step 1, the slave link is set to BOND_LINK_DOWN, and then in
+> step 2 changed from _DOWN to _FAIL?
+>
+>> Affected devices are therefore not utilized in the aggregation though they
+>> are operational. The simplest way to fix this seems to be to restrict the
+>> link state change to devices that are currently up and running.
+> 	This sounds similar to an issue from last fall; can you confirm
+> that you're running with a kernel that includes:
+>
+> 1899bb325149 bonding: fix state transition issue in link monitoring
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 25644daa36ea..5a44c1bf85e7 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -638,7 +638,7 @@
- 
- 			See Documentation/admin-guide/serial-console.rst for more
- 			information.  See
--			Documentation/networking/netconsole.txt for an
-+			Documentation/networking/netconsole.rst for an
- 			alternative.
- 
- 		uart[8250],io,<addr>[,options]
-diff --git a/Documentation/admin-guide/serial-console.rst b/Documentation/admin-guide/serial-console.rst
-index a8d1e36b627a..58b32832e50a 100644
---- a/Documentation/admin-guide/serial-console.rst
-+++ b/Documentation/admin-guide/serial-console.rst
-@@ -54,7 +54,7 @@ You will need to create a new device to use ``/dev/console``. The official
- ``/dev/console`` is now character device 5,1.
- 
- (You can also use a network device as a console.  See
--``Documentation/networking/netconsole.txt`` for information on that.)
-+``Documentation/networking/netconsole.rst`` for information on that.)
- 
- Here's an example that will use ``/dev/ttyS1`` (COM2) as the console.
- Replace the sample values as needed.
-diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
-index 492658bf7c0d..e58f872d401d 100644
---- a/Documentation/networking/index.rst
-+++ b/Documentation/networking/index.rst
-@@ -80,6 +80,7 @@ Contents:
-    mac80211-injection
-    mpls-sysctl
-    multiqueue
-+   netconsole
- 
- .. only::  subproject and html
- 
-diff --git a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.rst
-similarity index 66%
-rename from Documentation/networking/netconsole.txt
-rename to Documentation/networking/netconsole.rst
-index 296ea00fd3eb..1f5c4a04027c 100644
---- a/Documentation/networking/netconsole.txt
-+++ b/Documentation/networking/netconsole.rst
-@@ -1,7 +1,16 @@
-+.. SPDX-License-Identifier: GPL-2.0
-+
-+==========
-+Netconsole
-+==========
-+
- 
- started by Ingo Molnar <mingo@redhat.com>, 2001.09.17
-+
- 2.6 port and netpoll api by Matt Mackall <mpm@selenic.com>, Sep 9 2003
-+
- IPv6 support by Cong Wang <xiyou.wangcong@gmail.com>, Jan 1 2013
-+
- Extended console support by Tejun Heo <tj@kernel.org>, May 1 2015
- 
- Please send bug reports to Matt Mackall <mpm@selenic.com>
-@@ -23,34 +32,34 @@ Sender and receiver configuration:
- ==================================
- 
- It takes a string configuration parameter "netconsole" in the
--following format:
-+following format::
- 
-  netconsole=[+][src-port]@[src-ip]/[<dev>],[tgt-port]@<tgt-ip>/[tgt-macaddr]
- 
-    where
--        +             if present, enable extended console support
--        src-port      source for UDP packets (defaults to 6665)
--        src-ip        source IP to use (interface address)
--        dev           network interface (eth0)
--        tgt-port      port for logging agent (6666)
--        tgt-ip        IP address for logging agent
--        tgt-macaddr   ethernet MAC address for logging agent (broadcast)
-+	+             if present, enable extended console support
-+	src-port      source for UDP packets (defaults to 6665)
-+	src-ip        source IP to use (interface address)
-+	dev           network interface (eth0)
-+	tgt-port      port for logging agent (6666)
-+	tgt-ip        IP address for logging agent
-+	tgt-macaddr   ethernet MAC address for logging agent (broadcast)
- 
--Examples:
-+Examples::
- 
-  linux netconsole=4444@10.0.0.1/eth1,9353@10.0.0.2/12:34:56:78:9a:bc
- 
--  or
-+or::
- 
-  insmod netconsole netconsole=@/,@10.0.0.2/
- 
--  or using IPv6
-+or using IPv6::
- 
-  insmod netconsole netconsole=@/,@fd00:1:2:3::1/
- 
- It also supports logging to multiple remote agents by specifying
- parameters for the multiple agents separated by semicolons and the
--complete string enclosed in "quotes", thusly:
-+complete string enclosed in "quotes", thusly::
- 
-  modprobe netconsole netconsole="@/,@10.0.0.2/;@/eth1,6892@10.0.0.3/"
- 
-@@ -67,14 +76,19 @@ for example:
- 
-    On distributions using a BSD-based netcat version (e.g. Fedora,
-    openSUSE and Ubuntu) the listening port must be specified without
--   the -p switch:
-+   the -p switch::
- 
--   'nc -u -l -p <port>' / 'nc -u -l <port>' or
--   'netcat -u -l -p <port>' / 'netcat -u -l <port>'
-+	nc -u -l -p <port>' / 'nc -u -l <port>
-+
-+    or::
-+
-+	netcat -u -l -p <port>' / 'netcat -u -l <port>
- 
- 3) socat
- 
--   'socat udp-recv:<port> -'
-+::
-+
-+   socat udp-recv:<port> -
- 
- Dynamic reconfiguration:
- ========================
-@@ -92,7 +106,7 @@ netconsole module (or kernel, if netconsole is built-in).
- Some examples follow (where configfs is mounted at the /sys/kernel/config
- mountpoint).
- 
--To add a remote logging target (target names can be arbitrary):
-+To add a remote logging target (target names can be arbitrary)::
- 
-  cd /sys/kernel/config/netconsole/
-  mkdir target1
-@@ -102,12 +116,13 @@ above) and are disabled by default -- they must first be enabled by writing
- "1" to the "enabled" attribute (usually after setting parameters accordingly)
- as described below.
- 
--To remove a target:
-+To remove a target::
- 
-  rmdir /sys/kernel/config/netconsole/othertarget/
- 
- The interface exposes these parameters of a netconsole target to userspace:
- 
-+	==============  =================================       ============
- 	enabled		Is this target currently enabled?	(read-write)
- 	extended	Extended mode enabled			(read-write)
- 	dev_name	Local network interface name		(read-write)
-@@ -117,12 +132,13 @@ The interface exposes these parameters of a netconsole target to userspace:
- 	remote_ip	Remote agent's IP address		(read-write)
- 	local_mac	Local interface's MAC address		(read-only)
- 	remote_mac	Remote agent's MAC address		(read-write)
-+	==============  =================================       ============
- 
- The "enabled" attribute is also used to control whether the parameters of
- a target can be updated or not -- you can modify the parameters of only
- disabled targets (i.e. if "enabled" is 0).
- 
--To update a target's parameters:
-+To update a target's parameters::
- 
-  cat enabled				# check if enabled is 1
-  echo 0 > enabled			# disable the target (if required)
-@@ -140,12 +156,12 @@ Extended console:
- 
- If '+' is prefixed to the configuration line or "extended" config file
- is set to 1, extended console support is enabled. An example boot
--param follows.
-+param follows::
- 
-  linux netconsole=+4444@10.0.0.1/eth1,9353@10.0.0.2/12:34:56:78:9a:bc
- 
- Log messages are transmitted with extended metadata header in the
--following format which is the same as /dev/kmsg.
-+following format which is the same as /dev/kmsg::
- 
-  <level>,<sequnum>,<timestamp>,<contflag>;<message text>
- 
-@@ -155,12 +171,12 @@ newline is used as the delimeter.
- 
- If a message doesn't fit in certain number of bytes (currently 1000),
- the message is split into multiple fragments by netconsole. These
--fragments are transmitted with "ncfrag" header field added.
-+fragments are transmitted with "ncfrag" header field added::
- 
-  ncfrag=<byte-offset>/<total-bytes>
- 
- For example, assuming a lot smaller chunk size, a message "the first
--chunk, the 2nd chunk." may be split as follows.
-+chunk, the 2nd chunk." may be split as follows::
- 
-  6,416,1758426,-,ncfrag=0/31;the first chunk,
-  6,416,1758426,-,ncfrag=16/31; the 2nd chunk.
-@@ -168,39 +184,52 @@ chunk, the 2nd chunk." may be split as follows.
- Miscellaneous notes:
- ====================
- 
--WARNING: the default target ethernet setting uses the broadcast
--ethernet address to send packets, which can cause increased load on
--other systems on the same ethernet segment.
-+.. Warning::
- 
--TIP: some LAN switches may be configured to suppress ethernet broadcasts
--so it is advised to explicitly specify the remote agents' MAC addresses
--from the config parameters passed to netconsole.
-+   the default target ethernet setting uses the broadcast
-+   ethernet address to send packets, which can cause increased load on
-+   other systems on the same ethernet segment.
- 
--TIP: to find out the MAC address of, say, 10.0.0.2, you may try using:
-+.. Tip::
- 
-- ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
-+   some LAN switches may be configured to suppress ethernet broadcasts
-+   so it is advised to explicitly specify the remote agents' MAC addresses
-+   from the config parameters passed to netconsole.
- 
--TIP: in case the remote logging agent is on a separate LAN subnet than
--the sender, it is suggested to try specifying the MAC address of the
--default gateway (you may use /sbin/route -n to find it out) as the
--remote MAC address instead.
-+.. Tip::
- 
--NOTE: the network device (eth1 in the above case) can run any kind
--of other network traffic, netconsole is not intrusive. Netconsole
--might cause slight delays in other traffic if the volume of kernel
--messages is high, but should have no other impact.
-+   to find out the MAC address of, say, 10.0.0.2, you may try using::
- 
--NOTE: if you find that the remote logging agent is not receiving or
--printing all messages from the sender, it is likely that you have set
--the "console_loglevel" parameter (on the sender) to only send high
--priority messages to the console. You can change this at runtime using:
-+	ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
- 
-- dmesg -n 8
-+.. Tip::
- 
--or by specifying "debug" on the kernel command line at boot, to send
--all kernel messages to the console. A specific value for this parameter
--can also be set using the "loglevel" kernel boot option. See the
--dmesg(8) man page and Documentation/admin-guide/kernel-parameters.rst for details.
-+   in case the remote logging agent is on a separate LAN subnet than
-+   the sender, it is suggested to try specifying the MAC address of the
-+   default gateway (you may use /sbin/route -n to find it out) as the
-+   remote MAC address instead.
-+
-+.. note::
-+
-+   the network device (eth1 in the above case) can run any kind
-+   of other network traffic, netconsole is not intrusive. Netconsole
-+   might cause slight delays in other traffic if the volume of kernel
-+   messages is high, but should have no other impact.
-+
-+.. note::
-+
-+   if you find that the remote logging agent is not receiving or
-+   printing all messages from the sender, it is likely that you have set
-+   the "console_loglevel" parameter (on the sender) to only send high
-+   priority messages to the console. You can change this at runtime using::
-+
-+	dmesg -n 8
-+
-+   or by specifying "debug" on the kernel command line at boot, to send
-+   all kernel messages to the console. A specific value for this parameter
-+   can also be set using the "loglevel" kernel boot option. See the
-+   dmesg(8) man page and Documentation/admin-guide/kernel-parameters.rst
-+   for details.
- 
- Netconsole was designed to be as instantaneous as possible, to
- enable the logging of even the most critical kernel bugs. It works
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index c822f4a6d166..ad64be98330f 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -302,7 +302,7 @@ config NETCONSOLE
- 	tristate "Network console logging support"
- 	---help---
- 	  If you want to log kernel messages over the network, enable this.
--	  See <file:Documentation/networking/netconsole.txt> for details.
-+	  See <file:Documentation/networking/netconsole.rst> for details.
- 
- config NETCONSOLE_DYNAMIC
- 	bool "Dynamic reconfiguration of logging targets"
-@@ -312,7 +312,7 @@ config NETCONSOLE_DYNAMIC
- 	  This option enables the ability to dynamically reconfigure target
- 	  parameters (interface, IP addresses, port numbers, MAC addresses)
- 	  at runtime through a userspace interface exported using configfs.
--	  See <file:Documentation/networking/netconsole.txt> for details.
-+	  See <file:Documentation/networking/netconsole.rst> for details.
- 
- config NETPOLL
- 	def_bool NETCONSOLE
-diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-index 070dd6fa9401..310e6839c6e5 100644
---- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-+++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-@@ -1150,7 +1150,7 @@ static irqreturn_t gelic_card_interrupt(int irq, void *ptr)
-  * gelic_net_poll_controller - artificial interrupt for netconsole etc.
-  * @netdev: interface device structure
-  *
-- * see Documentation/networking/netconsole.txt
-+ * see Documentation/networking/netconsole.rst
-  */
- void gelic_net_poll_controller(struct net_device *netdev)
- {
-diff --git a/drivers/net/ethernet/toshiba/spider_net.c b/drivers/net/ethernet/toshiba/spider_net.c
-index 6576271642c1..3902b3aeb0c2 100644
---- a/drivers/net/ethernet/toshiba/spider_net.c
-+++ b/drivers/net/ethernet/toshiba/spider_net.c
-@@ -1615,7 +1615,7 @@ spider_net_interrupt(int irq, void *ptr)
-  * spider_net_poll_controller - artificial interrupt for netconsole etc.
-  * @netdev: interface device structure
-  *
-- * see Documentation/networking/netconsole.txt
-+ * see Documentation/networking/netconsole.rst
-  */
- static void
- spider_net_poll_controller(struct net_device *netdev)
--- 
-2.25.4
+It did not have that fix.  I will patch the kernel and rerun the test.
 
+Thanks,
+
+Tom
+
+>
+> 	-J
+> 	
+>
+>> CC: Jay Vosburgh <j.vosburgh@gmail.com>
+>> CC: Veaceslav Falico <vfalico@gmail.com>
+>> CC: Andy Gospodarek <andy@greyhouse.net>
+>> Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
+>> ---
+>> drivers/net/bonding/bond_main.c | 3 ++-
+>> 1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+>> index 2e70e43c5df5..d840da7cd379 100644
+>> --- a/drivers/net/bonding/bond_main.c
+>> +++ b/drivers/net/bonding/bond_main.c
+>> @@ -3175,7 +3175,8 @@ static int bond_slave_netdev_event(unsigned long event,
+>> 		 * speeds/duplex are available.
+>> 		 */
+>> 		if (bond_update_speed_duplex(slave) &&
+>> -		    BOND_MODE(bond) == BOND_MODE_8023AD) {
+>> +		    BOND_MODE(bond) == BOND_MODE_8023AD &&
+>> +		    slave->link == BOND_LINK_UP) {
+>> 			if (slave->last_link_up)
+>> 				slave->link = BOND_LINK_FAIL;
+>> 			else
+>> -- 
+>> 2.18.2
+>>
+> ---
+> 	-Jay Vosburgh, jay.vosburgh@canonical.com
