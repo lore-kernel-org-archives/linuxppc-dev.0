@@ -2,92 +2,93 @@ Return-Path: <SRS0=8RrW=6O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09BEAC83001
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:18:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16F7BC83001
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:38:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B65602083B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:18:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B65602083B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8B22121D7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 04:37:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B22121D7E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49CMYk40r6zDrBf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:18:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49CN0j2C5MzDrBH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2020 14:37:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49CMWt1vPFzDr8s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:16:26 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 03U420Zk051394; Thu, 30 Apr 2020 00:16:20 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30me46yreg-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49CMx96BQLzDrB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2020 14:34:53 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 03U4XLeo102019; Thu, 30 Apr 2020 00:34:36 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30qmauvubj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 00:16:20 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03U4EowQ010028;
- Thu, 30 Apr 2020 04:16:19 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma02dal.us.ibm.com with ESMTP id 30mcu751g2-1
+ Thu, 30 Apr 2020 00:34:36 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 03U4YaMB105744;
+ Thu, 30 Apr 2020 00:34:36 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30qmauvuav-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 30 Apr 2020 04:16:19 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 03U4GHHq21168586
+ Thu, 30 Apr 2020 00:34:35 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 03U4OoIa005949;
+ Thu, 30 Apr 2020 04:34:34 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04fra.de.ibm.com with ESMTP id 30mcu5ab3g-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 30 Apr 2020 04:34:33 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 03U4YVRd48431238
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 30 Apr 2020 04:16:17 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 43DA87805C;
- Thu, 30 Apr 2020 04:16:18 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B47367805E;
- Thu, 30 Apr 2020 04:16:17 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.60.232])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 30 Apr 2020 04:16:17 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 1B1262E2DE5; Thu, 30 Apr 2020 09:46:13 +0530 (IST)
-Date: Thu, 30 Apr 2020 09:46:13 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 0/5] Track and expose idle PURR and SPURR ticks
-Message-ID: <20200430041612.GA25522@in.ibm.com>
-References: <1586249263-14048-1-git-send-email-ego@linux.vnet.ibm.com>
- <04b5e2fa-089f-93c9-cde9-33a930455bb2@linux.ibm.com>
- <20200423100213.GA23192@in.ibm.com>
- <871ro5g0qb.fsf@mpe.ellerman.id.au>
+ Thu, 30 Apr 2020 04:34:31 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DDB2842042;
+ Thu, 30 Apr 2020 04:34:30 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4DF7F42041;
+ Thu, 30 Apr 2020 04:34:27 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.199.59.105])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 30 Apr 2020 04:34:27 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au, mikey@neuling.org
+Subject: [PATCH v4 01/16] powerpc/watchpoint: Rename current DAWR macros
+Date: Thu, 30 Apr 2020 10:04:02 +0530
+Message-Id: <20200430043417.30948-2-ravi.bangoria@linux.ibm.com>
+X-Mailer: git-send-email 2.25.3
+In-Reply-To: <20200430043417.30948-1-ravi.bangoria@linux.ibm.com>
+References: <20200430043417.30948-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <871ro5g0qb.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
  definitions=2020-04-30_01:2020-04-30,
- 2020-04-29 signatures=0
+ 2020-04-30 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 bulkscore=0
- lowpriorityscore=0 priorityscore=1501 mlxscore=0 impostorscore=0
- spamscore=0 malwarescore=0 mlxlogscore=999 clxscore=1015 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2004300025
+ malwarescore=0
+ priorityscore=1501 phishscore=0 clxscore=1015 adultscore=0 impostorscore=0
+ spamscore=0 suspectscore=0 bulkscore=0 mlxlogscore=999 mlxscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2004300030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,70 +100,173 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: apopple@linux.ibm.com, ravi.bangoria@linux.ibm.com, peterz@infradead.org,
+ fweisbec@gmail.com, oleg@redhat.com, npiggin@gmail.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org, jolsa@kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Michael,
+Future Power architecture is introducing second DAWR. Use real
+register names from ISA for current macros:
+  s/SPRN_DAWR/SPRN_DAWR0/
+  s/SPRN_DAWRX/SPRN_DAWRX0/
 
-On Thu, Apr 30, 2020 at 12:34:52PM +1000, Michael Ellerman wrote:
-> Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
-> > On Mon, Apr 20, 2020 at 03:46:35PM -0700, Tyrel Datwyler wrote:
-> >> On 4/7/20 1:47 AM, Gautham R. Shenoy wrote:
-> >> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >> > 
-> >> > Hi,
-> >> > 
-> >> > This is the fifth version of the patches to track and expose idle PURR
-> >> > and SPURR ticks. These patches are required by tools such as lparstat
-> >> > to compute system utilization for capacity planning purposes.
-> ...
-> >> > 
-> >> > Gautham R. Shenoy (5):
-> >> >   powerpc: Move idle_loop_prolog()/epilog() functions to header file
-> >> >   powerpc/idle: Store PURR snapshot in a per-cpu global variable
-> >> >   powerpc/pseries: Account for SPURR ticks on idle CPUs
-> >> >   powerpc/sysfs: Show idle_purr and idle_spurr for every CPU
-> >> >   Documentation: Document sysfs interfaces purr, spurr, idle_purr,
-> >> >     idle_spurr
-> >> > 
-> >> >  Documentation/ABI/testing/sysfs-devices-system-cpu | 39 +++++++++
-> >> >  arch/powerpc/include/asm/idle.h                    | 93 ++++++++++++++++++++++
-> >> >  arch/powerpc/kernel/sysfs.c                        | 82 ++++++++++++++++++-
-> >> >  arch/powerpc/platforms/pseries/setup.c             |  8 +-
-> >> >  drivers/cpuidle/cpuidle-pseries.c                  | 39 ++-------
-> >> >  5 files changed, 224 insertions(+), 37 deletions(-)
-> >> >  create mode 100644 arch/powerpc/include/asm/idle.h
-> >> > 
-> >> 
-> >> Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-> >
-> > Thanks for reviewing the patches.
-> >
-> >> 
-> >> Any chance this is going to be merged in the near future? There is a patchset to
-> >> update lparstat in the powerpc-utils package to calculate PURR/SPURR cpu
-> >> utilization that I would like to merge, but have been holding off to make sure
-> >> we are synced with this proposed patchset.
-> >
-> > Michael, could you please consider this for 5.8 ?
-> 
-> Yes. Has it been tested on KVM at all?
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Reviewed-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/include/asm/reg.h          |  4 ++--
+ arch/powerpc/kernel/dawr.c              |  4 ++--
+ arch/powerpc/kvm/book3s_hv.c            | 12 ++++++------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 18 +++++++++---------
+ arch/powerpc/xmon/xmon.c                |  2 +-
+ 5 files changed, 20 insertions(+), 20 deletions(-)
 
-No. I haven't tested this on KVM. Will do that today.
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index da5cab038e25..156ee89fa9be 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -283,14 +283,14 @@
+ #define   CTRL_CT1	0x40000000	/* thread 1 */
+ #define   CTRL_TE	0x00c00000	/* thread enable */
+ #define   CTRL_RUNLATCH	0x1
+-#define SPRN_DAWR	0xB4
++#define SPRN_DAWR0	0xB4
+ #define SPRN_RPR	0xBA	/* Relative Priority Register */
+ #define SPRN_CIABR	0xBB
+ #define   CIABR_PRIV		0x3
+ #define   CIABR_PRIV_USER	1
+ #define   CIABR_PRIV_SUPER	2
+ #define   CIABR_PRIV_HYPER	3
+-#define SPRN_DAWRX	0xBC
++#define SPRN_DAWRX0	0xBC
+ #define   DAWRX_USER	__MASK(0)
+ #define   DAWRX_KERNEL	__MASK(1)
+ #define   DAWRX_HYP	__MASK(2)
+diff --git a/arch/powerpc/kernel/dawr.c b/arch/powerpc/kernel/dawr.c
+index cc14aa6c4a1b..e91b613bf137 100644
+--- a/arch/powerpc/kernel/dawr.c
++++ b/arch/powerpc/kernel/dawr.c
+@@ -39,8 +39,8 @@ int set_dawr(struct arch_hw_breakpoint *brk)
+ 	if (ppc_md.set_dawr)
+ 		return ppc_md.set_dawr(dawr, dawrx);
+ 
+-	mtspr(SPRN_DAWR, dawr);
+-	mtspr(SPRN_DAWRX, dawrx);
++	mtspr(SPRN_DAWR0, dawr);
++	mtspr(SPRN_DAWRX0, dawrx);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 93493f0cbfe8..db07199f0977 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -3392,8 +3392,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	int trap;
+ 	unsigned long host_hfscr = mfspr(SPRN_HFSCR);
+ 	unsigned long host_ciabr = mfspr(SPRN_CIABR);
+-	unsigned long host_dawr = mfspr(SPRN_DAWR);
+-	unsigned long host_dawrx = mfspr(SPRN_DAWRX);
++	unsigned long host_dawr = mfspr(SPRN_DAWR0);
++	unsigned long host_dawrx = mfspr(SPRN_DAWRX0);
+ 	unsigned long host_psscr = mfspr(SPRN_PSSCR);
+ 	unsigned long host_pidr = mfspr(SPRN_PID);
+ 
+@@ -3422,8 +3422,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	mtspr(SPRN_SPURR, vcpu->arch.spurr);
+ 
+ 	if (dawr_enabled()) {
+-		mtspr(SPRN_DAWR, vcpu->arch.dawr);
+-		mtspr(SPRN_DAWRX, vcpu->arch.dawrx);
++		mtspr(SPRN_DAWR0, vcpu->arch.dawr);
++		mtspr(SPRN_DAWRX0, vcpu->arch.dawrx);
+ 	}
+ 	mtspr(SPRN_CIABR, vcpu->arch.ciabr);
+ 	mtspr(SPRN_IC, vcpu->arch.ic);
+@@ -3475,8 +3475,8 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	      (local_paca->kvm_hstate.fake_suspend << PSSCR_FAKE_SUSPEND_LG));
+ 	mtspr(SPRN_HFSCR, host_hfscr);
+ 	mtspr(SPRN_CIABR, host_ciabr);
+-	mtspr(SPRN_DAWR, host_dawr);
+-	mtspr(SPRN_DAWRX, host_dawrx);
++	mtspr(SPRN_DAWR0, host_dawr);
++	mtspr(SPRN_DAWRX0, host_dawrx);
+ 	mtspr(SPRN_PID, host_pidr);
+ 
+ 	/*
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 780a499c7114..70de3325d0e9 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -707,8 +707,8 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ BEGIN_FTR_SECTION
+ 	mfspr	r5, SPRN_CIABR
+-	mfspr	r6, SPRN_DAWR
+-	mfspr	r7, SPRN_DAWRX
++	mfspr	r6, SPRN_DAWR0
++	mfspr	r7, SPRN_DAWRX0
+ 	mfspr	r8, SPRN_IAMR
+ 	std	r5, STACK_SLOT_CIABR(r1)
+ 	std	r6, STACK_SLOT_DAWR(r1)
+@@ -803,8 +803,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	beq	1f
+ 	ld	r5, VCPU_DAWR(r4)
+ 	ld	r6, VCPU_DAWRX(r4)
+-	mtspr	SPRN_DAWR, r5
+-	mtspr	SPRN_DAWRX, r6
++	mtspr	SPRN_DAWR0, r5
++	mtspr	SPRN_DAWRX0, r6
+ 1:
+ 	ld	r7, VCPU_CIABR(r4)
+ 	ld	r8, VCPU_TAR(r4)
+@@ -1766,8 +1766,8 @@ BEGIN_FTR_SECTION
+ 	 * If the DAWR doesn't work, it's ok to write these here as
+ 	 * this value should always be zero
+ 	*/
+-	mtspr	SPRN_DAWR, r6
+-	mtspr	SPRN_DAWRX, r7
++	mtspr	SPRN_DAWR0, r6
++	mtspr	SPRN_DAWRX0, r7
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ BEGIN_FTR_SECTION
+ 	ld	r5, STACK_SLOT_TID(r1)
+@@ -2577,8 +2577,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mfmsr	r6
+ 	andi.	r6, r6, MSR_DR		/* in real mode? */
+ 	bne	4f
+-	mtspr	SPRN_DAWR, r4
+-	mtspr	SPRN_DAWRX, r5
++	mtspr	SPRN_DAWR0, r4
++	mtspr	SPRN_DAWRX0, r5
+ 4:	li	r3, 0
+ 	blr
+ 
+@@ -3329,7 +3329,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_AMR, r0
+ 	mtspr	SPRN_IAMR, r0
+ 	mtspr	SPRN_CIABR, r0
+-	mtspr	SPRN_DAWRX, r0
++	mtspr	SPRN_DAWRX0, r0
+ 
+ BEGIN_MMU_FTR_SECTION
+ 	b	4f
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 7af840c0fc93..d4dba8ea8995 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1939,7 +1939,7 @@ static void dump_207_sprs(void)
+ 	printf("hfscr  = %.16lx  dhdes = %.16lx rpr    = %.16lx\n",
+ 		mfspr(SPRN_HFSCR), mfspr(SPRN_DHDES), mfspr(SPRN_RPR));
+ 	printf("dawr   = %.16lx  dawrx = %.16lx ciabr  = %.16lx\n",
+-		mfspr(SPRN_DAWR), mfspr(SPRN_DAWRX), mfspr(SPRN_CIABR));
++		mfspr(SPRN_DAWR0), mfspr(SPRN_DAWRX0), mfspr(SPRN_CIABR));
+ #endif
+ }
+ 
+-- 
+2.21.1
 
-
-> 
-> cheers
-
---
-Thanks and Regards
-gautham.
