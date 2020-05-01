@@ -2,60 +2,88 @@ Return-Path: <SRS0=sn4m=6P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 598D1C47257
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 15:38:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62272C4724C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 16:59:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3AD5D24958
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 15:38:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AD5D24958
+	by mail.kernel.org (Postfix) with ESMTPS id B5B72206B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 16:59:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="mG1IcDPB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5B72206B8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49DGcV6LGGzDrKb
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 01:38:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49DJQ46R5qzDrN6
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 02:59:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=2a00:1450:4864:20::543;
+ helo=mail-ed1-x543.google.com; envelope-from=dan.j.williams@intel.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=intel-com.20150623.gappssmtp.com
+ header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=mG1IcDPB; dkim-atps=neutral
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
+ [IPv6:2a00:1450:4864:20::543])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49DGYd4zYFzDrKb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2020 01:35:56 +1000 (AEST)
-IronPort-SDR: PA9xaWjEMDUGVozALd+BpajI3nKJczhSICILTZPSMmpDiuNM+7Xj7DcKjnW/hp78a5VmfvNEC3
- wf+IBUHRa5Ow==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 May 2020 08:35:52 -0700
-IronPort-SDR: eiOWyZIKI7vO19DR7OCFr64BqstCK2TpjbIFtfZ8MAqSSlMpCoVlOTcj7hUJ1GBJabMYzWffE+
- Y8JGzvryIPoA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,339,1583222400"; d="scan'208";a="460295055"
-Received: from iweiny-desk2.sc.intel.com ([10.3.52.147])
- by fmsmga006.fm.intel.com with ESMTP; 01 May 2020 08:35:52 -0700
-Date: Fri, 1 May 2020 08:35:52 -0700
-From: Ira Weiny <ira.weiny@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: sparc-related comment, to Re: [PATCH V1 07/10] arch/kmap: Ensure
- kmap_prot visibility
-Message-ID: <20200501153551.GA673107@iweiny-DESK2.sc.intel.com>
-References: <20200430203845.582900-1-ira.weiny@intel.com>
- <20200430203845.582900-8-ira.weiny@intel.com>
- <20200501084446.GG27858@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49DJMN2Q9zzDrKh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2020 02:57:11 +1000 (AEST)
+Received: by mail-ed1-x543.google.com with SMTP id j20so7728811edj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2020 09:57:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=intel-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=b9REn6X5SevH+LhOI4dPec9Nj6TaOfQYrUIVwbI6BoM=;
+ b=mG1IcDPBM3HrlLCRXRv7RTTYgDzrduMX/5i/AlHCRx1Od+IpfQAyd0PeN//EsT0f5h
+ 4ISFK8ebgantTgILgro22Ez5VhTT+nYI/BrtdR2EEj+8gVO8TXYZXeoKV+n5R7g8buaW
+ 2yUZz1nPzY+7zON3G0XQLly2Qxcbo0G4O5Y6WDLkdJ7/fnZJpvu7siFKyoRkKMeO0fUZ
+ /D0cspPD70+dXDGbdUVG4+VwKt7dWiqpPW5XzMx4fPRxJpNAeD6LnRMMzp+TiNYAZ53P
+ qpaqeGLDtip2gO0UP/p8HNcC5mdTxBx8phoHoUjMgHPlB7ivmPuMEBOrgC5YppxB1E9h
+ UOtg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=b9REn6X5SevH+LhOI4dPec9Nj6TaOfQYrUIVwbI6BoM=;
+ b=q5eoKSvtO7VGpP/8PB8rXvBUQfntdYaBHZaCizsaGxTMpjwExLn/d25KYO+YtbmzDd
+ KsHhJU5RtTTM0z5Ak8H9+pt3eZhOdh9Crk3jRnYlC3LmqbvSPreyhXCyq0nkdblvAdjX
+ YhUMPNKkZxDLv/XGxXc1Jpy/BqQaI7o8nXorLfeat5jyV96ChWH4tvfWeWQyMZRVzeK5
+ NYaIgnqYPaeK0mWtlZfyqrNKbwxwwSl73y31eZd1Z5JgsEP8Gn/kq/WIa/PY2k6sUJJg
+ vRdgx+U6twIqQ+yJa/Ise+Hg+1oHDy17n34q3QmAVcyiNRzuiRrvStK7YACzvvxCr38U
+ bbZQ==
+X-Gm-Message-State: AGi0PubQPnPTiF8mNNUgWLIzm54hXjZUjFQpusVLo+zRbBaMQMXXnu2o
+ P4T2HUgtndpr/lKPkggdihXvblTv0QYRlWn+gq7NaQ==
+X-Google-Smtp-Source: APiQypJO8dBUZTWLLj3LS+obr3vgzbWXqFSCM7dxYsl5W+J7URhuw83eMvKFki8Cpffi0gsBU7jQUIflqfdneq89wWQ=
+X-Received: by 2002:aa7:c643:: with SMTP id z3mr4236295edr.154.1588352227631; 
+ Fri, 01 May 2020 09:57:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200501084446.GG27858@infradead.org>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+References: <20200430102908.10107-1-david@redhat.com>
+ <20200430102908.10107-3-david@redhat.com>
+ <87pnbp2dcz.fsf@x220.int.ebiederm.org>
+ <1b49c3be-6e2f-57cb-96f7-f66a8f8a9380@redhat.com>
+ <871ro52ary.fsf@x220.int.ebiederm.org>
+ <373a6898-4020-4af1-5b3d-f827d705dd77@redhat.com>
+ <875zdg26hp.fsf@x220.int.ebiederm.org>
+ <b28c9e02-8cf2-33ae-646b-fe50a185738e@redhat.com>
+ <20200430152403.e0d6da5eb1cad06411ac6d46@linux-foundation.org>
+ <5c908ec3-9495-531e-9291-cbab24f292d6@redhat.com>
+In-Reply-To: <5c908ec3-9495-531e-9291-cbab24f292d6@redhat.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Fri, 1 May 2020 09:56:56 -0700
+Message-ID: <CAPcyv4j=YKnr1HW4OhAmpzbuKjtfP7FdAn4-V7uA=b-Tcpfu+A@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] mm/memory_hotplug: Introduce MHP_NO_FIRMWARE_MEMMAP
+To: David Hildenbrand <david@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,58 +95,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- linux-mips@vger.kernel.org,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Huang Rui <ray.huang@amd.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- Helge Deller <deller@gmx.de>, x86@kernel.org, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Christian Koenig <christian.koenig@amd.com>
+Cc: virtio-dev@lists.oasis-open.org, linux-hyperv@vger.kernel.org,
+ Michal Hocko <mhocko@suse.com>, Baoquan He <bhe@redhat.com>,
+ Linux ACPI <linux-acpi@vger.kernel.org>, Wei Yang <richard.weiyang@gmail.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ virtualization@lists.linux-foundation.org, Linux MM <linux-mm@kvack.org>,
+ "Michael S . Tsirkin" <mst@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Pankaj Gupta <pankaj.gupta.linux@gmail.com>,
+ xen-devel <xen-devel@lists.xenproject.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 01, 2020 at 01:44:46AM -0700, Christoph Hellwig wrote:
-> > --- a/arch/sparc/mm/highmem.c
-> > +++ b/arch/sparc/mm/highmem.c
-> > @@ -33,6 +33,7 @@
-> >  #include <asm/vaddrs.h>
-> >  
-> >  pgprot_t kmap_prot;
-> > +EXPORT_SYMBOL(kmap_prot);
-> 
-> Btw, I don't see why sparc needs this as a variable, as there is just
-> a single assignment to it.
+On Fri, May 1, 2020 at 2:34 AM David Hildenbrand <david@redhat.com> wrote:
+>
+> On 01.05.20 00:24, Andrew Morton wrote:
+> > On Thu, 30 Apr 2020 20:43:39 +0200 David Hildenbrand <david@redhat.com> wrote:
+> >
+> >>>
+> >>> Why does the firmware map support hotplug entries?
+> >>
+> >> I assume:
+> >>
+> >> The firmware memmap was added primarily for x86-64 kexec (and still, is
+> >> mostly used on x86-64 only IIRC). There, we had ACPI hotplug. When DIMMs
+> >> get hotplugged on real HW, they get added to e820. Same applies to
+> >> memory added via HyperV balloon (unless memory is unplugged via
+> >> ballooning and you reboot ... the the e820 is changed as well). I assume
+> >> we wanted to be able to reflect that, to make kexec look like a real reboot.
+> >>
+> >> This worked for a while. Then came dax/kmem. Now comes virtio-mem.
+> >>
+> >>
+> >> But I assume only Andrew can enlighten us.
+> >>
+> >> @Andrew, any guidance here? Should we really add all memory to the
+> >> firmware memmap, even if this contradicts with the existing
+> >> documentation? (especially, if the actual firmware memmap will *not*
+> >> contain that memory after a reboot)
+> >
+> > For some reason that patch is misattributed - it was authored by
+> > Shaohui Zheng <shaohui.zheng@intel.com>, who hasn't been heard from in
+> > a decade.  I looked through the email discussion from that time and I'm
+> > not seeing anything useful.  But I wasn't able to locate Dave Hansen's
+> > review comments.
+>
+> Okay, thanks for checking. I think the documentation from 2008 is pretty
+> clear what has to be done here. I will add some of these details to the
+> patch description.
+>
+> Also, now that I know that esp. kexec-tools already don't consider
+> dax/kmem memory properly (memory will not get dumped via kdump) and
+> won't really suffer from a name change in /proc/iomem, I will go back to
+> the MHP_DRIVER_MANAGED approach and
+> 1. Don't create firmware memmap entries
+> 2. Name the resource "System RAM (driver managed)"
+> 3. Flag the resource via something like IORESOURCE_MEM_DRIVER_MANAGED.
+>
+> This way, kernel users and user space can figure out that this memory
+> has different semantics and handle it accordingly - I think that was
+> what Eric was asking for.
+>
+> Of course, open for suggestions.
 
-Because sparc uses non-standard defines which I'm not familiar with.
-
-        kmap_prot = __pgprot(SRMMU_ET_PTE | SRMMU_PRIV | SRMMU_CACHE);
-
-SRMMU_ET_PTE and friends are defined in 
-
-arch/sparc/include/asm/pgtsrmmu.h
-
-Since I can't readily test sparc this was easier to put out than let 0-day
-crank on the entire series checking if including that header in the common
-header chain would be an issue.
-
-> 
-> If sparc is sorted out we can always make it a define, and use a define
-> for kmap_prot that defaults to PAGE_KERNEL, avoiding a little
-> more duplication.
-
-Agreed.  But it seems easier as a follow up (for me with 0-day).  Perhaps
-someone from sparc can weigh in on the specifics of those defines and why they
-are different from the normal ones?  Or even provide a follow on patch?
-
-Ira
-
+I'm still more of a fan of this being communicated by "System RAM"
+being parented especially because that tells you something about how
+the memory is driver-managed and which mechanism might be in play.
+What about adding an optional /sys/firmware/memmap/X/parent attribute.
+This lets tooling check if it cares via that interface and lets it
+lookup the related infrastructure to interact with if it would do
+something different for virtio-mem vs dax/kmem?
