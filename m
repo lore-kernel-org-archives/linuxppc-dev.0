@@ -2,25 +2,25 @@ Return-Path: <SRS0=sn4m=6P=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE4B7C47254
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 08:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 143E2C47253
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 08:49:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F5B92076D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 08:47:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B5DB82076D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 08:49:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="jBOCr93w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F5B92076D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WrSjIe8B"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5DB82076D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49D5VG1ZDYzDqGt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 18:47:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49D5XG5q2KzDr6W
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2020 18:49:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,38 +30,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=jBOCr93w; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=WrSjIe8B; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49D5Kb694SzDqnc
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 18:40:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49D5RS5PntzDr8g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2020 18:45:08 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
  :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=5geXB+wgvJNSlb3JLVqXO3lp0IuR7gjoNPRNg1oie/s=; b=jBOCr93wfneh5KciyKmGx4Jc/1
- KdPGNvWVCmFNRuQl2aLf4eF5fwhdgzieCOJVqeTl8XJBhLnkSjxSR5BD8J7k8l8s2YzzJGYK6/PTw
- ALYucEFfVmiOJQQmTZGIXYjo9ZUC8ApauGoT8MMY5H83rQTo3o7ezS8pPguj1MU7zw1vGTfn/AnOO
- g2uBKs2NnutT3iltyhMZ65BprYAAhVahBvY+WpLOre2AFAo2agMjoOTnlPYFFEsRIH9LzXcqQ8n9I
- nsLN3DhgnGnwzze673d2PcpW0YgbiElqd8tSKYNZBGFV1V9oqXNlEUVK2vmJ4TpIhK+hTVa5u52ac
- zAzlh36g==;
+ bh=RZeiBC9EJZtL3o9wl9DzrRwokyorK8vs365JFKguCFg=; b=WrSjIe8BMSfRLI3jpUdAEwYOJE
+ tXYY9oHJxbcwtR63YkJacY1tOmRSo0VlWUfCBXPQ+9tbl6oJlB6VD5LcDihqELSVjdYutoJQPLF/4
+ 8oHd/jG9oqEktRgyDMVRMOdWgUxvFWtmrO8QVY5Bwuyx4kwsw09MghtZa6r2wfdwKKLrFF/HWbKx2
+ Zi8C52D4aGGC5APfXtvEL4/oyOvcKOr0v4gdC7IVh3dTxxV50jGh/gnhlOpbRnTobeSX5FvfQg+XE
+ AQYdMumCk1/McWx3/D54ShlP8u9koPQ1WhpJQpMsvcc6VEQhQ4YMiNhkqLNpVJLQbjN9J2nQBExHY
+ I+WV6DYw==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jURCz-0005OZ-MM; Fri, 01 May 2020 08:39:45 +0000
-Date: Fri, 1 May 2020 01:39:45 -0700
+ Hat Linux)) id 1jURHq-00008h-NO; Fri, 01 May 2020 08:44:46 +0000
+Date: Fri, 1 May 2020 01:44:46 -0700
 From: Christoph Hellwig <hch@infradead.org>
 To: ira.weiny@intel.com
-Subject: Re: [PATCH V1 06/10] arch/kunmap_atomic: Consolidate duplicate code
-Message-ID: <20200501083945.GF27858@infradead.org>
+Subject: sparc-related comment, to Re: [PATCH V1 07/10] arch/kmap: Ensure
+ kmap_prot visibility
+Message-ID: <20200501084446.GG27858@infradead.org>
 References: <20200430203845.582900-1-ira.weiny@intel.com>
- <20200430203845.582900-7-ira.weiny@intel.com>
+ <20200430203845.582900-8-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200430203845.582900-7-ira.weiny@intel.com>
+In-Reply-To: <20200430203845.582900-8-ira.weiny@intel.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,22 +96,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 30, 2020 at 01:38:41PM -0700, ira.weiny@intel.com wrote:
-> From: Ira Weiny <ira.weiny@intel.com>
-> 
-> Every single architecture (including !CONFIG_HIGHMEM) calls...
-> 
-> 	pagefault_enable();
-> 	preempt_enable();
-> 
-> ... before returning from __kunmap_atomic().  Lift this code into the
-> kunmap_atomic() macro.
-> 
-> While we are at it rename __kunmap_atomic() to kunmap_atomic_high() to
-> be consistent.
-> 
-> Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+> --- a/arch/sparc/mm/highmem.c
+> +++ b/arch/sparc/mm/highmem.c
+> @@ -33,6 +33,7 @@
+>  #include <asm/vaddrs.h>
+>  
+>  pgprot_t kmap_prot;
+> +EXPORT_SYMBOL(kmap_prot);
 
-Looks good,
+Btw, I don't see why sparc needs this as a variable, as there is just
+a single assignment to it.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+If sparc is sorted out we can always make it a define, and use a define
+for kmap_prot that defaults to PAGE_KERNEL, avoiding a little
+more duplication.
