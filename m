@@ -2,59 +2,83 @@ Return-Path: <SRS0=G0Pv=6Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8588C3A5A9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 11:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5332C3A5A9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 11:16:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35A8F216FD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 11:07:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35A8F216FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 431E721582
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 11:16:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 431E721582
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49DmY873QBzDrDl
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 21:07:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49DmlN64rpzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 21:16:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49DmWM1FG7zDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2020 21:05:44 +1000 (AEST)
-IronPort-SDR: NpnvaHmFmllOgdaV6Cvm+YfLgiDpv02Xkmmw7CsanqnmtgDglraYQQzB+h3ZMD9YSU/GmuMo+e
- tGRtglkdPnYQ==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 May 2020 04:05:40 -0700
-IronPort-SDR: u66RxMwByzh1KQSgThbbmuTzWGFZSWUuAWipGYcmo2WGKkZyhYj+1ybUh4RTZcDSufl6C32k+S
- 3vg498bnnG6A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,343,1583222400"; d="scan'208";a="262331432"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 02 May 2020 04:05:39 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1jUpxi-0006r4-E0; Sat, 02 May 2020 19:05:38 +0800
-Date: Sat, 02 May 2020 19:05:33 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- e2abb0f00606ece8b191679bbc3f9246738fb88e
-Message-ID: <5ead53fd.NRjAIW7F7D5Sl9zi%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Dmj25fZ0zDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2020 21:14:14 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 042B2pGO046109; Sat, 2 May 2020 07:14:07 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30s3155nvj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 02 May 2020 07:14:07 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 042BApYn003288;
+ Sat, 2 May 2020 11:14:06 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma04wdc.us.ibm.com with ESMTP id 30s0g62b2j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sat, 02 May 2020 11:14:06 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 042BE6tu52756786
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sat, 2 May 2020 11:14:06 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 19C4D2805E;
+ Sat,  2 May 2020 11:14:06 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB03328058;
+ Sat,  2 May 2020 11:13:57 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.52.206])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Sat,  2 May 2020 11:13:57 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH v2 00/12] powerpc/book3s/64/pkeys: Simplify the code
+Date: Sat,  2 May 2020 16:43:35 +0530
+Message-Id: <20200502111347.541836-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138, 18.0.676
+ definitions=2020-05-02_06:2020-05-01,
+ 2020-05-02 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0
+ priorityscore=1501 lowpriorityscore=0 suspectscore=0 mlxscore=0
+ spamscore=0 malwarescore=0 mlxlogscore=999 adultscore=0 bulkscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2005020095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,227 +90,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxram@us.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: e2abb0f00606ece8b191679bbc3f9246738fb88e  Merge KUAP fix from topic/uaccess-ppc into fixes-test
+This patch series update the pkey subsystem with more documentation and
+rename variables so that it is easy to follow the code. The last patch
+does fix a problem where we are treating keys above max_pkey as available.
+But userspace is not impacted because using that key in mprotect_pkey returns
+error due to limit check there. Also the uamor, value set by the platform is such
+that it will deny modification of keys above max pkey.
 
-elapsed time: 689m
+Changes from V1:
+* Rebase to the latest kernel.
+* Added two new patches 6 and 12.
 
-configs tested: 204
-configs skipped: 0
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Aneesh Kumar K.V (12):
+  powerpc/book3s64/pkeys: Fixup bit numbering
+  powerpc/book3s64/pkeys: pkeys are supported only on hash on book3s.
+  powerpc/book3s64/pkeys: Move pkey related bits in the linux page table
+  powerpc/book3s64/pkeys: Explain key 1 reservation details
+  powerpc/book3s64/pkeys: Simplify the key initialization
+  powerpc/book3s64/pkeys: Prevent key 1 modification from userspace.
+  powerpc/book3s64/pkeys: kill cpu feature key CPU_FTR_PKEY
+  powerpc/book3s64/pkeys: Convert execute key support to static key
+  powerpc/book3s64/pkeys: Simplify pkey disable branch
+  powerpc/book3s64/pkeys: Convert pkey_total to max_pkey
+  powerpc/book3s64/pkeys: Make initial_allocation_mask static
+  powerpc/book3s64/pkeys: Mark all the pkeys above max pkey as reserved
 
-arm64                            allyesconfig
-arm                              allyesconfig
-arm64                            allmodconfig
-arm                              allmodconfig
-arm64                             allnoconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                         at91_dt_defconfig
-arm                        shmobile_defconfig
-arm64                               defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm                        multi_v7_defconfig
-sparc                            allyesconfig
-powerpc                             defconfig
-ia64                                defconfig
-arc                                 defconfig
-mips                            ar7_defconfig
-mips                          ath79_defconfig
-mips                             allmodconfig
-nios2                         3c120_defconfig
-sparc64                             defconfig
-csky                                defconfig
-sh                          rsk7269_defconfig
-ia64                              allnoconfig
-nds32                             allnoconfig
-m68k                           sun3_defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                             alldefconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                        generic_defconfig
-ia64                          tiger_defconfig
-ia64                         bigsur_defconfig
-ia64                             allyesconfig
-ia64                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                       bvme6000_defconfig
-m68k                          multi_defconfig
-nios2                         10m50_defconfig
-c6x                        evmc6678_defconfig
-c6x                              allyesconfig
-openrisc                 simple_smp_defconfig
-openrisc                    or1ksim_defconfig
-nds32                               defconfig
-alpha                               defconfig
-h8300                       h8s-sim_defconfig
-h8300                     edosk2674_defconfig
-xtensa                          iss_defconfig
-h8300                    h8300h-sim_defconfig
-xtensa                       common_defconfig
-arc                              allyesconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-mips                      fuloong2e_defconfig
-mips                      malta_kvm_defconfig
-mips                             allyesconfig
-mips                         64r6el_defconfig
-mips                              allnoconfig
-mips                           32r2_defconfig
-mips                malta_kvm_guest_defconfig
-mips                         tb0287_defconfig
-mips                       capcella_defconfig
-mips                           ip32_defconfig
-mips                  decstation_64_defconfig
-mips                      loongson3_defconfig
-mips                        bcm63xx_defconfig
-parisc                            allnoconfig
-parisc                generic-64bit_defconfig
-parisc                generic-32bit_defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                      chrp32_defconfig
-powerpc                       holly_defconfig
-powerpc                       ppc64_defconfig
-powerpc                          rhel-kconfig
-powerpc                           allnoconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                    amigaone_defconfig
-powerpc                    adder875_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                          g5_defconfig
-powerpc                     mpc512x_defconfig
-m68k                 randconfig-a001-20200502
-mips                 randconfig-a001-20200502
-nds32                randconfig-a001-20200502
-alpha                randconfig-a001-20200502
-parisc               randconfig-a001-20200502
-riscv                randconfig-a001-20200502
-h8300                randconfig-a001-20200502
-nios2                randconfig-a001-20200502
-microblaze           randconfig-a001-20200502
-c6x                  randconfig-a001-20200502
-sparc64              randconfig-a001-20200502
-s390                 randconfig-a001-20200502
-xtensa               randconfig-a001-20200502
-sh                   randconfig-a001-20200502
-openrisc             randconfig-a001-20200502
-csky                 randconfig-a001-20200502
-x86_64               randconfig-a003-20200502
-x86_64               randconfig-a001-20200502
-x86_64               randconfig-a002-20200502
-i386                 randconfig-a002-20200502
-i386                 randconfig-a003-20200502
-i386                 randconfig-a001-20200502
-i386                 randconfig-b003-20200502
-i386                 randconfig-b001-20200502
-x86_64               randconfig-b003-20200502
-x86_64               randconfig-b001-20200502
-i386                 randconfig-b002-20200502
-i386                 randconfig-b003-20200501
-x86_64               randconfig-b002-20200501
-i386                 randconfig-b001-20200501
-x86_64               randconfig-b003-20200501
-x86_64               randconfig-b001-20200501
-i386                 randconfig-b002-20200501
-x86_64               randconfig-c002-20200502
-i386                 randconfig-c002-20200502
-i386                 randconfig-c001-20200502
-i386                 randconfig-c003-20200502
-i386                 randconfig-d003-20200502
-i386                 randconfig-d001-20200502
-x86_64               randconfig-d002-20200502
-i386                 randconfig-d002-20200502
-x86_64               randconfig-e003-20200502
-i386                 randconfig-e003-20200502
-x86_64               randconfig-e001-20200502
-i386                 randconfig-e002-20200502
-i386                 randconfig-e001-20200502
-x86_64               randconfig-e002-20200430
-i386                 randconfig-e003-20200430
-x86_64               randconfig-e003-20200430
-i386                 randconfig-e002-20200430
-x86_64               randconfig-e001-20200430
-i386                 randconfig-e001-20200430
-i386                 randconfig-f003-20200502
-x86_64               randconfig-f001-20200502
-x86_64               randconfig-f003-20200502
-x86_64               randconfig-f002-20200502
-i386                 randconfig-f001-20200502
-i386                 randconfig-f002-20200502
-x86_64               randconfig-g003-20200502
-i386                 randconfig-g003-20200502
-i386                 randconfig-g002-20200502
-x86_64               randconfig-g001-20200502
-x86_64               randconfig-g002-20200502
-i386                 randconfig-g001-20200502
-i386                 randconfig-h001-20200502
-i386                 randconfig-h002-20200502
-i386                 randconfig-h003-20200502
-x86_64               randconfig-h002-20200502
-x86_64               randconfig-h001-20200502
-x86_64               randconfig-h003-20200502
-i386                 randconfig-h001-20200501
-i386                 randconfig-h002-20200501
-i386                 randconfig-h003-20200501
-x86_64               randconfig-h001-20200501
-x86_64               randconfig-h003-20200501
-ia64                 randconfig-a001-20200502
-arm64                randconfig-a001-20200502
-arc                  randconfig-a001-20200502
-powerpc              randconfig-a001-20200502
-arm                  randconfig-a001-20200502
-sparc                randconfig-a001-20200502
-ia64                 randconfig-a001-20200501
-arc                  randconfig-a001-20200501
-powerpc              randconfig-a001-20200501
-arm                  randconfig-a001-20200501
-sparc                randconfig-a001-20200501
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-s390                       zfcpdump_defconfig
-s390                          debug_defconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                             alldefconfig
-s390                                defconfig
-sh                               allmodconfig
-sh                            titan_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  21 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |  12 +-
+ .../powerpc/include/asm/book3s/64/hash-pkey.h |  32 +++
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   8 +-
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  17 +-
+ arch/powerpc/include/asm/book3s/64/pkeys.h    |  25 +++
+ arch/powerpc/include/asm/cputable.h           |  10 +-
+ arch/powerpc/include/asm/pkeys.h              |  43 +---
+ arch/powerpc/kernel/dt_cpu_ftrs.c             |   6 -
+ arch/powerpc/mm/book3s64/pkeys.c              | 210 ++++++++++--------
+ 10 files changed, 222 insertions(+), 162 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/hash-pkey.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pkeys.h
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+-- 
+2.26.2
+
