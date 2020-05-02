@@ -2,97 +2,62 @@ Return-Path: <SRS0=G0Pv=6Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92CE4C3A5A9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 18:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87CC5C3A5A9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 18:32:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E395A206CD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 18:06:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E1DA3206CD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 May 2020 18:32:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="aSBw5wCD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E395A206CD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="r7M5DGle"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1DA3206CD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Dxrr5LfDzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 May 2020 04:06:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49DyQ70sq7zDr3N
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 May 2020 04:31:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=2a00:1450:4864:20::544;
- helo=mail-ed1-x544.google.com; envelope-from=dan.j.williams@intel.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=ebiggers@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=aSBw5wCD; dkim-atps=neutral
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
- [IPv6:2a00:1450:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=r7M5DGle; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Dxn861PszDrMJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2020 04:03:16 +1000 (AEST)
-Received: by mail-ed1-x544.google.com with SMTP id a8so9889028edv.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 May 2020 11:03:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=gzsuxDlItzKXIUBK7WGNpTkOsm9nq+BDdgFK8X2BWvo=;
- b=aSBw5wCDConKD/IcaaHbp4Mo0CTJ0pgKRvNWRkiIWGE3lCN/oPbrEa9/oKAglpfRn1
- ybYK1kBJxRVbPzvApGi7N1gI88wlw4xjREME4zX7kVXKZH3FDgSbie3ks5shBRY8TZ6q
- DMFWhZRW7RkjeJCSKPKh/8pZ2QWGSZw/Nyq/zAlnOngdfv/+o/QV9wf4QVQZ5gXVDkzN
- XNN+MYW95/ejtNi3wUzQ6oJ8i+BfB05eb9CwAbUAIbruiYbVwz5lfsdGnAXaouOdPAgk
- c8v1YIbx6b+WQ999NPSKnSrIN3qI9oKtRGvdPYhTcKRXMBwc/GxItvO5XlgyBCaOSzcl
- 2H2w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=gzsuxDlItzKXIUBK7WGNpTkOsm9nq+BDdgFK8X2BWvo=;
- b=VwYj0fMcKbQZzPMvcWkCtZb+1UkVrzUts69+q1aQ6jAhWMrjQmcWiO0TwaJRUZvJOF
- 7CyGuZg9cuWl2AfrcNb25lFOEdeHD00Ayb51QluuyR3U0EVC9c5QKz8aGDfE/K4ph5I7
- e3NTu8iqDdfdqHMjqaTfhduVZCIHJZPGSGxOIU9djjvuzl3WVt0VXSFiSTNCt86FJYle
- mNI73mB5LVHCFPj99kuR1mmouhAErLgxuaOqJn7BBgIVf39lIs74xIJLxxyQ+wT9SaX0
- 8lQ7lSySqUyIDp2cj9JUztM9mJ9paxs+3v4nhuADMVLU25NCxZWM8Qk8K5yhY2dK747G
- sd5g==
-X-Gm-Message-State: AGi0PuY1LoxyNWZ2gINrKVmDWyos1H5NqP45kVYt4TnAy33xR8/SXF4z
- jGS4SdO/JijObIQjBe4FgAe9FvyZsYQcZ3cVNDJJcA==
-X-Google-Smtp-Source: APiQypJrbz2VzfjebhxcGzu52aKY5ET0/26CFym5+FOkkSLJ9Vu46v3NJUgCYAVe4ZsgBJWlfsgCXWWgDBxtIIIlF1U=
-X-Received: by 2002:a05:6402:3136:: with SMTP id
- dd22mr8275680edb.165.1588442592251; 
- Sat, 02 May 2020 11:03:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49DyKk4VxwzDr1x
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2020 04:28:10 +1000 (AEST)
+Received: from sol.hsd1.ca.comcast.net (c-107-3-166-239.hsd1.ca.comcast.net
+ [107.3.166.239])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 672BA20775;
+ Sat,  2 May 2020 18:28:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588444088;
+ bh=MpOpLyRp32OcEAeGdDPZsgk7eR7jNOoThKxfaag+uuU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=r7M5DGleg8HtwnRWGrZDYKUoXl1liD0BSvTxyqAANiFELjUZgVrniqTADhg/TCk3E
+ uF0p8KFSTKCi+I4YKGOKoYEfHstkiLieaID0OTBJq/kvF8W0nyBd1KrTBhCmaxzDNc
+ juGKbyxbNDMbRB5V3Zm/k6KTFlKzpVpQlLHWWzKw=
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 3/7] crypto: powerpc/sha1 - prefix the "sha1_" functions
+Date: Sat,  2 May 2020 11:24:23 -0700
+Message-Id: <20200502182427.104383-4-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200502182427.104383-1-ebiggers@kernel.org>
+References: <20200502182427.104383-1-ebiggers@kernel.org>
 MIME-Version: 1.0
-References: <20200430102908.10107-1-david@redhat.com>
- <875zdg26hp.fsf@x220.int.ebiederm.org>
- <b28c9e02-8cf2-33ae-646b-fe50a185738e@redhat.com>
- <20200430152403.e0d6da5eb1cad06411ac6d46@linux-foundation.org>
- <5c908ec3-9495-531e-9291-cbab24f292d6@redhat.com>
- <CAPcyv4j=YKnr1HW4OhAmpzbuKjtfP7FdAn4-V7uA=b-Tcpfu+A@mail.gmail.com>
- <2d019c11-a478-9d70-abd5-4fd2ebf4bc1d@redhat.com>
- <CAPcyv4iOqS0Wbfa2KPfE1axQFGXoRB4mmPRP__Lmqpw6Qpr_ig@mail.gmail.com>
- <62dd4ce2-86cc-5b85-734f-ec8766528a1b@redhat.com>
- <0169e822-a6cc-1543-88ed-2a85d95ffb93@redhat.com>
- <CAPcyv4jGnR_fPtpKBC1rD2KRcT88bTkhqnTMmuwuc+f9Dwrz1g@mail.gmail.com>
- <9f3a813e-dc1d-b675-6e69-85beed3057a4@redhat.com>
- <CAPcyv4jjrxQ27rsfmz6wYPgmedevU=KG+wZ0GOm=qiE6tqa+VA@mail.gmail.com>
- <04242d48-5fa9-6da4-3e4a-991e401eb580@redhat.com>
- <CAPcyv4iXyOUDZgqhWH1KCObvATL=gP55xEr64rsRfUuJg5B+eQ@mail.gmail.com>
- <8242c0c5-2df2-fc0c-079a-3be62c113a11@redhat.com>
- <CAPcyv4h1nWjszkVJQgeXkUc=-nPv5=Me25BOGFQCpihUyFsD6w@mail.gmail.com>
- <467ccba3-80ac-085c-3127-d5618d77d3e0@redhat.com>
-In-Reply-To: <467ccba3-80ac-085c-3127-d5618d77d3e0@redhat.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Sat, 2 May 2020 11:03:01 -0700
-Message-ID: <CAPcyv4iqwh6k40DUy-Pwi2h5pJm9vu7+JU1ghELy=3MGM1naNg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] mm/memory_hotplug: Introduce MHP_NO_FIRMWARE_MEMMAP
-To: David Hildenbrand <david@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,68 +69,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: virtio-dev@lists.oasis-open.org, linux-hyperv@vger.kernel.org,
- Michal Hocko <mhocko@suse.com>, Baoquan He <bhe@redhat.com>,
- Linux ACPI <linux-acpi@vger.kernel.org>, Wei Yang <richard.weiyang@gmail.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- virtualization@lists.linux-foundation.org, Linux MM <linux-mm@kvack.org>,
- "Michael S . Tsirkin" <mst@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Pankaj Gupta <pankaj.gupta.linux@gmail.com>,
- xen-devel <xen-devel@lists.xenproject.org>,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Theodore Ts'o <tytso@mit.edu>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, May 2, 2020 at 2:27 AM David Hildenbrand <david@redhat.com> wrote:
->
-> >> Now, let's clarify what I want regarding virtio-mem:
-> >>
-> >> 1. kexec should not add virtio-mem memory to the initial firmware
-> >>    memmap. The driver has to be in charge as discussed.
-> >> 2. kexec should not place kexec images onto virtio-mem memory. That
-> >>    would end badly.
-> >> 3. kexec should still dump virtio-mem memory via kdump.
-> >
-> > Ok, but then seems to say to me that dax/kmem is a different type of
-> > (driver managed) than virtio-mem and it's confusing to try to apply
-> > the same meaning. Why not just call your type for the distinct type it
-> > is "System RAM (virtio-mem)" and let any other driver managed memory
-> > follow the same "System RAM ($driver)" format if it wants?
->
-> I had the same idea but discarded it because it seemed to uglify the
-> add_memory() interface (passing yet another parameter only relevant for
-> driver managed memory). Maybe we really want a new one, because I like
-> that idea:
->
-> /*
->  * Add special, driver-managed memory to the system as system ram.
->  * The resource_name is expected to have the name format "System RAM
->  * ($DRIVER)", so user space (esp. kexec-tools)" can special-case it.
->  *
->  * For this memory, no entries in /sys/firmware/memmap are created,
->  * as this memory won't be part of the raw firmware-provided memory map
->  * e.g., after a reboot. Also, the created memory resource is flagged
->  * with IORESOURCE_MEM_DRIVER_MANAGED, so in-kernel users can special-
->  * case this memory (e.g., not place kexec images onto it).
->  */
-> int add_memory_driver_managed(int nid, u64 start, u64 size,
->                               const char *resource_name);
->
->
-> If we'd ever have to special case it even more in the kernel, we could
-> allow to specify further resource flags. While passing the driver name
-> instead of the resource_name would be an option, this way we don't have
-> to hand craft new resource strings for added memory resources.
->
-> Thoughts?
+From: Eric Biggers <ebiggers@google.com>
 
-Looks useful to me and simplifies walking /proc/iomem. I personally
-like the safety of the string just being the $driver component of the
-name, but I won't lose sleep if the interface stays freeform like you
-propose.
+Prefix the PowerPC SHA-1 functions with "powerpc_sha1_" rather than
+"sha1_".  This allows us to rename the library function sha_init() to
+sha1_init() without causing a naming collision.
+
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/powerpc/crypto/sha1.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/crypto/sha1.c b/arch/powerpc/crypto/sha1.c
+index db46b6130a9642..b40dc50a6908ae 100644
+--- a/arch/powerpc/crypto/sha1.c
++++ b/arch/powerpc/crypto/sha1.c
+@@ -22,7 +22,7 @@
+ 
+ void powerpc_sha_transform(u32 *state, const u8 *src);
+ 
+-static int sha1_init(struct shash_desc *desc)
++static int powerpc_sha1_init(struct shash_desc *desc)
+ {
+ 	struct sha1_state *sctx = shash_desc_ctx(desc);
+ 
+@@ -33,8 +33,8 @@ static int sha1_init(struct shash_desc *desc)
+ 	return 0;
+ }
+ 
+-static int sha1_update(struct shash_desc *desc, const u8 *data,
+-			unsigned int len)
++static int powerpc_sha1_update(struct shash_desc *desc, const u8 *data,
++			       unsigned int len)
+ {
+ 	struct sha1_state *sctx = shash_desc_ctx(desc);
+ 	unsigned int partial, done;
+@@ -68,7 +68,7 @@ static int sha1_update(struct shash_desc *desc, const u8 *data,
+ 
+ 
+ /* Add padding and return the message digest. */
+-static int sha1_final(struct shash_desc *desc, u8 *out)
++static int powerpc_sha1_final(struct shash_desc *desc, u8 *out)
+ {
+ 	struct sha1_state *sctx = shash_desc_ctx(desc);
+ 	__be32 *dst = (__be32 *)out;
+@@ -81,10 +81,10 @@ static int sha1_final(struct shash_desc *desc, u8 *out)
+ 	/* Pad out to 56 mod 64 */
+ 	index = sctx->count & 0x3f;
+ 	padlen = (index < 56) ? (56 - index) : ((64+56) - index);
+-	sha1_update(desc, padding, padlen);
++	powerpc_sha1_update(desc, padding, padlen);
+ 
+ 	/* Append length */
+-	sha1_update(desc, (const u8 *)&bits, sizeof(bits));
++	powerpc_sha1_update(desc, (const u8 *)&bits, sizeof(bits));
+ 
+ 	/* Store state in digest */
+ 	for (i = 0; i < 5; i++)
+@@ -96,7 +96,7 @@ static int sha1_final(struct shash_desc *desc, u8 *out)
+ 	return 0;
+ }
+ 
+-static int sha1_export(struct shash_desc *desc, void *out)
++static int powerpc_sha1_export(struct shash_desc *desc, void *out)
+ {
+ 	struct sha1_state *sctx = shash_desc_ctx(desc);
+ 
+@@ -104,7 +104,7 @@ static int sha1_export(struct shash_desc *desc, void *out)
+ 	return 0;
+ }
+ 
+-static int sha1_import(struct shash_desc *desc, const void *in)
++static int powerpc_sha1_import(struct shash_desc *desc, const void *in)
+ {
+ 	struct sha1_state *sctx = shash_desc_ctx(desc);
+ 
+@@ -114,11 +114,11 @@ static int sha1_import(struct shash_desc *desc, const void *in)
+ 
+ static struct shash_alg alg = {
+ 	.digestsize	=	SHA1_DIGEST_SIZE,
+-	.init		=	sha1_init,
+-	.update		=	sha1_update,
+-	.final		=	sha1_final,
+-	.export		=	sha1_export,
+-	.import		=	sha1_import,
++	.init		=	powerpc_sha1_init,
++	.update		=	powerpc_sha1_update,
++	.final		=	powerpc_sha1_final,
++	.export		=	powerpc_sha1_export,
++	.import		=	powerpc_sha1_import,
+ 	.descsize	=	sizeof(struct sha1_state),
+ 	.statesize	=	sizeof(struct sha1_state),
+ 	.base		=	{
+-- 
+2.26.2
+
