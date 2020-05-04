@@ -2,65 +2,58 @@ Return-Path: <SRS0=+v6T=6S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62BCCC3A5A9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 21:53:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E755C3A5A9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 22:05:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12E302075A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 21:53:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.b="PwEu7JQq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12E302075A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.microsoft.com
+	by mail.kernel.org (Postfix) with ESMTPS id C8601206A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 22:05:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8601206A4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49GGnb1XbCzDqX0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 07:53:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49GH416gF4zDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 08:05:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182;
- helo=linux.microsoft.com; envelope-from=prsriva@linux.microsoft.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.microsoft.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com
- header.a=rsa-sha256 header.s=default header.b=PwEu7JQq; 
- dkim-atps=neutral
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
- by lists.ozlabs.org (Postfix) with ESMTP id 49GF7S2NqrzDqVv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2020 06:38:41 +1000 (AEST)
-Received: from prsriva-linux.hsd1.wa.comcast.net
- (c-24-19-135-168.hsd1.wa.comcast.net [24.19.135.168])
- by linux.microsoft.com (Postfix) with ESMTPSA id 48ADA20B71CC;
- Mon,  4 May 2020 13:38:39 -0700 (PDT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 48ADA20B71CC
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
- s=default; t=1588624720;
- bh=9BrQRipJ8L0+PR7w+BHorvxfJzUA9j4XBGTJLVfj2wo=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=PwEu7JQqBDNtq0Ye6OGM+lwHUvBLraMCPYd6S0gRzmT+DyyNhHY+NbfP5f4uH4gtm
- gX62CyYfzrXnAQeSD+SIqrWcSWeWjxA/cxR8sFn1vT7e5h8gn8tXWrycaXfTF7VyXI
- q0Yci1unj92sYaUT+UKvMO/gBetA75txVtFxqyNM=
-From: Prakhar Srivastava <prsriva@linux.microsoft.com>
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: [RFC][PATCH 2/2] Add support for ima buffer pass using reserved
- memory arm64
-Date: Mon,  4 May 2020 13:38:29 -0700
-Message-Id: <20200504203829.6330-3-prsriva@linux.microsoft.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200504203829.6330-1-prsriva@linux.microsoft.com>
-References: <20200504203829.6330-1-prsriva@linux.microsoft.com>
+ smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49GH0x6LDZzDqW4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2020 08:03:07 +1000 (AEST)
+IronPort-SDR: 1Y3NjOg3lZvDcZw+V99gijp6j8tv7zZBJLWJRxSQRmwD4K/RjHIc/wsDqr/nsDE6MwhGwyiB6m
+ eA1DtNoEVy0A==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 May 2020 15:03:03 -0700
+IronPort-SDR: TiKHvtEtyVeubacKI8Q4dyXdRjk3+NJ5PStLK+XSfHMYwCf4WNoN9h5pDe7m44YOWULD6/2PsB
+ fwjcyHLCu06A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,353,1583222400"; d="scan'208";a="259482895"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+ by orsmga003.jf.intel.com with ESMTP; 04 May 2020 15:03:02 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+ (envelope-from <lkp@intel.com>)
+ id 1jVjAz-0002CX-9i; Tue, 05 May 2020 06:03:01 +0800
+Date: Tue, 05 May 2020 06:02:05 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next] BUILD SUCCESS 140777a3d8dfdb3d3f20ea7707c0f1c0ce1b0aa5
+Message-ID: <5eb090dd.n35lhGOyxQo8Y2W0%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 05 May 2020 07:46:27 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,270 +65,228 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kstewart@linuxfoundation.org, mark.rutland@arm.com, catalin.marinas@arm.com,
- bhsharma@redhat.com, tao.li@vivo.com, zohar@linux.ibm.com, paulus@samba.org,
- vincenzo.frascino@arm.com, frowand.list@gmail.com, nramas@linux.microsoft.com,
- masahiroy@kernel.org, jmorris@namei.org, takahiro.akashi@linaro.org,
- serge@hallyn.com, pasha.tatashin@soleen.com, will@kernel.org,
- prsriva@linux.microsoft.com, robh+dt@kernel.org, hsinyi@chromium.org,
- tusharsu@linux.microsoft.com, tglx@linutronix.de, allison@lohutok.net,
- mbrugger@suse.com, balajib@linux.microsoft.com, dmitry.kasatkin@gmail.com,
- james.morse@arm.com, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
- Add support for ima buffer pass using reserved memory for
- arm64 kexec. Update the arch sepcific code path in kexec file load to store
- the ima buffer in the reserved memory. The same reserved memory is read on
- kexec or cold boot.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
+branch HEAD: 140777a3d8dfdb3d3f20ea7707c0f1c0ce1b0aa5  powerpc/fadump: consider reserved ranges while reserving memory
 
-Signed-off-by: Prakhar Srivastava <prsriva@linux.microsoft.com>
+elapsed time: 481m
+
+configs tested: 205
+configs skipped: 0
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm64                            allyesconfig
+arm                              allyesconfig
+arm64                            allmodconfig
+arm                              allmodconfig
+arm64                             allnoconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm                         at91_dt_defconfig
+arm                        shmobile_defconfig
+arm64                               defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm                        multi_v7_defconfig
+sparc                            allyesconfig
+ia64                        generic_defconfig
+riscv                             allnoconfig
+parisc                           allmodconfig
+parisc                            allnoconfig
+powerpc                       holly_defconfig
+s390                             allmodconfig
+s390                          debug_defconfig
+ia64                             allyesconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                             alldefconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                          tiger_defconfig
+ia64                         bigsur_defconfig
+ia64                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                       bvme6000_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+nios2                         3c120_defconfig
+nios2                         10m50_defconfig
+c6x                        evmc6678_defconfig
+c6x                              allyesconfig
+openrisc                 simple_smp_defconfig
+openrisc                    or1ksim_defconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                                defconfig
+alpha                               defconfig
+h8300                       h8s-sim_defconfig
+h8300                     edosk2674_defconfig
+xtensa                          iss_defconfig
+h8300                    h8300h-sim_defconfig
+xtensa                       common_defconfig
+arc                                 defconfig
+arc                              allyesconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+mips                      fuloong2e_defconfig
+mips                      malta_kvm_defconfig
+mips                            ar7_defconfig
+mips                             allyesconfig
+mips                         64r6el_defconfig
+mips                              allnoconfig
+mips                           32r2_defconfig
+mips                             allmodconfig
+mips                malta_kvm_guest_defconfig
+mips                         tb0287_defconfig
+mips                       capcella_defconfig
+mips                           ip32_defconfig
+mips                  decstation_64_defconfig
+mips                      loongson3_defconfig
+mips                          ath79_defconfig
+mips                        bcm63xx_defconfig
+parisc                generic-64bit_defconfig
+parisc                generic-32bit_defconfig
+parisc                           allyesconfig
+powerpc                      chrp32_defconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                          rhel-kconfig
+powerpc                           allnoconfig
+powerpc                  mpc866_ads_defconfig
+powerpc                    amigaone_defconfig
+powerpc                    adder875_defconfig
+powerpc                     ep8248e_defconfig
+powerpc                          g5_defconfig
+powerpc                     mpc512x_defconfig
+m68k                 randconfig-a001-20200505
+mips                 randconfig-a001-20200505
+nds32                randconfig-a001-20200505
+parisc               randconfig-a001-20200505
+alpha                randconfig-a001-20200505
+riscv                randconfig-a001-20200505
+m68k                 randconfig-a001-20200503
+mips                 randconfig-a001-20200503
+nds32                randconfig-a001-20200503
+alpha                randconfig-a001-20200503
+parisc               randconfig-a001-20200503
+riscv                randconfig-a001-20200503
+m68k                 randconfig-a001-20200502
+mips                 randconfig-a001-20200502
+nds32                randconfig-a001-20200502
+alpha                randconfig-a001-20200502
+parisc               randconfig-a001-20200502
+riscv                randconfig-a001-20200502
+h8300                randconfig-a001-20200503
+nios2                randconfig-a001-20200503
+microblaze           randconfig-a001-20200503
+c6x                  randconfig-a001-20200503
+sparc64              randconfig-a001-20200503
+s390                 randconfig-a001-20200504
+xtensa               randconfig-a001-20200504
+sh                   randconfig-a001-20200504
+openrisc             randconfig-a001-20200504
+csky                 randconfig-a001-20200504
+s390                 randconfig-a001-20200505
+xtensa               randconfig-a001-20200505
+sh                   randconfig-a001-20200505
+openrisc             randconfig-a001-20200505
+csky                 randconfig-a001-20200505
+xtensa               randconfig-a001-20200503
+sh                   randconfig-a001-20200503
+openrisc             randconfig-a001-20200503
+csky                 randconfig-a001-20200503
+s390                 randconfig-a001-20200430
+xtensa               randconfig-a001-20200430
+csky                 randconfig-a001-20200430
+openrisc             randconfig-a001-20200430
+sh                   randconfig-a001-20200430
+i386                 randconfig-b003-20200503
+x86_64               randconfig-b002-20200503
+i386                 randconfig-b001-20200503
+x86_64               randconfig-b003-20200503
+x86_64               randconfig-b001-20200503
+i386                 randconfig-b002-20200503
+x86_64               randconfig-c002-20200502
+i386                 randconfig-c002-20200502
+i386                 randconfig-c001-20200502
+i386                 randconfig-c003-20200502
+i386                 randconfig-d003-20200502
+i386                 randconfig-d001-20200502
+x86_64               randconfig-d002-20200502
+i386                 randconfig-d002-20200502
+x86_64               randconfig-e003-20200502
+i386                 randconfig-e003-20200502
+x86_64               randconfig-e001-20200502
+i386                 randconfig-e002-20200502
+i386                 randconfig-e001-20200502
+x86_64               randconfig-e003-20200503
+x86_64               randconfig-e002-20200503
+i386                 randconfig-e003-20200503
+x86_64               randconfig-e001-20200503
+i386                 randconfig-e002-20200503
+i386                 randconfig-e001-20200503
+i386                 randconfig-f003-20200505
+x86_64               randconfig-f001-20200505
+x86_64               randconfig-f003-20200505
+i386                 randconfig-f001-20200505
+i386                 randconfig-f002-20200505
+x86_64               randconfig-a003-20200505
+x86_64               randconfig-a001-20200505
+i386                 randconfig-a001-20200505
+i386                 randconfig-a003-20200505
+i386                 randconfig-a002-20200505
+ia64                 randconfig-a001-20200503
+arm64                randconfig-a001-20200503
+arc                  randconfig-a001-20200503
+arm                  randconfig-a001-20200503
+sparc                randconfig-a001-20200503
+ia64                 randconfig-a001-20200505
+arc                  randconfig-a001-20200505
+powerpc              randconfig-a001-20200505
+arm                  randconfig-a001-20200505
+sparc                randconfig-a001-20200505
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+s390                       zfcpdump_defconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             alldefconfig
+s390                                defconfig
+sh                          rsk7269_defconfig
+sh                               allmodconfig
+sh                            titan_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
 ---
- arch/arm64/Kconfig                     |  1 +
- arch/arm64/include/asm/ima.h           | 22 +++++++++
- arch/arm64/include/asm/kexec.h         |  5 ++
- arch/arm64/kernel/Makefile             |  1 +
- arch/arm64/kernel/ima_kexec.c          | 64 ++++++++++++++++++++++++++
- arch/arm64/kernel/machine_kexec_file.c |  1 +
- arch/powerpc/include/asm/ima.h         |  3 +-
- arch/powerpc/kexec/ima.c               | 14 +++++-
- security/integrity/ima/ima_kexec.c     | 15 ++++--
- 9 files changed, 119 insertions(+), 7 deletions(-)
- create mode 100644 arch/arm64/include/asm/ima.h
- create mode 100644 arch/arm64/kernel/ima_kexec.c
-
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 40fb05d96c60..bc9e1a91686b 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -1069,6 +1069,7 @@ config KEXEC
- config KEXEC_FILE
- 	bool "kexec file based system call"
- 	select KEXEC_CORE
-+	select HAVE_IMA_KEXEC
- 	help
- 	  This is new version of kexec system call. This system call is
- 	  file based and takes file descriptors as system call argument
-diff --git a/arch/arm64/include/asm/ima.h b/arch/arm64/include/asm/ima.h
-new file mode 100644
-index 000000000000..58033b427e59
---- /dev/null
-+++ b/arch/arm64/include/asm/ima.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_ARM64_IMA_H
-+#define _ASM_ARM64_IMA_H
-+
-+struct kimage;
-+
-+int is_ima_memory_reserved(void);
-+int ima_get_kexec_buffer(void **addr, size_t *size);
-+int ima_free_kexec_buffer(void);
-+
-+#ifdef CONFIG_IMA_KEXEC
-+int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
-+			      void *buffer, size_t size);
-+
-+#else
-+int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
-+			      void *buffer, size_t size)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_IMA_KEXEC */
-+#endif /* _ASM_ARM64_IMA_H */
-diff --git a/arch/arm64/include/asm/kexec.h b/arch/arm64/include/asm/kexec.h
-index d24b527e8c00..2bd19ccb6c43 100644
---- a/arch/arm64/include/asm/kexec.h
-+++ b/arch/arm64/include/asm/kexec.h
-@@ -100,6 +100,11 @@ struct kimage_arch {
- 	void *elf_headers;
- 	unsigned long elf_headers_mem;
- 	unsigned long elf_headers_sz;
-+
-+#ifdef CONFIG_IMA_KEXEC
-+	phys_addr_t ima_buffer_addr;
-+	size_t ima_buffer_size;
-+#endif
- };
- 
- extern const struct kexec_file_ops kexec_image_ops;
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 4e5b8ee31442..cd3cb7690d51 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_RANDOMIZE_BASE)		+= kaslr.o
- obj-$(CONFIG_HIBERNATION)		+= hibernate.o hibernate-asm.o
- obj-$(CONFIG_KEXEC_CORE)		+= machine_kexec.o relocate_kernel.o	\
- 					   cpu-reset.o
-+obj-$(CONFIG_HAVE_IMA_KEXEC)		+= ima_kexec.o
- obj-$(CONFIG_KEXEC_FILE)		+= machine_kexec_file.o kexec_image.o
- obj-$(CONFIG_ARM64_RELOC_TEST)		+= arm64-reloc-test.o
- arm64-reloc-test-y := reloc_test_core.o reloc_test_syms.o
-diff --git a/arch/arm64/kernel/ima_kexec.c b/arch/arm64/kernel/ima_kexec.c
-new file mode 100644
-index 000000000000..ff5649333c7c
---- /dev/null
-+++ b/arch/arm64/kernel/ima_kexec.c
-@@ -0,0 +1,64 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2019 Microsoft Corporation.
-+ *
-+ * Authors:
-+ * Prakhar Srivastava <prsriva@linux.microsoft.com>
-+ */
-+
-+#include <linux/kexec.h>
-+#include <linux/of.h>
-+
-+
-+/**
-+ * is_ima_memory_reserved - check if memory is reserved via device
-+ *			    tree.
-+ *	Return: negative or zero when memory is not reserved.
-+ *	positive number on success.
-+ *
-+ */
-+int is_ima_memory_reserved(void)
-+{
-+	return of_is_ima_memory_reserved();
-+}
-+
-+/**
-+ * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-+ * @addr:	On successful return, set to point to the buffer contents.
-+ * @size:	On successful return, set to the buffer size.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int ima_get_kexec_buffer(void **addr, size_t *size)
-+{
-+	return of_get_ima_buffer(addr, size);
-+}
-+
-+/**
-+ * ima_free_kexec_buffer - free memory used by the IMA buffer
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int ima_free_kexec_buffer(void)
-+{
-+	return of_remove_ima_buffer();
-+}
-+
-+#ifdef CONFIG_IMA_KEXEC
-+/**
-+ * arch_ima_add_kexec_buffer - do arch-specific steps to add the IMA
-+ *	measurement log.
-+ * @image: - pointer to the kimage, to store the address and size of the
-+ *	IMA measurement log.
-+ * @load_addr: - the address where the IMA measurement log is stored.
-+ * @size - size of the IMA measurement log.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
-+			      void *buffer, size_t size)
-+{
-+	of_ima_write_buffer(buffer, size);
-+	return 0;
-+}
-+#endif /* CONFIG_IMA_KEXEC */
-diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index b40c3b0def92..8dc25511142d 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -22,6 +22,7 @@
- #include <linux/types.h>
- #include <linux/vmalloc.h>
- #include <asm/byteorder.h>
-+#include <asm/ima.h>
- 
- /* relevant device tree properties */
- #define FDT_PROP_KEXEC_ELFHDR	"linux,elfcorehdr"
-diff --git a/arch/powerpc/include/asm/ima.h b/arch/powerpc/include/asm/ima.h
-index ead488cf3981..a8febc620b42 100644
---- a/arch/powerpc/include/asm/ima.h
-+++ b/arch/powerpc/include/asm/ima.h
-@@ -4,6 +4,7 @@
- 
- struct kimage;
- 
-+int is_ima_memory_reserved(void);
- int ima_get_kexec_buffer(void **addr, size_t *size);
- int ima_free_kexec_buffer(void);
- 
-@@ -15,7 +16,7 @@ static inline void remove_ima_buffer(void *fdt, int chosen_node) {}
- 
- #ifdef CONFIG_IMA_KEXEC
- int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
--			      size_t size);
-+			      void *buffer, size_t size);
- 
- int setup_ima_buffer(const struct kimage *image, void *fdt, int chosen_node);
- #else
-diff --git a/arch/powerpc/kexec/ima.c b/arch/powerpc/kexec/ima.c
-index 720e50e490b6..3823539d4e07 100644
---- a/arch/powerpc/kexec/ima.c
-+++ b/arch/powerpc/kexec/ima.c
-@@ -46,6 +46,18 @@ static int do_get_kexec_buffer(const void *prop, int len, unsigned long *addr,
- 	return 0;
- }
- 
-+/**
-+ * is_ima_memory_reserved - check if memory is reserved via device
-+ *			    tree.
-+ *	Return: negative or zero when memory is not reserved.
-+ *	positive number on success.
-+ *
-+ */
-+int is_ima_memory_reserved(void)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- /**
-  * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-  * @addr:	On successful return, set to point to the buffer contents.
-@@ -137,7 +149,7 @@ void remove_ima_buffer(void *fdt, int chosen_node)
-  * Return: 0 on success, negative errno on error.
-  */
- int arch_ima_add_kexec_buffer(struct kimage *image, unsigned long load_addr,
--			      size_t size)
-+			      void *buffer, size_t size)
- {
- 	image->arch.ima_buffer_addr = load_addr;
- 	image->arch.ima_buffer_size = size;
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-index 121de3e04af2..3749472c7e18 100644
---- a/security/integrity/ima/ima_kexec.c
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -116,13 +116,18 @@ void ima_add_kexec_buffer(struct kimage *image)
- 	kbuf.buffer = kexec_buffer;
- 	kbuf.bufsz = kexec_buffer_size;
- 	kbuf.memsz = kexec_segment_size;
--	ret = kexec_add_buffer(&kbuf);
--	if (ret) {
--		pr_err("Error passing over kexec measurement buffer.\n");
--		return;
-+
-+	if (!is_ima_memory_reserved()) {
-+
-+		ret = kexec_add_buffer(&kbuf);
-+		if (ret) {
-+			pr_err("Error passing over kexec measurement buffer.\n");
-+			return;
-+		}
- 	}
- 
--	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_segment_size);
-+	ret = arch_ima_add_kexec_buffer(image, kbuf.mem, kexec_buffer,
-+					kexec_segment_size);
- 	if (ret) {
- 		pr_err("Error passing over kexec measurement buffer.\n");
- 		return;
--- 
-2.25.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
