@@ -6,48 +6,48 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A618DC47257
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B602C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:14:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2969E2071C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:12:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2969E2071C
+	by mail.kernel.org (Postfix) with ESMTPS id 9DBD02071C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:14:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9DBD02071C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49FlFc3K4TzDqgx
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 11:12:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49FlHX4GYqzDqjb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 11:14:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49FlBM03v4zDqfG
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2020 11:09:29 +1000 (AEST)
-IronPort-SDR: uzfLm5vKYi8jgvznV8wpE3oS3FPOLSjNzD3w4UkoYdfkymPY7qUG2S7Z9cjEJkGkaHrSmjfuoX
- ar4+cV9ZInlg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49FlBM090hzDqfL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2020 11:09:26 +1000 (AEST)
+IronPort-SDR: hFj+mPRbeeG8MA9gvM6qy1W2y4ucn+ko2Q+3AfswLXusARLUli4NuaUoJ3jQEtC3XRskFaYutz
+ D9buHe6Aiv/w==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 May 2020 18:09:27 -0700
-IronPort-SDR: Fc2IIc9c2THj/HwNYcVXgIy3ANuD6CfXzgcUpSYeSxuPrkm+NdoaedfEUy5/ze1d2Nc6Rr/ExU
- 7n2k4cO5wh4w==
-X-IronPort-AV: E=Sophos;i="5.73,350,1583222400"; d="scan'208";a="433937305"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 May 2020 18:09:24 -0700
+IronPort-SDR: 4aazns70SaZdx0xWU78jrTYcmHZJ2XURIj8rrZRtFTeyjWzwLNv7surEXGn6+/XEDRQuvdWKpY
+ TPeRrvZ6DvIw==
+X-IronPort-AV: E=Sophos;i="5.73,350,1583222400"; d="scan'208";a="295359062"
 Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 May 2020 18:09:26 -0700
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 May 2020 18:09:22 -0700
 From: ira.weiny@intel.com
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
  Christian Koenig <christian.koenig@amd.com>, Huang Rui <ray.huang@amd.com>
-Subject: [PATCH V2 08/11] arch/kmap: Ensure kmap_prot visibility
-Date: Sun,  3 May 2020 18:09:09 -0700
-Message-Id: <20200504010912.982044-9-ira.weiny@intel.com>
+Subject: [PATCH V2 04/11] arch/kunmap: Remove duplicate kunmap implementations
+Date: Sun,  3 May 2020 18:09:05 -0700
+Message-Id: <20200504010912.982044-5-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200504010912.982044-1-ira.weiny@intel.com>
 References: <20200504010912.982044-1-ira.weiny@intel.com>
@@ -71,10 +71,11 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
  "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
  Ira Weiny <ira.weiny@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
  Helge Deller <deller@gmx.de>, x86@kernel.org, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@redhat.com>,
+ linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
@@ -84,103 +85,359 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-We want to support kmap_atomic_prot() on all architectures and it makes
-sense to define kmap_atomic() to use the default kmap_prot.
+All architectures do exactly the same thing for kunmap(); remove all the
+duplicate definitions and lift the call to the core.
 
-So we ensure all arch's have a globally available kmap_prot either as a
-define or exported symbol.
+This also has the benefit of changing kmap_unmap() on a number of
+architectures to be an inline call rather than an actual function.
 
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- arch/microblaze/include/asm/highmem.h | 2 +-
- arch/microblaze/mm/init.c             | 3 ---
- arch/powerpc/include/asm/highmem.h    | 2 +-
- arch/powerpc/mm/mem.c                 | 3 ---
- arch/sparc/mm/highmem.c               | 1 +
- 5 files changed, 3 insertions(+), 8 deletions(-)
+ arch/arc/include/asm/highmem.h        | 10 ----------
+ arch/arm/include/asm/highmem.h        |  3 ---
+ arch/arm/mm/highmem.c                 |  9 ---------
+ arch/csky/include/asm/highmem.h       |  3 ---
+ arch/csky/mm/highmem.c                |  9 ---------
+ arch/microblaze/include/asm/highmem.h |  9 ---------
+ arch/mips/include/asm/highmem.h       |  3 ---
+ arch/mips/mm/highmem.c                |  9 ---------
+ arch/nds32/include/asm/highmem.h      |  3 ---
+ arch/nds32/mm/highmem.c               | 10 ----------
+ arch/powerpc/include/asm/highmem.h    |  9 ---------
+ arch/sparc/include/asm/highmem.h      | 10 ----------
+ arch/x86/include/asm/highmem.h        |  4 ----
+ arch/x86/mm/highmem_32.c              |  9 ---------
+ arch/xtensa/include/asm/highmem.h     | 10 ----------
+ include/linux/highmem.h               |  9 +++++++++
+ 16 files changed, 9 insertions(+), 110 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/highmem.h b/arch/microblaze/include/asm/highmem.h
-index 1b8a3c5102bd..033ac5b5c2da 100644
---- a/arch/microblaze/include/asm/highmem.h
-+++ b/arch/microblaze/include/asm/highmem.h
-@@ -25,8 +25,8 @@
- #include <linux/uaccess.h>
- #include <asm/fixmap.h>
+diff --git a/arch/arc/include/asm/highmem.h b/arch/arc/include/asm/highmem.h
+index 96eb67c86961..8387a5596a91 100644
+--- a/arch/arc/include/asm/highmem.h
++++ b/arch/arc/include/asm/highmem.h
+@@ -32,7 +32,6 @@
  
-+#define kmap_prot		PAGE_KERNEL
- extern pte_t *kmap_pte;
--extern pgprot_t kmap_prot;
- extern pte_t *pkmap_page_table;
+ extern void *kmap_atomic(struct page *page);
+ extern void __kunmap_atomic(void *kvaddr);
+-extern void kunmap_high(struct page *page);
  
- /*
-diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-index 1ffbfa96b9b8..a467686c13af 100644
---- a/arch/microblaze/mm/init.c
-+++ b/arch/microblaze/mm/init.c
-@@ -49,8 +49,6 @@ unsigned long lowmem_size;
- #ifdef CONFIG_HIGHMEM
- pte_t *kmap_pte;
- EXPORT_SYMBOL(kmap_pte);
--pgprot_t kmap_prot;
--EXPORT_SYMBOL(kmap_prot);
+ extern void kmap_init(void);
  
- static inline pte_t *virt_to_kpte(unsigned long vaddr)
- {
-@@ -68,7 +66,6 @@ static void __init highmem_init(void)
- 	pkmap_page_table = virt_to_kpte(PKMAP_BASE);
- 
- 	kmap_pte = virt_to_kpte(__fix_to_virt(FIX_KMAP_BEGIN));
--	kmap_prot = PAGE_KERNEL;
+@@ -41,15 +40,6 @@ static inline void flush_cache_kmaps(void)
+ 	flush_cache_all();
  }
  
- static void highmem_setup(void)
-diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
-index 373a470df205..ee5de974c5ef 100644
---- a/arch/powerpc/include/asm/highmem.h
-+++ b/arch/powerpc/include/asm/highmem.h
-@@ -29,8 +29,8 @@
- #include <asm/page.h>
- #include <asm/fixmap.h>
- 
-+#define kmap_prot		PAGE_KERNEL
- extern pte_t *kmap_pte;
--extern pgprot_t kmap_prot;
- extern pte_t *pkmap_page_table;
- 
- /*
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 041ed7cfd341..3f642b058731 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -64,8 +64,6 @@ bool init_mem_is_free;
- #ifdef CONFIG_HIGHMEM
- pte_t *kmap_pte;
- EXPORT_SYMBOL(kmap_pte);
--pgprot_t kmap_prot;
--EXPORT_SYMBOL(kmap_prot);
+-static inline void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+-
  #endif
  
- pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-@@ -245,7 +243,6 @@ void __init paging_init(void)
- 	pkmap_page_table = virt_to_kpte(PKMAP_BASE);
+ #endif
+diff --git a/arch/arm/include/asm/highmem.h b/arch/arm/include/asm/highmem.h
+index c917522541de..736f65283e7b 100644
+--- a/arch/arm/include/asm/highmem.h
++++ b/arch/arm/include/asm/highmem.h
+@@ -20,8 +20,6 @@
  
- 	kmap_pte = virt_to_kpte(__fix_to_virt(FIX_KMAP_BEGIN));
--	kmap_prot = PAGE_KERNEL;
- #endif /* CONFIG_HIGHMEM */
+ extern pte_t *pkmap_page_table;
  
- 	printk(KERN_DEBUG "Top of RAM: 0x%llx, Total RAM: 0x%llx\n",
-diff --git a/arch/sparc/mm/highmem.c b/arch/sparc/mm/highmem.c
-index 469786bc430f..9f06d75e88e1 100644
---- a/arch/sparc/mm/highmem.c
-+++ b/arch/sparc/mm/highmem.c
-@@ -33,6 +33,7 @@
- #include <asm/vaddrs.h>
+-extern void kunmap_high(struct page *page);
+-
+ /*
+  * The reason for kmap_high_get() is to ensure that the currently kmap'd
+  * page usage count does not decrease to zero while we're using its
+@@ -62,7 +60,6 @@ static inline void *kmap_high_get(struct page *page)
+  * when CONFIG_HIGHMEM is not set.
+  */
+ #ifdef CONFIG_HIGHMEM
+-extern void kunmap(struct page *page);
+ extern void *kmap_atomic(struct page *page);
+ extern void __kunmap_atomic(void *kvaddr);
+ extern void *kmap_atomic_pfn(unsigned long pfn);
+diff --git a/arch/arm/mm/highmem.c b/arch/arm/mm/highmem.c
+index e8ba37c36590..c700b32350ee 100644
+--- a/arch/arm/mm/highmem.c
++++ b/arch/arm/mm/highmem.c
+@@ -31,15 +31,6 @@ static inline pte_t get_fixmap_pte(unsigned long vaddr)
+ 	return *ptep;
+ }
  
- pgprot_t kmap_prot;
-+EXPORT_SYMBOL(kmap_prot);
+-void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-EXPORT_SYMBOL(kunmap);
+-
+ void *kmap_atomic(struct page *page)
+ {
+ 	unsigned int idx;
+diff --git a/arch/csky/include/asm/highmem.h b/arch/csky/include/asm/highmem.h
+index 9d0516e38110..be11c5b67122 100644
+--- a/arch/csky/include/asm/highmem.h
++++ b/arch/csky/include/asm/highmem.h
+@@ -30,11 +30,8 @@ extern pte_t *pkmap_page_table;
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
  
- static pte_t *kmap_pte;
+-extern void kunmap_high(struct page *page);
+-
+ #define ARCH_HAS_KMAP_FLUSH_TLB
+ extern void kmap_flush_tlb(unsigned long addr);
+-extern void kunmap(struct page *page);
+ extern void *kmap_atomic(struct page *page);
+ extern void __kunmap_atomic(void *kvaddr);
+ extern void *kmap_atomic_pfn(unsigned long pfn);
+diff --git a/arch/csky/mm/highmem.c b/arch/csky/mm/highmem.c
+index 4a3c273bc8b9..e9952211264b 100644
+--- a/arch/csky/mm/highmem.c
++++ b/arch/csky/mm/highmem.c
+@@ -21,15 +21,6 @@ EXPORT_SYMBOL(kmap_flush_tlb);
  
+ EXPORT_SYMBOL(kmap);
+ 
+-void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-EXPORT_SYMBOL(kunmap);
+-
+ void *kmap_atomic(struct page *page)
+ {
+ 	unsigned long vaddr;
+diff --git a/arch/microblaze/include/asm/highmem.h b/arch/microblaze/include/asm/highmem.h
+index 8c5bfd228bd8..0c94046f2d58 100644
+--- a/arch/microblaze/include/asm/highmem.h
++++ b/arch/microblaze/include/asm/highmem.h
+@@ -51,18 +51,9 @@ extern pte_t *pkmap_page_table;
+ #define PKMAP_NR(virt)  ((virt - PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-extern void kunmap_high(struct page *page);
+ extern void *kmap_atomic_prot(struct page *page, pgprot_t prot);
+ extern void __kunmap_atomic(void *kvaddr);
+ 
+-static inline void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+ static inline void *kmap_atomic(struct page *page)
+ {
+ 	return kmap_atomic_prot(page, kmap_prot);
+diff --git a/arch/mips/include/asm/highmem.h b/arch/mips/include/asm/highmem.h
+index 1f741e3ecabf..24e7e7e5cc7b 100644
+--- a/arch/mips/include/asm/highmem.h
++++ b/arch/mips/include/asm/highmem.h
+@@ -46,11 +46,8 @@ extern pte_t *pkmap_page_table;
+ #define PKMAP_NR(virt)	((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)	(PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-extern void kunmap_high(struct page *page);
+-
+ #define ARCH_HAS_KMAP_FLUSH_TLB
+ extern void kmap_flush_tlb(unsigned long addr);
+-extern void kunmap(struct page *page);
+ extern void *kmap_atomic(struct page *page);
+ extern void __kunmap_atomic(void *kvaddr);
+ extern void *kmap_atomic_pfn(unsigned long pfn);
+diff --git a/arch/mips/mm/highmem.c b/arch/mips/mm/highmem.c
+index c72058bfead6..eb8ec8493f2f 100644
+--- a/arch/mips/mm/highmem.c
++++ b/arch/mips/mm/highmem.c
+@@ -18,15 +18,6 @@ void kmap_flush_tlb(unsigned long addr)
+ }
+ EXPORT_SYMBOL(kmap_flush_tlb);
+ 
+-void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-EXPORT_SYMBOL(kunmap);
+-
+ /*
+  * kmap_atomic/kunmap_atomic is significantly faster than kmap/kunmap because
+  * no global lock is needed and because the kmap code must perform a global TLB
+diff --git a/arch/nds32/include/asm/highmem.h b/arch/nds32/include/asm/highmem.h
+index b13654a79069..c93c7368bb3f 100644
+--- a/arch/nds32/include/asm/highmem.h
++++ b/arch/nds32/include/asm/highmem.h
+@@ -44,8 +44,6 @@ extern unsigned long highstart_pfn, highend_pfn;
+ 
+ extern pte_t *pkmap_page_table;
+ 
+-extern void kunmap_high(struct page *page);
+-
+ extern void kmap_init(void);
+ 
+ /*
+@@ -53,7 +51,6 @@ extern void kmap_init(void);
+  * when CONFIG_HIGHMEM is not set.
+  */
+ #ifdef CONFIG_HIGHMEM
+-extern void kunmap(struct page *page);
+ extern void *kmap_atomic(struct page *page);
+ extern void __kunmap_atomic(void *kvaddr);
+ extern void *kmap_atomic_pfn(unsigned long pfn);
+diff --git a/arch/nds32/mm/highmem.c b/arch/nds32/mm/highmem.c
+index d0cde53b84ae..f9348bec0ecb 100644
+--- a/arch/nds32/mm/highmem.c
++++ b/arch/nds32/mm/highmem.c
+@@ -10,16 +10,6 @@
+ #include <asm/fixmap.h>
+ #include <asm/tlbflush.h>
+ 
+-void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+-EXPORT_SYMBOL(kunmap);
+-
+ void *kmap_atomic(struct page *page)
+ {
+ 	unsigned int idx;
+diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
+index f14e4feef6d5..ba3371977d49 100644
+--- a/arch/powerpc/include/asm/highmem.h
++++ b/arch/powerpc/include/asm/highmem.h
+@@ -59,18 +59,9 @@ extern pte_t *pkmap_page_table;
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-extern void kunmap_high(struct page *page);
+ extern void *kmap_atomic_prot(struct page *page, pgprot_t prot);
+ extern void __kunmap_atomic(void *kvaddr);
+ 
+-static inline void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+ static inline void *kmap_atomic(struct page *page)
+ {
+ 	return kmap_atomic_prot(page, kmap_prot);
+diff --git a/arch/sparc/include/asm/highmem.h b/arch/sparc/include/asm/highmem.h
+index 2ff1192047f7..4bdb79fed02c 100644
+--- a/arch/sparc/include/asm/highmem.h
++++ b/arch/sparc/include/asm/highmem.h
+@@ -50,16 +50,6 @@ void kmap_init(void) __init;
+ 
+ #define PKMAP_END (PKMAP_ADDR(LAST_PKMAP))
+ 
+-void kunmap_high(struct page *page);
+-
+-static inline void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+ void *kmap_atomic(struct page *page);
+ void __kunmap_atomic(void *kvaddr);
+ 
+diff --git a/arch/x86/include/asm/highmem.h b/arch/x86/include/asm/highmem.h
+index c916a28a9738..90b96594d6c5 100644
+--- a/arch/x86/include/asm/highmem.h
++++ b/arch/x86/include/asm/highmem.h
+@@ -58,10 +58,6 @@ extern unsigned long highstart_pfn, highend_pfn;
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-extern void kunmap_high(struct page *page);
+-
+-void kunmap(struct page *page);
+-
+ void *kmap_atomic_prot(struct page *page, pgprot_t prot);
+ void *kmap_atomic(struct page *page);
+ void __kunmap_atomic(void *kvaddr);
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 12591a81b85c..c4ebfd0ae401 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -4,15 +4,6 @@
+ #include <linux/swap.h> /* for totalram_pages */
+ #include <linux/memblock.h>
+ 
+-void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-EXPORT_SYMBOL(kunmap);
+-
+ /*
+  * kmap_atomic/kunmap_atomic is significantly faster than kmap/kunmap because
+  * no global lock is needed and because the kmap code must perform a global TLB
+diff --git a/arch/xtensa/include/asm/highmem.h b/arch/xtensa/include/asm/highmem.h
+index 2546b88ddecf..5a481f7def0b 100644
+--- a/arch/xtensa/include/asm/highmem.h
++++ b/arch/xtensa/include/asm/highmem.h
+@@ -63,16 +63,6 @@ static inline wait_queue_head_t *get_pkmap_wait_queue_head(unsigned int color)
+ 
+ extern pte_t *pkmap_page_table;
+ 
+-void kunmap_high(struct page *page);
+-
+-static inline void kunmap(struct page *page)
+-{
+-	might_sleep();
+-	if (!PageHighMem(page))
+-		return;
+-	kunmap_high(page);
+-}
+-
+ static inline void flush_cache_kmaps(void)
+ {
+ 	flush_cache_all();
+diff --git a/include/linux/highmem.h b/include/linux/highmem.h
+index fc3adc51254a..ae6e8cb81043 100644
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -52,6 +52,15 @@ static inline void *kmap(struct page *page)
+ 	return addr;
+ }
+ 
++void kunmap_high(struct page *page);
++static inline void kunmap(struct page *page)
++{
++	might_sleep();
++	if (!PageHighMem(page))
++		return;
++	kunmap_high(page);
++}
++
+ /* declarations for linux/mm/highmem.c */
+ unsigned int nr_free_highpages(void);
+ extern atomic_long_t _totalhigh_pages;
 -- 
 2.25.1
 
