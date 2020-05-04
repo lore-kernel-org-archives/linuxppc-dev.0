@@ -6,48 +6,48 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D873C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 009E4C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:30:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07A0C206EB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:29:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07A0C206EB
+	by mail.kernel.org (Postfix) with ESMTPS id A9D8F206E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 01:30:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9D8F206E6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Flcx0xjDzDqck
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 11:29:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Flfl3P6hzDql5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2020 11:30:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49FlBM6hZlzDqfG
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2020 11:09:31 +1000 (AEST)
-IronPort-SDR: c6H3YQWN2O6eJ3J5C5zdNqvcTGFyT8WGRxEqGXvKaqS08N5dAByENnFZtWx8C413tcu+xRD2/w
- 5DkJtGnfE2cw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49FlBN3VV1zDqfH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2020 11:09:32 +1000 (AEST)
+IronPort-SDR: VFZuTn4rE4SsVYGIHWaciHF1vgthU23TN4jFz2fecT40rSmnaJOmQ0GQYCG0OJHt+aEenss8/V
+ 4Y2nzZZmCk8A==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 May 2020 18:09:28 -0700
-IronPort-SDR: 1bVoB4qieEEpgiINwJqOQjpqs6XmNA2TyX/l62INV5ILFJeC3pCrUNHGyeeWoQefqo/wcHYSxL
- CJqg8qvEGylQ==
-X-IronPort-AV: E=Sophos;i="5.73,350,1583222400"; d="scan'208";a="406323237"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 May 2020 18:09:22 -0700
+IronPort-SDR: 0sfTWrdVl9taYpdiQf4rbNyObgvnrL4HY5A/wwdVowOhzm+BQ1szN8Ld3ck7vtPYcDwAf8cgkk
+ odi25qXkZcbQ==
+X-IronPort-AV: E=Sophos;i="5.73,350,1583222400"; d="scan'208";a="249047740"
 Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 May 2020 18:09:27 -0700
+ by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 May 2020 18:09:21 -0700
 From: ira.weiny@intel.com
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
  Christian Koenig <christian.koenig@amd.com>, Huang Rui <ray.huang@amd.com>
-Subject: [PATCH V2 09/11] arch/kmap: Don't hard code kmap_prot values
-Date: Sun,  3 May 2020 18:09:10 -0700
-Message-Id: <20200504010912.982044-10-ira.weiny@intel.com>
+Subject: [PATCH V2 02/11] arch/xtensa: Move kmap build bug out of the way
+Date: Sun,  3 May 2020 18:09:03 -0700
+Message-Id: <20200504010912.982044-3-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200504010912.982044-1-ira.weiny@intel.com>
 References: <20200504010912.982044-1-ira.weiny@intel.com>
@@ -85,77 +85,51 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-To support kmap_atomic_prot() on all architectures each arch must
-support protections passed in to them.
-
-Change csky, mips, nds32 and xtensa to use their global constant
-kmap_prot rather than a hard coded value which was equal.
+Move the kmap() build bug to kmap_init() to facilitate patches to lift
+kmap() to the core.
 
 Reviewed-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 
 ---
-changes from V1:
-	Mention that kmap_prot is a constant in commit message
+Changes from V1:
+	combine code onto 1 line.
 ---
- arch/csky/mm/highmem.c   | 2 +-
- arch/mips/mm/highmem.c   | 2 +-
- arch/nds32/mm/highmem.c  | 2 +-
- arch/xtensa/mm/highmem.c | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/xtensa/include/asm/highmem.h | 5 -----
+ arch/xtensa/mm/highmem.c          | 4 ++++
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/csky/mm/highmem.c b/arch/csky/mm/highmem.c
-index 0aafbbbe651c..f4311669b5bb 100644
---- a/arch/csky/mm/highmem.c
-+++ b/arch/csky/mm/highmem.c
-@@ -32,7 +32,7 @@ void *kmap_atomic_high(struct page *page)
- #ifdef CONFIG_DEBUG_HIGHMEM
- 	BUG_ON(!pte_none(*(kmap_pte - idx)));
- #endif
--	set_pte(kmap_pte-idx, mk_pte(page, PAGE_KERNEL));
-+	set_pte(kmap_pte-idx, mk_pte(page, kmap_prot));
- 	flush_tlb_one((unsigned long)vaddr);
+diff --git a/arch/xtensa/include/asm/highmem.h b/arch/xtensa/include/asm/highmem.h
+index 413848cc1e56..a9587c85be85 100644
+--- a/arch/xtensa/include/asm/highmem.h
++++ b/arch/xtensa/include/asm/highmem.h
+@@ -68,11 +68,6 @@ void kunmap_high(struct page *page);
  
- 	return (void *)vaddr;
-diff --git a/arch/mips/mm/highmem.c b/arch/mips/mm/highmem.c
-index 155fbb107b35..87023bd1a33c 100644
---- a/arch/mips/mm/highmem.c
-+++ b/arch/mips/mm/highmem.c
-@@ -29,7 +29,7 @@ void *kmap_atomic_high(struct page *page)
- #ifdef CONFIG_DEBUG_HIGHMEM
- 	BUG_ON(!pte_none(*(kmap_pte - idx)));
- #endif
--	set_pte(kmap_pte-idx, mk_pte(page, PAGE_KERNEL));
-+	set_pte(kmap_pte-idx, mk_pte(page, kmap_prot));
- 	local_flush_tlb_one((unsigned long)vaddr);
- 
- 	return (void*) vaddr;
-diff --git a/arch/nds32/mm/highmem.c b/arch/nds32/mm/highmem.c
-index f6e6915c0d31..809f8c830f06 100644
---- a/arch/nds32/mm/highmem.c
-+++ b/arch/nds32/mm/highmem.c
-@@ -21,7 +21,7 @@ void *kmap_atomic_high(struct page *page)
- 
- 	idx = type + KM_TYPE_NR * smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
--	pte = (page_to_pfn(page) << PAGE_SHIFT) | (PAGE_KERNEL);
-+	pte = (page_to_pfn(page) << PAGE_SHIFT) | (kmap_prot);
- 	ptep = pte_offset_kernel(pmd_off_k(vaddr), vaddr);
- 	set_pte(ptep, pte);
- 
+ static inline void *kmap(struct page *page)
+ {
+-	/* Check if this memory layout is broken because PKMAP overlaps
+-	 * page table.
+-	 */
+-	BUILD_BUG_ON(PKMAP_BASE <
+-		     TLBTEMP_BASE_1 + TLBTEMP_SIZE);
+ 	might_sleep();
+ 	if (!PageHighMem(page))
+ 		return page_address(page);
 diff --git a/arch/xtensa/mm/highmem.c b/arch/xtensa/mm/highmem.c
-index 4de323e43682..50168b09510a 100644
+index 184ceadccc1a..da734a2ed641 100644
 --- a/arch/xtensa/mm/highmem.c
 +++ b/arch/xtensa/mm/highmem.c
-@@ -48,7 +48,7 @@ void *kmap_atomic_high(struct page *page)
- #ifdef CONFIG_DEBUG_HIGHMEM
- 	BUG_ON(!pte_none(*(kmap_pte + idx)));
- #endif
--	set_pte(kmap_pte + idx, mk_pte(page, PAGE_KERNEL_EXEC));
-+	set_pte(kmap_pte + idx, mk_pte(page, kmap_prot));
+@@ -88,6 +88,10 @@ void __init kmap_init(void)
+ {
+ 	unsigned long kmap_vstart;
  
- 	return (void *)vaddr;
- }
++	/* Check if this memory layout is broken because PKMAP overlaps
++	 * page table.
++	 */
++	BUILD_BUG_ON(PKMAP_BASE < TLBTEMP_BASE_1 + TLBTEMP_SIZE);
+ 	/* cache the first kmap pte */
+ 	kmap_vstart = __fix_to_virt(FIX_KMAP_BEGIN);
+ 	kmap_pte = kmap_get_fixmap_pte(kmap_vstart);
 -- 
 2.25.1
 
