@@ -1,49 +1,75 @@
-Return-Path: <SRS0=ZeYp=6T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xicG=6U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A42A4C47247
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 23:35:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8BC0C47247
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 00:37:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2EC28206B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 23:35:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EC28206B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 46FB020721
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 00:37:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 46FB020721
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Gx1K0SGWzDqf6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 09:35:49 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49GwzR5QvrzDqb9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 09:34:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49GyNJ6J6yzDqYq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 10:37:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49GwzP3Ql0z9sRf;
- Wed,  6 May 2020 09:34:09 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH] powerpc/xive: Enforce load-after-store ordering when
- StoreEOI is active
-Date: Wed, 06 May 2020 09:34:05 +1000
-Message-ID: <2990884.uye9WAk7yu@townsend>
-In-Reply-To: <20200220081506.31209-1-clg@kaod.org>
-References: <20200220081506.31209-1-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Gkj32FBgzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 01:50:59 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49GkSk662Lz9v6ZJ;
+ Tue,  5 May 2020 17:40:22 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id lB47a1rBtIIP; Tue,  5 May 2020 17:40:22 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49GkSk5DfVz9v6ZG;
+ Tue,  5 May 2020 17:40:22 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 69F418B7B3;
+ Tue,  5 May 2020 17:40:24 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ZCQ8FQrSrO81; Tue,  5 May 2020 17:40:24 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E76B98B7A8;
+ Tue,  5 May 2020 17:40:22 +0200 (CEST)
+Subject: Re: [PATCH v4 1/2] powerpc/uaccess: Implement unsafe_put_user() using
+ 'asm goto'
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, npiggin@gmail.com,
+ segher@kernel.crashing.org
+References: <23e680624680a9a5405f4b88740d2596d4b17c26.1587143308.git.christophe.leroy@c-s.fr>
+ <87sggecv81.fsf@mpe.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <1c6379b2-7e0a-91fe-34f0-51f5adca7929@csgroup.eu>
+Date: Tue, 5 May 2020 17:40:21 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+In-Reply-To: <87sggecv81.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 06 May 2020 10:35:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,150 +81,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Greg Kurz <groug@kaod.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I am still slowly wrapping my head around XIVE and it's interaction with KV=
-M=20
-but from what I can see this looks good and is needed so we can enable=20
-StoreEOI support in future so:
+Hi,
 
-Reviewed-by: Alistair Popple <alistair@popple.id.au>
+Le 05/05/2020 à 16:27, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> unsafe_put_user() is designed to take benefit of 'asm goto'.
+>>
+>> Instead of using the standard __put_user() approach and branch
+>> based on the returned error, use 'asm goto' and make the
+>> exception code branch directly to the error label. There is
+>> no code anymore in the fixup section.
+>>
+>> This change significantly simplifies functions using
+>> unsafe_put_user()
+>>
+> ...
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/include/asm/uaccess.h | 61 +++++++++++++++++++++++++-----
+>>   1 file changed, 52 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+>> index 9cc9c106ae2a..9365b59495a2 100644
+>> --- a/arch/powerpc/include/asm/uaccess.h
+>> +++ b/arch/powerpc/include/asm/uaccess.h
+>> @@ -196,6 +193,52 @@ do {								\
+>>   })
+>>   
+>>   
+>> +#define __put_user_asm_goto(x, addr, label, op)			\
+>> +	asm volatile goto(					\
+>> +		"1:	" op "%U1%X1 %0,%1	# put_user\n"	\
+>> +		EX_TABLE(1b, %l2)				\
+>> +		:						\
+>> +		: "r" (x), "m<>" (*addr)				\
+> 
+> The "m<>" here is breaking GCC 4.6.3, which we allegedly still support.
+> 
+> Plain "m" works, how much does the "<>" affect code gen in practice?
+> 
+> A quick diff here shows no difference from removing "<>".
 
-On Thursday, 20 February 2020 7:15:06 PM AEST C=E9dric Le Goater wrote:
-> When an interrupt has been handled, the OS notifies the interrupt
-> controller with a EOI sequence. On a POWER9 system using the XIVE
-> interrupt controller, this can be done with a load or a store
-> operation on the ESB interrupt management page of the interrupt. The
-> StoreEOI operation has less latency and improves interrupt handling
-> performance but it was deactivated during the POWER9 DD2.0 timeframe
-> because of ordering issues. We use the LoadEOI today but we plan to
-> reactivate StoreEOI in future architectures.
->=20
-> There is usually no need to enforce ordering between ESB load and
-> store operations as they should lead to the same result. E.g. a store
-> trigger and a load EOI can be executed in any order. Assuming the
-> interrupt state is PQ=3D10, a store trigger followed by a load EOI will
-> return a Q bit. In the reverse order, it will create a new interrupt
-> trigger from HW. In both cases, the handler processing interrupts is
-> notified.
->=20
-> In some cases, the XIVE_ESB_SET_PQ_10 load operation is used to
-> disable temporarily the interrupt source (mask/unmask). When the
-> source is reenabled, the OS can detect if interrupts were received
-> while the source was disabled and reinject them. This process needs
-> special care when StoreEOI is activated. The ESB load and store
-> operations should be correctly ordered because a XIVE_ESB_STORE_EOI
-> operation could leave the source enabled if it has not completed
-> before the loads.
->=20
-> For those cases, we enforce Load-after-Store ordering with a special
-> load operation offset. To avoid performance impact, this ordering is
-> only enforced when really needed, that is when interrupt sources are
-> temporarily disabled with the XIVE_ESB_SET_PQ_10 load. It should not
-> be needed for other loads.
->=20
-> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> ---
->  arch/powerpc/include/asm/xive-regs.h    | 8 ++++++++
->  arch/powerpc/kvm/book3s_xive_native.c   | 6 ++++++
->  arch/powerpc/kvm/book3s_xive_template.c | 3 +++
->  arch/powerpc/sysdev/xive/common.c       | 3 +++
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 5 +++++
->  5 files changed, 25 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/xive-regs.h
-> b/arch/powerpc/include/asm/xive-regs.h index f2dfcd50a2d3..b1996fbae59a
-> 100644
-> --- a/arch/powerpc/include/asm/xive-regs.h
-> +++ b/arch/powerpc/include/asm/xive-regs.h
-> @@ -37,6 +37,14 @@
->  #define XIVE_ESB_SET_PQ_10	0xe00 /* Load */
->  #define XIVE_ESB_SET_PQ_11	0xf00 /* Load */
->=20
-> +/*
-> + * Load-after-store ordering
-> + *
-> + * Adding this offset to the load address will enforce
-> + * load-after-store ordering. This is required to use StoreEOI.
-> + */
-> +#define XIVE_ESB_LD_ST_MO	0x40 /* Load-after-store ordering */
-> +
->  #define XIVE_ESB_VAL_P		0x2
->  #define XIVE_ESB_VAL_Q		0x1
->=20
-> diff --git a/arch/powerpc/kvm/book3s_xive_native.c
-> b/arch/powerpc/kvm/book3s_xive_native.c index d83adb1e1490..c80b6a447efd
-> 100644
-> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> @@ -31,6 +31,12 @@ static u8 xive_vm_esb_load(struct xive_irq_data *xd, u=
-32
-> offset) {
->  	u64 val;
->=20
-> +	/*
-> +	 * The KVM XIVE native device does not use the XIVE_ESB_SET_PQ_10
-> +	 * load operation, so there is no need to enforce load-after-store
-> +	 * ordering.
-> +	 */
-> +
->  	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->  		offset |=3D offset << 4;
->=20
-> diff --git a/arch/powerpc/kvm/book3s_xive_template.c
-> b/arch/powerpc/kvm/book3s_xive_template.c index a8a900ace1e6..4ad3c0279458
-> 100644
-> --- a/arch/powerpc/kvm/book3s_xive_template.c
-> +++ b/arch/powerpc/kvm/book3s_xive_template.c
-> @@ -58,6 +58,9 @@ static u8 GLUE(X_PFX,esb_load)(struct xive_irq_data *xd,
-> u32 offset) {
->  	u64 val;
->=20
-> +	if (offset =3D=3D XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE=
-_EOI)
-> +		offset |=3D XIVE_ESB_LD_ST_MO;
-> +
->  	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->  		offset |=3D offset << 4;
->=20
-> diff --git a/arch/powerpc/sysdev/xive/common.c
-> b/arch/powerpc/sysdev/xive/common.c index f5fadbd2533a..0dc421bb494f 1006=
-44
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -202,6 +202,9 @@ static notrace u8 xive_esb_read(struct xive_irq_data
-> *xd, u32 offset) {
->  	u64 val;
->=20
-> +	if (offset =3D=3D XIVE_ESB_SET_PQ_10 && xd->flags & XIVE_IRQ_FLAG_STORE=
-_EOI)
-> +		offset |=3D XIVE_ESB_LD_ST_MO;
-> +
->  	/* Handle HW errata */
->  	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
->  		offset |=3D offset << 4;
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> b/arch/powerpc/kvm/book3s_hv_rmhandlers.S index e11017897eb0..abe132ff2346
-> 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -2911,6 +2911,11 @@ kvm_cede_exit:
->  	beq	4f
->  	li	r0, 0
->  	stb	r0, VCPU_CEDED(r9)
-> +	/*
-> +	 * The escalation interrupts are special as we don't EOI them.
-> +	 * There is no need to use the load-after-store ordering offset
-> +	 * to set PQ to 10 as we won't use StoreEOI.
-> +	 */
->  	li	r6, XIVE_ESB_SET_PQ_10
->  	b	5f
->  4:	li	r0, 1
+It was recommended by Segher, there has been some discussion about it on 
+v1 of this patch, see 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/4fdc2aba6f5e51887d1cd0fee94be0989eada2cd.1586942312.git.christophe.leroy@c-s.fr/
 
+As far as I understood that's mandatory on recent gcc to get the 
+pre-update form of the instruction. With older versions "m" was doing 
+the same, but not anymore. Should we ifdef the "m<>" or "m" based on GCC 
+version ?
 
-
-
+Christophe
