@@ -2,66 +2,51 @@ Return-Path: <SRS0=ZeYp=6T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E1AC47247
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 14:34:26 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D6AC47257
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 15:35:27 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01AEF206A5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 14:34:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="AYudScwg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01AEF206A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id ED84C206B9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 15:35:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED84C206B9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Gj0Z1cSjzDqf6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 00:34:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49GkLx4DNVzDq5k
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 01:35:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
+ (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lwn.net
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Ghrz41gdzDqcW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 00:27:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=AYudScwg; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49Ghrw1s5zz9sTp;
- Wed,  6 May 2020 00:27:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1588688864;
- bh=tKWmkjZzDQuTCUpYsJT44pgEzBrMuLquVBArlnJPTok=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=AYudScwgGeF513DR39+vld/7XBnzPx/RmHX/ZpsMbR2xXEUEL2wuQW4p4g7Kvsisv
- 9BkStSD8LskDREEIZEUcnucf5n8bIAP/kQu2rNGVG4fIKIdYaiLi+vc3W32DET/0hz
- 5nsmqgrX3/E2FGtgYlYHZLqT5wY+S9qw+8b60lg/xiFk9lQCri05hPLII8zOg03WtG
- PzAzrymQXDPh8UfjPGwC7IuvwSJwXnjW1UDF04L9jrzlQAsxufL0jpsgaVkvW/fPcm
- FkzgDihqutVRnj1lbOzrs8G2my6pLc9rXtAY5CntiQp+YF12WDNjpeIJ+Iwrq2Q2bI
- 9B+Cn2SIClkKg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, npiggin@gmail.com,
- segher@kernel.crashing.org
-Subject: Re: [PATCH v4 1/2] powerpc/uaccess: Implement unsafe_put_user() using
- 'asm goto'
-In-Reply-To: <23e680624680a9a5405f4b88740d2596d4b17c26.1587143308.git.christophe.leroy@c-s.fr>
-References: <23e680624680a9a5405f4b88740d2596d4b17c26.1587143308.git.christophe.leroy@c-s.fr>
-Date: Wed, 06 May 2020 00:27:58 +1000
-Message-ID: <87sggecv81.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49GkCc1jRkzDqf1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 01:28:59 +1000 (AEST)
+Received: from lwn.net (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ms.lwn.net (Postfix) with ESMTPSA id E0CF5737;
+ Tue,  5 May 2020 15:28:39 +0000 (UTC)
+Date: Tue, 5 May 2020 09:28:38 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Subject: Re: [PATCH v3 00/29] Convert files to ReST - part 2
+Message-ID: <20200505092838.4b1ff075@lwn.net>
+In-Reply-To: <20200428130128.22c4b973@lwn.net>
+References: <cover.1588021877.git.mchehab+huawei@kernel.org>
+ <20200428130128.22c4b973@lwn.net>
+Organization: LWN.net
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,48 +58,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ codalist@coda.cs.cmu.edu, linux-xfs@vger.kernel.org, linux-cachefs@redhat.com,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> unsafe_put_user() is designed to take benefit of 'asm goto'.
->
-> Instead of using the standard __put_user() approach and branch
-> based on the returned error, use 'asm goto' and make the
-> exception code branch directly to the error label. There is
-> no code anymore in the fixup section.
->
-> This change significantly simplifies functions using
-> unsafe_put_user()
->
-...
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/include/asm/uaccess.h | 61 +++++++++++++++++++++++++-----
->  1 file changed, 52 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-> index 9cc9c106ae2a..9365b59495a2 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -196,6 +193,52 @@ do {								\
->  })
->  
->  
-> +#define __put_user_asm_goto(x, addr, label, op)			\
-> +	asm volatile goto(					\
-> +		"1:	" op "%U1%X1 %0,%1	# put_user\n"	\
-> +		EX_TABLE(1b, %l2)				\
-> +		:						\
-> +		: "r" (x), "m<>" (*addr)				\
+On Tue, 28 Apr 2020 13:01:28 -0600
+Jonathan Corbet <corbet@lwn.net> wrote:
 
-The "m<>" here is breaking GCC 4.6.3, which we allegedly still support.
+> So I'm happy to merge this set, but there is one thing that worries me a
+> bit... 
+> 
+> >  fs/cachefiles/Kconfig                         |    4 +-
+> >  fs/coda/Kconfig                               |    2 +-
+> >  fs/configfs/inode.c                           |    2 +-
+> >  fs/configfs/item.c                            |    2 +-
+> >  fs/fscache/Kconfig                            |    8 +-
+> >  fs/fscache/cache.c                            |    8 +-
+> >  fs/fscache/cookie.c                           |    2 +-
+> >  fs/fscache/object.c                           |    4 +-
+> >  fs/fscache/operation.c                        |    2 +-
+> >  fs/locks.c                                    |    2 +-
+> >  include/linux/configfs.h                      |    2 +-
+> >  include/linux/fs_context.h                    |    2 +-
+> >  include/linux/fscache-cache.h                 |    4 +-
+> >  include/linux/fscache.h                       |   42 +-
+> >  include/linux/lsm_hooks.h                     |    2 +-  
+> 
+> I'd feel a bit better if I could get an ack or two from filesystem folks
+> before I venture that far out of my own yard...what say you all?
 
-Plain "m" works, how much does the "<>" affect code gen in practice?
+It's been another week and nobody has complained, so I'm taking that as
+assent; the series has been applied.
 
-A quick diff here shows no difference from removing "<>".
+Thanks,
 
-cheers
+jon
