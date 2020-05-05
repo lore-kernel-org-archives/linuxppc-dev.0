@@ -2,55 +2,63 @@ Return-Path: <SRS0=ZeYp=6T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 762EFC47254
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 16:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C5EC47247
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 16:10:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D78072073B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 16:06:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D78072073B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 93F7F206A4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 16:10:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Jpyx0GW/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93F7F206A4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Gl3L6w9zzDqX2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 02:06:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Gl771slwzDqjQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 02:10:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=wsa@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 49GkvZ4NygzDqTv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 02:00:10 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 045Fxiqh012171;
- Tue, 5 May 2020 10:59:45 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 045FxikO012170;
- Tue, 5 May 2020 10:59:44 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 5 May 2020 10:59:44 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v4 1/2] powerpc/uaccess: Implement unsafe_put_user() using
- 'asm goto'
-Message-ID: <20200505155944.GO31009@gate.crashing.org>
-References: <23e680624680a9a5405f4b88740d2596d4b17c26.1587143308.git.christophe.leroy@c-s.fr>
- <87sggecv81.fsf@mpe.ellerman.id.au>
- <1c6379b2-7e0a-91fe-34f0-51f5adca7929@csgroup.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Jpyx0GW/; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Gl0H4WGtzDqg6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 02:04:15 +1000 (AEST)
+Received: from localhost (p54B335A1.dip0.t-ipconnect.de [84.179.53.161])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id B2BCE206A4;
+ Tue,  5 May 2020 16:04:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588694653;
+ bh=UPUCU3eUar7iY9cJbizcok3tqdxkqvfWgxtd4KniG9w=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Jpyx0GW/MEFsaJ/3a8hJQAhv87YOfwuY2VCRaz2f23rAvywCCpVGpGI62SPlvU69i
+ M6PyJEGWsX8kBfF4OIpUBzoH6UU6urADCJP1Lvy+RrPyzkDrdWg3+P38CzNeDwJ73w
+ fcgb2+iKwsiUevl4QPm+FOQRnr/WwxiojXAm3VSs=
+Date: Tue, 5 May 2020 18:04:10 +0200
+From: Wolfram Sang <wsa@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/5200: update contact email
+Message-ID: <20200505160410.GH2468@ninjato>
+References: <20200502142642.18979-1-wsa@kernel.org>
+ <877dxsdl5e.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="v2Uk6McLiE8OV1El"
 Content-Disposition: inline
-In-Reply-To: <1c6379b2-7e0a-91fe-34f0-51f5adca7929@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <877dxsdl5e.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,43 +70,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 05, 2020 at 05:40:21PM +0200, Christophe Leroy wrote:
-> >>+#define __put_user_asm_goto(x, addr, label, op)			\
-> >>+	asm volatile goto(					\
-> >>+		"1:	" op "%U1%X1 %0,%1	# put_user\n"	\
-> >>+		EX_TABLE(1b, %l2)				\
-> >>+		:						\
-> >>+		: "r" (x), "m<>" (*addr)				\
-> >
-> >The "m<>" here is breaking GCC 4.6.3, which we allegedly still support.
-> >
-> >Plain "m" works, how much does the "<>" affect code gen in practice?
-> >
-> >A quick diff here shows no difference from removing "<>".
-> 
-> It was recommended by Segher, there has been some discussion about it on 
-> v1 of this patch, see 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/4fdc2aba6f5e51887d1cd0fee94be0989eada2cd.1586942312.git.christophe.leroy@c-s.fr/
-> 
-> As far as I understood that's mandatory on recent gcc to get the 
-> pre-update form of the instruction. With older versions "m" was doing 
-> the same, but not anymore.
 
-Yes.  How much that matters depends on the asm.  On older CPUs (6xx/7xx,
-say) the update form was just as fast as the non-update form.  On newer
-or bigger CPUs it is usually executed just the same as an add followed
-by the memory access, so it just saves a bit of code size.
-
-> Should we ifdef the "m<>" or "m" based on GCC 
-> version ?
-
-That will be a lot of churn.  Just make 4.8 minimum?
+--v2Uk6McLiE8OV1El
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
-Segher
+> > My 'pengutronix' address is defunct for years. Merge the entries and use
+> > the proper contact address.
+>=20
+> Is there any point adding the new address? It's just likely to bit-rot
+> one day too.
+
+At least, this one is a group address, not an individual one, so less
+likey.
+
+> I figure the git history is a better source for more up-to-date emails.
+
+But yes, can still be argued. I won't persist if you don't like it.
+
+Thanks!
+
+
+--v2Uk6McLiE8OV1El
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl6xjnoACgkQFA3kzBSg
+KbaTsxAAizU7yVpsyfvJAhLroyGpAVRj7LysT+H5JlZ8JjJ4uDpEhOhL4Hzr5QO4
+T4RfB4o+1xmKc0pwT2BOUteCO05S2hRH6+cwel++k+vWjCnKUBxeinylK+ixk4+V
+P8QWDo/gFuqUtsm/Wb6PtBR8otMVa0FajdEPuaAkhi2OPQjO/2DvffSHT4c3VAtI
+HY4pIIbwaaCiAalCse6IrqkuJT90A0ZDM9oRTZOIaryVkkTHHkBNmB7PKu4viJic
+yS3yH+R0e5yBGEre6FkwL1z2CCNAGNXeBQ23gvq3glJAQIQyfBYgnO+lQFD8lZzq
+Cb8E69+sastbZnUBKAK7GR5xvBYJImCxN35PRakdd8/pLHcdKgwIWu1B9PTO5xQP
+avv3RmViYiSqfRJa5MSWqPu04zkJCYxy/w6yskdPHqhpG+7x1grsLO9hFBWxDN18
+KDQaMtcgGzQbGzhxXnB8aZGJOEOTGrmlCxE35WQ5t3uGQe09hHTKuaUri288LXwH
+7mK08jCqhMDavvLaUPngPz4IkdiAv8yZaK3LH4ikMQ4bKTJXhpnwfHYEswLP9FQq
+Qcrm3tGBksw5Ld3sncU+ENfhhVaoIyxWxxjTp+WQVI+jMjWGCuJ1hy57iPonXfKn
+2LEqI9lEf2iukddWH32wj4eivgYf6UHnf91Y5FoePzMf197dID4=
+=bFLt
+-----END PGP SIGNATURE-----
+
+--v2Uk6McLiE8OV1El--
