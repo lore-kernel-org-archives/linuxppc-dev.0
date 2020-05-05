@@ -2,46 +2,46 @@ Return-Path: <SRS0=ZeYp=6T=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 355F0C47247
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 07:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5DDBC47256
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 07:21:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A30A7206B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 07:17:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A30A7206B8
+	by mail.kernel.org (Postfix) with ESMTPS id 9B0AB206B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 07:21:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B0AB206B8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49GWJt5cTdzDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 17:17:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49GWPL386vzDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2020 17:21:42 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49GWFs21j0zDqTF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2020 17:15:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49GWJX3lpkzDqZW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2020 17:17:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=popple.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49GWFr4hBsz9sSW;
- Tue,  5 May 2020 17:15:12 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49GWJT426qz9sSW;
+ Tue,  5 May 2020 17:17:29 +1000 (AEST)
 From: Alistair Popple <alistair@popple.id.au>
 To: Jordan Niethe <jniethe5@gmail.com>
-Subject: Re: [PATCH v7 25/28] powerpc: Test prefixed instructions in feature
- fixups
-Date: Tue, 05 May 2020 17:15:09 +1000
-Message-ID: <5803808.3aLiq0rt1P@townsend>
-In-Reply-To: <20200501034220.8982-26-jniethe5@gmail.com>
+Subject: Re: [PATCH v7 26/28] powerpc: Support prefixed instructions in
+ alignment handler
+Date: Tue, 05 May 2020 17:17:29 +1000
+Message-ID: <7738808.RemDxODYhF@townsend>
+In-Reply-To: <20200501034220.8982-27-jniethe5@gmail.com>
 References: <20200501034220.8982-1-jniethe5@gmail.com>
- <20200501034220.8982-26-jniethe5@gmail.com>
+ <20200501034220.8982-27-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -62,207 +62,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hmm, I was hoping to add a tested by but I'm seeing the following failure in 
-Mambo:
+Reviewed-by: Alistair Popple <alistair@popple.id.au>
 
-[    1.475459] feature-fixups: test failed at line 730
-
-Based on the name of the test it looks like you probably made a copy/paste 
-error in ftr_fixup_prefix2_expected. I suspect you probably meant to use the alt 
-fixup:
-
-globl(ftr_fixup_prefix2_expected)
-	or	1,1,1
-	.long 0x7000000
-	.long 0x0000001
-	or	2,2,2
-
-Also for some reason these tests (and one of the code-patching tests) aren't 
-passing on big endian.
-
-- Alistair
-
-On Friday, 1 May 2020 1:42:17 PM AEST Jordan Niethe wrote:
-> Expand the feature-fixups self-tests to includes tests for prefixed
-> instructions.
+On Friday, 1 May 2020 1:42:18 PM AEST Jordan Niethe wrote:
+> If a prefixed instruction results in an alignment exception, the
+> SRR1_PREFIXED bit is set. The handler attempts to emulate the
+> responsible instruction and then increment the NIP past it. Use
+> SRR1_PREFIXED to determine by how much the NIP should be incremented.
+> 
+> Prefixed instructions are not permitted to cross 64-byte boundaries. If
+> they do the alignment interrupt is invoked with SRR1 BOUNDARY bit set.
+> If this occurs send a SIGBUS to the offending process if in user mode.
+> If in kernel mode call bad_page_fault().
 > 
 > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 > ---
-> v6: New to series
+> v2: - Move __get_user_instr() and __get_user_instr_inatomic() to this
+> commit (previously in "powerpc sstep: Prepare to support prefixed
+> instructions").
+>     - Rename sufx to suffix
+>     - Use a macro for calculating instruction length
+> v3: Move __get_user_{instr(), instr_inatomic()} up with the other
+> get_user definitions and remove nested if.
+> v4: Rolled into "Add prefixed instructions to instruction data type"
+> v5: Only one definition of inst_length()
 > ---
->  arch/powerpc/lib/feature-fixups-test.S | 68 +++++++++++++++++++++++
->  arch/powerpc/lib/feature-fixups.c      | 74 ++++++++++++++++++++++++++
->  2 files changed, 142 insertions(+)
+>  arch/powerpc/kernel/traps.c | 19 ++++++++++++++++++-
+>  1 file changed, 18 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/lib/feature-fixups-test.S
-> b/arch/powerpc/lib/feature-fixups-test.S index b12168c2447a..6e2da9123a9b
-> 100644
-> --- a/arch/powerpc/lib/feature-fixups-test.S
-> +++ b/arch/powerpc/lib/feature-fixups-test.S
-> @@ -791,3 +791,71 @@ globl(lwsync_fixup_test_expected_SYNC)
->  1:	or	1,1,1
->  	sync
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 493a3fa0ac1a..105242cc2f28 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -583,6 +583,8 @@ static inline int check_io_access(struct pt_regs *regs)
+>  #define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
+>  #define REASON_PRIVILEGED	ESR_PPR
+>  #define REASON_TRAP		ESR_PTR
+> +#define REASON_PREFIXED		0
+> +#define REASON_BOUNDARY		0
 > 
-> +globl(ftr_fixup_prefix1)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +globl(end_ftr_fixup_prefix1)
-> +
-> +globl(ftr_fixup_prefix1_orig)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +
-> +globl(ftr_fixup_prefix1_expected)
-> +	or	1,1,1
-> +	nop
-> +	nop
-> +	or	2,2,2
-> +
-> +globl(ftr_fixup_prefix2)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +globl(end_ftr_fixup_prefix2)
-> +
-> +globl(ftr_fixup_prefix2_orig)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +
-> +globl(ftr_fixup_prefix2_alt)
-> +	.long 0x7000000
-> +	.long 0x0000001
-> +
-> +globl(ftr_fixup_prefix2_expected)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000001
-> +	or	2,2,2
-> +
-> +globl(ftr_fixup_prefix3)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +	or	3,3,3
-> +globl(end_ftr_fixup_prefix3)
-> +
-> +globl(ftr_fixup_prefix3_orig)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000000
-> +	or	2,2,2
-> +	or	3,3,3
-> +
-> +globl(ftr_fixup_prefix3_alt)
-> +	.long 1 << 26
-> +	.long 0x0000001
-> +	nop
-> +
-> +globl(ftr_fixup_prefix3_expected)
-> +	or	1,1,1
-> +	.long 1 << 26
-> +	.long 0x0000001
-> +	nop
-> +	or	3,3,3
-> diff --git a/arch/powerpc/lib/feature-fixups.c
-> b/arch/powerpc/lib/feature-fixups.c index 243011f85287..6fc499b1d63e 100644
-> --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -687,6 +687,75 @@ static void test_lwsync_macros(void)
->  	}
->  }
+>  /* single-step stuff */
+>  #define single_stepping(regs)	(current->thread.debug.dbcr0 & DBCR0_IC)
+> @@ -597,12 +599,16 @@ static inline int check_io_access(struct pt_regs
+> *regs) #define REASON_ILLEGAL		SRR1_PROGILL
+>  #define REASON_PRIVILEGED	SRR1_PROGPRIV
+>  #define REASON_TRAP		SRR1_PROGTRAP
+> +#define REASON_PREFIXED		SRR1_PREFIXED
+> +#define REASON_BOUNDARY		SRR1_BOUNDARY
 > 
-> +#ifdef __powerpc64__
-> +static void __init test_prefix_patching(void)
-> +{
-> +	extern unsigned int ftr_fixup_prefix1[];
-> +	extern unsigned int end_ftr_fixup_prefix1[];
-> +	extern unsigned int ftr_fixup_prefix1_orig[];
-> +	extern unsigned int ftr_fixup_prefix1_expected[];
-> +	int size = sizeof(unsigned int) * (end_ftr_fixup_prefix1 -
-> ftr_fixup_prefix1); +
-> +	fixup.value = fixup.mask = 8;
-> +	fixup.start_off = calc_offset(&fixup, ftr_fixup_prefix1 + 1);
-> +	fixup.end_off = calc_offset(&fixup, ftr_fixup_prefix1 + 3);
-> +	fixup.alt_start_off = fixup.alt_end_off = 0;
+>  #define single_stepping(regs)	((regs)->msr & MSR_SE)
+>  #define clear_single_step(regs)	((regs)->msr &= ~MSR_SE)
+>  #define clear_br_trace(regs)	((regs)->msr &= ~MSR_BE)
+>  #endif
+> 
+> +#define inst_length(reason)	(((reason) & REASON_PREFIXED) ? 8 : 4)
 > +
-> +	/* Sanity check */
-> +	check(memcmp(ftr_fixup_prefix1, ftr_fixup_prefix1_orig, size) == 0);
-> +
-> +	patch_feature_section(0, &fixup);
-> +	check(memcmp(ftr_fixup_prefix1, ftr_fixup_prefix1_expected, size) == 0);
-> +	check(memcmp(ftr_fixup_prefix1, ftr_fixup_prefix1_orig, size) != 0);
-> +}
-> +
-> +static void __init test_prefix_alt_patching(void)
-> +{
-> +	extern unsigned int ftr_fixup_prefix2[];
-> +	extern unsigned int end_ftr_fixup_prefix2[];
-> +	extern unsigned int ftr_fixup_prefix2_orig[];
-> +	extern unsigned int ftr_fixup_prefix2_expected[];
-> +	extern unsigned int ftr_fixup_prefix2_alt[];
-> +	int size = sizeof(unsigned int) * (end_ftr_fixup_prefix2 -
-> ftr_fixup_prefix2); +
-> +	fixup.value = fixup.mask = 8;
-> +	fixup.start_off = calc_offset(&fixup, ftr_fixup_prefix2 + 1);
-> +	fixup.end_off = calc_offset(&fixup, ftr_fixup_prefix2 + 3);
-> +	fixup.alt_start_off = calc_offset(&fixup, ftr_fixup_prefix2_alt);
-> +	fixup.alt_end_off = calc_offset(&fixup, ftr_fixup_prefix2_alt + 2);
-> +	/* Sanity check */
-> +	check(memcmp(ftr_fixup_prefix2, ftr_fixup_prefix2_orig, size) == 0);
-> +
-> +	patch_feature_section(0, &fixup);
-> +	check(memcmp(ftr_fixup_prefix2, ftr_fixup_prefix2_expected, size) == 0);
-> +	patch_feature_section(0, &fixup);
-> +	check(memcmp(ftr_fixup_prefix2, ftr_fixup_prefix2_orig, size) != 0);
-> +}
-> +
-> +static void __init test_prefix_word_alt_patching(void)
-> +{
-> +	extern unsigned int ftr_fixup_prefix3[];
-> +	extern unsigned int end_ftr_fixup_prefix3[];
-> +	extern unsigned int ftr_fixup_prefix3_orig[];
-> +	extern unsigned int ftr_fixup_prefix3_expected[];
-> +	extern unsigned int ftr_fixup_prefix3_alt[];
-> +	int size = sizeof(unsigned int) * (end_ftr_fixup_prefix3 -
-> ftr_fixup_prefix3); +
-> +	fixup.value = fixup.mask = 8;
-> +	fixup.start_off = calc_offset(&fixup, ftr_fixup_prefix3 + 1);
-> +	fixup.end_off = calc_offset(&fixup, ftr_fixup_prefix3 + 4);
-> +	fixup.alt_start_off = calc_offset(&fixup, ftr_fixup_prefix3_alt);
-> +	fixup.alt_end_off = calc_offset(&fixup, ftr_fixup_prefix3_alt + 3);
-> +	/* Sanity check */
-> +	check(memcmp(ftr_fixup_prefix3, ftr_fixup_prefix3_orig, size) == 0);
-> +
-> +	patch_feature_section(0, &fixup);
-> +	check(memcmp(ftr_fixup_prefix3, ftr_fixup_prefix3_expected, size) == 0);
-> +	patch_feature_section(0, &fixup);
-> +	check(memcmp(ftr_fixup_prefix3, ftr_fixup_prefix3_orig, size) != 0);
-> +}
-> +#endif /* __powerpc64__ */
-> +
->  static int __init test_feature_fixups(void)
+>  #if defined(CONFIG_E500)
+>  int machine_check_e500mc(struct pt_regs *regs)
 >  {
->  	printk(KERN_DEBUG "Running feature fixup self-tests ...\n");
-> @@ -701,6 +770,11 @@ static int __init test_feature_fixups(void)
->  	test_cpu_macros();
->  	test_fw_macros();
->  	test_lwsync_macros();
-> +#ifdef __powerpc64__
-> +	test_prefix_patching();
-> +	test_prefix_alt_patching();
-> +	test_prefix_word_alt_patching();
-> +#endif
+> @@ -1593,11 +1599,20 @@ void alignment_exception(struct pt_regs *regs)
+>  {
+>  	enum ctx_state prev_state = exception_enter();
+>  	int sig, code, fixed = 0;
+> +	unsigned long  reason;
 > 
->  	return 0;
->  }
+>  	/* We restore the interrupt state now */
+>  	if (!arch_irq_disabled_regs(regs))
+>  		local_irq_enable();
+> 
+> +	reason = get_reason(regs);
+> +
+> +	if (reason & REASON_BOUNDARY) {
+> +		sig = SIGBUS;
+> +		code = BUS_ADRALN;
+> +		goto bad;
+> +	}
+> +
+>  	if (tm_abort_check(regs, TM_CAUSE_ALIGNMENT | TM_CAUSE_PERSISTENT))
+>  		goto bail;
+> 
+> @@ -1606,7 +1621,8 @@ void alignment_exception(struct pt_regs *regs)
+>  		fixed = fix_alignment(regs);
+> 
+>  	if (fixed == 1) {
+> -		regs->nip += 4;	/* skip over emulated instruction */
+> +		/* skip over emulated instruction */
+> +		regs->nip += inst_length(reason);
+>  		emulate_single_step(regs);
+>  		goto bail;
+>  	}
+> @@ -1619,6 +1635,7 @@ void alignment_exception(struct pt_regs *regs)
+>  		sig = SIGBUS;
+>  		code = BUS_ADRALN;
+>  	}
+> +bad:
+>  	if (user_mode(regs))
+>  		_exception(sig, regs, code, regs->dar);
+>  	else
 
 
 
