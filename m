@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C97DEC28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04180C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:01:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7DC5C206B9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:59:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DC5C206B9
+	by mail.kernel.org (Postfix) with ESMTPS id AAA5A206B9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:01:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAA5A206B9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49HN9W6LxDzDqXD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 02:59:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HNDJ1F8wzDqjx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 03:01:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HMwd2xPZzDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 02:48:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49HMwd30YtzDqjM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 02:48:13 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49HMwR6gPkz9tyfF;
- Wed,  6 May 2020 18:48:07 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49HMwQ60yqz9tydh;
+ Wed,  6 May 2020 18:48:06 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id CG2zr1My4I2d; Wed,  6 May 2020 18:48:07 +0200 (CEST)
+ with ESMTP id 9lwF8EZ8l9AR; Wed,  6 May 2020 18:48:06 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49HMwR5pjVz9tyf6;
- Wed,  6 May 2020 18:48:07 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49HMwQ4y1bz9txk0;
+ Wed,  6 May 2020 18:48:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A57298B7C5;
- Wed,  6 May 2020 18:48:09 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 792D98B7C5;
+ Wed,  6 May 2020 18:48:08 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id M66xR1VnlJm5; Wed,  6 May 2020 18:48:09 +0200 (CEST)
+ with ESMTP id 4OCiJnyLs3tC; Wed,  6 May 2020 18:48:08 +0200 (CEST)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 42ED58B7C3;
- Wed,  6 May 2020 18:48:09 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3846B8B7C3;
+ Wed,  6 May 2020 18:48:08 +0200 (CEST)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 1442C65911; Wed,  6 May 2020 16:48:09 +0000 (UTC)
-Message-Id: <0bf77158e9d5be4581a697fdf1cb52b2e12db24a.1588783498.git.christophe.leroy@csgroup.eu>
+ id 08DB265911; Wed,  6 May 2020 16:48:08 +0000 (UTC)
+Message-Id: <ac85b6a034a67ef4186175cb6af208b8a9cdf4cf.1588783498.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1588783498.git.christophe.leroy@csgroup.eu>
 References: <cover.1588783498.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 04/45] powerpc/kasan: Remove unnecessary page table locking
+Subject: [PATCH v2 03/45] powerpc/kasan: Fix shadow pages allocation failure
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  6 May 2020 16:48:09 +0000 (UTC)
+Date: Wed,  6 May 2020 16:48:08 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,73 +75,73 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 45ff3c559585 ("powerpc/kasan: Fix parallel loading of
-modules.") added spinlocks to manage parallele module loading.
+Doing kasan pages allocation in MMU_init is too early, kernel doesn't
+have access yet to the entire memory space and memblock_alloc() fails
+when the kernel is a bit big.
 
-Since then commit 47febbeeec44 ("powerpc/32: Force KASAN_VMALLOC for
-modules") converted the module loading to KASAN_VMALLOC.
+Do it from kasan_init() instead.
 
-The spinlocking has then become unneeded and can be removed to
-simplify kasan_init_shadow_page_tables()
-
-Also remove inclusion of linux/moduleloader.h and linux/vmalloc.h
-which are not needed anymore since the removal of modules management.
-
+Fixes: 2edb16efc899 ("powerpc/32: Add KASAN support")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/kasan/kasan_init_32.c | 19 ++++---------------
- 1 file changed, 4 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/kasan.h      | 2 --
+ arch/powerpc/mm/init_32.c             | 2 --
+ arch/powerpc/mm/kasan/kasan_init_32.c | 4 +++-
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index fc900937f653..4769bbf7173a 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -27,12 +27,10 @@
+ 
+ #ifdef CONFIG_KASAN
+ void kasan_early_init(void);
+-void kasan_mmu_init(void);
+ void kasan_init(void);
+ void kasan_late_init(void);
+ #else
+ static inline void kasan_init(void) { }
+-static inline void kasan_mmu_init(void) { }
+ static inline void kasan_late_init(void) { }
+ #endif
+ 
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 872df48ae41b..a6991ef8727d 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -170,8 +170,6 @@ void __init MMU_init(void)
+ 	btext_unmap();
+ #endif
+ 
+-	kasan_mmu_init();
+-
+ 	setup_kup();
+ 
+ 	/* Shortly after that, the entire linear mapping will be available */
 diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index b7c287adfd59..91e2ade75192 100644
+index 8b15fe09b967..b7c287adfd59 100644
 --- a/arch/powerpc/mm/kasan/kasan_init_32.c
 +++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -5,9 +5,7 @@
- #include <linux/kasan.h>
- #include <linux/printk.h>
- #include <linux/memblock.h>
--#include <linux/moduleloader.h>
- #include <linux/sched/task.h>
--#include <linux/vmalloc.h>
- #include <asm/pgalloc.h>
- #include <asm/code-patching.h>
- #include <mm/mmu_decl.h>
-@@ -34,31 +32,22 @@ static int __init kasan_init_shadow_page_tables(unsigned long k_start, unsigned
- {
- 	pmd_t *pmd;
- 	unsigned long k_cur, k_next;
--	pte_t *new = NULL;
- 
- 	pmd = pmd_ptr_k(k_start);
- 
- 	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
-+		pte_t *new;
-+
- 		k_next = pgd_addr_end(k_cur, k_end);
- 		if ((void *)pmd_page_vaddr(*pmd) != kasan_early_shadow_pte)
- 			continue;
- 
--		if (!new)
--			new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
-+		new = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
- 
- 		if (!new)
- 			return -ENOMEM;
- 		kasan_populate_pte(new, PAGE_KERNEL);
--
--		smp_wmb(); /* See comment in __pte_alloc */
--
--		spin_lock(&init_mm.page_table_lock);
--			/* Has another populated it ? */
--		if (likely((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)) {
--			pmd_populate_kernel(&init_mm, pmd, new);
--			new = NULL;
--		}
--		spin_unlock(&init_mm.page_table_lock);
-+		pmd_populate_kernel(&init_mm, pmd, new);
- 	}
- 	return 0;
+@@ -131,7 +131,7 @@ static void __init kasan_unmap_early_shadow_vmalloc(void)
+ 	flush_tlb_kernel_range(k_start, k_end);
  }
+ 
+-void __init kasan_mmu_init(void)
++static void __init kasan_mmu_init(void)
+ {
+ 	int ret;
+ 	struct memblock_region *reg;
+@@ -159,6 +159,8 @@ void __init kasan_mmu_init(void)
+ 
+ void __init kasan_init(void)
+ {
++	kasan_mmu_init();
++
+ 	kasan_remap_early_shadow_ro();
+ 
+ 	clear_page(kasan_early_shadow_page);
 -- 
 2.25.0
 
