@@ -2,81 +2,65 @@ Return-Path: <SRS0=xicG=6U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 958E9C47254
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 00:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8357CC47247
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 01:00:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3083C20721
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 00:39:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C3D69206E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 01:00:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="p0OmBMiN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3083C20721
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="CfKgaMPw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3D69206E6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49GyQh1sstzDqZL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 10:39:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::d41;
- helo=mail-io1-xd41.google.com; envelope-from=jmattson@google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=p0OmBMiN; dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Gytg6vyCzDqkG
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 11:00:11 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Gm5z0lp9zDqdh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 02:54:08 +1000 (AEST)
-Received: by mail-io1-xd41.google.com with SMTP id 19so2661659ioz.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2020 09:54:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=CQPV38VFHq5jUdj3xuK872aLx1CmmM995oAhTR/zeg4=;
- b=p0OmBMiNRcbZeEVttRyrUydpDTEXD+loILZwadE01yiYrZMAefBa5lEnkCd8IE/f1C
- wqtNt3itnutwU9SNyU/Y0fQOnPrSFTEoDV1obS+naK5wdvSAbwcozgcVIGkY/Otjnd9p
- 51XhOstTUsx5ISmBzOTD1jNv/oS5q27DmqmWhYSeqm+5U94xAJaIyLgweW34StzfEErI
- 3dfM/v0XMGcRAFe9bPtoLVFLg5ACcy1j8Rnan0JmxmJvsltfDo9KWXkcjYgZK/TvXSRC
- Oh/P44Cii0cxHTkyJ4tN2a3504hNbCU0BEhwsSTKenaJXoMTLVbgu3JdVv36Y/5fs6vB
- BO9Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=CQPV38VFHq5jUdj3xuK872aLx1CmmM995oAhTR/zeg4=;
- b=sn2TzhZxKl/m6yBWF2gCUiTHJBRtrYXT2FvvLPOG1rvlPeFnuhwasoVKIB5/Vt+/xh
- qUyKyfX0IvvqeDZ1kATTHIG1hhLlthkqAcSX4yZPasiY7RCEgcpNod//9zIGUuFpWtgU
- ExuJ6bJsmZQYQyAtn6feZI0UsIN4oVHYc/XqGeikDS1skxuu2Q115tEcln00wW7oM+/Z
- w3R6Xat//GSDKOwRabtYAUVdRdOcyrmmhIysmMqbbHwotDOZr/59hIPxO0zIxbhUMQ37
- ITkxhqeVCPUNHSQi2Iuv2cVGSJwIafWBMsumpf8uj5ZedoENT7USEKOHo2urlu3/inF7
- Bs6w==
-X-Gm-Message-State: AGi0PuanG35/MiMbm5mMjWRnSXnKNQ+Zd9bTiiJ4+9GiITnHp7PVnwfq
- I50/DIqklCzsYJPwbLg5vPEqfO0CTift2gWOjrJ7ag==
-X-Google-Smtp-Source: APiQypIh87tWtIMtuteWC1af3Q4H+FkjslZ8xyNvCG2aA394n3dc+bOaNgbwVm/hpp4CR/gsTCwAOETr4pzr5lry2Mw=
-X-Received: by 2002:a02:a004:: with SMTP id a4mr3700717jah.18.1588697644142;
- Tue, 05 May 2020 09:54:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Gyrt1X5czDqbY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2020 10:58:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=CfKgaMPw; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Gyrs6Rvnz9sNH;
+ Wed,  6 May 2020 10:58:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1588726718;
+ bh=LPwUPskRUylEnt488CUGD3+xVeRXzadcQSMeFeiwYhI=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=CfKgaMPwihzGc88U25ozzKu6O2Qy0OYmccWV5l9GMUh9hMqBrlxrjTID4z5sbsyXY
+ xW3QqGFhm4YvBeW383Fi2L8J9HTY04RauUThBqI2Ro4iVx/hhQFRc4ncwBoWM4lolA
+ +FK5HpcgmZCs42ZtKvszFSgA00NCkSJu3ZXWS8+dbqjqLQBWMtGA8XZq6fRp13M9EA
+ 4zHVH35BlhfuZrah0k0u6JQNDE2k2ip06YhyHjN8zmf0yv6SVuX2IUexdbg+8lul5c
+ mu0fB+JgGD9tGen59jolvNPewqvwcY3oyzQKHUqILkMx5H7aFq4001zHS7FjBWH3iH
+ 0rkclfFmAFjUg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v4 1/2] powerpc/uaccess: Implement unsafe_put_user() using
+ 'asm goto'
+In-Reply-To: <20200505153245.GN31009@gate.crashing.org>
+References: <23e680624680a9a5405f4b88740d2596d4b17c26.1587143308.git.christophe.leroy@c-s.fr>
+ <87sggecv81.fsf@mpe.ellerman.id.au>
+ <20200505153245.GN31009@gate.crashing.org>
+Date: Wed, 06 May 2020 10:58:55 +1000
+Message-ID: <87pnbhdgkw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20200504110344.17560-1-eesposit@redhat.com>
- <alpine.DEB.2.22.394.2005041429210.224786@chino.kir.corp.google.com>
- <f2654143-b8e5-5a1f-8bd0-0cb0df2cd638@redhat.com>
-In-Reply-To: <f2654143-b8e5-5a1f-8bd0-0cb0df2cd638@redhat.com>
-From: Jim Mattson <jmattson@google.com>
-Date: Tue, 5 May 2020 09:53:53 -0700
-Message-ID: <CALMp9eQYcLr_REzDC1kWTHX4SJWt7x+Zd1KwNvS1YGd5TVM1xA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] Statsfs: a new ram-based file sytem for Linux
- kernel statistics
-To: Emanuele Giuseppe Esposito <eesposit@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 06 May 2020 10:35:08 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,31 +72,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, kvm list <kvm@vger.kernel.org>,
- David Hildenbrand <david@redhat.com>, Cornelia Huck <cohuck@redhat.com>,
- Emanuele Giuseppe Esposito <e.emanuelegiuseppe@gmail.com>,
- LKML <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org,
- Jonathan Adams <jwadams@google.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, David Rientjes <rientjes@google.com>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 5, 2020 at 2:18 AM Emanuele Giuseppe Esposito
-<eesposit@redhat.com> wrote:
+Segher Boessenkool <segher@kernel.crashing.org> writes:
+> Hi!
 >
+> On Wed, May 06, 2020 at 12:27:58AM +1000, Michael Ellerman wrote:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> > unsafe_put_user() is designed to take benefit of 'asm goto'.
+>> >
+>> > Instead of using the standard __put_user() approach and branch
+>> > based on the returned error, use 'asm goto' and make the
+>> > exception code branch directly to the error label. There is
+>> > no code anymore in the fixup section.
+>> >
+>> > This change significantly simplifies functions using
+>> > unsafe_put_user()
+>> >
+>> ...
+>> >
+>> > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> > ---
+>> >  arch/powerpc/include/asm/uaccess.h | 61 +++++++++++++++++++++++++-----
+>> >  1 file changed, 52 insertions(+), 9 deletions(-)
+>> >
+>> > diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+>> > index 9cc9c106ae2a..9365b59495a2 100644
+>> > --- a/arch/powerpc/include/asm/uaccess.h
+>> > +++ b/arch/powerpc/include/asm/uaccess.h
+>> > @@ -196,6 +193,52 @@ do {								\
+>> >  })
+>> >  
+>> >  
+>> > +#define __put_user_asm_goto(x, addr, label, op)			\
+>> > +	asm volatile goto(					\
+>> > +		"1:	" op "%U1%X1 %0,%1	# put_user\n"	\
+>> > +		EX_TABLE(1b, %l2)				\
+>> > +		:						\
+>> > +		: "r" (x), "m<>" (*addr)				\
+>> 
+>> The "m<>" here is breaking GCC 4.6.3, which we allegedly still support.
 >
->
-> On 5/4/20 11:37 PM, David Rientjes wrote:
-> > Since this is becoming a generic API (good!!), maybe we can discuss
-> > possible ways to optimize gathering of stats in mass?
->
-> Sure, the idea of a binary format was considered from the beginning in
-> [1], and it can be done either together with the current filesystem, or
-> as a replacement via different mount options.
+> [ You shouldn't use 4.6.3, there has been 4.6.4 since a while.  And 4.6
+>   is nine years old now.  Most projects do not support < 4.8 anymore, on
+>   any architecture.  ]
 
-ASCII stats are not scalable. A binary format is definitely the way to go.
+Moving up to 4.6.4 wouldn't actually help with this though would it?
+
+Also I have 4.6.3 compilers already built, I don't really have time to
+rebuild them for 4.6.4.
+
+The kernel has a top-level minimum version, which I'm not in charge of, see:
+
+https://www.kernel.org/doc/html/latest/process/changes.html?highlight=gcc
+
+
+There were discussions about making 4.8 the minimum, but I'm not sure
+where they got to.
+
+>> Plain "m" works, how much does the "<>" affect code gen in practice?
+>> 
+>> A quick diff here shows no difference from removing "<>".
+>
+> It will make it impossible to use update-form instructions here.  That
+> probably does not matter much at all, in this case.
+>
+> If you remove the "<>" constraints, also remove the "%Un" output modifier?
+
+So like this?
+
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 62cc8d7640ec..ca847aed8e45 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -207,10 +207,10 @@ do {								\
+ 
+ #define __put_user_asm_goto(x, addr, label, op)			\
+ 	asm volatile goto(					\
+-		"1:	" op "%U1%X1 %0,%1	# put_user\n"	\
++		"1:	" op "%X1 %0,%1	# put_user\n"		\
+ 		EX_TABLE(1b, %l2)				\
+ 		:						\
+-		: "r" (x), "m<>" (*addr)				\
++		: "r" (x), "m" (*addr)				\
+ 		:						\
+ 		: label)
+ 
+
+
+cheers
