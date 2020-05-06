@@ -2,65 +2,64 @@ Return-Path: <SRS0=xicG=6U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3271C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:03:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EB8C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:51:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9BD1A2068E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:03:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BD1A2068E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
+	by mail.kernel.org (Postfix) with ESMTPS id ED1B4208E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:51:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED1B4208E4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49HLwy4kY5zDqlX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 02:03:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HN0d6xsvzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 02:51:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
- helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=xmission.com
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HLZk66jCzDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 01:47:41 +1000 (AEST)
-Received: from in02.mta.xmission.com ([166.70.13.52])
- by out03.mta.xmission.com with esmtps
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
- (envelope-from <ebiederm@xmission.com>)
- id 1jWMGk-0006bR-Ln; Wed, 06 May 2020 09:47:34 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
- helo=x220.xmission.com) by in02.mta.xmission.com with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
- (envelope-from <ebiederm@xmission.com>)
- id 1jWMGi-0006AO-Iz; Wed, 06 May 2020 09:47:34 -0600
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christoph Hellwig <hch@lst.de>
-References: <20200505101256.3121270-1-hch@lst.de>
- <CAHk-=wgrHhaM1XCB=E3Zp2Br8E5c_kmVUTd5y06xh5sev5nRMA@mail.gmail.com>
- <877dxqgm7x.fsf@x220.int.ebiederm.org> <20200506063134.GA11391@lst.de>
-Date: Wed, 06 May 2020 10:44:07 -0500
-In-Reply-To: <20200506063134.GA11391@lst.de> (Christoph Hellwig's message of
- "Wed, 6 May 2020 08:31:34 +0200")
-Message-ID: <87lfm5cblk.fsf@x220.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1jWMGi-0006AO-Iz; ; ; mid=<87lfm5cblk.fsf@x220.int.ebiederm.org>;
- ; ; hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
- frm=ebiederm@xmission.com; ; ; spf=neutral
-X-XM-AID: U2FsdGVkX18n7ilHkYpqhNUvG5niq5VycMEtqxB6v30=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: Re: remove set_fs calls from the coredump code v6
-X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49HMwd321JzDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 02:48:12 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49HMwQ0Hkrz9tybj;
+ Wed,  6 May 2020 18:48:06 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 3HTx1EqzAKdt; Wed,  6 May 2020 18:48:05 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49HMwP6T2Mz9txk0;
+ Wed,  6 May 2020 18:48:05 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AC0638B7C5;
+ Wed,  6 May 2020 18:48:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id j45Xcg18OEBK; Wed,  6 May 2020 18:48:07 +0200 (CEST)
+Received: from localhost.localdomain (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2FAFA8B7C3;
+ Wed,  6 May 2020 18:48:07 +0200 (CEST)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id 00C0F65911; Wed,  6 May 2020 16:48:06 +0000 (UTC)
+Message-Id: <2be05185972e755ffc830073c4d3e01447d68118.1588783498.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1588783498.git.christophe.leroy@csgroup.eu>
+References: <cover.1588783498.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 02/45] powerpc/kasan: Fix issues by lowering
+ KASAN_SHADOW_END
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed,  6 May 2020 16:48:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,42 +71,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- the arch/x86 maintainers <x86@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Jeremy Kerr <jk@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christoph Hellwig <hch@lst.de> writes:
+At the time being, KASAN_SHADOW_END is 0x100000000, which
+is 0 in 32 bits representation.
 
-> On Tue, May 05, 2020 at 03:28:50PM -0500, Eric W. Biederman wrote:
->> We probably can.   After introducing a kernel_compat_siginfo that is
->> the size that userspace actually would need.
->> 
->> It isn't something I want to mess with until this code gets merged, as I
->> think the set_fs cleanups are more important.
->> 
->> 
->> Christoph made some good points about how ugly the #ifdefs are in
->> the generic copy_siginfo_to_user32 implementation.
->
-> Take a look at the series you are replying to, the magic x86 ifdefs are
-> entirely gone from the common code :)
+This leads to a couple of issues:
+- kasan_remap_early_shadow_ro() does nothing because the comparison
+k_cur < k_end is always false.
+- In ptdump, address comparison for markers display fails and the
+marker's name is printed at the start of the KASAN area instead of
+being printed at the end.
 
-Interesting.
+However, there is no need to shadow the KASAN shadow area itself,
+so the KASAN shadow area can stop shadowing memory at the start
+of itself.
 
-That is a different way of achieving that, and I don't hate it.
-  
-I still want whatever you are doing to settle before I touch that code
-again.  Removing the set_fs is important and I have other fish to fry
-at the moment.
+With a PAGE_OFFSET set to 0xc0000000, KASAN shadow area is then going
+from 0xf8000000 to 0xff000000.
 
-Eric
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Fixes: cbd18991e24f ("powerpc/mm: Fix an Oops in kasan_mmu_init()")
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/include/asm/kasan.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index fbff9ff9032e..fc900937f653 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -23,9 +23,7 @@
+ 
+ #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
+ 
+-#define KASAN_SHADOW_END	0UL
+-
+-#define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
++#define KASAN_SHADOW_END	(-(-KASAN_SHADOW_START >> KASAN_SHADOW_SCALE_SHIFT))
+ 
+ #ifdef CONFIG_KASAN
+ void kasan_early_init(void);
+-- 
+2.25.0
 
