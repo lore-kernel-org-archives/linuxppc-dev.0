@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E49D6C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:20:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00932C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:22:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0BA820736
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:20:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0BA820736
+	by mail.kernel.org (Postfix) with ESMTPS id ABDB020736
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 17:22:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABDB020736
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49HNfD3VK7zDqby
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 03:20:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HNh32CdZzDqtW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 03:22:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HMwj3s0YzDqjY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 02:48:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49HMwk3fhRzDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 02:48:22 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49HMwb0z8Xz9v4kJ;
- Wed,  6 May 2020 18:48:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49HMwd2w0Fz9v4kM;
+ Wed,  6 May 2020 18:48:17 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 0ripaQKRQceS; Wed,  6 May 2020 18:48:15 +0200 (CEST)
+ with ESMTP id B36Rqi0BjgRO; Wed,  6 May 2020 18:48:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49HMwb0Cnhz9v4kF;
- Wed,  6 May 2020 18:48:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49HMwd216dz9v4kF;
+ Wed,  6 May 2020 18:48:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D56F88B7C5;
- Wed,  6 May 2020 18:48:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1DCF68B7C5;
+ Wed,  6 May 2020 18:48:19 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id flrb3IfwgV-6; Wed,  6 May 2020 18:48:16 +0200 (CEST)
+ with ESMTP id ra7wy__qUfco; Wed,  6 May 2020 18:48:19 +0200 (CEST)
 Received: from localhost.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7FCA48B7C3;
- Wed,  6 May 2020 18:48:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8DC5B8B7C3;
+ Wed,  6 May 2020 18:48:18 +0200 (CEST)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 4FCD965911; Wed,  6 May 2020 16:48:16 +0000 (UTC)
-Message-Id: <a2e03189c968f8eaa833dd96f04d572e0d6c8b1a.1588783498.git.christophe.leroy@csgroup.eu>
+ id 5CAE865911; Wed,  6 May 2020 16:48:18 +0000 (UTC)
+Message-Id: <9bcd46b0376b3d865fec696423b7002151607827.1588783498.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1588783498.git.christophe.leroy@csgroup.eu>
 References: <cover.1588783498.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 11/45] powerpc/ptdump: Standardise display of BAT flags
+Subject: [PATCH v2 13/45] powerpc/ptdump: Handle hugepd at PGD level
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  6 May 2020 16:48:16 +0000 (UTC)
+Date: Wed,  6 May 2020 16:48:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,77 +75,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Display BAT flags the same way as page flags: rwx and wimg
+The 8xx is about to map kernel linear space and IMMR using huge
+pages.
+
+In order to display those pages properly, ptdump needs to handle
+hugepd tables at PGD level.
+
+For the time being do it only at PGD level. Further patches may
+add handling of hugepd tables at lower level for other platforms
+when needed in the future.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/ptdump/bats.c | 37 ++++++++++++++---------------------
- 1 file changed, 15 insertions(+), 22 deletions(-)
+ arch/powerpc/mm/ptdump/ptdump.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/ptdump/bats.c b/arch/powerpc/mm/ptdump/bats.c
-index d6c660f63d71..cebb58c7e289 100644
---- a/arch/powerpc/mm/ptdump/bats.c
-+++ b/arch/powerpc/mm/ptdump/bats.c
-@@ -15,12 +15,12 @@
- static char *pp_601(int k, int pp)
- {
- 	if (pp == 0)
--		return k ? "NA" : "RWX";
-+		return k ? "   " : "rwx";
- 	if (pp == 1)
--		return k ? "ROX" : "RWX";
-+		return k ? "r x" : "rwx";
- 	if (pp == 2)
--		return k ? "RWX" : "RWX";
--	return k ? "ROX" : "ROX";
-+		return "rwx";
-+	return "r x";
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 64434b66f240..1adaa7e794f3 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -23,6 +23,7 @@
+ #include <linux/const.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
++#include <asm/hugetlb.h>
+ 
+ #include <mm/mmu_decl.h>
+ 
+@@ -270,6 +271,26 @@ static void walk_pte(struct pg_state *st, pmd_t *pmd, unsigned long start)
+ 	}
  }
  
- static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
-@@ -48,12 +48,9 @@ static void bat_show_601(struct seq_file *m, int idx, u32 lower, u32 upper)
- 
- 	seq_printf(m, "Kernel %s User %s", pp_601(k & 2, pp), pp_601(k & 1, pp));
- 
--	if (lower & _PAGE_WRITETHRU)
--		seq_puts(m, "write through ");
--	if (lower & _PAGE_NO_CACHE)
--		seq_puts(m, "no cache ");
--	if (lower & _PAGE_COHERENT)
--		seq_puts(m, "coherent ");
-+	seq_puts(m, lower & _PAGE_WRITETHRU ? "w " : "  ");
-+	seq_puts(m, lower & _PAGE_NO_CACHE ? "i " : "  ");
-+	seq_puts(m, lower & _PAGE_COHERENT ? "m " : "  ");
- 	seq_puts(m, "\n");
- }
- 
-@@ -101,20 +98,16 @@ static void bat_show_603(struct seq_file *m, int idx, u32 lower, u32 upper, bool
- 		seq_puts(m, "Kernel/User ");
- 
- 	if (lower & BPP_RX)
--		seq_puts(m, is_d ? "RO " : "EXEC ");
-+		seq_puts(m, is_d ? "r   " : "  x ");
- 	else if (lower & BPP_RW)
--		seq_puts(m, is_d ? "RW " : "EXEC ");
-+		seq_puts(m, is_d ? "rw  " : "  x ");
- 	else
--		seq_puts(m, is_d ? "NA " : "NX   ");
--
--	if (lower & _PAGE_WRITETHRU)
--		seq_puts(m, "write through ");
--	if (lower & _PAGE_NO_CACHE)
--		seq_puts(m, "no cache ");
--	if (lower & _PAGE_COHERENT)
--		seq_puts(m, "coherent ");
--	if (lower & _PAGE_GUARDED)
--		seq_puts(m, "guarded ");
-+		seq_puts(m, is_d ? "    " : "    ");
++static void walk_hugepd(struct pg_state *st, hugepd_t *phpd, unsigned long start,
++			int pdshift, int level)
++{
++#ifdef CONFIG_ARCH_HAS_HUGEPD
++	unsigned int i;
++	int shift = hugepd_shift(*phpd);
++	int ptrs_per_hpd = pdshift - shift > 0 ? 1 << (pdshift - shift) : 1;
 +
-+	seq_puts(m, lower & _PAGE_WRITETHRU ? "w " : "  ");
-+	seq_puts(m, lower & _PAGE_NO_CACHE ? "i " : "  ");
-+	seq_puts(m, lower & _PAGE_COHERENT ? "m " : "  ");
-+	seq_puts(m, lower & _PAGE_GUARDED ? "g " : "  ");
- 	seq_puts(m, "\n");
++	if (start & ((1 << shift) - 1))
++		return;
++
++	for (i = 0; i < ptrs_per_hpd; i++) {
++		unsigned long addr = start + (i << shift);
++		pte_t *pte = hugepte_offset(*phpd, addr, pdshift);
++
++		note_page(st, addr, level + 1, pte_val(*pte), shift);
++	}
++#endif
++}
++
+ static void walk_pmd(struct pg_state *st, pud_t *pud, unsigned long start)
+ {
+ 	pmd_t *pmd = pmd_offset(pud, 0);
+@@ -313,11 +334,13 @@ static void walk_pagetables(struct pg_state *st)
+ 	 * the hash pagetable.
+ 	 */
+ 	for (i = pgd_index(addr); i < PTRS_PER_PGD; i++, pgd++, addr += PGDIR_SIZE) {
+-		if (!pgd_none(*pgd) && !pgd_is_leaf(*pgd))
++		if (pgd_none(*pgd) || pgd_is_leaf(*pgd))
++			note_page(st, addr, 1, pgd_val(*pgd), PUD_SHIFT);
++		else if (is_hugepd(__hugepd(pgd_val(*pgd))))
++			walk_hugepd(st, (hugepd_t *)pgd, addr, PGDIR_SHIFT, 1);
++		else
+ 			/* pgd exists */
+ 			walk_pud(st, pgd, addr);
+-		else
+-			note_page(st, addr, 1, pgd_val(*pgd), PUD_SHIFT);
+ 	}
  }
  
 -- 
