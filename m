@@ -2,64 +2,65 @@ Return-Path: <SRS0=xicG=6U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02C54C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 15:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3271C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:03:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67C9620708
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 15:54:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="W01y7i9n"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67C9620708
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9BD1A2068E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 May 2020 16:03:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BD1A2068E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=xmission.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49HLkt08VPzDqb9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 01:54:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HLwy4kY5zDqlX
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 02:03:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=xmission.com (client-ip=166.70.13.233;
+ helo=out03.mta.xmission.com; envelope-from=ebiederm@xmission.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=W01y7i9n; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HL3d1lsPzDqVN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 01:24:13 +1000 (AEST)
-Received: from quaco.ghostprotocols.net (unknown [179.97.37.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 32FAD21BE5;
- Wed,  6 May 2020 15:24:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1588778651;
- bh=Z2a6BvB7V2oRcTfvpILMr6MCbyplu9h+wRMMfrZXx7E=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=W01y7i9nt1hesraQra2LYBVAR3tPGFHaIesl37RV3fsa7tcg0SRcxpL5XsbAz3Q/Y
- X5DkixVHSFUTVK9k8MvgaJ3WFnPb0oDck69pYpMPSP7UwQNHFC+EeD98h0OEy39XUD
- 6LpoN7LcGDNMaqdIEtZiKQAECR+MkXT1LpFpOFv8=
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 21/91] perf vendor events power9: Add hv_24x7 socket/chip
- level metric events
-Date: Wed,  6 May 2020 12:21:24 -0300
-Message-Id: <20200506152234.21977-22-acme@kernel.org>
-X-Mailer: git-send-email 2.21.1
-In-Reply-To: <20200506152234.21977-1-acme@kernel.org>
-References: <20200506152234.21977-1-acme@kernel.org>
+ dmarc=pass (p=none dis=none) header.from=xmission.com
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49HLZk66jCzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 01:47:41 +1000 (AEST)
+Received: from in02.mta.xmission.com ([166.70.13.52])
+ by out03.mta.xmission.com with esmtps
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.90_1)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jWMGk-0006bR-Ln; Wed, 06 May 2020 09:47:34 -0600
+Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95]
+ helo=x220.xmission.com) by in02.mta.xmission.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.87)
+ (envelope-from <ebiederm@xmission.com>)
+ id 1jWMGi-0006AO-Iz; Wed, 06 May 2020 09:47:34 -0600
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@lst.de>
+References: <20200505101256.3121270-1-hch@lst.de>
+ <CAHk-=wgrHhaM1XCB=E3Zp2Br8E5c_kmVUTd5y06xh5sev5nRMA@mail.gmail.com>
+ <877dxqgm7x.fsf@x220.int.ebiederm.org> <20200506063134.GA11391@lst.de>
+Date: Wed, 06 May 2020 10:44:07 -0500
+In-Reply-To: <20200506063134.GA11391@lst.de> (Christoph Hellwig's message of
+ "Wed, 6 May 2020 08:31:34 +0200")
+Message-ID: <87lfm5cblk.fsf@x220.int.ebiederm.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-XM-SPF: eid=1jWMGi-0006AO-Iz; ; ; mid=<87lfm5cblk.fsf@x220.int.ebiederm.org>;
+ ; ; hst=in02.mta.xmission.com; ; ; ip=68.227.160.95; ; ;
+ frm=ebiederm@xmission.com; ; ; spf=neutral
+X-XM-AID: U2FsdGVkX18n7ilHkYpqhNUvG5niq5VycMEtqxB6v30=
+X-SA-Exim-Connect-IP: 68.227.160.95
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+Subject: Re: remove set_fs calls from the coredump code v6
+X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,105 +72,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Jin Yao <yao.jin@linux.intel.com>,
- Jiri Olsa <jolsa@redhat.com>, Kan Liang <kan.liang@linux.intel.com>,
- Andi Kleen <ak@linux.intel.com>, Clark Williams <williams@redhat.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>, Joe Mario <jmario@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, Michael Petlan <mpetlan@redhat.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ the arch/x86 maintainers <x86@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Jeremy Kerr <jk@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Kajol Jain <kjain@linux.ibm.com>
+Christoph Hellwig <hch@lst.de> writes:
 
-The hv_24×7 feature in IBM® POWER9™ processor-based servers provide the
-facility to continuously collect large numbers of hardware performance
-metrics efficiently and accurately.
+> On Tue, May 05, 2020 at 03:28:50PM -0500, Eric W. Biederman wrote:
+>> We probably can.   After introducing a kernel_compat_siginfo that is
+>> the size that userspace actually would need.
+>> 
+>> It isn't something I want to mess with until this code gets merged, as I
+>> think the set_fs cleanups are more important.
+>> 
+>> 
+>> Christoph made some good points about how ugly the #ifdefs are in
+>> the generic copy_siginfo_to_user32 implementation.
+>
+> Take a look at the series you are replying to, the magic x86 ifdefs are
+> entirely gone from the common code :)
 
-This patch adds hv_24x7  metric file for different Socket/chip
-resources.
+Interesting.
 
-Result:
+That is a different way of achieving that, and I don't hate it.
+  
+I still want whatever you are doing to settle before I touch that code
+again.  Removing the set_fs is important and I have other fish to fry
+at the moment.
 
-power9 platform:
+Eric
 
-  command:# ./perf stat --metric-only -M Memory_RD_BW_Chip -C 0 -I 1000
 
-     1.000096188          0.9           0.3
-     2.000285720          0.5           0.1
-     3.000424990          0.4           0.1
-
-  command:# ./perf stat --metric-only -M PowerBUS_Frequency -C 0 -I 1000
-
-     1.000097981          2.3           2.3
-     2.000291713          2.3           2.3
-     3.000421719          2.3           2.3
-     4.000550912          2.3           2.3
-
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Acked-by: Jiri Olsa <jolsa@redhat.com>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jin Yao <yao.jin@linux.intel.com>
-Cc: Joe Mario <jmario@redhat.com>
-Cc: Kan Liang <kan.liang@linux.intel.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Petlan <mpetlan@redhat.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lore.kernel.org/lkml/20200401203340.31402-8-kjain@linux.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- .../arch/powerpc/power9/nest_metrics.json     | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
- create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/nest_metrics.json
-
-diff --git a/tools/perf/pmu-events/arch/powerpc/power9/nest_metrics.json b/tools/perf/pmu-events/arch/powerpc/power9/nest_metrics.json
-new file mode 100644
-index 000000000000..c121e526442a
---- /dev/null
-+++ b/tools/perf/pmu-events/arch/powerpc/power9/nest_metrics.json
-@@ -0,0 +1,19 @@
-+[
-+    {
-+        "MetricExpr": "(hv_24x7@PM_MCS01_128B_RD_DISP_PORT01\\,chip\\=?@ + hv_24x7@PM_MCS01_128B_RD_DISP_PORT23\\,chip\\=?@ + hv_24x7@PM_MCS23_128B_RD_DISP_PORT01\\,chip\\=?@ + hv_24x7@PM_MCS23_128B_RD_DISP_PORT23\\,chip\\=?@)",
-+        "MetricName": "Memory_RD_BW_Chip",
-+        "MetricGroup": "Memory_BW",
-+        "ScaleUnit": "1.6e-2MB"
-+    },
-+    {
-+	"MetricExpr": "(hv_24x7@PM_MCS01_128B_WR_DISP_PORT01\\,chip\\=?@ + hv_24x7@PM_MCS01_128B_WR_DISP_PORT23\\,chip\\=?@ + hv_24x7@PM_MCS23_128B_WR_DISP_PORT01\\,chip\\=?@ + hv_24x7@PM_MCS23_128B_WR_DISP_PORT23\\,chip\\=?@ )",
-+        "MetricName": "Memory_WR_BW_Chip",
-+        "MetricGroup": "Memory_BW",
-+        "ScaleUnit": "1.6e-2MB"
-+    },
-+    {
-+	"MetricExpr": "(hv_24x7@PM_PB_CYC\\,chip\\=?@ )",
-+        "MetricName": "PowerBUS_Frequency",
-+        "ScaleUnit": "2.5e-7GHz"
-+    }
-+]
--- 
-2.21.1
 
