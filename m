@@ -2,85 +2,79 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6616AC47247
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8847CC38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:57:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE11520575
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:46:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE11520575
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3E9392070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:57:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E9392070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Hx9f0ZJ8zDqXY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 00:46:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HxQS2MLjzDqQB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 00:57:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=wenxiong@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Hwjq1b5WzDqSS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 00:25:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Hwxx0Qv4zDqY1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 00:36:14 +1000 (AEST)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 047E6qrf061613; Thu, 7 May 2020 10:25:45 -0400
+ 047E6mlH061493
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2020 10:36:11 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6eyx0c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 10:25:45 -0400
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6f0b5r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2020 10:36:10 -0400
 Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 047E7LFb064544;
- Thu, 7 May 2020 10:25:44 -0400
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 047E7cAQ065379
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2020 10:36:10 -0400
 Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
  [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6eywys-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6f0b5b-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 10:25:44 -0400
+ Thu, 07 May 2020 10:36:10 -0400
 Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 047EPfue004070;
- Thu, 7 May 2020 14:25:43 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04dal.us.ibm.com with ESMTP id 30s0g7cy8s-1
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 047EUR3d009881;
+ Thu, 7 May 2020 14:36:09 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma04dal.us.ibm.com with ESMTP id 30s0g7d1vk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 14:25:43 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 047EPg1e59245020
+ Thu, 07 May 2020 14:36:09 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 047Ea8Ls53936572
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 7 May 2020 14:25:42 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 71DE87805F;
- Thu,  7 May 2020 14:25:42 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 66DBD7805E;
- Thu,  7 May 2020 14:25:40 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.199.52.212])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  7 May 2020 14:25:39 +0000 (GMT)
-X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v2 15/28] powerpc/book3s64/pkeys: Reset userspace AMR
- correctly on exec
-In-Reply-To: <20200502112229.545331-16-aneesh.kumar@linux.ibm.com>
-References: <20200502112229.545331-1-aneesh.kumar@linux.ibm.com>
- <20200502112229.545331-16-aneesh.kumar@linux.ibm.com>
-Date: Thu, 07 May 2020 19:55:37 +0530
-Message-ID: <874ksrakke.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ Thu, 7 May 2020 14:36:09 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC8E7112062;
+ Thu,  7 May 2020 14:36:08 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 78559112061;
+ Thu,  7 May 2020 14:36:08 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.40.195.89])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu,  7 May 2020 14:36:08 +0000 (GMT)
+From: wenxiong@linux.vnet.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: powerpc/pci: [PATCH 1/1]: PCIE PHB reset
+Date: Thu,  7 May 2020 08:10:37 -0500
+Message-Id: <1588857037-25950-1-git-send-email-wenxiong@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.2
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
  definitions=2020-05-07_09:2020-05-07,
@@ -88,7 +82,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0
  adultscore=0 mlxscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
- spamscore=0 suspectscore=0 phishscore=0 priorityscore=1501 clxscore=1015
+ spamscore=0 suspectscore=1 phishscore=0 priorityscore=1501 clxscore=1011
  impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2003020000 definitions=main-2005070114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -102,136 +96,196 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxram@us.ibm.com, npiggin@gmail.com, bauerman@linux.ibm.com
+Cc: brking@linux.vnet.ibm.com, Wen Xiong <wenxiong@linux.vnet.ibm.com>,
+ oohall@gmail.com, wenxiong@us.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+From: Wen Xiong <wenxiong@linux.vnet.ibm.com>
 
-> On fork, we inherit from the parent and on exec, we should switch to default_amr values.
->
-> Also, avoid changing the AMR register value within the kernel. The kernel now runs with
-> different AMR values.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/kup.h |  2 ++
->  arch/powerpc/kernel/process.c            | 19 ++++++++++++++++++-
->  arch/powerpc/mm/book3s64/pkeys.c         | 18 ++----------------
->  3 files changed, 22 insertions(+), 17 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-> index 67320a990f3f..fe1818954e51 100644
-> --- a/arch/powerpc/include/asm/book3s/64/kup.h
-> +++ b/arch/powerpc/include/asm/book3s/64/kup.h
-> @@ -171,6 +171,8 @@
->  #include <asm/ptrace.h>
->  
->  extern u64 default_uamor;
-> +extern u64 default_amr;
-> +extern u64 default_iamr;
->  
->  static inline void kuap_restore_user_amr(struct pt_regs *regs)
->  {
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 9ef95a1217ef..0ab9a8cf1bcb 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1474,7 +1474,25 @@ void arch_setup_new_exec(void)
->  		current->thread.regs = regs - 1;
->  	}
->  
-> +#ifdef CONFIG_PPC_MEM_KEYS
-> +	current->thread.regs->kuap  = default_amr;
-> +	current->thread.regs->kuep  = default_iamr;
-> +#endif
-> +
->  }
-> +#else
-> +void arch_setup_new_exec(void)
-> +{
-> +	/*
-> +	 * If we exec out of a kernel thread then thread.regs will not be
-> +	 * set.  Do it now.
-> +	 */
-> +	if (!current->thread.regs) {
-> +		struct pt_regs *regs = task_stack_page(current) + THREAD_SIZE;
-> +		current->thread.regs = regs - 1;
-> +	}
-> +}
-> +
->  #endif
->  
->  #ifdef CONFIG_PPC64
-> @@ -1809,7 +1827,6 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
->  	current->thread.load_tm = 0;
->  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
->  
-> -	thread_pkey_regs_init(&current->thread);
->  }
->  EXPORT_SYMBOL(start_thread);
->  
-> diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-> index 976f65f27324..5012b57af808 100644
-> --- a/arch/powerpc/mm/book3s64/pkeys.c
-> +++ b/arch/powerpc/mm/book3s64/pkeys.c
-> @@ -20,8 +20,8 @@ int  max_pkey;			/* Maximum key value supported */
->   */
->  u32  reserved_allocation_mask;
->  static u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
-> -static u64 default_amr;
-> -static u64 default_iamr;
-> +u64 default_amr;
-> +u64 default_iamr;
->  /* Allow all keys to be modified by default */
->  u64 default_uamor = ~0x0UL;
->  /*
-> @@ -387,20 +387,6 @@ void thread_pkey_regs_restore(struct thread_struct *new_thread,
->  		write_uamor(new_thread->uamor);
->  }
->  
-> -void thread_pkey_regs_init(struct thread_struct *thread)
-> -{
-> -	if (!mmu_has_feature(MMU_FTR_PKEY))
-> -		return;
-> -
-> -	thread->amr   = default_amr;
-> -	thread->iamr  = default_iamr;
-> -	thread->uamor = default_uamor;
-> -
-> -	write_amr(default_amr);
-> -	write_iamr(default_iamr);
-> -	write_uamor(default_uamor);
-> -}
-> -
->  int execute_only_pkey(struct mm_struct *mm)
->  {
->  	if (static_branch_likely(&execute_pkey_disabled))
-> -- 
-> 2.26.2
+Several device drivers hit EEH(Extended Error handling) when triggering
+kdump on Pseries PowerVM. This patch implemented a reset of the PHBs
+in pci general code. PHB reset stop all PCI transactions from previous
+kernel. We have tested the patch in several enviroments:
+- direct slot adapters
+- adapters under the switch
+- a VF adapter in PowerVM
+- a VF adapter/adapter in KVM guest.
 
-Needs this change to fix build error.
-
+Signed-off-by: Wen Xiong <wenxiong@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/thread_info.h | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/platforms/pseries/pci.c | 153 +++++++++++++++++++++++++++
+ 1 file changed, 153 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index ca6c97025704..9418dff1cfe1 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -77,10 +77,8 @@ struct thread_info {
- /* how to get the thread information struct from C */
- extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 911534b89c85..aac7f00696d2 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -11,6 +11,8 @@
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/string.h>
++#include <linux/crash_dump.h>
++#include <linux/delay.h>
  
--#ifdef CONFIG_PPC_BOOK3S_64
- void arch_setup_new_exec(void);
- #define arch_setup_new_exec arch_setup_new_exec
--#endif
+ #include <asm/eeh.h>
+ #include <asm/pci-bridge.h>
+@@ -354,3 +356,154 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
  
- #endif /* __ASSEMBLY__ */
- 
+ 	return 0;
+ }
++
++/**
++ * pseries_get_pdn_addr - Retrieve PHB address
++ * @pe: EEH PE
++ *
++ * Retrieve the assocated PHB address. Actually, there're 2 RTAS
++ * function calls dedicated for the purpose. We need implement
++ * it through the new function and then the old one. Besides,
++ * you should make sure the config address is figured out from
++ * FDT node before calling the function.
++ *
++ */
++static int pseries_get_pdn_addr(struct pci_controller *phb)
++{
++	int ret = -1;
++	int rets[3];
++	int ibm_get_config_addr_info;
++	int ibm_get_config_addr_info2;
++	int config_addr = 0;
++	struct pci_dn *root_pdn, *pdn;
++
++	ibm_get_config_addr_info2   = rtas_token("ibm,get-config-addr-info2");
++	ibm_get_config_addr_info    = rtas_token("ibm,get-config-addr-info");
++
++	root_pdn = PCI_DN(phb->dn);
++	pdn = list_first_entry(&root_pdn->child_list, struct pci_dn, list);
++	config_addr = (pdn->busno << 16) | (pdn->devfn << 8);
++
++	if (ibm_get_config_addr_info2 != RTAS_UNKNOWN_SERVICE) {
++		/*
++		 * First of all, we need to make sure there has one PE
++		 * associated with the device. Otherwise, PE address is
++		 * meaningless.
++		 */
++		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
++			config_addr, BUID_HI(pdn->phb->buid),
++			BUID_LO(pdn->phb->buid), 1);
++		if (ret || (rets[0] == 0)) {
++			pr_warn("%s: Failed to get address for PHB#%x-PE# "
++				"option=%d config_addr=%x\n",
++				__func__, pdn->phb->global_number, 1, rets[0]);
++			return -1;
++		}
++
++		/* Retrieve the associated PE config address */
++		ret = rtas_call(ibm_get_config_addr_info2, 4, 2, rets,
++			config_addr, BUID_HI(pdn->phb->buid),
++			BUID_LO(pdn->phb->buid), 0);
++		if (ret) {
++			pr_warn("%s: Failed to get address for PHB#%x-PE# "
++				"option=%d config_addr=%x\n",
++				__func__, pdn->phb->global_number, 0, rets[0]);
++			return -1;
++		}
++		return rets[0];
++	}
++
++	if (ibm_get_config_addr_info != RTAS_UNKNOWN_SERVICE) {
++		ret = rtas_call(ibm_get_config_addr_info, 4, 2, rets,
++			config_addr, BUID_HI(pdn->phb->buid),
++			BUID_LO(pdn->phb->buid), 0);
++		if (ret || rets[0]) {
++			pr_warn("%s: Failed to get address for PHB#%x-PE# "
++				"config_addr=%x\n",
++				__func__, pdn->phb->global_number, rets[0]);
++			return -1;
++		}
++		return rets[0];
++	}
++
++	return ret;
++}
++
++static int __init pseries_phb_reset(void)
++{
++	struct pci_controller *phb;
++	int config_addr;
++	int ibm_set_slot_reset;
++	int ibm_configure_pe;
++	int ret;
++
++	if (is_kdump_kernel() || reset_devices) {
++		pr_info("Issue PHB reset ...\n");
++		ibm_set_slot_reset = rtas_token("ibm,set-slot-reset");
++		ibm_configure_pe = rtas_token("ibm,configure-pe");
++
++		if (ibm_set_slot_reset == RTAS_UNKNOWN_SERVICE ||
++				ibm_configure_pe == RTAS_UNKNOWN_SERVICE) {
++			pr_info("%s: EEH functionality not supported\n",
++				__func__);
++		}
++
++		list_for_each_entry(phb, &hose_list, list_node) {
++			config_addr = pseries_get_pdn_addr(phb);
++			if (config_addr == -1)
++				continue;
++
++			ret = rtas_call(ibm_set_slot_reset, 4, 1, NULL,
++				config_addr, BUID_HI(phb->buid),
++				BUID_LO(phb->buid), EEH_RESET_FUNDAMENTAL);
++
++			/* If fundamental-reset not supported, try hot-reset */
++			if (ret == -8)
++				ret = rtas_call(ibm_set_slot_reset, 4, 1, NULL,
++					config_addr, BUID_HI(phb->buid),
++					BUID_LO(phb->buid), EEH_RESET_HOT);
++
++			if (ret) {
++				pr_err("%s: fail with rtas_call fundamental reset=%d\n",
++					__func__, ret);
++				continue;
++			}
++		}
++		msleep(EEH_PE_RST_SETTLE_TIME);
++
++		list_for_each_entry(phb, &hose_list, list_node) {
++			config_addr = pseries_get_pdn_addr(phb);
++			if (config_addr == -1)
++				continue;
++
++			ret = rtas_call(ibm_set_slot_reset, 4, 1, NULL,
++				config_addr, BUID_HI(phb->buid),
++				BUID_LO(phb->buid), EEH_RESET_DEACTIVATE);
++			if (ret) {
++				pr_err("%s: fail with rtas_call deactive=%d\n",
++					__func__, ret);
++				continue;
++			}
++		}
++		msleep(EEH_PE_RST_SETTLE_TIME);
++
++		list_for_each_entry(phb, &hose_list, list_node) {
++			config_addr = pseries_get_pdn_addr(phb);
++			if (config_addr == -1)
++				continue;
++
++			ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
++				config_addr, BUID_HI(phb->buid),
++				BUID_LO(phb->buid));
++			if (ret) {
++				pr_err("%s: fail with rtas_call configure_pe =%d\n",
++					__func__, ret);
++				continue;
++			}
++		}
++	}
++
++	return 0;
++}
++postcore_initcall(pseries_phb_reset);
++
 -- 
-2.26.2
+2.18.1
 
