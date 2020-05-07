@@ -2,86 +2,95 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C43B6C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:41:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6616AC47247
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:46:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F01120575
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:41:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F01120575
+	by mail.kernel.org (Postfix) with ESMTPS id CE11520575
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 14:46:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE11520575
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Hx3p382BzDqfV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 00:41:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Hx9f0ZJ8zDqXY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 00:46:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HwgF2XJhzDqbf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 00:23:36 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Hwjq1b5WzDqSS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 00:25:51 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 047E6kGE119956; Thu, 7 May 2020 10:23:30 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30sp8n2vc2-1
+ 047E6qrf061613; Thu, 7 May 2020 10:25:45 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6eyx0c-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 10:23:29 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 047EMXSb011028;
- Thu, 7 May 2020 14:23:29 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 30s0g74xnu-1
+ Thu, 07 May 2020 10:25:45 -0400
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 047E7LFb064544;
+ Thu, 7 May 2020 10:25:44 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ux6eywys-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 14:23:29 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 047ENSvx52691382
+ Thu, 07 May 2020 10:25:44 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 047EPfue004070;
+ Thu, 7 May 2020 14:25:43 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04dal.us.ibm.com with ESMTP id 30s0g7cy8s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 07 May 2020 14:25:43 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 047EPg1e59245020
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 7 May 2020 14:23:28 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4B32012405B;
- Thu,  7 May 2020 14:23:28 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B9BA212405A;
- Thu,  7 May 2020 14:23:26 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.52.212])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  7 May 2020 14:23:26 +0000 (GMT)
+ Thu, 7 May 2020 14:25:42 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 71DE87805F;
+ Thu,  7 May 2020 14:25:42 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 66DBD7805E;
+ Thu,  7 May 2020 14:25:40 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.52.212])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu,  7 May 2020 14:25:39 +0000 (GMT)
+X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH 2/3] powerpc: Fix instruction dumping to use address value
- correctly
-Date: Thu,  7 May 2020 19:53:15 +0530
-Message-Id: <20200507142316.265457-2-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200507142316.265457-1-aneesh.kumar@linux.ibm.com>
-References: <20200507142316.265457-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2 15/28] powerpc/book3s64/pkeys: Reset userspace AMR
+ correctly on exec
+In-Reply-To: <20200502112229.545331-16-aneesh.kumar@linux.ibm.com>
+References: <20200502112229.545331-1-aneesh.kumar@linux.ibm.com>
+ <20200502112229.545331-16-aneesh.kumar@linux.ibm.com>
+Date: Thu, 07 May 2020 19:55:37 +0530
+Message-ID: <874ksrakke.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
  definitions=2020-05-07_09:2020-05-07,
  2020-05-07 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0
- malwarescore=0 suspectscore=0 priorityscore=1501 spamscore=0 clxscore=1015
- mlxscore=0 lowpriorityscore=0 mlxlogscore=924 impostorscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2005070114
+ lowpriorityscore=0
+ adultscore=0 mlxscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
+ spamscore=0 suspectscore=0 phishscore=0 priorityscore=1501 clxscore=1015
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2005070114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,86 +102,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxram@us.ibm.com, npiggin@gmail.com, bauerman@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Avoid updating address value in the loop. If in real mode, convert the address
-outside the loop. Also, use ___va() to convert the real address that will
-skip the input validation. We can get interrupts with IR=0 and with NIP
-value > PAGE_OFFSET.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> On fork, we inherit from the parent and on exec, we should switch to default_amr values.
+>
+> Also, avoid changing the AMR register value within the kernel. The kernel now runs with
+> different AMR values.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/kup.h |  2 ++
+>  arch/powerpc/kernel/process.c            | 19 ++++++++++++++++++-
+>  arch/powerpc/mm/book3s64/pkeys.c         | 18 ++----------------
+>  3 files changed, 22 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+> index 67320a990f3f..fe1818954e51 100644
+> --- a/arch/powerpc/include/asm/book3s/64/kup.h
+> +++ b/arch/powerpc/include/asm/book3s/64/kup.h
+> @@ -171,6 +171,8 @@
+>  #include <asm/ptrace.h>
+>  
+>  extern u64 default_uamor;
+> +extern u64 default_amr;
+> +extern u64 default_iamr;
+>  
+>  static inline void kuap_restore_user_amr(struct pt_regs *regs)
+>  {
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 9ef95a1217ef..0ab9a8cf1bcb 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1474,7 +1474,25 @@ void arch_setup_new_exec(void)
+>  		current->thread.regs = regs - 1;
+>  	}
+>  
+> +#ifdef CONFIG_PPC_MEM_KEYS
+> +	current->thread.regs->kuap  = default_amr;
+> +	current->thread.regs->kuep  = default_iamr;
+> +#endif
+> +
+>  }
+> +#else
+> +void arch_setup_new_exec(void)
+> +{
+> +	/*
+> +	 * If we exec out of a kernel thread then thread.regs will not be
+> +	 * set.  Do it now.
+> +	 */
+> +	if (!current->thread.regs) {
+> +		struct pt_regs *regs = task_stack_page(current) + THREAD_SIZE;
+> +		current->thread.regs = regs - 1;
+> +	}
+> +}
+> +
+>  #endif
+>  
+>  #ifdef CONFIG_PPC64
+> @@ -1809,7 +1827,6 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+>  	current->thread.load_tm = 0;
+>  #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+>  
+> -	thread_pkey_regs_init(&current->thread);
+>  }
+>  EXPORT_SYMBOL(start_thread);
+>  
+> diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+> index 976f65f27324..5012b57af808 100644
+> --- a/arch/powerpc/mm/book3s64/pkeys.c
+> +++ b/arch/powerpc/mm/book3s64/pkeys.c
+> @@ -20,8 +20,8 @@ int  max_pkey;			/* Maximum key value supported */
+>   */
+>  u32  reserved_allocation_mask;
+>  static u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
+> -static u64 default_amr;
+> -static u64 default_iamr;
+> +u64 default_amr;
+> +u64 default_iamr;
+>  /* Allow all keys to be modified by default */
+>  u64 default_uamor = ~0x0UL;
+>  /*
+> @@ -387,20 +387,6 @@ void thread_pkey_regs_restore(struct thread_struct *new_thread,
+>  		write_uamor(new_thread->uamor);
+>  }
+>  
+> -void thread_pkey_regs_init(struct thread_struct *thread)
+> -{
+> -	if (!mmu_has_feature(MMU_FTR_PKEY))
+> -		return;
+> -
+> -	thread->amr   = default_amr;
+> -	thread->iamr  = default_iamr;
+> -	thread->uamor = default_uamor;
+> -
+> -	write_amr(default_amr);
+> -	write_iamr(default_iamr);
+> -	write_uamor(default_uamor);
+> -}
+> -
+>  int execute_only_pkey(struct mm_struct *mm)
+>  {
+>  	if (static_branch_likely(&execute_pkey_disabled))
+> -- 
+> 2.26.2
+
+Needs this change to fix build error.
+
 ---
- arch/powerpc/include/asm/processor.h |  9 +++++++++
- arch/powerpc/kernel/process.c        | 18 ++++++++++--------
- 2 files changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/thread_info.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 591987da44e2..4e7a5adc04df 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -436,6 +436,15 @@ extern void cvt_fd(float *from, double *to);
- extern void cvt_df(double *from, float *to);
- extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index ca6c97025704..9418dff1cfe1 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -77,10 +77,8 @@ struct thread_info {
+ /* how to get the thread information struct from C */
+ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
  
-+static inline unsigned long fixup_real_addr(struct pt_regs *regs,
-+					    unsigned long addr)
-+{
-+	if (!(regs->msr & MSR_IR))
-+		return (unsigned long)___va(addr);
-+
-+	return addr;
-+}
-+
- #ifdef CONFIG_PPC64
- /*
-  * We handle most unaligned accesses in hardware. On the other hand 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 682deeee421f..36cc03c33d25 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1238,29 +1238,31 @@ struct task_struct *__switch_to(struct task_struct *prev,
- static void show_instructions(struct pt_regs *regs)
- {
- 	int i;
-+	unsigned long nip = regs->nip;
- 	unsigned long pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
- 
- 	printk("Instruction dump:");
- 
-+
-+#if !defined(CONFIG_BOOKE)
-+	/* If executing with the IMMU off, adjust pc rather
-+	 * than print XXXXXXXX.
-+	 */
-+	pc = fixup_real_addr(regs, pc);
-+	nip = fixup_real_addr(regs, nip);
-+#endif
- 	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
- 		int instr;
- 
- 		if (!(i % 8))
- 			pr_cont("\n");
- 
--#if !defined(CONFIG_BOOKE)
--		/* If executing with the IMMU off, adjust pc rather
--		 * than print XXXXXXXX.
--		 */
--		if (!(regs->msr & MSR_IR))
--			pc = (unsigned long)phys_to_virt(pc);
+-#ifdef CONFIG_PPC_BOOK3S_64
+ void arch_setup_new_exec(void);
+ #define arch_setup_new_exec arch_setup_new_exec
 -#endif
  
- 		if (!__kernel_text_address(pc) ||
- 		    probe_kernel_address((const void *)pc, instr)) {
- 			pr_cont("XXXXXXXX ");
- 		} else {
--			if (regs->nip == pc)
-+			if (nip == pc)
- 				pr_cont("<%08x> ", instr);
- 			else
- 				pr_cont("%08x ", instr);
+ #endif /* __ASSEMBLY__ */
+ 
 -- 
 2.26.2
 
