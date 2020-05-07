@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97FDAC35280
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:41:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A9F9C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:42:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EED1208DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:41:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EED1208DB
+	by mail.kernel.org (Postfix) with ESMTPS id CA8E9208DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:42:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA8E9208DB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49J6Mv316XzDqyY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 07:40:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49J6Pq6lQmzDr1Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 07:42:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=stevens-zone.net (client-ip=212.227.126.187;
+ smtp.mailfrom=stevens-zone.net (client-ip=212.227.126.131;
  helo=mout.kundenserver.de; envelope-from=darren@stevens-zone.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=stevens-zone.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49J6Bs15xdzDqgS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 07:33:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49J6Bs17R1zDqgs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 07:33:06 +1000 (AEST)
 Received: from Cyrus.lan ([80.189.87.220]) by mrelayeu.kundenserver.de
  (mreue009 [212.227.15.163]) with ESMTPA (Nemesis) id
- 1MmDAW-1iougF0Pse-00iDsL; Thu, 07 May 2020 23:32:59 +0200
-Date: Thu, 7 May 2020 22:30:25 +0100
+ 1MfHIZ-1iwLSb1P9H-00gs9G; Thu, 07 May 2020 23:32:58 +0200
+Date: Thu, 7 May 2020 22:13:16 +0100
 From: Darren Stevens <darren@stevens-zone.net>
 To: linuxppc-dev@lists.ozlabs.org, oss@buserror.net
-Subject: [PATCH 5/5] powerpc/mpc85xx: Add Cyrus P5040 device tree source
-Message-ID: <20200507223025.0164b95b@Cyrus.lan>
+Subject: [PATCH 3/5] powerpc/mpc85xx: Add Cyrus Power-off and reset
+Message-ID: <20200507221316.284e0d19@Cyrus.lan>
 X-Mailer: Claws Mail 3.13.2 (GTK+ 2.24.30; powerpc-unknown-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:GXtaYXOv1B/RabyQVXjZJBu5bQ20FowCrgPra/IS9+5pbXQc/PL
- uqwfn8dmizwenabUpWtaalXHPlMPLNr5DTjE2uDdvMLxLbdC+talbh7DxLumj7p1rhWG96e
- i8GwILazlCcoe5Dr0x0DoevdbqWX9kxB6VOlNz4wwSXcspChosPljkcpoqM2XrNroT13fxI
- ylpRLQACRSDeUu/Ph5rkw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Os9PIwNHjRI=:SHyTx+5XYS3Ja7uDgZo3sb
- j5fDwx9HvvJQkesq0JX2yNFIfA8mPkk4RC3nd73uOPl0b7YEsAM+VFjStc1YCUIaQk17kzSE6
- Tocpbf9ZVa7HdazF8ovbDu6Y6LICAmpJANioN6GXibVoz/OyW8ZF/ojfS/Wue5A733GV0ACpi
- XnIfm5NOacQdYV71tVy2qKnVaTACzrJPzgaNO+keqUQuxFCY4aUYBMwtkJGL/RfD6Ym9VVucC
- 3pi5UTJcbD+nPqC/Orz3KaEa8hqep/OaE0Q6B82KHGew0D9L61ysHafsWUE0cvGRIbVpZgvMB
- 2/5eBPCN91oiOd/JbtzBloTxh4QjqZt+1SgVaQwmfEQS6Enk2FBKOXpsEVnVr4ha4aigSp5hh
- 6LKgdsj2Pb6TVLTjUPirvXFKGB49rK7hS5zRFEGhdB4rTUWV/2BNNhwleRYbODX4OKULrpgt8
- 8b7vAqc08bXd1uNeoeaNNuwd9wkX28iOcF4S7NxIHzJq5u11t+U8CdqYEKNDplIwWOtGok0A9
- 8CIf5g4/2ngt5q8fi9RojgeY+jbpVdEOATMzT0fIyn8Q6xSftVHU7aJJzVf0ya6A4c9RXW1/E
- 8ClNNcEYcy5fcscltmVqlcZQOC0S/INMDcZzdKz8FIJMiUn958ICrxx4Z+enD1bj2ZbUfVGob
- 4oApczP2iCqkBgm02BanM2JZsErHBV+VAw+assFCfLCI+lc+ldN5XGOCYkXZPu1kagSKxR6kT
- Kdn8q6ghGexwfbKWLzBah5bTGeF6E4eNog4JcvzwY5sx5A6vPTilMMEVXuIY6+KcPj9MqFpYY
- y2hNhfTeuFy01f6QycQioKBzYz/ZbmShT+zUAkbX2nWUadtAJqtSGJeG1fLWG77gnAM0HbK
+X-Provags-ID: V03:K1:64McGM3Z+Dz/9QNgreqeG+BHsblXt1nCHUvA1sqw0Q1O8vjvKhe
+ hGATtcmeY/Fa3oJxLVE/MyyL/fdgGTh6EKFtM7ASfd9c1r5IEVFC4/lPNGw95L60v1Yf5wm
+ 9yp8lO4z3FQiq2+4pUeMcbmk70bo3t/jwr/l9+pntdO86/B5cfjsyUvD+s10TZtMy2ThhDN
+ SO6DW9ws2iFWLfKQB19BQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:STImJKcutFk=:w6gIZ6Qn/B3h1bXZ5aws5X
+ iTK9cjiflD3+4kxE5uwm0nz08BemywqBqrq7ylM7ePYJzWQWdZvZhta/tXDe/t/p5Z8Sohaos
+ fxseEAjIhJPabV2a1Uqo+GYl3HQ+59LBOeCnvv18SeDc/2a9ZSFMJGh8sAs5k9qGTbisPlBdy
+ 6ari8GUOErhH8IOdy5BkbBwFSG8l6qSZ24FYJksz4n2CfvKcO76cY2QeJJcgircYyhhdIPPD8
+ E4xGFzPbsArh6s26F5LC3ftmiuofxv0CI4Cv1i5NxGx/yiXTBCfXWXRjCQa1pYSh9Avx9KajT
+ k9ot8qXSB2z2AeNF/D+k8n+ybRp9IXWwXVk0TY+VRN2gmmDluF0hS1XWVXwOOryZoKYDoGYcz
+ 3LpuMVQC3jdWXy5JVSuGGt3sYvzYtFT1H2y1EnsmjBVL9WOX8eHm9cufolHAjqv2NXGhIwWAY
+ e7Shpdws1YC+BKakkGJADEiT+45Wlq0rHKGlYPrUiahULaULCuLd/jWCGjj4ixzCNbBz5ZeDi
+ bjIbDGNDF33DF/Ujb9U6oyEKzdJo6+iRHMWvL92bEwAS3JKQgCfmC9H9e78N8bo/QasRL2hCW
+ XlIF2wVN6/G055HlIqUSvKDSq3WuepceJkHhQC/ljZGGdW9xD6Vi5j6gahwnsB57bZdTCSCRX
+ sEhp2whNZ1VBAZalSgkl+jFU3R4kX7jGLDpxXiIztcrShfOf08nNHwUldXc0eCP0E1TXPrYMc
+ /EYRo76nnJmx62fKZwkiXulnINGuN9ouP5b8DLdZ1c4i2kbe4x4uSj8L0hKfTPpNe+8JyhBOa
+ 6c9vGIvxfNuJe5yjl6FaoU5baYTB3g3wiBoHd8X3xWVuqKczA1zXaTlPQTlTjzcBKXrLSWA
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,122 +75,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Cyrus P5040 does not currently have a dts file in Linux, Add one.
+The Cyrus board has GPIO connected power-off and reset, add device tree
+nodes describing them.
 
 Signed-off-by: Darren Stevens <darren@stevens-zone.net>
-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
 
 ---
- arch/powerpc/boot/dts/fsl/cyrus_p5040.dts | 235 ++++++++++++++++++++++++++++++
- 1 file changed, 235 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5040.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5040.dts
-new file mode 100644
-index 0000000..596ee19
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/cyrus_p5040.dts
-@@ -0,0 +1,235 @@
-+/*
-+ * Cyrus 5040 Device Tree Source, based on p5040ds.dts
-+ *
-+ * Copyright 2020 Darren Stevens
-+ *
-+ * p5040ds.dts Copyright 2012 - 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * This software is provided by Freescale Semiconductor "as is" and any
-+ * express or implied warranties, including, but not limited to, the implied
-+ * warranties of merchantability and fitness for a particular purpose are
-+ * disclaimed. In no event shall Freescale Semiconductor be liable for any
-+ * direct, indirect, incidental, special, exemplary, or consequential damages
-+ * (including, but not limited to, procurement of substitute goods or services;
-+ * loss of use, data, or profits; or business interruption) however caused and
-+ * on any theory of liability, whether in contract, strict liability, or tort
-+ * (including negligence or otherwise) arising in any way out of the use of this
-+ * software, even if advised of the possibility of such damage.
-+ */
-+
-+/include/ "p5040si-pre.dtsi"
-+
-+/ {
-+	model = "varisys,CYRUS5040";
-+	compatible = "varisys,CYRUS";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases{
-+		ethernet0 = &enet4;
-+		ethernet1 = &enet10;
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		bman_fbpr: bman-fbpr {
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
-+		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
-+	};
-+
-+	bportals: bman-portals@ff4000000 {
-+		ranges = <0x0 0xf 0xf4000000 0x200000>;
-+	};
-+
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+		};
-+
-+		i2c@118100 {
-+		};
-+
-+		i2c@119100 {
-+			rtc@6f {
-+				compatible = "microchip,mcp7941x";
-+				reg = <0x6f>;
-+			};
-+		};
-+
+ arch/powerpc/boot/dts/fsl/cyrus_p5020.dts | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts index bdf0405..f0548fe
+100644 --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
++++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+@@ -73,6 +73,16 @@
+ 			};
+ 		};
+ 
 +		gpio-poweroff {
 +			compatible = "gpio-poweroff";
 +			gpios = <&gpio0 3 1>;
@@ -201,127 +103,6 @@ index 0000000..596ee19
 +			gpios = <&gpio0 2 1>;
 +		};
 +
-+		leds {
-+			compatible = "gpio-leds";
-+			hdd {
-+				label = "Disk activity";
-+				gpios = <&gpio0 5 0>;
-+				linux,default-trigger = "disk-activity";
-+			};
-+		};
-+
-+		fman@400000 {
-+			mdio@e1120 {
-+				phy3: ethernet-phy@3 {
-+					reg = <0x3>;
-+				};
-+
-+				phy7: ethernet-phy@7 {
-+					reg = <0x7>;
-+				};
-+			};
-+
-+			ethernet@e0000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e2000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e4000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e6000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e8000 {
-+				phy-handle = <&phy3>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+		};
-+
-+		fman@500000 {
-+			ethernet@e0000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e2000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e4000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e6000 {
-+				status = "disabled";
-+			};
-+
-+			ethernet@e8000 {
-+				phy-handle = <&phy7>;
-+				phy-connection-type = "rgmii";
-+			};
-+
-+		};
-+
-+	};
-+
-+	lbc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x1000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xffa00000 0x00040000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+	};
-+
-+	pci0: pcie@ffe200000 {
-+		reg = <0xf 0xfe200000 0 0x1000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe201000 {
-+		reg = <0xf 0xfe201000 0 0x1000>;
-+		ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
-+			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe202000 {
-+		reg = <0xf 0xfe202000 0 0x1000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x20000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-+
-+/include/ "p5040si-post.dtsi"
+ 		fman@400000 {
+ 			mdio@e1120 {
+ 				phy3: ethernet-phy@3 {
