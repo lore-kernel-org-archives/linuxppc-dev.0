@@ -2,61 +2,51 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D70BDC38A24
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 06:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9123C38A24
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 07:08:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 830DF2078C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 06:57:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 830DF2078C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3247620A8B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 07:08:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3247620A8B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Hkm61DVyzDqyX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 16:57:10 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Hkjc01QgzDqq7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 16:54:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Hl1543jvzDqly
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 17:08:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 49HkjZ6tK1z8t70
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 16:54:58 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 49HkjZ5Nqgz9sSm; Thu,  7 May 2020 16:54:58 +1000 (AEST)
-Authentication-Results: ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=tiwai@suse.de;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49HkjZ2Q6mz9sSc;
- Thu,  7 May 2020 16:54:57 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 1010968B05; Thu,  7 May 2020 08:54:52 +0200 (CEST)
-Date: Thu, 7 May 2020 08:54:51 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/spufs: Add rcu_read_lock() around fcheck()
-Message-ID: <20200507065451.GA6185@lst.de>
-References: <20200428114811.68436-1-mpe@ellerman.id.au>
- <20200428135245.GA2827@lst.de> <875zdifrgw.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <875zdifrgw.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Hkz14LF2zDqlw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2020 17:06:34 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id E9F11AAC7;
+ Thu,  7 May 2020 07:06:31 +0000 (UTC)
+Date: Thu, 07 May 2020 09:06:27 +0200
+Message-ID: <s5h1rnw6x70.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Samuel Zou <zou_wei@huawei.com>
+Subject: Re: [PATCH -next] ALSA: sound/ppc: Use bitwise instead of arithmetic
+ operator for flags
+In-Reply-To: <1588823647-12480-1-git-send-email-zou_wei@huawei.com>
+References: <1588823647-12480-1-git-send-email-zou_wei@huawei.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI/1.14.6 (Maruoka)
+ FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.8 Emacs/25.3
+ (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI 1.14.6 - "Maruoka")
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,39 +58,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, viro@zeniv.linux.org.uk, jk@ozlabs.org
+Cc: alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 09:42:39PM +1000, Michael Ellerman wrote:
-> Christoph Hellwig <hch@lst.de> writes:
-> > On Tue, Apr 28, 2020 at 09:48:11PM +1000, Michael Ellerman wrote:
-> >> 
-> >> This comes from fcheck_files() via fcheck().
-> >> 
-> >> It's pretty clearly documented that fcheck() must be wrapped with
-> >> rcu_read_lock(), so fix it.
-> >
-> > But for this to actually be useful you'd need the rcu read lock until
-> > your are done with the file (or got a reference).
+On Thu, 07 May 2020 05:54:07 +0200,
+Samuel Zou wrote:
 > 
-> Hmm OK. My reasoning was that we were done with the struct file, because
-> we return the ctx that's hanging off the inode.
+> Fix the following coccinelle warnings:
 > 
-> +	ctx = SPUFS_I(file_inode(file))->i_ctx;
+> sound/ppc/pmac.c:729:57-58: WARNING: sum of probable bitmasks, consider |
+> sound/ppc/pmac.c:229:37-38: WARNING: sum of probable bitmasks, consider |
 > 
-> But I guess the lifetime of the ctx is not guaranteed if the file goes
-> away.
-> 
-> It looks like the only long lived reference on the ctx is the one
-> taken in spufs_new_file() and dropped in spufs_evict_inode().
-> 
-> So if we take a reference to the ctx with the RCU lock held we should be
-> safe, I think. But I've definitely exhausted my spufs/vfs knowledge at
-> this point.
-> 
-> Something like below.
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Samuel Zou <zou_wei@huawei.com>
 
-Looks reasonable.
+Applied, thanks.
+
+
+Takashi
