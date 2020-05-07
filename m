@@ -2,25 +2,25 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C30BCC38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C314CC38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:56:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2120C20661
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:54:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 640CD20661
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:56:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pLECSGx/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2120C20661
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xo0uB0jz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 640CD20661
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49J5Lm3Lr1zDqvr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 06:54:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49J5Nx0b1BzDqsK
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 06:56:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=pLECSGx/; dkim-atps=neutral
+ header.s=default header.b=Xo0uB0jz; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49J5Jd51YJzDqlm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 06:53:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49J5Jm4nqNzDqpy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 06:53:12 +1000 (AEST)
 Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
  [73.231.172.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E2E7920735;
- Thu,  7 May 2020 20:52:58 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 635C4208D6;
+ Thu,  7 May 2020 20:53:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1588884780;
- bh=TyVMubmSwnb6HspI26I671gs2+xz/BioghUujIiqGH8=;
+ s=default; t=1588884789;
+ bh=hMm94zV9WGH7Tl9oZXIOfH3+eFqjMiH47dainavvzmQ=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=pLECSGx/bjY/e6dPZHg/pogKtFknD7CQxEbYnTijPvo31G65TH5qkje/0482SYoYN
- DUxu9XSArBxL1RHMChRsQBx2Ke74CL6dm6TMRGPJJfX7xkDXTBpZl44fWyvfgMqhU0
- epsvy3zKnV8VlRwcWKCyI4E8L4mB8LcbloZDf/RA=
-Date: Thu, 7 May 2020 13:52:58 -0700
+ b=Xo0uB0jzEa+6RQj31qDV5iepwWr5b+doPXcry4uWKXnR6W6xL9I88EI0MA39g9SuS
+ 5U/3zuoJRDt8b6/Q0n2onWLVPdRnd11VRA3YS2nqAKv/QZZqRC8GdpFAaS/d7ESL7c
+ ZnKJEnreBWqqWrZToty2CxiWaRWmtHuPnx6/3ffI=
+Date: Thu, 7 May 2020 13:53:07 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: ira.weiny@intel.com
-Subject: Re: [PATCH V3 13/15] parisc/kmap: Remove duplicate kmap code
-Message-Id: <20200507135258.f430182578c0d63b7488916e@linux-foundation.org>
-In-Reply-To: <20200507150004.1423069-14-ira.weiny@intel.com>
+Subject: Re: [PATCH V3 15/15] kmap: Consolidate kmap_prot definitions
+Message-Id: <20200507135307.4ba10d99c611f17beab31751@linux-foundation.org>
+In-Reply-To: <20200507150004.1423069-16-ira.weiny@intel.com>
 References: <20200507150004.1423069-1-ira.weiny@intel.com>
- <20200507150004.1423069-14-ira.weiny@intel.com>
+ <20200507150004.1423069-16-ira.weiny@intel.com>
 X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -77,13 +77,13 @@ Cc: Peter Zijlstra <peterz@infradead.org>,
  "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
  Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
  "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Helge Deller <deller@gmx.de>,
+ Dan Williams <dan.j.williams@intel.com>, Helge Deller <deller@gmx.de>,
  x86@kernel.org, linux-csky@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
- Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Borislav Petkov <bp@alien8.de>,
- Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
- Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
- Chris Zankel <chris@zankel.net>,
+ Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org,
+ Borislav Petkov <bp@alien8.de>, Al Viro <viro@zeniv.linux.org.uk>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
  linux-kernel@vger.kernel.org, Christian Koenig <christian.koenig@amd.com>,
  linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
@@ -91,50 +91,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu,  7 May 2020 08:00:01 -0700 ira.weiny@intel.com wrote:
+On Thu,  7 May 2020 08:00:03 -0700 ira.weiny@intel.com wrote:
 
-> parisc reimplements the kmap calls except to flush it's dcache.  This is
-> arguably an abuse of kmap but regardless it is messy and confusing.
+> From: Ira Weiny <ira.weiny@intel.com>
 > 
-> Remove the duplicate code and have parisc define
-> ARCH_HAS_FLUSH_ON_KUNMAP for a kunmap_flush_on_unmap() architecture
-> specific call to flush the cache.
+> Most architectures define kmap_prot to be PAGE_KERNEL.
+> 
+> Let sparc and xtensa define there own and define PAGE_KERNEL as the
+> default if not overridden.
+> 
 
-checkpatch says:
-
-ERROR: #define of 'ARCH_HAS_FLUSH_ON_KUNMAP' is wrong - use Kconfig variables or standard guards instead
-#69: FILE: arch/parisc/include/asm/cacheflush.h:103:
-+#define ARCH_HAS_FLUSH_ON_KUNMAP
-
-which is fair enough, I guess.  More conventional would be
-
-arch/parisc/include/asm/cacheflush.h:
-
-static inline void kunmap_flush_on_unmap(void *addr)
-{
-	...
-}
-#define kunmap_flush_on_unmap kunmap_flush_on_unmap
+checkpatch considered useful ;)
 
 
-include/linux/highmem.h:
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: kmap-consolidate-kmap_prot-definitions-checkpatch-fixes
 
-#ifndef kunmap_flush_on_unmap
-static inline void kunmap_flush_on_unmap(void *addr)
-{
-}
-#define kunmap_flush_on_unmap kunmap_flush_on_unmap
-#endif
+WARNING: macros should not use a trailing semicolon
+#134: FILE: arch/sparc/include/asm/highmem.h:33:
++#define kmap_prot __pgprot(SRMMU_ET_PTE | SRMMU_PRIV | SRMMU_CACHE);
 
+total: 0 errors, 1 warnings, 100 lines checked
 
-static inline void kunmap_atomic_high(void *addr)
-{
-	/* Mostly nothing to do in the CONFIG_HIGHMEM=n case as kunmap_atomic()
-	 * handles re-enabling faults + preemption */
-	kunmap_flush_on_unmap(addr);
-}
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
 
+./patches/kmap-consolidate-kmap_prot-definitions.patch has style problems, please review.
 
-but I don't really think it's worth bothering changing it.	
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
 
-(Ditto patch 3/15)
+Please run checkpatch prior to sending patches
+
+Cc: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/sparc/include/asm/highmem.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/sparc/include/asm/highmem.h~kmap-consolidate-kmap_prot-definitions-checkpatch-fixes
++++ a/arch/sparc/include/asm/highmem.h
+@@ -30,7 +30,7 @@
+ /* declarations for highmem.c */
+ extern unsigned long highstart_pfn, highend_pfn;
+ 
+-#define kmap_prot __pgprot(SRMMU_ET_PTE | SRMMU_PRIV | SRMMU_CACHE);
++#define kmap_prot __pgprot(SRMMU_ET_PTE | SRMMU_PRIV | SRMMU_CACHE)
+ extern pte_t *pkmap_page_table;
+ 
+ void kmap_init(void) __init;
+_
+
