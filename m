@@ -2,63 +2,85 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A9F9C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBC55C35280
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:07:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA8E9208DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 21:42:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA8E9208DB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
+	by mail.kernel.org (Postfix) with ESMTPS id F230B20725
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:07:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kOcLODoK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F230B20725
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49J6Pq6lQmzDr1Q
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 07:42:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=stevens-zone.net (client-ip=212.227.126.131;
- helo=mout.kundenserver.de; envelope-from=darren@stevens-zone.net;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49J6yJ39SkzDqjn
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 08:07:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::242;
+ helo=mail-lj1-x242.google.com; envelope-from=naresh.kamboju@linaro.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=stevens-zone.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=kOcLODoK; dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49J6Bs17R1zDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 07:33:06 +1000 (AEST)
-Received: from Cyrus.lan ([80.189.87.220]) by mrelayeu.kundenserver.de
- (mreue009 [212.227.15.163]) with ESMTPA (Nemesis) id
- 1MfHIZ-1iwLSb1P9H-00gs9G; Thu, 07 May 2020 23:32:58 +0200
-Date: Thu, 7 May 2020 22:13:16 +0100
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org, oss@buserror.net
-Subject: [PATCH 3/5] powerpc/mpc85xx: Add Cyrus Power-off and reset
-Message-ID: <20200507221316.284e0d19@Cyrus.lan>
-X-Mailer: Claws Mail 3.13.2 (GTK+ 2.24.30; powerpc-unknown-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49J6w20DQtzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 08:05:19 +1000 (AEST)
+Received: by mail-lj1-x242.google.com with SMTP id h4so8037561ljg.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2020 15:05:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=nPPvWhYSDBZH/W9ZzOHKWz2UFG4yFEnZgxOOVnctufk=;
+ b=kOcLODoKztByz0UBmzjXeqlmhusevIjl+c2HbLw3k5rPnNKk0UOKclN/cgZBe7f2BE
+ KEqsud4Rf5RdhjLb6rTlhUM5ds3Xzk7FnKfAsKFuTOitseFo/B4W7DCsQHn6MIDZOtdM
+ XpjV+SB82Z1h1ka5YTJZ7+6LcnBoSsPmQiuy7w3g1RSKnALtjhnggH/JTqnX8Bs27TGN
+ ood1tyTML/spLGCWlwrocHp6j+kCbFQp1TxUGnP/5eZHSKTDWrjMVOJMV0mMmz5OWK8f
+ xD7VPnGMNREiVpMw0n8DDrvcOIkqDBd0J/2WjILG0vEpGGnV+iSSQP4JFsm6KT8nJ2Q/
+ xEMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=nPPvWhYSDBZH/W9ZzOHKWz2UFG4yFEnZgxOOVnctufk=;
+ b=b4WdM/UVjMIUaT3C4HjSlHrw2U3snM6qPwtZu/ndgKdSragG7iLrwxFY/XhGArfLGb
+ anHgcNcszws7Fk6+sqhVUg/ZWcT2mrN2J9oaXj//pZQV3llw3eJ6QK5f5MvHU+LoVTei
+ y8SzgnzFgshM4cQsS6GqFqWKzMR0Q+EuCxBQ/6FvW2QtS18ly4gIclPzgk037gsqAwlT
+ RyI7lJ5dq3bJSHI0lT4i5pj+caMRDnSgmEC45WOg73SRkBr/JP3+/tbukHntTEIfk2xE
+ cEqewLV3GK/aiNgfpSVAQvD+xYkW8R7YqCFrnG/jpf6a1+Tkntq3GREPm8K3Hqdt/QEv
+ 3Uow==
+X-Gm-Message-State: AGi0PuZbIbfH/tIKv6SnIrumF64tddbwPPXT1o9NRt3nMpeo+ozm1exl
+ /PHrR3+GpoCrGeXhSoCGhcRIcMs8I8iN5R1XqBiY9w==
+X-Google-Smtp-Source: APiQypKNdCY3OtiIkeJWX0PcE2nxNIMwzLCH+DsayspwmtDmIkVB8t6LffEY5ZO8WubCZPRo18ZG04Dd+peMVypsg08=
+X-Received: by 2002:a2e:2e16:: with SMTP id u22mr10215821lju.243.1588889114309; 
+ Thu, 07 May 2020 15:05:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:64McGM3Z+Dz/9QNgreqeG+BHsblXt1nCHUvA1sqw0Q1O8vjvKhe
- hGATtcmeY/Fa3oJxLVE/MyyL/fdgGTh6EKFtM7ASfd9c1r5IEVFC4/lPNGw95L60v1Yf5wm
- 9yp8lO4z3FQiq2+4pUeMcbmk70bo3t/jwr/l9+pntdO86/B5cfjsyUvD+s10TZtMy2ThhDN
- SO6DW9ws2iFWLfKQB19BQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:STImJKcutFk=:w6gIZ6Qn/B3h1bXZ5aws5X
- iTK9cjiflD3+4kxE5uwm0nz08BemywqBqrq7ylM7ePYJzWQWdZvZhta/tXDe/t/p5Z8Sohaos
- fxseEAjIhJPabV2a1Uqo+GYl3HQ+59LBOeCnvv18SeDc/2a9ZSFMJGh8sAs5k9qGTbisPlBdy
- 6ari8GUOErhH8IOdy5BkbBwFSG8l6qSZ24FYJksz4n2CfvKcO76cY2QeJJcgircYyhhdIPPD8
- E4xGFzPbsArh6s26F5LC3ftmiuofxv0CI4Cv1i5NxGx/yiXTBCfXWXRjCQa1pYSh9Avx9KajT
- k9ot8qXSB2z2AeNF/D+k8n+ybRp9IXWwXVk0TY+VRN2gmmDluF0hS1XWVXwOOryZoKYDoGYcz
- 3LpuMVQC3jdWXy5JVSuGGt3sYvzYtFT1H2y1EnsmjBVL9WOX8eHm9cufolHAjqv2NXGhIwWAY
- e7Shpdws1YC+BKakkGJADEiT+45Wlq0rHKGlYPrUiahULaULCuLd/jWCGjj4ixzCNbBz5ZeDi
- bjIbDGNDF33DF/Ujb9U6oyEKzdJo6+iRHMWvL92bEwAS3JKQgCfmC9H9e78N8bo/QasRL2hCW
- XlIF2wVN6/G055HlIqUSvKDSq3WuepceJkHhQC/ljZGGdW9xD6Vi5j6gahwnsB57bZdTCSCRX
- sEhp2whNZ1VBAZalSgkl+jFU3R4kX7jGLDpxXiIztcrShfOf08nNHwUldXc0eCP0E1TXPrYMc
- /EYRo76nnJmx62fKZwkiXulnINGuN9ouP5b8DLdZ1c4i2kbe4x4uSj8L0hKfTPpNe+8JyhBOa
- 6c9vGIvxfNuJe5yjl6FaoU5baYTB3g3wiBoHd8X3xWVuqKczA1zXaTlPQTlTjzcBKXrLSWA
+References: <1480357509-28074-1-git-send-email-johan@kernel.org>
+ <1480357509-28074-12-git-send-email-johan@kernel.org>
+ <CA+G9fYvBjUVkVhtRHVm6xXcKe2+tZN4rGdB9FzmpcfpaLhY1+g@mail.gmail.com>
+ <20200507064412.GL2042@localhost> <20200507064734.GA798308@kroah.com>
+ <20200507111312.GA1497799@kroah.com>
+In-Reply-To: <20200507111312.GA1497799@kroah.com>
+From: Naresh Kamboju <naresh.kamboju@linaro.org>
+Date: Fri, 8 May 2020 03:35:02 +0530
+Message-ID: <CA+G9fYu2SrkEHyAzF57xJz5WjgHv361qdL2wPqON_pGS4Vtxmw@mail.gmail.com>
+Subject: Re: [PATCH net 11/16] net: ethernet: marvell: mvneta: fix fixed-link
+ phydev leaks
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Johan Hovold <johan@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,39 +92,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chzigotzky@xenosoft.de
+Cc: Andrew Lunn <andrew@lunn.ch>, lkft-triage@lists.linaro.org,
+ Frank Rowand <frowand.list@gmail.com>, Sasha Levin <sashal@kernel.org>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>,
+ Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org,
+ Lars Persson <lars.persson@axis.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>, linux-omap@vger.kernel.org,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Fugang Duan <fugang.duan@nxp.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ Netdev <netdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>,
+ linux- stable <stable@vger.kernel.org>, linux-renesas-soc@vger.kernel.org,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Cyrus board has GPIO connected power-off and reset, add device tree
-nodes describing them.
+On Thu, 7 May 2020 at 16:43, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+<trim>
+> > >
+> > > Greg, 3f65047c853a ("of_mdio: add helper to deregister fixed-link
+> > > PHYs") needs to be backported as well for these.
+> > >
+> > > Original series can be found here:
+> > >
+> > >     https://lkml.kernel.org/r/1480357509-28074-1-git-send-email-johan=
+@kernel.org
+> >
+> > Ah, thanks for that, I thought I dropped all of the ones that caused
+> > build errors, but missed the above one.  I'll go take the whole series
+> > instead.
+>
+> This should now all be fixed up, thanks.
 
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+While building kernel Image for arm architecture on stable-rc 4.4 branch
+the following build error found.
 
----
+of_mdio: add helper to deregister fixed-link PHYs
+commit 3f65047c853a2a5abcd8ac1984af3452b5df4ada upstream.
 
- arch/powerpc/boot/dts/fsl/cyrus_p5020.dts | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Add helper to deregister fixed-link PHYs registered using
+of_phy_register_fixed_link().
 
-diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts index bdf0405..f0548fe
-100644 --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-+++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-@@ -73,6 +73,16 @@
- 			};
- 		};
- 
-+		gpio-poweroff {
-+			compatible = "gpio-poweroff";
-+			gpios = <&gpio0 3 1>;
-+		};
-+
-+		gpio-restart {
-+			compatible = "gpio-restart";
-+			gpios = <&gpio0 2 1>;
-+		};
-+
- 		fman@400000 {
- 			mdio@e1120 {
- 				phy3: ethernet-phy@3 {
+Convert the two drivers that care to deregister their fixed-link PHYs to
+use the new helper, but note that most drivers currently fail to do so.
+
+Signed-off-by: Johan Hovold <johan@kernel.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[only take helper function for 4.4.y - gregkh]
+
+ # make -sk KBUILD_BUILD_USER=3DTuxBuild -C/linux -j16 ARCH=3Darm
+CROSS_COMPILE=3Darm-linux-gnueabihf- HOSTCC=3Dgcc CC=3D"sccache
+arm-linux-gnueabihf-gcc" O=3Dbuild zImage
+70 #
+71 ../drivers/of/of_mdio.c: In function =E2=80=98of_phy_deregister_fixed_li=
+nk=E2=80=99:
+72 ../drivers/of/of_mdio.c:379:2: error: implicit declaration of
+function =E2=80=98fixed_phy_unregister=E2=80=99; did you mean =E2=80=98fixe=
+d_phy_register=E2=80=99?
+[-Werror=3Dimplicit-function-declaration]
+73  379 | fixed_phy_unregister(phydev);
+74  | ^~~~~~~~~~~~~~~~~~~~
+75  | fixed_phy_register
+76 ../drivers/of/of_mdio.c:381:22: error: =E2=80=98struct phy_device=E2=80=
+=99 has no
+member named =E2=80=98mdio=E2=80=99; did you mean =E2=80=98mdix=E2=80=99?
+77  381 | put_device(&phydev->mdio.dev); /* of_phy_find_device() */
+78  | ^~~~
+79  | mdix
+
+>
+> greg k-h
