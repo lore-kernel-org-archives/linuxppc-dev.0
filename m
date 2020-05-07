@@ -2,96 +2,64 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1A9DC38A24
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 17:03:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C30BCC38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:54:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66114207DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 17:03:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66114207DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2120C20661
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 20:54:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pLECSGx/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2120C20661
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49J0CB0lfqzDqsG
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 03:03:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49J5Lm3Lr1zDqvr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 06:54:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=rppt@linux.ibm.com;
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=pLECSGx/; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Hz5w1Z0nzDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 02:13:23 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 047G4OvV160549; Thu, 7 May 2020 12:12:41 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30vmp6jc3d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 12:12:41 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 047G5fk6165277;
- Thu, 7 May 2020 12:12:40 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 30vmp6jc2g-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 12:12:40 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 047G9kSs025490;
- Thu, 7 May 2020 16:12:38 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04ams.nl.ibm.com with ESMTP id 30s0g5unrs-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 07 May 2020 16:12:37 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 047GCZYR1048834
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 7 May 2020 16:12:35 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA52442041;
- Thu,  7 May 2020 16:12:35 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2DFA142047;
- Thu,  7 May 2020 16:12:21 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.148.201.211])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  7 May 2020 16:12:20 +0000 (GMT)
-Date: Thu, 7 May 2020 19:11:55 +0300
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v4 02/14] arm: add support for folded p4d page tables
-Message-ID: <20200507161155.GE683243@linux.ibm.com>
-References: <20200414153455.21744-1-rppt@kernel.org>
- <20200414153455.21744-3-rppt@kernel.org>
- <CGME20200507121658eucas1p240cf4a3e0fe5c22dda5ec4f72734149f@eucas1p2.samsung.com>
- <39ba8a04-d6b5-649d-c289-0c8b27cb66c5@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <39ba8a04-d6b5-649d-c289-0c8b27cb66c5@samsung.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
- definitions=2020-05-07_10:2020-05-07,
- 2020-05-07 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 spamscore=0
- priorityscore=1501 suspectscore=1 malwarescore=0 impostorscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 adultscore=0 mlxlogscore=999
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2003020000 definitions=main-2005070125
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49J5Jd51YJzDqlm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 06:53:02 +1000 (AEST)
+Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
+ [73.231.172.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id E2E7920735;
+ Thu,  7 May 2020 20:52:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1588884780;
+ bh=TyVMubmSwnb6HspI26I671gs2+xz/BioghUujIiqGH8=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=pLECSGx/bjY/e6dPZHg/pogKtFknD7CQxEbYnTijPvo31G65TH5qkje/0482SYoYN
+ DUxu9XSArBxL1RHMChRsQBx2Ke74CL6dm6TMRGPJJfX7xkDXTBpZl44fWyvfgMqhU0
+ epsvy3zKnV8VlRwcWKCyI4E8L4mB8LcbloZDf/RA=
+Date: Thu, 7 May 2020 13:52:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ira.weiny@intel.com
+Subject: Re: [PATCH V3 13/15] parisc/kmap: Remove duplicate kmap code
+Message-Id: <20200507135258.f430182578c0d63b7488916e@linux-foundation.org>
+In-Reply-To: <20200507150004.1423069-14-ira.weiny@intel.com>
+References: <20200507150004.1423069-1-ira.weiny@intel.com>
+ <20200507150004.1423069-14-ira.weiny@intel.com>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,109 +71,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Fenghua Yu <fenghua.yu@intel.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>,
- kvmarm@lists.cs.columbia.edu, Jonas Bonn <jonas@southpole.se>,
- Brian Cain <bcain@codeaurora.org>, linux-hexagon@vger.kernel.org,
- linux-sh@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
- Ley Foon Tan <ley.foon.tan@intel.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- uclinux-h8-devel@lists.sourceforge.jp, linux-arch@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- =?utf-8?Q?=C5=81ukasz?= Stelmach <l.stelmach@samsung.com>,
- kvm-ppc@vger.kernel.org,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Stafford Horne <shorne@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Tony Luck <tony.luck@intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- linux-kernel@vger.kernel.org, Marc Zyngier <maz@kernel.org>,
- nios2-dev@lists.rocketboards.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, linux-csky@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+ Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
+ linux-xtensa@linux-xtensa.org, Borislav Petkov <bp@alien8.de>,
+ Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Christian Koenig <christian.koenig@amd.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Thu,  7 May 2020 08:00:01 -0700 ira.weiny@intel.com wrote:
 
-On Thu, May 07, 2020 at 02:16:56PM +0200, Marek Szyprowski wrote:
-> Hi
+> parisc reimplements the kmap calls except to flush it's dcache.  This is
+> arguably an abuse of kmap but regardless it is messy and confusing.
 > 
-> On 14.04.2020 17:34, Mike Rapoport wrote:
-> > From: Mike Rapoport <rppt@linux.ibm.com>
-> >
-> > Implement primitives necessary for the 4th level folding, add walks of p4d
-> > level where appropriate, and remove __ARCH_USE_5LEVEL_HACK.
-> >
-> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> 
-> Today I've noticed that kexec is broken on ARM 32bit. Bisecting between 
-> current linux-next and v5.7-rc1 pointed to this commit. I've tested this 
-> on Odroid XU4 and Raspberry Pi4 boards. Here is the relevant log:
-> 
-> # kexec --kexec-syscall -l zImage --append "$(cat /proc/cmdline)"
-> memory_range[0]:0x40000000..0xbe9fffff
-> memory_range[0]:0x40000000..0xbe9fffff
-> # kexec -e
-> kexec_core: Starting new kernel
-> 8<--- cut here ---
-> Unable to handle kernel paging request at virtual address c010f1f4
-> pgd = c6817793
-> [c010f1f4] *pgd=4000041e(bad)
-> Internal error: Oops: 80d [#1] PREEMPT ARM
-> Modules linked in:
-> CPU: 0 PID: 1329 Comm: kexec Tainted: G        W 
-> 5.7.0-rc3-00127-g6cba81ed0f62 #611
-> Hardware name: Samsung Exynos (Flattened Device Tree)
-> PC is at machine_kexec+0x40/0xfc
+> Remove the duplicate code and have parisc define
+> ARCH_HAS_FLUSH_ON_KUNMAP for a kunmap_flush_on_unmap() architecture
+> specific call to flush the cache.
 
-Any chance you have the debug info in this kernel?
-scripts/faddr2line would come handy here.
+checkpatch says:
 
-> LR is at 0xffffffff
-> pc : [<c010f0b4>]    lr : [<ffffffff>]    psr: 60000013
-> sp : ebc13e60  ip : 40008000  fp : 00000001
-> r10: 00000058  r9 : fee1dead  r8 : 00000001
-> r7 : c121387c  r6 : 6c224000  r5 : ece40c00  r4 : ec222000
-> r3 : c010f1f4  r2 : c1100000  r1 : c1100000  r0 : 418d0000
-> Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment none
-> Control: 10c5387d  Table: 6bc14059  DAC: 00000051
-> Process kexec (pid: 1329, stack limit = 0x366bb4dc)
-> Stack: (0xebc13e60 to 0xebc14000)
-> ...
-> [<c010f0b4>] (machine_kexec) from [<c01c0d84>] (kernel_kexec+0x74/0x7c)
-> [<c01c0d84>] (kernel_kexec) from [<c014b1bc>] (__do_sys_reboot+0x1f8/0x210)
-> [<c014b1bc>] (__do_sys_reboot) from [<c0100060>] (ret_fast_syscall+0x0/0x28)
-> Exception stack(0xebc13fa8 to 0xebc13ff0)
-> ...
-> ---[ end trace 3e8d6c81723c778d ]---
-> 1329 Segmentation fault      ./kexec -e
-> 
-> > ---
-> >   arch/arm/include/asm/pgtable.h     |  1 -
-> >   arch/arm/lib/uaccess_with_memcpy.c |  7 +++++-
-> >   arch/arm/mach-sa1100/assabet.c     |  2 +-
-> >   arch/arm/mm/dump.c                 | 29 +++++++++++++++++-----
-> >   arch/arm/mm/fault-armv.c           |  7 +++++-
-> >   arch/arm/mm/fault.c                | 22 ++++++++++------
-> >   arch/arm/mm/idmap.c                |  3 ++-
-> >   arch/arm/mm/init.c                 |  2 +-
-> >   arch/arm/mm/ioremap.c              | 12 ++++++---
-> >   arch/arm/mm/mm.h                   |  2 +-
-> >   arch/arm/mm/mmu.c                  | 35 +++++++++++++++++++++-----
-> >   arch/arm/mm/pgd.c                  | 40 ++++++++++++++++++++++++------
-> >   12 files changed, 125 insertions(+), 37 deletions(-)
-> >
-> > ...
-> 
-> Best regards
-> -- 
-> Marek Szyprowski, PhD
-> Samsung R&D Institute Poland
-> 
+ERROR: #define of 'ARCH_HAS_FLUSH_ON_KUNMAP' is wrong - use Kconfig variables or standard guards instead
+#69: FILE: arch/parisc/include/asm/cacheflush.h:103:
++#define ARCH_HAS_FLUSH_ON_KUNMAP
 
--- 
-Sincerely yours,
-Mike.
+which is fair enough, I guess.  More conventional would be
+
+arch/parisc/include/asm/cacheflush.h:
+
+static inline void kunmap_flush_on_unmap(void *addr)
+{
+	...
+}
+#define kunmap_flush_on_unmap kunmap_flush_on_unmap
+
+
+include/linux/highmem.h:
+
+#ifndef kunmap_flush_on_unmap
+static inline void kunmap_flush_on_unmap(void *addr)
+{
+}
+#define kunmap_flush_on_unmap kunmap_flush_on_unmap
+#endif
+
+
+static inline void kunmap_atomic_high(void *addr)
+{
+	/* Mostly nothing to do in the CONFIG_HIGHMEM=n case as kunmap_atomic()
+	 * handles re-enabling faults + preemption */
+	kunmap_flush_on_unmap(addr);
+}
+
+
+but I don't really think it's worth bothering changing it.	
+
+(Ditto patch 3/15)
