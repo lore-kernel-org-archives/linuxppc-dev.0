@@ -2,24 +2,23 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7222C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 16:34:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0653EC38A24
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 16:40:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D0B620643
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 16:34:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D0B620643
+	by mail.kernel.org (Postfix) with ESMTPS id 507E220838
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 16:40:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 507E220838
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49HzZ64b1PzDqRN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 02:34:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49HzjH3KlJzDqFL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 02:40:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
@@ -28,27 +27,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49HxTh1VZBzDqVm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 01:00:23 +1000 (AEST)
-IronPort-SDR: jKCZ9nrOY2yGkgwhsYJbV3hXP23p+EBMbIPxj6gIkPsv8A3ZUiohXoeg90xm1VcGApMA/eBhJf
- KTRUsPxVbrfA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49HxTj6CdbzDqVm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 01:00:25 +1000 (AEST)
+IronPort-SDR: KY+sRi/cxWWFljLWcqbGfHoY8lEZEim8qLc5lC/xiHFzDJ/SMjTF4y950CagFcSDljli3znm8o
+ JuIsNsWSw3+w==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 May 2020 08:00:21 -0700
-IronPort-SDR: 8kelONvFWkDSLnlxb+aC09SCcHpfPaQNdOui/5AjOqlu1OGR0HzXrUJ86xU7g9SACnHrbkp/Nh
- JAksyq4FIvkw==
-X-IronPort-AV: E=Sophos;i="5.73,364,1583222400"; d="scan'208";a="339377415"
+ 07 May 2020 08:00:23 -0700
+IronPort-SDR: 4+lFW9Yj7kJIdT+ai15CylOphoSR+eOiOGiYQddow4O8kNGA7yeiAoFRFuZTXUusfeunsTY2e1
+ /RFOKnjE4+Mw==
+X-IronPort-AV: E=Sophos;i="5.73,364,1583222400"; d="scan'208";a="435314561"
 Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 May 2020 08:00:19 -0700
+ by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 May 2020 08:00:21 -0700
 From: ira.weiny@intel.com
 To: linux-kernel@vger.kernel.org,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH V3 12/15] kmap: Remove kmap_atomic_to_page()
-Date: Thu,  7 May 2020 08:00:00 -0700
-Message-Id: <20200507150004.1423069-13-ira.weiny@intel.com>
+Subject: [PATCH V3 14/15] sparc: Remove unnecessary includes
+Date: Thu,  7 May 2020 08:00:02 -0700
+Message-Id: <20200507150004.1423069-15-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200507150004.1423069-1-ira.weiny@intel.com>
 References: <20200507150004.1423069-1-ira.weiny@intel.com>
@@ -86,8 +85,10 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-kmap_atomic_to_page() has no callers and is only defined on 1 arch and
-declared on another.  Remove it.
+linux/highmem.h has not been needed for the pte_offset_map =>
+kmap_atomic use in sparc for some time (~2002)
+
+Remove this include.
 
 Suggested-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
@@ -96,59 +97,34 @@ Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 Changes from V2:
 	New Patch for this series
 ---
- arch/csky/include/asm/highmem.h  |  1 -
- arch/csky/mm/highmem.c           | 13 -------------
- arch/nds32/include/asm/highmem.h |  1 -
- 3 files changed, 15 deletions(-)
+ arch/sparc/mm/io-unit.c | 1 -
+ arch/sparc/mm/iommu.c   | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/arch/csky/include/asm/highmem.h b/arch/csky/include/asm/highmem.h
-index 263fbddcd0a3..ea2f3f39174d 100644
---- a/arch/csky/include/asm/highmem.h
-+++ b/arch/csky/include/asm/highmem.h
-@@ -33,7 +33,6 @@ extern pte_t *pkmap_page_table;
- #define ARCH_HAS_KMAP_FLUSH_TLB
- extern void kmap_flush_tlb(unsigned long addr);
- extern void *kmap_atomic_pfn(unsigned long pfn);
--extern struct page *kmap_atomic_to_page(void *ptr);
- 
- #define flush_cache_kmaps() do {} while (0)
- 
-diff --git a/arch/csky/mm/highmem.c b/arch/csky/mm/highmem.c
-index 3ae5c8cd7619..3b3f622f5ae9 100644
---- a/arch/csky/mm/highmem.c
-+++ b/arch/csky/mm/highmem.c
-@@ -81,19 +81,6 @@ void *kmap_atomic_pfn(unsigned long pfn)
- 	return (void *) vaddr;
- }
- 
--struct page *kmap_atomic_to_page(void *ptr)
--{
--	unsigned long idx, vaddr = (unsigned long)ptr;
--	pte_t *pte;
--
--	if (vaddr < FIXADDR_START)
--		return virt_to_page(ptr);
--
--	idx = virt_to_fix(vaddr);
--	pte = kmap_pte - (idx - FIX_KMAP_BEGIN);
--	return pte_page(*pte);
--}
--
- static void __init kmap_pages_init(void)
- {
- 	unsigned long vaddr;
-diff --git a/arch/nds32/include/asm/highmem.h b/arch/nds32/include/asm/highmem.h
-index 4d21308549c9..a48a6536d41a 100644
---- a/arch/nds32/include/asm/highmem.h
-+++ b/arch/nds32/include/asm/highmem.h
-@@ -52,7 +52,6 @@ extern void kmap_init(void);
-  */
- #ifdef CONFIG_HIGHMEM
- extern void *kmap_atomic_pfn(unsigned long pfn);
--extern struct page *kmap_atomic_to_page(void *ptr);
- #endif
- 
- #endif
+diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
+index 289276b99b01..08238d989cfd 100644
+--- a/arch/sparc/mm/io-unit.c
++++ b/arch/sparc/mm/io-unit.c
+@@ -10,7 +10,6 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/mm.h>
+-#include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
+ #include <linux/bitops.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/of.h>
+diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
+index b00dde13681b..f1e08e30b64e 100644
+--- a/arch/sparc/mm/iommu.c
++++ b/arch/sparc/mm/iommu.c
+@@ -12,7 +12,6 @@
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+-#include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
+ #include <linux/dma-mapping.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
 -- 
 2.25.1
 
