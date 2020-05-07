@@ -2,26 +2,26 @@ Return-Path: <SRS0=vA0f=6V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C62DC35280
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5858C35280
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:25:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B023206B8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:24:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5566F20870
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 May 2020 22:25:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oGR62nnt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B023206B8
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OJFE/I/y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5566F20870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49J7Kd2rDrzDqkW
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 08:24:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49J7Ml46NszDqw1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 08:25:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
@@ -29,29 +29,29 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=oGR62nnt; dkim-atps=neutral
+ header.s=default header.b=OJFE/I/y; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49J2Y25YZBzDqlD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 04:48:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49J2fZ21bFzDqlD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 04:53:25 +1000 (AEST)
 Received: from embeddedor (unknown [189.207.59.248])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 18FF521BE5;
- Thu,  7 May 2020 18:48:35 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 15D562495D;
+ Thu,  7 May 2020 18:53:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1588877315;
- bh=eVID7GhEbcf0/8Q5jvZMrtErhyUthXxPmrIJvJbk/+0=;
+ s=default; t=1588877603;
+ bh=LtgQkSM/IwxpKlPxttxhXPuDElKoRhjvop/LYhzxF6o=;
  h=Date:From:To:Cc:Subject:From;
- b=oGR62nntwkq79FCOWn7nFoj1c0oW3WjNOnphBMx4Dq82vtNhdigMNzMmLyQFKEC83
- A0ZA+AbFawVcm9ae2RIV9vD6RbaS17vFxeyDGH+RbBTdnEKlmiLAfrz2jskEv5bsuF
- 6mfzbK2eQ9T3AzL1Kjk8CeWEw057BF+M6M44vK6w=
-Date: Thu, 7 May 2020 13:53:01 -0500
+ b=OJFE/I/yy5SEyPknWvR7UAN9a8xrQZex53O9c9WwdkoCg6u1Uen6YtMZMTxeeN0Ir
+ VPvf/k9YWgaopZejhMrm9W6zoC+2z2B6r3knAKU7Te94WN6Qt0bhKhO4D7R8WgWOwR
+ 0TxOEAOxVk6s0Q/38oDXN0Byr0yLN4X1EVzCQgvE=
+Date: Thu, 7 May 2020 13:57:49 -0500
 From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To: Li Yang <leoyang.li@nxp.com>
-Subject: [PATCH] treewide: Replace zero-length array with flexible-array
-Message-ID: <20200507185301.GA14333@embeddedor>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Replace zero-length array with flexible-array
+Message-ID: <20200507185749.GA14994@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -68,8 +68,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -111,20 +110,20 @@ This issue was found with the help of Coccinelle.
 
 Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
- include/linux/fsl/bestcomm/bestcomm.h |    2 +-
+ arch/powerpc/platforms/powermac/nvram.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/fsl/bestcomm/bestcomm.h b/include/linux/fsl/bestcomm/bestcomm.h
-index a0e2e6b19b57..154e541ce57e 100644
---- a/include/linux/fsl/bestcomm/bestcomm.h
-+++ b/include/linux/fsl/bestcomm/bestcomm.h
-@@ -27,7 +27,7 @@
-  */
- struct bcom_bd {
- 	u32	status;
--	u32	data[0];	/* variable payload size */
-+	u32	data[];	/* variable payload size */
+diff --git a/arch/powerpc/platforms/powermac/nvram.c b/arch/powerpc/platforms/powermac/nvram.c
+index dc7a5bae8f1c..853ccc4480e2 100644
+--- a/arch/powerpc/platforms/powermac/nvram.c
++++ b/arch/powerpc/platforms/powermac/nvram.c
+@@ -55,7 +55,7 @@ struct chrp_header {
+   u8		cksum;
+   u16		len;
+   char          name[12];
+-  u8		data[0];
++  u8		data[];
  };
  
- /* ======================================================================== */
+ struct core99_header {
 
