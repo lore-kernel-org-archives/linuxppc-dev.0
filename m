@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 892EBC38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:22:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECAB7C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:24:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C5A621473
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:22:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9D058208CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:24:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oGeRkJlP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C5A621473
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cG6SbF5P"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D058208CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JbG42WtbzDrBY
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:22:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JbJb5VrKzDrCt
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:24:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -29,31 +29,35 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=cG6SbF5P; 
+ dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb625D3zzDqXT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6C55L4zDqkR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=qdYWLNhq6AYzQRc2x28TBNIUBfuKUw2o/UwXGfr0pxM=; b=oGeRkJlPxCrwCXqudpdswPTJw4
- /7Ft+aEzCwiGSaMG2qWCqHijVBZPCn+IfXnlhUF+wo7lPFJ4m99u6S66QoPK6k7W700TOXtaBqwVC
- HLubG1RPmdNbx51WdW3dp9myMyflbkJ4QrSTpNsQLVlgYLqJx0DdeBqjeV5i5p6DlslfzweATAKwZ
- p6drssAMDn7pmbyUv2tH+tczcsE3UxC/UkqVlkUyHRiWQzYMxgpR7HJbCMm5Hsxjngd4kYXgkm5EC
- zihUFUpaL4QtulvwqKjA0+0XnD7lTYIFapYgOPJKhawbF/AOJmNqgBhlfdN6rTEjVDN0iAr987svI
- 3YvFd1Sg==;
+ bh=z+5kJZZyByJU3IJf1jfbVMQe+NBGne9Opxw8kiFryiE=; b=cG6SbF5PQ7oinj68xTV0bxGkzU
+ sSFsFa44SLrYmDofMrNmW8/LDzdnOfreAd34wq44I/1C58olU5fTmwxxvc2B3BLkoYp24cMIakjwn
+ DaECxZsQupFliUoUpSvJgMyluftD2dNLF34WVal/3hfin8pJeMaS00hYZT0pweKml+djpcE8eMEX1
+ VemE6evj0iMC5TESsIOKRLOOyJYG5I7PnVDdIt9FC27a9d5Qua4My20QC83rXzH7Zfm/+r1oJlXeU
+ 4oxyUY2LxQKfpZN1tlAi/NjGwh64ftFg2BXDbO0lSq8bR+qqkurXuUJryI+ffIUyDPbDDZfLND+9T
+ k2rxQMVw==;
 Received: from [2001:4bb8:180:9d3f:90d7:9df8:7cd:3504] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jX5en-0004Ry-OW; Fri, 08 May 2020 16:15:26 +0000
+ id 1jX5f0-0004fd-7i; Fri, 08 May 2020 16:15:38 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 02/15] simdisk: stop using ->queuedata
-Date: Fri,  8 May 2020 18:15:04 +0200
-Message-Id: <20200508161517.252308-3-hch@lst.de>
+Subject: [PATCH 06/15] rsxx: stop using ->queuedata
+Date: Fri,  8 May 2020 18:15:08 +0200
+Message-Id: <20200508161517.252308-7-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200508161517.252308-1-hch@lst.de>
 References: <20200508161517.252308-1-hch@lst.de>
@@ -87,31 +91,39 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/xtensa/platforms/iss/simdisk.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/block/rsxx/dev.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/arch/xtensa/platforms/iss/simdisk.c b/arch/xtensa/platforms/iss/simdisk.c
-index 49322b66cda93..31b5020077a05 100644
---- a/arch/xtensa/platforms/iss/simdisk.c
-+++ b/arch/xtensa/platforms/iss/simdisk.c
-@@ -103,7 +103,7 @@ static void simdisk_transfer(struct simdisk *dev, unsigned long sector,
+diff --git a/drivers/block/rsxx/dev.c b/drivers/block/rsxx/dev.c
+index 8ffa8260dcafe..6dde80b096c62 100644
+--- a/drivers/block/rsxx/dev.c
++++ b/drivers/block/rsxx/dev.c
+@@ -133,7 +133,7 @@ static void bio_dma_done_cb(struct rsxx_cardinfo *card,
  
- static blk_qc_t simdisk_make_request(struct request_queue *q, struct bio *bio)
+ static blk_qc_t rsxx_make_request(struct request_queue *q, struct bio *bio)
  {
--	struct simdisk *dev = q->queuedata;
-+	struct simdisk *dev = bio->bi_disk->private_data;
- 	struct bio_vec bvec;
- 	struct bvec_iter iter;
- 	sector_t sector = bio->bi_iter.bi_sector;
-@@ -273,8 +273,6 @@ static int __init simdisk_setup(struct simdisk *dev, int which,
- 		goto out_alloc_queue;
+-	struct rsxx_cardinfo *card = q->queuedata;
++	struct rsxx_cardinfo *card = bio->bi_disk->private_data;
+ 	struct rsxx_bio_meta *bio_meta;
+ 	blk_status_t st = BLK_STS_IOERR;
+ 
+@@ -282,8 +282,6 @@ int rsxx_setup_dev(struct rsxx_cardinfo *card)
+ 		card->queue->limits.discard_alignment   = RSXX_HW_BLK_SIZE;
  	}
  
--	dev->queue->queuedata = dev;
+-	card->queue->queuedata = card;
 -
- 	dev->gd = alloc_disk(SIMDISK_MINORS);
- 	if (dev->gd == NULL) {
- 		pr_err("alloc_disk failed\n");
+ 	snprintf(card->gendisk->disk_name, sizeof(card->gendisk->disk_name),
+ 		 "rsxx%d", card->disk_id);
+ 	card->gendisk->major = card->major;
+@@ -304,7 +302,6 @@ void rsxx_destroy_dev(struct rsxx_cardinfo *card)
+ 	card->gendisk = NULL;
+ 
+ 	blk_cleanup_queue(card->queue);
+-	card->queue->queuedata = NULL;
+ 	unregister_blkdev(card->major, DRIVER_NAME);
+ }
+ 
 -- 
 2.26.2
 
