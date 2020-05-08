@@ -2,92 +2,56 @@ Return-Path: <SRS0=nAOP=6W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC14BC38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 20:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24E49C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 20:42:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75ECE20A8B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 20:06:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Poj0OkKv";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Poj0OkKv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75ECE20A8B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 343F121775
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 20:42:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 343F121775
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JhCt1S6nzDr72
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 06:06:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=fweimer@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Jj221rCzzDr96
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 06:42:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Poj0OkKv; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Poj0OkKv; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
- [205.139.110.61])
+ spf=none (no SPF record) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jh9N5Dg4zDrBx
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 06:03:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1588968228;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=X5kwfCZ8GEMui0d70gWIkFX2ZjpyuOsqtOJu+2yxxqE=;
- b=Poj0OkKvHUY9YLvqHwXl2cCF7MBzq8musmd5F5D63EYNYpyJbHp2inUgVCE+6OFfQV7xpb
- HJ0Y/fSoiuurodnypxfdQ+1wRO2v8eH4qDISEExCEAZ9Bt2O/xjIIBkRLZw73yWGo1uhc2
- 5+aE4/UKvUkUVe/0Jq2SWNhRudRNC74=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1588968228;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=X5kwfCZ8GEMui0d70gWIkFX2ZjpyuOsqtOJu+2yxxqE=;
- b=Poj0OkKvHUY9YLvqHwXl2cCF7MBzq8musmd5F5D63EYNYpyJbHp2inUgVCE+6OFfQV7xpb
- HJ0Y/fSoiuurodnypxfdQ+1wRO2v8eH4qDISEExCEAZ9Bt2O/xjIIBkRLZw73yWGo1uhc2
- 5+aE4/UKvUkUVe/0Jq2SWNhRudRNC74=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-308-enATtp9oPj2wo-KN0UthHg-1; Fri, 08 May 2020 16:03:26 -0400
-X-MC-Unique: enATtp9oPj2wo-KN0UthHg-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 5F6401005510;
- Fri,  8 May 2020 20:03:25 +0000 (UTC)
-Received: from oldenburg2.str.redhat.com (ovpn-113-187.ams2.redhat.com
- [10.36.113.187])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 607B8702EC;
- Fri,  8 May 2020 20:03:22 +0000 (UTC)
-From: Florian Weimer <fweimer@redhat.com>
-To: Sandipan Das <sandipan@linux.ibm.com>
-Subject: Re: [PATCH 2/2] selftests: vm: pkeys: Fix powerpc access right updates
-References: <cover.1588959697.git.sandipan@linux.ibm.com>
- <cover.1588959697.git.sandipan@linux.ibm.com>
- <5f65cf37be993760de8112a88da194e3ccbb2bf8.1588959697.git.sandipan@linux.ibm.com>
- <87blmymhkx.fsf@oldenburg2.str.redhat.com>
- <a40c364d-e204-1d63-c211-7cdfdccb32e0@linux.ibm.com>
-Date: Fri, 08 May 2020 22:03:20 +0200
-In-Reply-To: <a40c364d-e204-1d63-c211-7cdfdccb32e0@linux.ibm.com> (Sandipan
- Das's message of "Sat, 9 May 2020 01:24:26 +0530")
-Message-ID: <87mu6ii48n.fsf@oldenburg2.str.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49JhzD2zCfzDrFn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 06:40:07 +1000 (AEST)
+Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1jX9kg-0000Ri-N0; Fri, 08 May 2020 15:37:52 -0500
+Message-ID: <c4ca1e6aed1fcb73acda5d8a43954f05f890db6d.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 08 May 2020 15:37:45 -0500
+In-Reply-To: <20200507221550.6b02a290@Cyrus.lan>
+References: <20200507221550.6b02a290@Cyrus.lan>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: darren@stevens-zone.net, linuxppc-dev@lists.ozlabs.org,
+ chzigotzky@xenosoft.de
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [PATCH 4/5] powerpc/mpc85xx: Add Cyrus HDD LED
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,38 +63,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, linuxram@us.ibm.com, linux-mm@kvack.org,
- linux-kselftest@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: chzigotzky@xenosoft.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Sandipan Das:
+On Thu, 2020-05-07 at 22:15 +0100, Darren Stevens wrote:
+> The Cyrus board has its HDD LED connected to a GPIO pin. Add a device
+> tree entry for this.
+> 
+> Signed-off-By: Darren Stevens <darren@stevens-zone.net>
+> 
+> ---
+>  arch/powerpc/boot/dts/fsl/cyrus_p5020.dts | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts index f0548fe..74c100f
+> 100644 --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> +++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+> @@ -83,6 +83,16 @@
+>  			gpios = <&gpio0 2 1>;
+>  		};
+>  
+> +		leds {
+> +			compatible = "gpio-leds";
+> +
+> +			hdd {
+> +				label = "Disk Activity";
+> +				gpios = <&gpio0 5 0>;
+> +				linux,default-trigger =
+> "disk-activity";
+> +			};
 
-> Hi Florian,
->
-> On 08/05/20 11:31 pm, Florian Weimer wrote:
->> * Sandipan Das:
->> 
->>> The Power ISA mandates that all writes to the Authority
->>> Mask Register (AMR) must always be preceded as well as
->>> succeeded by a context-synchronizing instruction. This
->>> applies to both the privileged and unprivileged variants
->>> of the Move To AMR instruction.
->> 
->> Ugh.  Do you have a reference for that?
->> 
->> We need to fix this in glibc.
->> 
->
-> This is from Table 6 of Chapter 11 in page 1134 of Power
-> ISA 3.0B. The document can be found here:
-> https://ibm.ent.box.com/s/1hzcwkwf8rbju5h9iyf44wm94amnlcrv
+Documentation/devicetree/bindings/leds/common.yaml says that label is
+deprecated, and to "use 'function' and 'color' properties instead".
 
-Thanks a lot!  I filed:
+Also, please CC devicetree@vger.kernel.org on these patches.
 
-  <https://sourceware.org/bugzilla/show_bug.cgi?id=25954>
+-Scott
 
-Florian
 
