@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ECAB7C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30FB2C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:27:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D058208CA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:24:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D6F79208CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:27:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cG6SbF5P"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D058208CA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="p0ElUfR3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6F79208CA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JbJb5VrKzDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:24:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JbMd4B2zzDrCN
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:27:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=cG6SbF5P; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=p0ElUfR3; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6C55L4zDqkR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6S08lpzDqwT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=z+5kJZZyByJU3IJf1jfbVMQe+NBGne9Opxw8kiFryiE=; b=cG6SbF5PQ7oinj68xTV0bxGkzU
- sSFsFa44SLrYmDofMrNmW8/LDzdnOfreAd34wq44I/1C58olU5fTmwxxvc2B3BLkoYp24cMIakjwn
- DaECxZsQupFliUoUpSvJgMyluftD2dNLF34WVal/3hfin8pJeMaS00hYZT0pweKml+djpcE8eMEX1
- VemE6evj0iMC5TESsIOKRLOOyJYG5I7PnVDdIt9FC27a9d5Qua4My20QC83rXzH7Zfm/+r1oJlXeU
- 4oxyUY2LxQKfpZN1tlAi/NjGwh64ftFg2BXDbO0lSq8bR+qqkurXuUJryI+ffIUyDPbDDZfLND+9T
- k2rxQMVw==;
+ bh=v95R0zjTgUANy896rAxmeWpttbECsK32wQlrntDvB9M=; b=p0ElUfR3gK1Rk5PmAzNROj0KqY
+ c74p4QSvm4KdW68E1PC0gFs+KF+EO5SGozWG9ESk4gFf2HbF9XfXdh77qoEi3XzLs0Q43Xy9f26fv
+ BAaig/pdUtmrY/BtkXTGeCDNxZjhpZcXPrh52CtE57IcvP5DedivWBwD/tMewiCvxZ50AfXIR2HP6
+ o7+ZJ1BiHyG6xf1CJfZP9+pZgfbtfB1+M9Ku/h/9GLXId/E1gM7ns2sEo65YxszlshCiIe+YNWoCD
+ sKmSj/N22isoShI/24frjlLR2xgBEGCSYuD1u8yApU/BWCbrigPs9wWHe777HKrqy8m6Z1TP9tMUg
+ QyuKblsg==;
 Received: from [2001:4bb8:180:9d3f:90d7:9df8:7cd:3504] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jX5f0-0004fd-7i; Fri, 08 May 2020 16:15:38 +0000
+ id 1jX5f6-0004i4-Ek; Fri, 08 May 2020 16:15:45 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 06/15] rsxx: stop using ->queuedata
-Date: Fri,  8 May 2020 18:15:08 +0200
-Message-Id: <20200508161517.252308-7-hch@lst.de>
+Subject: [PATCH 08/15] zram: stop using ->queuedata
+Date: Fri,  8 May 2020 18:15:10 +0200
+Message-Id: <20200508161517.252308-9-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200508161517.252308-1-hch@lst.de>
 References: <20200508161517.252308-1-hch@lst.de>
@@ -91,38 +91,29 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/rsxx/dev.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/block/zram/zram_drv.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/block/rsxx/dev.c b/drivers/block/rsxx/dev.c
-index 8ffa8260dcafe..6dde80b096c62 100644
---- a/drivers/block/rsxx/dev.c
-+++ b/drivers/block/rsxx/dev.c
-@@ -133,7 +133,7 @@ static void bio_dma_done_cb(struct rsxx_cardinfo *card,
- 
- static blk_qc_t rsxx_make_request(struct request_queue *q, struct bio *bio)
+diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+index ebb234f36909c..e1a6c74c7a4ba 100644
+--- a/drivers/block/zram/zram_drv.c
++++ b/drivers/block/zram/zram_drv.c
+@@ -1593,7 +1593,7 @@ static void __zram_make_request(struct zram *zram, struct bio *bio)
+  */
+ static blk_qc_t zram_make_request(struct request_queue *queue, struct bio *bio)
  {
--	struct rsxx_cardinfo *card = q->queuedata;
-+	struct rsxx_cardinfo *card = bio->bi_disk->private_data;
- 	struct rsxx_bio_meta *bio_meta;
- 	blk_status_t st = BLK_STS_IOERR;
+-	struct zram *zram = queue->queuedata;
++	struct zram *zram = bio->bi_disk->private_data;
  
-@@ -282,8 +282,6 @@ int rsxx_setup_dev(struct rsxx_cardinfo *card)
- 		card->queue->limits.discard_alignment   = RSXX_HW_BLK_SIZE;
- 	}
- 
--	card->queue->queuedata = card;
--
- 	snprintf(card->gendisk->disk_name, sizeof(card->gendisk->disk_name),
- 		 "rsxx%d", card->disk_id);
- 	card->gendisk->major = card->major;
-@@ -304,7 +302,6 @@ void rsxx_destroy_dev(struct rsxx_cardinfo *card)
- 	card->gendisk = NULL;
- 
- 	blk_cleanup_queue(card->queue);
--	card->queue->queuedata = NULL;
- 	unregister_blkdev(card->major, DRIVER_NAME);
- }
+ 	if (!valid_io_request(zram, bio->bi_iter.bi_sector,
+ 					bio->bi_iter.bi_size)) {
+@@ -1916,7 +1916,6 @@ static int zram_add(void)
+ 	zram->disk->first_minor = device_id;
+ 	zram->disk->fops = &zram_devops;
+ 	zram->disk->queue = queue;
+-	zram->disk->queue->queuedata = zram;
+ 	zram->disk->private_data = zram;
+ 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
  
 -- 
 2.26.2
