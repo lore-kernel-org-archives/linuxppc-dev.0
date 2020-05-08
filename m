@@ -2,86 +2,51 @@ Return-Path: <SRS0=nAOP=6W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=FAKE_REPLY_C,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5CD9C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 05:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35158C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 06:10:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52BCA208D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 05:08:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PeoiCp66"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52BCA208D6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D9C2D20746
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 06:10:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9C2D20746
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JJHv6HJzzDr3N
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 15:08:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JKgL0BMXzDqyh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:10:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
- helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
+ helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=PeoiCp66; dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+Received: from fornost.hmeau.com (helcar.hmeau.com [216.24.177.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49JHYb0jbYzDqvp
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 14:34:58 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id v63so290683pfb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2020 21:34:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=hGMx/GhOm4RxkjPqXcJGh/pt4EublTjg+RR69QfMk7U=;
- b=PeoiCp66YB8mpKd/EjbEC5QLTfS74+GUUjOSjJe8hYorhegMUVQcZaSf5vycgXgidW
- XdbYQOsAUfVsZN75KEIq/w+EYYBEslg7rxWJG/vyucnc+CI8megcynHVSjE4W7Bp/5NF
- CfMnwXkqZtwAPVw2Hge3LUGHa+1wr6Ehbv4EAGFAT6aUTQTUzubdwjaaIC+wy5oXFc52
- Wp+7NIL89rw6w2s5jUgJI9U6z/wWfymRZnMuE9VqkW5TV6LHG74fx1BAzPM9Mf8YPIVl
- Kmjl5YCxcWI+rhDkIOM0ARlw+FRiuIYfxGGsu375u9kXiqvjxb8Y2QPFej3jqrF01Ysd
- GvxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=hGMx/GhOm4RxkjPqXcJGh/pt4EublTjg+RR69QfMk7U=;
- b=XBOKoLw85JdmjkA1ViV/2QRAgMYN/MZ2MKUlyywaT4JbmKiT8vCYl6teMWnoAMIblz
- evf4Om5AkjCeaXYIygydmemGMaL9/GvP/hHskYeYiyTCMIoX65WG1o7mNbiDm3D/hkab
- p4rO3/WUq2Ppa1UcMAR0yZvQsdZRpMoUgqE8i5hXIzv9iFId0TInL9+zgn8NetloBYNu
- bZFR0LmPwLTYS6rCtkKBMrNE6TrtAvmnZ/2RWw56bUgda6Opg1cteftQYAULsIPiG5PL
- iyHeNpaKNznX+VFP2gbnb4QRr1mJWXBLatw06uqNMQ2hlLKQ5cHvMaffW6ug5v3JM4Us
- 1PJw==
-X-Gm-Message-State: AGi0PubqEVRJBQJ2o4LvgqzyHIE0aJgLzRSJyv9hbkowCArc9JjoGTLJ
- KdxQ1HXnMEBniqqzcMcKp12WpGKn
-X-Google-Smtp-Source: APiQypIWVBD3PqkAVi1isVC2gRBHnY6w8Xe9/3g1DPes/kiZWM4Si1yYwRnaWgqnPdq34hA79k8sjQ==
-X-Received: by 2002:a65:6797:: with SMTP id e23mr530224pgr.409.1588912496019; 
- Thu, 07 May 2020 21:34:56 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com (61-68-214-199.tpgi.com.au. [61.68.214.199])
- by smtp.gmail.com with ESMTPSA id i9sm358813pfk.199.2020.05.07.21.34.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 07 May 2020 21:34:55 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 16/16] powerpc/traps: Machine check fix RI=0 recoverability
- check
-Date: Fri,  8 May 2020 14:34:08 +1000
-Message-Id: <20200508043408.886394-17-npiggin@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20200508043408.886394-1-npiggin@gmail.com>
-References: <20200508043408.886394-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49JKdQ5X5tzDqyh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 16:08:24 +1000 (AEST)
+Received: from gwarestrin.me.apana.org.au ([192.168.0.7]
+ helo=gwarestrin.arnor.me.apana.org.au)
+ by fornost.hmeau.com with smtp (Exim 4.89 #2 (Debian))
+ id 1jWw4W-00055R-7Y; Fri, 08 May 2020 16:01:21 +1000
+Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
+ Fri, 08 May 2020 16:07:59 +1000
+Date: Fri, 8 May 2020 16:07:59 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH 0/7] sha1 library cleanup
+Message-ID: <20200508060759.GA24982@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200502182427.104383-1-ebiggers@kernel.org>
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,46 +58,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-s390@vger.kernel.org, Jason@zx2c4.com, tytso@mit.edu,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+ linux-crypto@vger.kernel.org, pabeni@redhat.com, mptcp@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The MSR[RI]=0 recoverability check should be in the recovered machine
-check case. Without this, a machine check that hits in a RI region that
-has for example live SRRs, will cause the interrupted context to resume
-with corrupted registers and crash unpredictably.
+Eric Biggers <ebiggers@kernel.org> wrote:
+> <linux/cryptohash.h> sounds very generic and important, like it's the
+> header to include if you're doing cryptographic hashing in the kernel.
+> But actually it only includes the library implementation of the SHA-1
+> compression function (not even the full SHA-1).  This should basically
+> never be used anymore; SHA-1 is no longer considered secure, and there
+> are much better ways to do cryptographic hashing in the kernel.
+> 
+> Also the function is named just "sha_transform()", which makes it
+> unclear which version of SHA is meant.
+> 
+> Therefore, this series cleans things up by moving these SHA-1
+> declarations into <crypto/sha.h> where they better belong, and changing
+> the names to say SHA-1 rather than just SHA.
+> 
+> As future work, we should split sha.h into sha1.h and sha2.h and try to
+> remove the remaining uses of SHA-1.  For example, the remaining use in
+> drivers/char/random.c is probably one that can be gotten rid of.
+> 
+> This patch series applies to cryptodev/master.
+> 
+> Eric Biggers (7):
+>  mptcp: use SHA256_BLOCK_SIZE, not SHA_MESSAGE_BYTES
+>  crypto: powerpc/sha1 - remove unused temporary workspace
+>  crypto: powerpc/sha1 - prefix the "sha1_" functions
+>  crypto: s390/sha1 - prefix the "sha1_" functions
+>  crypto: lib/sha1 - rename "sha" to "sha1"
+>  crypto: lib/sha1 - remove unnecessary includes of linux/cryptohash.h
+>  crypto: lib/sha1 - fold linux/cryptohash.h into crypto/sha.h
+> 
+> Documentation/security/siphash.rst          |  2 +-
+> arch/arm/crypto/sha1_glue.c                 |  1 -
+> arch/arm/crypto/sha1_neon_glue.c            |  1 -
+> arch/arm/crypto/sha256_glue.c               |  1 -
+> arch/arm/crypto/sha256_neon_glue.c          |  1 -
+> arch/arm/kernel/armksyms.c                  |  1 -
+> arch/arm64/crypto/sha256-glue.c             |  1 -
+> arch/arm64/crypto/sha512-glue.c             |  1 -
+> arch/microblaze/kernel/microblaze_ksyms.c   |  1 -
+> arch/mips/cavium-octeon/crypto/octeon-md5.c |  1 -
+> arch/powerpc/crypto/md5-glue.c              |  1 -
+> arch/powerpc/crypto/sha1-spe-glue.c         |  1 -
+> arch/powerpc/crypto/sha1.c                  | 33 ++++++++++-----------
+> arch/powerpc/crypto/sha256-spe-glue.c       |  1 -
+> arch/s390/crypto/sha1_s390.c                | 12 ++++----
+> arch/sparc/crypto/md5_glue.c                |  1 -
+> arch/sparc/crypto/sha1_glue.c               |  1 -
+> arch/sparc/crypto/sha256_glue.c             |  1 -
+> arch/sparc/crypto/sha512_glue.c             |  1 -
+> arch/unicore32/kernel/ksyms.c               |  1 -
+> arch/x86/crypto/sha1_ssse3_glue.c           |  1 -
+> arch/x86/crypto/sha256_ssse3_glue.c         |  1 -
+> arch/x86/crypto/sha512_ssse3_glue.c         |  1 -
+> crypto/sha1_generic.c                       |  5 ++--
+> drivers/char/random.c                       |  8 ++---
+> drivers/crypto/atmel-sha.c                  |  1 -
+> drivers/crypto/chelsio/chcr_algo.c          |  1 -
+> drivers/crypto/chelsio/chcr_ipsec.c         |  1 -
+> drivers/crypto/omap-sham.c                  |  1 -
+> fs/f2fs/hash.c                              |  1 -
+> include/crypto/sha.h                        | 10 +++++++
+> include/linux/cryptohash.h                  | 14 ---------
+> include/linux/filter.h                      |  4 +--
+> include/net/tcp.h                           |  1 -
+> kernel/bpf/core.c                           | 18 +++++------
+> lib/crypto/chacha.c                         |  1 -
+> lib/sha1.c                                  | 24 ++++++++-------
+> net/core/secure_seq.c                       |  1 -
+> net/ipv6/addrconf.c                         | 10 +++----
+> net/ipv6/seg6_hmac.c                        |  1 -
+> net/mptcp/crypto.c                          |  4 +--
+> 41 files changed, 69 insertions(+), 104 deletions(-)
+> delete mode 100644 include/linux/cryptohash.h
+> 
+> 
+> base-commit: 12b3cf9093542d9f752a4968815ece836159013f
 
-This does not affect 64s at the moment, because it does its own early
-handling with RI check, but it may affect 32s.
-
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/traps.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 477befcda8d3..759d8dbf867b 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -873,13 +873,13 @@ void machine_check_exception(struct pt_regs *regs)
- 
- 	die("Machine check", regs, SIGBUS);
- 
-+	return;
-+
-+bail:
- 	/* Must die if the interrupt is not recoverable */
- 	if (!(regs->msr & MSR_RI))
- 		die("Unrecoverable Machine check", regs, SIGBUS);
- 
--	return;
--
--bail:
- 	if (!nested)
- 		nmi_exit();
- }
+All applied.  Thanks.
 -- 
-2.23.0
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
