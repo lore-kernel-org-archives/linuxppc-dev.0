@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C04CC38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 17:07:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A86DAC38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 17:11:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 372732083B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 17:07:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 461152083B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 17:11:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="fK2aBIt0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372732083B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="BxJHu15I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 461152083B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JcFG3Gp9zDqb1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 03:06:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JcLP34grzDr3b
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 03:11:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=fK2aBIt0; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=BxJHu15I; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6Y55g2zDqfB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:16:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6f69V5zDqY0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:16:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=reoioN+SzUTCBcbV1XFXAraZxNdP1dP6cCeZt13G6tA=; b=fK2aBIt0vzlaWJtBvexdAvJMAe
- S6cYDoV3UE72OWzzPYY4edNpTfoOTq7IOZGfcsghCdgzVFGyK0VVaSUDHuAlolBqdDM4GeAktdy5p
- bu9ycf3ZbUnayKti5+mUhsIpbtX7ZBNtsu4urRUK3quNTS59x8GSvPOos6l115fjOKLGtS2IXMfeg
- nOY4PMbqzyodo8tx0Pwr/3ViI5fQ9jWmIYNPMIaHCNMLcBLeNywPpwUc+3nHx4Htb5rL5g99NAouU
- lhjL0sTDMnJP5/r3qy8gYL8e8SMtdvgE8S2GdEPFK/RtT/8JZxdKTgVOabQ4uZ6GSFIOTjZK90dkg
- YgZr48QA==;
+ bh=xqUmHHy02koBEfSFWiUuHH2Y6nKAt/nZw4u/FVTv6zk=; b=BxJHu15IRW004JkxZY/KyYHUej
+ 74WLt+f/xjeWE/ehYrxDrBGRkkA//dnglHTvVOgtDoQzzOQKY1dyKm9LHMP9Eb4fGadhIpgkIojYI
+ eUfKgVHrl9kbrdlcLpUqFRRrfnuJtQpdCIZOhmcoS+uShMnTu3r0x49dNbVwuLCKdArfz18AzF3RP
+ cMF64rqnSdOmJClYev0alieJ13GC0i+TG8Fll/eotlYw7azmblEgoldOFuS3A1QUypcphrVGe4QCM
+ Pu8SNC///ni4n5Z91Bl8/8JHT/Tow1csQjCnGXVp4YKgmxEo6KAjYrayvew3Qyg7WLowVbYI96tnF
+ 5JHSr8DA==;
 Received: from [2001:4bb8:180:9d3f:90d7:9df8:7cd:3504] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jX5fJ-0004mp-7m; Fri, 08 May 2020 16:15:57 +0000
+ id 1jX5fP-0004p9-Aa; Fri, 08 May 2020 16:16:03 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 12/15] md: stop using ->queuedata
-Date: Fri,  8 May 2020 18:15:14 +0200
-Message-Id: <20200508161517.252308-13-hch@lst.de>
+Subject: [PATCH 14/15] nvdimm/btt: stop using ->queuedata
+Date: Fri,  8 May 2020 18:15:16 +0200
+Message-Id: <20200508161517.252308-15-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200508161517.252308-1-hch@lst.de>
 References: <20200508161517.252308-1-hch@lst.de>
@@ -91,30 +91,30 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/md/md.c | 3 +--
+ drivers/nvdimm/btt.c | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 271e8a5873549..c079ecf77c564 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -466,7 +466,7 @@ static blk_qc_t md_make_request(struct request_queue *q, struct bio *bio)
+diff --git a/drivers/nvdimm/btt.c b/drivers/nvdimm/btt.c
+index 3b09419218d6f..eca3e48fefda1 100644
+--- a/drivers/nvdimm/btt.c
++++ b/drivers/nvdimm/btt.c
+@@ -1442,7 +1442,7 @@ static int btt_do_bvec(struct btt *btt, struct bio_integrity_payload *bip,
+ static blk_qc_t btt_make_request(struct request_queue *q, struct bio *bio)
  {
- 	const int rw = bio_data_dir(bio);
- 	const int sgrp = op_stat_group(bio_op(bio));
--	struct mddev *mddev = q->queuedata;
-+	struct mddev *mddev = bio->bi_disk->private_data;
- 	unsigned int sectors;
+ 	struct bio_integrity_payload *bip = bio_integrity(bio);
+-	struct btt *btt = q->queuedata;
++	struct btt *btt = bio->bi_disk->private_data;
+ 	struct bvec_iter iter;
+ 	unsigned long start;
+ 	struct bio_vec bvec;
+@@ -1543,7 +1543,6 @@ static int btt_blk_init(struct btt *btt)
+ 	blk_queue_logical_block_size(btt->btt_queue, btt->sector_size);
+ 	blk_queue_max_hw_sectors(btt->btt_queue, UINT_MAX);
+ 	blk_queue_flag_set(QUEUE_FLAG_NONROT, btt->btt_queue);
+-	btt->btt_queue->queuedata = btt;
  
- 	if (unlikely(test_bit(MD_BROKEN, &mddev->flags)) && (rw == WRITE)) {
-@@ -5626,7 +5626,6 @@ static int md_alloc(dev_t dev, char *name)
- 	mddev->queue = blk_alloc_queue(md_make_request, NUMA_NO_NODE);
- 	if (!mddev->queue)
- 		goto abort;
--	mddev->queue->queuedata = mddev;
- 
- 	blk_set_stacking_limits(&mddev->queue->limits);
- 
+ 	if (btt_meta_size(btt)) {
+ 		int rc = nd_integrity_init(btt->btt_disk, btt_meta_size(btt));
 -- 
 2.26.2
 
