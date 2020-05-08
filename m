@@ -2,26 +2,25 @@ Return-Path: <SRS0=nAOP=6W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6159C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:34:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B473DC38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:37:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73C18214D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:34:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6547920CC7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 16:37:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hg0J6vPc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73C18214D8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bPwC4QVd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6547920CC7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JbWw0K7lzDrCj
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:34:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JbbQ3Hn3zDrCp
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 02:37:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -34,29 +33,27 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb674YVrzDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Jb6955KFzDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 02:15:45 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
- :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=StWP0crF+8pSNFux4pjsqh9CnHUPvltK4WN7YgDzDwo=; b=hg0J6vPc1CAtRbBcIKiIwGZj1R
- U/NYXsltRCgUXRtF02xAh6x/dQQt7bD8PzPhXtSQ7xtfClVpUVDRELn7ixFyZ4B2pCgOFCooBv00b
- Kb3UuE2iupMli5UVx0Ld3aKZ1QZcPq28l06UGMLW5DFIhlEjEpmVKcxKOP5Z6+5Ul64aYiy4wQLjf
- XUU256tNa+A9CfSiuzAX8CUPPPYrqDPrd5en8kVJ2NLMaRiEdIyuo4wfyA6bowpdUqeN6bgwNuwZy
- ZWQbvwwkYO4D0ebTcT0ciGUghRQlVk/s8oLF8DDRZGiij+odbfRZdhIEZqowwh8vFKNKZjPynC6hV
- xkR17kBw==;
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:In-Reply-To:References;
+ bh=Es4eIMqxlcHTpRumUrbJ++gZhpS818l1WN5FHjjMEjU=; b=bPwC4QVd0Eqoqu/0a+YLSeqq6G
+ y3Ac6OeS7pyYIvXRuJ1Q1r8hldlCe1EyFxndwC6/UraMbV3XVZvIqbPYeCd5sGITrXAIxDNXAGQUW
+ yZp4CytLymAXVg8Itk+HF3vSnQYDL2aEs5HHWvuQT/9u8WcWUgP3a6UsxHxFUCSXefc0ZOB92ORqu
+ p2J+yQbrrAa18myCM+1A5S2RAbMs1QtGw3SppGzhKmy3I7wNMrzkeLRctZpWN3/RDMn+XM88t1UK7
+ d9WLPbt4BVV7ADYNKYz+1OpEtXJFhYJsMyjG9PKK6MKBcvwLmtY5ZPUUd3vITVwYSJiyK9m0mJk6z
+ xYopxSug==;
 Received: from [2001:4bb8:180:9d3f:90d7:9df8:7cd:3504] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jX5er-0004Wm-9C; Fri, 08 May 2020 16:15:30 +0000
+ id 1jX5eh-0004MH-Mi; Fri, 08 May 2020 16:15:20 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 03/15] drbd: stop using ->queuedata
-Date: Fri,  8 May 2020 18:15:05 +0200
-Message-Id: <20200508161517.252308-4-hch@lst.de>
+Subject: remove a few uses of ->queuedata
+Date: Fri,  8 May 2020 18:15:02 +0200
+Message-Id: <20200508161517.252308-1-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200508161517.252308-1-hch@lst.de>
-References: <20200508161517.252308-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -85,37 +82,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/block/drbd/drbd_main.c | 1 -
- drivers/block/drbd/drbd_req.c  | 2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
+Hi all,
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index c094c3c2c5d4d..be787b268f044 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -2805,7 +2805,6 @@ enum drbd_ret_code drbd_create_device(struct drbd_config_context *adm_ctx, unsig
- 	if (!q)
- 		goto out_no_q;
- 	device->rq_queue = q;
--	q->queuedata   = device;
- 
- 	disk = alloc_disk(1);
- 	if (!disk)
-diff --git a/drivers/block/drbd/drbd_req.c b/drivers/block/drbd/drbd_req.c
-index 840c3aef3c5c9..02c104a0c45e0 100644
---- a/drivers/block/drbd/drbd_req.c
-+++ b/drivers/block/drbd/drbd_req.c
-@@ -1614,7 +1614,7 @@ void do_submit(struct work_struct *ws)
- 
- blk_qc_t drbd_make_request(struct request_queue *q, struct bio *bio)
- {
--	struct drbd_device *device = (struct drbd_device *) q->queuedata;
-+	struct drbd_device *device = bio->bi_disk->private_data;
- 	unsigned long start_jif;
- 
- 	blk_queue_split(q, &bio);
--- 
-2.26.2
+various bio based drivers use queue->queuedata despite already having
+set up disk->private_data, which can be used just as easily.  This
+series cleans them up to only use a single private data pointer.
 
+blk-mq based drivers that have code pathes that can't easily get at
+the gendisk are unaffected by this series.
