@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-11.8 required=3.0
 	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68EF6C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 13:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85411C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 13:28:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22441206B9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 13:20:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22441206B9
+	by mail.kernel.org (Postfix) with ESMTPS id E8E2024958
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 13:28:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8E2024958
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JWCl4b40zDqPf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 23:20:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JWNd61jwzDqb1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 May 2020 23:28:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linutronix.de
  (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de;
@@ -30,24 +30,24 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49JVtr4nVXzDqM5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 23:05:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49JVtr4nV8zDqHf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2020 23:05:38 +1000 (AEST)
 Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
  by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
  (Exim 4.80) (envelope-from <tip-bot2@linutronix.de>)
- id 1jX2gu-0007lX-1Q; Fri, 08 May 2020 15:05:24 +0200
+ id 1jX2gu-0007lm-KB; Fri, 08 May 2020 15:05:24 +0200
 Received: from [127.0.1.1] (localhost [IPv6:::1])
- by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id DDDEF1C0838;
- Fri,  8 May 2020 15:05:07 +0200 (CEST)
-Date: Fri, 08 May 2020 13:05:07 -0000
+ by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id 5735A1C0852;
+ Fri,  8 May 2020 15:05:08 +0200 (CEST)
+Date: Fri, 08 May 2020 13:05:08 -0000
 From: "tip-bot2 for Kajol Jain" <tip-bot2@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip: perf/core] perf tools: Enable Hz/hz prinitg for --metric-only
- option
-In-Reply-To: <20200401203340.31402-7-kjain@linux.ibm.com>
-References: <20200401203340.31402-7-kjain@linux.ibm.com>
+Subject: [tip: perf/core] perf tests expr: Added test for runtime param in
+ metric expression
+In-Reply-To: <20200401203340.31402-6-kjain@linux.ibm.com>
+References: <20200401203340.31402-6-kjain@linux.ibm.com>
 MIME-Version: 1.0
-Message-ID: <158894310784.8414.347891140580420790.tip-bot2@tip-bot2>
+Message-ID: <158894310825.8414.975904064383982223.tip-bot2@tip-bot2>
 X-Mailer: tip-git-log-daemon
 Robot-ID: <tip-bot2.linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from
@@ -91,19 +91,16 @@ Sender: "Linuxppc-dev"
 
 The following commit has been merged into the perf/core branch of tip:
 
-Commit-ID:     3351c6da896bf521b118bfbb699fbda8f2a816b3
-Gitweb:        https://git.kernel.org/tip/3351c6da896bf521b118bfbb699fbda8f2a816b3
+Commit-ID:     9022608ec5babbb0fa631234098d52895e7e34d8
+Gitweb:        https://git.kernel.org/tip/9022608ec5babbb0fa631234098d52895e7e34d8
 Author:        Kajol Jain <kjain@linux.ibm.com>
-AuthorDate:    Thu, 02 Apr 2020 02:03:39 +05:30
+AuthorDate:    Thu, 02 Apr 2020 02:03:38 +05:30
 Committer:     Arnaldo Carvalho de Melo <acme@redhat.com>
 CommitterDate: Thu, 30 Apr 2020 10:48:33 -03:00
 
-perf tools: Enable Hz/hz prinitg for --metric-only option
+perf tests expr: Added test for runtime param in metric expression
 
-Commit 54b5091606c18 ("perf stat: Implement --metric-only mode") added
-function 'valid_only_metric()' which drops "Hz" or "hz", if it is part
-of "ScaleUnit". This patch enable it since hv_24x7 supports couple of
-frequency events.
+Added test case for parsing  "?" in metric expression.
 
 Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
 Acked-by: Jiri Olsa <jolsa@redhat.com>
@@ -127,22 +124,28 @@ Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lore.kernel.org/lkml/20200401203340.31402-7-kjain@linux.ibm.com
+Link: http://lore.kernel.org/lkml/20200401203340.31402-6-kjain@linux.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/util/stat-display.c | 2 --
- 1 file changed, 2 deletions(-)
+ tools/perf/tests/expr.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-index 9e757d1..679aaa6 100644
---- a/tools/perf/util/stat-display.c
-+++ b/tools/perf/util/stat-display.c
-@@ -237,8 +237,6 @@ static bool valid_only_metric(const char *unit)
- 	if (!unit)
- 		return false;
- 	if (strstr(unit, "/sec") ||
--	    strstr(unit, "hz") ||
--	    strstr(unit, "Hz") ||
- 	    strstr(unit, "CPUs utilized"))
- 		return false;
- 	return true;
+diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
+index 516504c..f9e8e56 100644
+--- a/tools/perf/tests/expr.c
++++ b/tools/perf/tests/expr.c
+@@ -59,6 +59,14 @@ int test__expr(struct test *t __maybe_unused, int subtest __maybe_unused)
+ 	TEST_ASSERT_VAL("find other", !strcmp(other[2], "BOZO"));
+ 	TEST_ASSERT_VAL("find other", other[3] == NULL);
+ 
++	TEST_ASSERT_VAL("find other",
++			expr__find_other("EVENT1\\,param\\=?@ + EVENT2\\,param\\=?@", NULL,
++				   &other, &num_other, 3) == 0);
++	TEST_ASSERT_VAL("find other", num_other == 2);
++	TEST_ASSERT_VAL("find other", !strcmp(other[0], "EVENT1,param=3/"));
++	TEST_ASSERT_VAL("find other", !strcmp(other[1], "EVENT2,param=3/"));
++	TEST_ASSERT_VAL("find other", other[2] == NULL);
++
+ 	for (i = 0; i < num_other; i++)
+ 		zfree(&other[i]);
+ 	free((void *)other);
