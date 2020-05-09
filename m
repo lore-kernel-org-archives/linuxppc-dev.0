@@ -2,71 +2,58 @@ Return-Path: <SRS0=lnSH=6X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF698C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 18:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A59C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:00:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 766602072F
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 18:50:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 766602072F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id AEB6D208E4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:00:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ey0R8rFt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEB6D208E4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49KGVS6srjzDr5g
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 04:50:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49KGjz74RTzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 05:00:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49KGSR3h5QzDr4t
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:48:51 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49KGSG1DQfz9v0bb;
- Sat,  9 May 2020 20:48:46 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PslmPuTS_Qi2; Sat,  9 May 2020 20:48:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49KGSF5mGvz9v0bX;
- Sat,  9 May 2020 20:48:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B4E88B775;
- Sat,  9 May 2020 20:48:48 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vZm-xPGAfqgM; Sat,  9 May 2020 20:48:48 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 06C8C8B75F;
- Sat,  9 May 2020 20:48:46 +0200 (CEST)
-Subject: Re: [PATCH v8 8/8] powerpc/vdso: Provide __kernel_clock_gettime64()
- on vdso32
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Arnd Bergmann <arnd@arndb.de>
-References: <cover.1588079622.git.christophe.leroy@c-s.fr>
- <e78344d3fcc1d33bfb1782e430b7f0529f6c612f.1588079622.git.christophe.leroy@c-s.fr>
- <CAK8P3a2aXJRWjxWO8oMRX2AJkfeVeeoYbOPbpd9-UTgjqM4B7g@mail.gmail.com>
- <d3f303f1-8b2c-0c54-5380-0b9a370a4eb3@csgroup.eu>
-Message-ID: <35e09925-b475-237c-57f2-3f10cf5ad9b2@csgroup.eu>
-Date: Sat, 9 May 2020 20:48:42 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
-MIME-Version: 1.0
-In-Reply-To: <d3f303f1-8b2c-0c54-5380-0b9a370a4eb3@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49KGgv0mp9zDr5D
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:58:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
+ In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=w6PVlsHDLizRg66uVEwUAxJ6BYvUC3ZwsXimRPif9mY=; b=ey0R8rFtp01+2B4o3fxoldeaOg
+ Uttm5ogGJtYHvXUgVXe+K2j9KOZ2r5hDZkuZhbkKu7VF7fOMsVz6eU1CHDfiySVR9wEPuXCrG/14e
+ vcDbW78Iqnz8akPZhrAJjG0srwdRLsZn5hAPHxhjTyJeG54Au+BHRT+o28gWQLzZ0oQ/JVjsK/xoK
+ vMPuz7m20294pQ7jmy0qzeVoHeeQhNbdb1gAN5uHdyUX+XlwF0jnoCsqRkZfkvYFR+kqQTL5Dx94b
+ qKCUbO1GxuZNW1gvZkW3DqkjxoF8vnEqQpzR22W/JMcLLXm1cilY64/8WysgucVEk0h+t6BiwN6Sl
+ /FzlpboA==;
+Received: from geoff by merlin.infradead.org with local (Exim 4.92.3 #3 (Red
+ Hat Linux)) id 1jXUgB-0003Dq-Vj; Sat, 09 May 2020 18:58:32 +0000
+Message-Id: <c763425d8e6f680d3180b3246c9e77727df179d0.1589049250.git.geoff@infradead.org>
+In-Reply-To: <cover.1589049250.git.geoff@infradead.org>
+References: <cover.1589049250.git.geoff@infradead.org>
+From: Geoff Levand <geoff@infradead.org>
+Patch-Date: Sat, 16 Dec 2017 12:32:42 +0100
+Subject: [PATCH v2 4/9] drivers/ps3: Remove duplicate error messages
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Sat, 09 May 2020 18:58:31 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,121 +65,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- linux-arch <linux-arch@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Emmanuel Nicolet <emmanuel.nicolet@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Markus Elfring <elfring@users.sourceforge.net>
+
+Remove duplicate memory allocation failure error messages.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+ drivers/ps3/ps3-lpm.c   | 2 --
+ drivers/ps3/ps3-vuart.c | 1 -
+ 2 files changed, 3 deletions(-)
+
+diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
+index 83c45659bc9d..fcc346296e3a 100644
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -1111,8 +1111,6 @@ int ps3_lpm_open(enum ps3_lpm_tb_type tb_type, void *tb_cache,
+ 		lpm_priv->tb_cache_internal = kzalloc(
+ 			lpm_priv->tb_cache_size + 127, GFP_KERNEL);
+ 		if (!lpm_priv->tb_cache_internal) {
+-			dev_err(sbd_core(), "%s:%u: alloc internal tb_cache "
+-				"failed\n", __func__, __LINE__);
+ 			result = -ENOMEM;
+ 			goto fail_malloc;
+ 		}
+diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
+index ddaa5ea5801a..3b5878edc6c2 100644
+--- a/drivers/ps3/ps3-vuart.c
++++ b/drivers/ps3/ps3-vuart.c
+@@ -917,7 +917,6 @@ static int ps3_vuart_bus_interrupt_get(void)
+ 	vuart_bus_priv.bmp = kzalloc(sizeof(struct ports_bmp), GFP_KERNEL);
+ 
+ 	if (!vuart_bus_priv.bmp) {
+-		pr_debug("%s:%d: kzalloc failed.\n", __func__, __LINE__);
+ 		result = -ENOMEM;
+ 		goto fail_bmp_malloc;
+ 	}
+-- 
+2.20.1
 
 
-Le 09/05/2020 à 17:54, Christophe Leroy a écrit :
-> 
-> 
-> Le 28/04/2020 à 18:05, Arnd Bergmann a écrit :
->> On Tue, Apr 28, 2020 at 3:16 PM Christophe Leroy
->> <christophe.leroy@c-s.fr> wrote:
->>>
->>> Provides __kernel_clock_gettime64() on vdso32. This is the
->>> 64 bits version of __kernel_clock_gettime() which is
->>> y2038 compliant.
->>>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>
->> Looks good to me
->>
->> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
->>
->> There was a bug on ARM for the corresponding function, so far it is 
->> unclear
->> if this was a problem related to particular hardware, the 32-bit 
->> kernel code,
->> or the common implementation of clock_gettime64 in the vdso library,
->> see https://github.com/richfelker/musl-cross-make/issues/96
->>
->> Just to be sure that powerpc is not affected by the same issue, can you
->> confirm that repeatedly calling clock_gettime64 on powerpc32, alternating
->> between vdso and syscall, results in monotically increasing times?
->>
-> 
-> I think that's one of the things vdsotest checks, so yes that's ok I think.
-> 
-
-Here is the full result with vdsotest:
-
-gettimeofday: syscall: 3715 nsec/call
-gettimeofday:    libc: 794 nsec/call
-gettimeofday:    vdso: 947 nsec/call
-getcpu: syscall: 1614 nsec/call
-getcpu:    libc: 484 nsec/call
-getcpu:    vdso: 184 nsec/call
-clock-gettime64-realtime-coarse: syscall: 3152 nsec/call
-clock-gettime64-realtime-coarse:    libc: not tested
-clock-gettime64-realtime-coarse:    vdso: 653 nsec/call
-clock-getres-realtime-coarse: syscall: 2963 nsec/call
-clock-getres-realtime-coarse:    libc: 745 nsec/call
-clock-getres-realtime-coarse:    vdso: 553 nsec/call
-clock-gettime-realtime-coarse: syscall: 5120 nsec/call
-clock-gettime-realtime-coarse:    libc: 731 nsec/call
-clock-gettime-realtime-coarse:    vdso: 577 nsec/call
-clock-gettime64-realtime: syscall: 3719 nsec/call
-clock-gettime64-realtime:    libc: not tested
-clock-gettime64-realtime:    vdso: 976 nsec/call
-clock-getres-realtime: syscall: 2496 nsec/call
-clock-getres-realtime:    libc: 745 nsec/call
-clock-getres-realtime:    vdso: 546 nsec/call
-clock-gettime-realtime: syscall: 4800 nsec/call
-clock-gettime-realtime:    libc: 1080 nsec/call
-clock-gettime-realtime:    vdso: 1798 nsec/call
-clock-gettime64-boottime: syscall: 4132 nsec/call
-clock-gettime64-boottime:    libc: not tested
-clock-gettime64-boottime:    vdso: 975 nsec/call
-clock-getres-boottime: syscall: 2497 nsec/call
-clock-getres-boottime:    libc: 730 nsec/call
-clock-getres-boottime:    vdso: 546 nsec/call
-clock-gettime-boottime: syscall: 3728 nsec/call
-clock-gettime-boottime:    libc: 1079 nsec/call
-clock-gettime-boottime:    vdso: 941 nsec/call
-clock-gettime64-tai: syscall: 4148 nsec/call
-clock-gettime64-tai:    libc: not tested
-clock-gettime64-tai:    vdso: 955 nsec/call
-clock-getres-tai: syscall: 2494 nsec/call
-clock-getres-tai:    libc: 730 nsec/call
-clock-getres-tai:    vdso: 545 nsec/call
-clock-gettime-tai: syscall: 3729 nsec/call
-clock-gettime-tai:    libc: 1079 nsec/call
-clock-gettime-tai:    vdso: 927 nsec/call
-clock-gettime64-monotonic-raw: syscall: 3677 nsec/call
-clock-gettime64-monotonic-raw:    libc: not tested
-clock-gettime64-monotonic-raw:    vdso: 1032 nsec/call
-clock-getres-monotonic-raw: syscall: 2494 nsec/call
-clock-getres-monotonic-raw:    libc: 745 nsec/call
-clock-getres-monotonic-raw:    vdso: 545 nsec/call
-clock-gettime-monotonic-raw: syscall: 3276 nsec/call
-clock-gettime-monotonic-raw:    libc: 1140 nsec/call
-clock-gettime-monotonic-raw:    vdso: 1002 nsec/call
-clock-gettime64-monotonic-coarse: syscall: 4099 nsec/call
-clock-gettime64-monotonic-coarse:    libc: not tested
-clock-gettime64-monotonic-coarse:    vdso: 653 nsec/call
-clock-getres-monotonic-coarse: syscall: 2962 nsec/call
-clock-getres-monotonic-coarse:    libc: 745 nsec/call
-clock-getres-monotonic-coarse:    vdso: 545 nsec/call
-clock-gettime-monotonic-coarse: syscall: 4297 nsec/call
-clock-gettime-monotonic-coarse:    libc: 730 nsec/call
-clock-gettime-monotonic-coarse:    vdso: 592 nsec/call
-clock-gettime64-monotonic: syscall: 3863 nsec/call
-clock-gettime64-monotonic:    libc: not tested
-clock-gettime64-monotonic:    vdso: 975 nsec/call
-clock-getres-monotonic: syscall: 2494 nsec/call
-clock-getres-monotonic:    libc: 745 nsec/call
-clock-getres-monotonic:    vdso: 545 nsec/call
-clock-gettime-monotonic: syscall: 3465 nsec/call
-clock-gettime-monotonic:    libc: 1079 nsec/call
-clock-gettime-monotonic:    vdso: 927 nsec/call
-
-Christophe
