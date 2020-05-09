@@ -2,87 +2,62 @@ Return-Path: <SRS0=lnSH=6X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB178C47257
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 03:17:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B81F9C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:07:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 611CB21974
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 03:17:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EC29B2184D
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:07:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RncL95G1";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="DYNToviy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 611CB21974
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="IAt+sbGW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC29B2184D
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Jsnr46snzDrCD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 13:17:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=ming.lei@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JwDq4cyYzDqxl
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 15:07:39 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49JwBH27BczDr2p
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 15:05:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=RncL95G1; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=DYNToviy; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Jl3V2L3RzDrBr
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 08:13:49 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1588976026;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=7XTZwXR9Z9h3mhkEx2o1bmyDVneFoc2pkGAjVYehhi0=;
- b=RncL95G1n8XUFTaOJapGjDj95acCt1Ym8G7H4dJNG+Pg/r++EnkX0nzb+ThOgN72Me9yXe
- WsaRj8D9yI3Ucsci75A3DbsOc8Js8j4XzsO78PM5KE213nqNF+F2VD3K2sda8Jq6P0cAh7
- ocx771djD+y41WVPdMyFq98Bp9i2vPQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1588976027;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=7XTZwXR9Z9h3mhkEx2o1bmyDVneFoc2pkGAjVYehhi0=;
- b=DYNToviyiMl7w9UQ7gUvhh4rfgDyGWwcDsjwd27ECg2H3FwzzSssQXrTZcpq+3N7UBFMm1
- Vu0a1br9K1I1rIwmOj6Qx1d0WI/+76mtYQ3/Vm8jkJxxDipFgxnawZQYtdT21dapbfb3HL
- lnYUcnow49Lv4KkpYGMEYM4Cnrgdi2s=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-483-d2xIQt37O8yux2pmv4ZgAg-1; Fri, 08 May 2020 18:13:42 -0400
-X-MC-Unique: d2xIQt37O8yux2pmv4ZgAg-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 828A51005510;
- Fri,  8 May 2020 22:13:39 +0000 (UTC)
-Received: from T590 (ovpn-8-16.pek2.redhat.com [10.72.8.16])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 74FBC1001B07;
- Fri,  8 May 2020 22:13:27 +0000 (UTC)
-Date: Sat, 9 May 2020 06:13:21 +0800
-From: Ming Lei <ming.lei@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: remove a few uses of ->queuedata
-Message-ID: <20200508221321.GD1389136@T590>
-References: <20200508161517.252308-1-hch@lst.de>
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=IAt+sbGW; dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 49JwBH09FFz9sT6; Sat,  9 May 2020 15:05:27 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 49JwBG2h18z9sSt; Sat,  9 May 2020 15:05:25 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1589000726; bh=Pb4GlTVyBO3ZbDiPQD2yApf8GXzqR8eKfxsf99d1p1U=;
+ h=Date:From:To:Subject:References:In-Reply-To:From;
+ b=IAt+sbGWKz4+smwgeJXmDZBQBmmRhtByXt/0HjaBwhJyZeolsMOMcORRpk583IKZ+
+ isNsW2bT6/JdPdwclzUqUiVpf0Jovzo+/XMCdfZc3kRxQ24xfy/3Y7J41pJWPFIMTD
+ sHoNld8Bzik2kR+u0iVqNvNk2Rcoy4befdaSAhYNpkM4eUg6Zwxdm7TW3MWhfOMs4d
+ z+BfD8HBJ6XwCALUFQi3nxc2Ko7D2Zblqa3kNFspMFrYVjsVckpIx82tnUsCreQ/co
+ +Pto0su5Ht8MB5rK3bwZdzQR3Z9hHiK4alBxE3x7GZ9uzfHQcuHsoeJH48aBgY2xxC
+ 30D0CaJ5sd30g==
+Date: Sat, 9 May 2020 15:03:40 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@ozlabs.org>
+Subject: [PATCH RFC 3/4] powerpc/microwatt: Add early debug UART support for
+ Microwatt
+Message-ID: <20200509050340.GD1464954@thinks.paulus.ozlabs.org>
+References: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200508161517.252308-1-hch@lst.de>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Mailman-Approved-At: Sat, 09 May 2020 13:15:46 +1000
+In-Reply-To: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,36 +69,191 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-xtensa@linux-xtensa.org,
- linux-raid@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- linux-nvdimm@lists.01.org, Geoff Levand <geoff@infradead.org>,
- linux-kernel@vger.kernel.org, Jim Paris <jim@jtan.com>,
- linux-block@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- linux-m68k@lists.linux-m68k.org, Philip Kelleher <pjk1939@linux.ibm.com>,
- linux-bcache@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joshua Morris <josh.h.morris@us.ibm.com>, Nitin Gupta <ngupta@vflare.org>,
- drbd-dev@lists.linbit.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 08, 2020 at 06:15:02PM +0200, Christoph Hellwig wrote:
-> Hi all,
-> 
-> various bio based drivers use queue->queuedata despite already having
-> set up disk->private_data, which can be used just as easily.  This
-> series cleans them up to only use a single private data pointer.
-> 
-> blk-mq based drivers that have code pathes that can't easily get at
-> the gendisk are unaffected by this series.
+Currently microwatt-based SoCs come with a "potato" UART.  This
+adds udbg support for the potato UART, giving us both an early
+debug console, and a runtime console using the hvc-udbg support.
 
-Yeah, before adding disk, there still may be requests queued to LLD
-for blk-mq based drivers.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+---
+ arch/powerpc/Kconfig.debug               |   6 ++
+ arch/powerpc/include/asm/udbg.h          |   1 +
+ arch/powerpc/kernel/udbg.c               |   2 +
+ arch/powerpc/platforms/microwatt/setup.c | 108 +++++++++++++++++++++++
+ 4 files changed, 117 insertions(+)
 
-So are there this similar situation for these bio based drivers?
-
-
-Thanks,
-Ming
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 0b063830eea8..399abc6d2af7 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -277,6 +277,12 @@ config PPC_EARLY_DEBUG_MEMCONS
+ 	  This console provides input and output buffers stored within the
+ 	  kernel BSS and should be safe to select on any system. A debugger
+ 	  can then be used to read kernel output or send input to the console.
++
++config PPC_EARLY_DEBUG_MICROWATT
++       bool "Microwatt potato UART"
++       help
++         Select this to enable early debugging using the potato UART
++	 included in the Microwatt SOC.
+ endchoice
+ 
+ config PPC_MEMCONS_OUTPUT_SIZE
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index 0ea9e70ed78b..2dbd2d3b0591 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -53,6 +53,7 @@ extern void __init udbg_init_ehv_bc(void);
+ extern void __init udbg_init_ps3gelic(void);
+ extern void __init udbg_init_debug_opal_raw(void);
+ extern void __init udbg_init_debug_opal_hvsi(void);
++extern void __init udbg_init_debug_microwatt(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 01595e8cafe7..e614993021c6 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -67,6 +67,8 @@ void __init udbg_early_init(void)
+ 	udbg_init_debug_opal_raw();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_OPAL_HVSI)
+ 	udbg_init_debug_opal_hvsi();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_MICROWATT)
++	udbg_init_debug_microwatt();
+ #endif
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG
+diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
+index 3cfc5955a6fe..a5145adeaae7 100644
+--- a/arch/powerpc/platforms/microwatt/setup.c
++++ b/arch/powerpc/platforms/microwatt/setup.c
+@@ -10,8 +10,115 @@
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <asm/machdep.h>
++#include <asm/udbg.h>
++#include <asm/reg.h>
+ #include <asm/time.h>
+ 
++static u64 potato_uart_base;
++
++#define PROC_FREQ 100000000
++#define UART_FREQ 115200
++#define UART_BASE 0xc0002000
++
++#define POTATO_CONSOLE_TX		0x00
++#define POTATO_CONSOLE_RX		0x08
++#define POTATO_CONSOLE_STATUS		0x10
++#define   POTATO_CONSOLE_STATUS_RX_EMPTY		0x01
++#define   POTATO_CONSOLE_STATUS_TX_EMPTY		0x02
++#define   POTATO_CONSOLE_STATUS_RX_FULL			0x04
++#define   POTATO_CONSOLE_STATUS_TX_FULL			0x08
++#define POTATO_CONSOLE_CLOCK_DIV	0x18
++#define POTATO_CONSOLE_IRQ_EN		0x20
++
++static u64 potato_uart_reg_read(int offset)
++{
++	u64 val, msr;
++
++	msr = mfmsr();
++	__asm__ volatile("mtmsrd %3,0; ldcix %0,%1,%2; mtmsrd %4,0"
++			 : "=r" (val) : "b" (potato_uart_base), "r" (offset),
++			   "r" (msr & ~MSR_DR), "r" (msr));
++
++	return val;
++}
++
++static void potato_uart_reg_write(int offset, u64 val)
++{
++	u64 msr;
++
++	msr = mfmsr();
++	__asm__ volatile("mtmsrd %3,0; stdcix %0,%1,%2; mtmsrd %4,0"
++			 : : "r" (val), "b" (potato_uart_base), "r" (offset),
++			   "r" (msr & ~MSR_DR), "r" (msr));
++}
++
++static int potato_uart_rx_empty(void)
++{
++	u64 val;
++
++	val = potato_uart_reg_read(POTATO_CONSOLE_STATUS);
++
++	if (val & POTATO_CONSOLE_STATUS_RX_EMPTY)
++		return 1;
++
++	return 0;
++}
++
++static int potato_uart_tx_full(void)
++{
++	u64 val;
++
++	val = potato_uart_reg_read(POTATO_CONSOLE_STATUS);
++
++	if (val & POTATO_CONSOLE_STATUS_TX_FULL)
++		return 1;
++
++	return 0;
++}
++
++static int potato_uart_read(void)
++{
++	while (potato_uart_rx_empty())
++		;
++	return potato_uart_reg_read(POTATO_CONSOLE_RX);
++}
++
++static int potato_uart_read_poll(void)
++{
++	if (potato_uart_rx_empty())
++		return -1;
++	return potato_uart_reg_read(POTATO_CONSOLE_RX);
++}
++
++static void potato_uart_write(char c)
++{
++	if (c == '\n')
++		potato_uart_write('\r');
++	while (potato_uart_tx_full())
++		;
++	potato_uart_reg_write(POTATO_CONSOLE_TX, c);
++}
++
++static unsigned long potato_uart_divisor(unsigned long proc_freq, unsigned long uart_freq)
++{
++	return proc_freq / (uart_freq * 16) - 1;
++}
++
++void potato_uart_init(void)
++{
++	potato_uart_base = UART_BASE;
++
++	potato_uart_reg_write(POTATO_CONSOLE_CLOCK_DIV, potato_uart_divisor(PROC_FREQ, UART_FREQ));
++}
++
++void udbg_init_debug_microwatt(void)
++{
++	potato_uart_init();
++	udbg_putc = potato_uart_write;
++	udbg_getc = potato_uart_read;
++	udbg_getc_poll = potato_uart_read_poll;
++}
++
+ static void __init microwatt_calibrate_decr(void)
+ {
+ 	ppc_tb_freq = 100000000;
+@@ -36,5 +143,6 @@ define_machine(microwatt) {
+ 	.probe			= microwatt_probe,
+ 	.setup_arch		= microwatt_setup_arch,
+ 	.init_IRQ		= microwatt_init_IRQ,
++	.progress		= udbg_progress,
+ 	.calibrate_decr		= microwatt_calibrate_decr,
+ };
+-- 
+2.25.3
 
