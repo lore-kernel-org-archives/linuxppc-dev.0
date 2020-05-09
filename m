@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FF11C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AAF5C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:22:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35AE820644
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:19:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 790EE20644
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:22:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="QX9POZj/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35AE820644
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="z1x0RfFm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 790EE20644
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49KH841QQ5zDr7M
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 05:19:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49KHCG1bkwzDr74
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 05:22:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
@@ -32,28 +32,28 @@ Received: from merlin.infradead.org (merlin.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49KGh13stczDr5D
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:58:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49KGh35MmXzDr5g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:58:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
  In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=oyp2159SuQimkAaP2XvbdzTHQC+j+kFnxcKYSUlp4UQ=; b=QX9POZj/ZcUKjl+ayz9cwwaFQI
- oh8XgJXdpwz94GaA/KUevXnJ9Qnu6RK8QePKySyLtf46EhbdltiNcx+5r6CmDcDroJatTLd98qm8q
- b5U6IPlasH/XsNywqDlUM9kpQbgR5wD+rLUTJJaeZ5sl2xApDYpyZngfX2KHNB/EJCPl7TkuX1sCP
- vDVc6rgMFZMkoHMfZxGc76A1PGKYYUs+ly4B7jHoAYjH1GhwcPO9LtOSpG3Kv4huyqjkFY5NRpoiU
- zEG6xwgCZlhdfLgg9+3WMcugDhyVA1qLgaxDDeuxbuq2lJsvqkY6LFdsbccKH91qEzc4H/Uz1HsDF
- La6DQKNQ==;
+ bh=DMI7XyHRUVD9GYMLW/DPQbUxgUgdFJbJY72UQWXWpIY=; b=z1x0RfFmjfyBoZL1SjL5Meh98I
+ YcxtZPiP9vOP+xb9/UVptvGvV2AhR4/6onuMtmST+gnTu1ofKnHXMu+Fr8f1ywJfWh6kmZFJs29Dw
+ 9+U/UkN5kVPB8AD6LEJ7sTMgqqBu59u5p8Xr+QgNdRL0oRr1uClrH5jw3yl2oNu72SKT6s+FclnwL
+ FRVGuzmJuQE9E8Shh6uo6AOwV7Sn/HWVfb0ZWoh+9O7ozp096Dvc4c4AeBEGrpUeWCC2IQhP9Bip1
+ sIg+DOzBtW5ooaDUSZOZ9Llb7zc0JD9N1sQxbPU7qaj8b0GplbvDqQNZcLHcZU4dlke/11ULO+vkb
+ ycpfhexA==;
 Received: from geoff by merlin.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jXUgC-0003EB-Cw; Sat, 09 May 2020 18:58:32 +0000
-Message-Id: <6f6294df663a53f47bb28abcbb1ef756c6a59922.1589049250.git.geoff@infradead.org>
+ Hat Linux)) id 1jXUgB-0003De-Ls; Sat, 09 May 2020 18:58:31 +0000
+Message-Id: <1ae1aed811ba6760af2e46d331285dd6a4de5b80.1589049250.git.geoff@infradead.org>
 In-Reply-To: <cover.1589049250.git.geoff@infradead.org>
 References: <cover.1589049250.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Patch-Date: Wed, 1 Apr 2020 20:16:27 -0700
-Subject: [PATCH v2 9/9] hvc_console: Allow backends to set I/O buffer size
+Patch-Date: Fri, 27 Mar 2020 09:41:41 -0700
+Subject: [PATCH v2 1/9] powerpc/head_check: Automatic verbosity
 To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 09 May 2020 18:58:32 +0000
+Date: Sat, 09 May 2020 18:58:31 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,72 +72,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To allow HVC backends to set the I/O buffer sizes to values
-that are most efficient for the backend, change the macro
-definitions where the buffer sizes are set to be conditional
-on whether or not the macros are already defined.  Also,
-rename the macros from N_OUTBUF to HVC_N_OUBUF and from
-N_INBUF to HVC_N_INBUF.
-
-Typical usage in the backend source file would be:
+To aid debugging build problems turn on shell tracing for the
+head_check script when the build is verbose.
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- drivers/tty/hvc/hvc_console.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/tools/head_check.sh | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 436cc51c92c3..2928bad057fc 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -42,12 +42,15 @@
- #define HVC_CLOSE_WAIT (HZ/100) /* 1/10 of a second */
+diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
+index ad9e57209aa4..37061fb9b58e 100644
+--- a/arch/powerpc/tools/head_check.sh
++++ b/arch/powerpc/tools/head_check.sh
+@@ -31,8 +31,10 @@
+ # level entry code (boot, interrupt vectors, etc) until r2 is set up. This
+ # could cause the kernel to die in early boot.
  
- /*
-- * These sizes are most efficient for vio, because they are the
-- * native transfer size. We could make them selectable in the
-- * future to better deal with backends that want other buffer sizes.
-+ * These default sizes are most efficient for vio, because they are
-+ * the native transfer size.
-  */
--#define N_OUTBUF	16
--#define N_INBUF		16
-+#if !defined(HVC_N_OUTBUF)
-+# define HVC_N_OUTBUF	16
-+#endif
-+#if !defined(HVC_N_INBUF)
-+# define HVC_N_INBUF	16
-+#endif
+-# Turn this on if you want more debug output:
+-# set -x
++# Allow for verbose output
++if [ "$V" = "1" ]; then
++	set -x
++fi
  
- #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
- 
-@@ -151,7 +154,7 @@ static uint32_t vtermnos[MAX_NR_HVC_CONSOLES] =
- static void hvc_console_print(struct console *co, const char *b,
- 			      unsigned count)
- {
--	char c[N_OUTBUF] __ALIGNED__;
-+	char c[HVC_N_OUTBUF] __ALIGNED__;
- 	unsigned i = 0, n = 0;
- 	int r, donecr = 0, index = co->index;
- 
-@@ -640,7 +643,7 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
- {
- 	struct tty_struct *tty;
- 	int i, n, count, poll_mask = 0;
--	char buf[N_INBUF] __ALIGNED__;
-+	char buf[HVC_N_INBUF] __ALIGNED__;
- 	unsigned long flags;
- 	int read_total = 0;
- 	int written_total = 0;
-@@ -681,7 +684,7 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
- 
-  read_again:
- 	/* Read data if any */
--	count = tty_buffer_request_room(&hp->port, N_INBUF);
-+	count = tty_buffer_request_room(&hp->port, HVC_N_INBUF);
- 
- 	/* If flip is full, just reschedule a later read */
- 	if (count == 0) {
+ if [ $# -lt 2 ]; then
+ 	echo "$0 [path to nm] [path to vmlinux]" 1>&2
 -- 
 2.20.1
+
 
