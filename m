@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-11.8 required=3.0
 	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96AECC28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 16:14:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC32FC28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 16:20:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D64D92063A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 16:14:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D64D92063A
+	by mail.kernel.org (Postfix) with ESMTPS id 62C892063A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 16:20:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62C892063A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49KC252WXpzDqws
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 02:14:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49KC8d5Jk3zDr0L
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 02:20:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49KBzx24y1zDqTV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 02:12:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49KC6f3XKTzDqwY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 02:18:16 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49KBzl3Pygz9v0b0;
- Sat,  9 May 2020 18:12:19 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49KC6V5rdgz9v0b6;
+ Sat,  9 May 2020 18:18:10 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hD3eTjiO5EOB; Sat,  9 May 2020 18:12:19 +0200 (CEST)
+ with ESMTP id BzLqXVjCH2t8; Sat,  9 May 2020 18:18:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49KBzl2LTPz9v0Zy;
- Sat,  9 May 2020 18:12:19 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49KC6V402Qz9v0b3;
+ Sat,  9 May 2020 18:18:10 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8D5188B775;
- Sat,  9 May 2020 18:12:21 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CBD0E8B775;
+ Sat,  9 May 2020 18:18:12 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Zahn9vMaQql5; Sat,  9 May 2020 18:12:21 +0200 (CEST)
+ with ESMTP id RscsG8tyHa6h; Sat,  9 May 2020 18:18:12 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A4CC8B75F;
- Sat,  9 May 2020 18:12:21 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E5658B75F;
+ Sat,  9 May 2020 18:18:12 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D317865770; Sat,  9 May 2020 16:12:20 +0000 (UTC)
+ id 5369265770; Sat,  9 May 2020 16:18:12 +0000 (UTC)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: nathan_lynch@mentor.com, arnd@arndb.de
+To: nathanl@linux.ibm.com, arnd@arndb.de
 Subject: [PATCH vdsotest] Add support for clock_gettime64() on powerpc32
-Message-Id: <20200509161220.D317865770@pc16570vm.idsi0.si.c-s.fr>
-Date: Sat,  9 May 2020 16:12:20 +0000 (UTC)
+Message-Id: <20200509161812.5369265770@pc16570vm.idsi0.si.c-s.fr>
+Date: Sat,  9 May 2020 16:18:12 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
