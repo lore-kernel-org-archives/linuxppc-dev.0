@@ -2,48 +2,49 @@ Return-Path: <SRS0=lnSH=6X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC094C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:27:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD80C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6E5324953
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:27:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6E5324953
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 6A49C24957
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:37:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A49C24957
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49K0gm13YYzDqgs
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 18:27:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49K0v628gCzDr1r
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 18:37:38 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49K0c30hmtzDr0V
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 18:24:35 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 8260E68CEC; Sat,  9 May 2020 10:24:31 +0200 (CEST)
-Date: Sat, 9 May 2020 10:24:31 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Ming Lei <ming.lei@redhat.com>
-Subject: Re: remove a few uses of ->queuedata
-Message-ID: <20200509082431.GC21834@lst.de>
-References: <20200508161517.252308-1-hch@lst.de>
- <20200508221321.GD1389136@T590>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49K0sP687FzDr1c
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 18:36:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49K0sN3JVtz9sSc;
+ Sat,  9 May 2020 18:36:08 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH RFC 2/4] powerpc: Add Microwatt platform
+Date: Sat, 09 May 2020 18:36:05 +1000
+Message-ID: <2771261.oJVn4HZnso@townsend>
+In-Reply-To: <1589010752.ygtog0nhjc.astroid@bobo.none>
+References: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
+ <20200509050255.GC1464954@thinks.paulus.ozlabs.org>
+ <1589010752.ygtog0nhjc.astroid@bobo.none>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200508221321.GD1389136@T590>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,36 +56,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-xtensa@linux-xtensa.org,
- linux-raid@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- linux-nvdimm@lists.01.org, Geoff Levand <geoff@infradead.org>,
- linux-kernel@vger.kernel.org, Jim Paris <jim@jtan.com>,
- Joshua Morris <josh.h.morris@us.ibm.com>, linux-block@vger.kernel.org,
- Minchan Kim <minchan@kernel.org>, linux-m68k@lists.linux-m68k.org,
- Philip Kelleher <pjk1939@linux.ibm.com>, linux-bcache@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Nitin Gupta <ngupta@vflare.org>, drbd-dev@lists.linbit.com
+Cc: Michael Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@ozlabs.org>, linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, May 09, 2020 at 06:13:21AM +0800, Ming Lei wrote:
-> On Fri, May 08, 2020 at 06:15:02PM +0200, Christoph Hellwig wrote:
-> > Hi all,
+On Saturday, 9 May 2020 5:58:57 PM AEST Nicholas Piggin wrote:
+> Excerpts from Paul Mackerras's message of May 9, 2020 3:02 pm:
+> > Microwatt is a FPGA-based implementation of the Power ISA.  It
+> > currently only implements little-endian 64-bit mode, and does
+> > not (yet) support SMP.
 > > 
-> > various bio based drivers use queue->queuedata despite already having
-> > set up disk->private_data, which can be used just as easily.  This
-> > series cleans them up to only use a single private data pointer.
-> > 
-> > blk-mq based drivers that have code pathes that can't easily get at
-> > the gendisk are unaffected by this series.
+> > This adds a new machine type to support FPGA-based SoCs with a
+> > Microwatt core.
 > 
-> Yeah, before adding disk, there still may be requests queued to LLD
-> for blk-mq based drivers.
+> Very cool!
 > 
-> So are there this similar situation for these bio based drivers?
+> Would there be any point sharing this with the "naked metal" platform
+> Alistair has for booting POWER in L3 without OPAL? Or is it easy enough
+> to have a several different simple 64s platforms?
 
-bio submittsion is based on the gendisk, so we can't submit before
-it is added.  The passthrough request based path obviously doesn't apply
-here.
+It looks pretty similar at the moment, I've been meaning to clean those 
+patches up and send them upstream but Paul has beaten me to it. The main 
+difference so far is how the console is setup. For booting cache contained I 
+was using a device tree pointing at a standard UART driver and enabling the 
+standard OF platform device tree probing.
+
+- Alistair
+
+> I have an HPT conditional compile patch and a few other diet Kconfig
+> things I'll now be better justified to try get merged :)
+> 
+> Thanks,
+> Nick
+
+
+
+
