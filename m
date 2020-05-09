@@ -7,51 +7,52 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E43C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68FF6C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:11:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4227B2184D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:09:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0D12E2184D
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 05:11:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="DuZlKqg2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4227B2184D
+	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="M/BQS2zJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D12E2184D
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49JwGq3ldzzDr96
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 15:09:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49JwKT49pBzDr2j
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 15:11:41 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49JwBH0BZVzDr2j
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49JwBH0PMLzDr2m
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 15:05:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=DuZlKqg2; dkim-atps=neutral
+ header.s=201707 header.b=M/BQS2zJ; dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 49JwBG0fDmz9sSw; Sat,  9 May 2020 15:05:26 +1000 (AEST)
+ id 49JwBG2pstz9sT0; Sat,  9 May 2020 15:05:26 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 49JwBF6m7vz9sSd; Sat,  9 May 2020 15:05:25 +1000 (AEST)
+ id 49JwBG0PNpz9sNH; Sat,  9 May 2020 15:05:26 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1589000725; bh=CgqWOopARLNmzAEolaS/Q8u0NdxFknua08nLGGSI4u0=;
+ t=1589000726; bh=lES1YpCuU/2Z1sFhawP/2rUzTXByNK+I43I/QSTzCeY=;
  h=Date:From:To:Subject:References:In-Reply-To:From;
- b=DuZlKqg2l6cMwds9tVqxIx4CPhOqlx9KQC0l5Gb+qWoEVseDhASr9olu0yEH2Hf94
- 7Js48VaVffw8OG7cF0Iqr4ry2DR9zHBET70lb5ltZnyATuxss0wHMzeF2fuUdqf0wd
- fMwLjzVsK8d/Yj4aIR04sru3e5xgpkCAzbEgNBxIRtEQwfrUdkA2cAGk8IWw2DScvt
- siH6wq5uAEIaVLLIsbnx6HsA1rouKBN64aKfsXo8eEHUURB0NVT3Aah5QdaipA/NgD
- MoGapl9qFGvFfxxENTBq676a8Z7uYEA3WxiMb4u3cLQVxda2PVfQ9/AHpS55Jj1mXj
- 6iUXms5sWaTOg==
-Date: Sat, 9 May 2020 15:04:58 +1000
+ b=M/BQS2zJJIxhXlTXJzKtVbnV3wWDmFcGmJG2mwFBFztlTup6jfUxDKHzMpnjDRRgI
+ GnUe3ZEgtLYR9lbRPXMtja7ZZ9s1kzqagsDKwNEiGQNJAU8nXXQgOSlY484DDX3OXJ
+ hkn+xvZgbHDGpKoWKL4NrrV7uup+xVkHlFa6GNHpB1yxuVlcig+5T9AqJZKqZGqYtA
+ ESMwqVAgnax4uKFJ68G2VxbRjhZVCeo6CaZm6XvWpayKuMP1M/QTvcEPF4k5NJbWjz
+ eeP0B3T/KSSRYpcyXJmzC87r050jkQT4ZmVWIxoArSCgl+wTCGUh5vJIfv3xCja06a
+ 5UX58pzf1HThQ==
+Date: Sat, 9 May 2020 15:02:04 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@ozlabs.org>,
  Michael Neuling <mikey@neuling.org>, Anton Blanchard <anton@ozlabs.org>
-Subject: [PATCH RFC 4/4] powerpc/radix: Add support for microwatt's PRTBL SPR
-Message-ID: <20200509050458.GE1464954@thinks.paulus.ozlabs.org>
+Subject: [PATCH RFC 1/4] powerpc/radix: Fix compilation for radix with
+ CONFIG_SMP=n
+Message-ID: <20200509050204.GB1464954@thinks.paulus.ozlabs.org>
 References: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -72,58 +73,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Microwatt currently doesn't implement hypervisor mode and therefore
-doesn't implement the partition table.  It does implement the process
-table and radix page table walks.
-
-This adds code to write the base address of the process table to the
-PRTBL SPR, which has been assigned SPR 720 for now, as that is in the
-range of SPR numbers assigned for experimental use.  PRTBL is only
-written when we have neither the FW_FEATURE_LPAR feature nor the
-CPU_FTR_HVMODE feature.
+This fixes the compile errors we currently get with CONFIG_SMP=n and
+CONFIG_PPC_RADIX_MMU=y.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/include/asm/reg.h           |  1 +
- arch/powerpc/mm/book3s64/radix_pgtable.c | 13 +++++++++----
- 2 files changed, 10 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush-radix.h | 2 ++
+ arch/powerpc/mm/book3s64/radix_tlb.c                | 2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1aa46dff0957..6ea3fc42740d 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -721,6 +721,7 @@
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index ca8db193ae38..adcc6114d170 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -68,6 +68,8 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
+ #define radix__flush_all_mm(mm)		radix__local_flush_all_mm(mm)
+ #define radix__flush_tlb_page(vma,addr)	radix__local_flush_tlb_page(vma,addr)
+ #define radix__flush_tlb_page_psize(mm,addr,p) radix__local_flush_tlb_page_psize(mm,addr,p)
++#define exit_flush_lazy_tlbs(mm)	do { } while (0)
++#define __flush_all_mm(mm, fullmm)	radix__local_flush_all_mm(mm)
  #endif
- #define SPRN_TIR	0x1BE	/* Thread Identification Register */
- #define SPRN_PTCR	0x1D0	/* Partition table control Register */
-+#define SPRN_PRTBL	0x2D0	/* Process table pointer */
- #define SPRN_PSPB	0x09F	/* Problem State Priority Boost reg */
- #define SPRN_PTEHI	0x3D5	/* 981 7450 PTE HI word (S/W TLB load) */
- #define SPRN_PTELO	0x3D6	/* 982 7450 PTE LO word (S/W TLB load) */
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index dd1bea45325c..2e6a376c9d82 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -600,10 +600,15 @@ void __init radix__early_init_mmu(void)
- 	radix_init_pgtable();
+ extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
+ extern void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr);
+diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+index 03f43c924e00..e3ea026cf91e 100644
+--- a/arch/powerpc/mm/book3s64/radix_tlb.c
++++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+@@ -776,8 +776,6 @@ void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_page);
  
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
--		lpcr = mfspr(SPRN_LPCR);
--		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
--		radix_init_partition_table();
--		radix_init_amor();
-+		if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+			lpcr = mfspr(SPRN_LPCR);
-+			mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
-+			radix_init_partition_table();
-+			radix_init_amor();
-+		} else {
-+			mtspr(SPRN_PRTBL, (__pa(process_tb) |
-+					   (PRTB_SIZE_SHIFT - 12)));
-+		}
- 	} else {
- 		radix_init_pseries();
- 	}
+-#else /* CONFIG_SMP */
+-#define radix__flush_all_mm radix__local_flush_all_mm
+ #endif /* CONFIG_SMP */
+ 
+ static void do_tlbiel_kernel(void *info)
 -- 
 2.25.3
 
