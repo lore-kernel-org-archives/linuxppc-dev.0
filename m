@@ -7,79 +7,79 @@ X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0766C47254
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:45:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 577D7C28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 09:12:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3749424953
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 08:45:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6981F2495C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 09:12:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kcvLKoGH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3749424953
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nMEKaFm5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6981F2495C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49K1481LZzzDr3D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 18:45:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49K1gF1M40zDrBn
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:12:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036;
- helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=kcvLKoGH; dkim-atps=neutral
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com
- [IPv6:2607:f8b0:4864:20::1036])
+ header.s=20161025 header.b=nMEKaFm5; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49K1235Sf0zDqBb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 18:43:39 +1000 (AEST)
-Received: by mail-pj1-x1036.google.com with SMTP id y6so5370135pjc.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2020 01:43:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49K1dP5KPrzDqQj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2020 19:10:46 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id b6so1781481plz.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2020 02:10:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :message-id:content-transfer-encoding;
- bh=MM0pGuoQz+m2i7SaYQltsjhcG+vuQhDEB07kHe3ONp0=;
- b=kcvLKoGHrq9a+5FfTP8I/NSRlRWu8KC1v695rjWAb9PcXDvN9fvLTi2oFBnMQCjBOY
- EPu3A2k0S9rM8sVRt4AllKRGzkMHa+mCg07kNipoGXPLoIxr1zaKy3OPelFzOOmwND7+
- cgkpVRemAhJ+yVySh/spOAaQ5wnLx3cu0pfxBJXEAP3lXJPmIXNN+mJf1OtqtiHIfG7S
- tXDRZBpYBb5eY7ddn+nJ/QeJl3ZniXG4JIaqkvaRwTvEcD3UFG+JGxjLmBFn9rzxPHlj
- TqFHybaSAf2rwWCCo8B7A4jeFE8p5+QkzdYbyT/6RuaJA8ed/2SRuqa7RBk6ZKovLbLK
- JJDQ==
+ bh=3aZQPfVWvX/Cz5y+To9kc7EjGlGudGJTepWhWgdPzfM=;
+ b=nMEKaFm5QFtFvFT83hrZXFfe/JcPlWekxSRSdCWVTjeHUXJ6SjqOdZ9PkdqJnhsGW7
+ CRskhIp1dRqpmTxUjR2IrGlobcVwPdZ3vMMIRWDb8pv2dfdiTkeI4c+Mg5pUHpOrBEZb
+ 4SrQv2Qt/lZte0gnmeIyhE1Bh9lfGZHyXidt4XYLPMvIz6+s3s3yka/3gV7fN9ZWOCKx
+ douzzivfznHJS4u2kejQ/rMD+JWxsipcOA3vco+imBZ0kuUONb86+eiT5ZhVfGg37JHT
+ k84+iI4otYXeyIpKv4vf6lT6Q2D4VESvH8dV/dWF/Rh9ln1LleN/zwV2M1RuYDOQXQPR
+ yc/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:message-id:content-transfer-encoding;
- bh=MM0pGuoQz+m2i7SaYQltsjhcG+vuQhDEB07kHe3ONp0=;
- b=hiWnoiiJIgeVOroDxDaVnm3BZENfmwe0hxh/2hlbFUsWKyS9d0OjUXy4b1IkgsBwxX
- wCpApA7UBnmOJttwkhmhVODcJSHHBmV4pZyPd/WwAl9Dc9bwAc36hxUrfV4D8d4U+ZfH
- +9KsLSWWm/8tLJyURjro91kuKCq0ThEL1cznQ5gkaPirKu5+Ih7vSB+C+YggoXtjiEdx
- cGpPFeezWxGJce3w53/7ygXt1lI8RcnvTQg2usgRdbEGCINLk6yTMAeH2lvM6LfwUEaS
- jXRNKkU+FhExsiS2Kp5pireyUFXGho7qQjtmMY49jFQJqcItzsNWOseaFku+hchXQaxH
- RU+w==
-X-Gm-Message-State: AGi0Pub9RWVX4ljZk2LYDexecxeKDHSAJ+VRhS0zfs3TjIN+goxyP6z2
- CWyeTEnFPXNJq9d+a85f5EE=
-X-Google-Smtp-Source: APiQypJOeWgThOJc+RzZuE2Da5TBy3JNA8q5LcFNGI6CFT06/rcxe512zRiuVgYXqPtfTYAokEoLdw==
-X-Received: by 2002:a17:90a:f40f:: with SMTP id
- ch15mr6228382pjb.178.1589013816321; 
- Sat, 09 May 2020 01:43:36 -0700 (PDT)
+ bh=3aZQPfVWvX/Cz5y+To9kc7EjGlGudGJTepWhWgdPzfM=;
+ b=XJm+B3L+6cL3YXQTllyNxf+DP/SsUcjZFBt7thpiaJw5aktMy4obRqks98o5xUmZMa
+ B2ldqJDSHO9fs89F/jAOwsG8+aqUBhA6NETqb+HVONpAAa1e9/W4GMl+/HbLi+nbUY8s
+ YnZJ6dBOp/O3oF1M1OqlhYoiEJYw3kr9YrNWZji7c/enYu4cXbjfn2eBsrxSYCwqp6jx
+ JyxiFDY6vbMfXYQQRJ0+oi8zYigJSZqIGcpfXRWy0HBCmm1ILE7APjWNwBazrR2AjBJS
+ bnYiY4Gn+H+2Lq1knqD5cvPLwnX2yhztvqO7ec8c7ts1OjLTls890/DTsGHN/OZx/H58
+ 56bA==
+X-Gm-Message-State: AGi0Pua/2QQ4AC6ftESBLyexT4nmYunZ5tYV3K+4m6JmmZ8Hsczsc1jo
+ xddBeG9/Fb4hgkaZgP2M79w=
+X-Google-Smtp-Source: APiQypJam4gCw6uppv/XnVHP25QtCioUrt9qom4TTEVWg0Bb8JexFztfJccyVR0OVAaA9Bo+w8P4JA==
+X-Received: by 2002:a17:902:b202:: with SMTP id t2mr4256600plr.1.1589015444980; 
+ Sat, 09 May 2020 02:10:44 -0700 (PDT)
 Received: from localhost (61-68-214-199.tpgi.com.au. [61.68.214.199])
- by smtp.gmail.com with ESMTPSA id v9sm4218268pju.3.2020.05.09.01.43.34
+ by smtp.gmail.com with ESMTPSA id d14sm2863420pgt.66.2020.05.09.02.10.43
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 09 May 2020 01:43:35 -0700 (PDT)
-Date: Sat, 09 May 2020 18:43:30 +1000
+ Sat, 09 May 2020 02:10:44 -0700 (PDT)
+Date: Sat, 09 May 2020 19:10:39 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: ioremap() called early from pnv_pci_init_ioda_phb()
-To: Qian Cai <cai@lca.pw>, Oliver O'Halloran <oohall@gmail.com>
-References: <B183CDAA-DA88-4760-9C1B-F73A8F7840E7@lca.pw>
- <CAOSf1CFNp6+k_y_87r7p2e8cKfX0rK-9wBxeR+K0e0y8R0_TNg@mail.gmail.com>
-In-Reply-To: <CAOSf1CFNp6+k_y_87r7p2e8cKfX0rK-9wBxeR+K0e0y8R0_TNg@mail.gmail.com>
+Subject: Re: [PATCH RFC 2/4] powerpc: Add Microwatt platform
+To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
+ <20200509050255.GC1464954@thinks.paulus.ozlabs.org>
+ <1589010752.ygtog0nhjc.astroid@bobo.none> <2771261.oJVn4HZnso@townsend>
+In-Reply-To: <2771261.oJVn4HZnso@townsend>
 MIME-Version: 1.0
-Message-Id: <1589013519.0fzm2px5cz.astroid@bobo.none>
+Message-Id: <1589015352.vol2thm3ae.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,40 +93,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Oliver O'Halloran's message of May 9, 2020 6:11 pm:
-> On Sat, May 9, 2020 at 12:41 AM Qian Cai <cai@lca.pw> wrote:
->>
->>  Booting POWER9 PowerNV has this message,
->>
->> "ioremap() called early from pnv_pci_init_ioda_phb+0x420/0xdfc. Use earl=
-y_ioremap() instead=E2=80=9D
->>
->> but use the patch below will result in leaks because it will never call =
-early_iounmap() anywhere. However, it looks me it was by design that phb->r=
-egs mapping would be there forever where it would be used in pnv_ioda_get_i=
-nval_reg(), so is just that check_early_ioremap_leak() initcall too strong?
+Excerpts from Alistair Popple's message of May 9, 2020 6:36 pm:
+> On Saturday, 9 May 2020 5:58:57 PM AEST Nicholas Piggin wrote:
+>> Excerpts from Paul Mackerras's message of May 9, 2020 3:02 pm:
+>> > Microwatt is a FPGA-based implementation of the Power ISA.  It
+>> > currently only implements little-endian 64-bit mode, and does
+>> > not (yet) support SMP.
+>> >=20
+>> > This adds a new machine type to support FPGA-based SoCs with a
+>> > Microwatt core.
+>>=20
+>> Very cool!
+>>=20
+>> Would there be any point sharing this with the "naked metal" platform
+>> Alistair has for booting POWER in L3 without OPAL? Or is it easy enough
+>> to have a several different simple 64s platforms?
 >=20
-> The warning there is junk. The PHBs are setup at boot and never torn
-> down so we're not "leaking" the mapping. It's supposed to be there for
-> the lifetime of the kernel.
->=20
-> That said, we could probably move the PCI setup to a point later in
-> boot where the normal ioremap can be be used. We would have to check
-> for initcalls which depend on the PHBs being setup and delay those too
-> though.
+> It looks pretty similar at the moment, I've been meaning to clean those=20
+> patches up and send them upstream but Paul has beaten me to it. The main=20
+> difference so far is how the console is setup. For booting cache containe=
+d I=20
+> was using a device tree pointing at a standard UART driver and enabling t=
+he=20
+> standard OF platform device tree probing.
 
-I think it helps to unify code a bit more and take special cases out of=20
-ioremap to have all these early calls use early_ioremap.
-
-We actually do want to move these later if possible too, on radix they=20
-use memblock for page tables, and on hash they don't even set up proper=20
-kernel page tables but just bolt PTEs into the hash table.
+Well I'd only merge them if you think it makes sense. If the platform is=20
+a perfectly good abstraction for the differences and merging them would=20
+just result in painful special cases it wouldn't be worthwhile. It's
+clearly not a lot of code.
 
 Thanks,
 Nick
