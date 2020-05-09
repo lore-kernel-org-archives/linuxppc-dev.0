@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1681C28CBC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F295CC28CBC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:16:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6812D208E4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:12:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A4E0520722
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 May 2020 19:16:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nxfuCnxf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6812D208E4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="An4zJv69"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4E0520722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49KGzF5PZ4zDr1N
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 05:12:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49KH4P5BVRzDr0t
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 05:16:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
@@ -32,28 +32,28 @@ Received: from merlin.infradead.org (merlin.infradead.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49KGgz6Kj0zDr5R
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:58:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49KGh14bcdzDr5V
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 04:58:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=merlin.20170209; h=Date:Cc:To:Subject:From:References:
  In-Reply-To:Message-Id:Sender:Reply-To:MIME-Version:Content-Type:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=hrdjt8PAYlRcK9St65pLelHqmaCoNpXHENLe8hK4Z60=; b=nxfuCnxfquzTGx2mvl5MicECy7
- 3PGV6fYU1tcGZW+3d9uTnfhOhoTUJtnoar/3vKQLVKh4WZkNlptv0I1GjWhnZZHgX6nmyYeQ9SvjD
- 0EnQDdj+zKEtqyxe5UUi36JpOyVfr82KbA1RREXrG3iVcDZuCgQohZyVewAqSEwltZz/Zxo+Wdert
- Erw1k7H26Bhn3nbIXHawCMWVvGjMI8IIiidO1ecAKZqIberR5WmLo5tpCUnZWmpCzzKW+dD0+EkGg
- HThPj/51C5DtK8crl59d7OUjNwo3rGoLZDd+NR1HxUqk74HIN2NisyX/2a/OnbBt/I5ak+kRrzkoH
- u/4lzEGA==;
+ bh=nPaHBiwnr6PpZH+bH6o3Q/s4/U07piP0uc8eU+TlsIs=; b=An4zJv69H5Ob7FRe6qn4RVCdze
+ yYhwbd6SApwA5C8bu4nsyKUh+nXqzixX42KRtWaUEITjlJLyagIujDgEKuVehmCfs0hAIYqa0cGR+
+ MUgJenikoaogyUdMeMU4oU8Xhr4QDjXR3QOeJWstIu2/tzn4XAZBL09NXcqZLd/95ECc0od7vVBki
+ VG/PwCYVkKETLSMhR5XqSaeOKDQCfyjYrd9QboGqjHvUZJEcaCs4FNizjv+nrRBp40kVRZ1U8hh8D
+ K9Oc6ycHT8YWKYSLE24T/GuWDVyLMfwn3P4XZqEoW2TwgJ0pjaCWHHhu5Un/5xR9XOv/WZ8rJEZW2
+ oyXxKPIw==;
 Received: from geoff by merlin.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jXUgB-0003Di-PP; Sat, 09 May 2020 18:58:31 +0000
-Message-Id: <fb477f5e91c6b74a1dec98df3cc0a1c91632d94d.1589049250.git.geoff@infradead.org>
+ Hat Linux)) id 1jXUgC-0003E7-AA; Sat, 09 May 2020 18:58:32 +0000
+Message-Id: <7325c4af2b4c989c19d6a26b90b1fec9c0615ddf.1589049250.git.geoff@infradead.org>
 In-Reply-To: <cover.1589049250.git.geoff@infradead.org>
 References: <cover.1589049250.git.geoff@infradead.org>
 From: Geoff Levand <geoff@infradead.org>
-Patch-Date: Fri, 27 Mar 2020 09:41:41 -0700
-Subject: [PATCH v2 2/9] powerpc/wrapper: Output linker map file
+Patch-Date: Tue, 14 Apr 2020 18:31:34 -0700
+Subject: [PATCH v2 8/9] powerpc/ps3: Fix kexec shutdown hang
 To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 09 May 2020 18:58:31 +0000
+Date: Sat, 09 May 2020 18:58:32 +0000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,35 +72,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To aid debugging wrapper troubles, output a linker map file
-'wrapper.map' when the build is verbose.
+The ps3_mm_region_destroy() and ps3_mm_vas_destroy() routines
+are called very late in the shutdown via kexec's mmu_cleanup_all
+routine.  By the time mmu_cleanup_all runs it is too late to use
+udbg_printf, and calling it will cause PS3 systems to hang.
+
+Remove all debugging statements from ps3_mm_region_destroy() and
+ps3_mm_vas_destroy() and replace any error reporting with calls
+to lv1_panic.
+
+With this change builds with 'DEBUG' defined will not cause kexec
+reboots to hang, and builds with 'DEBUG' defined or not will end
+in lv1_panic if an error is encountered.
 
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/boot/wrapper | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/mm.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index ed6266367bc0..35ace40d9fc2 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -29,6 +29,7 @@ set -e
- # Allow for verbose output
- if [ "$V" = 1 ]; then
-     set -x
-+    map="-Map wrapper.map"
- fi
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 423be34f0f5f..f42fe4e86ce5 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -200,13 +200,14 @@ void ps3_mm_vas_destroy(void)
+ {
+ 	int result;
  
- # defaults
-@@ -500,7 +501,7 @@ if [ "$platform" != "miboot" ]; then
-         text_start="-Ttext $link_address"
-     fi
- #link everything
--    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl -o "$ofile" \
-+    ${CROSS}ld -m $format -T $lds $text_start $pie $nodl -o "$ofile" $map \
- 	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
+-	DBG("%s:%d: map.vas_id    = %llu\n", __func__, __LINE__, map.vas_id);
+-
+ 	if (map.vas_id) {
+ 		result = lv1_select_virtual_address_space(0);
+-		BUG_ON(result);
+-		result = lv1_destruct_virtual_address_space(map.vas_id);
+-		BUG_ON(result);
++		result += lv1_destruct_virtual_address_space(map.vas_id);
++
++		if (result) {
++			lv1_panic(0);
++		}
++
+ 		map.vas_id = 0;
+ 	}
+ }
+@@ -304,19 +305,20 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+ 	int result;
+ 
+ 	if (!r->destroy) {
+-		pr_info("%s:%d: Not destroying high region: %llxh %llxh\n",
+-			__func__, __LINE__, r->base, r->size);
+ 		return;
+ 	}
+ 
+-	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
+-
+ 	if (r->base) {
+ 		result = lv1_release_memory(r->base);
+-		BUG_ON(result);
++
++		if (result) {
++			lv1_panic(0);
++		}
++
+ 		r->size = r->base = r->offset = 0;
+ 		map.total = map.rm.size;
+ 	}
++
+ 	ps3_mm_set_repository_highmem(NULL);
+ }
+ 
 -- 
 2.20.1
 
