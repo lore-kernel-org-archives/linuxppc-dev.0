@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56A56C54E49
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 08:08:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36865C54E49
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 08:11:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAB6F20708
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 08:08:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D36D620731
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 08:11:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="M6E6jT1v"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAB6F20708
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="i1x1Ss6r"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D36D620731
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49KcCR08X9zDqkq
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 18:08:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49KcFt0g96zDqXW
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 May 2020 18:10:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,34 +31,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=M6E6jT1v; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=i1x1Ss6r; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49KbwV0MjLzDqc3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 17:55:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49KbwW1np9zDqc4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2020 17:55:55 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=Z9YRs5dLpbvo98tj/Cgt22OOiGK6aHhMzE6epEWfQXc=; b=M6E6jT1vTAkcc/uqCv5rRZBqVj
- 4C9y1DKz9zmQassTsueu8yWQtNmiSAw2Hqc+MF/e1W//UGZoTW7Mkhlj5xO2Sw8y6kKhWH6Lxu081
- RTOiKkdeaCdvxRpTIMXxDZX2l/SD61dJ1ht3dJUMAZ5fSZztKAueD6GAhmW6p58R92s+FRj6moa0W
- MW6rCeXcQQ1sGtgtL8vI274YEWPu36qdr9qupNELF/8k4VcjiFVOld/2i3HBkugH4PB6MhS+BWh7/
- W8A67yIAP6eHosepHe+pXuDHyaVjcFfcdRZzmDftL4nnPz9Dlr8KupBRqGGJq8mtr1f9Lr6VMYOde
- +ETCOrfw==;
+ bh=nlhENnOEhFNbEFUndyREOb6FGEq18FGbNW1JKWIMMLQ=; b=i1x1Ss6rIc4xzNUDXo+FvRpYHu
+ 82lL8kLQuanx4yVq+U1KkNB54lkslveAIWBaF+MTputzPzOFWndXQQnXvyD7+FR+cqMFLp/pP55/1
+ JJ1pgO5gGrfYSFIUciLqyV93Z0Ro6GYZ1Y2psM6c/Tk9M9xNEjj3wwc0P80q5dfa02Mhfzfk8J1rq
+ WZkBh9V+FcI+fFWoRlojFUob83e57Ewrm3Nz0A9dnifpN+kou+fNnBsyHvGFkSFgYUsaPq4o4wj6C
+ nBGWsukawde3e9GvXnOH1VVzVXmsV4EctOI+UKlFdhH6DokZwsMxvU22j+6HxfvOXf+1azU3aVXpn
+ her/Gw8Q==;
 Received: from [2001:4bb8:180:9d3f:c70:4a89:bc61:2] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jXgo3-0007yb-Rn; Sun, 10 May 2020 07:55:28 +0000
+ id 1jXgo6-000830-Qo; Sun, 10 May 2020 07:55:31 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
  Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH 05/31] powerpc: unexport flush_icache_user_range
-Date: Sun, 10 May 2020 09:54:44 +0200
-Message-Id: <20200510075510.987823-6-hch@lst.de>
+Subject: [PATCH 06/31] unicore32: remove flush_cache_user_range
+Date: Sun, 10 May 2020 09:54:45 +0200
+Message-Id: <20200510075510.987823-7-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200510075510.987823-1-hch@lst.de>
 References: <20200510075510.987823-1-hch@lst.de>
@@ -91,26 +91,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-flush_icache_user_range is only used by copy_to_user_page, which is
-only used by core VM code.
+flush_cache_user_range is an ARMism not used by any generic or unicore32
+specific code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/mm/mem.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/unicore32/include/asm/cacheflush.h | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 041ed7cfd341a..f0d1bf0a8e14f 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -587,7 +587,6 @@ void flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
- 	flush_icache_range(maddr, maddr + len);
- 	kunmap(page);
- }
--EXPORT_SYMBOL(flush_icache_user_range);
+diff --git a/arch/unicore32/include/asm/cacheflush.h b/arch/unicore32/include/asm/cacheflush.h
+index dc8c0b41538f8..9393ca4047e93 100644
+--- a/arch/unicore32/include/asm/cacheflush.h
++++ b/arch/unicore32/include/asm/cacheflush.h
+@@ -132,14 +132,6 @@ extern void flush_cache_page(struct vm_area_struct *vma,
  
+ #define flush_cache_dup_mm(mm) flush_cache_mm(mm)
+ 
+-/*
+- * flush_cache_user_range is used when we want to ensure that the
+- * Harvard caches are synchronised for the user space address range.
+- * This is used for the UniCore private sys_cacheflush system call.
+- */
+-#define flush_cache_user_range(vma, start, end) \
+-	__cpuc_coherent_user_range((start) & PAGE_MASK, PAGE_ALIGN(end))
+-
  /*
-  * System memory should not be in /proc/iomem but various tools expect it
+  * Perform necessary cache operations to ensure that data previously
+  * stored within this range of addresses can be executed by the CPU.
 -- 
 2.26.2
 
