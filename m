@@ -2,58 +2,85 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDC50C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 08:33:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9BD7C54E4B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 09:22:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87B3320735
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 08:33:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87B3320735
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id D28C82075E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 09:22:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HbrwVkiT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D28C82075E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LDhv5G4gzDqZW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 18:33:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LFp56rh7zDqgs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 19:22:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1041;
+ helo=mail-pj1-x1041.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=HbrwVkiT; dkim-atps=neutral
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
+ [IPv6:2607:f8b0:4864:20::1041])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LDWz5CDdzDqZP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 18:25:19 +1000 (AEST)
-IronPort-SDR: P3yZRm4RJMv2/zUE7iKgTc9w2Al9TEG3NbjEHL6BsKpFV4VI+0W5B6uh+Q1T/wBrBRG1fPRX+F
- iyHtXOD8TMDg==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 May 2020 01:25:11 -0700
-IronPort-SDR: rBBHPArX1/QSU07bJIUzlJKVoa6K0bCexb+BEIXQKyp6WlhclAiB8p0ee89UrepgmytKGVioAo
- 913ueLoM/IDQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,379,1583222400"; d="scan'208";a="279712941"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by orsmga002.jf.intel.com with ESMTP; 11 May 2020 01:25:10 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1jY3kL-0001G9-GI; Mon, 11 May 2020 16:25:09 +0800
-Date: Mon, 11 May 2020 16:25:01 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 78263190ec9727216ca715bfc0ee8b58b657d1ea
-Message-ID: <5eb90bdd.mxiRYyGydb2JVOj6%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LFm73pLkzDqBN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 19:20:54 +1000 (AEST)
+Received: by mail-pj1-x1041.google.com with SMTP id hi11so7559935pjb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 02:20:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=nspBAZPY6x37OvgvHji/WwP5ZYZTXqnM92cXAE98zjs=;
+ b=HbrwVkiTVV1sgDKE283MiakLVSx/xsPSnsgRVY/r2yzA1bO+/i3DUqDWovjy11xzbB
+ n7N7XCOUXEzg1Cq5dRKUJwUH0MdpNdjlyY1izpCtsKsTE377jHpG8v3ZZlsha7wLGMY7
+ E6sTrH1pmPWb/DE7Hmb2uQZFJk5LsHZtO/XKnc3IOVOz7F4OPDq9sH2+3VJKu+XHzMzq
+ YJ6+KDJXf5aGHBgJUlY2W6vywa1k8x3T019hhF2lK+kTSFNZbuVb+jlP27P9cAGf7Zmq
+ 6zH6zJh1zZnHMVhn85/B075i+EKChtQWS8j/Nlh9uCe7KqFzduiW9PgBGLw0jj+XugB1
+ yK7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=nspBAZPY6x37OvgvHji/WwP5ZYZTXqnM92cXAE98zjs=;
+ b=O2r4EkDZNRsOUcnR9s3YNCCXFPJs2nwKXsa5hj3z5LETxdxqE7H85aubGc/O6vsSms
+ wRoNRZXxELtO1lTy7m36buQMcL2MYJVD4u3So1QeswCwABgeerna7CRYfSL/Ss8a8ZgN
+ knev+kqkh5fBTShYFab2BCc2PescELrWTlKP43qm/OveprmQTP39riOXqbtAUVIFnZ4i
+ ysnkuOsIKQ4xepsF82cFclZbnUmYXbx4hiGISOl/zeB7zp126PH1B+L6+2JqgvmGIYka
+ Qfry990QPzhFEv9e8ckA+SP5TONE4JztGGwbVpAO5w45mJaAuodnw3e+SJYCiauY8bAA
+ 0yXA==
+X-Gm-Message-State: AGi0PuYSSqLx1WQy4tO6AIChVXDr57Hp6/pcgec41ZsnQowSQ33X4Qw2
+ aYpLx/ljobaYVrAAqsOvGWmA7s5j
+X-Google-Smtp-Source: APiQypL2pfxD6ermABiYmzuMs8GIgqvUMiElDq9kzRCGwRohz1aJHE37ClcUXzS4+aAgz31FvPmwvg==
+X-Received: by 2002:a17:90a:1181:: with SMTP id
+ e1mr22516456pja.234.1589188850899; 
+ Mon, 11 May 2020 02:20:50 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (61-68-214-199.tpgi.com.au. [61.68.214.199])
+ by smtp.gmail.com with ESMTPSA id p66sm8497541pfb.65.2020.05.11.02.20.48
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 11 May 2020 02:20:50 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/2] powerpc/64s/hash: add torture_slb kernel boot option
+ to increase SLB faults
+Date: Mon, 11 May 2020 19:20:39 +1000
+Message-Id: <20200511092040.1339667-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,141 +92,347 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 78263190ec9727216ca715bfc0ee8b58b657d1ea  Automatic merge of 'master', 'next' and 'fixes' (2020-05-07 22:25)
+This option increases the number of SLB misses by limiting the number of
+kernel SLB entries, and increased flushing of cached lookaside information.
+This helps stress test difficult to hit paths in the kernel.
 
-elapsed time: 5480m
-
-configs tested: 118
-configs skipped: 26
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sparc                            allyesconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-i386                             allyesconfig
-s390                             allmodconfig
-m68k                              allnoconfig
-um                                allnoconfig
-m68k                                defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                           sun3_defconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a006-20200511
-i386                 randconfig-a005-20200511
-i386                 randconfig-a003-20200511
-i386                 randconfig-a001-20200511
-i386                 randconfig-a004-20200511
-i386                 randconfig-a002-20200511
-i386                 randconfig-a005-20200507
-i386                 randconfig-a004-20200507
-i386                 randconfig-a001-20200507
-i386                 randconfig-a002-20200507
-i386                 randconfig-a003-20200507
-i386                 randconfig-a006-20200507
-x86_64               randconfig-a005-20200511
-x86_64               randconfig-a003-20200511
-x86_64               randconfig-a006-20200511
-x86_64               randconfig-a004-20200511
-x86_64               randconfig-a001-20200511
-x86_64               randconfig-a002-20200511
-i386                 randconfig-a012-20200510
-i386                 randconfig-a016-20200510
-i386                 randconfig-a014-20200510
-i386                 randconfig-a011-20200510
-i386                 randconfig-a013-20200510
-i386                 randconfig-a015-20200510
-i386                 randconfig-a012-20200507
-i386                 randconfig-a016-20200507
-i386                 randconfig-a014-20200507
-i386                 randconfig-a011-20200507
-i386                 randconfig-a015-20200507
-i386                 randconfig-a013-20200507
-i386                 randconfig-a012-20200511
-i386                 randconfig-a016-20200511
-i386                 randconfig-a014-20200511
-i386                 randconfig-a011-20200511
-i386                 randconfig-a013-20200511
-i386                 randconfig-a015-20200511
-x86_64               randconfig-a004-20200507
-x86_64               randconfig-a006-20200507
-x86_64               randconfig-a002-20200507
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                                defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
-
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+v3:
+- Fix compile error found by ktr
+
+ .../admin-guide/kernel-parameters.txt         |   5 +
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   7 +
+ arch/powerpc/mm/book3s64/hash_utils.c         |  13 ++
+ arch/powerpc/mm/book3s64/slb.c                | 152 ++++++++++++------
+ 4 files changed, 132 insertions(+), 45 deletions(-)
+
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 7bc83f3d9bdf..8dd4260746dc 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -871,6 +871,11 @@
+ 			can be useful when debugging issues that require an SLB
+ 			miss to occur.
+ 
++	torture_slb	[PPC]
++			Limits the number of kernel SLB entries, and flushes
++			them frequently to increase the rate of SLB faults
++			on kernel addresses.
++
+ 	disable=	[IPV6]
+ 			See Documentation/networking/ipv6.txt.
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 3fa1b962dc27..758de1e0f676 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -317,6 +317,13 @@ extern unsigned long tce_alloc_start, tce_alloc_end;
+  */
+ extern int mmu_ci_restrictions;
+ 
++extern bool torture_slb_enabled;
++DECLARE_STATIC_KEY_FALSE(torture_slb_key);
++static inline bool torture_slb(void)
++{
++	return static_branch_unlikely(&torture_slb_key);
++}
++
+ /*
+  * This computes the AVPN and B fields of the first dword of a HPTE,
+  * for use when we want to match an existing PTE.  The bottom 7 bits
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index 8ed2411c3f39..9c487b5782ef 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -354,6 +354,7 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ }
+ 
+ static bool disable_1tb_segments = false;
++bool torture_slb_enabled __read_mostly = false;
+ 
+ static int __init parse_disable_1tb_segments(char *p)
+ {
+@@ -362,6 +363,13 @@ static int __init parse_disable_1tb_segments(char *p)
+ }
+ early_param("disable_1tb_segments", parse_disable_1tb_segments);
+ 
++static int __init parse_torture_slb(char *p)
++{
++	torture_slb_enabled = true;
++	return 0;
++}
++early_param("torture_slb", parse_torture_slb);
++
+ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 					 const char *uname, int depth,
+ 					 void *data)
+@@ -854,6 +862,8 @@ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 	pr_info("Partition table %p\n", partition_tb);
+ }
+ 
++DEFINE_STATIC_KEY_FALSE(torture_slb_key);
++
+ static void __init htab_initialize(void)
+ {
+ 	unsigned long table;
+@@ -870,6 +880,9 @@ static void __init htab_initialize(void)
+ 		printk(KERN_INFO "Using 1TB segments\n");
+ 	}
+ 
++	if (torture_slb_enabled)
++		static_branch_enable(&torture_slb_key);
++
+ 	/*
+ 	 * Calculate the required size of the htab.  We want the number of
+ 	 * PTEGs to equal one half the number of real pages.
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index 716204aee3da..cf41c4b63d95 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -68,7 +68,7 @@ static void assert_slb_presence(bool present, unsigned long ea)
+ 	 * slbfee. requires bit 24 (PPC bit 39) be clear in RB. Hardware
+ 	 * ignores all other bits from 0-27, so just clear them all.
+ 	 */
+-	ea &= ~((1UL << 28) - 1);
++	ea &= ~((1UL << SID_SHIFT) - 1);
+ 	asm volatile(__PPC_SLBFEE_DOT(%0, %1) : "=r"(tmp) : "r"(ea) : "cr0");
+ 
+ 	WARN_ON(present == (tmp == 0));
+@@ -153,14 +153,42 @@ void slb_flush_all_realmode(void)
+ 	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+ }
+ 
++static __always_inline void __slb_flush_and_restore_bolted(bool preserve_kernel_lookaside)
++{
++	struct slb_shadow *p = get_slb_shadow();
++	unsigned long ksp_esid_data, ksp_vsid_data;
++	u32 ih;
++
++	/*
++	 * SLBIA IH=1 on ISA v2.05 and newer processors may preserve lookaside
++	 * information created with Class=0 entries, which we use for kernel
++	 * SLB entries (the SLB entries themselves are still invalidated).
++	 *
++	 * Older processors will ignore this optimisation. Over-invalidation
++	 * is fine because we never rely on lookaside information existing.
++	 */
++	if (preserve_kernel_lookaside)
++		ih = 1;
++	else
++		ih = 0;
++
++	ksp_esid_data = be64_to_cpu(p->save_area[KSTACK_INDEX].esid);
++	ksp_vsid_data = be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
++
++	asm volatile(PPC_SLBIA(%0)"	\n"
++		     "slbmte	%1, %2	\n"
++		     :: "i" (ih),
++			"r" (ksp_vsid_data),
++			"r" (ksp_esid_data)
++		     : "memory");
++}
++
+ /*
+  * This flushes non-bolted entries, it can be run in virtual mode. Must
+  * be called with interrupts disabled.
+  */
+ void slb_flush_and_restore_bolted(void)
+ {
+-	struct slb_shadow *p = get_slb_shadow();
+-
+ 	BUILD_BUG_ON(SLB_NUM_BOLTED != 2);
+ 
+ 	WARN_ON(!irqs_disabled());
+@@ -171,13 +199,10 @@ void slb_flush_and_restore_bolted(void)
+ 	 */
+ 	hard_irq_disable();
+ 
+-	asm volatile("isync\n"
+-		     "slbia\n"
+-		     "slbmte  %0, %1\n"
+-		     "isync\n"
+-		     :: "r" (be64_to_cpu(p->save_area[KSTACK_INDEX].vsid)),
+-			"r" (be64_to_cpu(p->save_area[KSTACK_INDEX].esid))
+-		     : "memory");
++	isync();
++	__slb_flush_and_restore_bolted(false);
++	isync();
++
+ 	assert_slb_presence(true, get_paca()->kstack);
+ 
+ 	get_paca()->slb_cache_ptr = 0;
+@@ -400,6 +425,30 @@ void preload_new_slb_context(unsigned long start, unsigned long sp)
+ 	local_irq_enable();
+ }
+ 
++static void slb_cache_slbie_kernel(unsigned int index)
++{
++	unsigned long slbie_data = get_paca()->slb_cache[index];
++	unsigned long ksp = get_paca()->kstack;
++
++	slbie_data <<= SID_SHIFT;
++	slbie_data |= 0xc000000000000000ULL;
++	if ((ksp & slb_esid_mask(mmu_kernel_ssize)) == slbie_data)
++		return;
++	slbie_data |= mmu_kernel_ssize << SLBIE_SSIZE_SHIFT;
++
++	asm volatile("slbie %0" : : "r" (slbie_data));
++}
++
++static void slb_cache_slbie_user(unsigned int index)
++{
++	unsigned long slbie_data = get_paca()->slb_cache[index];
++
++	slbie_data <<= SID_SHIFT;
++	slbie_data |= user_segment_size(slbie_data) << SLBIE_SSIZE_SHIFT;
++	slbie_data |= SLBIE_C; /* user slbs have C=1 */
++
++	asm volatile("slbie %0" : : "r" (slbie_data));
++}
+ 
+ /* Flush all user entries from the segment table of the current processor. */
+ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+@@ -414,8 +463,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 	 * which would update the slb_cache/slb_cache_ptr fields in the PACA.
+ 	 */
+ 	hard_irq_disable();
+-	asm volatile("isync" : : : "memory");
+-	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++	isync();
++	if (torture_slb()) {
++		__slb_flush_and_restore_bolted(false);
++		isync();
++		get_paca()->slb_cache_ptr = 0;
++		get_paca()->slb_kern_bitmap = (1U << SLB_NUM_BOLTED) - 1;
++
++	} else if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		/*
+ 		 * SLBIA IH=3 invalidates all Class=1 SLBEs and their
+ 		 * associated lookaside structures, which matches what
+@@ -423,47 +478,29 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		 * cache.
+ 		 */
+ 		asm volatile(PPC_SLBIA(3));
++
+ 	} else {
+ 		unsigned long offset = get_paca()->slb_cache_ptr;
+ 
+ 		if (!mmu_has_feature(MMU_FTR_NO_SLBIE_B) &&
+ 		    offset <= SLB_CACHE_ENTRIES) {
+-			unsigned long slbie_data = 0;
+-
+-			for (i = 0; i < offset; i++) {
+-				unsigned long ea;
+-
+-				ea = (unsigned long)
+-					get_paca()->slb_cache[i] << SID_SHIFT;
+-				/*
+-				 * Could assert_slb_presence(true) here, but
+-				 * hypervisor or machine check could have come
+-				 * in and removed the entry at this point.
+-				 */
+-
+-				slbie_data = ea;
+-				slbie_data |= user_segment_size(slbie_data)
+-						<< SLBIE_SSIZE_SHIFT;
+-				slbie_data |= SLBIE_C; /* user slbs have C=1 */
+-				asm volatile("slbie %0" : : "r" (slbie_data));
+-			}
++			/*
++			 * Could assert_slb_presence(true) here, but
++			 * hypervisor or machine check could have come
++			 * in and removed the entry at this point.
++			 */
++
++			for (i = 0; i < offset; i++)
++				slb_cache_slbie_user(i);
+ 
+ 			/* Workaround POWER5 < DD2.1 issue */
+ 			if (!cpu_has_feature(CPU_FTR_ARCH_207S) && offset == 1)
+-				asm volatile("slbie %0" : : "r" (slbie_data));
++				slb_cache_slbie_user(0);
+ 
+ 		} else {
+-			struct slb_shadow *p = get_slb_shadow();
+-			unsigned long ksp_esid_data =
+-				be64_to_cpu(p->save_area[KSTACK_INDEX].esid);
+-			unsigned long ksp_vsid_data =
+-				be64_to_cpu(p->save_area[KSTACK_INDEX].vsid);
+-
+-			asm volatile(PPC_SLBIA(1) "\n"
+-				     "slbmte	%0,%1\n"
+-				     "isync"
+-				     :: "r"(ksp_vsid_data),
+-					"r"(ksp_esid_data));
++			/* Flush but retain kernel lookaside information */
++			__slb_flush_and_restore_bolted(true);
++			isync();
+ 
+ 			get_paca()->slb_kern_bitmap = (1U << SLB_NUM_BOLTED) - 1;
+ 		}
+@@ -503,7 +540,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 	 * address accesses by the kernel (user mode won't happen until
+ 	 * rfid, which is safe).
+ 	 */
+-	asm volatile("isync" : : : "memory");
++	isync();
+ }
+ 
+ void slb_set_size(u16 size)
+@@ -571,6 +608,9 @@ static void slb_cache_update(unsigned long esid_data)
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		return; /* ISAv3.0B and later does not use slb_cache */
+ 
++	if (torture_slb())
++		return;
++
+ 	/*
+ 	 * Now update slb cache entries
+ 	 */
+@@ -580,7 +620,7 @@ static void slb_cache_update(unsigned long esid_data)
+ 		 * We have space in slb cache for optimized switch_slb().
+ 		 * Top 36 bits from esid_data as per ISA
+ 		 */
+-		local_paca->slb_cache[slb_cache_index++] = esid_data >> 28;
++		local_paca->slb_cache[slb_cache_index++] = esid_data >> SID_SHIFT;
+ 		local_paca->slb_cache_ptr++;
+ 	} else {
+ 		/*
+@@ -671,6 +711,28 @@ static long slb_insert_entry(unsigned long ea, unsigned long context,
+ 	 * accesses user memory before it returns to userspace with rfid.
+ 	 */
+ 	assert_slb_presence(false, ea);
++	if (torture_slb()) {
++		int slb_cache_index = local_paca->slb_cache_ptr;
++
++		/*
++		 * torture_slb() does not use slb cache, repurpose as a
++		 * cache of inserted (non-bolted) kernel SLB entries. All
++		 * non-bolted kernel entries are flushed on any user fault,
++		 * or if there are already 3 non-boled kernel entries.
++		 */
++		BUILD_BUG_ON(SLB_CACHE_ENTRIES < 3);
++		if (!kernel || slb_cache_index == 3) {
++			int i;
++
++			for (i = 0; i < slb_cache_index; i++)
++				slb_cache_slbie_kernel(i);
++			slb_cache_index = 0;
++		}
++
++		if (kernel)
++			local_paca->slb_cache[slb_cache_index++] = esid_data >> SID_SHIFT;
++		local_paca->slb_cache_ptr = slb_cache_index;
++	}
+ 	asm volatile("slbmte %0, %1" : : "r" (vsid_data), "r" (esid_data));
+ 
+ 	barrier();
+-- 
+2.23.0
+
