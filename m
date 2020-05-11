@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EB0C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0772C54E8D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:14:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C486C20735
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:11:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C486C20735
+	by mail.kernel.org (Postfix) with ESMTPS id 5DE4E20736
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:14:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DE4E20736
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LLst204lzDqLp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 23:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LLxk2Ym2zDqCY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 23:14:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LJXQ1TXtzDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:25:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJXT2RpWzDqg5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:26:01 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49LJXD4kR8z9ty3l;
- Mon, 11 May 2020 13:25:48 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49LJXH5Tvgz9ty3q;
+ Mon, 11 May 2020 13:25:51 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id eVFjLGWLZzlf; Mon, 11 May 2020 13:25:48 +0200 (CEST)
+ with ESMTP id UTkeDddTYE_f; Mon, 11 May 2020 13:25:51 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49LJXD3zHGz9ty3g;
- Mon, 11 May 2020 13:25:48 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49LJXH4h6sz9ty3g;
+ Mon, 11 May 2020 13:25:51 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3DD1B8B7AE;
- Mon, 11 May 2020 13:25:55 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 53F4B8B7AE;
+ Mon, 11 May 2020 13:25:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HvsRdz-JOdz6; Mon, 11 May 2020 13:25:55 +0200 (CEST)
+ with ESMTP id AcowpS2JQt6J; Mon, 11 May 2020 13:25:58 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F140C8B7AD;
- Mon, 11 May 2020 13:25:54 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1045C8B7AD;
+ Mon, 11 May 2020 13:25:58 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D5E1B65A09; Mon, 11 May 2020 11:25:54 +0000 (UTC)
-Message-Id: <e334b1d870b859fde677988813c5d5c9c72d6907.1589196133.git.christophe.leroy@csgroup.eu>
+ id E7C5565A09; Mon, 11 May 2020 11:25:57 +0000 (UTC)
+Message-Id: <e77dd354ee9ec5db432e020d72d31fc9361abe8c.1589196133.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 References: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 28/45] powerpc/8xx: MM_SLICE is not needed anymore
+Subject: [PATCH v3 31/45] powerpc/8xx: Don't set IMMR map anymore at boot
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 11 May 2020 11:25:54 +0000 (UTC)
+Date: Mon, 11 May 2020 11:25:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,160 +75,177 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As the 8xx now manages 512k pages in standard page tables,
-it doesn't need CONFIG_PPC_MM_SLICES anymore.
+Only early debug requires IMMR to be mapped early.
 
-Don't select it anymore and remove all related code.
+No need to set it up and pin it in assembly. Map it
+through page tables at udbg init when necessary.
+
+If CONFIG_PIN_TLB_IMMR is selected, pin it once we
+don't need the 32 Mb pinned RAM anymore.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/32/mmu-8xx.h | 64 --------------------
- arch/powerpc/include/asm/nohash/32/slice.h   | 20 ------
- arch/powerpc/include/asm/slice.h             |  2 -
- arch/powerpc/platforms/Kconfig.cputype       |  1 -
- 4 files changed, 87 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/nohash/32/slice.h
+v2: Disable TLB reservation to modify entry 31
+---
+ arch/powerpc/kernel/head_8xx.S     | 39 +++++++++++++-----------------
+ arch/powerpc/mm/mmu_decl.h         |  4 +++
+ arch/powerpc/mm/nohash/8xx.c       | 15 +++++++++---
+ arch/powerpc/platforms/8xx/Kconfig |  2 +-
+ arch/powerpc/sysdev/cpm_common.c   |  2 ++
+ 5 files changed, 35 insertions(+), 27 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-index 26b7cee34dfe..a092e6434bda 100644
---- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-@@ -176,12 +176,6 @@
-  */
- #define SPRN_M_TW	799
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index c9e3d54e6a6f..d607f4b53e0f 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -749,6 +749,23 @@ start_here:
+ 	rfi
+ /* Load up the kernel context */
+ 2:
++#ifdef CONFIG_PIN_TLB_IMMR
++	lis	r0, MD_TWAM@h
++	oris	r0, r0, 0x1f00
++	mtspr	SPRN_MD_CTR, r0
++	LOAD_REG_IMMEDIATE(r0, VIRT_IMMR_BASE | MD_EVALID)
++	tlbie	r0
++	mtspr	SPRN_MD_EPN, r0
++	LOAD_REG_IMMEDIATE(r0, MD_SVALID | MD_PS512K | MD_GUARDED)
++	mtspr	SPRN_MD_TWC, r0
++	mfspr   r0, SPRN_IMMR
++	rlwinm	r0, r0, 0, 0xfff80000
++	ori	r0, r0, 0xf0 | _PAGE_DIRTY | _PAGE_SPS | _PAGE_SH | \
++			_PAGE_NO_CACHE | _PAGE_PRESENT
++	mtspr	SPRN_MD_RPN, r0
++	lis	r0, (MD_TWAM | MD_RSV4I)@h
++	mtspr	SPRN_MD_CTR, r0
++#endif
+ 	tlbia			/* Clear all TLB entries */
+ 	sync			/* wait for tlbia/tlbie to finish */
  
--#ifdef CONFIG_PPC_MM_SLICES
--#include <asm/nohash/32/slice.h>
--#define SLICE_ARRAY_SIZE	(1 << (32 - SLICE_LOW_SHIFT - 1))
--#define LOW_SLICE_ARRAY_SZ	SLICE_ARRAY_SIZE
+@@ -797,28 +814,6 @@ initial_mmu:
+ 	ori	r8, r8, MD_APG_INIT@l
+ 	mtspr	SPRN_MD_AP, r8
+ 
+-	/* Map a 512k page for the IMMR to get the processor
+-	 * internal registers (among other things).
+-	 */
+-#ifdef CONFIG_PIN_TLB_IMMR
+-	oris	r10, r10, MD_RSV4I@h
+-	ori	r10, r10, 0x1c00
+-	mtspr	SPRN_MD_CTR, r10
+-
+-	mfspr	r9, 638			/* Get current IMMR */
+-	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
+-
+-	lis	r8, VIRT_IMMR_BASE@h	/* Create vaddr for TLB */
+-	ori	r8, r8, MD_EVALID	/* Mark it valid */
+-	mtspr	SPRN_MD_EPN, r8
+-	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
+-	ori	r8, r8, MD_SVALID	/* Make it valid */
+-	mtspr	SPRN_MD_TWC, r8
+-	mr	r8, r9			/* Create paddr for TLB */
+-	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+-	mtspr	SPRN_MD_RPN, r8
 -#endif
 -
- #if defined(CONFIG_PPC_4K_PAGES)
- #define mmu_virtual_psize	MMU_PAGE_4K
- #elif defined(CONFIG_PPC_16K_PAGES)
-@@ -199,71 +193,13 @@
- 
- #include <linux/mmdebug.h>
- 
--struct slice_mask {
--	u64 low_slices;
--	DECLARE_BITMAP(high_slices, 0);
--};
--
- typedef struct {
- 	unsigned int id;
- 	unsigned int active;
- 	unsigned long vdso_base;
--#ifdef CONFIG_PPC_MM_SLICES
--	u16 user_psize;		/* page size index */
--	unsigned char low_slices_psize[SLICE_ARRAY_SIZE];
--	unsigned char high_slices_psize[0];
--	unsigned long slb_addr_limit;
--	struct slice_mask mask_base_psize; /* 4k or 16k */
--	struct slice_mask mask_512k;
--	struct slice_mask mask_8m;
--#endif
- 	void *pte_frag;
- } mm_context_t;
- 
--#ifdef CONFIG_PPC_MM_SLICES
--static inline u16 mm_ctx_user_psize(mm_context_t *ctx)
--{
--	return ctx->user_psize;
--}
--
--static inline void mm_ctx_set_user_psize(mm_context_t *ctx, u16 user_psize)
--{
--	ctx->user_psize = user_psize;
--}
--
--static inline unsigned char *mm_ctx_low_slices(mm_context_t *ctx)
--{
--	return ctx->low_slices_psize;
--}
--
--static inline unsigned char *mm_ctx_high_slices(mm_context_t *ctx)
--{
--	return ctx->high_slices_psize;
--}
--
--static inline unsigned long mm_ctx_slb_addr_limit(mm_context_t *ctx)
--{
--	return ctx->slb_addr_limit;
--}
--
--static inline void mm_ctx_set_slb_addr_limit(mm_context_t *ctx, unsigned long limit)
--{
--	ctx->slb_addr_limit = limit;
--}
--
--static inline struct slice_mask *slice_mask_for_size(mm_context_t *ctx, int psize)
--{
--	if (psize == MMU_PAGE_512K)
--		return &ctx->mask_512k;
--	if (psize == MMU_PAGE_8M)
--		return &ctx->mask_8m;
--
--	BUG_ON(psize != mmu_virtual_psize);
--
--	return &ctx->mask_base_psize;
--}
--#endif /* CONFIG_PPC_MM_SLICE */
--
- #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
- #define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
- 
-diff --git a/arch/powerpc/include/asm/nohash/32/slice.h b/arch/powerpc/include/asm/nohash/32/slice.h
-deleted file mode 100644
-index 39eb0154ae2d..000000000000
---- a/arch/powerpc/include/asm/nohash/32/slice.h
-+++ /dev/null
-@@ -1,20 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _ASM_POWERPC_NOHASH_32_SLICE_H
--#define _ASM_POWERPC_NOHASH_32_SLICE_H
--
--#ifdef CONFIG_PPC_MM_SLICES
--
--#define SLICE_LOW_SHIFT		26	/* 64 slices */
--#define SLICE_LOW_TOP		(0x100000000ull)
--#define SLICE_NUM_LOW		(SLICE_LOW_TOP >> SLICE_LOW_SHIFT)
--#define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
--
--#define SLICE_HIGH_SHIFT	0
--#define SLICE_NUM_HIGH		0ul
--#define GET_HIGH_SLICE_INDEX(addr)	(addr & 0)
--
--#define SLB_ADDR_LIMIT_DEFAULT	DEFAULT_MAP_WINDOW
--
--#endif /* CONFIG_PPC_MM_SLICES */
--
--#endif /* _ASM_POWERPC_NOHASH_32_SLICE_H */
-diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
-index c6f466f4c241..0bdd9c62eca0 100644
---- a/arch/powerpc/include/asm/slice.h
-+++ b/arch/powerpc/include/asm/slice.h
-@@ -4,8 +4,6 @@
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/book3s/64/slice.h>
--#elif defined(CONFIG_PPC_MMU_NOHASH_32)
--#include <asm/nohash/32/slice.h>
+ 	/* Now map the lower RAM (up to 32 Mbytes) into the ITLB. */
+ #ifdef CONFIG_PIN_TLB_TEXT
+ 	lis	r8, MI_RSV4I@h
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 7097e07a209a..1b6d39e9baed 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -182,6 +182,10 @@ static inline void mmu_mark_initmem_nx(void) { }
+ static inline void mmu_mark_rodata_ro(void) { }
  #endif
  
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 27a81c291be8..5774a55a9c58 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -55,7 +55,6 @@ config PPC_8xx
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select PPC_HAVE_KUEP
- 	select PPC_HAVE_KUAP
--	select PPC_MM_SLICES if HUGETLB_PAGE
- 	select HAVE_ARCH_VMAP_STACK
++#ifdef CONFIG_PPC_8xx
++void __init mmu_mapin_immr(void);
++#endif
++
+ #ifdef CONFIG_PPC_DEBUG_WX
+ void ptdump_check_wx(void);
+ #else
+diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
+index d83a12c5bc7f..d54d395c3378 100644
+--- a/arch/powerpc/mm/nohash/8xx.c
++++ b/arch/powerpc/mm/nohash/8xx.c
+@@ -65,7 +65,7 @@ void __init MMU_init_hw(void)
+ 	if (IS_ENABLED(CONFIG_PIN_TLB_DATA)) {
+ 		unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
+ 		unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
+-		int i = IS_ENABLED(CONFIG_PIN_TLB_IMMR) ? 29 : 28;
++		int i = 28;
+ 		unsigned long addr = 0;
+ 		unsigned long mem = total_lowmem;
  
- config 40x
+@@ -80,12 +80,19 @@ void __init MMU_init_hw(void)
+ 	}
+ }
+ 
+-static void __init mmu_mapin_immr(void)
++static bool immr_is_mapped __initdata;
++
++void __init mmu_mapin_immr(void)
+ {
+ 	unsigned long p = PHYS_IMMR_BASE;
+ 	unsigned long v = VIRT_IMMR_BASE;
+ 	int offset;
+ 
++	if (immr_is_mapped)
++		return;
++
++	immr_is_mapped = true;
++
+ 	for (offset = 0; offset < IMMR_SIZE; offset += PAGE_SIZE)
+ 		map_kernel_page(v + offset, p + offset, PAGE_KERNEL_NCG);
+ }
+@@ -121,9 +128,10 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+ {
+ 	unsigned long mapped;
+ 
++	mmu_mapin_immr();
++
+ 	if (__map_without_ltlbs) {
+ 		mapped = 0;
+-		mmu_mapin_immr();
+ 		if (!IS_ENABLED(CONFIG_PIN_TLB_IMMR))
+ 			patch_instruction_site(&patch__dtlbmiss_immr_jmp, PPC_INST_NOP);
+ 		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
+@@ -142,7 +150,6 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+ 		 */
+ 		mmu_mapin_ram_chunk(0, einittext8, PAGE_KERNEL_X);
+ 		mmu_mapin_ram_chunk(einittext8, mapped, PAGE_KERNEL);
+-		mmu_mapin_immr();
+ 	}
+ 
+ 	mmu_patch_cmp_limit(&patch__dtlbmiss_linmem_top, mapped);
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 0d036cd868ef..04ea1a8a0bdc 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -187,7 +187,7 @@ config PIN_TLB_DATA
+ 
+ config PIN_TLB_IMMR
+ 	bool "Pinned TLB for IMMR"
+-	depends on PIN_TLB || PPC_EARLY_DEBUG_CPM
++	depends on PIN_TLB
+ 	default y
+ 	help
+ 	  This pins the IMMR area with a 512kbytes page. In case
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 71660bacb264..7dc1960f8bdb 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -68,6 +68,8 @@ static void udbg_putc_cpm(char c)
+ void __init udbg_init_cpm(void)
+ {
+ #ifdef CONFIG_PPC_8xx
++	mmu_mapin_immr();
++
+ 	cpm_udbg_txdesc = (u32 __iomem __force *)
+ 			  (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR - PHYS_IMMR_BASE +
+ 			   VIRT_IMMR_BASE);
 -- 
 2.25.0
 
