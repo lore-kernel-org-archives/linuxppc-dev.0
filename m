@@ -2,66 +2,50 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B30EC47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75C52C47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:28:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 59CAC206DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:19:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="HcmtsGhW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59CAC206DB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 18A3B20722
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:28:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18A3B20722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LNN90JBpzDr2p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:19:05 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LJYQ68h6zDqgx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:26:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=HcmtsGhW; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49LJYN0Wgxz9sV6;
- Mon, 11 May 2020 21:26:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1589196409;
- bh=4NvXf9toL+4UXpT6HxsGqGALQmokSTs3VQyX07XztTk=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=HcmtsGhW3vvibCLKVXSur3CJ6fDr8ntOm4mcDszKPhs4GTP737/Wdfw0z6huCxBCe
- HVcsEEd/MTSe9PIvxR4g1mJyWlY9pNfzuhdWrgSLDvrxv0HoV0uCl81kNTDqjk5Cxc
- TgCZNgAde0FVNfAZ4JhAxZ7N9PiEsN+zjxPDzb7Rc4uXtU4HmRtqRWhhDdLzWuCB8l
- GZBwk+W4cMwAKVsgp5G9PAyRFVaBbJ0zWJP9A9TDVJYCcc8SUNVV+6i8c+OlC0UZIZ
- A+Tdq4kCohHBk3kW2wY1c8d3rP7bLfFFQlHv8A/x1THr3dNj5iLBtWGWEfQ2IcZBQ0
- S3FUgyHwBmyow==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Christopher Lameter <cl@linux.com>
-Subject: Re: [PATCH v3 1/3] powerpc/numa: Set numa_node for all possible cpus
-In-Reply-To: <20200508132130.GC1961@linux.vnet.ibm.com>
-References: <20200501031128.19584-1-srikar@linux.vnet.ibm.com>
- <20200501031128.19584-2-srikar@linux.vnet.ibm.com>
- <alpine.DEB.2.21.2005022254170.28355@www.lameter.com>
- <20200508132130.GC1961@linux.vnet.ibm.com>
-Date: Mon, 11 May 2020 21:27:07 +1000
-Message-ID: <87v9l2btkk.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LNZj3N9czDqMg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:28:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49LJbW4jd1zDqgn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:28:39 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A0B5D1FB;
+ Mon, 11 May 2020 04:28:37 -0700 (PDT)
+Received: from gaia (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 75B2A3F305;
+ Mon, 11 May 2020 04:28:36 -0700 (PDT)
+Date: Mon, 11 May 2020 12:28:30 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/kvm: silence kmemleak false positives
+Message-ID: <20200511112829.GB19176@gaia>
+References: <20200509015538.3183-1-cai@lca.pw>
+ <87y2pybu38.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87y2pybu38.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,51 +57,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michal Hocko <mhocko@suse.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Mel Gorman <mgorman@suse.de>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Vlastimil Babka <vbabka@suse.cz>
+Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
-> * Christopher Lameter <cl@linux.com> [2020-05-02 22:55:16]:
->
->> On Fri, 1 May 2020, Srikar Dronamraju wrote:
->> 
->> > -	for_each_present_cpu(cpu)
->> > -		numa_setup_cpu(cpu);
->> > +	for_each_possible_cpu(cpu) {
->> > +		/*
->> > +		 * Powerpc with CONFIG_NUMA always used to have a node 0,
->> > +		 * even if it was memoryless or cpuless. For all cpus that
->> > +		 * are possible but not present, cpu_to_node() would point
->> > +		 * to node 0. To remove a cpuless, memoryless dummy node,
->> > +		 * powerpc need to make sure all possible but not present
->> > +		 * cpu_to_node are set to a proper node.
->> > +		 */
->> > +		if (cpu_present(cpu))
->> > +			numa_setup_cpu(cpu);
->> > +		else
->> > +			set_cpu_numa_node(cpu, first_online_node);
->> > +	}
->> >  }
->> 
->> Can this be folded into numa_setup_cpu?
->> 
->> This looks more like numa_setup_cpu needs to change?
->
-> We can fold this into numa_setup_cpu().
->
-> However till now we were sure that numa_setup_cpu() would be called only for
-> a present cpu. That assumption will change.
-> + (non-consequential) an additional check everytime cpu is hotplugged in.
->
-> If Michael Ellerman is okay with the change, I can fold it in.
+On Mon, May 11, 2020 at 09:15:55PM +1000, Michael Ellerman wrote:
+> Qian Cai <cai@lca.pw> writes:
+> > kvmppc_pmd_alloc() and kvmppc_pte_alloc() allocate some memory but then
+> > pud_populate() and pmd_populate() will use __pa() to reference the newly
+> > allocated memory. The same is in xive_native_provision_pages().
+> >
+> > Since kmemleak is unable to track the physical memory resulting in false
+> > positives, silence those by using kmemleak_ignore().
+> 
+> There is kmemleak_alloc_phys(), which according to the docs can be used
+> for tracking a phys address.
 
-Yes I agree it would be better in numa_setup_cpu().
+This won't help. While kmemleak_alloc_phys() allows passing a physical
+address, it doesn't track physical address references to this object. It
+still expects VA pointing to it, otherwise the object would be reported
+as a leak.
 
-cheers
+We currently only call this from the memblock code with a min_count of
+0, meaning it will not be reported as a leak if no references are found.
+
+We don't have this issue with page tables on other architectures since
+most of them use whole page allocations which aren't tracked by
+kmemleak. These powerpc functions use kmem_cache_alloc() which would be
+tracked automatically by kmemleak. While we could add a phys alias to
+kmemleak (another search tree), I think the easiest is as per Qian's
+patch, just ignore those objects.
+
+-- 
+Catalin
