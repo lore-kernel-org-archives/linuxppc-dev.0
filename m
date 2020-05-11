@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FA34C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:37:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7818BC47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:40:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0682B20708
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:37:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0682B20708
+	by mail.kernel.org (Postfix) with ESMTPS id 2F06F20708
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:40:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F06F20708
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LJp363bkzDql8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:37:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LJrm2pynzDqVL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:40:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,39 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LJX100ByzDqg7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJX100B9zDqg5
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:25:32 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49LJWh3YX5z9ty3j;
- Mon, 11 May 2020 13:25:20 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49LJWj47h2z9ty3m;
+ Mon, 11 May 2020 13:25:21 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NgAeJVkG7h7r; Mon, 11 May 2020 13:25:20 +0200 (CEST)
+ with ESMTP id BDfGMIPT8x-X; Mon, 11 May 2020 13:25:21 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49LJWh2ZKbz9ty3g;
- Mon, 11 May 2020 13:25:20 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49LJWj38k8z9ty3k;
+ Mon, 11 May 2020 13:25:21 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 07EFD8B7AE;
- Mon, 11 May 2020 13:25:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F88F8B7AE;
+ Mon, 11 May 2020 13:25:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Lu8gn5gHy6wF; Mon, 11 May 2020 13:25:26 +0200 (CEST)
+ with ESMTP id FRhu3HcDIC0H; Mon, 11 May 2020 13:25:28 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD82E8B7AD;
- Mon, 11 May 2020 13:25:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D5CD78B7AD;
+ Mon, 11 May 2020 13:25:27 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B5CDC65A09; Mon, 11 May 2020 11:25:26 +0000 (UTC)
-Message-Id: <4e2cb6b7beab7350220062806181c2bb494583e0.1589196133.git.christophe.leroy@csgroup.eu>
+ id BD1FA65A09; Mon, 11 May 2020 11:25:27 +0000 (UTC)
+Message-Id: <f5b173c662b8675a8f375dd436449da7e866b659.1589196133.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 References: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 01/45] powerpc/kasan: Fix error detection on memory
- allocation
+Subject: [PATCH v3 02/45] powerpc/kasan: Fix issues by lowering
+ KASAN_SHADOW_END
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 11 May 2020 11:25:26 +0000 (UTC)
+Date: Mon, 11 May 2020 11:25:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,40 +76,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In case (k_start & PAGE_MASK) doesn't equal (kstart), 'va' will never be
-NULL allthough 'block' is NULL
+At the time being, KASAN_SHADOW_END is 0x100000000, which
+is 0 in 32 bits representation.
 
-Check the return of memblock_alloc() directly instead of
-the resulting address in the loop.
+This leads to a couple of issues:
+- kasan_remap_early_shadow_ro() does nothing because the comparison
+k_cur < k_end is always false.
+- In ptdump, address comparison for markers display fails and the
+marker's name is printed at the start of the KASAN area instead of
+being printed at the end.
 
-Fixes: 509cd3f2b473 ("powerpc/32: Simplify KASAN init")
+However, there is no need to shadow the KASAN shadow area itself,
+so the KASAN shadow area can stop shadowing memory at the start
+of itself.
+
+With a PAGE_OFFSET set to 0xc0000000, KASAN shadow area is then going
+from 0xf8000000 to 0xff000000.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Fixes: cbd18991e24f ("powerpc/mm: Fix an Oops in kasan_mmu_init()")
+Cc: stable@vger.kernel.org
 ---
- arch/powerpc/mm/kasan/kasan_init_32.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kasan.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index cbcad369fcb2..8b15fe09b967 100644
---- a/arch/powerpc/mm/kasan/kasan_init_32.c
-+++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -76,15 +76,14 @@ static int __init kasan_init_region(void *start, size_t size)
- 		return ret;
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index fbff9ff9032e..fc900937f653 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -23,9 +23,7 @@
  
- 	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+	if (!block)
-+		return -ENOMEM;
+ #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
  
- 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
- 		pmd_t *pmd = pmd_ptr_k(k_cur);
- 		void *va = block + k_cur - k_start;
- 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
- 
--		if (!va)
--			return -ENOMEM;
+-#define KASAN_SHADOW_END	0UL
 -
- 		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
- 	}
- 	flush_tlb_kernel_range(k_start, k_end);
+-#define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
++#define KASAN_SHADOW_END	(-(-KASAN_SHADOW_START >> KASAN_SHADOW_SCALE_SHIFT))
+ 
+ #ifdef CONFIG_KASAN
+ void kasan_early_init(void);
 -- 
 2.25.0
 
