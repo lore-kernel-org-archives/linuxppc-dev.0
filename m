@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C12CC47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:18:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AAF4C47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:22:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DF0F20735
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:18:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DF0F20735
+	by mail.kernel.org (Postfix) with ESMTPS id 3198F206F5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:22:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3198F206F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LM284nP2zDqBr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 23:18:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LM6s5m2QzDqv2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 23:22:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LJXV2JMjzDqgB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:26:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJXP1TDSzDqgk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:25:57 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49LJXJ5fY1z9ty3j;
- Mon, 11 May 2020 13:25:52 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49LJXC4hHdz9ty3k;
+ Mon, 11 May 2020 13:25:47 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zOU4zQHjH2f6; Mon, 11 May 2020 13:25:52 +0200 (CEST)
+ with ESMTP id ZCbNnw1iZSjV; Mon, 11 May 2020 13:25:47 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49LJXJ4ZWrz9ty3g;
- Mon, 11 May 2020 13:25:52 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49LJXC3NCdz9ty3g;
+ Mon, 11 May 2020 13:25:47 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 58F868B7AE;
- Mon, 11 May 2020 13:25:59 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2AA6B8B7AE;
+ Mon, 11 May 2020 13:25:54 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vlB-OeLuW3fz; Mon, 11 May 2020 13:25:59 +0200 (CEST)
+ with ESMTP id HwFzcCTV1eSa; Mon, 11 May 2020 13:25:54 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 18A998B7AD;
- Mon, 11 May 2020 13:25:59 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EA75E8B7AD;
+ Mon, 11 May 2020 13:25:53 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EE97365A09; Mon, 11 May 2020 11:25:58 +0000 (UTC)
-Message-Id: <1f0eef3990ebb4e8216a711da8fd695086179179.1589196133.git.christophe.leroy@csgroup.eu>
+ id CEF1765A09; Mon, 11 May 2020 11:25:53 +0000 (UTC)
+Message-Id: <ce32c612b010ccaf2aee3189ecfe77df64db2d57.1589196133.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 References: <cover.1589196133.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 32/45] powerpc/8xx: Always pin TLBs at startup.
+Subject: [PATCH v3 27/45] powerpc/8xx: Only 8M pages are hugepte pages now
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 11 May 2020 11:25:58 +0000 (UTC)
+Date: Mon, 11 May 2020 11:25:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,130 +75,91 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At startup, map 32 Mbytes of memory through 4 pages of 8M,
-and PIN them inconditionnaly. They need to be pinned because
-KASAN is using page tables early and the TLBs might be
-dynamically replaced otherwise.
+512k pages are now standard pages, so only 8M pages
+are hugepte.
 
-Remove RSV4I flag after installing mappings unless
-CONFIG_PIN_TLB_XXXX is selected.
+No more handling of normal page tables through hugepd allocation
+and freeing, and hugepte helpers can also be simplified.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_8xx.S | 31 +++++++++++++++++--------------
- arch/powerpc/mm/nohash/8xx.c   | 19 +------------------
- 2 files changed, 18 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h |  7 +++----
+ arch/powerpc/mm/hugetlbpage.c                    | 16 +++-------------
+ 2 files changed, 6 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d607f4b53e0f..b0cceee6405c 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -765,6 +765,14 @@ start_here:
- 	mtspr	SPRN_MD_RPN, r0
- 	lis	r0, (MD_TWAM | MD_RSV4I)@h
- 	mtspr	SPRN_MD_CTR, r0
-+#endif
-+#ifndef CONFIG_PIN_TLB_TEXT
-+	li	r0, 0
-+	mtspr	SPRN_MI_CTR, r0
-+#endif
-+#if !defined(CONFIG_PIN_TLB_DATA) && !defined(CONFIG_PIN_TLB_IMMR)
-+	lis	r0, MD_TWAM@h
-+	mtspr	SPRN_MD_CTR, r0
- #endif
- 	tlbia			/* Clear all TLB entries */
- 	sync			/* wait for tlbia/tlbie to finish */
-@@ -802,10 +810,6 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10	/* remove PINNED DTLB entries */
+diff --git a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
+index 785437323576..1c7d4693a78e 100644
+--- a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
+@@ -13,13 +13,13 @@ static inline pte_t *hugepd_page(hugepd_t hpd)
  
- 	tlbia			/* Invalidate all TLB entries */
--#ifdef CONFIG_PIN_TLB_DATA
--	oris	r10, r10, MD_RSV4I@h
--	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
--#endif
- 
- 	lis	r8, MI_APG_INIT@h	/* Set protection modes */
- 	ori	r8, r8, MI_APG_INIT@l
-@@ -814,33 +818,32 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Now map the lower RAM (up to 32 Mbytes) into the ITLB. */
--#ifdef CONFIG_PIN_TLB_TEXT
-+	/* Map the lower RAM (up to 32 Mbytes) into the ITLB and DTLB */
- 	lis	r8, MI_RSV4I@h
- 	ori	r8, r8, 0x1c00
--#endif
-+	oris	r12, r10, MD_RSV4I@h
-+	ori	r12, r12, 0x1c00
- 	li	r9, 4				/* up to 4 pages of 8M */
- 	mtctr	r9
- 	lis	r9, KERNELBASE@h		/* Create vaddr for TLB */
- 	li	r10, MI_PS8MEG | MI_SVALID	/* Set 8M byte page */
- 	li	r11, MI_BOOTINIT		/* Create RPN for address 0 */
--	lis	r12, _einittext@h
--	ori	r12, r12, _einittext@l
- 1:
--#ifdef CONFIG_PIN_TLB_TEXT
- 	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
- 	addi	r8, r8, 0x100
--#endif
--
- 	ori	r0, r9, MI_EVALID		/* Mark it valid */
- 	mtspr	SPRN_MI_EPN, r0
- 	mtspr	SPRN_MI_TWC, r10
- 	mtspr	SPRN_MI_RPN, r11		/* Store TLB entry */
-+	mtspr	SPRN_MD_CTR, r12
-+	addi	r12, r12, 0x100
-+	mtspr	SPRN_MD_EPN, r0
-+	mtspr	SPRN_MD_TWC, r10
-+	mtspr	SPRN_MD_RPN, r11
- 	addis	r9, r9, 0x80
- 	addis	r11, r11, 0x80
- 
--	cmpl	cr0, r9, r12
--	bdnzf	gt, 1b
-+	bdnz	1b
- 
- 	/* Since the cache is enabled according to the information we
- 	 * just loaded into the TLB, invalidate and enable the caches here.
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index d54d395c3378..43578a8a8cad 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -61,23 +61,6 @@ unsigned long p_block_mapped(phys_addr_t pa)
-  */
- void __init MMU_init_hw(void)
+ static inline unsigned int hugepd_shift(hugepd_t hpd)
  {
--	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
--	if (IS_ENABLED(CONFIG_PIN_TLB_DATA)) {
--		unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
--		unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
--		int i = 28;
--		unsigned long addr = 0;
--		unsigned long mem = total_lowmem;
--
--		for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
--			mtspr(SPRN_MD_CTR, ctr | (i << 8));
--			mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
--			mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
--			mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
--			addr += LARGE_PAGE_SIZE_8M;
--			mem -= LARGE_PAGE_SIZE_8M;
--		}
--	}
+-	return ((hpd_val(hpd) & _PMD_PAGE_MASK) >> 1) + 17;
++	return PAGE_SHIFT_8M;
  }
  
- static bool immr_is_mapped __initdata;
-@@ -225,7 +208,7 @@ void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	BUG_ON(first_memblock_base != 0);
+ static inline pte_t *hugepte_offset(hugepd_t hpd, unsigned long addr,
+ 				    unsigned int pdshift)
+ {
+-	unsigned long idx = (addr & ((1UL << pdshift) - 1)) >> PAGE_SHIFT;
++	unsigned long idx = (addr & (SZ_4M - 1)) >> PAGE_SHIFT;
  
- 	/* 8xx can only access 32MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x02000000));
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, SZ_32M));
+ 	return hugepd_page(hpd) + idx;
+ }
+@@ -32,8 +32,7 @@ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
+ 
+ static inline void hugepd_populate(hugepd_t *hpdp, pte_t *new, unsigned int pshift)
+ {
+-	*hpdp = __hugepd(__pa(new) | _PMD_USER | _PMD_PRESENT |
+-			 (pshift == PAGE_SHIFT_8M ? _PMD_PAGE_8M : _PMD_PAGE_512K));
++	*hpdp = __hugepd(__pa(new) | _PMD_USER | _PMD_PRESENT | _PMD_PAGE_8M);
  }
  
- /*
+ static inline int check_and_get_huge_psize(int shift)
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 35eb29584b54..243e90db400c 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -54,24 +54,17 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 	if (pshift >= pdshift) {
+ 		cachep = PGT_CACHE(PTE_T_ORDER);
+ 		num_hugepd = 1 << (pshift - pdshift);
+-		new = NULL;
+-	} else if (IS_ENABLED(CONFIG_PPC_8xx)) {
+-		cachep = NULL;
+-		num_hugepd = 1;
+-		new = pte_alloc_one(mm);
+ 	} else {
+ 		cachep = PGT_CACHE(pdshift - pshift);
+ 		num_hugepd = 1;
+-		new = NULL;
+ 	}
+ 
+-	if (!cachep && !new) {
++	if (!cachep) {
+ 		WARN_ONCE(1, "No page table cache created for hugetlb tables");
+ 		return -ENOMEM;
+ 	}
+ 
+-	if (cachep)
+-		new = kmem_cache_alloc(cachep, pgtable_gfp_flags(mm, GFP_KERNEL));
++	new = kmem_cache_alloc(cachep, pgtable_gfp_flags(mm, GFP_KERNEL));
+ 
+ 	BUG_ON(pshift > HUGEPD_SHIFT_MASK);
+ 	BUG_ON((unsigned long)new & HUGEPD_SHIFT_MASK);
+@@ -102,10 +95,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 	if (i < num_hugepd) {
+ 		for (i = i - 1 ; i >= 0; i--, hpdp--)
+ 			*hpdp = __hugepd(0);
+-		if (cachep)
+-			kmem_cache_free(cachep, new);
+-		else
+-			pte_free(mm, new);
++		kmem_cache_free(cachep, new);
+ 	} else {
+ 		kmemleak_ignore(new);
+ 	}
 -- 
 2.25.0
 
