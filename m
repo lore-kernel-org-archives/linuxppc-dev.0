@@ -2,23 +2,23 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6352C38A2A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 03:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91D48C38A2A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 03:08:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 996BA24974
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 03:06:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 996BA24974
+	by mail.kernel.org (Postfix) with ESMTPS id 4934F24974
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 03:08:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4934F24974
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49L5SP1ZCpzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:06:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49L5VM4QvVzDqDG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 13:08:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
@@ -29,53 +29,55 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49L5JL0nNrzDqgN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 12:59:45 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49L5JN4n20zDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 12:59:48 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 04B22fxo060627; Sun, 10 May 2020 22:59:25 -0400
+ 04B2VqOk072727; Sun, 10 May 2020 22:59:40 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30ws2dwacw-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ws444xve-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 10 May 2020 22:59:25 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04B2CIE6108961;
- Sun, 10 May 2020 22:59:25 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30ws2dwacc-1
+ Sun, 10 May 2020 22:59:39 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04B2Vw2u072919;
+ Sun, 10 May 2020 22:59:38 -0400
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 30ws444xup-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 10 May 2020 22:59:25 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04B2t9Mm029912;
- Mon, 11 May 2020 02:59:22 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04ams.nl.ibm.com with ESMTP id 30wm55bfpw-1
+ Sun, 10 May 2020 22:59:38 -0400
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04B2tO3i018022;
+ Mon, 11 May 2020 02:59:35 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma05fra.de.ibm.com with ESMTP id 30wm55hd4n-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 May 2020 02:59:22 +0000
+ Mon, 11 May 2020 02:59:35 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 04B2xKBC57212948
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 04B2xWMT64160074
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 May 2020 02:59:20 GMT
+ Mon, 11 May 2020 02:59:32 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2AC71AE055;
- Mon, 11 May 2020 02:59:20 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0CB8AAE04D;
+ Mon, 11 May 2020 02:59:32 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8FEBCAE04D;
- Mon, 11 May 2020 02:59:16 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8AC45AE051;
+ Mon, 11 May 2020 02:59:28 +0000 (GMT)
 Received: from bangoria.ibmuc.com (unknown [9.199.53.64])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 11 May 2020 02:59:16 +0000 (GMT)
+ Mon, 11 May 2020 02:59:28 +0000 (GMT)
 From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 To: mpe@ellerman.id.au, mikey@neuling.org
-Subject: [PATCH v5 00/16] powerpc/watchpoint: Preparation for more than one
- watchpoint
-Date: Mon, 11 May 2020 08:28:55 +0530
-Message-Id: <20200511025911.212827-1-ravi.bangoria@linux.ibm.com>
+Subject: [PATCH v5 03/16] powerpc/watchpoint: Introduce function to get nr
+ watchpoints dynamically
+Date: Mon, 11 May 2020 08:28:58 +0530
+Message-Id: <20200511025911.212827-4-ravi.bangoria@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200511025911.212827-1-ravi.bangoria@linux.ibm.com>
+References: <20200511025911.212827-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -83,11 +85,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
  definitions=2020-05-10_11:2020-05-08,
  2020-05-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0
- mlxlogscore=638 bulkscore=0 clxscore=1015 impostorscore=0 adultscore=0
- phishscore=0 mlxscore=0 priorityscore=1501 lowpriorityscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2003020000
- definitions=main-2005110014
+ mlxlogscore=999
+ priorityscore=1501 suspectscore=0 lowpriorityscore=0 bulkscore=0
+ impostorscore=0 spamscore=0 adultscore=0 phishscore=0 mlxscore=0
+ clxscore=1015 malwarescore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2003020000 definitions=main-2005110014
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,66 +110,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-So far, powerpc Book3S code has been written with an assumption of
-only one watchpoint. But Power10[1] is introducing second watchpoint
-register (DAWR). Even though this patchset does not enable 2nd DAWR,
-it makes the infrastructure ready so that enabling 2nd DAWR should
-just be a matter of changing count.
+So far we had only one watchpoint, so we have hardcoded HBP_NUM to 1.
+But Power10 is introducing 2nd DAWR and thus kernel should be able to
+dynamically find actual number of watchpoints supported by hw it's
+running on. Introduce function for the same. Also convert HBP_NUM macro
+to HBP_NUM_MAX, which will now represent maximum number of watchpoints
+supported by Powerpc.
 
-Existing functionality works fine with the patchset. I've tested it
-with perf, ptrace(gdb), xmon. All hw-breakpoint selftests are passing
-as well. And I've build tested for 8xx and 'AMCC 44x, 46x or 47x'.
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Reviewed-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/include/asm/cputable.h      | 6 +++++-
+ arch/powerpc/include/asm/hw_breakpoint.h | 5 +++++
+ arch/powerpc/include/asm/processor.h     | 2 +-
+ arch/powerpc/kernel/hw_breakpoint.c      | 2 +-
+ 4 files changed, 12 insertions(+), 3 deletions(-)
 
-Note: kvm or PowerVM guest is not enabled yet.
-
-v4: https://lore.kernel.org/linuxppc-dev/20200430043417.30948-1-ravi.bangoria@linux.ibm.com
-
-v4->v5:
- - s/future power architecture/Power10/
- - s/dawr/DAWR/ in commit descriptions
-
-[1]: https://www-355.ibm.com/systems/power/openpower/
-
-Ravi Bangoria (16):
-  powerpc/watchpoint: Rename current DAWR macros
-  powerpc/watchpoint: Add SPRN macros for second DAWR
-  powerpc/watchpoint: Introduce function to get nr watchpoints
-    dynamically
-  powerpc/watchpoint/ptrace: Return actual num of available watchpoints
-  powerpc/watchpoint: Provide DAWR number to set_dawr
-  powerpc/watchpoint: Provide DAWR number to __set_breakpoint
-  powerpc/watchpoint: Get watchpoint count dynamically while disabling
-    them
-  powerpc/watchpoint: Disable all available watchpoints when
-    !dawr_force_enable
-  powerpc/watchpoint: Convert thread_struct->hw_brk to an array
-  powerpc/watchpoint: Use loop for thread_struct->ptrace_bps
-  powerpc/watchpoint: Introduce is_ptrace_bp() function
-  powerpc/watchpoint: Use builtin ALIGN*() macros
-  powerpc/watchpoint: Prepare handler to handle more than one
-    watcnhpoint
-  powerpc/watchpoint: Don't allow concurrent perf and ptrace events
-  powerpc/watchpoint/xmon: Don't allow breakpoint overwriting
-  powerpc/watchpoint/xmon: Support 2nd DAWR
-
- arch/powerpc/include/asm/cputable.h       |   6 +-
- arch/powerpc/include/asm/debug.h          |   2 +-
- arch/powerpc/include/asm/hw_breakpoint.h  |  32 +-
- arch/powerpc/include/asm/processor.h      |   6 +-
- arch/powerpc/include/asm/reg.h            |   6 +-
- arch/powerpc/include/asm/sstep.h          |   2 +
- arch/powerpc/kernel/dawr.c                |  23 +-
- arch/powerpc/kernel/hw_breakpoint.c       | 645 ++++++++++++++++++----
- arch/powerpc/kernel/process.c             |  85 +--
- arch/powerpc/kernel/ptrace/ptrace-noadv.c |  72 ++-
- arch/powerpc/kernel/ptrace/ptrace32.c     |   4 +-
- arch/powerpc/kernel/signal.c              |  13 +-
- arch/powerpc/kvm/book3s_hv.c              |  12 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |  18 +-
- arch/powerpc/xmon/xmon.c                  |  99 +++-
- kernel/events/hw_breakpoint.c             |  16 +
- 16 files changed, 814 insertions(+), 227 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 40a4d3c6fd99..c67b94f3334c 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -614,7 +614,11 @@ enum {
+ };
+ #endif /* __powerpc64__ */
+ 
+-#define HBP_NUM 1
++/*
++ * Maximum number of hw breakpoint supported on powerpc. Number of
++ * breakpoints supported by actual hw might be less than this.
++ */
++#define HBP_NUM_MAX	1
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index f2f8d8aa8e3b..518b41eef924 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -43,6 +43,11 @@ struct arch_hw_breakpoint {
+ #define DABR_MAX_LEN	8
+ #define DAWR_MAX_LEN	512
+ 
++static inline int nr_wp_slots(void)
++{
++	return HBP_NUM_MAX;
++}
++
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+ #include <linux/kdebug.h>
+ #include <asm/reg.h>
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bfa336fbcfeb..a71bdd6bc284 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -180,7 +180,7 @@ struct thread_struct {
+ 	int		fpexc_mode;	/* floating-point exception mode */
+ 	unsigned int	align_ctl;	/* alignment handling control */
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+-	struct perf_event *ptrace_bps[HBP_NUM];
++	struct perf_event *ptrace_bps[HBP_NUM_MAX];
+ 	/*
+ 	 * Helps identify source of single-step exception and subsequent
+ 	 * hw-breakpoint enablement
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index 72f461bd70fb..4120349e2abe 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -38,7 +38,7 @@ static DEFINE_PER_CPU(struct perf_event *, bp_per_reg);
+ int hw_breakpoint_slots(int type)
+ {
+ 	if (type == TYPE_DATA)
+-		return HBP_NUM;
++		return nr_wp_slots();
+ 	return 0;		/* no instruction breakpoints available */
+ }
+ 
 -- 
 2.21.1
 
