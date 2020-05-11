@@ -2,52 +2,62 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFB1DC47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:03:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58B67C47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:17:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 203CE20736
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:03:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 203CE20736
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F3B2720722
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 11:17:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="JYTwqrWT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3B2720722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LJ2Q0nDfzDqQS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:03:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 49LHz56Zc2zDqfr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:00:27 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4AD751FB;
- Mon, 11 May 2020 04:00:24 -0700 (PDT)
-Received: from gaia (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DFC143F305;
- Mon, 11 May 2020 04:00:20 -0700 (PDT)
-Date: Mon, 11 May 2020 12:00:14 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Will Deacon <will@kernel.org>
-Subject: Re: [PATCH 02/31] arm64: fix the flush_icache_range arguments in
- machine_kexec
-Message-ID: <20200511110014.GA19176@gaia>
-References: <20200510075510.987823-1-hch@lst.de>
- <20200510075510.987823-3-hch@lst.de>
- <20200511075115.GA16134@willie-the-truck>
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LJM52p5bzDqjH
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:17:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJJX3nlQzDqg5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:15:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=JYTwqrWT; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49LJJV56jgz9sPF;
+ Mon, 11 May 2020 21:15:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1589195738;
+ bh=6jMBGt6cCuxG5ogHappx3RvOBhGXUdUBt4srA2FzeVQ=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=JYTwqrWTtatawX9E9uCWvSCMdxzbkYKyGUKiRXi2FvNjjN22Zi7b2VYkhjEYqr6Zs
+ gpefe7juiqlnLR23hGKNV4nJBW1KwxcokfhrriOPXi+/0HVXRsuEMvASGwZE4qh/F4
+ o9A//EnFaS+D5iMUhDiakpPbVVdBe407TFKLg344kzdrvzLuTvYonCg8URRl6pxzSi
+ f7yWo60ABiuz6jzxYuUn4tAgt5BvpJUTO8vqUF1ZCCaU63BvSeczs7m+hVSQmopm+g
+ OubQRRbncGIVGb7WxI5SR+UNnXSvI494vS7ocfn/W9ETbahHmKeBbnDp+NlGaoibk5
+ dRIyyp023LHuQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Qian Cai <cai@lca.pw>
+Subject: Re: [PATCH] powerpc/kvm: silence kmemleak false positives
+In-Reply-To: <20200509015538.3183-1-cai@lca.pw>
+References: <20200509015538.3183-1-cai@lca.pw>
+Date: Mon, 11 May 2020 21:15:55 +1000
+Message-ID: <87y2pybu38.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200511075115.GA16134@willie-the-truck>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,75 +69,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Roman Zippel <zippel@linux-m68k.org>, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Christoph Hellwig <hch@lst.de>,
- linux-arch@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, Jessica Yu <jeyu@kernel.org>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, linux-kernel@vger.kernel.org,
- james.morse@arm.com, linux-alpha@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Qian Cai <cai@lca.pw>, catalin.marinas@arm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 11, 2020 at 08:51:15AM +0100, Will Deacon wrote:
-> On Sun, May 10, 2020 at 09:54:41AM +0200, Christoph Hellwig wrote:
-> > The second argument is the end "pointer", not the length.
-> > 
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > ---
-> >  arch/arm64/kernel/machine_kexec.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
-> > index 8e9c924423b4e..a0b144cfaea71 100644
-> > --- a/arch/arm64/kernel/machine_kexec.c
-> > +++ b/arch/arm64/kernel/machine_kexec.c
-> > @@ -177,6 +177,7 @@ void machine_kexec(struct kimage *kimage)
-> >  	 * the offline CPUs. Therefore, we must use the __* variant here.
-> >  	 */
-> >  	__flush_icache_range((uintptr_t)reboot_code_buffer,
-> > +			     (uintptr_t)reboot_code_buffer +
-> >  			     arm64_relocate_new_kernel_size);
-> 
-> Urgh, well spotted. It's annoyingly different from __flush_dcache_area().
-> 
-> But now I'm wondering what this code actually does... the loop condition
-> in invalidate_icache_by_line works with 64-bit arithmetic, so we could
-> spend a /very/ long time here afaict.
+Qian Cai <cai@lca.pw> writes:
+> kvmppc_pmd_alloc() and kvmppc_pte_alloc() allocate some memory but then
+> pud_populate() and pmd_populate() will use __pa() to reference the newly
+> allocated memory. The same is in xive_native_provision_pages().
+>
+> Since kmemleak is unable to track the physical memory resulting in false
+> positives, silence those by using kmemleak_ignore().
 
-I think it goes through the loop only once. The 'b.lo' saves us here.
-OTOH, there is no I-cache maintenance done.
+There is kmemleak_alloc_phys(), which according to the docs can be used
+for tracking a phys address.
 
-> It's also a bit annoying that we do a bunch of redundant D-cache
-> maintenance too. Should we use invalidate_icache_range() here instead?
+Did you try that?
 
-Since we have the __flush_dcache_area() above it for cleaning to PoC, we
-could use invalidate_icache_range() here. We probably didn't have this
-function at the time, it was added for KVM (commit 4fee94736603cd6).
+cheers
 
-> (and why does that thing need to toggle uaccess)?
 
-invalidate_icache_range() doesn't need to, it works on the kernel linear
-map.
-
-__flush_icache_range() doesn't need to either, that's a side-effect of
-the fall-through implementation.
-
-Anyway, I think Christoph's patch needs to go in with a fixes tag:
-
-Fixes: d28f6df1305a ("arm64/kexec: Add core kexec support")
-Cc: <stable@vger.kernel.org> # 4.8.x-
-
-and we'll change these functions/helpers going forward for arm64.
-
-Happy to pick this up via the arm64 for-next/fixes branch.
-
--- 
-Catalin
+> unreferenced object 0xc000201c382a1000 (size 4096):
+>   comm "qemu-kvm", pid 124828, jiffies 4295733767 (age 341.250s)
+>   hex dump (first 32 bytes):
+>     c0 00 20 09 f4 60 03 87 c0 00 20 10 72 a0 03 87  .. ..`.... .r...
+>     c0 00 20 0e 13 a0 03 87 c0 00 20 1b dc c0 03 87  .. ....... .....
+>   backtrace:
+>     [<000000004cc2790f>] kvmppc_create_pte+0x838/0xd20 [kvm_hv]
+>     kvmppc_pmd_alloc at arch/powerpc/kvm/book3s_64_mmu_radix.c:366
+>     (inlined by) kvmppc_create_pte at arch/powerpc/kvm/book3s_64_mmu_radix.c:590
+>     [<00000000d123c49a>] kvmppc_book3s_instantiate_page+0x2e0/0x8c0 [kvm_hv]
+>     [<00000000bb549087>] kvmppc_book3s_radix_page_fault+0x1b4/0x2b0 [kvm_hv]
+>     [<0000000086dddc0e>] kvmppc_book3s_hv_page_fault+0x214/0x12a0 [kvm_hv]
+>     [<000000005ae9ccc2>] kvmppc_vcpu_run_hv+0xc5c/0x15f0 [kvm_hv]
+>     [<00000000d22162ff>] kvmppc_vcpu_run+0x34/0x48 [kvm]
+>     [<00000000d6953bc4>] kvm_arch_vcpu_ioctl_run+0x314/0x420 [kvm]
+>     [<000000002543dd54>] kvm_vcpu_ioctl+0x33c/0x950 [kvm]
+>     [<0000000048155cd6>] ksys_ioctl+0xd8/0x130
+>     [<0000000041ffeaa7>] sys_ioctl+0x28/0x40
+>     [<000000004afc4310>] system_call_exception+0x114/0x1e0
+>     [<00000000fb70a873>] system_call_common+0xf0/0x278
+> unreferenced object 0xc0002001f0c03900 (size 256):
+>   comm "qemu-kvm", pid 124830, jiffies 4295735235 (age 326.570s)
+>   hex dump (first 32 bytes):
+>     c0 00 20 10 fa a0 03 87 c0 00 20 10 fa a1 03 87  .. ....... .....
+>     c0 00 20 10 fa a2 03 87 c0 00 20 10 fa a3 03 87  .. ....... .....
+>   backtrace:
+>     [<0000000023f675b8>] kvmppc_create_pte+0x854/0xd20 [kvm_hv]
+>     kvmppc_pte_alloc at arch/powerpc/kvm/book3s_64_mmu_radix.c:356
+>     (inlined by) kvmppc_create_pte at arch/powerpc/kvm/book3s_64_mmu_radix.c:593
+>     [<00000000d123c49a>] kvmppc_book3s_instantiate_page+0x2e0/0x8c0 [kvm_hv]
+>     [<00000000bb549087>] kvmppc_book3s_radix_page_fault+0x1b4/0x2b0 [kvm_hv]
+>     [<0000000086dddc0e>] kvmppc_book3s_hv_page_fault+0x214/0x12a0 [kvm_hv]
+>     [<000000005ae9ccc2>] kvmppc_vcpu_run_hv+0xc5c/0x15f0 [kvm_hv]
+>     [<00000000d22162ff>] kvmppc_vcpu_run+0x34/0x48 [kvm]
+>     [<00000000d6953bc4>] kvm_arch_vcpu_ioctl_run+0x314/0x420 [kvm]
+>     [<000000002543dd54>] kvm_vcpu_ioctl+0x33c/0x950 [kvm]
+>     [<0000000048155cd6>] ksys_ioctl+0xd8/0x130
+>     [<0000000041ffeaa7>] sys_ioctl+0x28/0x40
+>     [<000000004afc4310>] system_call_exception+0x114/0x1e0
+>     [<00000000fb70a873>] system_call_common+0xf0/0x278
+> unreferenced object 0xc000201b53e90000 (size 65536):
+>   comm "qemu-kvm", pid 124557, jiffies 4295650285 (age 364.370s)
+>   hex dump (first 32 bytes):
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>   backtrace:
+>     [<00000000acc2fb77>] xive_native_alloc_vp_block+0x168/0x210
+>     xive_native_provision_pages at arch/powerpc/sysdev/xive/native.c:645
+>     (inlined by) xive_native_alloc_vp_block at arch/powerpc/sysdev/xive/native.c:674
+>     [<000000004d5c7964>] kvmppc_xive_compute_vp_id+0x20c/0x3b0 [kvm]
+>     [<0000000055317cd2>] kvmppc_xive_connect_vcpu+0xa4/0x4a0 [kvm]
+>     [<0000000093dfc014>] kvm_arch_vcpu_ioctl+0x388/0x508 [kvm]
+>     [<00000000d25aea0f>] kvm_vcpu_ioctl+0x15c/0x950 [kvm]
+>     [<0000000048155cd6>] ksys_ioctl+0xd8/0x130
+>     [<0000000041ffeaa7>] sys_ioctl+0x28/0x40
+>     [<000000004afc4310>] system_call_exception+0x114/0x1e0
+>     [<00000000fb70a873>] system_call_common+0xf0/0x278
+>
+> Signed-off-by: Qian Cai <cai@lca.pw>
+> ---
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c | 16 ++++++++++++++--
+>  arch/powerpc/sysdev/xive/native.c      |  4 ++++
+>  2 files changed, 18 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> index aa12cd4078b3..bc6c1aa3d0e9 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+> @@ -353,7 +353,13 @@ static struct kmem_cache *kvm_pmd_cache;
+>  
+>  static pte_t *kvmppc_pte_alloc(void)
+>  {
+> -	return kmem_cache_alloc(kvm_pte_cache, GFP_KERNEL);
+> +	pte_t *pte;
+> +
+> +	pte = kmem_cache_alloc(kvm_pte_cache, GFP_KERNEL);
+> +	/* pmd_populate() will only reference _pa(pte). */
+> +	kmemleak_ignore(pte);
+> +
+> +	return pte;
+>  }
+>  
+>  static void kvmppc_pte_free(pte_t *ptep)
+> @@ -363,7 +369,13 @@ static void kvmppc_pte_free(pte_t *ptep)
+>  
+>  static pmd_t *kvmppc_pmd_alloc(void)
+>  {
+> -	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
+> +	pmd_t *pmd;
+> +
+> +	pmd = kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
+> +	/* pud_populate() will only reference _pa(pmd). */
+> +	kmemleak_ignore(pmd);
+> +
+> +	return pmd;
+>  }
+>  
+>  static void kvmppc_pmd_free(pmd_t *pmdp)
+> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+> index 5218fdc4b29a..2d19f28967a6 100644
+> --- a/arch/powerpc/sysdev/xive/native.c
+> +++ b/arch/powerpc/sysdev/xive/native.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/cpumask.h>
+>  #include <linux/mm.h>
+> +#include <linux/kmemleak.h>
+>  
+>  #include <asm/machdep.h>
+>  #include <asm/prom.h>
+> @@ -647,6 +648,9 @@ static bool xive_native_provision_pages(void)
+>  			pr_err("Failed to allocate provisioning page\n");
+>  			return false;
+>  		}
+> +		/* Kmemleak is unable to track the physical address. */
+> +		kmemleak_ignore(p);
+> +
+>  		opal_xive_donate_page(chip, __pa(p));
+>  	}
+>  	return true;
+> -- 
+> 2.21.0 (Apple Git-122.2)
