@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A610C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:18:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A434DC47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:22:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C49AF206D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:18:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C49AF206D3
+	by mail.kernel.org (Postfix) with ESMTPS id 588A8206D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:22:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 588A8206D5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LPj51Q62zDr6y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:18:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LPmj09JpzDqrV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:21:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,21 +28,23 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LPbY4b2JzDqDp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 01:14:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LPdR2bzjzDqpM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 01:15:39 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id B6F0368BFE; Mon, 11 May 2020 17:13:56 +0200 (CEST)
-Date: Mon, 11 May 2020 17:13:56 +0200
+ id 919CD68BFE; Mon, 11 May 2020 17:15:35 +0200 (CEST)
+Date: Mon, 11 May 2020 17:15:35 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: sort out the flush_icache_range mess
-Message-ID: <20200511151356.GB28634@lst.de>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 02/31] arm64: fix the flush_icache_range arguments in
+ machine_kexec
+Message-ID: <20200511151535.GC28634@lst.de>
 References: <20200510075510.987823-1-hch@lst.de>
- <CAMuHMdXazsBw0mjJd0uFHQud7qbb5-Uw-PTDB3+-M=huRWOfgQ@mail.gmail.com>
+ <20200510075510.987823-3-hch@lst.de>
+ <20200511075115.GA16134@willie-the-truck> <20200511110014.GA19176@gaia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdXazsBw0mjJd0uFHQud7qbb5-Uw-PTDB3+-M=huRWOfgQ@mail.gmail.com>
+In-Reply-To: <20200511110014.GA19176@gaia>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,46 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv@lists.infradead.org, Christoph Hellwig <hch@lst.de>,
- Linux-Arch <linux-arch@vger.kernel.org>, linux-c6x-dev@linux-c6x.org,
- "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>,
- Arnd Bergmann <arnd@arndb.de>, Jessica Yu <jeyu@kernel.org>,
- linux-um <linux-um@lists.infradead.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Openrisc <openrisc@lists.librecores.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- alpha <linux-alpha@vger.kernel.org>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Roman Zippel <zippel@linux-m68k.org>, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ Jessica Yu <jeyu@kernel.org>, linux-um@lists.infradead.org,
+ linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, james.morse@arm.com, linux-alpha@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 11, 2020 at 09:46:17AM +0200, Geert Uytterhoeven wrote:
-> Hi Christoph,
+On Mon, May 11, 2020 at 12:00:14PM +0100, Catalin Marinas wrote:
+> Anyway, I think Christoph's patch needs to go in with a fixes tag:
 > 
-> On Sun, May 10, 2020 at 9:55 AM Christoph Hellwig <hch@lst.de> wrote:
-> > none of which really are used by a typical MMU enabled kernel, as a.out can
-> > only be build for alpha and m68k to start with.
+> Fixes: d28f6df1305a ("arm64/kexec: Add core kexec support")
+> Cc: <stable@vger.kernel.org> # 4.8.x-
 > 
-> Quoting myself:
-> "I think it's safe to assume no one still runs a.out binaries on m68k."
-> http://lore.kernel.org/r/CAMuHMdW+m0Q+j3rsQdMXnrEPm+XB5Y2AQrxW5sD1mZAKgmEqoA@mail.gmail.com
+> and we'll change these functions/helpers going forward for arm64.
+> 
+> Happy to pick this up via the arm64 for-next/fixes branch.
 
-Do you want to drop the:
-
-    select HAVE_AOUT if MMU
-
-for m68k then?
-
-Note that we'll still need flush_icache_user_range for m68k with mmu,
-as it also allows binfmt_flat for mmu configs.
+Please do, there are no dependencies on it in this series (I originally
+planned to switch flush_icache_range to pass a kernel pointer + len
+instead of the strange unsigned long start and end.  That still looks
+very useful, but the series already is way too large, so I'm going to
+defer that change for another merge window).
