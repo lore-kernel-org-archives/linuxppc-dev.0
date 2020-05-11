@@ -2,50 +2,93 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75C52C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB923C47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:32:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18A3B20722
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:28:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18A3B20722
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9A476206D6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:32:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A476206D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LNZj3N9czDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:28:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LNg922r5zDqND
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:32:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 49LJbW4jd1zDqgn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:28:39 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A0B5D1FB;
- Mon, 11 May 2020 04:28:37 -0700 (PDT)
-Received: from gaia (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 75B2A3F305;
- Mon, 11 May 2020 04:28:36 -0700 (PDT)
-Date: Mon, 11 May 2020 12:28:30 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/kvm: silence kmemleak false positives
-Message-ID: <20200511112829.GB19176@gaia>
-References: <20200509015538.3183-1-cai@lca.pw>
- <87y2pybu38.fsf@mpe.ellerman.id.au>
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJl81QZZzDqS3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:35:15 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 04BBVUgW130721; Mon, 11 May 2020 07:35:09 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30ws9y9r9n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 May 2020 07:35:09 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04BBVp01131766;
+ Mon, 11 May 2020 07:35:08 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 30ws9y9r9a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 May 2020 07:35:08 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04BBPPGr009697;
+ Mon, 11 May 2020 11:35:08 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma02wdc.us.ibm.com with ESMTP id 30wm568qyr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 11 May 2020 11:35:08 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 04BBZ7Mm38928792
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 May 2020 11:35:07 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C78E3B2064;
+ Mon, 11 May 2020 11:35:07 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B495DB205F;
+ Mon, 11 May 2020 11:35:05 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.102.2.235])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 11 May 2020 11:35:05 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH 2/2] powerpc/pmem: Add flush routines using new pmem store and
+ sync instruction
+Date: Mon, 11 May 2020 17:04:43 +0530
+Message-Id: <20200511113443.36569-2-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200511113443.36569-1-aneesh.kumar@linux.ibm.com>
+References: <20200511113443.36569-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y2pybu38.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
+ definitions=2020-05-11_04:2020-05-11,
+ 2020-05-11 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 adultscore=0
+ impostorscore=0 phishscore=0 mlxlogscore=999 mlxscore=0 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2005110092
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,38 +100,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org
+Cc: alistair@popple.id.au, oohall@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 11, 2020 at 09:15:55PM +1000, Michael Ellerman wrote:
-> Qian Cai <cai@lca.pw> writes:
-> > kvmppc_pmd_alloc() and kvmppc_pte_alloc() allocate some memory but then
-> > pud_populate() and pmd_populate() will use __pa() to reference the newly
-> > allocated memory. The same is in xive_native_provision_pages().
-> >
-> > Since kmemleak is unable to track the physical memory resulting in false
-> > positives, silence those by using kmemleak_ignore().
-> 
-> There is kmemleak_alloc_phys(), which according to the docs can be used
-> for tracking a phys address.
+Start using dcbstps; phwsync; sequence for flushing persistent memory range.
+The new instructions are implemented as a variant of dcbf and hwsync and on
+POWER9 they will be executed as those instructions.
 
-This won't help. While kmemleak_alloc_phys() allows passing a physical
-address, it doesn't track physical address references to this object. It
-still expects VA pointing to it, otherwise the object would be reported
-as a leak.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/include/asm/cacheflush.h | 31 +++++++++++++++++++++++++++
+ arch/powerpc/lib/pmem.c               |  8 +++----
+ 2 files changed, 35 insertions(+), 4 deletions(-)
 
-We currently only call this from the memblock code with a min_count of
-0, meaning it will not be reported as a leak if no references are found.
-
-We don't have this issue with page tables on other architectures since
-most of them use whole page allocations which aren't tracked by
-kmemleak. These powerpc functions use kmem_cache_alloc() which would be
-tracked automatically by kmemleak. While we could add a phys alias to
-kmemleak (another search tree), I think the easiest is as per Qian's
-patch, just ignore those objects.
-
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index e92191b390f3..edb59edeeacb 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -74,6 +74,37 @@ static inline void flush_dcache_range(unsigned long start, unsigned long stop)
+ 
+ }
+ 
++static inline void clean_pmem_range(unsigned long start, unsigned long stop)
++{
++	unsigned long shift = l1_dcache_shift();
++	unsigned long bytes = l1_dcache_bytes();
++	void *addr = (void *)(start & ~(bytes - 1));
++	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> shift; i++, addr += bytes)
++		asm volatile(PPC_DCBSTPS(%0, %1): :"i"(0), "r"(addr): "memory");
++
++
++	asm volatile(PPC_PHWSYNC():::"memory");
++}
++
++static inline void flush_pmem_range(unsigned long start, unsigned long stop)
++{
++	unsigned long shift = l1_dcache_shift();
++	unsigned long bytes = l1_dcache_bytes();
++	void *addr = (void *)(start & ~(bytes - 1));
++	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> shift; i++, addr += bytes)
++		asm volatile(PPC_DCBFPS(%0, %1): :"i"(0), "r"(addr): "memory");
++
++
++	asm volatile(PPC_PHWSYNC():::"memory");
++}
++
++
+ /*
+  * Write any modified data cache blocks out to memory.
+  * Does not invalidate the corresponding cache lines (especially for
+diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
+index 0666a8d29596..624708bcaaad 100644
+--- a/arch/powerpc/lib/pmem.c
++++ b/arch/powerpc/lib/pmem.c
+@@ -15,14 +15,14 @@
+ void arch_wb_cache_pmem(void *addr, size_t size)
+ {
+ 	unsigned long start = (unsigned long) addr;
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ }
+ EXPORT_SYMBOL_GPL(arch_wb_cache_pmem);
+ 
+ void arch_invalidate_pmem(void *addr, size_t size)
+ {
+ 	unsigned long start = (unsigned long) addr;
+-	flush_dcache_range(start, start + size);
++	flush_pmem_range(start, start + size);
+ }
+ EXPORT_SYMBOL_GPL(arch_invalidate_pmem);
+ 
+@@ -35,7 +35,7 @@ long __copy_from_user_flushcache(void *dest, const void __user *src,
+ 	unsigned long copied, start = (unsigned long) dest;
+ 
+ 	copied = __copy_from_user(dest, src, size);
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ 
+ 	return copied;
+ }
+@@ -45,7 +45,7 @@ void *memcpy_flushcache(void *dest, const void *src, size_t size)
+ 	unsigned long start = (unsigned long) dest;
+ 
+ 	memcpy(dest, src, size);
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ 
+ 	return dest;
+ }
 -- 
-Catalin
+2.26.2
+
