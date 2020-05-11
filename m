@@ -2,23 +2,23 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7910DC47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:15:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A610C47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:18:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30701206D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:15:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30701206D5
+	by mail.kernel.org (Postfix) with ESMTPS id C49AF206D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 15:18:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C49AF206D3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LPdD08nnzDqPN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:15:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LPj51Q62zDr6y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:18:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=lst.de
  (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
@@ -28,23 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LPXf11qWzDr5n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 01:11:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LPbY4b2JzDqDp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 01:14:01 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
- id 2865568BFE; Mon, 11 May 2020 17:11:21 +0200 (CEST)
-Date: Mon, 11 May 2020 17:11:20 +0200
+ id B6F0368BFE; Mon, 11 May 2020 17:13:56 +0200 (CEST)
+Date: Mon, 11 May 2020 17:13:56 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 31/31] module: move the set_fs hack for
- flush_icache_range to m68k
-Message-ID: <20200511151120.GA28634@lst.de>
+Subject: Re: sort out the flush_icache_range mess
+Message-ID: <20200511151356.GB28634@lst.de>
 References: <20200510075510.987823-1-hch@lst.de>
- <20200510075510.987823-32-hch@lst.de>
- <CAMuHMdU_OxNoKfO=i903kx0mgk0-i2h4u2ase3m9_dn6oFh_5g@mail.gmail.com>
+ <CAMuHMdXazsBw0mjJd0uFHQud7qbb5-Uw-PTDB3+-M=huRWOfgQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdU_OxNoKfO=i903kx0mgk0-i2h4u2ase3m9_dn6oFh_5g@mail.gmail.com>
+In-Reply-To: <CAMuHMdXazsBw0mjJd0uFHQud7qbb5-Uw-PTDB3+-M=huRWOfgQ@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,18 +79,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 11, 2020 at 09:40:39AM +0200, Geert Uytterhoeven wrote:
-> On Sun, May 10, 2020 at 9:57 AM Christoph Hellwig <hch@lst.de> wrote:
-> >
-> > flush_icache_range generally operates on kernel addresses, but for some
-> > reason m68k needed a set_fs override.  Move that into the m68k code
-> > insted of keeping it in the module loader.
-> >
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
+On Mon, May 11, 2020 at 09:46:17AM +0200, Geert Uytterhoeven wrote:
+> Hi Christoph,
 > 
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> On Sun, May 10, 2020 at 9:55 AM Christoph Hellwig <hch@lst.de> wrote:
+> > none of which really are used by a typical MMU enabled kernel, as a.out can
+> > only be build for alpha and m68k to start with.
+> 
+> Quoting myself:
+> "I think it's safe to assume no one still runs a.out binaries on m68k."
+> http://lore.kernel.org/r/CAMuHMdW+m0Q+j3rsQdMXnrEPm+XB5Y2AQrxW5sD1mZAKgmEqoA@mail.gmail.com
 
-Btw, do you know what part of flush_icache_range relied on set_fs?
-Do any of the m68k maintainers have an idea how to handle that in
-a nicer way when we can split the implementations?
+Do you want to drop the:
+
+    select HAVE_AOUT if MMU
+
+for m68k then?
+
+Note that we'll still need flush_icache_user_range for m68k with mmu,
+as it also allows binfmt_flat for mmu configs.
