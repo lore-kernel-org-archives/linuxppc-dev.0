@@ -2,63 +2,66 @@ Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 623A7C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B30EC47255
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:19:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1B648206DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:13:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B648206DB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 59CAC206DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 14:19:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="HcmtsGhW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59CAC206DB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LNFY0WWkzDqKL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:13:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49LNN90JBpzDr2p
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 00:19:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LJXm26HczDqgL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:26:16 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49LJXZ12xkz9ty3l;
- Mon, 11 May 2020 13:26:06 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jjG6-7I3oC-h; Mon, 11 May 2020 13:26:06 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49LJXZ0GdRz9ty3g;
- Mon, 11 May 2020 13:26:06 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B5E088B7AE;
- Mon, 11 May 2020 13:26:12 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id R-ATr0yYLvil; Mon, 11 May 2020 13:26:12 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 78E7D8B7AD;
- Mon, 11 May 2020 13:26:12 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5B57465A09; Mon, 11 May 2020 11:26:12 +0000 (UTC)
-Message-Id: <cd24ae9437183388376db1b936a5c14b8bf027a6.1589196133.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1589196133.git.christophe.leroy@csgroup.eu>
-References: <cover.1589196133.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 45/45] powerpc/32s: Implement dedicated kasan_init_region()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 11 May 2020 11:26:12 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49LJYQ68h6zDqgx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2020 21:26:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=HcmtsGhW; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49LJYN0Wgxz9sV6;
+ Mon, 11 May 2020 21:26:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1589196409;
+ bh=4NvXf9toL+4UXpT6HxsGqGALQmokSTs3VQyX07XztTk=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=HcmtsGhW3vvibCLKVXSur3CJ6fDr8ntOm4mcDszKPhs4GTP737/Wdfw0z6huCxBCe
+ HVcsEEd/MTSe9PIvxR4g1mJyWlY9pNfzuhdWrgSLDvrxv0HoV0uCl81kNTDqjk5Cxc
+ TgCZNgAde0FVNfAZ4JhAxZ7N9PiEsN+zjxPDzb7Rc4uXtU4HmRtqRWhhDdLzWuCB8l
+ GZBwk+W4cMwAKVsgp5G9PAyRFVaBbJ0zWJP9A9TDVJYCcc8SUNVV+6i8c+OlC0UZIZ
+ A+Tdq4kCohHBk3kW2wY1c8d3rP7bLfFFQlHv8A/x1THr3dNj5iLBtWGWEfQ2IcZBQ0
+ S3FUgyHwBmyow==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Christopher Lameter <cl@linux.com>
+Subject: Re: [PATCH v3 1/3] powerpc/numa: Set numa_node for all possible cpus
+In-Reply-To: <20200508132130.GC1961@linux.vnet.ibm.com>
+References: <20200501031128.19584-1-srikar@linux.vnet.ibm.com>
+ <20200501031128.19584-2-srikar@linux.vnet.ibm.com>
+ <alpine.DEB.2.21.2005022254170.28355@www.lameter.com>
+ <20200508132130.GC1961@linux.vnet.ibm.com>
+Date: Mon, 11 May 2020 21:27:07 +1000
+Message-ID: <87v9l2btkk.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,120 +73,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michal Hocko <mhocko@suse.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Mel Gorman <mgorman@suse.de>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Implement a kasan_init_region() dedicated to book3s/32 that
-allocates KASAN regions using BATs.
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> * Christopher Lameter <cl@linux.com> [2020-05-02 22:55:16]:
+>
+>> On Fri, 1 May 2020, Srikar Dronamraju wrote:
+>> 
+>> > -	for_each_present_cpu(cpu)
+>> > -		numa_setup_cpu(cpu);
+>> > +	for_each_possible_cpu(cpu) {
+>> > +		/*
+>> > +		 * Powerpc with CONFIG_NUMA always used to have a node 0,
+>> > +		 * even if it was memoryless or cpuless. For all cpus that
+>> > +		 * are possible but not present, cpu_to_node() would point
+>> > +		 * to node 0. To remove a cpuless, memoryless dummy node,
+>> > +		 * powerpc need to make sure all possible but not present
+>> > +		 * cpu_to_node are set to a proper node.
+>> > +		 */
+>> > +		if (cpu_present(cpu))
+>> > +			numa_setup_cpu(cpu);
+>> > +		else
+>> > +			set_cpu_numa_node(cpu, first_online_node);
+>> > +	}
+>> >  }
+>> 
+>> Can this be folded into numa_setup_cpu?
+>> 
+>> This looks more like numa_setup_cpu needs to change?
+>
+> We can fold this into numa_setup_cpu().
+>
+> However till now we were sure that numa_setup_cpu() would be called only for
+> a present cpu. That assumption will change.
+> + (non-consequential) an additional check everytime cpu is hotplugged in.
+>
+> If Michael Ellerman is okay with the change, I can fold it in.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/kasan.h      |  1 +
- arch/powerpc/mm/kasan/Makefile        |  1 +
- arch/powerpc/mm/kasan/book3s_32.c     | 57 +++++++++++++++++++++++++++
- arch/powerpc/mm/kasan/kasan_init_32.c |  2 +-
- 4 files changed, 60 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/mm/kasan/book3s_32.c
+Yes I agree it would be better in numa_setup_cpu().
 
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index 107a24c3f7b3..be85c7005fb1 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -34,6 +34,7 @@ static inline void kasan_init(void) { }
- static inline void kasan_late_init(void) { }
- #endif
- 
-+void kasan_update_early_region(unsigned long k_start, unsigned long k_end, pte_t pte);
- int kasan_init_shadow_page_tables(unsigned long k_start, unsigned long k_end);
- int kasan_init_region(void *start, size_t size);
- 
-diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-index 440038ea79f1..bb1a5408b86b 100644
---- a/arch/powerpc/mm/kasan/Makefile
-+++ b/arch/powerpc/mm/kasan/Makefile
-@@ -4,3 +4,4 @@ KASAN_SANITIZE := n
- 
- obj-$(CONFIG_PPC32)           += kasan_init_32.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
-+obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s_32.o
-diff --git a/arch/powerpc/mm/kasan/book3s_32.c b/arch/powerpc/mm/kasan/book3s_32.c
-new file mode 100644
-index 000000000000..4bc491a4a1fd
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/book3s_32.c
-@@ -0,0 +1,57 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#define DISABLE_BRANCH_PROFILING
-+
-+#include <linux/kasan.h>
-+#include <linux/memblock.h>
-+#include <asm/pgalloc.h>
-+#include <mm/mmu_decl.h>
-+
-+int __init kasan_init_region(void *start, size_t size)
-+{
-+	unsigned long k_start = (unsigned long)kasan_mem_to_shadow(start);
-+	unsigned long k_end = (unsigned long)kasan_mem_to_shadow(start + size);
-+	unsigned long k_cur = k_start;
-+	int k_size = k_end - k_start;
-+	int k_size_base = 1 << (ffs(k_size) - 1);
-+	int ret;
-+	void *block;
-+
-+	block = memblock_alloc(k_size, k_size_base);
-+
-+	if (block && k_size_base >= SZ_128K && k_start == ALIGN(k_start, k_size_base)) {
-+		int k_size_more = 1 << (ffs(k_size - k_size_base) - 1);
-+
-+		setbat(-1, k_start, __pa(block), k_size_base, PAGE_KERNEL);
-+		if (k_size_more >= SZ_128K)
-+			setbat(-1, k_start + k_size_base, __pa(block) + k_size_base,
-+			       k_size_more, PAGE_KERNEL);
-+		if (v_block_mapped(k_start))
-+			k_cur = k_start + k_size_base;
-+		if (v_block_mapped(k_start + k_size_base))
-+			k_cur = k_start + k_size_base + k_size_more;
-+
-+		update_bats();
-+	}
-+
-+	if (!block)
-+		block = memblock_alloc(k_size, PAGE_SIZE);
-+	if (!block)
-+		return -ENOMEM;
-+
-+	ret = kasan_init_shadow_page_tables(k_start, k_end);
-+	if (ret)
-+		return ret;
-+
-+	kasan_update_early_region(k_start, k_cur, __pte(0));
-+
-+	for (; k_cur < k_end; k_cur += PAGE_SIZE) {
-+		pmd_t *pmd = pmd_ptr_k(k_cur);
-+		void *va = block + k_cur - k_start;
-+		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
-+
-+		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
-+	}
-+	flush_tlb_kernel_range(k_start, k_end);
-+	return 0;
-+}
-diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index 76d418af4ce8..c42085801c04 100644
---- a/arch/powerpc/mm/kasan/kasan_init_32.c
-+++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -79,7 +79,7 @@ int __init __weak kasan_init_region(void *start, size_t size)
- 	return 0;
- }
- 
--static void __init
-+void __init
- kasan_update_early_region(unsigned long k_start, unsigned long k_end, pte_t pte)
- {
- 	unsigned long k_cur;
--- 
-2.25.0
-
+cheers
