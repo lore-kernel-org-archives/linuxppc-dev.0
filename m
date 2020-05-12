@@ -1,95 +1,69 @@
-Return-Path: <SRS0=5PiN=6Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=zMZh=62=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C41C9C47255
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:10:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AF84C47255
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:58:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4422C20836
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 May 2020 21:10:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4422C20836
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 59BA920746
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 01:58:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="eXVA8bld"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59BA920746
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49LYVT2JF8zDqnv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 07:10:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Lgtt3ZCwzDqnZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 May 2020 11:58:14 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49LYRx5YLRzDqkf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 07:07:57 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 04BL6XZI077544; Mon, 11 May 2020 17:07:43 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30wrvpa1ae-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 May 2020 17:07:43 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04BL7bZk080246;
- Mon, 11 May 2020 17:07:43 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 30wrvpa19w-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 May 2020 17:07:42 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04BL3bNR023827;
- Mon, 11 May 2020 21:07:41 GMT
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by ppma05wdc.us.ibm.com with ESMTP id 30wm5646fp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 11 May 2020 21:07:41 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 04BL7eE915991052
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 May 2020 21:07:40 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 531BA6A051;
- Mon, 11 May 2020 21:07:40 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 000816A04F;
- Mon, 11 May 2020 21:07:39 +0000 (GMT)
-Received: from localhost (unknown [9.85.205.196])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 May 2020 21:07:39 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Kajol Jain <kjain@linux.ibm.com>
-Subject: Re: [PATCH v8 2/5] powerpc/hv-24x7: Add rtas call in hv-24x7 driver
- to get processor details
-In-Reply-To: <20200506110737.14904-3-kjain@linux.ibm.com>
-References: <20200506110737.14904-1-kjain@linux.ibm.com>
- <20200506110737.14904-3-kjain@linux.ibm.com>
-Date: Mon, 11 May 2020 16:07:39 -0500
-Message-ID: <87blmu2nac.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Lgrd1XnrzDqlc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2020 11:56:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=eXVA8bld; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 49Lgrc0hFsz9sSW; Tue, 12 May 2020 11:56:16 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Lgrb5p8Zz9sRY;
+ Tue, 12 May 2020 11:56:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1589248575;
+ bh=1rLVXiqQF0oXhqxfyOkX5mhyIRTT31QjSiTEBjqNbyI=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=eXVA8bld+l61UA1Ia5G4I+1hSYwg3WMOhnvBuQOl9dwHEr6dBdoPZLPVe+wSoFuKv
+ Dg/L/Bf2y/bRFpDu4S3QVT09QDuGbCE+cmiG1L4/YW6dLKEDFhI2/SaAnE4EqRYg2J
+ Zxutm8s7YFrVBrizm5vLEr1uK8jTwpAPKJr1wWWWgQPnaXqmZRZHo5kGEG6h04OAqy
+ CSzXrg6Ok8L4N8HBlbhZpFSh5/8YJdGlCEllISwBO5YXpALrZRoU9ngirwrPjo1NMp
+ wGUoUd227ktLOMAj+wpXJRGl047ovwLf6+AxJ5fHblxjXvbNsk6z10L1n3WN/LlAs8
+ Cq9xaFhqjTCaA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org,
+ Benjamin Herrenschmidt <benh@ozlabs.org>, Michael Neuling <mikey@neuling.org>,
+ Anton Blanchard <anton@ozlabs.org>
+Subject: Re: [PATCH RFC 2/4] powerpc: Add Microwatt platform
+In-Reply-To: <20200509050255.GC1464954@thinks.paulus.ozlabs.org>
+References: <20200509050103.GA1464954@thinks.paulus.ozlabs.org>
+ <20200509050255.GC1464954@thinks.paulus.ozlabs.org>
+Date: Tue, 12 May 2020 11:56:33 +1000
+Message-ID: <87sgg5c3vy.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
- definitions=2020-05-11_10:2020-05-11,
- 2020-05-11 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0
- priorityscore=1501 impostorscore=0 lowpriorityscore=0 suspectscore=1
- mlxscore=0 bulkscore=0 malwarescore=0 adultscore=0 phishscore=0
- mlxlogscore=999 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2003020000 definitions=main-2005110152
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,112 +75,182 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, maddy@linux.vnet.ibm.com,
- anju@linux.vnet.ibm.com, peterz@infradead.org, gregkh@linuxfoundation.org,
- suka@us.ibm.com, alexander.shishkin@linux.intel.com, mingo@kernel.org,
- mpetlan@redhat.com, yao.jin@linux.intel.com, ak@linux.intel.com,
- mamatha4@linux.vnet.ibm.com, acme@kernel.org, jmario@redhat.com,
- namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org, jolsa@kernel.org,
- kan.liang@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Paul Mackerras <paulus@ozlabs.org> writes:
+> Microwatt is a FPGA-based implementation of the Power ISA.  It
+> currently only implements little-endian 64-bit mode, and does
+> not (yet) support SMP.
 
-Kajol Jain <kjain@linux.ibm.com> writes:
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 48e8f4b17b91..8cf242aad98f 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -20,6 +20,7 @@
->  #include <asm/io.h>
->  #include <linux/byteorder/generic.h>
+... or FP or VSX or Altivec?
+
+What about transactional memory?
+
+> This adds a new machine type to support FPGA-based SoCs with a
+> Microwatt core.
+>
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> ---
+>  arch/powerpc/Kconfig                      |    2 +-
+>  arch/powerpc/configs/microwatt_defconfig  | 1418 +++++++++++++++++++++
+>  arch/powerpc/platforms/Kconfig            |    1 +
+>  arch/powerpc/platforms/Makefile           |    1 +
+>  arch/powerpc/platforms/microwatt/Kconfig  |    9 +
+>  arch/powerpc/platforms/microwatt/Makefile |    1 +
+>  arch/powerpc/platforms/microwatt/setup.c  |   40 +
+>  7 files changed, 1471 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/powerpc/configs/microwatt_defconfig
+>  create mode 100644 arch/powerpc/platforms/microwatt/Kconfig
+>  create mode 100644 arch/powerpc/platforms/microwatt/Makefile
+>  create mode 100644 arch/powerpc/platforms/microwatt/setup.c
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 497b7d0b2d7e..97286b8312f5 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -407,7 +407,7 @@ config HUGETLB_PAGE_SIZE_VARIABLE
 >  
-> +#include <asm/rtas.h>
->  #include "hv-24x7.h"
->  #include "hv-24x7-catalog.h"
->  #include "hv-common.h"
-> @@ -57,6 +58,75 @@ static bool is_physical_domain(unsigned domain)
->  	}
->  }
+>  config MATH_EMULATION
+>  	bool "Math emulation"
+> -	depends on 4xx || PPC_8xx || PPC_MPC832x || BOOKE
+> +	depends on 4xx || PPC_8xx || PPC_MPC832x || BOOKE || PPC_MICROWATT
+>  	help
+>  	  Some PowerPC chips designed for embedded applications do not have
+>  	  a floating-point unit and therefore do not implement the
+> diff --git a/arch/powerpc/configs/microwatt_defconfig b/arch/powerpc/configs/microwatt_defconfig
+> new file mode 100644
+> index 000000000000..f4f4c965a786
+> --- /dev/null
+> +++ b/arch/powerpc/configs/microwatt_defconfig
+> @@ -0,0 +1,1418 @@
+> +#
+> +# Automatically generated file; DO NOT EDIT.
+> +# Linux/powerpc 5.6.0 Kernel Configuration
+> +#
+> +
+> +#
+> +# Compiler: powerpc64le-linux-gnu-gcc (GCC) 9.2.1 20190827 (Red Hat Cross 9.2.1-1)
+> +#
+> +CONFIG_CC_IS_GCC=y
+> +CONFIG_GCC_VERSION=90201
+> +CONFIG_CLANG_VERSION=0
+> +CONFIG_CC_HAS_ASM_GOTO=y
+> +CONFIG_CC_HAS_ASM_INLINE=y
+> +CONFIG_CC_HAS_WARN_MAYBE_UNINITIALIZED=y
+> +CONFIG_CC_DISABLE_WARN_MAYBE_UNINITIALIZED=y
+> +CONFIG_IRQ_WORK=y
+> +CONFIG_BUILDTIME_TABLE_SORT=y
+> +CONFIG_THREAD_INFO_IN_TASK=y
+
+This should be a minimised config generated with savedefconfig.
+
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index 1f8025383caa..5b701acc6afa 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -20,6 +20,7 @@ source "arch/powerpc/platforms/embedded6xx/Kconfig"
+>  source "arch/powerpc/platforms/44x/Kconfig"
+>  source "arch/powerpc/platforms/40x/Kconfig"
+>  source "arch/powerpc/platforms/amigaone/Kconfig"
+> +source "arch/powerpc/platforms/microwatt/Kconfig"
 >  
+>  config KVM_GUEST
+>  	bool "KVM Guest support"
+> diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+> index 143d4417f6cc..edcb54cdb1a8 100644
+> --- a/arch/powerpc/platforms/Makefile
+> +++ b/arch/powerpc/platforms/Makefile
+> @@ -22,3 +22,4 @@ obj-$(CONFIG_PPC_CELL)		+= cell/
+>  obj-$(CONFIG_PPC_PS3)		+= ps3/
+>  obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+>  obj-$(CONFIG_AMIGAONE)		+= amigaone/
+> +obj-$(CONFIG_PPC_MICROWATT)	+= microwatt/
+> diff --git a/arch/powerpc/platforms/microwatt/Kconfig b/arch/powerpc/platforms/microwatt/Kconfig
+> new file mode 100644
+> index 000000000000..981f722ae9ce
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/microwatt/Kconfig
+> @@ -0,0 +1,9 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +config PPC_MICROWATT
+> +	depends on PPC64 && PPC_BOOK3S
+
+That can just be PPC_BOOK3S_64
+
+I think it should also depend on !CPU_BIG_ENDIAN && !SMP ?
+
+Should it also select MATH_EMULATION?
+And MATH_EMULATION_FULL ?
+
+> +	bool "Microwatt SoC platform"
+> +	select PPC_XICS
+> +	select PPC_NATIVE
+> +	help
+> +          This option enables support for FPGA-based Microwatt implementations.
+> +
+> diff --git a/arch/powerpc/platforms/microwatt/Makefile b/arch/powerpc/platforms/microwatt/Makefile
+> new file mode 100644
+> index 000000000000..e6885b3b2ee7
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/microwatt/Makefile
+> @@ -0,0 +1 @@
+> +obj-y	+= setup.o
+> diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
+> new file mode 100644
+> index 000000000000..3cfc5955a6fe
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/microwatt/setup.c
+> @@ -0,0 +1,40 @@
 > +/*
-> + * The Processor Module Information system parameter allows transferring
-> + * of certain processor module information from the platform to the OS.
-> + * Refer PAPR+ document to get parameter token value as '43'.
+> + * Microwatt FPGA-based SoC platform setup code.
+> + *
+> + * Copyright 2020 Paul Mackerras (paulus@ozlabs.org), IBM Corp.
 > + */
 > +
-> +#define PROCESSOR_MODULE_INFO   43
-> +#define PROCESSOR_MAX_LENGTH	(8 * 1024)
+> +#include <linux/types.h>
+> +#include <linux/kernel.h>
+> +#include <linux/stddef.h>
+> +#include <linux/init.h>
+> +#include <linux/of.h>
+> +#include <asm/machdep.h>
+> +#include <asm/time.h>
 > +
-> +DEFINE_SPINLOCK(rtas_local_data_buf_lock);
-> +EXPORT_SYMBOL(rtas_local_data_buf_lock);
-
-This should be static and not exported, correct?
-
-> +
-> +static u32 phys_sockets;	/* Physical sockets */
-> +static u32 phys_chipspersocket;	/* Physical chips per socket*/
-> +static u32 phys_coresperchip; /* Physical cores per chip */
-> +
-> +/*
-> + * Function read_sys_info_pseries() make a rtas_call which require
-> + * data buffer of size 8K. As standard 'rtas_data_buf' is of size
-> + * 4K, we are adding new local buffer 'rtas_local_data_buf'.
-
-Sorry if this has been covered before but I don't understand why it
-would require a larger buffer; by my reading this call will return *ten
-bytes* of output. Also, current versions of PAPR+ limit the output
-length to 4002 bytes. I feel like I'm missing something.
-
-
-> + */
-> +static __be16 rtas_local_data_buf[PROCESSOR_MAX_LENGTH] __cacheline_aligned;
-> +
-> +/*
-> + * read_sys_info_pseries()
-> + * Retrieve the number of sockets and chips per socket and cores per
-> + * chip details through the get-system-parameter rtas call.
-> + */
-> +void read_sys_info_pseries(void)
+> +static void __init microwatt_calibrate_decr(void)
 > +{
-> +	int call_status, len, ntypes;
-> +
-> +	/*
-> +	 * Making system parameter: chips and sockets and cores per chip
-> +	 * default to 1.
-> +	 */
-> +	phys_sockets = 1;
-> +	phys_chipspersocket = 1;
-> +	phys_coresperchip = 1;
-> +	memset(rtas_local_data_buf, 0, PROCESSOR_MAX_LENGTH * sizeof(__be16));
+> +	ppc_tb_freq = 100000000;
+> +	ppc_proc_freq = 100000000;
+> +}
 
-Modifying global state outside of any critical section...? How do
-you prevent readers from seeing inconsistent results?
-
-
-> +	spin_lock(&rtas_local_data_buf_lock);
-> +
-> +	call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
-> +				NULL,
-> +				PROCESSOR_MODULE_INFO,
-> +				__pa(rtas_local_data_buf),
-> +				PROCESSOR_MAX_LENGTH);
-> +
-> +	spin_unlock(&rtas_local_data_buf_lock);
-
-Using this lock this way fails to provide any protection to the data
-buffer or the phys_* variables.
-
+Why can't those come via the device tree?
 
 > +
-> +	if (call_status != 0) {
-> +		pr_info("Error calling get-system-parameter (0x%x)\n",
-> +			call_status);
+> +static void __init microwatt_setup_arch(void)
+> +{
+> +}
 
-To be robust, this should handle busy (-2) and extended delay (990x)
-statuses. And if it's going to log errors it should use pr_err() and use
-decimal, not hex, to report the RTAS call status, since that's how
-they're specified in PAPR+.
+That can be NULL in ppc_md.
 
+> +static void __init microwatt_init_IRQ(void)
+> +{
+> +}
+
+Can be NULL in ppc_md.
+
+> +static int __init microwatt_probe(void)
+> +{
+> +	return of_machine_is_compatible("microwatt-soc");
+> +}
+> +
+> +define_machine(microwatt) {
+> +	.name			= "microwatt",
+> +	.probe			= microwatt_probe,
+> +	.setup_arch		= microwatt_setup_arch,
+> +	.init_IRQ		= microwatt_init_IRQ,
+> +	.calibrate_decr		= microwatt_calibrate_decr,
+> +};
+> -- 
+> 2.25.3
+
+cheers
