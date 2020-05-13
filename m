@@ -2,59 +2,103 @@ Return-Path: <SRS0=uIst=63=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F45FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:43:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09A8EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:55:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0A76205CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:43:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0A76205CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3271C2054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:55:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Hl5KliNg";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Hl5KliNg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3271C2054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Mk7l5fR2zDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 04:42:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49MkPY50QHzDqcq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 04:54:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=bhsharma@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=Hl5KliNg; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hl5KliNg; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [207.211.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Mjwf3JF4zDqf6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:33:21 +1000 (AEST)
-IronPort-SDR: pCLlTayHH3jix5+GxyViNs4qTmiEVjH6+mY3EK0C9g5iCDTp4d7As/QqGMn6P5S2QFX7Pntoi/
- S/ioXJ96GD6g==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 May 2020 11:33:19 -0700
-IronPort-SDR: rLcD36nSMClByVlploBlVdNFFk5pHCSIcgbOCaJdgcs+RdjWx7c4Clrf05lAXA5sE0Hoqh85/E
- xJ2Zo6yQbzQQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,388,1583222400"; d="scan'208";a="371987982"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga001.fm.intel.com with ESMTP; 13 May 2020 11:33:16 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1jYwBw-0006II-8U; Thu, 14 May 2020 02:33:16 +0800
-Date: Thu, 14 May 2020 02:32:52 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 249c9b0cd193d983c3a0b00f3fd3b92333bfeebe
-Message-ID: <5ebc3d54.mi26C2hy9vEzTopy%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49MkM95TSBzDqc8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:52:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1589395967;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:content-type:content-type:in-reply-to:in-reply-to:
+ references:references; bh=wHSBbB5/QZT/EwoeOOweY77s6h/009zkbzY0iSlBYP8=;
+ b=Hl5KliNg4qQzUnYPVH7Wqp/eS41pyypOIZ7VRVKPUQ+EQL771Z4MFD7dRZjurIZ8vQFt7y
+ rjalnhMsr6XT+9BNTYhuiV6QqOpVTaayMbxGI2/En3nVeOTTTzuHIHOsawActAXIDBH8Kx
+ OvduGoLhHiwU4pinJis5vMTp0WTY5p8=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1589395967;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:content-type:content-type:in-reply-to:in-reply-to:
+ references:references; bh=wHSBbB5/QZT/EwoeOOweY77s6h/009zkbzY0iSlBYP8=;
+ b=Hl5KliNg4qQzUnYPVH7Wqp/eS41pyypOIZ7VRVKPUQ+EQL771Z4MFD7dRZjurIZ8vQFt7y
+ rjalnhMsr6XT+9BNTYhuiV6QqOpVTaayMbxGI2/En3nVeOTTTzuHIHOsawActAXIDBH8Kx
+ OvduGoLhHiwU4pinJis5vMTp0WTY5p8=
+Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com
+ [209.85.215.200]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-235-fXpxRmKdMJiMWtSbmhH0oA-1; Wed, 13 May 2020 14:52:45 -0400
+X-MC-Unique: fXpxRmKdMJiMWtSbmhH0oA-1
+Received: by mail-pg1-f200.google.com with SMTP id g1so312169pgk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 11:52:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=wHSBbB5/QZT/EwoeOOweY77s6h/009zkbzY0iSlBYP8=;
+ b=k/PizjXahgT4VeVAb9HW22wtmnMCKgnOp1F3x7DKbJWWwHm5LuvhBWICz8CAfc5T3X
+ IfRMEkZB3pyEXPSq0047X6W8yQsmdKyig1NoAgv/6y8E2ZkgiGJl6oHq2cYQcQfXbMtA
+ 7/3u4b+UP2sLOYEOhL1CSI/oREf/sDjBnNtBFDpOlo8pB5S3++vue36uznOenmS06ou/
+ K/Ng3z4Bt8b0AxfGgiO51PgHCneSJF4rDHEdyzov++FPTqd7ijU6BgoSyDyLOEmT9KFk
+ F3lc22ipkfKV+LZhCfzRhzuhod05fwFRuvP2eXebtj8Cu+S8mnA4yDDu99idB2jj73OM
+ 4RRg==
+X-Gm-Message-State: AOAM532C1hhb+EGuWeB/Q9V3n4Pd/V3z690xVu19kXXMo/uDl3sbGkQ8
+ KaICdwn5i/aH7K3enn/TC3PhS24kq7FF+D2uxhWo5/ceS5ZWk8rkHs4FXHBNuMZ+xY77DXRU5zN
+ /poCFmlvV6iZQLThXc7ADrvRXXg==
+X-Received: by 2002:aa7:82d4:: with SMTP id f20mr638964pfn.253.1589395964884; 
+ Wed, 13 May 2020 11:52:44 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJz5Sglv3QSN2AQ8L8vX+EbHi2Jv4mN3LxBZJj8ZVFGF26HEK+cSiLoq/r1EcEne4FxQ9u0lwQ==
+X-Received: by 2002:aa7:82d4:: with SMTP id f20mr638933pfn.253.1589395964561; 
+ Wed, 13 May 2020 11:52:44 -0700 (PDT)
+Received: from localhost ([122.177.166.225])
+ by smtp.gmail.com with ESMTPSA id d2sm230168pfa.164.2020.05.13.11.52.43
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 13 May 2020 11:52:43 -0700 (PDT)
+From: Bhupesh Sharma <bhsharma@redhat.com>
+To: linux-arm-kernel@lists.infradead.org,
+	x86@kernel.org
+Subject: [PATCH v6 1/2] crash_core,
+ vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+Date: Thu, 14 May 2020 00:22:36 +0530
+Message-Id: <1589395957-24628-2-git-send-email-bhsharma@redhat.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1589395957-24628-1-git-send-email-bhsharma@redhat.com>
+References: <1589395957-24628-1-git-send-email-bhsharma@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,167 +110,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ bhsharma@redhat.com, kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>,
+ Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ bhupesh.linux@gmail.com, Will Deacon <will@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Dave Anderson <anderson@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 249c9b0cd193d983c3a0b00f3fd3b92333bfeebe  powerpc/40x: Make more space for system call exception
+Right now user-space tools like 'makedumpfile' and 'crash' need to rely
+on a best-guess method of determining value of 'MAX_PHYSMEM_BITS'
+supported by underlying kernel.
 
-elapsed time: 585m
+This value is used in user-space code to calculate the bit-space
+required to store a section for SPARESMEM (similar to the existing
+calculation method used in the kernel implementation):
 
-configs tested: 144
-configs skipped: 10
+  #define SECTIONS_SHIFT    (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Now, regressions have been reported in user-space utilities
+like 'makedumpfile' and 'crash' on arm64, with the recently added
+kernel support for 52-bit physical address space, as there is
+no clear method of determining this value in user-space
+(other than reading kernel CONFIG flags).
 
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sparc                            allyesconfig
-m68k                             allyesconfig
-h8300                     edosk2674_defconfig
-mips                     decstation_defconfig
-sh                          rsk7201_defconfig
-mips                          rm200_defconfig
-riscv                    nommu_virt_defconfig
-mips                      pistachio_defconfig
-xtensa                           alldefconfig
-sh                           se7722_defconfig
-openrisc                         alldefconfig
-arm                        cerfcube_defconfig
-arm                         assabet_defconfig
-sh                          sdk7786_defconfig
-arm                            hisi_defconfig
-arm                          exynos_defconfig
-arm                            mps2_defconfig
-sh                ecovec24-romimage_defconfig
-arc                            hsdk_defconfig
-arm                          iop32x_defconfig
-riscv                             allnoconfig
-arm                          moxart_defconfig
-sh                               allmodconfig
-sh                             espt_defconfig
-arm                            xcep_defconfig
-microblaze                          defconfig
-arm                         orion5x_defconfig
-sh                   sh7724_generic_defconfig
-m68k                          amiga_defconfig
-arm                        shmobile_defconfig
-powerpc                    gamecube_defconfig
-sh                           se7343_defconfig
-c6x                                 defconfig
-sh                            titan_defconfig
-mips                       capcella_defconfig
-arm                       spear13xx_defconfig
-arc                        nsimosci_defconfig
-arm                         shannon_defconfig
-nios2                            alldefconfig
-arm                           corgi_defconfig
-arm                         lpc32xx_defconfig
-mips                      loongson3_defconfig
-arc                          axs101_defconfig
-mips                     loongson1c_defconfig
-c6x                        evmc6472_defconfig
-um                               alldefconfig
-arm                        clps711x_defconfig
-powerpc                    adder875_defconfig
-parisc                generic-64bit_defconfig
-arm                        vexpress_defconfig
-i386                              allnoconfig
-i386                             allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-nios2                               defconfig
-nios2                            allyesconfig
-openrisc                            defconfig
-c6x                              allyesconfig
-c6x                               allnoconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a005-20200513
-x86_64               randconfig-a003-20200513
-x86_64               randconfig-a006-20200513
-x86_64               randconfig-a004-20200513
-x86_64               randconfig-a001-20200513
-x86_64               randconfig-a002-20200513
-i386                 randconfig-a006-20200513
-i386                 randconfig-a005-20200513
-i386                 randconfig-a003-20200513
-i386                 randconfig-a001-20200513
-i386                 randconfig-a004-20200513
-i386                 randconfig-a002-20200513
-i386                 randconfig-a012-20200513
-i386                 randconfig-a016-20200513
-i386                 randconfig-a014-20200513
-i386                 randconfig-a011-20200513
-i386                 randconfig-a013-20200513
-i386                 randconfig-a015-20200513
-riscv                            allyesconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-x86_64                              defconfig
-sparc                               defconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-um                               allmodconfig
-um                                allnoconfig
-um                               allyesconfig
-um                                  defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.6
-x86_64                    rhel-7.6-kselftests
-x86_64                         rhel-7.2-clear
-x86_64                                    lkp
-x86_64                              fedora-25
-x86_64                                  kexec
+As per suggestion from makedumpfile maintainer (Kazu), it makes more
+sense to append 'MAX_PHYSMEM_BITS' to vmcoreinfo in the core code itself
+rather than in arch-specific code, so that the user-space code for other
+archs can also benefit from this addition to the vmcoreinfo and use it
+as a standard way of determining 'SECTIONS_SHIFT' value in user-land.
 
+A reference 'makedumpfile' implementation which reads the
+'MAX_PHYSMEM_BITS' value from vmcoreinfo in a arch-independent fashion
+is available here:
+
+While at it also update vmcoreinfo documentation for 'MAX_PHYSMEM_BITS'
+variable being added to vmcoreinfo.
+
+'MAX_PHYSMEM_BITS' defines the maximum supported physical address
+space memory.
+
+Cc: Boris Petkov <bp@alien8.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: James Morse <james.morse@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Anderson <anderson@redhat.com>
+Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+Cc: x86@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: kexec@lists.infradead.org
+Tested-by: John Donnelly <john.p.donnelly@oracle.com>
+Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ Documentation/admin-guide/kdump/vmcoreinfo.rst | 5 +++++
+ kernel/crash_core.c                            | 1 +
+ 2 files changed, 6 insertions(+)
+
+diff --git a/Documentation/admin-guide/kdump/vmcoreinfo.rst b/Documentation/admin-guide/kdump/vmcoreinfo.rst
+index e4ee8b2db604..2a632020f809 100644
+--- a/Documentation/admin-guide/kdump/vmcoreinfo.rst
++++ b/Documentation/admin-guide/kdump/vmcoreinfo.rst
+@@ -93,6 +93,11 @@ It exists in the sparse memory mapping model, and it is also somewhat
+ similar to the mem_map variable, both of them are used to translate an
+ address.
+ 
++MAX_PHYSMEM_BITS
++----------------
++
++Defines the maximum supported physical address space memory.
++
+ page
+ ----
+ 
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index 9f1557b98468..18175687133a 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -413,6 +413,7 @@ static int __init crash_save_vmcoreinfo_init(void)
+ 	VMCOREINFO_LENGTH(mem_section, NR_SECTION_ROOTS);
+ 	VMCOREINFO_STRUCT_SIZE(mem_section);
+ 	VMCOREINFO_OFFSET(mem_section, section_mem_map);
++	VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
+ #endif
+ 	VMCOREINFO_STRUCT_SIZE(page);
+ 	VMCOREINFO_STRUCT_SIZE(pglist_data);
+-- 
+2.7.4
+
