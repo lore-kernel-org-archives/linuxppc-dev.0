@@ -3,42 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C53EC2D0FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 12:56:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B075CA90AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:00:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 084D8206E5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 12:56:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 084D8206E5
+	by mail.kernel.org (Postfix) with ESMTPS id E800D205ED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:00:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E800D205ED
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49MZRQ0hZxzDqlQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 22:56:02 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49MZY43nqVzDqGY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 23:00:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49MZ9C6tVKzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 22:43:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49MZ9D5fBwzDqgF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 22:43:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 49MZ9C5QFJz9sRK; Wed, 13 May 2020 22:43:43 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49MZ9C4YG8z9sSg; Wed, 13 May 2020 22:43:43 +1000 (AEST)
+ id 49MZ9D4QCHz9sSk; Wed, 13 May 2020 22:43:44 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-In-Reply-To: <20200502143316.929341-1-mpe@ellerman.id.au>
-References: <20200502143316.929341-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Fix unrecoverable SLB crashes due to
- preemption check
-Message-Id: <158937375729.3526905.5583250630457226854.b4-ty@ellerman.id.au>
-Date: Wed, 13 May 2020 22:43:43 +1000 (AEST)
+To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-integrity@vger.kernel.org
+In-Reply-To: <1588342612-14532-1-git-send-email-nayna@linux.ibm.com>
+References: <1588342612-14532-1-git-send-email-nayna@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/ima: fix secure boot rules in ima arch policy
+Message-Id: <158937375594.3526905.9967004768395504429.b4-ty@ellerman.id.au>
+Date: Wed, 13 May 2020 22:43:44 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,24 +48,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: hughd@google.com, npiggin@gmail.com
+Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 3 May 2020 00:33:16 +1000, Michael Ellerman wrote:
-> Hugh reported that his trusty G5 crashed after a few hours under load
-> with an "Unrecoverable exception 380".
-> 
-> The crash is in interrupt_return() where we check lazy_irq_pending(),
-> which calls get_paca() and with CONFIG_DEBUG_PREEMPT=y that goes to
-> check_preemption_disabled() via debug_smp_processor_id().
+On Fri, 1 May 2020 10:16:52 -0400, Nayna Jain wrote:
+> To prevent verifying the kernel module appended signature twice
+> (finit_module), once by the module_sig_check() and again by IMA, powerpc
+> secure boot rules define an IMA architecture specific policy rule
+> only if CONFIG_MODULE_SIG_FORCE is not enabled. This, unfortunately, does
+> not take into account the ability of enabling "sig_enforce" on the boot
+> command line (module.sig_enforce=1).
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/64s: Fix unrecoverable SLB crashes due to preemption check
-      https://git.kernel.org/powerpc/c/0094368e3bb97a710ce163f9c06d290c1c308621
+[1/1] powerpc/ima: Fix secure boot rules in ima arch policy
+      https://git.kernel.org/powerpc/c/fa4f3f56ccd28ac031ab275e673ed4098855fed4
 
 cheers
