@@ -2,101 +2,98 @@ Return-Path: <SRS0=uIst=63=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4444C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E80DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 20:57:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 361772065C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:57:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aMnRz9IN";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZzVmKyi4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 361772065C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1B7D62054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 20:57:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B7D62054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49MkS71LDlzDq8F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 04:57:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Mn7B050xzDqf5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 06:57:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=bhsharma@redhat.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=msc@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=aMnRz9IN; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZzVmKyi4; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49MkMD18tbzDqc5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:52:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1589395964;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:content-type:content-type;
- bh=klz1aIlltTyMvpQo6wp2CnVfN50qcHTeSgtHjx0WeI8=;
- b=aMnRz9INnv+JdfcDSmXV2SQUFxAoeovMzFGrYgj7pNBOAEZWzpwrou6FzRX8B+Uku6f5x0
- b5Tx/Yh8HDNTewp78P7DkX+FQ455BwfrzMu5jhIcPpOsn4e+IxqDZprGtlNqyf1RPKlPH+
- wexqukKd1DwPcyAYD9hKSzos7xbcoBg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1589395965;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:content-type:content-type;
- bh=klz1aIlltTyMvpQo6wp2CnVfN50qcHTeSgtHjx0WeI8=;
- b=ZzVmKyi4eoqOMsjEQh0UyLEk/U5aD6673idZvaZ9VuziqgtYKFlFnRMoJ49PMFbzzfPg4C
- dz4He3DSI61S5lVWQQRyZApr2oYqLNGFwOfIvpkGiD0TmPeBAx/9ejlp7qPtCbPlYi/yej
- zrsOVta8jkQf05eTya5qb03zwttcTM0=
-Received: from mail-pf1-f198.google.com (mail-pf1-f198.google.com
- [209.85.210.198]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-122-ZXS0ejXBP36Hh2YdpV4_9w-1; Wed, 13 May 2020 14:52:43 -0400
-X-MC-Unique: ZXS0ejXBP36Hh2YdpV4_9w-1
-Received: by mail-pf1-f198.google.com with SMTP id z19so480970pfk.15
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 11:52:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=klz1aIlltTyMvpQo6wp2CnVfN50qcHTeSgtHjx0WeI8=;
- b=DeM2e/j4cm8b5QcjK9mTIsQV868B7wnlf2ZSjx4D7QDSpLKu5zueKXvDb3T6pI0jI7
- xZVvYMoFCqbOaaGGszkkQWcGKeXoATOvYb5buT7ACvOjya8MpfzBS9p/Y0NMYR9H/xq1
- 9Q2rD+oOZ0Tc2VGsCvszqOovICsIljYTE3RWWiRfHrEjgtpiE262D+3S8AAUHOdgMHrz
- qic0ozlmsK5b36JbKQMkHp5bup1P6jIATrWQILVIBjwIe64AVeveQhx874nOIx5cfBRH
- zA6yuuNJXnHuw33nTrsFwGXGK24GB6HcW4Vc9zEGH+ByLwATAtIgdLXCaC6fgnwbNp9E
- aAsQ==
-X-Gm-Message-State: AGi0PuZGI6Ji+ume3Dj/CsYbX6QXKzBGQbccW97knHychXejEogOw0T3
- 3PwcPVxpUXUxhkQAxk51imZSfh+lF9jvsZW/pzn4Sow54HIwek7FaN1YGV0QhxGSfN/usN607u8
- lbfZWsFXhVLbhDFTuHlHii2BKDA==
-X-Received: by 2002:a17:90a:bc4a:: with SMTP id
- t10mr35609788pjv.104.1589395961877; 
- Wed, 13 May 2020 11:52:41 -0700 (PDT)
-X-Google-Smtp-Source: APiQypIuLKmGrGFPHM791kHZAFCmnHIYlCo9XywvYUHAqAM5Bb2fZsRB2lyt+YcuSxBVSz35z/ovow==
-X-Received: by 2002:a17:90a:bc4a:: with SMTP id
- t10mr35609740pjv.104.1589395961483; 
- Wed, 13 May 2020 11:52:41 -0700 (PDT)
-Received: from localhost ([122.177.166.225])
- by smtp.gmail.com with ESMTPSA id m18sm16270331pjl.14.2020.05.13.11.52.40
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 13 May 2020 11:52:40 -0700 (PDT)
-From: Bhupesh Sharma <bhsharma@redhat.com>
-To: linux-arm-kernel@lists.infradead.org,
-	x86@kernel.org
-Subject: [PATCH v6 0/2] Append new variables to vmcoreinfo (TCR_EL1.T1SZ for
- arm64 and MAX_PHYSMEM_BITS for all archs)
-Date: Thu, 14 May 2020 00:22:35 +0530
-Message-Id: <1589395957-24628-1-git-send-email-bhsharma@redhat.com>
-X-Mailer: git-send-email 2.7.4
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Mn4S0RkbzDqc3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 06:55:15 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 04DKVcw4131455
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 16:55:11 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3101ky906j-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 16:55:11 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04DKVh5i131979
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 16:55:11 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3101ky906c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 13 May 2020 16:55:11 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04DKoItr009502;
+ Wed, 13 May 2020 20:55:10 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma02dal.us.ibm.com with ESMTP id 3100uc3v27-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 13 May 2020 20:55:10 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 04DKt9uM11207624
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 13 May 2020 20:55:10 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E0C42AC05B;
+ Wed, 13 May 2020 20:55:09 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2BF2DAC059;
+ Wed, 13 May 2020 20:55:09 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.148.48])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 13 May 2020 20:55:08 +0000 (GMT)
+Subject: Re: [RFC PATCH 2/2] powerpc/64s: system call support for scv/rfscv
+ instructions
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20200430040202.1735506-1-npiggin@gmail.com>
+ <20200430040202.1735506-3-npiggin@gmail.com>
+From: Matheus Castanho <msc@linux.ibm.com>
+Message-ID: <cc609f82-1d11-b1f9-2594-153936d7fe48@linux.ibm.com>
+Date: Wed, 13 May 2020 17:55:07 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
+MIME-Version: 1.0
+In-Reply-To: <20200430040202.1735506-3-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
+ definitions=2020-05-13_09:2020-05-13,
+ 2020-05-13 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 mlxscore=0
+ priorityscore=1501 adultscore=0 clxscore=1011 malwarescore=0 spamscore=0
+ cotscore=-2147483648 phishscore=0 mlxlogscore=999 suspectscore=0
+ impostorscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2005130171
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,128 +105,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org,
- bhsharma@redhat.com, Paul Mackerras <paulus@samba.org>,
- Amit Kachhap <amit.kachhap@arm.com>, Will Deacon <will@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- John Donnelly <john.p.donnelly@oracle.com>, scott.branden@broadcom.com,
- Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- bhupesh.linux@gmail.com, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Steve Capper <steve.capper@arm.com>, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>,
- Dave Anderson <anderson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Apologies for the delayed update. Its been quite some time since I
-posted the last version (v5), but I have been really caught up in some
-other critical issues.
+Hi Nicholas,
 
-Changes since v5:
-----------------
-- v5 can be viewed here:
-  http://lists.infradead.org/pipermail/kexec/2019-November/024055.html
-- Addressed review comments from James Morse and Boris.
-- Added Tested-by received from John on v5 patchset.
-- Rebased against arm64 (for-next/ptr-auth) branch which has Amit's
-  patchset for ARMv8.3-A Pointer Authentication feature vmcoreinfo
-  applied.
+Small comment below:
 
-Changes since v4:
-----------------
-- v4 can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-November/023961.html
-- Addressed comments from Dave and added patches for documenting
-  new variables appended to vmcoreinfo documentation.
-- Added testing report shared by Akashi for PATCH 2/5.
+On 4/30/20 1:02 AM, Nicholas Piggin wrote:
+> Add support for the scv instruction on POWER9 and later CPUs.
+> 
+> For now this implements the zeroth scv vector 'scv 0', as identical
+> to 'sc' system calls, with the exception that lr is not preserved, and
+> it is 64-bit only. There may yet be changes made to this ABI, so it's
+> for testing only.
+> 
+> rfscv is implemented to return from scv type system calls. It can not
+> be used to return from sc system calls because those are defined to
+> preserve lr.
+> 
+> In a comparison of getpid syscall, the test program had scv taking
+> about 3 more cycles in user mode (92 vs 89 for sc), due to lr handling.
+> getpid syscall throughput on POWER9 is improved by 33%, mostly due to
+> reducing mtmsr and mtspr.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  Documentation/powerpc/syscall64-abi.rst   |  42 ++++--
 
-Changes since v3:
-----------------
-- v3 can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-March/022590.html
-- Addressed comments from James and exported TCR_EL1.T1SZ in vmcoreinfo
-  instead of PTRS_PER_PGD.
-- Added a new patch (via [PATCH 3/3]), which fixes a simple typo in
-  'Documentation/arm64/memory.rst'
+[...]
 
-Changes since v2:
-----------------
-- v2 can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
-- Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
-  ifdef sections, as suggested by Kazu.
-- Updated vmcoreinfo documentation to add description about
-  'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
+> +Return value
+> +------------
+> +- For the sc instruction, both a return value and a return error code are
+> +  returned. cr0.SO is the return error code, and r3 is the return value or
+> +  error code. When cr0.SO is clear, the syscall succeeded and r3 is the return
+> +  value. When cr0.SO is set, the syscall failed and r3 is the error code that
+> +  generally corresponds to errno.
+> +
+> +- For the scv 0 instruction, there is a return value indicates failure if it
+> +  is >= -MAX_ERRNO (-4095) as an unsigned comparison, in which case it is the
+> +  negated return error code. Otherwise it is the successful return value.
 
-Changes since v1:
-----------------
-- v1 was sent out as a single patch which can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
+I believe this last paragraph is a bit confusing (didn't quite get the
+unsigned comparison with negative values). So instead of cr0.SO to
+indicate failure, scv returns the negated error code, and positive in
+case of success?
 
-- v2 breaks the single patch into two independent patches:
-  [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, whereas
-  [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel code (all archs)
-
-This patchset primarily fixes the regression reported in user-space
-utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
-with the availability of 52-bit address space feature in underlying
-kernel. These regressions have been reported both on CPUs which don't
-support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
-and also on prototype platforms (like ARMv8 FVP simulator model) which
-support ARMv8.2 extensions and are running newer kernels.
-
-The reason for these regressions is that right now user-space tools
-have no direct access to these values (since these are not exported
-from the kernel) and hence need to rely on a best-guess method of
-determining value of 'vabits_actual' and 'MAX_PHYSMEM_BITS' supported
-by underlying kernel.
-
-Exporting these values via vmcoreinfo will help user-land in such cases.
-In addition, as per suggestion from makedumpfile maintainer (Kazu),
-it makes more sense to append 'MAX_PHYSMEM_BITS' to
-vmcoreinfo in the core code itself rather than in arm64 arch-specific
-code, so that the user-space code for other archs can also benefit from
-this addition to the vmcoreinfo and use it as a standard way of
-determining 'SECTIONS_SHIFT' value in user-land.
-
-Cc: Boris Petkov <bp@alien8.de>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: James Morse <james.morse@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Steve Capper <steve.capper@arm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Dave Anderson <anderson@redhat.com>
-Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-Cc: John Donnelly <john.p.donnelly@oracle.com>
-Cc: scott.branden@broadcom.com
-Cc: Amit Kachhap <amit.kachhap@arm.com>
-Cc: x86@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: kexec@lists.infradead.org
-
-Bhupesh Sharma (2):
-  crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
-  arm64/crash_core: Export TCR_EL1.T1SZ in vmcoreinfo
-
- Documentation/admin-guide/kdump/vmcoreinfo.rst | 16 ++++++++++++++++
- arch/arm64/include/asm/pgtable-hwdef.h         |  1 +
- arch/arm64/kernel/crash_core.c                 | 10 ++++++++++
- kernel/crash_core.c                            |  1 +
- 4 files changed, 28 insertions(+)
-
--- 
-2.7.4
-
+Thanks,
+Matheus Castanho
