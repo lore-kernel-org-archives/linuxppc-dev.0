@@ -3,40 +3,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B075CA90AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:00:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1427ECA90AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E800D205ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:00:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E800D205ED
+	by mail.kernel.org (Postfix) with ESMTPS id 73B4620673
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 13:03:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73B4620673
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49MZY43nqVzDqGY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 23:00:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49MZcW5Bt9zDqK5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 23:03:55 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49MZ9D5fBwzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 22:43:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49MZ9G3TGSzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 22:43:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49MZ9D4QCHz9sSk; Wed, 13 May 2020 22:43:44 +1000 (AEST)
+ id 49MZ9G0qt9z9sSs; Wed, 13 May 2020 22:43:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-integrity@vger.kernel.org
-In-Reply-To: <1588342612-14532-1-git-send-email-nayna@linux.ibm.com>
-References: <1588342612-14532-1-git-send-email-nayna@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/ima: fix secure boot rules in ima arch policy
-Message-Id: <158937375594.3526905.9967004768395504429.b4-ty@ellerman.id.au>
-Date: Wed, 13 May 2020 22:43:44 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20200429062607.1675792-1-npiggin@gmail.com>
+References: <20200429062607.1675792-1-npiggin@gmail.com>
+Subject: Re: [PATCH 0/6] assorted kuap fixes
+Message-Id: <158937375708.3526905.9247302215282441299.b4-ty@ellerman.id.au>
+Date: Wed, 13 May 2020 22:43:45 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,24 +47,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 1 May 2020 10:16:52 -0400, Nayna Jain wrote:
-> To prevent verifying the kernel module appended signature twice
-> (finit_module), once by the module_sig_check() and again by IMA, powerpc
-> secure boot rules define an IMA architecture specific policy rule
-> only if CONFIG_MODULE_SIG_FORCE is not enabled. This, unfortunately, does
-> not take into account the ability of enabling "sig_enforce" on the boot
-> command line (module.sig_enforce=1).
+On Wed, 29 Apr 2020 16:26:00 +1000, Nicholas Piggin wrote:
+> Here's a bunch of fixes I collected, and some that Aneesh needs for
+> his kuap on hash series.
+> 
+> Nicholas Piggin (6):
+>   powerpc/64/kuap: move kuap checks out of MSR[RI]=0 regions of exit
+>     code
+>   missing isync
+>   powerpc/64/kuap: interrupt exit kuap restore add missing isync,
+>     conditionally restore AMR
+>   rpc/64/kuap: restore AMR in system reset exception
+>   powerpc/64/kuap: restore AMR in fast_interrupt_return
+>   powerpc/64/kuap: conditionally restore AMR in kuap_restore_amr asm
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Patches 1, 4 and 5 applied to powerpc/fixes.
 
-[1/1] powerpc/ima: Fix secure boot rules in ima arch policy
-      https://git.kernel.org/powerpc/c/fa4f3f56ccd28ac031ab275e673ed4098855fed4
+[1/6] powerpc/64/kuap: Move kuap checks out of MSR[RI]=0 regions of exit code
+      https://git.kernel.org/powerpc/c/c0d7dcf89e5151b2259d1c2c1b922da3b881d02e
+[4/6] powerpc/64s/kuap: Restore AMR in system reset exception
+      https://git.kernel.org/powerpc/c/53459dc9709db2141d784702abbd43e8fcac8e6d
+[5/6] powerpc/64s/kuap: Restore AMR in fast_interrupt_return
+      https://git.kernel.org/powerpc/c/c44dc6323cd49d8d742c37e234b952e822c35de4
 
 cheers
