@@ -2,72 +2,86 @@ Return-Path: <SRS0=uIst=63=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB72CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 21:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A21A2C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 21:49:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80DE0205ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 21:28:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F17EA2054F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 21:49:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RLQfxHVc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80DE0205ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RW1G+oga"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F17EA2054F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Mnp75s0fzDqgn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 07:27:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49MpH66GCkzDqkJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 07:49:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=song@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::343;
+ helo=mail-wm1-x343.google.com; envelope-from=emil.l.velikov@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=RLQfxHVc; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=RW1G+oga; dkim-atps=neutral
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
+ [IPv6:2a00:1450:4864:20::343])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49MkBt4pB5zDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:45:42 +1000 (AEST)
-Received: from mail-lj1-f178.google.com (mail-lj1-f178.google.com
- [209.85.208.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C6ADF20708
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 18:45:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1589395541;
- bh=y3uf4cDEBcGin/ahVjDWwwqBbdeSBPGoaou/iCBc+Ng=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=RLQfxHVcrn6lWhWEu0DDrnMIHIoZ+37WfrxEpZxqiKdV1WCyAtQwcUcFu2SvS2080
- VTE5vGbKGPtkrp13IOlhl2+f6sYzR7NeAlwZhvD/+sHUP7ta5YnAY2Vdmt9jo9N04s
- CEpGnXvJbsQIZi+fuoRT8dDY4nvc1HnFSDyGGc2w=
-Received: by mail-lj1-f178.google.com with SMTP id l19so697528lje.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 11:45:39 -0700 (PDT)
-X-Gm-Message-State: AOAM533mQrkdVb4HmfmuVuyHPElI3tSvbbCReHtA33KW3YBHkDX/mW+A
- EM4JOtjBmNAD9vzYZJGxVprQNCmlPZrNMHUBy5I=
-X-Google-Smtp-Source: ABdhPJzyHaUiiK2XwtDLa9MHZHs3wyCWyuE6aX0bNKMPXZmRZyv4SYSAs5m7n5jeU7J7JeAy2/ppnnbYCoByE6/YYa8=
-X-Received: by 2002:a2e:9258:: with SMTP id v24mr280263ljg.109.1589395538071; 
- Wed, 13 May 2020 11:45:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49MpD334kCzDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 07:46:52 +1000 (AEST)
+Received: by mail-wm1-x343.google.com with SMTP id d207so9895115wmd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2020 14:46:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=qwEXZysR23CccmrNbp4oN3ldgqd9cJzH2UZSb4ihijw=;
+ b=RW1G+ogaAUWg4GP/IAaKNDiWpKHIvYpQnbau/mVBhnk3xIed4Kf27YNjBWyThTty/b
+ aa6RzDE2vVQpDzT4KYj0Hg1pX7a86XwH8Gkjh+dqN2ijY/Bh7VOGNBKaBvllUvvgTe7V
+ JYtYdUkSr9CrVUUlGhGy0qMnqJzhlEs9Gg1WhRCbrsggDPN8rSk+V+Xjj/ZBwbDca1zn
+ Zqxq/ucDBkApCW26k1BrUvDs0z4ynUSWmSjyaEkSz0+q23ekyBhQTXxIbOAkQi1qEUd3
+ PJfBW7d+pq1xy7EbcafYMm7NFocw/Ek9E40OFAv8yotfqMA/LMU73/trnk1ziQrnvLwP
+ 0KLw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=qwEXZysR23CccmrNbp4oN3ldgqd9cJzH2UZSb4ihijw=;
+ b=Y62TQtVSvO7zUF+3PR17cohSwUeHi0+cAFRNqKedTZ/f5jrXhVu6f7MksrNFVDp30e
+ foK0ZW5B1MVKkItXofcJGWxdE/IRxtBOrzqp+jtnixe4x33ntDZYBg3KUjinFd9JcOAT
+ kMmQx7eHnXa24eIYIFNmXZAKjugq93WUUfZoc/5pHNsVeIQ+8UXVIqEbeZgE7uriOKHT
+ R42eMaF2gPGBnEMe7Olsm1pArfqC48GQfHiidoUNpykDzIs+4mUEbuFQjvt5Jd9HBr61
+ o6uzQuY+9mMdiXSEPm8uSoDSVEQ72nvKETgBXdeiGK9m7E+8Gd4unIceQ5ZyrxMwd0+u
+ +91g==
+X-Gm-Message-State: AOAM530D+hUMNxa5etB8y/BIinSzxBsIxP2YFhUK4CV6x5/vRaUZW4Od
+ GLOD2HG8Z5+usPjPlveF9WY=
+X-Google-Smtp-Source: ABdhPJyLIg3eccKezg4f5axysxo4mad1I/De7u6J1LU+oD/g9NIWVf+Zl8ski/Ae57u9v6OoYfDaPA==
+X-Received: by 2002:a1c:e188:: with SMTP id y130mr9611614wmg.105.1589406403908; 
+ Wed, 13 May 2020 14:46:43 -0700 (PDT)
+Received: from localhost.localdomain
+ (cpc91192-cmbg18-2-0-cust374.5-4.cable.virginm.net. [80.6.113.119])
+ by smtp.gmail.com with ESMTPSA id m23sm1699734wmg.45.2020.05.13.14.46.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 13 May 2020 14:46:43 -0700 (PDT)
+From: Emil Velikov <emil.l.velikov@gmail.com>
+To: dri-devel@lists.freedesktop.org
+Subject: [PATCH 06/11] powerpc/xmon: constify sysrq_key_op
+Date: Wed, 13 May 2020 22:43:46 +0100
+Message-Id: <20200513214351.2138580-6-emil.l.velikov@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200513214351.2138580-1-emil.l.velikov@gmail.com>
+References: <20200513214351.2138580-1-emil.l.velikov@gmail.com>
 MIME-Version: 1.0
-References: <20200508161517.252308-1-hch@lst.de>
- <20200508161517.252308-13-hch@lst.de>
- <CAPhsuW6_Y53_XLFeVxhTDpTi_PKNLqqnrXLn+M2fJW268eE6_w@mail.gmail.com>
- <20200513183304.GA29895@lst.de>
-In-Reply-To: <20200513183304.GA29895@lst.de>
-From: Song Liu <song@kernel.org>
-Date: Wed, 13 May 2020 11:45:26 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW6pG+-EAa-FW96r+LEP=j1nWEK0Zqk_fJeaAu2Hn9AqeA@mail.gmail.com>
-Message-ID: <CAPhsuW6pG+-EAa-FW96r+LEP=j1nWEK0Zqk_fJeaAu2Hn9AqeA@mail.gmail.com>
-Subject: Re: [PATCH 12/15] md: stop using ->queuedata
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 14 May 2020 07:23:54 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,29 +93,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-xtensa@linux-xtensa.org,
- linux-raid <linux-raid@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- linux-nvdimm@lists.01.org, Geoff Levand <geoff@infradead.org>,
- open list <linux-kernel@vger.kernel.org>, Jim Paris <jim@jtan.com>,
- linux-block@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- linux-m68k@lists.linux-m68k.org, Philip Kelleher <pjk1939@linux.ibm.com>,
- linux-bcache@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joshua Morris <josh.h.morris@us.ibm.com>, Nitin Gupta <ngupta@vflare.org>,
- drbd-dev@lists.linbit.com
+Cc: Jiri Slaby <jslaby@suse.com>, emil.l.velikov@gmail.com,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 13, 2020 at 11:33 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> On Wed, May 13, 2020 at 11:29:17AM -0700, Song Liu wrote:
-> > On Fri, May 8, 2020 at 9:17 AM Christoph Hellwig <hch@lst.de> wrote:
-> > >
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> >
-> > Thanks for the cleanup. IIUC, you want this go through md tree?
->
-> Yes, please pick it up though the md tree.
+With earlier commits, the API no longer discards the const-ness of the
+sysrq_key_op. As such we can add the notation.
 
-Thanks for the clarification. Applied to md-next.
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Emil Velikov <emil.l.velikov@gmail.com>
+---
+Please keep me in the CC list, as I'm not subscribed to the list.
+
+IMHO it would be better if this gets merged this via the tty tree.
+---
+ arch/powerpc/xmon/xmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 7af840c0fc93..0d8ca5c9f131 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3842,7 +3842,7 @@ static void sysrq_handle_xmon(int key)
+ 		xmon_init(0);
+ }
+ 
+-static struct sysrq_key_op sysrq_xmon_op = {
++static const struct sysrq_key_op sysrq_xmon_op = {
+ 	.handler =	sysrq_handle_xmon,
+ 	.help_msg =	"xmon(x)",
+ 	.action_msg =	"Entering xmon",
+-- 
+2.25.1
+
