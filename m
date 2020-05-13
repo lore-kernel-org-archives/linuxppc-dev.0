@@ -6,50 +6,51 @@ X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C04A0C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:37:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 721BDC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:40:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 452A9205CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:37:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 452A9205CB
+	by mail.kernel.org (Postfix) with ESMTPS id EF7B1205CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 May 2020 18:40:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF7B1205CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Mk1Z4fjhzDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 04:37:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Mk4x48B0zDqRw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 May 2020 04:40:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Mjwb3mPWzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:33:18 +1000 (AEST)
-IronPort-SDR: 6PFfMp2uIgTdZupFRx3J2i8FP+GEOguVE+/rVgTBYToRxLo/uxYhIPyDSc/6rb+39CVx16mER5
- lqiR39ow1A/Q==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Mjwd63kPzDqf4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2020 04:33:20 +1000 (AEST)
+IronPort-SDR: olxDyg1Wb8l7dguj/uPOYEtq/lzY+tXen+82lJjDPNM7VKI9VOLm0MZd3U3vf+hX2N/bUxJldF
+ qtUA4NT0E8Og==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 May 2020 11:33:14 -0700
-IronPort-SDR: vG0wJp6XENaHC3bJ4XZ5T7FqH+Qg9UXgHKT7nOHkEUYTXtjiGNyzySFy9I7dzVch7TuIzNkK8+
- aoXDCym8/FXA==
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 May 2020 11:33:18 -0700
+IronPort-SDR: MUzSoquzYwzWlDVu83pUSCY7fBfUiwv5DxBE4XuTC7oMBVzWbDLI3tq7JYJY5CcoDq2TTvw8At
+ RV/Re44wgw0g==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,388,1583222400"; d="scan'208";a="253268589"
+X-IronPort-AV: E=Sophos;i="5.73,388,1583222400"; d="scan'208";a="437600411"
 Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga008.fm.intel.com with ESMTP; 13 May 2020 11:33:12 -0700
+ by orsmga005.jf.intel.com with ESMTP; 13 May 2020 11:33:17 -0700
 Received: from kbuild by lkp-server01 with local (Exim 4.89)
  (envelope-from <lkp@intel.com>)
- id 1jYwBs-0005rs-5P; Thu, 14 May 2020 02:33:12 +0800
-Date: Thu, 14 May 2020 02:32:57 +0800
+ id 1jYwBw-0006Lk-L1; Thu, 14 May 2020 02:33:16 +0800
+Date: Thu, 14 May 2020 02:33:00 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 93369d50dc0f266ee67adcc6053c96700236d8be
-Message-ID: <5ebc3d59.Wq1zpA8EPzsyO/le%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 9aaaca63114c41ad857bb9889732c0827a1689af
+Message-ID: <5ebc3d5c.LNFdohCXr/4g2yIU%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,12 +71,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 93369d50dc0f266ee67adcc6053c96700236d8be  Automatic merge of 'master', 'next' and 'fixes' (2020-05-13 18:37)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 9aaaca63114c41ad857bb9889732c0827a1689af  powerpc/ps3: Fix kexec shutdown hang
 
-elapsed time: 584m
+elapsed time: 582m
 
-configs tested: 127
+configs tested: 121
 configs skipped: 6
 
 The following configs have been built successfully.
@@ -172,18 +173,12 @@ x86_64               randconfig-a006-20200513
 x86_64               randconfig-a004-20200513
 x86_64               randconfig-a001-20200513
 x86_64               randconfig-a002-20200513
+i386                 randconfig-a004-20200513
 i386                 randconfig-a006-20200513
 i386                 randconfig-a005-20200513
 i386                 randconfig-a003-20200513
 i386                 randconfig-a001-20200513
-i386                 randconfig-a004-20200513
 i386                 randconfig-a002-20200513
-i386                 randconfig-a012-20200513
-i386                 randconfig-a016-20200513
-i386                 randconfig-a014-20200513
-i386                 randconfig-a011-20200513
-i386                 randconfig-a013-20200513
-i386                 randconfig-a015-20200513
 riscv                            allyesconfig
 riscv                               defconfig
 riscv                            allmodconfig
