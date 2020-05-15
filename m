@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6958C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 15:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE1DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 15:58:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98B45206C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 15:56:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2D161206C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 15:58:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mXN1xIL/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98B45206C0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Z7u5T16o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D161206C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49NtLc2RFYzDq5n
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 01:56:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49NtPK0TrNzDr1j
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 01:58:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,34 +31,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=mXN1xIL/; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=Z7u5T16o; 
  dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Nrc71k0szDqTh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Nrc74j89zDqVc
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 00:37:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description;
- bh=+nwO03jcpqZOPZP7BRWxpcr5aqGQrWzDQhhYlZpFczM=; b=mXN1xIL/KCK7MrzsI+7Ig4BsID
- UFxadzg6FIHkLGK7la/QdCMzj6hShPZaFvDMTmf0FJvzeiz238u8uYuWehpIhApmHuRSWA/jdlgD4
- O6FC7je7L4zUVLOXMXlZ/R2RjmmAr9ECjQGQGLjoVnO8LNAtoi3ujQ5W2I4Ma+Ii9x7jsgzvglX1l
- dAYzga+b7Occ0zhksgDq4SrzKkQ+edonAA/CUSwFEGdijbGAmHL6Te57qr4OspA9+5iBZQJbzALhG
- NVDvvmVv2efYyM3fHtmuMz0b2Cs4mq6WqX2cSsoP9KeHAQI1l2PTCmVIMKwDKLcLU2rJMPXbKiEVx
- Fkfgh21A==;
+ bh=k6GtIYshQkzMKbjHn89HEgO/LyVVB61BpvX4N4bhIRg=; b=Z7u5T16oWlOT/9Iev8rQYxD8W/
+ /9yBGyGeS+MvTGoamw7v3lUDy94JUDJw3KUm4iPonlQetJDBWIjD85m/EaBqmKGRaEsdX/uoA+xCZ
+ /VN8LbxQ3vebJPxVwJJV5pmq1LijPBZDH0sK4h0ZLm3eNBf4RM/KxMhkDbCnabHiuOOcTKlCnZjuW
+ Jb7lcqQDFItvKzlzkdNF/9ZFudDU5np1Q0avEFrvoQaIz97kqk1SEHuQ2WjdAufe1pfUSAjeAtDy6
+ Y2icQP2EHvHf/7BJYI85Td0BuAv0FLlHc/FJOrN6RPtc9yVh1CE5wZpUSKIs9UOmEM/RNx65VJU25
+ +l7Sw3SA==;
 Received: from [2001:4bb8:188:1506:c70:4a89:bc61:2] (helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jZbSr-0004az-7h; Fri, 15 May 2020 14:37:29 +0000
+ id 1jZbSx-0004j0-Pp; Fri, 15 May 2020 14:37:36 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
  Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH 14/29] m68knommu: use asm-generic/cacheflush.h
-Date: Fri, 15 May 2020 16:36:31 +0200
-Message-Id: <20200515143646.3857579-15-hch@lst.de>
+Subject: [PATCH 16/29] powerpc: use asm-generic/cacheflush.h
+Date: Fri, 15 May 2020 16:36:33 +0200
+Message-Id: <20200515143646.3857579-17-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200515143646.3857579-1-hch@lst.de>
 References: <20200515143646.3857579-1-hch@lst.de>
@@ -77,66 +77,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, Greg Ungerer <gerg@linux-m68k.org>,
- linux-arch@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
+Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Michal Simek <monstr@monstr.eu>, Jessica Yu <jeyu@kernel.org>,
+ linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org,
  linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, Jessica Yu <jeyu@kernel.org>,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-m68knommu needs almost no cache flushing routines of its own.  Rely on
+Power needs almost no cache flushing routines of its own.  Rely on
 asm-generic/cacheflush.h for the defaults.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Greg Ungerer <gerg@linux-m68k.org>
----
- arch/m68k/include/asm/cacheflush_no.h | 19 ++-----------------
- 1 file changed, 2 insertions(+), 17 deletions(-)
+Also remove the pointless __KERNEL__ ifdef while we're at it.
 
-diff --git a/arch/m68k/include/asm/cacheflush_no.h b/arch/m68k/include/asm/cacheflush_no.h
-index 11e9a9dcbfb24..2731f07e7be8c 100644
---- a/arch/m68k/include/asm/cacheflush_no.h
-+++ b/arch/m68k/include/asm/cacheflush_no.h
-@@ -9,25 +9,8 @@
- #include <asm/mcfsim.h>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/powerpc/include/asm/cacheflush.h | 42 +++++++--------------------
+ 1 file changed, 10 insertions(+), 32 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index e92191b390f31..e682c8e10e903 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -4,23 +4,9 @@
+ #ifndef _ASM_POWERPC_CACHEFLUSH_H
+ #define _ASM_POWERPC_CACHEFLUSH_H
  
- #define flush_cache_all()			__flush_cache_all()
+-#ifdef __KERNEL__
+-
+ #include <linux/mm.h>
+ #include <asm/cputable.h>
+ 
+-/*
+- * No cache flushing is required when address mappings are changed,
+- * because the caches on PowerPCs are physically addressed.
+- */
+-#define flush_cache_all()			do { } while (0)
 -#define flush_cache_mm(mm)			do { } while (0)
 -#define flush_cache_dup_mm(mm)			do { } while (0)
 -#define flush_cache_range(vma, start, end)	do { } while (0)
--#define flush_cache_page(vma, vmaddr)		do { } while (0)
- #define flush_dcache_range(start, len)		__flush_dcache_all()
--#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
--#define flush_dcache_page(page)			do { } while (0)
--#define flush_dcache_mmap_lock(mapping)		do { } while (0)
--#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
- #define flush_icache_range(start, len)		__flush_icache_all()
--#define flush_icache_page(vma,pg)		do { } while (0)
--#define flush_icache_user_range(vma,pg,adr,len)	do { } while (0)
--#define flush_cache_vmap(start, end)		do { } while (0)
+-#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
+-#define flush_icache_page(vma, page)		do { } while (0)
 -#define flush_cache_vunmap(start, end)		do { } while (0)
 -
--#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
--	memcpy(dst, src, len)
--#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
--	memcpy(dst, src, len)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ /*
+  * Book3s has no ptesync after setting a pte, so without this ptesync it's
+@@ -33,20 +19,20 @@ static inline void flush_cache_vmap(unsigned long start, unsigned long end)
+ {
+ 	asm volatile("ptesync" ::: "memory");
+ }
+-#else
+-static inline void flush_cache_vmap(unsigned long start, unsigned long end) { }
+-#endif
++#define flush_cache_vmap flush_cache_vmap
++#endif /* CONFIG_PPC_BOOK3S_64 */
  
- void mcf_cache_push(void);
+ #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *page);
+-#define flush_dcache_mmap_lock(mapping)		do { } while (0)
+-#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
  
-@@ -98,4 +81,6 @@ static inline void cache_clear(unsigned long paddr, int len)
- 	__clear_cache_all();
+ void flush_icache_range(unsigned long start, unsigned long stop);
+-extern void flush_icache_user_range(struct vm_area_struct *vma,
+-				    struct page *page, unsigned long addr,
+-				    int len);
+-extern void flush_dcache_icache_page(struct page *page);
++#define flush_icache_range flush_icache_range
++
++void flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
++		unsigned long addr, int len);
++#define flush_icache_user_range flush_icache_user_range
++
++void flush_dcache_icache_page(struct page *page);
+ void __flush_dcache_icache(void *page);
+ 
+ /**
+@@ -111,14 +97,6 @@ static inline void invalidate_dcache_range(unsigned long start,
+ 	mb();	/* sync */
  }
  
+-#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+-	do { \
+-		memcpy(dst, src, len); \
+-		flush_icache_user_range(vma, page, vaddr, len); \
+-	} while (0)
+-#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
+-	memcpy(dst, src, len)
+-
+-#endif /* __KERNEL__ */
 +#include <asm-generic/cacheflush.h>
-+
- #endif /* _M68KNOMMU_CACHEFLUSH_H */
+ 
+ #endif /* _ASM_POWERPC_CACHEFLUSH_H */
 -- 
 2.26.2
 
