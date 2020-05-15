@@ -2,79 +2,76 @@ Return-Path: <SRS0=TkHQ=65=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BFF2C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 18:55:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99374C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 18:57:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1414120643
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 18:55:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0A06F206D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 18:57:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="dJGXyum4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1414120643
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="FepFYDdu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A06F206D8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49NyK31tNSzDr5s
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 04:55:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49NyMd4QwqzDr2w
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 04:57:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=dJGXyum4; dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+ header.s=google header.b=FepFYDdu; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Ny4v4YxMzDqrF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 04:44:44 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id a4so1404511pgc.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 11:44:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Ny4w5b9KzDq6l
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 04:44:45 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id r10so1389957pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 11:44:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=0jdcunXv3pqO3EZGEjVZoYTNjFacyriadazWIgCIza0=;
- b=dJGXyum44KSJaIJ6ilVk6F+MrANEv/lMa+3vHZEw+Ee/F1S+Khae+6am+JJqjUAiur
- xBltba6noayGshrr5DxfoWxBOGFddZ2Q6/7usxSbkmXzsQ6VuUbv+3k9rY0wEFNMFtsi
- hEwaIVZ0ywvmhwEBIyI/X+3TR4cdCOeMAROUM=
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=aqpEyjmRGymmAkpEVNLXc9rm3KhELEO9r/R/WZVikzc=;
+ b=FepFYDduMkE+0Vc6udG9athvibh6QBvTsQoYsBFI7fTVizPHCZoDeTiA1Qh1GhyRsu
+ KE65oHTsa+hmwdwO4VpPHRts+bXH6NsISs8EGjuR/EukerazV9u0Qpsi4MhsN4Odq6Wa
+ +FNAlLl++yjbjgUKqAnw0ypxXMATy9BiLo+Uw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=0jdcunXv3pqO3EZGEjVZoYTNjFacyriadazWIgCIza0=;
- b=a+wvGPgnApNNW0ofpjDYlXaqytJ+BBKhRRX2XYDxaHezcKwNf8TyL5KMFAR1D17Glo
- LenqMYKK5VUTyxqeLjTMG1ga6df4ADadlzBOEBzPrZfYtRaQfPrui7uPZYUDirOYbrc9
- gLZo6OF2J8O9cwgmvl8lPtsm/oJ3sTTROQaV/I4v+5vqFl34KuQVRqEpqSoxjqLTyf9E
- yL0Sh3Hf2RRC++GZiWHfqjcjT0QuBQajuoWoYP6A8wh2r4jGzaXFf0siwS823uUk0Ws+
- BVFmZfJ4/8h9xe5C7a3P8c51NA8g6gJnYXCA2T0LMScHKpVmSIQqqX5im/t6svEjsGC9
- 7hDg==
-X-Gm-Message-State: AOAM531k5VvwrFuMPUKqkffLB+QLjML9vABcyUw9BNhVaoMa/l1qPmLE
- CatvxgrmsM7ogypWlrGL3KL2t/gyEbk=
-X-Google-Smtp-Source: ABdhPJzok71/4xx3xqYrVEUNk01rjmmUYSquuxTkQe96RfbVBWJ4Kp4ARtspqkm/dg5KXVU82P9AJA==
-X-Received: by 2002:a63:d60a:: with SMTP id q10mr4555654pgg.37.1589568281921; 
- Fri, 15 May 2020 11:44:41 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=aqpEyjmRGymmAkpEVNLXc9rm3KhELEO9r/R/WZVikzc=;
+ b=Z4RaPo+vB3lFGwFhcX2buXqzSFthH6IAzDk9zdTlFAPBjIODV3KHbbBokHLiLjNxAy
+ R/nf28CK7xieMAs9hQxf2hbfrBejL9vij7Xtx2LqIU51UeshX3ONo1PhpdPdEEDirmwP
+ AzHWfMmtpyQerpHEz39A2vfa5W8j+Yj/ZrrosjAUYDs5NMubILEE+IVD6YxGsCgg+fYj
+ tjOqPqTmzCYgkkmhLms7GE21GEoYJu7hVihwlPNFDpF/Ptt60wbZpDuKQHI+oIO2Ffah
+ DPc92e3+AGHHKKD5Al31Y0m1OLnbfC3bvSp8iqsQuDfgcAY0q7cRvV2DI/C54yxutQxN
+ wmTw==
+X-Gm-Message-State: AOAM532MK/8u0QkYtcFTmDeh5JkxxPTVXZ1FPwQOneGV7niX9RPoWy4T
+ 75bgrXKqmTyiRq268ThZ/DHBpA==
+X-Google-Smtp-Source: ABdhPJxDRJnJDZmBecNcZ4uRgeiGUpxX7zgXYIqmKtnUH4FhAIJ11bjo7gZpRkIMVbYw1HRdWk2dWg==
+X-Received: by 2002:a63:2b03:: with SMTP id r3mr4280548pgr.201.1589568282926; 
+ Fri, 15 May 2020 11:44:42 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id mu17sm2243430pjb.53.2020.05.15.11.44.38
+ by smtp.gmail.com with ESMTPSA id j26sm2518425pfr.215.2020.05.15.11.44.38
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Fri, 15 May 2020 11:44:38 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Pavel Tatashin <pasha.tatashin@soleen.com>
-Subject: [PATCH v4 2/6] printk: honor the max_reason field in kmsg_dumper
-Date: Fri, 15 May 2020 11:44:30 -0700
-Message-Id: <20200515184434.8470-3-keescook@chromium.org>
+Subject: [PATCH v4 0/6] allow ramoops to collect all kmesg_dump events
+Date: Fri, 15 May 2020 11:44:28 -0700
+Message-Id: <20200515184434.8470-1-keescook@chromium.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200515184434.8470-1-keescook@chromium.org>
-References: <20200515184434.8470-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -101,64 +98,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Pavel Tatashin <pasha.tatashin@soleen.com>
+Hello!
 
-kmsg_dump() allows to dump kmesg buffer for various system events: oops,
-panic, reboot, etc. It provides an interface to register a callback call
-for clients, and in that callback interface there is a field "max_reason"
-which gets ignored unless always_kmsg_dump is passed as kernel parameter.
+I wanted to get the pstore tree nailed down, so here's the v4 of
+Pavel's series, tweaked for the feedback during v3 review.
 
-Allow clients to decide max_reason, and keep the current behavior when
-max_reason is not set.
+-Kees
 
-Signed-off-by: Pavel Tatashin <pasha.tatashin@soleen.com>
-Link: https://lore.kernel.org/lkml/20200506211523.15077-2-keescook@chromium.org/
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- include/linux/kmsg_dump.h |  1 +
- kernel/printk/printk.c    | 15 +++++++++++----
- 2 files changed, 12 insertions(+), 4 deletions(-)
+v4:
+- rebase on pstore tree
+- collapse shutdown types into a single dump reason
+  https://lore.kernel.org/lkml/CA+CK2bAPv5u1ih5y9t5FUnTyximtFCtDYXJCpuyjOyHNOkRdqw@mail.gmail.com/
+- fix dump_oops vs max_reason module params
+  https://lore.kernel.org/lkml/20200512233504.GA118720@sequoia/
+- typos
+  https://lore.kernel.org/lkml/4cdeaa2af2fe0d6cc2ca8ce3a37608340799df8a.camel@perches.com/
+- rename DT parsing routines ..._size -> ..._u32
+  https://lore.kernel.org/lkml/CA+CK2bCu8eFomiU+NeBjVn-o2dbuECxwRfssNjB3ys3caCbXeA@mail.gmail.com/
+v3: https://lore.kernel.org/lkml/20200506211523.15077-1-keescook@chromium.org/
+v2: https://lore.kernel.org/lkml/20200505154510.93506-1-pasha.tatashin@soleen.com
+v1: https://lore.kernel.org/lkml/20200502143555.543636-1-pasha.tatashin@soleen.com
 
-diff --git a/include/linux/kmsg_dump.h b/include/linux/kmsg_dump.h
-index 3f82b5cb2d82..9826014771ab 100644
---- a/include/linux/kmsg_dump.h
-+++ b/include/linux/kmsg_dump.h
-@@ -26,6 +26,7 @@ enum kmsg_dump_reason {
- 	KMSG_DUMP_OOPS,
- 	KMSG_DUMP_EMERG,
- 	KMSG_DUMP_SHUTDOWN,
-+	KMSG_DUMP_MAX
- };
- 
- /**
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 9a9b6156270b..a121c2255737 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -3157,12 +3157,19 @@ void kmsg_dump(enum kmsg_dump_reason reason)
- 	struct kmsg_dumper *dumper;
- 	unsigned long flags;
- 
--	if ((reason > KMSG_DUMP_OOPS) && !always_kmsg_dump)
--		return;
--
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(dumper, &dump_list, list) {
--		if (dumper->max_reason && reason > dumper->max_reason)
-+		enum kmsg_dump_reason max_reason = dumper->max_reason;
-+
-+		/*
-+		 * If client has not provided a specific max_reason, default
-+		 * to KMSG_DUMP_OOPS, unless always_kmsg_dump was set.
-+		 */
-+		if (max_reason == KMSG_DUMP_UNDEF) {
-+			max_reason = always_kmsg_dump ? KMSG_DUMP_MAX :
-+							KMSG_DUMP_OOPS;
-+		}
-+		if (reason > max_reason)
- 			continue;
- 
- 		/* initialize iterator with data about the stored records */
+Kees Cook (3):
+  printk: Collapse shutdown types into a single dump reason
+  printk: Introduce kmsg_dump_reason_str()
+  pstore/ram: Introduce max_reason and convert dump_oops
+
+Pavel Tatashin (3):
+  printk: honor the max_reason field in kmsg_dumper
+  pstore/platform: Pass max_reason to kmesg dump
+  ramoops: Add max_reason optional field to ramoops DT node
+
+ Documentation/admin-guide/ramoops.rst         | 14 +++--
+ .../bindings/reserved-memory/ramoops.txt      | 13 ++++-
+ arch/powerpc/kernel/nvram_64.c                |  4 +-
+ drivers/platform/chrome/chromeos_pstore.c     |  2 +-
+ fs/pstore/platform.c                          | 26 ++-------
+ fs/pstore/ram.c                               | 58 +++++++++++++------
+ include/linux/kmsg_dump.h                     | 12 +++-
+ include/linux/pstore.h                        |  7 +++
+ include/linux/pstore_ram.h                    |  2 +-
+ kernel/printk/printk.c                        | 32 ++++++++--
+ kernel/reboot.c                               |  6 +-
+ 11 files changed, 114 insertions(+), 62 deletions(-)
+
 -- 
 2.20.1
 
