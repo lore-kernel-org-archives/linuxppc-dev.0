@@ -2,59 +2,60 @@ Return-Path: <SRS0=TkHQ=65=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B74A2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 10:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03017C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 11:12:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69A6E206B6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 10:26:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69A6E206B6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C21C206B6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 11:12:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="2OKpYtBF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C21C206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Nl1V2TcwzDqvR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 20:26:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Nm2n0bL0zDqx2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 21:12:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=2OKpYtBF; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Nkv96DGxzDqpB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 20:20:35 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BAAE1200754;
- Fri, 15 May 2020 12:20:32 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 80BE2200755;
- Fri, 15 May 2020 12:20:27 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id DEDAF40319;
- Fri, 15 May 2020 18:20:20 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, robh+dt@kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 2/2] ASoC: fsl_esai: Add new compatible string for imx8qm
-Date: Fri, 15 May 2020 18:10:51 +0800
-Message-Id: <fade597f6fb7e0ef9eb1185b491eaa46a9d287e3.1589537601.git.shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Nm0g14T4zDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 21:10:26 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A1FDB2074D;
+ Fri, 15 May 2020 11:10:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1589541023;
+ bh=SLJ8q9ALaDgv+nU5BF1TbEJ2mglM/zXsGZrXaSF5RsM=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=2OKpYtBFi78dOyoTHb5nG6B3uf262CEL31o5mUV0yWCV11KTrU1ZGh68tURsMZLib
+ s9/tQAYeeTVvOU+AfihLQ5n4Sn3J7DFtrSccZWJdBPJZ0v4wqpp27+tM/KN8INudmv
+ se6BD/ZE3sy5SJ/Huo2J2voX/QAxLh2z5RhsNN+s=
+Date: Fri, 15 May 2020 12:10:20 +0100
+From: Mark Brown <broonie@kernel.org>
+To: nicoleotsuka@gmail.com, robh+dt@kernel.org, lgirdwood@gmail.com,
+ tiwai@suse.com, alsa-devel@alsa-project.org, timur@kernel.org,
+ Xiubo.Lee@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>, perex@perex.cz,
+ festevam@gmail.com, devicetree@vger.kernel.org
 In-Reply-To: <cover.1589537601.git.shengjiu.wang@nxp.com>
 References: <cover.1589537601.git.shengjiu.wang@nxp.com>
-In-Reply-To: <cover.1589537601.git.shengjiu.wang@nxp.com>
-References: <cover.1589537601.git.shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+Subject: Re: [PATCH v2 0/2] ASoC: fsl_esai: Add support for imx8qm
+Message-Id: <158954102051.28239.13020944644998998751.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,26 +72,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add new compatible string "fsl,imx8qm-esai" in the binding document.
+On Fri, 15 May 2020 18:10:49 +0800, Shengjiu Wang wrote:
+> Add support for imx8qm.
+> 
+> Shengjiu Wang (2):
+>   ASoC: fsl_esai: introduce SoC specific data
+>   ASoC: fsl_esai: Add new compatible string for imx8qm
+> 
+> Changes in v2
+> - drop the 0002 patch in v1, the dma relate limitation should
+>   be done in dma driver, or define a new DMA API for it.
+> 
+> [...]
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
- Documentation/devicetree/bindings/sound/fsl,esai.txt | 1 +
- 1 file changed, 1 insertion(+)
+Applied to
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-index 0e6e2166f76c..0a2480aeecf0 100644
---- a/Documentation/devicetree/bindings/sound/fsl,esai.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
-@@ -12,6 +12,7 @@ Required properties:
- 			  "fsl,imx35-esai",
- 			  "fsl,vf610-esai",
- 			  "fsl,imx6ull-esai",
-+			  "fsl,imx8qm-esai",
- 
-   - reg			: Offset and length of the register set for the device.
- 
--- 
-2.21.0
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-5.8
 
+Thanks!
+
+[1/2] ASoC: fsl_esai: introduce SoC specific data
+      commit: 6878e75204e1d0420fd8130bad33f88053ba44de
+[2/2] ASoC: fsl_esai: Add new compatible string for imx8qm
+      commit: d59628b310a77e616ce2e5857e6ede5bf96c6784
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
