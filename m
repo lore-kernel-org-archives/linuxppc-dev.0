@@ -6,79 +6,60 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4433CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:55:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20C16C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 21:13:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E1E1920727
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:55:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 88F36205CB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 21:13:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="WOdBZxkO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1E1920727
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nxT0Ssf9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88F36205CB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Nzfh4420zDr7J
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 05:55:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49P1Nv1qKYzDr9P
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 07:13:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::442;
- helo=mail-pf1-x442.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=WOdBZxkO; dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=nxT0Ssf9; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Nzch578ZzDr42
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 05:53:53 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id 145so1468173pfw.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 12:53:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=5qtf7blhXztbp1/La11Bf9xlOpWMwbs2y8ergkt/b1Y=;
- b=WOdBZxkO9ZlChGU9oTzTvFnzf5mUvWnxclG7T4JezJMXnEFbeWIBYnzv0c5jwu2xR9
- Ua3N7q+nFby1Wl8Ij1gOb/0WxV2Lt/MvTh2s4lrob2lxAcR9KO41fQ13sdSZlN1Y3XVh
- OTL4s6x9aG0YSd9i9ndrZNnBrE8K6mg0Mxnms=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=5qtf7blhXztbp1/La11Bf9xlOpWMwbs2y8ergkt/b1Y=;
- b=XtzV9uUjWQwAtEeiq4SAYm6Jo27mvHETRP447H4lS536x0jGfzzRNZeyfw0dP+Yyty
- ShbXuGJ2fg03LQviVsgr+QvK2dTapZkMlG+dU+eCnUD2fKU0TwHUYN2d4+wMwoisodSQ
- 8rvxhcCPoygwddF/p1jIxGA6Imxflwrs8xhd9I9RJl7drlvSxU2jRCgAxracgsXhX4L1
- nh+s8DZIoI+V5MHhzOIgIvk2Cdkg8HvxPLcowf3Ne0psoWwyJhOpOu0bkeD3n0CbxYQ9
- s3maJ75f5Eg+NzQiCD4qc2Dj2FPT4DGwA87RP1J8rLURz6hplyJwbBba4jne32l0WiUr
- p8vA==
-X-Gm-Message-State: AOAM531M9FWqFFP167xJvyF90tLVmoI/TXmQSV9ZaKaX2/WebpihuQMQ
- ahs4i1SFcLZbmz00lDorjgH6bw==
-X-Google-Smtp-Source: ABdhPJwUJ8/mvnjZpuvFRvd7Z7fsk0iW3ySHXxxVPnmOTQBwN+vIWkdIBNf95F25TgFzeLZ3qRQIkg==
-X-Received: by 2002:aa7:9a4c:: with SMTP id x12mr5517509pfj.263.1589572432046; 
- Fri, 15 May 2020 12:53:52 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id h13sm2560838pfk.86.2020.05.15.12.53.50
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 15 May 2020 12:53:51 -0700 (PDT)
-Date: Fri, 15 May 2020 12:53:50 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Pavel Tatashin <pasha.tatashin@soleen.com>
-Subject: Re: [PATCH v4 5/6] pstore/ram: Introduce max_reason and convert
- dump_oops
-Message-ID: <202005151253.AF4AC00@keescook>
-References: <20200515184434.8470-1-keescook@chromium.org>
- <20200515184434.8470-6-keescook@chromium.org>
- <CA+CK2bCbAb1EN6xa9a-DRfan6Cv3YgZgPJ1buwUaej7jBRv=Kg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CA+CK2bCbAb1EN6xa9a-DRfan6Cv3YgZgPJ1buwUaej7jBRv=Kg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49P1M51wYvzDr31
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 07:12:17 +1000 (AEST)
+Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
+ [73.231.172.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 658E2205CB;
+ Fri, 15 May 2020 21:12:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1589577135;
+ bh=UmRPGOLdKmuTI3Qv0jzWmP0JQ6FJlc6TDky71yMCXsw=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=nxT0Ssf9yY8pLVLUEFt5SAsZlyL5o6RvbYcpe/Ogb/hZ+Ibv3VYpsIHopMwIvk69A
+ +v0QRtIwEwpLk0FCwhPrY/meT71ffNnp97a68i1ipAlCz7NidwUH9DVZrUpfKzkMPS
+ TuSlq3nyhe5fsuqvT1isjduKVkMQeXc1Kt6J9V7M=
+Date: Fri, 15 May 2020 14:12:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v2 00/12] mm: consolidate definitions of page table
+ accessors
+Message-Id: <20200515141211.653db07a4e7142107a57cf24@linux-foundation.org>
+In-Reply-To: <20200514170327.31389-1-rppt@kernel.org>
+References: <20200514170327.31389-1-rppt@kernel.org>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,29 +71,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Petr Mladek <pmladek@suse.com>, Tony Luck <tony.luck@intel.com>,
- Jonathan Corbet <corbet@lwn.net>, Anton Vorontsov <anton@enomsg.org>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, devicetree@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Colin Cross <ccross@android.com>,
- Enric Balletbo i Serra <enric.balletbo@collabora.com>,
- linuxppc-dev@lists.ozlabs.org, Benson Leung <bleung@chromium.org>
+Cc: linux-m68k@vger.kernel.org, Rich Felker <dalias@libc.org>,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ Matthew Wilcox <willy@infradead.org>, sparclinux@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Vincent Chen <deanbo422@gmail.com>, Will Deacon <will@kernel.org>,
+ Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Brian Cain <bcain@codeaurora.org>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ley Foon Tan <ley.foon.tan@intel.com>, Mike Rapoport <rppt@linux.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-parisc@vger.kernel.org, Mark Salter <msalter@redhat.com>,
+ Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
+ Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+ Greentime Hu <green.hu@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Stafford Horne <shorne@gmail.com>, linux-csky@vger.kernel.org,
+ Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Nick Hu <nickhu@andestech.com>,
+ linux-mm@kvack.org, Vineet Gupta <vgupta@synopsys.com>,
+ linux-kernel@vger.kernel.org, openrisc@lists.librecores.org,
+ Thomas Gleixner <tglx@linutronix.de>, Richard Weinberger <richard@nod.at>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 15, 2020 at 03:40:14PM -0400, Pavel Tatashin wrote:
->  pdata.dump_oops = dump_oops;
-> > +       /* If "max_reason" is set, its value has priority over "dump_oops". */
-> > +       if (ramoops_max_reason != -1)
-> > +               pdata.max_reason = ramoops_max_reason;
+On Thu, 14 May 2020 20:03:15 +0300 Mike Rapoport <rppt@kernel.org> wrote:
+
+> The low level page table accessors (pXY_index(), pXY_offset()) are
+> duplicated across all architectures and sometimes more than once. For
+> instance, we have 31 definition of pgd_offset() for 25 supported
+> architectures.
 > 
->  (ramoops_max_reason >= 0) might make more sense here, we do not want
-> negative max_reason even if it was provided by the user.
+> Most of these definitions are actually identical and typically it boils
+> down to, e.g. 
+> 
+> static inline unsigned long pmd_index(unsigned long address)
+> {
+>         return (address >> PMD_SHIFT) & (PTRS_PER_PMD - 1);
+> }
+> 
+> static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
+> {
+>         return (pmd_t *)pud_page_vaddr(*pud) + pmd_index(address);
+> }
+> 
+> These definitions can be shared among 90% of the arches provided XYZ_SHIFT,
+> PTRS_PER_XYZ and xyz_page_vaddr() are defined.
+> 
+> For architectures that really need a custom version there is always
+> possibility to override the generic version with the usual ifdefs magic.
+> 
+> These patches introduce include/linux/pgtable.h that replaces
+> include/asm-generic/pgtable.h and add the definitions of the page table
+> accessors to the new header.
 
-Yeah, that's a good point. I'll tweak that. Thanks!
+hm,
 
--- 
-Kees Cook
+>  712 files changed, 684 insertions(+), 2021 deletions(-)
+
+big!
+
+There's a lot of stuff going on at present (I suspect everyone is
+sitting at home coding up a storm).  However this all merged up fairly
+cleanly, haven't tried compiling it yet.
