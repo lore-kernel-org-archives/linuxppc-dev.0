@@ -2,76 +2,77 @@ Return-Path: <SRS0=TkHQ=65=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 504D0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:22:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F4096C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:26:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B37472070A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:22:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9A20C2070A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 May 2020 19:26:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=soleen.com header.i=@soleen.com header.b="Dyhz804e"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B37472070A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=soleen.com header.i=@soleen.com header.b="DYjN1UQ+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A20C2070A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=soleen.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Nyvs1KZFzDqZB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 05:22:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Nz194XtvzDqd3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 May 2020 05:26:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=soleen.com (client-ip=2a00:1450:4864:20::543;
- helo=mail-ed1-x543.google.com; envelope-from=pasha.tatashin@soleen.com;
+ smtp.mailfrom=soleen.com (client-ip=2a00:1450:4864:20::541;
+ helo=mail-ed1-x541.google.com; envelope-from=pasha.tatashin@soleen.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=soleen.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=soleen.com header.i=@soleen.com header.a=rsa-sha256
- header.s=google header.b=Dyhz804e; dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
+ header.s=google header.b=DYjN1UQ+; dkim-atps=neutral
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
+ [IPv6:2a00:1450:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Nykr0HnGzDr3G
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 05:14:05 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id g16so3141717eds.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 12:14:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49NyqH3DDgzDqSP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2020 05:18:02 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id g9so3103050edw.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2020 12:18:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=soleen.com; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=rEcYbavgX8JtqJsaFfda+512xKGwZ/fm/kUZY43XBic=;
- b=Dyhz804eVJkifn7MrOk3lXA2cYeO07Wo2pl7mf5YjMFBNH39vMrrhMJ/rIJJabb4dV
- guEH+JGaq2EM2INQSVaVgsuHj0/xRby9hVLII3mauZmrrfgywAQhkpHYiGp/aL59oUW3
- ZskkLFWhScXljJGuVqfdxvI3oQqIPrVtmrQns7kskcjtHK7z8vgsq0bQogumhdMa6aae
- VX9ngNS7wwbyJGWrDeaoO3gxjUUHkHB6XPPl+bx8d3H83IGpB6xBxF5RiluqLnlDU4P1
- jpMhUqIxQYqRBHzlxVjqr6F/k7yqBDkIivvA7gyYKw7NnCA9p0M/HzdhEyOFmn9up+6j
- g+8w==
+ :cc; bh=zbFsGFMIlvy1kKOGqgavt+ubA29TnTVOTBRv6vIQjH0=;
+ b=DYjN1UQ+2UifVP6w0ZHdAS+uaK/GP/9FOFhOPYeVr635TTaqdqu+hbJhqccicAI5lx
+ Cbo4FdRrTW0jq/ekvklHVpsOkZBAOYDwp+KcZCiioXOsJ7nN1THWpRDJ8kkCV5qWtm0g
+ AF/+1417vIKTX3DYRaoeOUt3wKN4+Ft836iqIjoOgl+X6UJGNj2GLPekJh8DuKYjf3UE
+ AXjUmpSfyNeiq8S37ot0NrUeGh3+vXZJaYGwsPNrz9mVCSVhK6B96CRah6XKUOsEhypz
+ ryKvBFjGDOrNVUKj4PYHDUpHNw82luHfzbGnyDdIGkha6PdBAja9wmcuYdT0B/+oY+TA
+ MbhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=rEcYbavgX8JtqJsaFfda+512xKGwZ/fm/kUZY43XBic=;
- b=sZXZlb1aDPABQcIeisaLyFgdaOXkHpYqSxpg/A9fzOPIWjhHNs7SOf8FwwdKw9u2az
- BynKPUWC7zib8YB37TzpCOLjAl5otw1CmhBYCOImPSo5udpSH7uD5/Ntej0ShVFB/A9g
- F3g0sTo7MFP5Spvc8WCgfDo2j/YXMkEvrWnHI8nd64px2RYGVzTepNlR49g5Bblv0WVl
- HMykAXNfTz/YVY/cQynir8bY9085BJuZswFH6Flywdl4Jv2hc5cxlOpQtgoPUV50kYmQ
- rZpVqhnjE9ZHTccwzQUtOvJlFPVoZyrNa+zmZtNeKka2NgDO0TBgew6yjZ5m7J/wFOWk
- jPQA==
-X-Gm-Message-State: AOAM531prROFbp43Rcig374U/BPSSbOOM7kql/Kbux/xG7Bf2CwgkhjW
- XK6VtRO/kG7hwIo73iKDkfngJj0aQbtDK0NiR1t8OQ==
-X-Google-Smtp-Source: ABdhPJzRuccajda0lvZX2w/+DdXmexWrUFl/B2OFA4hS4ryIA7/8/FI38g9Sc/H55qlMNSQAqFa8Wmrf7GbHja6mIt4=
-X-Received: by 2002:a05:6402:31b1:: with SMTP id
- dj17mr4444751edb.142.1589570040580; 
- Fri, 15 May 2020 12:14:00 -0700 (PDT)
+ bh=zbFsGFMIlvy1kKOGqgavt+ubA29TnTVOTBRv6vIQjH0=;
+ b=NVY1XbHNGgAC6o+MkhEG+6mn+Zjbq+sP2/AFa1LJ1XO0eEN5fkJDk70sRfECFi/nJK
+ ZZeMRe9mP7Ies5fN+a19ysQi4RYObhSKGmSMqJ4L4Y4IA0fNsDZvea2PbcD7Na3amRmV
+ aujrOn8c5yGAZEhhBD23ilL7R4HgSr1GB0NPz+8KFHfv/jO//h6oeCXa2T6kaJ+pCmnL
+ DX3x+vHhQ4p3QY66fUOtO5rD1RVjmxAgFOKyt5udlpLTD92Rb89WmcANL2BGnb83Kb1A
+ WVwZNJEQe3iMAJMErz46fQe9Q2P9tyB26IJLin69XMlPTU+FEbXrf6fC5ZBAJRgd+DtY
+ 9hbQ==
+X-Gm-Message-State: AOAM532Q9xCLAr81oarUoUPCMtgoaTSA6V1kQ87HpYq4K4LjW93KPahM
+ dqAG/KfnbJmcqZ+R5UG2hgtxT9l3yX1Ll42k8eexSw==
+X-Google-Smtp-Source: ABdhPJz0Ek3DDmLsyu6vepzg7IcDPqIXlEvChPtaCxV8HF3LZLhlke8gwyZn2f1RjvDzPYken2umNdX2JOgQpllNx+E=
+X-Received: by 2002:a50:ee04:: with SMTP id g4mr4273534eds.221.1589570278060; 
+ Fri, 15 May 2020 12:17:58 -0700 (PDT)
 MIME-Version: 1.0
 References: <20200515184434.8470-1-keescook@chromium.org>
-In-Reply-To: <20200515184434.8470-1-keescook@chromium.org>
+ <20200515184434.8470-2-keescook@chromium.org>
+In-Reply-To: <20200515184434.8470-2-keescook@chromium.org>
 From: Pavel Tatashin <pasha.tatashin@soleen.com>
-Date: Fri, 15 May 2020 15:13:24 -0400
-Message-ID: <CA+CK2bAo163NzFn=t+MXBYcTEHPqkptFw6K0d_yMbhwROdGy2A@mail.gmail.com>
-Subject: Re: [PATCH v4 0/6] allow ramoops to collect all kmesg_dump events
+Date: Fri, 15 May 2020 15:17:22 -0400
+Message-ID: <CA+CK2bBV2vT-4NCsBnbuKM7YtDM=y9tV3mOcb+Mh+mW=YxF5Lg@mail.gmail.com>
+Subject: Re: [PATCH v4 1/6] printk: Collapse shutdown types into a single dump
+ reason
 To: Kees Cook <keescook@chromium.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -100,58 +101,17 @@ Sender: "Linuxppc-dev"
 
 On Fri, May 15, 2020 at 2:44 PM Kees Cook <keescook@chromium.org> wrote:
 >
-> Hello!
+> To turn the KMSG_DUMP_* reasons into a more ordered list, collapse
+> the redundant KMSG_DUMP_(RESTART|HALT|POWEROFF) reasons into
+> KMSG_DUMP_SHUTDOWN. The current users already don't meaningfully
+> distinguish between them, so there's no need to, as discussed here:
+> https://lore.kernel.org/lkml/CA+CK2bAPv5u1ih5y9t5FUnTyximtFCtDYXJCpuyjOyHNOkRdqw@mail.gmail.com/
 >
-> I wanted to get the pstore tree nailed down, so here's the v4 of
-> Pavel's series, tweaked for the feedback during v3 review.
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-Hi Kees,
+Maybe it makes sense to mention in the commit log that for all three
+merged cases there is a pr_emerg() message logged right before the
+kmsg_dump(), thus the reason is distinguishable from the dmesg log
+itself.
 
-Thank you, I was planning to send a new version of this series later
-today. Let me quickly review it.
-
-Pasha
-
->
-> -Kees
->
-> v4:
-> - rebase on pstore tree
-> - collapse shutdown types into a single dump reason
->   https://lore.kernel.org/lkml/CA+CK2bAPv5u1ih5y9t5FUnTyximtFCtDYXJCpuyjOyHNOkRdqw@mail.gmail.com/
-> - fix dump_oops vs max_reason module params
->   https://lore.kernel.org/lkml/20200512233504.GA118720@sequoia/
-> - typos
->   https://lore.kernel.org/lkml/4cdeaa2af2fe0d6cc2ca8ce3a37608340799df8a.camel@perches.com/
-> - rename DT parsing routines ..._size -> ..._u32
->   https://lore.kernel.org/lkml/CA+CK2bCu8eFomiU+NeBjVn-o2dbuECxwRfssNjB3ys3caCbXeA@mail.gmail.com/
-> v3: https://lore.kernel.org/lkml/20200506211523.15077-1-keescook@chromium.org/
-> v2: https://lore.kernel.org/lkml/20200505154510.93506-1-pasha.tatashin@soleen.com
-> v1: https://lore.kernel.org/lkml/20200502143555.543636-1-pasha.tatashin@soleen.com
->
-> Kees Cook (3):
->   printk: Collapse shutdown types into a single dump reason
->   printk: Introduce kmsg_dump_reason_str()
->   pstore/ram: Introduce max_reason and convert dump_oops
->
-> Pavel Tatashin (3):
->   printk: honor the max_reason field in kmsg_dumper
->   pstore/platform: Pass max_reason to kmesg dump
->   ramoops: Add max_reason optional field to ramoops DT node
->
->  Documentation/admin-guide/ramoops.rst         | 14 +++--
->  .../bindings/reserved-memory/ramoops.txt      | 13 ++++-
->  arch/powerpc/kernel/nvram_64.c                |  4 +-
->  drivers/platform/chrome/chromeos_pstore.c     |  2 +-
->  fs/pstore/platform.c                          | 26 ++-------
->  fs/pstore/ram.c                               | 58 +++++++++++++------
->  include/linux/kmsg_dump.h                     | 12 +++-
->  include/linux/pstore.h                        |  7 +++
->  include/linux/pstore_ram.h                    |  2 +-
->  kernel/printk/printk.c                        | 32 ++++++++--
->  kernel/reboot.c                               |  6 +-
->  11 files changed, 114 insertions(+), 62 deletions(-)
->
-> --
-> 2.20.1
->
+Reviewed-by: Pavel Tatashin <pasha.tatashin@soleen.com>
