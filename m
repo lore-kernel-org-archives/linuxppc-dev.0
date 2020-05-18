@@ -2,81 +2,98 @@ Return-Path: <SRS0=1bSx=7A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D85C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87538C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:11:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D510207ED
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:04:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gI8KKb5w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D510207ED
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3EC3920709
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:11:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EC3920709
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49QbkN0QK4zDqbx
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:04:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qbsx0spKzDqXr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:11:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::a42;
- helo=mail-vk1-xa42.google.com; envelope-from=emil.l.velikov@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=gI8KKb5w; dkim-atps=neutral
-Received: from mail-vk1-xa42.google.com (mail-vk1-xa42.google.com
- [IPv6:2607:f8b0:4864:20::a42])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Qbhd13V9zDq6l
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:02:56 +1000 (AEST)
-Received: by mail-vk1-xa42.google.com with SMTP id p7so2283881vkf.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 04:02:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=TnOYIJ1nfLcoOoATov1dQrgNfdtrmD6iK7NVPcue8aw=;
- b=gI8KKb5wg5v2qHES5+bGI2/rAEVGlQyfyhgnrzFvpj0QTqUU0jjur8KfbXqQxC3X0f
- Oj/NDuXfzLcdQd/Ky7f0T/JOKAJ8Vdp4Jp+v5J4MFuikS8hxIRQeSa6WLZPdXf/IvZvo
- aJax/8xpfJCVDt0reyd6pXnSQWAPWO4vhodo/7GrUhA3Wj1q4r9ICNUzfzr9dQ/9X5U8
- BGVDET7wIUJFycZ9kLSGcyKN/B78T3+YBK3P6gqxigN/jDwltMSv58jZGaYPu29V54Cq
- +HblOF0A+hSQXgwsedFi9JHkeOG9e2wBiDvPtaxeU9LaOfh/+XUHNKLwDfRtrMb23t6n
- oUzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=TnOYIJ1nfLcoOoATov1dQrgNfdtrmD6iK7NVPcue8aw=;
- b=FOK0guzcew4zFMxFGk49SqowzsYqxCDjfHZphmCNXM9YhyEEAhuKnNvIyMHbkLXNHI
- 7pEn2uZKQFlUmAv4lR3puVVMF44Gc8sHMQHzqXc3M0ehY/opCK4mIT1cE4XOt/DbL84R
- 0hO5LledhNeE+Vt3UOP0YtwzBYj578eDrrwOJNwKsghOpU6b+Mvibfh1bB3rrn2i1GqK
- uLRLLAQvSX0xnPsCM7Bez1Nw4//7U1haDsIS/giMgzrc38LAq1jrdLLxCfrA6mmJo4WZ
- ChOs3ddc1T3VEzu+C0qXe43QZLpz4Bknxy58AdfWaQt9nlvniv1topfVhVCi5u8kGRxP
- sPsw==
-X-Gm-Message-State: AOAM530L8vOr7CNZA/7eDDPcm8ZGnU4raw3wfa11PQm4xRHkymQygEvJ
- 4us3pbMUQnArpf85q4fnJXyNsCbqtykDas7PdxY=
-X-Google-Smtp-Source: ABdhPJwl3t0P8UBkzkdQpBdqsy7c2RThfeVs2tmdfCsbYsQ/Ug1eIUBiEG7XSaPXWJV0OnBR5xJ5kOPd74G5rKrixjc=
-X-Received: by 2002:a1f:2bd7:: with SMTP id r206mr818859vkr.28.1589799772920; 
- Mon, 18 May 2020 04:02:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49QbqC4B9SzDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:08:39 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 04IB3YFZ087371; Mon, 18 May 2020 07:08:33 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 312cp7n9bj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 18 May 2020 07:08:33 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04IB4GA6091230;
+ Mon, 18 May 2020 07:08:32 -0400
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 312cp7n9ac-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 18 May 2020 07:08:32 -0400
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04IB5hAj012263;
+ Mon, 18 May 2020 11:08:30 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma02fra.de.ibm.com with ESMTP id 3127t5hmb3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 18 May 2020 11:08:30 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 04IB8RsU41615586
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 18 May 2020 11:08:27 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3C53BA405B;
+ Mon, 18 May 2020 11:08:27 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7ABBEA4053;
+ Mon, 18 May 2020 11:08:24 +0000 (GMT)
+Received: from vajain21-in-ibm-com (unknown [9.102.2.238])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 18 May 2020 11:08:24 +0000 (GMT)
+Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
+ Mon, 18 May 2020 16:38:23 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
+Subject: [RFC PATCH 1/4] powerpc/papr_scm: Fetch nvdimm performance stats from
+ PHYP
+Date: Mon, 18 May 2020 16:38:11 +0530
+Message-Id: <20200518110814.145644-2-vaibhav@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200518110814.145644-1-vaibhav@linux.ibm.com>
+References: <20200518110814.145644-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-References: <20200517220524.4036334-1-emil.l.velikov@gmail.com>
- <20200517220524.4036334-2-emil.l.velikov@gmail.com>
- <9b0db95949b973c682b449906573e7b28c6113ef.camel@kernel.crashing.org>
-In-Reply-To: <9b0db95949b973c682b449906573e7b28c6113ef.camel@kernel.crashing.org>
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Date: Mon, 18 May 2020 12:00:01 +0100
-Message-ID: <CACvgo52Qws2VF0Bui-V3VdL5CFLsean9H=shLBi5H2S2fvjFSA@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] powerpc/configs: replace deprecated riva/nvidia
- with nouveau
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
+ definitions=2020-05-18_04:2020-05-15,
+ 2020-05-18 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 suspectscore=0
+ adultscore=0 mlxlogscore=999 bulkscore=0 cotscore=-2147483648
+ priorityscore=1501 malwarescore=0 clxscore=1015 phishscore=0
+ impostorscore=0 lowpriorityscore=0 spamscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2005180096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,38 +105,277 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>,
- Antonino Daplas <adaplas@gmail.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- ML dri-devel <dri-devel@lists.freedesktop.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Santosh Sivaraj <santosh@fossix.org>, Oliver O'Halloran <oohall@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>, Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Benjamin,
+Update papr_scm.c to query dimm performance statistics from PHYP via
+H_SCM_PERFORMANCE_STATS hcall and export them to userspace as PAPR
+specific NVDIMM attribute 'perf_stats' in sysfs. The patch also
+provide a sysfs ABI documentation for the stats being reported and
+their meanings.
 
-On Mon, 18 May 2020 at 01:45, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
-> On Sun, 2020-05-17 at 23:05 +0100, Emil Velikov wrote:
-> > As mentioned in earlier commit, the riva and nvidia fbdev drivers
-> > have
-> > seen no love over the years, are short on features and overall below
-> > par
-> >
-> > Users are encouraged to switch to the nouveau drm driver instead.
-> >
-> > v2: Split configs to separate patch, enable nouveau (Bartlomiej)
->
-> Back when I still had these things to play with (years ago) nouveau
-> didn't work properly on these ancient machines.
->
-I believe you reported issues due to different page size for the CPU/GPU.
-Have you tried nouveau recently, there has been a handful of patches
-on the topic since your report.
+During NVDIMM probe time in papr_scm_nvdimm_init() a special variant
+of H_SCM_PERFORMANCE_STATS hcall is issued to check if collection of
+performance statistics is supported or not. If yes then a per-nvdimm
+performance stats buffer is of size as returned by PHYP is allocated
+and stored along with its length in two newly introduced NVDIMM
+private struct members 'perf_stats' and 'len_stat_buffer'.
 
-Alternatively, it would make sense you rebase, cleanup and merge your patch.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+ Documentation/ABI/testing/sysfs-bus-papr-scm |  27 ++++
+ arch/powerpc/platforms/pseries/papr_scm.c    | 156 +++++++++++++++++++
+ 2 files changed, 183 insertions(+)
 
--Emil
+diff --git a/Documentation/ABI/testing/sysfs-bus-papr-scm b/Documentation/ABI/testing/sysfs-bus-papr-scm
+index 6143d06072f1..ad06b3e9c315 100644
+--- a/Documentation/ABI/testing/sysfs-bus-papr-scm
++++ b/Documentation/ABI/testing/sysfs-bus-papr-scm
+@@ -25,3 +25,30 @@ Description:
+ 				  NVDIMM have been scrubbed.
+ 		* "locked"	: Indicating that NVDIMM contents cant
+ 				  be modified until next power cycle.
++
++What:		/sys/bus/nd/devices/nmemX/papr/perf_stats
++Date:		May, 2020
++KernelVersion:	v5.8
++Contact:	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-nvdimm@lists.01.org,
++Description:
++		(RO) Report various performance stats related to papr-scm NVDIMM
++		device.  Each stat is reported on a new line with each line
++		composed of a stat-identifier followed by it value. Below are
++		currently known dimm performance stats which are reported:
++
++		* "CtlResCt" : Controller Reset Count
++		* "CtlResTm" : Controller Reset Elapsed Time
++		* "PonSecs " : Power-on Seconds
++		* "MemLife " : Life Remaining
++		* "CritRscU" : Critical Resource Utilization
++		* "HostLCnt" : Host Load Count
++		* "HostSCnt" : Host Store Count
++		* "HostSDur" : Host Store Duration
++		* "HostLDur" : Host Load Duration
++		* "MedRCnt " : Media Read Count
++		* "MedWCnt " : Media Write Count
++		* "MedRDur " : Media Read Duration
++		* "MedWDur " : Media Write Duration
++		* "CchRHCnt" : Cache Read Hit Count
++		* "CchWHCnt" : Cache Write Hit Count
++		* "FastWCnt" : Fast Write Count
+\ No newline at end of file
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index c59bf17ad054..fd9a12275315 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -62,6 +62,24 @@
+ 					PAPR_SCM_DIMM_HEALTH_FATAL |	\
+ 					PAPR_SCM_DIMM_HEALTH_UNHEALTHY)
+ 
++#define PAPR_SCM_PERF_STATS_EYECATCHER __stringify(SCMSTATS)
++#define PAPR_SCM_PERF_STATS_VERSION 0x1
++
++/* Struct holding a single performance metric */
++struct papr_scm_perf_stat {
++	u8 statistic_id[8];
++	u64 statistic_value;
++};
++
++/* Struct exchanged between kernel and PHYP for fetching drc perf stats */
++struct papr_scm_perf_stats {
++	u8 eye_catcher[8];
++	u32 stats_version;		/* Should be 0x01 */
++	u32 num_statistics;		/* Number of stats following */
++	/* zero or more performance matrics */
++	struct papr_scm_perf_stat scm_statistics[];
++} __packed;
++
+ /* private struct associated with each region */
+ struct papr_scm_priv {
+ 	struct platform_device *pdev;
+@@ -89,6 +107,12 @@ struct papr_scm_priv {
+ 
+ 	/* Health information for the dimm */
+ 	struct nd_papr_pdsm_health health;
++
++	/* length of the stat buffer as expected by phyp */
++	size_t len_stat_buffer;
++
++	/* Cached version of all performance state */
++	struct papr_scm_perf_stats *perf_stats;
+ };
+ 
+ static int drc_pmem_bind(struct papr_scm_priv *p)
+@@ -194,6 +218,75 @@ static int drc_pmem_query_n_bind(struct papr_scm_priv *p)
+ 	return drc_pmem_bind(p);
+ }
+ 
++/*
++ * Query the Dimm performance stats from PHYP and copy them (if returned) to
++ * provided struct papr_scm_perf_stats instance 'stats' of 'size' in bytes.
++ * The value of R4 is copied to 'out' if the pointer is provided.
++ */
++static int drc_pmem_query_stats(struct papr_scm_priv *p,
++				struct papr_scm_perf_stats *buff_stats,
++				size_t size, unsigned int num_stats,
++				uint64_t *out)
++{
++	unsigned long ret[PLPAR_HCALL_BUFSIZE];
++	struct papr_scm_perf_stat *stats;
++	s64 rc, i;
++
++	/* Setup the out buffer */
++	if (buff_stats) {
++		memcpy(buff_stats->eye_catcher,
++		       PAPR_SCM_PERF_STATS_EYECATCHER, 8);
++		buff_stats->stats_version =
++			cpu_to_be32(PAPR_SCM_PERF_STATS_VERSION);
++		buff_stats->num_statistics =
++			cpu_to_be32(num_stats);
++	} else {
++		/* In case of no out buffer ignore the size */
++		size = 0;
++	}
++
++	/*
++	 * Do the HCALL asking PHYP for info and if R4 was requested
++	 * return its value in 'out' variable.
++	 */
++	rc = plpar_hcall(H_SCM_PERFORMANCE_STATS, ret, p->drc_index,
++			 __pa(buff_stats), size);
++	if (out)
++		*out =  ret[0];
++
++	if (rc == H_PARTIAL) {
++		dev_err(&p->pdev->dev,
++			"Unknown performance stats, Err:0x%016lX\n", ret[0]);
++		return -ENOENT;
++	} else if (rc != H_SUCCESS) {
++		dev_err(&p->pdev->dev,
++			"Failed to query performance stats, Err:%lld\n", rc);
++		return -ENXIO;
++	}
++
++	/* Successfully fetched the requested stats from phyp */
++	if (size != 0) {
++		buff_stats->num_statistics =
++			be32_to_cpu(buff_stats->num_statistics);
++
++		/* Transform the stats buffer values from BE to cpu native */
++		for (i = 0, stats = buff_stats->scm_statistics;
++		     i < buff_stats->num_statistics; ++i) {
++			stats[i].statistic_value =
++				be64_to_cpu(stats[i].statistic_value);
++		}
++		dev_dbg(&p->pdev->dev,
++			"Performance stats returned %d stats\n",
++			buff_stats->num_statistics);
++	} else {
++		/* Handle case where stat buffer size was requested */
++		dev_dbg(&p->pdev->dev,
++			"Performance stats size %ld\n", ret[0]);
++	}
++
++	return 0;
++}
++
+ /*
+  * Issue hcall to retrieve dimm health info and populate papr_scm_priv with the
+  * health information.
+@@ -563,6 +656,47 @@ static int papr_scm_ndctl(struct nvdimm_bus_descriptor *nd_desc,
+ 	return *cmd_rc;
+ }
+ 
++static ssize_t perf_stats_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	int index, rc;
++	struct seq_buf s;
++	struct nvdimm *dimm = to_nvdimm(dev);
++	struct papr_scm_priv *p = nvdimm_provider_data(dimm);
++	struct papr_scm_perf_stat *stats = p->perf_stats->scm_statistics;
++
++	if (!p->len_stat_buffer)
++		return -ENOENT;
++
++	seq_buf_init(&s, buf, PAGE_SIZE);
++
++	/* Protect concurrent modifications to papr_scm_priv */
++	rc = mutex_lock_interruptible(&p->health_mutex);
++	if (rc)
++		return rc;
++
++	/* Ask phyp to return all dimm perf stats */
++	rc = drc_pmem_query_stats(p, p->perf_stats, p->len_stat_buffer, 0,
++				  NULL);
++	if (!rc) {
++		/*
++		 * Go through the returned output buffer and print stats and
++		 * values. Since statistic_id is essentially a char string of
++		 * 8 bytes, simply use the string format specifier to print it.
++		 */
++		for (index = 0; index < p->perf_stats->num_statistics;
++		     ++index) {
++			seq_buf_printf(&s, "%.8s = 0x%016llX\n",
++				       stats[index].statistic_id,
++				       stats[index].statistic_value);
++		}
++	}
++
++	mutex_unlock(&p->health_mutex);
++	return rc ? rc : seq_buf_used(&s);
++}
++DEVICE_ATTR_RO(perf_stats);
++
+ static ssize_t flags_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+@@ -615,6 +749,7 @@ DEVICE_ATTR_RO(flags);
+ /* papr_scm specific dimm attributes */
+ static struct attribute *papr_scm_nd_attributes[] = {
+ 	&dev_attr_flags.attr,
++	&dev_attr_perf_stats.attr,
+ 	NULL,
+ };
+ 
+@@ -635,6 +770,7 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 	struct nd_region_desc ndr_desc;
+ 	unsigned long dimm_flags;
+ 	int target_nid, online_nid;
++	u64 stat_size;
+ 
+ 	p->bus_desc.ndctl = papr_scm_ndctl;
+ 	p->bus_desc.module = THIS_MODULE;
+@@ -698,6 +834,26 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
+ 		dev_info(dev, "Region registered with target node %d and online node %d",
+ 			 target_nid, online_nid);
+ 
++	/* Try retriving the stat buffer and see if its supported */
++	if (!drc_pmem_query_stats(p, NULL, 0, 0, &stat_size)) {
++		/* Allocate the buffer for phyp where stats are written */
++		p->perf_stats = kzalloc(stat_size, GFP_KERNEL);
++
++		/* Failed allocation is non fatal and results in limited data */
++		if (!p->perf_stats)
++			dev_dbg(&p->pdev->dev,
++				"Unable to allocate %llu bytes for perf-state",
++				stat_size);
++		else
++			p->len_stat_buffer = (size_t)stat_size;
++	} else {
++		dev_dbg(&p->pdev->dev, "Unable to retrieve performace stats\n");
++	}
++
++	/* Check if perf-stats buffer was allocated */
++	if (!p->len_stat_buffer)
++		dev_info(&p->pdev->dev, "Limited dimm info available\n");
++
+ 	return 0;
+ 
+ err:	nvdimm_bus_unregister(p->bus);
+-- 
+2.26.2
+
