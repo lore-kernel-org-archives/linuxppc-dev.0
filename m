@@ -2,82 +2,84 @@ Return-Path: <SRS0=1bSx=7A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ECC5C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:13:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D47ADC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:15:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5FC42070A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:12:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5FC42070A
+	by mail.kernel.org (Postfix) with ESMTPS id 8F75A2083E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:15:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F75A2083E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Qbw95M8TzDqXS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:12:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qbyl2sSmzDqXr
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:15:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49QbqD24TCzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:08:39 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49QbqG487yzDqQr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:08:42 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 04IB4tCA060074; Mon, 18 May 2020 07:08:29 -0400
+ 04IB3Brp070327; Mon, 18 May 2020 07:08:37 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 312c21xram-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 312btu38r5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 May 2020 07:08:28 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04IB6DLs078031;
- Mon, 18 May 2020 07:08:28 -0400
+ Mon, 18 May 2020 07:08:37 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04IB3rar071619;
+ Mon, 18 May 2020 07:08:36 -0400
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 312c21xr9t-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 312btu38qf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 May 2020 07:08:28 -0400
+ Mon, 18 May 2020 07:08:36 -0400
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04IB5a7m030822;
- Mon, 18 May 2020 11:08:26 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 3127t5kyhw-1
+ by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04IB5LrM030422;
+ Mon, 18 May 2020 11:08:34 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma03ams.nl.ibm.com with ESMTP id 3127t5kyj4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 18 May 2020 11:08:25 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 04IB8NaR10420728
+ Mon, 18 May 2020 11:08:34 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 04IB7J0q47186332
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 18 May 2020 11:08:23 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34D0C4C04E;
- Mon, 18 May 2020 11:08:23 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5AA5A4C046;
- Mon, 18 May 2020 11:08:20 +0000 (GMT)
+ Mon, 18 May 2020 11:07:19 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1946F4204D;
+ Mon, 18 May 2020 11:08:31 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 610394203F;
+ Mon, 18 May 2020 11:08:28 +0000 (GMT)
 Received: from vajain21-in-ibm-com (unknown [9.102.2.238])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon, 18 May 2020 11:08:20 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 18 May 2020 11:08:28 +0000 (GMT)
 Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
- Mon, 18 May 2020 16:38:19 +0530
+ Mon, 18 May 2020 16:38:27 +0530
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
-Subject: [RFC PATCH 0/4] powerpc/papr_scm: Add support for reporting NVDIMM
- performance statistics
-Date: Mon, 18 May 2020 16:38:10 +0530
-Message-Id: <20200518110814.145644-1-vaibhav@linux.ibm.com>
+Subject: [RFC PATCH 2/4] powerpc/papr_scm: Add support for
+ PAPR_SCM_PDSM_FETCH_PERF_STATS
+Date: Mon, 18 May 2020 16:38:12 +0530
+Message-Id: <20200518110814.145644-3-vaibhav@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200518110814.145644-1-vaibhav@linux.ibm.com>
+References: <20200518110814.145644-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -85,11 +87,12 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
  definitions=2020-05-18_04:2020-05-15,
  2020-05-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0
- cotscore=-2147483648 lowpriorityscore=0 adultscore=0 malwarescore=0
- mlxlogscore=676 priorityscore=1501 mlxscore=0 spamscore=0 suspectscore=0
- phishscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2004280000 definitions=main-2005180096
+ suspectscore=0 bulkscore=0
+ priorityscore=1501 malwarescore=0 mlxscore=0 mlxlogscore=999
+ impostorscore=0 spamscore=0 clxscore=1015 cotscore=-2147483648
+ lowpriorityscore=0 adultscore=0 phishscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2005180096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,86 +111,144 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch-set proposes to add support for fetching and reporting
-performance statistics for PAPR compliant NVDIMMs as described in
-documentation for H_SCM_PERFORMANCE_STATS hcall Ref[1]. The patch-set
-also implements mechanisms to expose NVDIMM performance stats via
-sysfs and newly introduced PDSMs[2] for libndctl.
+Add support for pdsm PAPR_SCM_PDSM_FETCH_PERF_STATS that issues HCALL
+H_SCM_PERFORMANCE_STATS to PHYP to fetch all the NVDIMM performance
+stats and store them in per nvdimm 'struct papr_scm_priv' as member
+'perf_stats'. A further PDSM request (introduced later) is needed to
+read the contents of this performance stats buffer.
 
-This patch-set combined with corresponding ndctl and libndctl changes
-proposed at Ref[3] should enable user to fetch PAPR compliant NVDIMMs
-using following command:
+A new uapi struct 'nd_psdm_perf_stats_size' is introduced to be used
+by libndctl to retrieve the size of buffer needed to store all NVDIMM
+performance stats.
 
- # ndctl list -D --stats
-[
-  {
-    "dev":"nmem0",
-    "stats":{
-      "Controller Reset Count":2,
-      "Controller Reset Elapsed Time":603331,
-      "Power-on Seconds":603931,
-      "Life Remaining":"100%",
-      "Critical Resource Utilization":"0%",
-      "Host Load Count":5781028,
-      "Host Store Count":8966800,
-      "Host Load Duration":975895365,
-      "Host Store Duration":716230690,
-      "Media Read Count":0,
-      "Media Write Count":6313,
-      "Media Read Duration":0,
-      "Media Write Duration":9679615,
-      "Cache Read Hit Count":5781028,
-      "Cache Write Hit Count":8442479,
-      "Fast Write Count":8969912
-    }
-  }
-]
+The patch updates papr_scm_service_pdsm() to route
+PAPR_SCM_PDSM_FETCH_PERF_STATS to newly introduced
+papr_scm_fetch_perf_stats() which then issues the HCALL and copies the
+needed size to the PDSM payload.
 
-The patchset is dependent on existing patch-set "[PATCH v7 0/5]
-powerpc/papr_scm: Add support for reporting nvdimm health" available
-at Ref[2] that adds support for reporting PAPR compliant NVDIMMs in
-'papr_scm' kernel module.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/papr_scm_pdsm.h | 13 ++++
+ arch/powerpc/platforms/pseries/papr_scm.c     | 70 +++++++++++++++++++
+ 2 files changed, 83 insertions(+)
 
-Structure of the patch-set
-==========================
-
-The patch-set starts with implementing functionality in papr_scm
-module to issue H_SCM_PERFORMANCE_STATS hcall, fetch & parse dimm
-performance stats and exposing them as a PAPR specific libnvdimm
-attribute named 'perf_stats'
-
-Patch-2 introduces a new PDSM named FETCH_PERF_STATS that can be
-issued by libndctl asking papr_scm to issue the
-H_SCM_PERFORMANCE_STATS hcall using helpers introduced earlier and
-storing the results in a dimm specific perf-stats-buffer.
-
-Patch-3 introduces a new PDSM named READ_PERF_STATS that can be
-issued by libndctl to read the perf-stats-buffer in an incremental
-manner to workaround the 256-bytes envelop limitation of libnvdimm.
-
-Finally Patch-4 introduces a new PDSM named GET_PERF_STAT that can be
-issued by libndctl to read values of a specific NVDIMM performance
-stat like "Life Remaining".
-
-References
-==========
-[1] Documentation/powerpc/papr_hcals.rst
-
-[2] https://lore.kernel.org/linux-nvdimm/20200508104922.72565-1-vaibhav@linux.ibm.com/
-
-[3] https://github.com/vaibhav92/ndctl/tree/papr_scm_stats_v1
-
-Vaibhav Jain (4):
-  powerpc/papr_scm: Fetch nvdimm performance stats from PHYP
-  powerpc/papr_scm: Add support for PAPR_SCM_PDSM_FETCH_PERF_STATS
-  powerpc/papr_scm: Implement support for PAPR_SCM_PDSM_READ_PERF_STATS
-  powerpc/papr_scm: Add support for PDSM GET_PERF_STAT
-
- Documentation/ABI/testing/sysfs-bus-papr-scm  |  27 ++
- arch/powerpc/include/uapi/asm/papr_scm_pdsm.h |  60 +++
- arch/powerpc/platforms/pseries/papr_scm.c     | 391 ++++++++++++++++++
- 3 files changed, 478 insertions(+)
-
+diff --git a/arch/powerpc/include/uapi/asm/papr_scm_pdsm.h b/arch/powerpc/include/uapi/asm/papr_scm_pdsm.h
+index db0cf550dabe..40ec55d06f4c 100644
+--- a/arch/powerpc/include/uapi/asm/papr_scm_pdsm.h
++++ b/arch/powerpc/include/uapi/asm/papr_scm_pdsm.h
+@@ -114,6 +114,7 @@ struct nd_pdsm_cmd_pkg {
+ enum papr_scm_pdsm {
+ 	PAPR_SCM_PDSM_MIN = 0x0,
+ 	PAPR_SCM_PDSM_HEALTH,
++	PAPR_SCM_PDSM_FETCH_PERF_STATS,
+ 	PAPR_SCM_PDSM_MAX,
+ };
+ 
+@@ -170,4 +171,16 @@ struct nd_papr_pdsm_health_v1 {
+ /* Current version number for the dimm health struct */
+ #define ND_PAPR_PDSM_HEALTH_VERSION 1
+ 
++/*
++ * Return the maximum buffer size needed to hold all performance state.
++ * max_stats_size: The buffer size needed to hold all stat entries
++ */
++struct nd_pdsm_fetch_perf_stats_v1 {
++	__u32 max_stats_size;
++	__u8 reserved[4];
++} __packed;
++
++#define nd_pdsm_fetch_perf_stats nd_pdsm_fetch_perf_stats_v1
++#define ND_PDSM_FETCH_PERF_STATS_VERSION 1
++
+ #endif /* _UAPI_ASM_POWERPC_PAPR_SCM_PDSM_H_ */
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index fd9a12275315..f8b37a830aed 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -525,6 +525,73 @@ static int is_cmd_valid(struct nvdimm *nvdimm, unsigned int cmd, void *buf,
+ 	return 0;
+ }
+ 
++/* Return the size in bytes for returning all perf stats to libndctl */
++static int papr_scm_fetch_perf_stats(struct papr_scm_priv *p,
++				     struct nd_pdsm_cmd_pkg *pkg)
++{
++	int rc = 0;
++	size_t copysize = sizeof(struct nd_pdsm_fetch_perf_stats);
++	struct nd_pdsm_fetch_perf_stats *sz =
++		(struct nd_pdsm_fetch_perf_stats *)pdsm_cmd_to_payload(pkg);
++
++	/*
++	 * If the requested payload version is greater than one we know
++	 * about, return the payload version we know about and let
++	 * caller/userspace handle.
++	 */
++	if (pkg->payload_version > ND_PDSM_FETCH_PERF_STATS_VERSION)
++		pkg->payload_version = ND_PDSM_FETCH_PERF_STATS_VERSION;
++
++	if (pkg->hdr.nd_size_out < copysize) {
++		dev_dbg(&p->pdev->dev, "Truncated payload (%u). Expected (%lu)",
++			pkg->hdr.nd_size_out, copysize);
++		rc = -ENOSPC;
++		goto out;
++	}
++
++	rc = mutex_lock_interruptible(&p->health_mutex);
++	if (rc)
++		goto out;
++
++	if (!p->len_stat_buffer) {
++		rc = -ENOENT;
++		goto out_unlock;
++	}
++
++	/* Setup the buffer and request phyp for all dimm perf stats data */
++	rc = drc_pmem_query_stats(p, p->perf_stats, p->len_stat_buffer, 0,
++				  NULL);
++	if (rc)
++		goto out_unlock;
++
++	dev_dbg(&p->pdev->dev, "Copying payload size=%lu version=0x%x\n",
++		copysize, pkg->payload_version);
++
++	/*
++	 * Put the buffer size needed in the payload buffer subtracting the
++	 * perf_stat header size.
++	 */
++	if (p->len_stat_buffer > sizeof(struct papr_scm_perf_stats))
++		sz->max_stats_size = p->len_stat_buffer -
++			sizeof(struct papr_scm_perf_stats);
++	else
++		sz->max_stats_size = 0;
++
++	pkg->hdr.nd_fw_size = copysize;
++
++out_unlock:
++	mutex_unlock(&p->health_mutex);
++out:
++	/*
++	 * Put the error in out package and return success from function
++	 * so that errors if any are propogated back to userspace.
++	 */
++	pkg->cmd_status = rc;
++	dev_dbg(&p->pdev->dev, "completion code = %d\n", rc);
++
++	return 0;
++}
++
+ /* Fetch the DIMM health info and populate it in provided package. */
+ static int papr_scm_get_health(struct papr_scm_priv *p,
+ 			       struct nd_pdsm_cmd_pkg *pkg)
+@@ -594,6 +661,9 @@ static int papr_scm_service_pdsm(struct papr_scm_priv *p,
+ 	case PAPR_SCM_PDSM_HEALTH:
+ 		return papr_scm_get_health(p, call_pkg);
+ 
++	case PAPR_SCM_PDSM_FETCH_PERF_STATS:
++		return papr_scm_fetch_perf_stats(p, call_pkg);
++
+ 	default:
+ 		dev_dbg(&p->pdev->dev, "Unsupported PDSM request 0x%llx\n",
+ 			call_pkg->hdr.nd_command);
 -- 
 2.26.2
 
