@@ -2,84 +2,66 @@ Return-Path: <SRS0=1bSx=7A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59977C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 13:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B82C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 13:27:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C33412065F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 13:24:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E60222065F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 13:27:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P/j+l4rl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C33412065F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="bwhULTYe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E60222065F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49QfqR08BLzDqbW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 23:24:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e42;
- helo=mail-vs1-xe42.google.com; envelope-from=emil.l.velikov@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=P/j+l4rl; dkim-atps=neutral
-Received: from mail-vs1-xe42.google.com (mail-vs1-xe42.google.com
- [IPv6:2607:f8b0:4864:20::e42])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qfv62h1hzDqJk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 23:27:14 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Qfl33hslzDqWc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 23:20:12 +1000 (AEST)
-Received: by mail-vs1-xe42.google.com with SMTP id l15so3637851vsr.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 06:20:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=smFwrGW+2ZYyRm3yJx9TvCDHllY75XTU0ZDXk/besJY=;
- b=P/j+l4rloAGJ5+zOh7ldG3MH1MdKGjKsbOchWEgDz0r3TcptKxJ1Bp8HWPcC1S3fmm
- rX/Ml0ruOt+Zix5rJNR8BVurvVsN/K4gCUQfEm62amnKjAll6C/pestSxWW+iWgQY9jy
- tTWNTrDxkQrfrVc+lNfLeVJrBgZ7/vicsqJWKimsblBlPKhR/CVoKdlJ3NNCPiHj0qtI
- bJ6v+HqXqrmGR0xZPvzDg/uhV1AwqgA3sHXFT5MkuzYewlbMnfUAmm2kngveuxpuS8e+
- 8bF+VeDJ1VAOdMMzqlMvEgvuvxO+HvNfpuR4H+ZPstuBIbaUn4xjW0RSWNyPxwHa3724
- uDUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=smFwrGW+2ZYyRm3yJx9TvCDHllY75XTU0ZDXk/besJY=;
- b=Evavm/3uZzxND4RGPEsrJt3yC5KuNOT1wriLl0npYHVo3yMVDbY7onn31tQK/T4XHj
- MwFJfrIi1s5NBuMYRd1ILUp25uHNiduf5R8XoUppeS2yUpvIQW1lqbFYiD806CB1XY7e
- 74hsi2ngttMUJl+GWGAWx8IFT3wvUBApMj09eqfzHVc3Hrka+A1nHR2PDFOssb9VfY4E
- ht7W06YPFpJiukpVzoez6BLRia2bo7bHxmT8BahrHiQ42qCaQ+lM6KCFNCFMlzlZKDmi
- Z8txJkIeltgYtNTNdPc5ukT8nkeRJvf7fwNYeJA7yIdkwzC07TKEK3keYvmETU3nNojD
- aJJg==
-X-Gm-Message-State: AOAM531id2R4Vd+8yhM4vFL0VPkGQ2DkpRnmcWF12wP0TP2kEpOl12OQ
- qWXM/Opq4TYG5c8Jm5TEiLhhNUkUi2C60rJMQ2A=
-X-Google-Smtp-Source: ABdhPJyB9j3yxm/3uct+3is6hkBldRsVNEHECFEnQ4z23rMWJaJ9Tdo/jYPHQ+KXggCqQyHhC6tZDoDIkFVYF/4KxZU=
-X-Received: by 2002:a67:be19:: with SMTP id x25mr1506536vsq.37.1589808009106; 
- Mon, 18 May 2020 06:20:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Qfl33gNqzDqWL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 23:20:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=bwhULTYe; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Qfl1694vz9sTS;
+ Mon, 18 May 2020 23:20:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1589808015;
+ bh=RloeE0LdmqKAFSvpaXbVeVj8qQSByHsMtpiN5OEN8FA=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=bwhULTYedxiW3vCTcPq1HpvpTZ/liHivPDSALic6bvBzZec6hbQyS7NnzjoHOCG/I
+ 3XFfQuQXNzQP02yVygvIzzynBObCLbOcNjLOdFMbdpHhjhAI/JcjWuJ/53kLefYZrU
+ pFoeXYTnLUYJEHbOzoEBNLL2Zl1sr5/AT5lbVwSI1cIIafoy3soMr0elcJiCf0mSkc
+ 1lGqYgY1hWJxzONtuO8S2HH9K+79wds1tzyjnkngLz16OyXPJIqzITYyd7cAxVHBdE
+ VeQb7ldLtjKDQyZbe68K2osL/ckc8LgtrqiH1cTw/mGjH+ZJdepen5zpLGYKAnXOKK
+ vyU6PWLjzbhyg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Chancellor <natechancellor@gmail.com>,
+ kbuild test robot <lkp@intel.com>
+Subject: Remove WALNUT hacks in serio/i8042 (was Re: ld.lld: error: undefined
+ symbol: kb_cs)
+In-Reply-To: <20200514030149.GA1841966@ubuntu-s3-xlarge-x86>
+References: <202005140845.lthaPgxR%lkp@intel.com>
+ <20200514030149.GA1841966@ubuntu-s3-xlarge-x86>
+Date: Mon, 18 May 2020 23:20:30 +1000
+Message-ID: <87a7254bxd.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20200517220524.4036334-1-emil.l.velikov@gmail.com>
- <20200517220524.4036334-2-emil.l.velikov@gmail.com>
- <87d071aedu.fsf@mpe.ellerman.id.au>
- <CGME20200518112226eucas1p1aa59db1e75cf0f91454b8714c828444c@eucas1p1.samsung.com>
- <CACvgo53uWVmhwon4+Fn5=_4HPXSciqNrf1MSJjt1kA3G2wyECw@mail.gmail.com>
- <3bd8fb59-2a91-64d7-bef9-d5f717c49bfb@samsung.com>
-In-Reply-To: <3bd8fb59-2a91-64d7-bef9-d5f717c49bfb@samsung.com>
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Date: Mon, 18 May 2020 14:19:57 +0100
-Message-ID: <CACvgo53=Vv7R-8BP32iQXwgvfxjJ8W5XCBmMq-tdUG-wUN6_4A@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] powerpc/configs: replace deprecated riva/nvidia
- with nouveau
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,72 +73,189 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>,
- Antonino Daplas <adaplas@gmail.com>,
- ML dri-devel <dri-devel@lists.freedesktop.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: clang-built-linux@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
+ kbuild-all@lists.01.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 18 May 2020 at 13:48, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
->
-> On 5/18/20 1:19 PM, Emil Velikov wrote:
-> > Hi Michael,
-> >
-> > On Mon, 18 May 2020 at 08:30, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >>
-> >> Emil Velikov <emil.l.velikov@gmail.com> writes:
-> >>> As mentioned in earlier commit, the riva and nvidia fbdev drivers have
-> >>> seen no love over the years, are short on features and overall below par
-> >>>
-> >>> Users are encouraged to switch to the nouveau drm driver instead.
-> >>>
-> >>> v2: Split configs to separate patch, enable nouveau (Bartlomiej)
-> >>>
-> >>> Cc: Antonino Daplas <adaplas@gmail.com>
-> >>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >>> Cc: linux-fbdev@vger.kernel.org
-> >>> Cc: dri-devel@lists.freedesktop.org
-> >>> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>> Cc: Paul Mackerras <paulus@samba.org>
-> >>> Cc: linuxppc-dev@lists.ozlabs.org
-> >>> Signed-off-by: Emil Velikov <emil.l.velikov@gmail.com>
-> >>> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch> (v1)
-> >>> ---
-> >>> Hi all unless, there are objections I would prefer to merge this via
-> >>> the drm tree.
-> >>
-> >> Have you tested that the resulting kernels work on the relevant
-> >> hardware?
-> >>
-> > Sadly, no I haven't. I'm updating the defconfigs as requested by the
-> > fbdev maintainer.
->
-> I've just noticed that v1 (patch #1/1) & v2 (patch #1/2) lack
-> Cc: to powerpc Maintainers so they cannot see the context of
-> changes in this patch.
->
-Haven't see any instances of fbdev/drm patches being Cc to arch/ developers.
-As such I made sure the commit message illustrates 1/2 as clearly as possible.
+[ Cc += linuxppc-dev ]
 
-> Also you've proposed v1 yourself and it has already contained
-> modifications to defconfigs (removal of setting the config
-> options for the old drivers) in addition to marking the old
-> drivers as BROKEN.
+Nathan Chancellor <natechancellor@gmail.com> writes:
+> On Thu, May 14, 2020 at 08:13:48AM +0800, kbuild test robot wrote:
+>> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+>> head:   24085f70a6e1b0cb647ec92623284641d8270637
+>> commit: 5990cdee689c6885b27c6d969a3d58b09002b0bc lib/mpi: Fix building for powerpc with clang
 >
-> It now turns out that v1 has also never been tested. :(
+> I am certain that this patch did nothing to cause this... Maybe exposed
+> it but not the root cause.
 >
-> Please don't submit untested patches without marking them
-> as such.
+>> date:   3 weeks ago
+>> config: powerpc-randconfig-r034-20200514 (attached as .config)
+>> compiler: clang version 11.0.0 (https://github.com/llvm/llvm-project 310d32cb80a611e6384a921e85607fea05841f26)
+>> reproduce:
+>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>         chmod +x ~/bin/make.cross
+>>         # install powerpc cross compiling tool for clang build
+>>         # apt-get install binutils-powerpc-linux-gnu
+>>         git checkout 5990cdee689c6885b27c6d969a3d58b09002b0bc
+>>         # save the attached .config to linux build tree
+>>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross ARCH=powerpc 
+>> 
+>> If you fix the issue, kindly add following tag as appropriate
+>> Reported-by: kbuild test robot <lkp@intel.com>
+>> 
+>> All errors (new ones prefixed by >>):
+>> 
+>> >> ld.lld: error: undefined symbol: kb_cs
+>> >>> referenced by i8042-ppcio.h:28 (drivers/input/serio/i8042-ppcio.h:28)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced by i8042-ppcio.h:28 (drivers/input/serio/i8042-ppcio.h:28)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced by i8042-ppcio.h:28 (drivers/input/serio/i8042-ppcio.h:28)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced 45 more times
+>> --
+>> >> ld.lld: error: undefined symbol: kb_data
+>> >>> referenced by i8042.c:309 (drivers/input/serio/i8042.c:309)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced by i8042-ppcio.h:33 (drivers/input/serio/i8042-ppcio.h:33)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced by i8042.c:319 (drivers/input/serio/i8042.c:319)
+>> >>> input/serio/i8042.o:(__i8042_command) in archive drivers/built-in.a
+>> >>> referenced 15 more times
 >
-Does x86 box with nv34 GPU count as testing? I suspect not :-(
-It was been using nouveau ever since I bought it 15+ years ago.
+> kb_cs and kb_data are declared as extern void pointers when
+> CONFIG_WALNUT is set, which this config does. However, it looks like
+> the definitions of these variables were removed in
+> commit  917f0af9e5a9 ("powerpc: Remove arch/ppc and include/asm-ppc"),
+> way back in 2.6.27-rc1... So presumably, this has been broken for 12
+> years and nobody noticed?
 
-Will be more careful in the future.
+Hmm, nice. 12 years is a pretty typical time frame for finding bugs in
+the powerpc tree ... o_O
 
--Emil
+Our ppc40x_defconfig has CONFIG_SERIO=m, but explicitly disables
+CONFIG_SERIO_I8042. And walnut_defconfig disables CONFIG_SERIO.
+
+So I guess it has a PS2 controller but most folks didn't use it?
+
+> Probably means there is a good amount of dead
+> code that can be removed, or we could just avoid ever selecting this
+> driver with CONFIG_WALNUT (if it does not actually work without the
+> special handling from i8042-ppcio.h) while removing the dead code.
+
+I'm inclined to let the driver be selected, rather than carry a wart for
+it. I doubt anyone will ever turn it on explicitly, and if they do they
+can have fun debugging it.
+
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 924c541a9260..59b2f655e39e 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -138,7 +138,7 @@ config PPC
+>  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>  	select ARCH_KEEP_MEMBLOCK
+>  	select ARCH_MIGHT_HAVE_PC_PARPORT
+> -	select ARCH_MIGHT_HAVE_PC_SERIO
+> +	select ARCH_MIGHT_HAVE_PC_SERIO if !WALNUT
+>  	select ARCH_OPTIONAL_KERNEL_RWX		if ARCH_HAS_STRICT_KERNEL_RWX
+>  	select ARCH_SUPPORTS_ATOMIC_RMW
+>  	select ARCH_USE_BUILTIN_BSWAP
+
+So I'd drop this hunk.
+
+> diff --git a/drivers/input/serio/i8042-ppcio.h b/drivers/input/serio/i8042-ppcio.h
+> deleted file mode 100644
+> index 391f94d9e47d..000000000000
+> --- a/drivers/input/serio/i8042-ppcio.h
+> +++ /dev/null
+> @@ -1,57 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0-only */
+> -#ifndef _I8042_PPCIO_H
+> -#define _I8042_PPCIO_H
+> -
+> -
+> -#if defined(CONFIG_WALNUT)
+> -
+> -#define I8042_KBD_IRQ 25
+> -#define I8042_AUX_IRQ 26
+> -
+> -#define I8042_KBD_PHYS_DESC "walnutps2/serio0"
+> -#define I8042_AUX_PHYS_DESC "walnutps2/serio1"
+> -#define I8042_MUX_PHYS_DESC "walnutps2/serio%d"
+> -
+> -extern void *kb_cs;
+> -extern void *kb_data;
+> -
+> -#define I8042_COMMAND_REG (*(int *)kb_cs)
+> -#define I8042_DATA_REG (*(int *)kb_data)
+> -
+> -static inline int i8042_read_data(void)
+> -{
+> -	return readb(kb_data);
+> -}
+> -
+> -static inline int i8042_read_status(void)
+> -{
+> -	return readb(kb_cs);
+> -}
+> -
+> -static inline void i8042_write_data(int val)
+> -{
+> -	writeb(val, kb_data);
+> -}
+> -
+> -static inline void i8042_write_command(int val)
+> -{
+> -	writeb(val, kb_cs);
+> -}
+> -
+> -static inline int i8042_platform_init(void)
+> -{
+> -	i8042_reset = I8042_RESET_ALWAYS;
+> -	return 0;
+> -}
+> -
+> -static inline void i8042_platform_exit(void)
+> -{
+> -}
+> -
+> -#else
+> -
+> -#include "i8042-io.h"
+> -
+> -#endif
+> -
+> -#endif /* _I8042_PPCIO_H */
+> diff --git a/drivers/input/serio/i8042.h b/drivers/input/serio/i8042.h
+> index 38dc27ad3c18..eb376700dfff 100644
+> --- a/drivers/input/serio/i8042.h
+> +++ b/drivers/input/serio/i8042.h
+> @@ -17,8 +17,6 @@
+>  #include "i8042-ip22io.h"
+>  #elif defined(CONFIG_SNI_RM)
+>  #include "i8042-snirm.h"
+> -#elif defined(CONFIG_PPC)
+> -#include "i8042-ppcio.h"
+>  #elif defined(CONFIG_SPARC)
+>  #include "i8042-sparcio.h"
+>  #elif defined(CONFIG_X86) || defined(CONFIG_IA64)
+
+#elif defined(CONFIG_UNICORE32)
+#include "i8042-unicore32io.h"
+#else
+#include "i8042-io.h"
+#endif
+
+The rest of the context is ^
+
+Which makes it clear that your removal of the entire file results in no
+change when WALNUT=n.
+
+I'm not sure if anyone really maintains that code, but this is all PPC
+really so I think we could merge it.
+
+Do you want to send a proper SOB'ed patch?
+
+cheers
