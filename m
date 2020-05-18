@@ -2,53 +2,75 @@ Return-Path: <SRS0=1bSx=7A=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BC11C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C24FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:23:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88B4A206D4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:21:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88B4A206D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cmss.chinamobile.com
+	by mail.kernel.org (Postfix) with ESMTPS id B50C3206D4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 11:23:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sCUogVFE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B50C3206D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Qc5x57wMzDqc1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:21:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qc8b4SMDzDqbG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 May 2020 21:23:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=cmss.chinamobile.com (client-ip=221.176.66.81;
- helo=cmccmta3.chinamobile.com; envelope-from=tangbin@cmss.chinamobile.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e2f;
+ helo=mail-vs1-xe2f.google.com; envelope-from=rsalvaterra@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=cmss.chinamobile.com
-Received: from cmccmta3.chinamobile.com (cmccmta3.chinamobile.com
- [221.176.66.81])
- by lists.ozlabs.org (Postfix) with ESMTP id 49Qbqg06R7zDqT1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:09:00 +1000 (AEST)
-Received: from spf.mail.chinamobile.com (unknown[172.16.121.17]) by
- rmmx-syy-dmz-app11-12011 (RichMail) with SMTP id 2eeb5ec26ab0fe5-37701;
- Mon, 18 May 2020 19:00:00 +0800 (CST)
-X-RM-TRANSID: 2eeb5ec26ab0fe5-37701
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG: 00000000
-Received: from localhost.localdomain (unknown[112.25.154.146])
- by rmsmtp-syy-appsvr09-12009 (RichMail) with SMTP id 2ee95ec26aadd27-b87e8;
- Mon, 18 May 2020 19:00:00 +0800 (CST)
-X-RM-TRANSID: 2ee95ec26aadd27-b87e8
-From: Tang Bin <tangbin@cmss.chinamobile.com>
-To: broonie@kernel.org, timur@kernel.org, nicoleotsuka@gmail.com,
- Xiubo.Lee@gmail.com, perex@perex.cz
-Subject: [PATCH] ASoC: fsl_micfil: Fix unused assignment in
- fsl_set_clock_params()
-Date: Mon, 18 May 2020 19:00:40 +0800
-Message-Id: <20200518110040.18036-1-tangbin@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.20.1.windows.1
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=sCUogVFE; dkim-atps=neutral
+Received: from mail-vs1-xe2f.google.com (mail-vs1-xe2f.google.com
+ [IPv6:2607:f8b0:4864:20::e2f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Qc4g3VDXzDqc1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 21:20:19 +1000 (AEST)
+Received: by mail-vs1-xe2f.google.com with SMTP id 62so5310181vsi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 04:20:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:from:date:message-id:subject:to;
+ bh=FwXuV2cpxUSmCy7up15Uwmqhyk5m3pVcIwxq8dUVwU4=;
+ b=sCUogVFEgqxkFeiGS1deK6BYWcRs/bXc9mzN6EfpU9712ZjJIuFJleaiNG+HC6kgXQ
+ 4GSTmDjIU/Ex3AfcjCHJzMW8DDs+BpUpqFixdzvEMQvzkY2myC5K0hPne3wx5qtmC5Dm
+ 3T5cio7JzmeRqh4yk9I9/chSLU9NzPxqo6DFSPoxCLSuthQLgOYxggk/LjzNYN/k7HqO
+ 5KP5U2IRTZBkXAf0wvKQr30hKzTLSN8AqtfH4hdUGD6rj9k8BBmYogCn+ytv6V3ZWQi3
+ SttAgxHwvmEctqoIjWPNh3hkhEbjG6W9dzoNzg8dw+p1h/z2k8PUUyAIAJB0k2ZwN7bt
+ eJzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=FwXuV2cpxUSmCy7up15Uwmqhyk5m3pVcIwxq8dUVwU4=;
+ b=flZtGfQwKyRthinmUIqd/DZnoeadtISwgKw+4r6ZgzrHdv1kzbgErGyA2IpgCTESzu
+ wQKjdUN1RLVPTFJY/NdPydSaDWsfHqw67pNofbhSZRTqpT3jzPaUGZTKLPJZU9TmOY61
+ hGuZq3RWIdWTKjYyldp5vbsxdJsuCfvaVxtBllFny6orZCv2Ta3jmzZBRuE8EYb8OCLm
+ IHICi3ogAOxkhmCgE6zoKwGAB+uRwu07R1YjAg17cEw+KfpaV7uyDlf9BdznYMJVvs/J
+ hFBRXVmutghnct0cE91xHLxhNjQ3CzxHsTYIw9i73lazrzfB48fju9TgDy/ca8yju7tm
+ 4GNg==
+X-Gm-Message-State: AOAM531FmaPjb5xx6fa6Zi4K3uL27mvd0viYqgtEkwzct9quHThjUxcf
+ 1lyZf5gFmUucjixSH4moK3JWQqPdKZfoYYl4tjjYg/E=
+X-Google-Smtp-Source: ABdhPJxEQFphj2Sq8hlQl6IfTRYt/YeeVPsYywLPPhfYBYSi0Ff97l30iN41++lXn0O8ZzPymnxpjXEHT6XT+J3SDEg=
+X-Received: by 2002:a67:8d0a:: with SMTP id p10mr11245879vsd.45.1589800815636; 
+ Mon, 18 May 2020 04:20:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Rui Salvaterra <rsalvaterra@gmail.com>
+Date: Mon, 18 May 2020 12:20:04 +0100
+Message-ID: <CALjTZvZ69v3Z=8MY28F+p8v8_Z5e+7NrH0PAJ7TGD9kh6Ab7bw@mail.gmail.com>
+Subject: [Regression 5.7-rc1] Random hangs on 32-bit PowerPC (PowerBook6,7)
+To: linuxppc-dev@lists.ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,35 +82,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Tang Bin <tangbin@cmss.chinamobile.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Delete unused initialized value of 'ret', because it will
-be assigned by the function fsl_micfil_set_mclk_rate().
+[Resending since I messed up the subject, sorry]
 
-Signed-off-by: Tang Bin <tangbin@cmss.chinamobile.com>
----
- sound/soc/fsl/fsl_micfil.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi, everyone,
 
-diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
-index 79cf488fa..a7a6118be 100644
---- a/sound/soc/fsl/fsl_micfil.c
-+++ b/sound/soc/fsl/fsl_micfil.c
-@@ -295,7 +295,7 @@ static int fsl_set_clock_params(struct device *dev, unsigned int rate)
- {
- 	struct fsl_micfil *micfil = dev_get_drvdata(dev);
- 	int clk_div;
--	int ret = 0;
-+	int ret;
- 
- 	ret = fsl_micfil_set_mclk_rate(micfil, rate);
- 	if (ret < 0)
--- 
-2.20.1.windows.1
+Something went wrong between Linux 5.6 and 5.7-rc1. This is an iBook
+G4 laptop with 1.5 GiB of RAM running the Debian powerpc port. I
+haven't bisected yet, since it's going to take quite a bit of time, so
+I'm sending this mostly as a heads-up (and to see if anybody has any
+clues about the possible cause). I'm using the following reproducer:
 
+stress-ng --cpu 8 --io 8 --vm 8 --vm-bytes 1G --fork 8 --timeout 10m
 
+On Linux 5.7-rc1, this completely hangs the machine in about 30
+seconds. Linux 5.6 survives the test. Let me know if I can provide any
+additional info, otherwise I'll just bite the bullet and start
+bisecting.
 
+Thanks,
+Rui
