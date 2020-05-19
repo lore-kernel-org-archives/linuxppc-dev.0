@@ -4,47 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC791C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 05:47:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22191C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 05:56:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEBF7207D4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 05:47:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEBF7207D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C75CE2075F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 05:56:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C75CE2075F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49R4f85LgLzDqf6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 15:47:28 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49R4c26S5VzDqrn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:45:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49R4rN3lWnzDqMF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 15:56:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=popple.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49R4c16cbmz9sTT;
- Tue, 19 May 2020 15:45:37 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/7] powerpc: Add support for ISA v3.1
-Date: Tue, 19 May 2020 15:45:34 +1000
-Message-ID: <2708597.ukFscvRmPa@townsend>
-In-Reply-To: <CACzsE9pF6Q01eMtzM1esnGC1k=BWZuq8gPMRZC4uaHNoQ=VdzA@mail.gmail.com>
-References: <20200519003157.31946-1-alistair@popple.id.au>
- <20200519003157.31946-3-alistair@popple.id.au>
- <CACzsE9pF6Q01eMtzM1esnGC1k=BWZuq8gPMRZC4uaHNoQ=VdzA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49R4gj0JS7zDqLY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:48:49 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49R4gb1TM2z9txm0;
+ Tue, 19 May 2020 07:48:43 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 63XlcneLXsR3; Tue, 19 May 2020 07:48:43 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49R4gZ72BRz9txlx;
+ Tue, 19 May 2020 07:48:42 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0ABFE8B7A7;
+ Tue, 19 May 2020 07:48:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 48w6HbIsE106; Tue, 19 May 2020 07:48:43 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8C3258B767;
+ Tue, 19 May 2020 07:48:43 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 6AD6C65A4A; Tue, 19 May 2020 05:48:43 +0000 (UTC)
+Message-Id: <7cb8ca82042bfc45a5cfe726c921cd7e7eeb12a3.1589866984.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1589866984.git.christophe.leroy@csgroup.eu>
+References: <cover.1589866984.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v4 01/45] powerpc/kasan: Fix error detection on memory
+ allocation
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 19 May 2020 05:48:43 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,102 +71,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>, mikey@neuling.org,
- Nicholas Piggin <npiggin@gmail.com>, aneesh.kumar@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tuesday, 19 May 2020 2:04:51 PM AEST Jordan Niethe wrote:
-> On Tue, May 19, 2020 at 10:39 AM Alistair Popple <alistair@popple.id.au> 
-wrote:
-> > Newer ISA versions are enabled by clearing all bits in the PCR
-> > associated with previous versions of the ISA. Enable ISA v3.1 support
-> > by updating the PCR mask to include ISA v3.0. This ensures all PCR
-> > bits corresponding to earlier architecture versions get cleared
-> > thereby enabling ISA v3.1 if supported by the hardware.
-> > 
-> > Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> > ---
-> > 
-> >  arch/powerpc/include/asm/cputable.h | 1 +
-> >  arch/powerpc/include/asm/reg.h      | 3 ++-
-> >  arch/powerpc/kvm/book3s_hv.c        | 3 ---
-> >  3 files changed, 3 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/cputable.h
-> > b/arch/powerpc/include/asm/cputable.h index 40a4d3c6fd99..36f894dea9e7
-> > 100644
-> > --- a/arch/powerpc/include/asm/cputable.h
-> > +++ b/arch/powerpc/include/asm/cputable.h
-> > @@ -213,6 +213,7 @@ static inline void cpu_feature_keys_init(void) { }
-> > 
-> >  #define CPU_FTR_P9_TIDR                       
-> >  LONG_ASM_CONST(0x0000800000000000) #define CPU_FTR_P9_TLBIE_ERAT_BUG    
-> >   LONG_ASM_CONST(0x0001000000000000) #define
-> >  CPU_FTR_P9_RADIX_PREFETCH_BUG  LONG_ASM_CONST(0x0002000000000000)> 
-> > +#define CPU_FTR_ARCH_31                       
-> > LONG_ASM_CONST(0x0004000000000000)> 
-> >  #ifndef __ASSEMBLY__
-> > 
-> > diff --git a/arch/powerpc/include/asm/reg.h
-> > b/arch/powerpc/include/asm/reg.h index 773f76402392..1931b1142599 100644
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -485,10 +485,11 @@
-> > 
-> >   * determine both the compatibility level which we want to emulate and
-> >   the
-> >   * compatibility level which the host is capable of emulating.
-> >   */
-> > 
-> > +#define   PCR_ARCH_300 0x10            /* Architecture 3.00 */
-> > 
-> >  #define   PCR_ARCH_207 0x8             /* Architecture 2.07 */
-> >  #define   PCR_ARCH_206 0x4             /* Architecture 2.06 */
-> >  #define   PCR_ARCH_205 0x2             /* Architecture 2.05 */
-> > 
-> > -#define   PCR_LOW_BITS (PCR_ARCH_207 | PCR_ARCH_206 | PCR_ARCH_205)
-> > +#define   PCR_LOW_BITS (PCR_ARCH_207 | PCR_ARCH_206 | PCR_ARCH_205 |
-> > PCR_ARCH_300)> 
-> >  #define   PCR_MASK     ~(PCR_HIGH_BITS | PCR_LOW_BITS) /* PCR Reserved
-> >  Bits */ #define        SPRN_HEIR       0x153   /* Hypervisor Emulated
-> >  Instruction Register */ #define SPRN_TLBINDEXR 0x154   /* P7 TLB control
-> >  register */
-> > 
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index 93493f0cbfe8..532215040f3e 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -344,9 +344,6 @@ static void kvmppc_set_pvr_hv(struct kvm_vcpu *vcpu,
-> > u32 pvr)> 
-> >         vcpu->arch.pvr = pvr;
-> >  
-> >  }
-> > 
-> > -/* Dummy value used in computing PCR value below */
-> > -#define PCR_ARCH_300   (PCR_ARCH_207 << 1)
-> > -
-> 
-> Later will we need
-> +/* Dummy value used in computing PCR value below */
-> +#define PCR_ARCH_310   (PCR_ARCH_300 << 1)
-> ?
+In case (k_start & PAGE_MASK) doesn't equal (kstart), 'va' will never be
+NULL allthough 'block' is NULL
 
-Correct. I left that out of this patch series though as I am putting together 
-a separate series for basic P10 KVM enablement which will add the definition 
-for ARCH 3.1.
+Check the return of memblock_alloc() directly instead of
+the resulting address in the loop.
 
-- Alistair
+Fixes: 509cd3f2b473 ("powerpc/32: Simplify KASAN init")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/mm/kasan/kasan_init_32.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> >  static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
-> >  {
-> >  
-> >         unsigned long host_pcr_bit = 0, guest_pcr_bit = 0;
-> > 
-> > --
-> > 2.20.1
-
-
-
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index cbcad369fcb2..8b15fe09b967 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -76,15 +76,14 @@ static int __init kasan_init_region(void *start, size_t size)
+ 		return ret;
+ 
+ 	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
++	if (!block)
++		return -ENOMEM;
+ 
+ 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
+ 		pmd_t *pmd = pmd_ptr_k(k_cur);
+ 		void *va = block + k_cur - k_start;
+ 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
+ 
+-		if (!va)
+-			return -ENOMEM;
+-
+ 		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
+ 	}
+ 	flush_tlb_kernel_range(k_start, k_end);
+-- 
+2.25.0
 
