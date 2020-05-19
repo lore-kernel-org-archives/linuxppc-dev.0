@@ -3,22 +3,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NORMAL_HTTP_TO_IP,NUMERIC_HTTP_ADDR,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08B1AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:51:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 284F9C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:53:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B595920758
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:51:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B595920758
+	by mail.kernel.org (Postfix) with ESMTPS id D6FF320809
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:53:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6FF320809
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49R6456KbhzDqHZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 16:51:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49R6623xf8zDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 16:53:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49R4hG0QC5zDqRJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:49:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49R4hJ0FLSzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:49:20 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49R4hB1177z9txm0;
- Tue, 19 May 2020 07:49:14 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49R4hD0snqz9txm4;
+ Tue, 19 May 2020 07:49:16 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id IHLo3eE-kpTY; Tue, 19 May 2020 07:49:14 +0200 (CEST)
+ with ESMTP id Qg4LW-gqs4Ck; Tue, 19 May 2020 07:49:16 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49R4hB08ZHz9txlx;
- Tue, 19 May 2020 07:49:14 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49R4hD07nSz9txlx;
+ Tue, 19 May 2020 07:49:16 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 22CB28B7A7;
- Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 28FA48B7A7;
+ Tue, 19 May 2020 07:49:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pfuUbpNAUf7d; Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ with ESMTP id pR9XnFpyxVVP; Tue, 19 May 2020 07:49:17 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C15508B767;
- Tue, 19 May 2020 07:49:14 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D0C928B767;
+ Tue, 19 May 2020 07:49:16 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9EF5565A4A; Tue, 19 May 2020 05:49:14 +0000 (UTC)
-Message-Id: <13c1e8539fdf363d3146f4884e5c3c76c6c308b5.1589866984.git.christophe.leroy@csgroup.eu>
+ id AE0A265A4A; Tue, 19 May 2020 05:49:16 +0000 (UTC)
+Message-Id: <221b7e3ead80a5969629938c023f8cfe45fdd2fb.1589866984.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1589866984.git.christophe.leroy@csgroup.eu>
 References: <cover.1589866984.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 31/45] powerpc/8xx: Don't set IMMR map anymore at boot
+Subject: [PATCH v4 33/45] powerpc/8xx: Drop special handling of Linear and
+ IMMR mappings in I/D TLB handlers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 19 May 2020 05:49:14 +0000 (UTC)
+Date: Tue, 19 May 2020 05:49:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,177 +77,233 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Only early debug requires IMMR to be mapped early.
+Up to now, linear and IMMR mappings are managed via huge TLB entries
+through specific code directly in TLB miss handlers. This implies
+some patching of the TLB miss handlers at startup, and a lot of
+dedicated code.
 
-No need to set it up and pin it in assembly. Map it
-through page tables at udbg init when necessary.
+Remove all this specific dedicated code.
 
-If CONFIG_PIN_TLB_IMMR is selected, pin it once we
-don't need the 32 Mb pinned RAM anymore.
+For now we are back to normal handling via standard 4k pages. In the
+next patches, linear memory mapping and IMMR mapping will be managed
+through huge pages.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Disable TLB reservation to modify entry 31
----
- arch/powerpc/kernel/head_8xx.S     | 39 +++++++++++++-----------------
- arch/powerpc/mm/mmu_decl.h         |  4 +++
- arch/powerpc/mm/nohash/8xx.c       | 15 +++++++++---
- arch/powerpc/platforms/8xx/Kconfig |  2 +-
- arch/powerpc/sysdev/cpm_common.c   |  2 ++
- 5 files changed, 35 insertions(+), 27 deletions(-)
+ arch/powerpc/kernel/head_8xx.S |  29 +--------
+ arch/powerpc/mm/nohash/8xx.c   | 106 +--------------------------------
+ 2 files changed, 3 insertions(+), 132 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index c9e3d54e6a6f..d607f4b53e0f 100644
+index b0cceee6405c..d1546f379757 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -749,6 +749,23 @@ start_here:
- 	rfi
- /* Load up the kernel context */
- 2:
-+#ifdef CONFIG_PIN_TLB_IMMR
-+	lis	r0, MD_TWAM@h
-+	oris	r0, r0, 0x1f00
-+	mtspr	SPRN_MD_CTR, r0
-+	LOAD_REG_IMMEDIATE(r0, VIRT_IMMR_BASE | MD_EVALID)
-+	tlbie	r0
-+	mtspr	SPRN_MD_EPN, r0
-+	LOAD_REG_IMMEDIATE(r0, MD_SVALID | MD_PS512K | MD_GUARDED)
-+	mtspr	SPRN_MD_TWC, r0
-+	mfspr   r0, SPRN_IMMR
-+	rlwinm	r0, r0, 0, 0xfff80000
-+	ori	r0, r0, 0xf0 | _PAGE_DIRTY | _PAGE_SPS | _PAGE_SH | \
-+			_PAGE_NO_CACHE | _PAGE_PRESENT
-+	mtspr	SPRN_MD_RPN, r0
-+	lis	r0, (MD_TWAM | MD_RSV4I)@h
-+	mtspr	SPRN_MD_CTR, r0
-+#endif
- 	tlbia			/* Clear all TLB entries */
- 	sync			/* wait for tlbia/tlbie to finish */
- 
-@@ -797,28 +814,6 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Map a 512k page for the IMMR to get the processor
--	 * internal registers (among other things).
--	 */
--#ifdef CONFIG_PIN_TLB_IMMR
--	oris	r10, r10, MD_RSV4I@h
--	ori	r10, r10, 0x1c00
--	mtspr	SPRN_MD_CTR, r10
--
--	mfspr	r9, 638			/* Get current IMMR */
--	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
--
--	lis	r8, VIRT_IMMR_BASE@h	/* Create vaddr for TLB */
--	ori	r8, r8, MD_EVALID	/* Mark it valid */
--	mtspr	SPRN_MD_EPN, r8
--	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
--	ori	r8, r8, MD_SVALID	/* Make it valid */
--	mtspr	SPRN_MD_TWC, r8
--	mr	r8, r9			/* Create paddr for TLB */
--	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
--	mtspr	SPRN_MD_RPN, r8
--#endif
--
- 	/* Now map the lower RAM (up to 32 Mbytes) into the ITLB. */
- #ifdef CONFIG_PIN_TLB_TEXT
- 	lis	r8, MI_RSV4I@h
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 7097e07a209a..1b6d39e9baed 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -182,6 +182,10 @@ static inline void mmu_mark_initmem_nx(void) { }
- static inline void mmu_mark_rodata_ro(void) { }
- #endif
- 
-+#ifdef CONFIG_PPC_8xx
-+void __init mmu_mapin_immr(void);
-+#endif
-+
- #ifdef CONFIG_PPC_DEBUG_WX
- void ptdump_check_wx(void);
+@@ -207,31 +207,21 @@ InstructionTLBMiss:
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+ 	INVALIDATE_ADJACENT_PAGES_CPU15(r10)
+ 	mtspr	SPRN_MD_EPN, r10
+-	/* Only modules will cause ITLB Misses as we always
+-	 * pin the first 8MB of kernel memory */
+ #ifdef ITLB_MISS_KERNEL
+ 	mfcr	r11
+-#if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
++#if defined(SIMPLE_KERNEL_ADDRESS)
+ 	cmpi	cr0, r10, 0	/* Address >= 0x80000000 */
  #else
+ 	rlwinm	r10, r10, 16, 0xfff8
+ 	cmpli	cr0, r10, PAGE_OFFSET@h
+-#ifndef CONFIG_PIN_TLB_TEXT
+-	/* It is assumed that kernel code fits into the first 32M */
+-0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x2000000)@h
+-	patch_site	0b, patch__itlbmiss_linmem_top
+-#endif
+ #endif
+ #endif
+ 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
+ #ifdef ITLB_MISS_KERNEL
+-#if defined(SIMPLE_KERNEL_ADDRESS) && defined(CONFIG_PIN_TLB_TEXT)
++#if defined(SIMPLE_KERNEL_ADDRESS)
+ 	bge+	3f
+ #else
+ 	blt+	3f
+-#endif
+-#ifndef CONFIG_PIN_TLB_TEXT
+-	blt	cr7, ITLBMissLinear
+ #endif
+ 	rlwinm	r10, r10, 0, 20, 31
+ 	oris	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@ha
+@@ -327,19 +317,9 @@ DataStoreTLBMiss:
+ 	mfspr	r10, SPRN_MD_EPN
+ 	rlwinm	r10, r10, 16, 0xfff8
+ 	cmpli	cr0, r10, PAGE_OFFSET@h
+-#ifndef CONFIG_PIN_TLB_IMMR
+-	cmpli	cr6, r10, VIRT_IMMR_BASE@h
+-#endif
+-0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x2000000)@h
+-	patch_site	0b, patch__dtlbmiss_linmem_top
+ 
+ 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
+ 	blt+	3f
+-#ifndef CONFIG_PIN_TLB_IMMR
+-0:	beq-	cr6, DTLBMissIMMR
+-	patch_site	0b, patch__dtlbmiss_immr_jmp
+-#endif
+-	blt	cr7, DTLBMissLinear
+ 	rlwinm	r10, r10, 0, 20, 31
+ 	oris	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@ha
+ 3:
+@@ -571,14 +551,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	cmpli	cr1, r11, PAGE_OFFSET@h
+ 	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+ 	blt+	cr1, 3f
+-	rlwinm	r11, r10, 16, 0xfff8
+-
+-0:	cmpli	cr7, r11, (PAGE_OFFSET + 0x1800000)@h
+-	patch_site	0b, patch__fixupdar_linmem_top
+ 
+ 	/* create physical page address from effective address */
+ 	tophys(r11, r10)
+-	blt-	cr7, 201f
+ 	mfspr	r11, SPRN_M_TWB	/* Get level 1 table */
+ 	rlwinm	r11, r11, 0, 20, 31
+ 	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
 diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index bda5290af751..a9313aa6f1cd 100644
+index 2c480e35b426..b735482e1529 100644
 --- a/arch/powerpc/mm/nohash/8xx.c
 +++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -66,7 +66,7 @@ void __init MMU_init_hw(void)
- 	if (IS_ENABLED(CONFIG_PIN_TLB_DATA)) {
- 		unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
- 		unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
--		int i = IS_ENABLED(CONFIG_PIN_TLB_IMMR) ? 29 : 28;
-+		int i = 28;
- 		unsigned long addr = 0;
- 		unsigned long mem = total_lowmem;
- 
-@@ -81,12 +81,19 @@ void __init MMU_init_hw(void)
- 	}
+@@ -55,8 +55,6 @@ unsigned long p_block_mapped(phys_addr_t pa)
+ 	return 0;
  }
  
--static void __init mmu_mapin_immr(void)
-+static bool immr_is_mapped __initdata;
-+
-+void __init mmu_mapin_immr(void)
- {
- 	unsigned long p = PHYS_IMMR_BASE;
- 	unsigned long v = VIRT_IMMR_BASE;
- 	int offset;
- 
-+	if (immr_is_mapped)
-+		return;
-+
-+	immr_is_mapped = true;
-+
- 	for (offset = 0; offset < IMMR_SIZE; offset += PAGE_SIZE)
+-#define LARGE_PAGE_SIZE_8M	(1<<23)
+-
+ /*
+  * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+  */
+@@ -81,122 +79,20 @@ void __init mmu_mapin_immr(void)
  		map_kernel_page(v + offset, p + offset, PAGE_KERNEL_NCG);
  }
-@@ -122,9 +129,10 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+ 
+-static void mmu_patch_cmp_limit(s32 *site, unsigned long mapped)
+-{
+-	modify_instruction_site(site, 0xffff, (unsigned long)__va(mapped) >> 16);
+-}
+-
+-static void mmu_patch_addis(s32 *site, long simm)
+-{
+-	unsigned int instr = *(unsigned int *)patch_site_addr(site);
+-
+-	instr &= 0xffff0000;
+-	instr |= ((unsigned long)simm) >> 16;
+-	patch_instruction_site(site, ppc_inst(instr));
+-}
+-
+-static void mmu_mapin_ram_chunk(unsigned long offset, unsigned long top, pgprot_t prot)
+-{
+-	unsigned long s = offset;
+-	unsigned long v = PAGE_OFFSET + s;
+-	phys_addr_t p = memstart_addr + s;
+-
+-	for (; s < top; s += PAGE_SIZE) {
+-		map_kernel_page(v, p, prot);
+-		v += PAGE_SIZE;
+-		p += PAGE_SIZE;
+-	}
+-}
+-
+ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
  {
- 	unsigned long mapped;
+-	unsigned long mapped;
+-
+ 	mmu_mapin_immr();
  
-+	mmu_mapin_immr();
-+
- 	if (__map_without_ltlbs) {
- 		mapped = 0;
--		mmu_mapin_immr();
- 		if (!IS_ENABLED(CONFIG_PIN_TLB_IMMR))
- 			patch_instruction_site(&patch__dtlbmiss_immr_jmp, ppc_inst(PPC_INST_NOP));
- 		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
-@@ -143,7 +151,6 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- 		 */
- 		mmu_mapin_ram_chunk(0, einittext8, PAGE_KERNEL_X);
- 		mmu_mapin_ram_chunk(einittext8, mapped, PAGE_KERNEL);
--		mmu_mapin_immr();
- 	}
+-	if (__map_without_ltlbs) {
+-		mapped = 0;
+-		if (!IS_ENABLED(CONFIG_PIN_TLB_IMMR))
+-			patch_instruction_site(&patch__dtlbmiss_immr_jmp, ppc_inst(PPC_INST_NOP));
+-		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
+-			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, 0);
+-	} else {
+-		unsigned long einittext8 = ALIGN(__pa(_einittext), SZ_8M);
+-
+-		mapped = top & ~(LARGE_PAGE_SIZE_8M - 1);
+-		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
+-			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, einittext8);
+-
+-		/*
+-		 * Populate page tables to:
+-		 * - have them appear in /sys/kernel/debug/kernel_page_tables
+-		 * - allow the BDI to find the pages when they are not PINNED
+-		 */
+-		mmu_mapin_ram_chunk(0, einittext8, PAGE_KERNEL_X);
+-		mmu_mapin_ram_chunk(einittext8, mapped, PAGE_KERNEL);
+-	}
+-
+-	mmu_patch_cmp_limit(&patch__dtlbmiss_linmem_top, mapped);
+-	mmu_patch_cmp_limit(&patch__fixupdar_linmem_top, mapped);
+-
+-	/* If the size of RAM is not an exact power of two, we may not
+-	 * have covered RAM in its entirety with 8 MiB
+-	 * pages. Consequently, restrict the top end of RAM currently
+-	 * allocable so that calls to the MEMBLOCK to allocate PTEs for "tail"
+-	 * coverage with normal-sized pages (or other reasons) do not
+-	 * attempt to allocate outside the allowed range.
+-	 */
+-	if (mapped)
+-		memblock_set_current_limit(mapped);
+-
+-	block_mapped_ram = mapped;
+-
+-	return mapped;
++	return 0;
+ }
  
- 	mmu_patch_cmp_limit(&patch__dtlbmiss_linmem_top, mapped);
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 0d036cd868ef..04ea1a8a0bdc 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -187,7 +187,7 @@ config PIN_TLB_DATA
- 
- config PIN_TLB_IMMR
- 	bool "Pinned TLB for IMMR"
--	depends on PIN_TLB || PPC_EARLY_DEBUG_CPM
-+	depends on PIN_TLB
- 	default y
- 	help
- 	  This pins the IMMR area with a 512kbytes page. In case
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 71660bacb264..7dc1960f8bdb 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -68,6 +68,8 @@ static void udbg_putc_cpm(char c)
- void __init udbg_init_cpm(void)
+ void mmu_mark_initmem_nx(void)
  {
- #ifdef CONFIG_PPC_8xx
-+	mmu_mapin_immr();
-+
- 	cpm_udbg_txdesc = (u32 __iomem __force *)
- 			  (CONFIG_PPC_EARLY_DEBUG_CPM_ADDR - PHYS_IMMR_BASE +
- 			   VIRT_IMMR_BASE);
+-	if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX) && CONFIG_ETEXT_SHIFT < 23)
+-		mmu_patch_addis(&patch__itlbmiss_linmem_top8,
+-				-((long)_etext & ~(LARGE_PAGE_SIZE_8M - 1)));
+-	if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT)) {
+-		unsigned long einittext8 = ALIGN(__pa(_einittext), SZ_8M);
+-		unsigned long etext8 = ALIGN(__pa(_etext), SZ_8M);
+-		unsigned long etext = __pa(_etext);
+-
+-		mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, __pa(_etext));
+-
+-		/* Update page tables for PTDUMP and BDI */
+-		mmu_mapin_ram_chunk(0, einittext8, __pgprot(0));
+-		if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)) {
+-			mmu_mapin_ram_chunk(0, etext, PAGE_KERNEL_TEXT);
+-			mmu_mapin_ram_chunk(etext, einittext8, PAGE_KERNEL);
+-		} else {
+-			mmu_mapin_ram_chunk(0, etext8, PAGE_KERNEL_TEXT);
+-			mmu_mapin_ram_chunk(etext8, einittext8, PAGE_KERNEL);
+-		}
+-	}
+-	_tlbil_all();
+ }
+ 
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ void mmu_mark_rodata_ro(void)
+ {
+-	unsigned long sinittext = __pa(_sinittext);
+-	unsigned long etext = __pa(_etext);
+-
+-	if (CONFIG_DATA_SHIFT < 23)
+-		mmu_patch_addis(&patch__dtlbmiss_romem_top8,
+-				-__pa(((unsigned long)_sinittext) &
+-				      ~(LARGE_PAGE_SIZE_8M - 1)));
+-	mmu_patch_addis(&patch__dtlbmiss_romem_top, -__pa(_sinittext));
+-
+-	_tlbil_all();
+-
+-	/* Update page tables for PTDUMP and BDI */
+-	mmu_mapin_ram_chunk(0, sinittext, __pgprot(0));
+-	mmu_mapin_ram_chunk(0, etext, PAGE_KERNEL_ROX);
+-	mmu_mapin_ram_chunk(etext, sinittext, PAGE_KERNEL_RO);
+ }
+ #endif
+ 
 -- 
 2.25.0
 
