@@ -3,22 +3,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NORMAL_HTTP_TO_IP,NUMERIC_HTTP_ADDR,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D063C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:54:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5CFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:56:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 020F820758
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:54:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 020F820758
+	by mail.kernel.org (Postfix) with ESMTPS id 16B8420758
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 06:56:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16B8420758
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49R67x1yXVzDqS2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 16:54:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49R6B73CyNzDrCX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 16:56:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49R4hH2p6JzDqWL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:49:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49R4hK3NqczDqRH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 15:49:21 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49R4hC1fr6z9txm1;
- Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49R4hF1bdyz9txm5;
+ Tue, 19 May 2020 07:49:17 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cFAs5u6pZCkM; Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ with ESMTP id eoIDD0Zky-kU; Tue, 19 May 2020 07:49:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49R4hC0Spvz9txlx;
- Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49R4hF0qbwz9txlx;
+ Tue, 19 May 2020 07:49:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 252488B7A7;
- Tue, 19 May 2020 07:49:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 30BFD8B7A7;
+ Tue, 19 May 2020 07:49:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id JTGUI8JKwfUQ; Tue, 19 May 2020 07:49:16 +0200 (CEST)
+ with ESMTP id BPhmAeN8alyT; Tue, 19 May 2020 07:49:18 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C90188B767;
- Tue, 19 May 2020 07:49:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D971D8B767;
+ Tue, 19 May 2020 07:49:17 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A5A7C65A4A; Tue, 19 May 2020 05:49:15 +0000 (UTC)
-Message-Id: <b27c5767d18053b59f7eefddc189fcc3acf7b9c2.1589866984.git.christophe.leroy@csgroup.eu>
+ id B6C6A65A4A; Tue, 19 May 2020 05:49:17 +0000 (UTC)
+Message-Id: <75750d25849cb8e73ca519866bb892d7eb9649c0.1589866984.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1589866984.git.christophe.leroy@csgroup.eu>
 References: <cover.1589866984.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4 32/45] powerpc/8xx: Always pin TLBs at startup.
+Subject: [PATCH v4 34/45] powerpc/8xx: Remove now unused TLB miss functions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 19 May 2020 05:49:15 +0000 (UTC)
+Date: Tue, 19 May 2020 05:49:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,130 +76,180 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At startup, map 32 Mbytes of memory through 4 pages of 8M,
-and PIN them inconditionnaly. They need to be pinned because
-KASAN is using page tables early and the TLBs might be
-dynamically replaced otherwise.
+The code to setup linear and IMMR mapping via huge TLB entries is
+not called anymore. Remove it.
 
-Remove RSV4I flag after installing mappings unless
-CONFIG_PIN_TLB_XXXX is selected.
+Also remove the handling of removed code exits in the perf driver.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_8xx.S | 31 +++++++++++++++++--------------
- arch/powerpc/mm/nohash/8xx.c   | 19 +------------------
- 2 files changed, 18 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h |  8 +-
+ arch/powerpc/kernel/head_8xx.S               | 83 --------------------
+ arch/powerpc/perf/8xx-pmu.c                  | 10 ---
+ 3 files changed, 1 insertion(+), 100 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+index 4d3ef3841b00..e82368838416 100644
+--- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+@@ -240,13 +240,7 @@ static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
+ }
+ 
+ /* patch sites */
+-extern s32 patch__itlbmiss_linmem_top, patch__itlbmiss_linmem_top8;
+-extern s32 patch__dtlbmiss_linmem_top, patch__dtlbmiss_immr_jmp;
+-extern s32 patch__fixupdar_linmem_top;
+-extern s32 patch__dtlbmiss_romem_top, patch__dtlbmiss_romem_top8;
+-
+-extern s32 patch__itlbmiss_exit_1, patch__itlbmiss_exit_2;
+-extern s32 patch__dtlbmiss_exit_1, patch__dtlbmiss_exit_2, patch__dtlbmiss_exit_3;
++extern s32 patch__itlbmiss_exit_1, patch__dtlbmiss_exit_1;
+ extern s32 patch__itlbmiss_perf, patch__dtlbmiss_perf;
+ 
+ #endif /* !__ASSEMBLY__ */
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d607f4b53e0f..b0cceee6405c 100644
+index d1546f379757..fb5d17187772 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -765,6 +765,14 @@ start_here:
- 	mtspr	SPRN_MD_RPN, r0
- 	lis	r0, (MD_TWAM | MD_RSV4I)@h
- 	mtspr	SPRN_MD_CTR, r0
-+#endif
-+#ifndef CONFIG_PIN_TLB_TEXT
-+	li	r0, 0
-+	mtspr	SPRN_MI_CTR, r0
-+#endif
-+#if !defined(CONFIG_PIN_TLB_DATA) && !defined(CONFIG_PIN_TLB_IMMR)
-+	lis	r0, MD_TWAM@h
-+	mtspr	SPRN_MD_CTR, r0
+@@ -278,33 +278,6 @@ InstructionTLBMiss:
+ 	rfi
  #endif
- 	tlbia			/* Clear all TLB entries */
- 	sync			/* wait for tlbia/tlbie to finish */
-@@ -802,10 +810,6 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10	/* remove PINNED DTLB entries */
  
- 	tlbia			/* Invalidate all TLB entries */
--#ifdef CONFIG_PIN_TLB_DATA
--	oris	r10, r10, MD_RSV4I@h
--	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+-#ifndef CONFIG_PIN_TLB_TEXT
+-ITLBMissLinear:
+-	mtcr	r11
+-#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_ETEXT_SHIFT < 23
+-	patch_site	0f, patch__itlbmiss_linmem_top8
+-
+-	mfspr	r10, SPRN_SRR0
+-0:	subis	r11, r10, (PAGE_OFFSET - 0x80000000)@ha
+-	rlwinm	r11, r11, 4, MI_PS8MEG ^ MI_PS512K
+-	ori	r11, r11, MI_PS512K | MI_SVALID
+-	rlwinm	r10, r10, 0, 0x0ff80000	/* 8xx supports max 256Mb RAM */
+-#else
+-	/* Set 8M byte page and mark it valid */
+-	li	r11, MI_PS8MEG | MI_SVALID
+-	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
 -#endif
- 
- 	lis	r8, MI_APG_INIT@h	/* Set protection modes */
- 	ori	r8, r8, MI_APG_INIT@l
-@@ -814,33 +818,32 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Now map the lower RAM (up to 32 Mbytes) into the ITLB. */
--#ifdef CONFIG_PIN_TLB_TEXT
-+	/* Map the lower RAM (up to 32 Mbytes) into the ITLB and DTLB */
- 	lis	r8, MI_RSV4I@h
- 	ori	r8, r8, 0x1c00
--#endif
-+	oris	r12, r10, MD_RSV4I@h
-+	ori	r12, r12, 0x1c00
- 	li	r9, 4				/* up to 4 pages of 8M */
- 	mtctr	r9
- 	lis	r9, KERNELBASE@h		/* Create vaddr for TLB */
- 	li	r10, MI_PS8MEG | MI_SVALID	/* Set 8M byte page */
- 	li	r11, MI_BOOTINIT		/* Create RPN for address 0 */
--	lis	r12, _einittext@h
--	ori	r12, r12, _einittext@l
- 1:
--#ifdef CONFIG_PIN_TLB_TEXT
- 	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
- 	addi	r8, r8, 0x100
+-	mtspr	SPRN_MI_TWC, r11
+-	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
+-			  _PAGE_PRESENT
+-	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
+-
+-0:	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	rfi
+-	patch_site	0b, patch__itlbmiss_exit_2
 -#endif
 -
- 	ori	r0, r9, MI_EVALID		/* Mark it valid */
- 	mtspr	SPRN_MI_EPN, r0
- 	mtspr	SPRN_MI_TWC, r10
- 	mtspr	SPRN_MI_RPN, r11		/* Store TLB entry */
-+	mtspr	SPRN_MD_CTR, r12
-+	addi	r12, r12, 0x100
-+	mtspr	SPRN_MD_EPN, r0
-+	mtspr	SPRN_MD_TWC, r10
-+	mtspr	SPRN_MD_RPN, r11
- 	addis	r9, r9, 0x80
- 	addis	r11, r11, 0x80
+ 	. = 0x1200
+ DataStoreTLBMiss:
+ 	mtspr	SPRN_DAR, r10
+@@ -371,62 +344,6 @@ DataStoreTLBMiss:
+ 	rfi
+ 	patch_site	0b, patch__dtlbmiss_exit_1
  
--	cmpl	cr0, r9, r12
--	bdnzf	gt, 1b
-+	bdnz	1b
- 
- 	/* Since the cache is enabled according to the information we
- 	 * just loaded into the TLB, invalidate and enable the caches here.
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index a9313aa6f1cd..2c480e35b426 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -62,23 +62,6 @@ unsigned long p_block_mapped(phys_addr_t pa)
-  */
- void __init MMU_init_hw(void)
- {
--	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
--	if (IS_ENABLED(CONFIG_PIN_TLB_DATA)) {
--		unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
--		unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
--		int i = 28;
--		unsigned long addr = 0;
--		unsigned long mem = total_lowmem;
+-DTLBMissIMMR:
+-	mtcr	r11
+-	/* Set 512k byte guarded page and mark it valid */
+-	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
+-	mtspr	SPRN_MD_TWC, r10
+-	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
+-	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
+-	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
+-			  _PAGE_PRESENT | _PAGE_NO_CACHE
+-	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
 -
--		for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
--			mtspr(SPRN_MD_CTR, ctr | (i << 8));
--			mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
--			mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
--			mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
--			addr += LARGE_PAGE_SIZE_8M;
--			mem -= LARGE_PAGE_SIZE_8M;
--		}
--	}
- }
+-	li	r11, RPN_PATTERN
+-
+-0:	mfspr	r10, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_M_TW
+-	rfi
+-	patch_site	0b, patch__dtlbmiss_exit_2
+-
+-DTLBMissLinear:
+-	mtcr	r11
+-	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
+-#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_DATA_SHIFT < 23
+-	patch_site	0f, patch__dtlbmiss_romem_top8
+-
+-0:	subis	r11, r10, (PAGE_OFFSET - 0x80000000)@ha
+-	rlwinm	r11, r11, 0, 0xff800000
+-	neg	r10, r11
+-	or	r11, r11, r10
+-	rlwinm	r11, r11, 4, MI_PS8MEG ^ MI_PS512K
+-	ori	r11, r11, MI_PS512K | MI_SVALID
+-	mfspr	r10, SPRN_MD_EPN
+-	rlwinm	r10, r10, 0, 0x0ff80000	/* 8xx supports max 256Mb RAM */
+-#else
+-	/* Set 8M byte page and mark it valid */
+-	li	r11, MD_PS8MEG | MD_SVALID
+-#endif
+-	mtspr	SPRN_MD_TWC, r11
+-#ifdef CONFIG_STRICT_KERNEL_RWX
+-	patch_site	0f, patch__dtlbmiss_romem_top
+-
+-0:	subis	r11, r10, 0
+-	rlwimi	r10, r11, 11, _PAGE_RO
+-#endif
+-	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
+-			  _PAGE_PRESENT
+-	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+-
+-	li	r11, RPN_PATTERN
+-
+-0:	mfspr	r10, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r11, SPRN_M_TW
+-	rfi
+-	patch_site	0b, patch__dtlbmiss_exit_3
+-
+ /* This is an instruction TLB error on the MPC8xx.  This could be due
+  * to many reasons, such as executing guarded memory or illegal instruction
+  * addresses.  There is nothing to do but handle a big time error fault.
+diff --git a/arch/powerpc/perf/8xx-pmu.c b/arch/powerpc/perf/8xx-pmu.c
+index acc27fc63eb7..e53c3c161257 100644
+--- a/arch/powerpc/perf/8xx-pmu.c
++++ b/arch/powerpc/perf/8xx-pmu.c
+@@ -100,9 +100,6 @@ static int mpc8xx_pmu_add(struct perf_event *event, int flags)
+ 			unsigned long target = patch_site_addr(&patch__itlbmiss_perf);
  
- static bool immr_is_mapped __initdata;
-@@ -226,7 +209,7 @@ void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	BUG_ON(first_memblock_base != 0);
+ 			patch_branch_site(&patch__itlbmiss_exit_1, target, 0);
+-#ifndef CONFIG_PIN_TLB_TEXT
+-			patch_branch_site(&patch__itlbmiss_exit_2, target, 0);
+-#endif
+ 		}
+ 		val = itlb_miss_counter;
+ 		break;
+@@ -111,8 +108,6 @@ static int mpc8xx_pmu_add(struct perf_event *event, int flags)
+ 			unsigned long target = patch_site_addr(&patch__dtlbmiss_perf);
  
- 	/* 8xx can only access 32MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x02000000));
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, SZ_32M));
- }
+ 			patch_branch_site(&patch__dtlbmiss_exit_1, target, 0);
+-			patch_branch_site(&patch__dtlbmiss_exit_2, target, 0);
+-			patch_branch_site(&patch__dtlbmiss_exit_3, target, 0);
+ 		}
+ 		val = dtlb_miss_counter;
+ 		break;
+@@ -175,9 +170,6 @@ static void mpc8xx_pmu_del(struct perf_event *event, int flags)
+ 					    __PPC_SPR(SPRN_SPRG_SCRATCH0));
  
- /*
+ 			patch_instruction_site(&patch__itlbmiss_exit_1, insn);
+-#ifndef CONFIG_PIN_TLB_TEXT
+-			patch_instruction_site(&patch__itlbmiss_exit_2, insn);
+-#endif
+ 		}
+ 		break;
+ 	case PERF_8xx_ID_DTLB_LOAD_MISS:
+@@ -187,8 +179,6 @@ static void mpc8xx_pmu_del(struct perf_event *event, int flags)
+ 					    __PPC_SPR(SPRN_DAR));
+ 
+ 			patch_instruction_site(&patch__dtlbmiss_exit_1, insn);
+-			patch_instruction_site(&patch__dtlbmiss_exit_2, insn);
+-			patch_instruction_site(&patch__dtlbmiss_exit_3, insn);
+ 		}
+ 		break;
+ 	}
 -- 
 2.25.0
 
