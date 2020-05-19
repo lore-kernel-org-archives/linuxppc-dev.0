@@ -2,91 +2,45 @@ Return-Path: <SRS0=gZAI=7B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55062C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10C01C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:35:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF37F20715
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:28:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Fp5I1zLj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF37F20715
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9406820657
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:35:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9406820657
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49QxZX1MP9zDqss
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 10:28:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::742;
- helo=mail-qk1-x742.google.com; envelope-from=leobras.c@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Fp5I1zLj; dkim-atps=neutral
-Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
- [IPv6:2607:f8b0:4864:20::742])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qxk23qCVzDqnk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 10:35:22 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49QxWk419dzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 10:26:25 +1000 (AEST)
-Received: by mail-qk1-x742.google.com with SMTP id 190so12666648qki.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2020 17:26:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=vSJnwcwzJ6JQ8cOkRgXkpxTwGHhwzzMaFtdAARFsxXA=;
- b=Fp5I1zLjyad2CUSFmsDYAcObjn71acu20n11AnJLUVFXrJo5RMDOe5M2EqavYD23Ws
- G8wGk/jMQywcMZRmiaM6f2QXt7OE1tvnkE0Z4KCP9J/NyJzodUsQKAOG+W5Z9hL6YmVA
- ztf6oeTYJrRfQGG4DWolxcRm6ABmRqBeIVx2kjHP+c6VzOvOFkCxm+bm0ggvEf0TitGQ
- 4nK/Vws5/yPko9TF4FzkCNe7pu4rsS/NHwJdLDM/nGV+FOT99ho8mep++0upq61Zwk0t
- jVCzkLfDAYPaVZx1hvttS+U4oaEEQfVgEc3dpX7Ulw33WWVQ0a3FAWv61TT99P1jTX26
- n98A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=vSJnwcwzJ6JQ8cOkRgXkpxTwGHhwzzMaFtdAARFsxXA=;
- b=eshJqMOqy6840omOL++hWgoGuXWtgrU+WVgcucPjxHjtgTFcCJ7WgFoCiEuGH/xVnl
- pwM33n1TQi+RqRlEagdJnb7rUDjd/2E5lcKlffkEEXiLHKB4MtwhsmZf37aIfVZJVeM4
- jNBIEUCV8FG39UJXqr79KWJ8dELamMLotiXkIsY7jCZWRUzb4iSkOb+daaGTP6wVZnBP
- XnJ5LhuG8SW9nzwO+6VWmRREpJrjpWQQXMQ6D3zvT8odWsNUl2jj7HhX6mOaRr97eBhY
- cqG5KBVBGKNIT/8RRGsFx+2BGtbMbTH1U/ocnm3I3/QtfZbqWSlgQuRwwSVe/rDG50bP
- IQRQ==
-X-Gm-Message-State: AOAM533CZpBWiQG2nJ3+CpcyQagkHgJz1qiDO6D2gWxxcpYq8+9h6SFp
- LAZ0Z4+nEk7MRPDFe5fpyng=
-X-Google-Smtp-Source: ABdhPJxc6ks256v3X/1qy6T5tU1qAbCGp8bsiXZlDzOdzp8HLmooSIIpu97YX77sV39D4Ma6oHkFFA==
-X-Received: by 2002:a37:b5c3:: with SMTP id
- e186mr17102893qkf.158.1589847983534; 
- Mon, 18 May 2020 17:26:23 -0700 (PDT)
-Received: from LeoBras.aus.stglabs.ibm.com
- (177-131-65-239.dynamic.desktop.com.br. [177.131.65.239])
- by smtp.gmail.com with ESMTPSA id e34sm2284048qtb.21.2020.05.18.17.26.14
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 18 May 2020 17:26:22 -0700 (PDT)
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Allison Randal <allison@lohutok.net>,
- Leonardo Bras <leobras.c@gmail.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Alexios Zavras <alexios.zavras@intel.com>,
- Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 1/1] powerpc/crash: Use NMI context for printk when
- starting to crash
-Date: Mon, 18 May 2020 21:25:58 -0300
-Message-Id: <20200519002558.202929-1-leobras.c@gmail.com>
-X-Mailer: git-send-email 2.25.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49QxgS0WKHzDqJf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 10:33:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49QxgR2Q0Xz9sSc;
+ Tue, 19 May 2020 10:33:07 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/7] Base support for POWER10
+Date: Tue, 19 May 2020 10:31:50 +1000
+Message-Id: <20200519003157.31946-1-alistair@popple.id.au>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -99,63 +53,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: mikey@neuling.org, npiggin@gmail.com, aneesh.kumar@linux.ibm.com,
+ Alistair Popple <alistair@popple.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, if printk lock (logbuf_lock) is held by other thread during
-crash, there is a chance of deadlocking the crash on next printk, and
-blocking a possibly desired kdump.
+This series brings together several previously posted patches required for
+POWER10 support and introduces a new patch enabling POWER10 architected
+mode to enable booting as a POWER10 pseries guest.
 
-At the start of default_machine_crash_shutdown, make printk enter
-NMI context, as it will use per-cpu buffers to store the message,
-and avoid locking logbuf_lock.
+It includes support for enabling facilities related to MMA and prefix
+instructions.
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
+Changes from v1:
+  - Two bug-fixes to enable prefix and MMA on pseries
+  - Minor updates to commit message wording
+  - Fixes a build error when CONFIG_KVM_BOOK3S_64_HV is enabled
 
----
-Changes since v2:
-- Changes usage of printk_nmi_enter() to nmi_enter()
-  (Suggested by Nick Piggin)
+Alistair Popple (7):
+  powerpc: Add new HWCAP bits
+  powerpc: Add support for ISA v3.1
+  powerpc/dt_cpu_ftrs: Advertise support for ISA v3.1 if selected
+  powerpc/dt_cpu_ftrs: Set current thread fscr bits
+  powerpc/dt_cpu_ftrs: Enable Prefixed Instructions
+  powerpc/dt_cpu_ftrs: Add MMA feature
+  powerpc: Add POWER10 architected mode
 
-Changes since v1:
-- Added in-code comment explaining the need of context change
-- Function moved to the start of default_machine_crash_shutdown,
-  to avoid locking any printk on crashing routine.
-- Title was 'Use NMI context for printk after crashing other CPUs'
+ arch/powerpc/include/asm/cputable.h      | 16 +++++++++++--
+ arch/powerpc/include/asm/mmu.h           |  1 +
+ arch/powerpc/include/asm/prom.h          |  1 +
+ arch/powerpc/include/asm/reg.h           |  6 +++--
+ arch/powerpc/include/uapi/asm/cputable.h |  2 ++
+ arch/powerpc/kernel/cpu_setup_power.S    | 20 ++++++++++++++--
+ arch/powerpc/kernel/cputable.c           | 30 ++++++++++++++++++++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c        | 26 +++++++++++++++++++-
+ arch/powerpc/kernel/prom_init.c          | 12 ++++++++--
+ arch/powerpc/kvm/book3s_hv.c             |  3 ---
+ 10 files changed, 105 insertions(+), 12 deletions(-)
 
----
- arch/powerpc/kexec/crash.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
-index d488311efab1..53c5cf9b6d3c 100644
---- a/arch/powerpc/kexec/crash.c
-+++ b/arch/powerpc/kexec/crash.c
-@@ -16,6 +16,7 @@
- #include <linux/delay.h>
- #include <linux/irq.h>
- #include <linux/types.h>
-+#include <linux/hardirq.h>
- 
- #include <asm/processor.h>
- #include <asm/machdep.h>
-@@ -311,6 +312,13 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
- 	unsigned int i;
- 	int (*old_handler)(struct pt_regs *regs);
- 
-+	/*
-+	 * Avoid hardlocking with irresponsive CPU holding logbuf_lock,
-+	 * by using printk nmi_context
-+	 */
-+	if (!in_nmi())
-+		nmi_enter();
-+
- 	/*
- 	 * This function is only called after the system
- 	 * has panicked or is otherwise in a critical state.
 -- 
-2.25.4
+2.20.1
 
