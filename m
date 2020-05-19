@@ -2,42 +2,43 @@ Return-Path: <SRS0=gZAI=7B=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13A71C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56D48C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:47:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B82BD2072C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:45:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B82BD2072C
+	by mail.kernel.org (Postfix) with ESMTPS id 0FB7B2072C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 00:47:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FB7B2072C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49QxxV42nVzDqL4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 10:45:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Qxzh6n0szDqtN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 May 2020 10:47:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Qxgc4RK3zDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 10:33:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Qxgd6NQpzDqKf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2020 10:33:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=popple.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49QxgZ2hXpz9sTC;
- Tue, 19 May 2020 10:33:14 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Qxgc6vNHz9sTc;
+ Tue, 19 May 2020 10:33:16 +1000 (AEST)
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 5/7] powerpc/dt_cpu_ftrs: Enable Prefixed Instructions
-Date: Tue, 19 May 2020 10:31:55 +1000
-Message-Id: <20200519003157.31946-6-alistair@popple.id.au>
+Subject: [PATCH v2 6/7] powerpc/dt_cpu_ftrs: Add MMA feature
+Date: Tue, 19 May 2020 10:31:56 +1000
+Message-Id: <20200519003157.31946-7-alistair@popple.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200519003157.31946-1-alistair@popple.id.au>
 References: <20200519003157.31946-1-alistair@popple.id.au>
@@ -60,27 +61,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Prefix instructions have their own FSCR bit which needs to be enabled
-via a CPU feature. The kernel will save the FSCR for problem state but
-it needs to be enabled initially.
+Matrix multiple accumulate (MMA) is a new feature added to ISAv3.1 and
+POWER10. Support on powernv can be selected via a firmware CPU device
+tree feature which enables it via a PCR bit.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/kernel/dt_cpu_ftrs.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/reg.h    |  3 ++-
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 17 ++++++++++++++++-
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1931b1142599..c446863a40cf 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -479,7 +479,8 @@
+ #define   PCR_VEC_DIS	(__MASK(63-0))	/* Vec. disable (bit NA since POWER8) */
+ #define   PCR_VSX_DIS	(__MASK(63-1))	/* VSX disable (bit NA since POWER8) */
+ #define   PCR_TM_DIS	(__MASK(63-2))	/* Trans. memory disable (POWER8) */
+-#define   PCR_HIGH_BITS	(PCR_VEC_DIS | PCR_VSX_DIS | PCR_TM_DIS)
++#define   PCR_MMA_DIS	(__MASK(63-3)) /* Matrix-Multiply Accelerator */
++#define   PCR_HIGH_BITS	(PCR_MMA_DIS | PCR_VEC_DIS | PCR_VSX_DIS | PCR_TM_DIS)
+ /*
+  * These bits are used in the function kvmppc_set_arch_compat() to specify and
+  * determine both the compatibility level which we want to emulate and the
 diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 677190f70cac..93c340906aad 100644
+index 93c340906aad..e7540ee5cad8 100644
 --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
 +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -628,6 +628,7 @@ static struct dt_cpu_feature_match __initdata
- 	{"vector-binary128", feat_enable, 0},
+@@ -75,6 +75,7 @@ static struct {
+ 	u64	lpcr_clear;
+ 	u64	hfscr;
+ 	u64	fscr;
++	u64	pcr;
+ } system_registers;
+ 
+ static void (*init_pmu_registers)(void);
+@@ -102,7 +103,7 @@ static void __restore_cpu_cpufeatures(void)
+ 	if (hv_mode) {
+ 		mtspr(SPRN_LPID, 0);
+ 		mtspr(SPRN_HFSCR, system_registers.hfscr);
+-		mtspr(SPRN_PCR, PCR_MASK);
++		mtspr(SPRN_PCR, system_registers.pcr);
+ 	}
+ 	mtspr(SPRN_FSCR, system_registers.fscr);
+ 
+@@ -555,6 +556,18 @@ static int __init feat_enable_large_ci(struct dt_cpu_feature *f)
+ 	return 1;
+ }
+ 
++static int __init feat_enable_mma(struct dt_cpu_feature *f)
++{
++	u64 pcr;
++
++	feat_enable(f);
++	pcr = mfspr(SPRN_PCR);
++	pcr &= ~PCR_MMA_DIS;
++	mtspr(SPRN_PCR, pcr);
++
++	return 1;
++}
++
+ struct dt_cpu_feature_match {
+ 	const char *name;
+ 	int (*enable)(struct dt_cpu_feature *f);
+@@ -629,6 +642,7 @@ static struct dt_cpu_feature_match __initdata
  	{"vector-binary16", feat_enable, 0},
  	{"wait-v3", feat_enable, 0},
-+	{"prefix-instructions", feat_enable, 0},
+ 	{"prefix-instructions", feat_enable, 0},
++	{"matrix-multiply-accumulate", feat_enable_mma, 0},
  };
  
  static bool __initdata using_dt_cpu_ftrs;
+@@ -779,6 +793,7 @@ static void __init cpufeatures_setup_finished(void)
+ 	system_registers.lpcr = mfspr(SPRN_LPCR);
+ 	system_registers.hfscr = mfspr(SPRN_HFSCR);
+ 	system_registers.fscr = mfspr(SPRN_FSCR);
++	system_registers.pcr = mfspr(SPRN_PCR);
+ 
+ 	pr_info("final cpu/mmu features = 0x%016lx 0x%08x\n",
+ 		cur_cpu_spec->cpu_features, cur_cpu_spec->mmu_features);
 -- 
 2.20.1
 
