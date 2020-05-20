@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF7A3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 18:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87EE1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 18:36:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BA0520671
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 18:33:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 29D042072C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 18:36:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="x5LSs/4i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BA0520671
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="o6V9JEi/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29D042072C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49S1c12bXfzDqdP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 04:33:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49S1fX5jHyzDqfD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 04:36:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=oracle.com (client-ip=156.151.31.85; helo=userp2120.oracle.com;
  envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
@@ -29,50 +29,50 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=x5LSs/4i; 
+ header.s=corp-2020-01-29 header.b=o6V9JEi/; 
  dkim-atps=neutral
 Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49S1TB0W7nzDqdR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49S1TB08ZvzDqdM
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2020 04:27:51 +1000 (AEST)
 Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04KIHRpm000781;
- Wed, 20 May 2020 18:27:10 GMT
+ by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04KIHZoq000875;
+ Wed, 20 May 2020 18:27:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
  h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=corp-2020-01-29;
- bh=jCJIf2wmiDSS+BjtUDA+ZMjI+y7yIcmsNXeQVwW/Xag=;
- b=x5LSs/4ijZLCMnuICsPpuDDbTx4yAJ7NkaxrnkWI9TPHmcBX62mo6sL8dHRaXxzLhRi/
- MUajNfN96/ikt9Whx1H3v5dWpP9hvXoUpY+eP7n2PEvQMOD4xceHvw/uAsLa6UP6/XHr
- ympP6PF3g7EVPonCaqo8RI5UrhNrzxVL9ckPBo1raknaIOAhZG7uYdEnvCsIKtYi6ccM
- 7vdryTK6ZS4qSN/X0iJlmiJhUHLyfqD6mKnX0ttiRGCpZgF0gRi2QvyuTtxlHsR73KeV
- 7oOHt5FfU7G+Kki8B5SZaMtx0dXjormuQj2mv2ffGHRcwNLGD6+p0iFFoafpoq8DPKK4 kg== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
- by userp2120.oracle.com with ESMTP id 31501rb8a6-1
+ bh=EEM8Jl/oICbjsjiZ/HuAgCE6hAIkFuScST0UVyGiCpY=;
+ b=o6V9JEi/cj47DnhABLEggaXWDNqXZoYjRBmg44xiUDNvEp/CL3DpPQkexak5TjikjrwE
+ ZwUq+Ke9u5GC6+IBd1rK0VdK1Vew3yFFn74qyiGJtCeJrDhg80iNcptsMGfcAzYqn/1n
+ JzG2o8ntPmoZZUoRxtJ9l6mYof6HYYjmcQw/bNk97hu9kilNxCwsHEBFERERgSV4NTh8
+ B7D9uh9qRerHMVEX1gTfqzLpV8ix5ktvoUza5c1k5vjLVb0oyjVMTdvQj1S3cvlFD6rK
+ dIdVZmSTVhs9WjE/HgQ8yYU2TNNFKFhBgzrKNL5f3zkrTISkgkedh6xPwvbChZUtsxeD eA== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+ by userp2120.oracle.com with ESMTP id 31501rb89j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 20 May 2020 18:27:09 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
- by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04KICdqQ014999;
- Wed, 20 May 2020 18:27:09 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserp3030.oracle.com with ESMTP id 313gj3yth8-1
+ Wed, 20 May 2020 18:27:03 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+ by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04KIDB2b076087;
+ Wed, 20 May 2020 18:27:02 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userp3020.oracle.com with ESMTP id 315020rd6u-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 May 2020 18:27:09 +0000
+ Wed, 20 May 2020 18:27:02 +0000
 Received: from abhmp0017.oracle.com (abhmp0017.oracle.com [141.146.116.23])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 04KIR64p016486;
- Wed, 20 May 2020 18:27:06 GMT
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 04KIQveR008071;
+ Wed, 20 May 2020 18:26:57 GMT
 Received: from localhost.localdomain (/98.229.125.203)
  by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 20 May 2020 11:27:06 -0700
+ with ESMTP ; Wed, 20 May 2020 11:26:57 -0700
 From: Daniel Jordan <daniel.m.jordan@oracle.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  Herbert Xu <herbert@gondor.apana.org.au>,
  Steffen Klassert <steffen.klassert@secunet.com>
-Subject: [PATCH v2 6/7] mm: make deferred init's max threads arch-specific
-Date: Wed, 20 May 2020 14:26:44 -0400
-Message-Id: <20200520182645.1658949-7-daniel.m.jordan@oracle.com>
+Subject: [PATCH v2 2/7] padata: initialize earlier
+Date: Wed, 20 May 2020 14:26:40 -0400
+Message-Id: <20200520182645.1658949-3-daniel.m.jordan@oracle.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200520182645.1658949-1-daniel.m.jordan@oracle.com>
 References: <20200520182645.1658949-1-daniel.m.jordan@oracle.com>
@@ -80,16 +80,16 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9627
  signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
- spamscore=0 malwarescore=0
- mlxscore=0 adultscore=0 bulkscore=0 suspectscore=2 mlxlogscore=999
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0
+ mlxscore=0 mlxlogscore=999
+ adultscore=0 bulkscore=0 suspectscore=2 phishscore=0 malwarescore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
  definitions=main-2005200148
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9627
  signatures=668686
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
  lowpriorityscore=0 spamscore=0
- mlxlogscore=999 clxscore=1015 priorityscore=1501 cotscore=-2147483648
+ mlxlogscore=999 clxscore=1011 priorityscore=1501 cotscore=-2147483648
  impostorscore=0 bulkscore=0 adultscore=0 malwarescore=0 phishscore=0
  mlxscore=0 suspectscore=2 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2004280000 definitions=main-2005200148
@@ -124,87 +124,103 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using padata during deferred init has only been tested on x86, so for
-now limit it to this architecture.
+padata will soon initialize the system's struct pages in parallel, so it
+needs to be ready by page_alloc_init_late().
 
-If another arch wants this, it can find the max thread limit that's best
-for it and override deferred_page_init_max_threads().
+The error return from padata_driver_init() triggers an initcall warning,
+so add a warning to padata_init() to avoid silent failure.
 
 Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 ---
- arch/x86/mm/init_64.c    | 12 ++++++++++++
- include/linux/memblock.h |  3 +++
- mm/page_alloc.c          | 13 ++++++++-----
- 3 files changed, 23 insertions(+), 5 deletions(-)
+ include/linux/padata.h |  6 ++++++
+ init/main.c            |  2 ++
+ kernel/padata.c        | 17 ++++++++---------
+ 3 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 8b5f73f5e207c..2d749ec12ea8a 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1260,6 +1260,18 @@ void __init mem_init(void)
- 	mem_init_print_info(NULL);
- }
+diff --git a/include/linux/padata.h b/include/linux/padata.h
+index a0d8b41850b25..476ecfa41f363 100644
+--- a/include/linux/padata.h
++++ b/include/linux/padata.h
+@@ -164,6 +164,12 @@ struct padata_instance {
+ #define	PADATA_INVALID	4
+ };
  
-+#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-+int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask)
-+{
-+	/*
-+	 * More CPUs always led to greater speedups on tested systems, up to
-+	 * all the nodes' CPUs.  Use all since the system is otherwise idle
-+	 * now.
-+	 */
-+	return max_t(int, cpumask_weight(node_cpumask), 1);
-+}
++#ifdef CONFIG_PADATA
++extern void __init padata_init(void);
++#else
++static inline void __init padata_init(void) {}
 +#endif
 +
- int kernel_set_to_readonly;
+ extern struct padata_instance *padata_alloc_possible(const char *name);
+ extern void padata_free(struct padata_instance *pinst);
+ extern struct padata_shell *padata_alloc_shell(struct padata_instance *pinst);
+diff --git a/init/main.c b/init/main.c
+index 03371976d3872..8ab521f7af5d2 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -94,6 +94,7 @@
+ #include <linux/rodata_test.h>
+ #include <linux/jump_label.h>
+ #include <linux/mem_encrypt.h>
++#include <linux/padata.h>
  
- void mark_rodata_ro(void)
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index 6bc37a731d27b..2b289df44194f 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -275,6 +275,9 @@ void __next_mem_pfn_range_in_zone(u64 *idx, struct zone *zone,
- #define for_each_free_mem_pfn_range_in_zone_from(i, zone, p_start, p_end) \
- 	for (; i != U64_MAX;					  \
- 	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end))
-+
-+int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask);
-+
- #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -1482,6 +1483,7 @@ static noinline void __init kernel_init_freeable(void)
+ 	smp_init();
+ 	sched_init_smp();
  
- /**
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 9cb780e8dec78..0d7d805f98b2d 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1843,6 +1843,13 @@ deferred_init_memmap_chunk(unsigned long start_pfn, unsigned long end_pfn,
- 	atomic_long_add(nr_pages, &args->nr_pages);
++	padata_init();
+ 	page_alloc_init_late();
+ 	/* Initialize page ext after all struct pages are initialized. */
+ 	page_ext_init();
+diff --git a/kernel/padata.c b/kernel/padata.c
+index 835919c745266..6f709bc0fc413 100644
+--- a/kernel/padata.c
++++ b/kernel/padata.c
+@@ -31,7 +31,6 @@
+ #include <linux/slab.h>
+ #include <linux/sysfs.h>
+ #include <linux/rcupdate.h>
+-#include <linux/module.h>
+ 
+ #define MAX_OBJ_NUM 1000
+ 
+@@ -1050,26 +1049,26 @@ void padata_free_shell(struct padata_shell *ps)
  }
+ EXPORT_SYMBOL(padata_free_shell);
  
-+/* An arch may override for more concurrency. */
-+__weak int __init
-+deferred_page_init_max_threads(const struct cpumask *node_cpumask)
-+{
-+	return 1;
-+}
-+
- /* Initialise remaining memory on a node */
- static int __init deferred_init_memmap(void *data)
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+-static __init int padata_driver_init(void)
++void __init padata_init(void)
  {
-@@ -1891,11 +1898,7 @@ static int __init deferred_init_memmap(void *data)
- 						 first_init_pfn))
- 		goto zone_empty;
++#ifdef CONFIG_HOTPLUG_CPU
+ 	int ret;
  
--	/*
--	 * More CPUs always led to greater speedups on tested systems, up to
--	 * all the nodes' CPUs.  Use all since the system is otherwise idle now.
--	 */
--	max_threads = max(cpumask_weight(cpumask), 1u);
-+	max_threads = deferred_page_init_max_threads(cpumask);
+ 	ret = cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN, "padata:online",
+ 				      padata_cpu_online, NULL);
+ 	if (ret < 0)
+-		return ret;
++		goto err;
+ 	hp_online = ret;
  
- 	while (spfn < epfn) {
- 		epfn_align = ALIGN_DOWN(epfn, PAGES_PER_SECTION);
+ 	ret = cpuhp_setup_state_multi(CPUHP_PADATA_DEAD, "padata:dead",
+ 				      NULL, padata_cpu_dead);
+ 	if (ret < 0) {
+ 		cpuhp_remove_multi_state(hp_online);
+-		return ret;
++		goto err;
+ 	}
+-	return 0;
+-}
+-module_init(padata_driver_init);
+ 
++	return;
++err:
++	pr_warn("padata: initialization failed\n");
+ #endif
++}
 -- 
 2.26.2
 
