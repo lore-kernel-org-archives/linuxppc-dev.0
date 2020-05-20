@@ -4,48 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D40AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 09:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1240FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 09:22:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A9E1207ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 09:13:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A9E1207ED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 49C5D207D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 09:22:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49C5D207D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Rn9Y1WZlzDqTn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 19:13:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49RnN20xSfzDqWJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 May 2020 19:22:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=chentao107@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=oss.nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=biwen.li@oss.nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ dmarc=none (p=none dis=none) header.from=oss.nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Rn7Q3S27zDqSZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2020 19:11:45 +1000 (AEST)
-Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 6BCF348DF83988F62CA4;
- Wed, 20 May 2020 17:11:38 +0800 (CST)
-Received: from huawei.com (10.67.174.156) by DGGEMS412-HUB.china.huawei.com
- (10.3.19.212) with Microsoft SMTP Server id 14.3.487.0; Wed, 20 May 2020
- 17:11:28 +0800
-From: Chen Tao <chentao107@huawei.com>
-To: <jejb@linux.ibm.com>, <martin.petersen@oracle.com>
-Subject: [PATCH -next] scsi: ibmvscsi: Make some functions static
-Date: Wed, 20 May 2020 17:10:36 +0800
-Message-ID: <20200520091036.247286-1-chentao107@huawei.com>
-X-Mailer: git-send-email 2.22.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.67.174.156]
-X-CFilter-Loop: Reflected
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49RnKr3X5qzDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2020 19:20:45 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1266A2000DD;
+ Wed, 20 May 2020 11:20:43 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8000E200257;
+ Wed, 20 May 2020 11:20:38 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 86800402A6;
+ Wed, 20 May 2020 17:20:32 +0800 (SGT)
+From: Biwen Li <biwen.li@oss.nxp.com>
+To: leoyang.li@nxp.com, robh+dt@kernel.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, a.zummo@towertech.it,
+ alexandre.belloni@bootlin.com
+Subject: [v2 2/2] dts: ppc: t1024rdb: remove interrupts property
+Date: Wed, 20 May 2020 17:15:43 +0800
+Message-Id: <20200520091543.44692-2-biwen.li@oss.nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200520091543.44692-1-biwen.li@oss.nxp.com>
+References: <20200520091543.44692-1-biwen.li@oss.nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,47 +62,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, chentao107@huawei.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Biwen Li <biwen.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix the following warning:
+From: Biwen Li <biwen.li@nxp.com>
 
-drivers/scsi/ibmvscsi/ibmvscsi.c:2387:12: warning: symbol
-'ibmvscsi_module_init' was not declared. Should it be static?
-drivers/scsi/ibmvscsi/ibmvscsi.c:2409:13: warning: symbol
-'ibmvscsi_module_exit' was not declared. Should it be static?
+This removes interrupts property to drop warning as follows:
+    - $ hwclock.util-linux
+      hwclock.util-linux: select() to /dev/rtc0
+      to wait for clock tick timed out
 
-Signed-off-by: Chen Tao <chentao107@huawei.com>
+My case:
+    - RTC ds1339s INT pin isn't connected to cpus INT pin on T1024RDB,
+      then the RTC cannot inform cpu about alarm interrupt
+
+How to fix it?
+    - remove IRQ line
+
+Signed-off-by: Biwen Li <biwen.li@nxp.com>
 ---
- drivers/scsi/ibmvscsi/ibmvscsi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 59f0f1030c54..44e64aa21194 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -2384,7 +2384,7 @@ static struct vio_driver ibmvscsi_driver = {
- static struct srp_function_template ibmvscsi_transport_functions = {
- };
+diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+index 645caff98ed1..605ceec66af3 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+@@ -161,7 +161,6 @@
+ 			rtc@68 {
+ 				compatible = "dallas,ds1339";
+ 				reg = <0x68>;
+-				interrupts = <0x1 0x1 0 0>;
+ 			};
+ 		};
  
--int __init ibmvscsi_module_init(void)
-+static int __init ibmvscsi_module_init(void)
- {
- 	int ret;
- 
-@@ -2406,7 +2406,7 @@ int __init ibmvscsi_module_init(void)
- 	return ret;
- }
- 
--void __exit ibmvscsi_module_exit(void)
-+static void __exit ibmvscsi_module_exit(void)
- {
- 	vio_unregister_driver(&ibmvscsi_driver);
- 	srp_release_transport(ibmvscsi_transport_template);
 -- 
-2.22.0
+2.17.1
 
