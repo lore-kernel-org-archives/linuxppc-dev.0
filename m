@@ -2,64 +2,92 @@ Return-Path: <SRS0=dcvz=7D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEFA6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FE84C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:34:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C6E3206C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:30:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C6E3206C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id C24592072C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:34:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C24592072C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Sc8B2SyXzDqXw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 03:30:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ScDY2v6JzDqHX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 03:34:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49SbPP6PWczDqgC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 02:56:41 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49SbNd5ttNz9v0q3;
- Thu, 21 May 2020 18:56:01 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id jcERMmJqSzRy; Thu, 21 May 2020 18:56:01 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49SbNd57TJz9v0pY;
- Thu, 21 May 2020 18:56:01 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0C0958B7DB;
- Thu, 21 May 2020 18:56:04 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UF0oZYlxDyeR; Thu, 21 May 2020 18:56:03 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B5BB88B778;
- Thu, 21 May 2020 18:56:03 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9501A65A53; Thu, 21 May 2020 16:56:03 +0000 (UTC)
-Message-Id: <7f330e971952abb2645fb9ca4310c0f527e84dcb.1590079969.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1590079968.git.christophe.leroy@csgroup.eu>
-References: <cover.1590079968.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v5 12/13] powerpc/40x: Avoid using r12 in TLB miss handlers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- michal.simek@xilinx.com, arnd@arndb.de
-Date: Thu, 21 May 2020 16:56:03 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49SbTb5Br7zDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 03:00:18 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 04LGXXKn069939; Thu, 21 May 2020 12:59:48 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 313x65g0y0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 21 May 2020 12:59:48 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 04LGt9j3004809;
+ Thu, 21 May 2020 16:59:46 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04fra.de.ibm.com with ESMTP id 313wne2gmw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 21 May 2020 16:59:46 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 04LGxhs910289500
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 21 May 2020 16:59:43 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 37241A4059;
+ Thu, 21 May 2020 16:59:43 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 43E2BA404D;
+ Thu, 21 May 2020 16:59:40 +0000 (GMT)
+Received: from vajain21-in-ibm-com (unknown [9.79.187.27])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 21 May 2020 16:59:39 +0000 (GMT)
+Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
+ Thu, 21 May 2020 22:29:38 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Michael Ellerman <michaele@au1.ibm.com>, Ira Weiny <ira.weiny@intel.com>
+Subject: Re: [RESEND PATCH v7 3/5] powerpc/papr_scm: Fetch nvdimm health
+ information from PHYP
+In-Reply-To: <87k115gy0i.fsf@mpe.ellerman.id.au>
+References: <20200519190058.257981-1-vaibhav@linux.ibm.com>
+ <20200519190058.257981-4-vaibhav@linux.ibm.com>
+ <20200520145430.GB3660833@iweiny-DESK2.sc.intel.com>
+ <87tv0awmr5.fsf@linux.ibm.com> <87k115gy0i.fsf@mpe.ellerman.id.au>
+Date: Thu, 21 May 2020 22:29:38 +0530
+Message-ID: <87imgpw7et.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
+ definitions=2020-05-21_10:2020-05-21,
+ 2020-05-21 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ spamscore=0 impostorscore=0 phishscore=0 mlxscore=0 mlxlogscore=999
+ suspectscore=0 cotscore=-2147483648 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 adultscore=0 bulkscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2005210118
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,211 +99,160 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, linux-nvdimm@lists.01.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+Michael Ellerman <michaele@au1.ibm.com> writes:
 
-Let's reduce the number of registers used in TLB miss handlers.
+> Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+>> Thanks for reviewing this this patch Ira. My responses below:
+>> Ira Weiny <ira.weiny@intel.com> writes:
+>>> On Wed, May 20, 2020 at 12:30:56AM +0530, Vaibhav Jain wrote:
+>>>> Implement support for fetching nvdimm health information via
+>>>> H_SCM_HEALTH hcall as documented in Ref[1]. The hcall returns a pair
+>>>> of 64-bit big-endian integers, bitwise-and of which is then stored in
+>>>> 'struct papr_scm_priv' and subsequently partially exposed to
+>>>> user-space via newly introduced dimm specific attribute
+>>>> 'papr/flags'. Since the hcall is costly, the health information is
+>>>> cached and only re-queried, 60s after the previous successful hcall.
+> ...
+>>>> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+>>>> index f35592423380..142636e1a59f 100644
+>>>> --- a/arch/powerpc/platforms/pseries/papr_scm.c
+>>>> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
+>>>> @@ -39,6 +78,15 @@ struct papr_scm_priv {
+>>>>  	struct resource res;
+>>>>  	struct nd_region *region;
+>>>>  	struct nd_interleave_set nd_set;
+>>>> +
+>>>> +	/* Protect dimm health data from concurrent read/writes */
+>>>> +	struct mutex health_mutex;
+>>>> +
+>>>> +	/* Last time the health information of the dimm was updated */
+>>>> +	unsigned long lasthealth_jiffies;
+>>>> +
+>>>> +	/* Health information for the dimm */
+>>>> +	u64 health_bitmap;
+>>>
+>>> I wonder if this should be typed big endian as you mention that it is in the
+>>> commit message?
+>> This was discussed in an earlier review of the patch series at
+>> https://lore.kernel.org/linux-nvdimm/878sjetcis.fsf@mpe.ellerman.id.au
+>>
+>> Even though health bitmap is returned in big endian format (For ex
+>> value 0xC00000000000000 indicates bits 0,1 set), its value is never
+>> used. Instead only test for specific bits being set in the register is
+>> done.
+>
+> This has already caused a lot of confusion, so let me try and clear it
+> up. I will probably fail :)
+>
+> The value is not big endian.
+>
+> It's returned in a GPR (a register), from the hypervisor. The ordering
+> of bytes in a register is not dependent on what endian we're executing
+> in.
+>
+> It's true that the hypervisor will have been running big endian, and
+> when it returns to us we will now be running little endian. But the
+> value is unchanged, it was 0xC00000000000000 in the GPR while the HV was
+> running and it's still 0xC00000000000000 when we return to Linux. You
+> can see this in mambo, see below for an example.
+>
+>
+> _However_, the specification of the bits in the bitmap value uses MSB 0
+> ordering, as is traditional for IBM documentation. That means the most
+> significant bit, aka. the left most bit, is called "bit 0".
+>
+> See: https://en.wikipedia.org/wiki/Bit_numbering#MSB_0_bit_numbering
+>
+> That is the opposite numbering from what most people use, and in
+> particular what most code in Linux uses, which is that bit 0 is the
+> least significant bit.
+>
+> Which is where the confusion comes in. It's not that the bytes are
+> returned in a different order, it's that the bits are numbered
+> differently in the IBM documentation.
+>
+> The way to fix this kind of thing is to read the docs, and convert all
+> the bits into correct numbering (LSB=0), and then throw away the docs ;)
+>
+> cheers
+Thanks a lot for clarifying this Mpe and for this detailed explaination.
 
-We have both r9 and r12 available for any temporary use.
+I have removed the term Big-Endian from v8 patch description to avoid
+any further confusion.
 
-r9 is enough, avoid using r12.
+>
+>
+>
+> In mambo we can set a breakpoint just before the kernel enters skiboot,
+> towards the end of __opal_call. The kernel is running LE and skiboot
+> runs BE.
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] b 0xc0000000000c1744
+>   breakpoint set at [0:0:0]: 0xc0000000000c1744 (0x00000000000C1744) Enc:0x2402004C : hrfid
+>
+> Then run:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] c
+>   [0:0:0]: 0xC0000000000C1744 (0x00000000000C1744) Enc:0x2402004C : hrfid
+>   INFO: 121671618: (121671618): ** Execution stopped: user (tcl),  **
+>   121671618: ** finished running 121671618 instructions **
+>
+> And we stop there, on an hrfid that we haven't executed yet.
+> We can print r0, to see the OPAL token:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] p r0
+>   0x0000000000000019
+>
+> ie. we're calling OPAL_CONSOLE_WRITE_BUFFER_SPACE (25).
+>
+> And we can print the MSR:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] p msr
+>   0x9000000002001033
+>   
+>                      64-bit mode (SF): 0x1 [64-bit mode]
+>                 Hypervisor State (HV): 0x1
+>                Vector Available (VEC): 0x1
+>   Machine Check Interrupt Enable (ME): 0x1
+>             Instruction Relocate (IR): 0x1
+>                    Data Relocate (DR): 0x1
+>            Recoverable Interrupt (RI): 0x1
+>               Little-Endian Mode (LE): 0x1 [little-endian]
+>
+> ie. we're little endian.
+>
+> We then step one instruction:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] s
+>   [0:0:0]: 0x0000000030002BF0 (0x0000000030002BF0) Enc:0x7D9FFAA6 : mfspr   r12,PIR
+>
+> Now we're in skiboot. Print the MSR again:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] p msr
+>   0x9000000002001002
+>   
+>                      64-bit mode (SF): 0x1 [64-bit mode]
+>                 Hypervisor State (HV): 0x1
+>                Vector Available (VEC): 0x1
+>   Machine Check Interrupt Enable (ME): 0x1
+>            Recoverable Interrupt (RI): 0x1
+>
+> We're big endian.
+> Print r0:
+>
+>   systemsim-p9 [~/skiboot/skiboot/external/mambo] p r0
+>   0x0000000000000019
+>
+> r0 is unchanged!
+Got it. Thanks again.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/head_40x.S | 70 ++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 37 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 75238897093d..b584e81f6d19 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -255,9 +255,9 @@ _ENTRY(saved_ksp_limit)
- 	mtspr	SPRN_SPRG_SCRATCH3, r12
- 	mtspr	SPRN_SPRG_SCRATCH4, r9
- 	mfcr	r11
--	mfspr	r12, SPRN_PID
-+	mfspr	r9, SPRN_PID
- 	mtspr	SPRN_SPRG_SCRATCH6, r11
--	mtspr	SPRN_SPRG_SCRATCH5, r12
-+	mtspr	SPRN_SPRG_SCRATCH5, r9
- 	mfspr	r10, SPRN_DEAR		/* Get faulting address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -280,12 +280,12 @@ _ENTRY(saved_ksp_limit)
- 4:
- 	tophys(r11, r11)
- 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
--	lwz	r12, 0(r11)		/* Get L1 entry */
--	andi.	r9, r12, _PMD_PRESENT	/* Check if it points to a PTE page */
-+	lwz	r11, 0(r11)		/* Get L1 entry */
-+	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
- 	beq	2f			/* Bail if no table */
- 
--	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
--	lwz	r11, 0(r12)		/* Get Linux PTE */
-+	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
-+	lwz	r11, 0(r11)		/* Get Linux PTE */
- #ifdef CONFIG_SWAP
- 	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED
- #else
-@@ -301,13 +301,13 @@ _ENTRY(saved_ksp_limit)
- 	/* Create TLB tag.  This is the faulting address plus a static
- 	 * set of bits.  These are size, valid, E, U0.
- 	*/
--	li	r12, 0x00c0
--	rlwimi	r10, r12, 0, 20, 31
-+	li	r9, 0x00c0
-+	rlwimi	r10, r9, 0, 20, 31
- 
- 	b	finish_tlb_load
- 
- 2:	/* Check for possible large-page pmd entry */
--	rlwinm.	r9, r12, 2, 22, 24
-+	rlwinm.	r9, r11, 2, 22, 24
- 	beq	5f
- 
- 	/* Create TLB tag.  This is the faulting address, plus a static
-@@ -315,7 +315,6 @@ _ENTRY(saved_ksp_limit)
- 	 */
- 	ori	r9, r9, 0x40
- 	rlwimi	r10, r9, 0, 20, 31
--	mr	r11, r12
- 
- 	b	finish_tlb_load
- 
-@@ -323,9 +322,9 @@ _ENTRY(saved_ksp_limit)
- 	/* The bailout.  Restore registers to pre-exception conditions
- 	 * and call the heavyweights to help us out.
- 	 */
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
-@@ -343,9 +342,9 @@ _ENTRY(saved_ksp_limit)
- 	mtspr	SPRN_SPRG_SCRATCH3, r12
- 	mtspr	SPRN_SPRG_SCRATCH4, r9
- 	mfcr	r11
--	mfspr	r12, SPRN_PID
-+	mfspr	r9, SPRN_PID
- 	mtspr	SPRN_SPRG_SCRATCH6, r11
--	mtspr	SPRN_SPRG_SCRATCH5, r12
-+	mtspr	SPRN_SPRG_SCRATCH5, r9
- 	mfspr	r10, SPRN_SRR0		/* Get faulting address */
- 
- 	/* If we are faulting a kernel address, we have to use the
-@@ -368,12 +367,12 @@ _ENTRY(saved_ksp_limit)
- 4:
- 	tophys(r11, r11)
- 	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
--	lwz	r12, 0(r11)		/* Get L1 entry */
--	andi.	r9, r12, _PMD_PRESENT	/* Check if it points to a PTE page */
-+	lwz	r11, 0(r11)		/* Get L1 entry */
-+	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
- 	beq	2f			/* Bail if no table */
- 
--	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
--	lwz	r11, 0(r12)		/* Get Linux PTE */
-+	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
-+	lwz	r11, 0(r11)		/* Get Linux PTE */
- #ifdef CONFIG_SWAP
- 	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
- #else
-@@ -389,13 +388,13 @@ _ENTRY(saved_ksp_limit)
- 	/* Create TLB tag.  This is the faulting address plus a static
- 	 * set of bits.  These are size, valid, E, U0.
- 	*/
--	li	r12, 0x00c0
--	rlwimi	r10, r12, 0, 20, 31
-+	li	r9, 0x00c0
-+	rlwimi	r10, r9, 0, 20, 31
- 
- 	b	finish_tlb_load
- 
- 2:	/* Check for possible large-page pmd entry */
--	rlwinm.	r9, r12, 2, 22, 24
-+	rlwinm.	r9, r11, 2, 22, 24
- 	beq	5f
- 
- 	/* Create TLB tag.  This is the faulting address, plus a static
-@@ -403,7 +402,6 @@ _ENTRY(saved_ksp_limit)
- 	 */
- 	ori	r9, r9, 0x40
- 	rlwimi	r10, r9, 0, 20, 31
--	mr	r11, r12
- 
- 	b	finish_tlb_load
- 
-@@ -411,9 +409,9 @@ _ENTRY(saved_ksp_limit)
- 	/* The bailout.  Restore registers to pre-exception conditions
- 	 * and call the heavyweights to help us out.
- 	 */
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
-@@ -529,7 +527,7 @@ WDTException:
- 	 * miss get to this point to load the TLB.
- 	 * 	r10 - TLB_TAG value
- 	 * 	r11 - Linux PTE
--	 *	r12, r9 - available to use
-+	 *	r9 - available to use
- 	 *	PID - loaded with proper value when we get here
- 	 *	Upon exit, we reload everything and RFI.
- 	 * Actually, it will fit now, but oh well.....a common place
-@@ -538,30 +536,28 @@ WDTException:
- tlb_4xx_index:
- 	.long	0
- finish_tlb_load:
--	/* load the next available TLB index.
--	*/
--	lwz	r9, tlb_4xx_index@l(0)
--	addi	r9, r9, 1
--	andi.	r9, r9, (PPC40X_TLB_SIZE-1)
--	stw	r9, tlb_4xx_index@l(0)
--
--6:
- 	/*
- 	 * Clear out the software-only bits in the PTE to generate the
- 	 * TLB_DATA value.  These are the bottom 2 bits of the RPM, the
- 	 * top 3 bits of the zone field, and M.
- 	 */
--	li	r12, 0x0ce2
--	andc	r11, r11, r12
-+	li	r9, 0x0ce2
-+	andc	r11, r11, r9
-+
-+	/* load the next available TLB index. */
-+	lwz	r9, tlb_4xx_index@l(0)
-+	addi	r9, r9, 1
-+	andi.	r9, r9, PPC40X_TLB_SIZE - 1
-+	stw	r9, tlb_4xx_index@l(0)
- 
- 	tlbwe	r11, r9, TLB_DATA		/* Load TLB LO */
- 	tlbwe	r10, r9, TLB_TAG		/* Load TLB HI */
- 
- 	/* Done...restore registers and get out of here.
- 	*/
--	mfspr	r12, SPRN_SPRG_SCRATCH5
-+	mfspr	r9, SPRN_SPRG_SCRATCH5
- 	mfspr	r11, SPRN_SPRG_SCRATCH6
--	mtspr	SPRN_PID, r12
-+	mtspr	SPRN_PID, r9
- 	mtcr	r11
- 	mfspr	r9, SPRN_SPRG_SCRATCH4
- 	mfspr	r12, SPRN_SPRG_SCRATCH3
 -- 
-2.25.0
-
+Cheers
+~ Vaibhav
