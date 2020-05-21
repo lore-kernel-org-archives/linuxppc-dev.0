@@ -6,79 +6,62 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 328EDC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 03:26:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADD60C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 04:53:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A71E20678
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 03:26:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 18D2A2070A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 04:53:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="dQODjFoC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A71E20678
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="A/WHOQ4G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18D2A2070A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49SFQH23XQzDqnB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 13:26:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::543;
- helo=mail-pg1-x543.google.com; envelope-from=keescook@chromium.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=dQODjFoC; dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49SHLn29xgzDqSp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 14:53:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49SFN65LHtzDqjQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2020 13:24:22 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id f4so2438323pgi.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2020 20:24:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=mWnBjl1zYC8g8arTkDhsLL1NSSPTMEKdZHG0NVZD9M8=;
- b=dQODjFoCNsXPgZtIsjjHamdC4Pu+mSJd0GckTyPx551zr98aODM5dJFMdkhXgPjklf
- VYPAt85gs5oCBBSY8ECg8cFn31wUYDRLAAh9PNMfsCMF8a+/KTkDsHPt9m0Jc9PtxSpU
- 8wZgJVSDe5kxAm3oAtQuqWMfKgxPEZGlO2rzc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=mWnBjl1zYC8g8arTkDhsLL1NSSPTMEKdZHG0NVZD9M8=;
- b=Q/JqleJz02Qz7Eg1fHDdNrUGw2NH9/roXGtukXSsSQxKbD6w84fzEv4s5RaR/if9rL
- kyMqPRK8nHoVjyQOkWcxjRFRpkRzoZhtYwWGLm5p2Oad6Scrturo6hCeq5CQVI6A0vLq
- uGPZRn0mOyKfwoT5eg6zJo3FsWRVLYyj6DlhGdXkB5ievpmJMeKkziIv4aAQVZ4CAmor
- vao5Dy84dF3zflMhKrjcicdmosYhseEWYNAufuIob7qgk2sm2HR+sxTvMvCnN/6IWCP9
- 7MVY+tDgj4NoDECZPm6FX5ChC51WYZBxSsG7LsgQ9DrqAec+kFz9lTlyNWBr8e1LtH8s
- 53Ag==
-X-Gm-Message-State: AOAM532UgPYdwdYnxjP/UmGvgnAiBrcDotSZOJtDx+uXCWLU4h1r3URd
- IA8hlaT0H03tcq5H4LjFPNBWPw==
-X-Google-Smtp-Source: ABdhPJwEXKl6A+KQbb5Fp68HNAuocmXXpqB85QaVdfl5nI9EFTDUjgRqSfp1CPCQYOESq1iPuYQ3Xw==
-X-Received: by 2002:a63:f242:: with SMTP id d2mr7158481pgk.212.1590031458617; 
- Wed, 20 May 2020 20:24:18 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id s206sm3325954pfc.31.2020.05.20.20.24.16
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 20 May 2020 20:24:16 -0700 (PDT)
-Date: Wed, 20 May 2020 20:24:15 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Li Yang <leoyang.li@nxp.com>
-Subject: Re: [PATCH] soc: fsl: qe: Replace one-element array and use
- struct_size() helper
-Message-ID: <202005202022.588918E61@keescook>
-References: <20200518221904.GA22274@embeddedor>
- <202005181529.C0CB448FBB@keescook>
- <CADRPPNR-Croux9FgnrQJJmdF2jNnuAmC+2xMJSgSbkbRv9u8Mw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49SHJl4gKzzDqjT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2020 14:51:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=A/WHOQ4G; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49SHJg6pG4z9sRK;
+ Thu, 21 May 2020 14:51:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1590036695;
+ bh=Vvjbw6Q5rxtxSmTSpphFOU/PwAYYBFFB40vqqXq++1c=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=A/WHOQ4Gh5Q6ACmyswDHgE6Cva2c1JIxTmXl24lnY5DMA/IDX8TAE4q+75ZHcD8Bp
+ KyrX856ksyYk6lEeNko/P3s2ox5fx4QKtHRrbMqEMr63nlvn7jOGMMJsxaAbsVRHXR
+ rXM4BdfdN4Z8QeDyiS3jWr9q0RFO6IX7RSYsQcyPXM5rbRpKcZ3nyB27AuRxiintBf
+ 7AGWw1YgDhKwQ/f6yMcnMkNVDabwBJAxmiHhRxX7307OsWrah5sSxCFwYukRGp/Hrf
+ qvdODddKGdEfINH9SX2gRo8PthC2AYkzYkvTlOIXK4+exk6VML7oZBvch/aR2yn4+z
+ JqyiZm/uQhvfQ==
+Date: Thu, 21 May 2020 14:51:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>, Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H.
+ Peter Anvin" <hpa@zytor.com>
+Subject: Re: linux-next: manual merge of the rcu tree with the powerpc tree
+Message-ID: <20200521145124.48ae408b@canb.auug.org.au>
+In-Reply-To: <20200519172316.3b37cbae@canb.auug.org.au>
+References: <20200519172316.3b37cbae@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CADRPPNR-Croux9FgnrQJJmdF2jNnuAmC+2xMJSgSbkbRv9u8Mw@mail.gmail.com>
+Content-Type: multipart/signed; boundary="Sig_/CQMfjLSTVZpJuWvNZ/.x1qE";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,48 +73,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
- lkml <linux-kernel@vger.kernel.org>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Paul E. McKenney" <paulmck@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 20, 2020 at 06:52:21PM -0500, Li Yang wrote:
-> On Mon, May 18, 2020 at 5:57 PM Kees Cook <keescook@chromium.org> wrote:
-> > Hm, looking at this code, I see a few other things that need to be
-> > fixed:
-> >
-> > 1) drivers/tty/serial/ucc_uart.c does not do a be32_to_cpu() conversion
-> >    on the length test (understandably, a little-endian system has never run
-> >    this code since it's ppc specific), but it's still wrong:
-> >
-> >         if (firmware->header.length != fw->size) {
-> >
-> >    compare to the firmware loader:
-> >
-> >         length = be32_to_cpu(hdr->length);
-> >
-> > 2) drivers/soc/fsl/qe/qe.c does not perform bounds checking on the
-> >    per-microcode offsets, so the uploader might send data outside the
-> >    firmware buffer. Perhaps:
-> 
-> We do validate the CRC for each microcode, it is unlikely the CRC
-> check can pass if the offset or length is not correct.  But you are
-> probably right that it will be safer to check the boundary and fail
+--Sig_/CQMfjLSTVZpJuWvNZ/.x1qE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Right, but a malicious firmware file could still match CRC but trick the
-kernel code.
+Hi all,
 
-> quicker before we actually start the CRC check.  Will you come up with
-> a formal patch or you want us to deal with it?
+On Tue, 19 May 2020 17:23:16 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Today's linux-next merge of the rcu tree got a conflict in:
+>=20
+>   arch/powerpc/kernel/traps.c
+>=20
+> between commit:
+>=20
+>   116ac378bb3f ("powerpc/64s: machine check interrupt update NMI accounti=
+ng")
+>=20
+> from the powerpc tree and commit:
+>=20
+>   187416eeb388 ("hardirq/nmi: Allow nested nmi_enter()")
+>=20
+> from the rcu tree.
+>=20
+> I fixed it up (I used the powerpc tree version for now) and can carry the
+> fix as necessary. This is now fixed as far as linux-next is concerned,
+> but any non trivial conflicts should be mentioned to your upstream
+> maintainer when your tree is submitted for merging.  You may also want
+> to consider cooperating with the maintainer of the conflicting tree to
+> minimise any particularly complex conflicts.
 
-It sounds like Gustavo will be sending one, though I don't think either
-of us have the hardware to test it with, so if you could do that part,
-that would be great! :)
+This is now a conflict between the powerpc commit and commit
 
--- 
-Kees Cook
+  69ea03b56ed2 ("hardirq/nmi: Allow nested nmi_enter()")
+
+from the tip tree.  I assume that the rcu and tip trees are sharing
+some patches (but not commits) :-(
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/CQMfjLSTVZpJuWvNZ/.x1qE
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl7GCMwACgkQAVBC80lX
+0GxDgAgAjBhkbXjQw6c4H9zUJ/eMzz46ZhGjxATiSVcRL9djbp+Vc/KpQO1tkjif
+bJ0tP19uatDYyD/6eEzPotCk+htDR/rVSJv1kEQlOILCXxWxR6EmccmJryRyIeAc
+ARG/q+iSSPQrCzT8bPRK20ToK6FQEoX0wAE+c9eScTlI2OO6x6LbeYwKPphzLvZj
+FjNiUZffxnOJrCc/ru7++ga/YIhNn8YVXKjdk9dNzlS0G5LH87wz4syI8f4T8Pks
+CK0aH65PfcV+F923TsGDB3+r+GQD5zAZDxhsY2T1moDbVloNx9Cab3EHj1/djDQ6
+Y/EBDv6+GEF5EV/D49ExqoET5sa0XQ==
+=wTU9
+-----END PGP SIGNATURE-----
+
+--Sig_/CQMfjLSTVZpJuWvNZ/.x1qE--
