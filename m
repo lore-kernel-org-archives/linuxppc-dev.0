@@ -2,23 +2,23 @@ Return-Path: <SRS0=dcvz=7D=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 943A0C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:03:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FB6DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:06:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F666207F7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:03:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F666207F7
+	by mail.kernel.org (Postfix) with ESMTPS id 45EC120759
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 May 2020 17:06:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45EC120759
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49SbXj1tgHzDqlQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 03:03:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49SbcM704WzDqrW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 03:06:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,37 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49SbPJ6SckzDqfr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 02:56:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49SbPJ6NmkzDqfN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 02:55:58 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49SbNP3xptz9tyFq;
- Thu, 21 May 2020 18:55:49 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49SbNR4cJjz9v0lZ;
+ Thu, 21 May 2020 18:55:51 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id t1vK45dStyxb; Thu, 21 May 2020 18:55:49 +0200 (CEST)
+ with ESMTP id gwHAqONeztj1; Thu, 21 May 2020 18:55:51 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49SbNP33vLz9v125;
- Thu, 21 May 2020 18:55:49 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BBF548B7DB;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49SbNR3LbNz9v127;
  Thu, 21 May 2020 18:55:51 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C2ACD8B778;
+ Thu, 21 May 2020 18:55:53 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OyFS_cgZ7i-a; Thu, 21 May 2020 18:55:51 +0200 (CEST)
+ with ESMTP id E1vWHHw_IGu7; Thu, 21 May 2020 18:55:53 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 705198B778;
- Thu, 21 May 2020 18:55:51 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 566B08B7DC;
+ Thu, 21 May 2020 18:55:53 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3959665A53; Thu, 21 May 2020 16:55:51 +0000 (UTC)
-Message-Id: <cover.1590079968.git.christophe.leroy@csgroup.eu>
+ id 3818465A53; Thu, 21 May 2020 16:55:53 +0000 (UTC)
+Message-Id: <99a0fcd337ef67088140d1647d75fea026a70413.1590079968.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1590079968.git.christophe.leroy@csgroup.eu>
+References: <cover.1590079968.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v5 00/13] Modernise powerpc 40x
+Subject: [PATCH v5 02/13] powerpc/40x: Rework 40x PTE access and TLB miss
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  michal.simek@xilinx.com, arnd@arndb.de
-Date: Thu, 21 May 2020 16:55:51 +0000 (UTC)
+Date: Thu, 21 May 2020 16:55:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,134 +76,346 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v1 and v2 of this series were aiming at removing 40x entirely,
-but it led to protests.
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-v3 is trying to start modernising powerpc 40x:
-- Rework TLB miss handlers to not use PTE_ATOMIC_UPDATES and _PAGE_HWWRITE
-- Remove old versions of 40x processors, namely 403 and 405GP and associated
-errata.
-- Last two patches are trivial changes in TLB miss handlers to reduce number
-of scratch registers.
+Commit 1bc54c03117b ("powerpc: rework 4xx PTE access and TLB miss")
+reworked 44x PTE access to avoid atomic pte updates, and
+left 8xx, 40x and fsl booke with atomic pte updates.
+Commit 6cfd8990e27d ("powerpc: rework FSL Book-E PTE access and TLB
+miss") removed atomic pte updates on fsl booke.
+It went away on 8xx with commit ddfc20a3b9ae ("powerpc/8xx: Remove
+PTE_ATOMIC_UPDATES").
 
-v4:
-- Fixing a build failure with patch 2 due to a missing ;
-- There was in patch 5 some stuff belonging to patch 6. Moved them.
-- Rebased to today's powerpc/merge
+40x is the last platform setting PTE_ATOMIC_UPDATES.
 
-v5:
-- Rebase on top of 35a26089dd1c Automatic merge of 'next-test' into merge-test (2020-05-22 00:14)
+Rework PTE access and TLB miss to remove PTE_ATOMIC_UPDATES for 40x:
+- Always handle DSI as a fault.
+- Bail out of TLB miss handler when CONFIG_SWAP is set and
+_PAGE_ACCESSED is not set.
+- Bail out of ITLB miss handler when _PAGE_EXEC is not set.
+- Only set WR bit when both _PAGE_RW and _PAGE_DIRTY are set.
+- Remove _PAGE_HWWRITE
+- Don't require PTE_ATOMIC_UPDATES anymore
 
-I would have liked to test it with QEMU, but I get the following error when
-trying to start QEMU for machine ref405ep.
-
-	qemu-system-ppc: Could not load PowerPC BIOS 'ppc405_rom.bin'
-
-Can someone help with that ?
-
-Christophe Leroy (12):
-  powerpc/40x: Rework 40x PTE access and TLB miss
-  powerpc/pgtable: Drop PTE_ATOMIC_UPDATES
-  powerpc/40x: Remove support for IBM 403GCX
-  powerpc/40x: Remove STB03xxx
-  powerpc/40x: Remove WALNUT
-  powerpc/40x: Remove EP405
-  powerpc/40x: Remove support for ISS Simulator
-  powerpc/40x: Remove support for IBM 405GP
-  powerpc/40x: Remove IBM405 Erratum #51
-  powerpc: Remove IBM405 Erratum #77
-  powerpc/40x: Avoid using r12 in TLB miss handlers
-  powerpc/40x: Don't save CR in SPRN_SPRG_SCRATCH6
-
-Michal Simek (1):
-  powerpc: Remove Xilinx PPC405/PPC440 support
-
- Documentation/devicetree/bindings/xilinx.txt | 143 ------
- Documentation/powerpc/bootwrapper.rst        |  28 +-
- arch/powerpc/Kconfig.debug                   |   2 +-
- arch/powerpc/boot/Makefile                   |  14 +-
- arch/powerpc/boot/dts/Makefile               |   1 -
- arch/powerpc/boot/dts/ep405.dts              | 230 ---------
- arch/powerpc/boot/dts/virtex440-ml507.dts    | 406 ----------------
- arch/powerpc/boot/dts/virtex440-ml510.dts    | 466 -------------------
- arch/powerpc/boot/dts/walnut.dts             | 246 ----------
- arch/powerpc/boot/ep405.c                    |  71 ---
- arch/powerpc/boot/ops.h                      |   1 -
- arch/powerpc/boot/serial.c                   |   5 -
- arch/powerpc/boot/treeboot-walnut.c          |  81 ----
- arch/powerpc/boot/uartlite.c                 |  79 ----
- arch/powerpc/boot/virtex.c                   |  97 ----
- arch/powerpc/boot/virtex405-head.S           |  31 --
- arch/powerpc/boot/wrapper                    |   8 -
- arch/powerpc/configs/40x/acadia_defconfig    |   1 -
- arch/powerpc/configs/40x/ep405_defconfig     |  62 ---
- arch/powerpc/configs/40x/kilauea_defconfig   |   1 -
- arch/powerpc/configs/40x/klondike_defconfig  |   1 -
- arch/powerpc/configs/40x/makalu_defconfig    |   1 -
- arch/powerpc/configs/40x/obs600_defconfig    |   1 -
- arch/powerpc/configs/40x/virtex_defconfig    |  75 ---
- arch/powerpc/configs/44x/virtex5_defconfig   |  74 ---
- arch/powerpc/configs/ppc40x_defconfig        |   9 -
- arch/powerpc/configs/ppc44x_defconfig        |   8 -
- arch/powerpc/include/asm/asm-405.h           |  19 -
- arch/powerpc/include/asm/atomic.h            |  11 -
- arch/powerpc/include/asm/bitops.h            |   4 -
- arch/powerpc/include/asm/cache.h             |   2 +-
- arch/powerpc/include/asm/cmpxchg.h           |  11 -
- arch/powerpc/include/asm/futex.h             |   3 -
- arch/powerpc/include/asm/nohash/32/pgtable.h |  16 -
- arch/powerpc/include/asm/nohash/32/pte-40x.h |  23 +-
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+v4: Fixed build failure (missing ;)
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/nohash/32/pte-40x.h |  23 +--
  arch/powerpc/include/asm/nohash/pgtable.h    |   2 -
- arch/powerpc/include/asm/reg_booke.h         |  54 ---
- arch/powerpc/include/asm/spinlock.h          |   4 -
- arch/powerpc/include/asm/time.h              |  12 -
- arch/powerpc/include/asm/xilinx_intc.h       |  16 -
- arch/powerpc/include/asm/xilinx_pci.h        |  21 -
- arch/powerpc/kernel/cputable.c               | 102 ----
- arch/powerpc/kernel/entry_32.S               |  11 -
- arch/powerpc/kernel/head_40x.S               | 316 +++----------
- arch/powerpc/kernel/misc_32.S                |   9 -
- arch/powerpc/kernel/setup-common.c           |   4 -
+ arch/powerpc/kernel/head_40x.S               | 177 +++----------------
  arch/powerpc/mm/nohash/40x.c                 |   4 +-
- arch/powerpc/platforms/40x/Kconfig           |  76 ---
- arch/powerpc/platforms/40x/Makefile          |   3 -
- arch/powerpc/platforms/40x/ep405.c           | 123 -----
- arch/powerpc/platforms/40x/virtex.c          |  54 ---
- arch/powerpc/platforms/40x/walnut.c          |  65 ---
- arch/powerpc/platforms/44x/Kconfig           |  40 +-
- arch/powerpc/platforms/44x/Makefile          |   2 -
- arch/powerpc/platforms/44x/virtex.c          |  60 ---
- arch/powerpc/platforms/44x/virtex_ml510.c    |  30 --
- arch/powerpc/platforms/Kconfig               |   4 -
- arch/powerpc/sysdev/Makefile                 |   2 -
- arch/powerpc/sysdev/xilinx_intc.c            |  88 ----
- arch/powerpc/sysdev/xilinx_pci.c             | 132 ------
- drivers/char/Kconfig                         |   2 +-
- drivers/video/fbdev/Kconfig                  |   2 +-
- 62 files changed, 83 insertions(+), 3386 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/ep405.dts
- delete mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
- delete mode 100644 arch/powerpc/boot/dts/virtex440-ml510.dts
- delete mode 100644 arch/powerpc/boot/dts/walnut.dts
- delete mode 100644 arch/powerpc/boot/ep405.c
- delete mode 100644 arch/powerpc/boot/treeboot-walnut.c
- delete mode 100644 arch/powerpc/boot/uartlite.c
- delete mode 100644 arch/powerpc/boot/virtex.c
- delete mode 100644 arch/powerpc/boot/virtex405-head.S
- delete mode 100644 arch/powerpc/configs/40x/ep405_defconfig
- delete mode 100644 arch/powerpc/configs/40x/virtex_defconfig
- delete mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
- delete mode 100644 arch/powerpc/include/asm/asm-405.h
- delete mode 100644 arch/powerpc/include/asm/xilinx_intc.h
- delete mode 100644 arch/powerpc/include/asm/xilinx_pci.h
- delete mode 100644 arch/powerpc/platforms/40x/ep405.c
- delete mode 100644 arch/powerpc/platforms/40x/virtex.c
- delete mode 100644 arch/powerpc/platforms/40x/walnut.c
- delete mode 100644 arch/powerpc/platforms/44x/virtex.c
- delete mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
- delete mode 100644 arch/powerpc/sysdev/xilinx_intc.c
- delete mode 100644 arch/powerpc/sysdev/xilinx_pci.c
+ 4 files changed, 34 insertions(+), 172 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+index 12c6811e344b..2d3153cfc0d7 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+@@ -44,9 +44,8 @@
+ #define	_PAGE_WRITETHRU	0x008	/* W: caching is write-through */
+ #define	_PAGE_USER	0x010	/* matches one of the zone permission bits */
+ #define	_PAGE_SPECIAL	0x020	/* software: Special page */
+-#define	_PAGE_RW	0x040	/* software: Writes permitted */
+ #define	_PAGE_DIRTY	0x080	/* software: dirty page */
+-#define _PAGE_HWWRITE	0x100	/* hardware: Dirty & RW, set in exception */
++#define _PAGE_RW	0x100	/* hardware: WR, anded with dirty in exception */
+ #define _PAGE_EXEC	0x200	/* hardware: EX permission */
+ #define _PAGE_ACCESSED	0x400	/* software: R: page referenced */
+ 
+@@ -58,8 +57,8 @@
+ 
+ #define _PAGE_KERNEL_RO		0
+ #define _PAGE_KERNEL_ROX	_PAGE_EXEC
+-#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+-#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE | _PAGE_EXEC)
++#define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW)
++#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
+ 
+ #define _PMD_PRESENT	0x400	/* PMD points to page of PTEs */
+ #define _PMD_PRESENT_MASK	_PMD_PRESENT
+@@ -85,21 +84,5 @@
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
+ 
+-#ifndef __ASSEMBLY__
+-static inline pte_t pte_wrprotect(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE));
+-}
+-
+-#define pte_wrprotect pte_wrprotect
+-
+-static inline pte_t pte_mkclean(pte_t pte)
+-{
+-	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
+-}
+-
+-#define pte_mkclean pte_mkclean
+-#endif
+-
+ #endif /* __KERNEL__ */
+ #endif /*  _ASM_POWERPC_NOHASH_32_PTE_40x_H */
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index f27c967d9269..50a4b0bb8d16 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -130,12 +130,10 @@ static inline pte_t pte_exprotect(pte_t pte)
+ 	return __pte(pte_val(pte) & ~_PAGE_EXEC);
+ }
+ 
+-#ifndef pte_mkclean
+ static inline pte_t pte_mkclean(pte_t pte)
+ {
+ 	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
+ }
+-#endif
+ 
+ static inline pte_t pte_mkold(pte_t pte)
+ {
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 2cec543c38f0..f45d71ada48b 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -176,135 +176,16 @@ _ENTRY(saved_ksp_limit)
+  * 0x0300 - Data Storage Exception
+  * This happens for just a few reasons.  U0 set (but we don't do that),
+  * or zone protection fault (user violation, write to protected page).
+- * If this is just an update of modified status, we do that quickly
+- * and exit.  Otherwise, we call heavywight functions to do the work.
++ * The other Data TLB exceptions bail out to this point
++ * if they can't resolve the lightweight TLB fault.
+  */
+ 	START_EXCEPTION(0x0300,	DataStorage)
+-	mtspr	SPRN_SPRG_SCRATCH0, r10 /* Save some working registers */
+-	mtspr	SPRN_SPRG_SCRATCH1, r11
+-#ifdef CONFIG_403GCX
+-	stw     r12, 0(r0)
+-	stw     r9, 4(r0)
+-	mfcr    r11
+-	mfspr   r12, SPRN_PID
+-	stw     r11, 8(r0)
+-	stw     r12, 12(r0)
+-#else
+-	mtspr	SPRN_SPRG_SCRATCH3, r12
+-	mtspr	SPRN_SPRG_SCRATCH4, r9
+-	mfcr	r11
+-	mfspr	r12, SPRN_PID
+-	mtspr	SPRN_SPRG_SCRATCH6, r11
+-	mtspr	SPRN_SPRG_SCRATCH5, r12
+-#endif
+-
+-	/* First, check if it was a zone fault (which means a user
+-	* tried to access a kernel or read-protected page - always
+-	* a SEGV).  All other faults here must be stores, so no
+-	* need to check ESR_DST as well. */
+-	mfspr	r10, SPRN_ESR
+-	andis.	r10, r10, ESR_DIZ@h
+-	bne	2f
+-
+-	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, PAGE_OFFSET@h
+-	cmplw	r10, r11
+-	blt+	3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-	li	r9, 0
+-	mtspr	SPRN_PID, r9		/* TLB will have 0 TID */
+-	b	4f
+-
+-	/* Get the PGD for the current thread.
+-	 */
+-3:
+-	mfspr	r11,SPRN_SPRG_THREAD
+-	lwz	r11,PGDIR(r11)
+-4:
+-	tophys(r11, r11)
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	rlwinm.	r12, r11, 0, 0, 19	/* Extract L2 (pte) base address */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r12)		/* Get Linux PTE */
+-
+-	andi.	r9, r11, _PAGE_RW	/* Is it writeable? */
+-	beq	2f			/* Bail if not */
+-
+-	/* Update 'changed'.
+-	*/
+-	ori	r11, r11, _PAGE_DIRTY|_PAGE_ACCESSED|_PAGE_HWWRITE
+-	stw	r11, 0(r12)		/* Update Linux page table */
+-
+-	/* Most of the Linux PTE is ready to load into the TLB LO.
+-	 * We set ZSEL, where only the LS-bit determines user access.
+-	 * We set execute, because we don't have the granularity to
+-	 * properly set this at the page level (Linux problem).
+-	 * If shared is set, we cause a zero PID->TID load.
+-	 * Many of these bits are software only.  Bits we don't set
+-	 * here we (properly should) assume have the appropriate value.
+-	 */
+-	li	r12, 0x0ce2
+-	andc	r11, r11, r12		/* Make sure 20, 21 are zero */
+-
+-	/* find the TLB index that caused the fault.  It has to be here.
+-	*/
+-	tlbsx	r9, 0, r10
+-
+-	tlbwe	r11, r9, TLB_DATA		/* Load TLB LO */
+-
+-	/* Done...restore registers and get out of here.
+-	*/
+-#ifdef CONFIG_403GCX
+-	lwz     r12, 12(r0)
+-	lwz     r11, 8(r0)
+-	mtspr   SPRN_PID, r12
+-	mtcr    r11
+-	lwz     r9, 4(r0)
+-	lwz     r12, 0(r0)
+-#else
+-	mfspr	r12, SPRN_SPRG_SCRATCH5
+-	mfspr	r11, SPRN_SPRG_SCRATCH6
+-	mtspr	SPRN_PID, r12
+-	mtcr	r11
+-	mfspr	r9, SPRN_SPRG_SCRATCH4
+-	mfspr	r12, SPRN_SPRG_SCRATCH3
+-#endif
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	PPC405_ERR77_SYNC
+-	rfi			/* Should sync shadow TLBs */
+-	b	.		/* prevent prefetch past rfi */
+-
+-2:
+-	/* The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-#ifdef CONFIG_403GCX
+-	lwz     r12, 12(r0)
+-	lwz     r11, 8(r0)
+-	mtspr   SPRN_PID, r12
+-	mtcr    r11
+-	lwz     r9, 4(r0)
+-	lwz     r12, 0(r0)
+-#else
+-	mfspr	r12, SPRN_SPRG_SCRATCH5
+-	mfspr	r11, SPRN_SPRG_SCRATCH6
+-	mtspr	SPRN_PID, r12
+-	mtcr	r11
+-	mfspr	r9, SPRN_SPRG_SCRATCH4
+-	mfspr	r12, SPRN_SPRG_SCRATCH3
+-#endif
+-	mfspr	r11, SPRN_SPRG_SCRATCH1
+-	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	b	DataAccess
++	EXCEPTION_PROLOG
++	mfspr	r5, SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
++	stw	r5, _ESR(r11)
++	mfspr	r4, SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
++	stw	r4, _DEAR(r11)
++	EXC_XFER_LITE(0x300, handle_page_fault)
+ 
+ /*
+  * 0x0400 - Instruction Storage Exception
+@@ -415,11 +296,17 @@ _ENTRY(saved_ksp_limit)
+ 
+ 	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+ 	lwz	r11, 0(r12)		/* Get Linux PTE */
+-	andi.	r9, r11, _PAGE_PRESENT
+-	beq	5f
++#ifdef CONFIG_SWAP
++	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED
++#else
++	li	r9, _PAGE_PRESENT
++#endif
++	andc.	r9, r9, r11		/* Check permission */
++	bne	5f
+ 
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 0(r12)
++	rlwinm	r9, r11, 1, _PAGE_RW	/* dirty => rw */
++	and	r9, r9, r11		/* hwwrite = dirty & rw */
++	rlwimi	r11, r9, 0, _PAGE_RW	/* replace rw by hwwrite */
+ 
+ 	/* Create TLB tag.  This is the faulting address plus a static
+ 	 * set of bits.  These are size, valid, E, U0.
+@@ -463,7 +350,7 @@ _ENTRY(saved_ksp_limit)
+ #endif
+ 	mfspr	r11, SPRN_SPRG_SCRATCH1
+ 	mfspr	r10, SPRN_SPRG_SCRATCH0
+-	b	DataAccess
++	b	DataStorage
+ 
+ /* 0x1200 - Instruction TLB Miss Exception
+  * Nearly the same as above, except we get our information from different
+@@ -515,11 +402,17 @@ _ENTRY(saved_ksp_limit)
+ 
+ 	rlwimi	r12, r10, 22, 20, 29	/* Compute PTE address */
+ 	lwz	r11, 0(r12)		/* Get Linux PTE */
+-	andi.	r9, r11, _PAGE_PRESENT
+-	beq	5f
++#ifdef CONFIG_SWAP
++	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
++#else
++	li	r9, _PAGE_PRESENT | _PAGE_EXEC
++#endif
++	andc.	r9, r9, r11		/* Check permission */
++	bne	5f
+ 
+-	ori	r11, r11, _PAGE_ACCESSED
+-	stw	r11, 0(r12)
++	rlwinm	r9, r11, 1, _PAGE_RW	/* dirty => rw */
++	and	r9, r9, r11		/* hwwrite = dirty & rw */
++	rlwimi	r11, r9, 0, _PAGE_RW	/* replace rw by hwwrite */
+ 
+ 	/* Create TLB tag.  This is the faulting address plus a static
+ 	 * set of bits.  These are size, valid, E, U0.
+@@ -669,18 +562,6 @@ WDTException:
+ 	                  (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)),
+ 			  crit_transfer_to_handler, ret_from_crit_exc)
+ 
+-/*
+- * The other Data TLB exceptions bail out to this point
+- * if they can't resolve the lightweight TLB fault.
+- */
+-DataAccess:
+-	EXCEPTION_PROLOG
+-	mfspr	r5,SPRN_ESR		/* Grab the ESR, save it, pass arg3 */
+-	stw	r5,_ESR(r11)
+-	mfspr	r4,SPRN_DEAR		/* Grab the DEAR, save it, pass arg2 */
+-	stw	r4, _DEAR(r11)
+-	EXC_XFER_LITE(0x300, handle_page_fault)
+-
+ /* Other PowerPC processors, namely those derived from the 6xx-series
+  * have vectors from 0x2100 through 0x2F00 defined, but marked as reserved.
+  * However, for the 4xx-series processors these are neither defined nor
+diff --git a/arch/powerpc/mm/nohash/40x.c b/arch/powerpc/mm/nohash/40x.c
+index 82862723ab42..4eaf462cda30 100644
+--- a/arch/powerpc/mm/nohash/40x.c
++++ b/arch/powerpc/mm/nohash/40x.c
+@@ -102,7 +102,7 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+ 
+ 	while (s >= LARGE_PAGE_SIZE_16M) {
+ 		pmd_t *pmdp;
+-		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_HWWRITE;
++		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_RW;
+ 
+ 		pmdp = pmd_ptr_k(v);
+ 		*pmdp++ = __pmd(val);
+@@ -117,7 +117,7 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+ 
+ 	while (s >= LARGE_PAGE_SIZE_4M) {
+ 		pmd_t *pmdp;
+-		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_HWWRITE;
++		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_RW;
+ 
+ 		pmdp = pmd_ptr_k(v);
+ 		*pmdp = __pmd(val);
 -- 
 2.25.0
 
