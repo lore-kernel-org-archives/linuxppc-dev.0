@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58157C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 01:32:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E198C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 01:38:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B8B3207D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 01:32:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B8B3207D8
+	by mail.kernel.org (Postfix) with ESMTPS id B38082078B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 01:38:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B38082078B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49SprJ6GTNzDqxl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 11:32:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Spys5YBBzDqyY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 May 2020 11:37:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
  helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
@@ -29,16 +29,16 @@ Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49SppH5rZwzDqvZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 11:30:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Spwj2msnzDqvg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2020 11:36:05 +1000 (AEST)
 Received: from viro by ZenIV.linux.org.uk with local (Exim 4.93 #3 (Red Hat
- Linux)) id 1jbwVS-00DFOA-8Y; Fri, 22 May 2020 01:29:50 +0000
-Date: Fri, 22 May 2020 02:29:50 +0100
+ Linux)) id 1jbwap-00DFUw-Lr; Fri, 22 May 2020 01:35:23 +0000
+Date: Fri, 22 May 2020 02:35:23 +0100
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [PATCH] arch/{mips,sparc,microblaze,powerpc}: Don't enable
  pagefault/preempt twice
-Message-ID: <20200522012950.GN23230@ZenIV.linux.org.uk>
+Message-ID: <20200522013523.GO23230@ZenIV.linux.org.uk>
 References: <20200507150004.1423069-8-ira.weiny@intel.com>
  <20200518184843.3029640-1-ira.weiny@intel.com>
  <20200519165422.GA5838@roeck-us.net>
@@ -47,10 +47,11 @@ References: <20200507150004.1423069-8-ira.weiny@intel.com>
  <20200521224612.GJ23230@ZenIV.linux.org.uk>
  <20200522004618.GA3151350@ZenIV.linux.org.uk>
  <970857bd-bb56-7b2e-833e-ca74a82fa9b5@roeck-us.net>
+ <20200522012950.GN23230@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <970857bd-bb56-7b2e-833e-ca74a82fa9b5@roeck-us.net>
+In-Reply-To: <20200522012950.GN23230@ZenIV.linux.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,15 +84,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 21, 2020 at 06:11:08PM -0700, Guenter Roeck wrote:
-
-> Mainline, with:
+On Fri, May 22, 2020 at 02:29:50AM +0100, Al Viro wrote:
+> On Thu, May 21, 2020 at 06:11:08PM -0700, Guenter Roeck wrote:
 > 
-> qemu-system-sparc -M SS-4 -kernel arch/sparc/boot/zImage -no-reboot \
-> 	-snapshot -drive file=rootfs.ext2,format=raw,if=scsi \
-> 	-append "panic=-1 slub_debug=FZPUA root=/dev/sda console=ttyS0"
-> 	-nographic -monitor none
+> > Mainline, with:
+> > 
+> > qemu-system-sparc -M SS-4 -kernel arch/sparc/boot/zImage -no-reboot \
+> > 	-snapshot -drive file=rootfs.ext2,format=raw,if=scsi \
+> > 	-append "panic=-1 slub_debug=FZPUA root=/dev/sda console=ttyS0"
+> > 	-nographic -monitor none
+> > 
+> > The machine doesn't really matter, though.
 > 
-> The machine doesn't really matter, though.
+> It does, unfortunately - try that with SS-10 and watch what happens ;-/
 
-It does, unfortunately - try that with SS-10 and watch what happens ;-/
+Ugh...  It's actually something in -m handling: -m 256 passes, -m 512
+leads to that panic.
