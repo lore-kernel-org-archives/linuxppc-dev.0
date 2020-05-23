@@ -2,90 +2,62 @@ Return-Path: <SRS0=nO0J=7F=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C91A3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2020 19:51:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED552C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2020 22:24:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A473204EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2020 19:51:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HNaqQKaQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A473204EF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwfinger.net
+	by mail.kernel.org (Postfix) with ESMTPS id 2E33A20787
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 May 2020 22:24:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E33A20787
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Tv9m0rz9zDqfv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 05:51:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49TyZF4V29zDqj4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 08:24:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c44;
- helo=mail-oo1-xc44.google.com; envelope-from=larry.finger@gmail.com;
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=abjp=7f=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwfinger.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=HNaqQKaQ; dkim-atps=neutral
-Received: from mail-oo1-xc44.google.com (mail-oo1-xc44.google.com
- [IPv6:2607:f8b0:4864:20::c44])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Tv7k1SMqzDqf9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 05:49:21 +1000 (AEST)
-Received: by mail-oo1-xc44.google.com with SMTP id p123so2872137oop.12
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2020 12:49:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=xgndOloRKNtdK78AcW7sPC8a95QIlm+mmZmaumtncUc=;
- b=HNaqQKaQLUq/APhlvRG5lP97ykP8CBcnuAYjOTG7XC4H2V0b5eeS37jqC7zF6xLlYm
- foOBDqbvVO2DAq8XZA6JpiXF3NIubfy+UV3xLKrKl4UH2Oi/uoEKDJ2N4bGt2zhddAmb
- bbkbXOUBbEtGl4ygvFnj2jcUabvJadmQdd7MM0UjJ43zZeVv4KuM+nulK3xCoeQaNJyi
- 9S2/7/6ibmJnAOjqDkKDG+5n4wnwYYfad2zUihlZmcHbw1j9Y2kvjIo8GP0pVZ2IAd7n
- 51+4Fh28KADZOpOkrkL7ZZXthJrwEePYdArCTEYp0YjAS1sGMU6vzwfl5/fM0KmCRl4s
- K7vw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=xgndOloRKNtdK78AcW7sPC8a95QIlm+mmZmaumtncUc=;
- b=JG236srgaEdaP02zVA4cRDsZ5MsntM23zb1dgE2WBKA7aV9vLMb/8pG7+DygA/s9I3
- zHZaa6DmNJf/j4dkhzNg+N40HbcVujYz71QwJxowDbf3jASrnbFQtUaQDUPGjcfcTwCl
- FBFPMoQYzQ7e6rtFnjLH2LSNayJUvmDUQDO/jFm6asNH1YsFFED8iFAHwTQ4j+XZzA/M
- q52iontW4qt+58PYdNF4GGuIvYqN+Y9zdCikD8TyCGc79j34OERX1h1Ojptvy0Qh9mR8
- FZIr7SWvtxUenSGW/bGh0kOhA+Unt0q11Alz8iWIaS6EBcerjAZte+VYVoBk+XvLXwov
- fieQ==
-X-Gm-Message-State: AOAM533yRpONWF0TfxuxwR3MBGUlonUhaDFRh3S3grsJowc15qVPUKwT
- RRXyA6NRtvjtInHOjn0loRLNXGO1
-X-Google-Smtp-Source: ABdhPJynQMgmdSbexmBIKI9HyUyaz2y7BNMfUh8s5jiveBpjiP3p1GJ3PwgKIWZsbD1dcAVcgSl1xw==
-X-Received: by 2002:a4a:9624:: with SMTP id q33mr8038927ooi.53.1590263356529; 
- Sat, 23 May 2020 12:49:16 -0700 (PDT)
-Received: from localhost.localdomain (cpe-24-31-245-230.kc.res.rr.com.
- [24.31.245.230])
- by smtp.gmail.com with ESMTPSA id t13sm447468oie.34.2020.05.23.12.49.15
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sat, 23 May 2020 12:49:15 -0700 (PDT)
-Subject: Re: Kernel bug in 5.7 for PPC32 on PowerBook G4 - bisected to commit
- 697ece7
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <2c361d8e-5e2a-cdd9-da8e-aa49a4f93cfd@lwfinger.net>
- <3e3e2343-d674-02e0-7b23-81636b472641@csgroup.eu>
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Message-ID: <94639869-c744-2879-9203-21cea664a563@lwfinger.net>
-Date: Sat, 23 May 2020 14:49:14 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49TyWq5fSwzDqWr
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 08:21:59 +1000 (AEST)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 207873] New: BUG at swapops + rcu stall + soft lockup at
+ running btrfs test suite (TEST=013\* ./misc-tests.sh)
+Date: Sat, 23 May 2020 22:21:55 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cc cf_regression attachments.created
+Message-ID: <bug-207873-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-In-Reply-To: <3e3e2343-d674-02e0-7b23-81636b472641@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,35 +69,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/23/20 12:30 PM, Christophe Leroy wrote:
-> Hi Larry,
-> 
-> Le 23/05/2020 à 19:24, Larry Finger a écrit :
->> Hi Christophe,
->>
->> Although kernel 5.7.0-rc2 appeared to boot cleanly, it failed on my G4 when I 
->> tried to generate a new kernel. The following BUG message is logged:
->>
-> 
-> [...]
-> 
->>
->> This problem was bisected to commit 697ece7 ("powerpc/32s: reorder Linux PTE 
->> bits to better match Hash PTE bits").
-> 
-> Being reversed in new -rc , see 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/87sgfsf4hs.fsf@mpe.ellerman.id.au/ 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D207873
 
-Christophe,
+            Bug ID: 207873
+           Summary: BUG at swapops + rcu stall + soft lockup at running
+                    btrfs test suite (TEST=3D013\* ./misc-tests.sh)
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 5.7-rc6
+          Hardware: PPC-32
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-32
+          Assignee: platform_ppc-32@kernel-bugs.osdl.org
+          Reporter: erhard_f@mailbox.org
+                CC: fs_btrfs@kernel-bugs.osdl.org
+        Regression: No
 
-Thanks for the update.
+Created attachment 289253
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D289253&action=3Dedit
+kernel .config (5.7-rc6, PowerMac G4 DP)
 
-Larry
+The bug is triggered by running "TEST=3D013\* ./misc-tests.sh" of btrfs-pro=
+gs
+test suite, built from git master:
 
+ # git clone https://github.com/kdave/btrfs-progs && cd btrfs-progs/
+ # ./autogen.sh && ./configure --disable-documentation
+ # make && make fssum
+ # cd tests/
+ # TEST=3D013\* ./misc-tests.sh
 
+The G4 crashes and the reboot timer kicks in. Before it shows a series of s=
+tack
+traces, starting with the "kernel BUG at include/linux/swapops.h:197!"-part
+from bug #207221. After that I get an rcu stall and a soft lockup. For the =
+full
+stacktrace have a look at the transcript of both screenshots.
+
+[...]
+rcu: INFO: rcu_sched self-detected stall on CPU
+rcu: o1-....: (7799 ticks this GP) idle=3Da06/1/0x40000002 soft irq=3D11075=
+/11075
+fqs=3D2599
+o(t=3D7804 jiffies g=3D21629 q=3D59)
+Task dump for CPU 1:
+dd              R  running task        0  2200    394 0x0000000c
+Call Trace:
+[f49fb458] [c00fcddc] sched_show_task+0x3bc/Ox3fe (unreliable)
+[f49fb498] [c01c650c] rcu_dump_cpu_stacks+0x228/0x23c
+[f49fb4e8] [c01c2e18] rcu_sched_clock_irq+0x81c/0x1360
+[f49fb568] [c01d8940] update_process_times+0x2c/0x98
+[f49fb588] [c02027d4] tick_sched_timer+0x128/0x1d8
+[f49fb5a8] [c01dc49c] __hrtimer_run_queues+0x490/Oxae8
+[f49fb698] [c01dd788] hrtimer_interrupt+0x278/0x520
+[f49fb6f8] [c001710c] timer_interrupt+0x374/0xb4c
+[f49fb738] [c002c5e4] ret_from_except+0x0/0x14
+--- interrupt: 901 at do_raw_spin_lock+0x1c8/0x2cc
+    LR =3D do_raw_spin_lock+0x1a4/0x2cc
+[f49fb800] [c0180e0c] do_raw_spin_lock+0x188/0x2cc (unrelable)
+[f49fb830] [c0428890] unmap_page_range+0x244/0xb08
+[f49fb910] [c0429610] unmap_vmas+0x94/0xdc
+[f49fb930] [c043c25c] exit_mmap+0x340/0x46c
+[f49fba20] [c0078260] __mmput+0x78/0x360
+[f49fba50] [c0090514] do_exit+0x9c4/0x21fc
+[f49fbb20] [c0019d38] user_single_step_report+0x0/0x74
+[f49fbb70] [c002c5e0] ret_from_except+0x0/0x4
+--- interrupt: 700 at __migration_entry_wait+0x13c/0x198
+    LR =3D __migration_entry_wait+0xf0/0x198
+[f49fbc58] [c042c0f0] do_swap_page+0x1f0/0x198
+[f49fbd28] [c042e7e4] handle_mm_fault+0x794/0x16f4
+[f49fbe48] [c0039868] do_page_fault+0xf50/0x12f8
+[f49fbf38] [c002c468] handle_page_fault+0x10/0x3c
+--- interrupt: 301 at 0x87e378
+    LR =3D 0x87e33c
+[...]
+
+I don't know wether this is a btrfs bug, or a bug only triggered by this
+specific test. So I am filing this as platform specific as I have not seen =
+it
+on x86 yet.
+
+Unlike bug #207221 KASAN is enabled here, so the stack trace looks slightly
+different.
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
