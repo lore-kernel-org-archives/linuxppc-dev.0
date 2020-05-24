@@ -2,87 +2,62 @@ Return-Path: <SRS0=ulwU=7G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E0F7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF388C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 17:06:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3219220787
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:45:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3219220787
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3703B20787
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 17:06:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3703B20787
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49VFhB1hwfzDqXm
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 19:45:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49VRTc5YK5zDqTQ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 03:06:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=dqaa=7g=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=bugzilla.kernel.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49VFYf1QLszDqT7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 19:39:34 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 04O9WgV2064006; Sun, 24 May 2020 05:39:30 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 316x5bgr5m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 24 May 2020 05:39:30 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 04O9bCNP024266;
- Sun, 24 May 2020 09:39:29 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma05wdc.us.ibm.com with ESMTP id 316ufqe0s2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 24 May 2020 09:39:28 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 04O9cYLP23265722
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 24 May 2020 09:38:34 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BAE036A047;
- Sun, 24 May 2020 09:38:35 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AE1DB6A04F;
- Sun, 24 May 2020 09:38:33 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.75.35])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Sun, 24 May 2020 09:38:33 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v2 3/4] powerpc: Fix instruction dumping to use address value
- correctly
-Date: Sun, 24 May 2020 15:08:21 +0530
-Message-Id: <20200524093822.423487-3-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200524093822.423487-1-aneesh.kumar@linux.ibm.com>
-References: <20200524093822.423487-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49VRRP14vXzDq9L
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2020 03:04:48 +1000 (AEST)
+From: bugzilla-daemon@bugzilla.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 207873] BUG at swapops + rcu stall + soft lockup at running
+ btrfs test suite (TEST=013\* ./misc-tests.sh)
+Date: Sun, 24 May 2020 17:04:46 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: PATCH_ALREADY_AVAILABLE
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-207873-206035-aIACr697u7@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-207873-206035@https.bugzilla.kernel.org/>
+References: <bug-207873-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
- definitions=2020-05-23_14:2020-05-22,
- 2020-05-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0
- mlxscore=0 lowpriorityscore=0 bulkscore=0 priorityscore=1501
- suspectscore=0 phishscore=0 spamscore=0 mlxlogscore=924 malwarescore=0
- clxscore=1015 cotscore=-2147483648 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2005240078
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,59 +69,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use ___va() to convert the real address that will skip the input
-validation. We can get interrupts with IR=0 and with NIP value > PAGE_OFFSET.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D207873
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/processor.h | 9 +++++++++
- arch/powerpc/kernel/process.c        | 7 ++-----
- 2 files changed, 11 insertions(+), 5 deletions(-)
+Erhard F. (erhard_f@mailbox.org) changed:
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 4e53df163b92..8bf7921dceca 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -441,6 +441,15 @@ extern void cvt_fd(float *from, double *to);
- extern void cvt_df(double *from, float *to);
- extern void _nmask_and_or_msr(unsigned long nmask, unsigned long or_val);
- 
-+static inline unsigned long fixup_real_addr(struct pt_regs *regs,
-+					    unsigned long addr)
-+{
-+	if (!(regs->msr & MSR_IR))
-+		return (unsigned long)___va(addr);
-+
-+	return addr;
-+}
-+
- #ifdef CONFIG_PPC64
- /*
-  * We handle most unaligned accesses in hardware. On the other hand 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 93bf4a766707..de07b796222d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1262,12 +1262,9 @@ static void show_instructions(struct pt_regs *regs)
- 	/* If executing with the IMMU off, adjust pc rather
- 	 * than print XXXXXXXX.
- 	 */
--	if (!(regs->msr & MSR_IR)) {
--		pc = (unsigned long)phys_to_virt(pc);
--		nip = (unsigned long)phys_to_virt(regs->nip);
--	}
-+	pc = fixup_real_addr(regs, pc);
-+	nip = fixup_real_addr(regs, nip);
- #endif
--
- 	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
- 		int instr;
- 
--- 
-2.26.2
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |PATCH_ALREADY_AVAILABLE
 
+--- Comment #6 from Erhard F. (erhard_f@mailbox.org) ---
+(In reply to Christophe Leroy from comment #5)
+> Try
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/
+> ?id=3D40bb0e904212cf7d6f041a98c58c8341b2016670
+Thanks for the hint! That patch did the trick. The btrfs test suite complet=
+es
+fine now and building larger projects works unremarkably.=20
+
+Will close here as the fix seems to be going into -rc7.
+
+--=20
+You are receiving this mail because:
+You are watching the assignee of the bug.=
