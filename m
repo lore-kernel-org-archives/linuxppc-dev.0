@@ -2,57 +2,85 @@ Return-Path: <SRS0=ulwU=7G=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4EBEC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53218C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:40:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75B2920787
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:01:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75B2920787
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 6BE1F20787
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 09:40:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BE1F20787
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49VDjV0zyXzDqXZ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 19:01:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49VFZK64mPzDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 May 2020 19:40:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49VDgd2M3NzDqBM
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 18:59:40 +1000 (AEST)
-Received: from relay12.mail.gandi.net (unknown [217.70.178.232])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 6984B3A25E2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 08:53:53 +0000 (UTC)
-Received: from localhost.localdomain
- (lfbn-gre-1-325-105.w90-112.abo.wanadoo.fr [90.112.45.105])
- (Authenticated sender: alex@ghiti.fr)
- by relay12.mail.gandi.net (Postfix) with ESMTPSA id 5C8BB200006;
- Sun, 24 May 2020 08:53:08 +0000 (UTC)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Anup Patel <Anup.Patel@wdc.com>, Atish Patra <Atish.Patra@wdc.com>,
- Zong Li <zong.li@sifive.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org
-Subject: [PATCH v3 0/3] vmalloc kernel mapping and relocatable kernel
-Date: Sun, 24 May 2020 04:52:56 -0400
-Message-Id: <20200524085259.24784-1-alex@ghiti.fr>
-X-Mailer: git-send-email 2.20.1
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49VFXY5HB0zDqQm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 19:38:37 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 04O9V6XE034109; Sun, 24 May 2020 05:38:32 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 316wethdty-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sun, 24 May 2020 05:38:32 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 04O9ZGp0013771;
+ Sun, 24 May 2020 09:38:31 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma03dal.us.ibm.com with ESMTP id 316uf97u35-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sun, 24 May 2020 09:38:31 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 04O9cS5d10748572
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 24 May 2020 09:38:29 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 07B0F6A04F;
+ Sun, 24 May 2020 09:38:30 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 115AB6A04D;
+ Sun, 24 May 2020 09:38:27 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.75.35])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Sun, 24 May 2020 09:38:27 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH v2 1/4] powerpc/instruction_dump: Fix kernel crash with
+ show_instructions
+Date: Sun, 24 May 2020 15:08:19 +0530
+Message-Id: <20200524093822.423487-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.676
+ definitions=2020-05-23_14:2020-05-22,
+ 2020-05-23 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0
+ bulkscore=0 mlxscore=0 impostorscore=0 spamscore=0 lowpriorityscore=0
+ adultscore=0 mlxlogscore=841 priorityscore=1501 clxscore=1015
+ suspectscore=0 cotscore=-2147483648 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2005240078
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,49 +92,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset originally implemented relocatable kernel support but now
-also moves the kernel mapping into the vmalloc zone.
+With Hard Lockup watchdog, we can hit a BUG() if we take a watchdog
+interrupt when in OPAL mode. This happens in show_instructions()
+where the kernel takes the watchdog NMI IPI with MSR_IR == 0.
+With that show_instructions() updates the variable pc in the loop
+and the second iterations will result in BUG().
 
-The first patch explains why we need to move the kernel into vmalloc
-zone (instead of memcpying it around). That patch should ease KASLR
-implementation a lot.
+We hit the BUG_ON due the below check in  __va()
 
-The second patch allows to build relocatable kernels but is not selected
-by default.
+ #define __va(x)								\
+({									\
+	VIRTUAL_BUG_ON((unsigned long)(x) >= PAGE_OFFSET);		\
+	(void *)(unsigned long)((phys_addr_t)(x) | PAGE_OFFSET);	\
+})
 
-The third patch takes advantage of an already existing powerpc script
-that checks relocations at compile-time, and uses it for riscv.
+Fixes: 4dd7554a6456 ("powerpc/64: Add VIRTUAL_BUG_ON checks for __va and __pa addresses")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/kernel/process.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-Alexandre Ghiti (3):
-  riscv: Move kernel mapping to vmalloc zone
-  riscv: Introduce CONFIG_RELOCATABLE
-  arch, scripts: Add script to check relocations at compile time
-
- arch/powerpc/tools/relocs_check.sh |  18 +----
- arch/riscv/Kconfig                 |  12 +++
- arch/riscv/Makefile                |   5 +-
- arch/riscv/Makefile.postlink       |  36 +++++++++
- arch/riscv/boot/loader.lds.S       |   3 +-
- arch/riscv/include/asm/page.h      |  10 ++-
- arch/riscv/include/asm/pgtable.h   |  37 ++++++---
- arch/riscv/kernel/head.S           |   3 +-
- arch/riscv/kernel/module.c         |   4 +-
- arch/riscv/kernel/vmlinux.lds.S    |   9 ++-
- arch/riscv/mm/Makefile             |   4 +
- arch/riscv/mm/init.c               | 121 +++++++++++++++++++++++++----
- arch/riscv/mm/physaddr.c           |   2 +-
- arch/riscv/tools/relocs_check.sh   |  26 +++++++
- scripts/relocs_check.sh            |  20 +++++
- 15 files changed, 258 insertions(+), 52 deletions(-)
- create mode 100644 arch/riscv/Makefile.postlink
- create mode 100755 arch/riscv/tools/relocs_check.sh
- create mode 100755 scripts/relocs_check.sh
-
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 048d64c4e115..93bf4a766707 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1253,29 +1253,32 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ static void show_instructions(struct pt_regs *regs)
+ {
+ 	int i;
++	unsigned long nip = regs->nip;
+ 	unsigned long pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+ 
+ 	printk("Instruction dump:");
+ 
++#if !defined(CONFIG_BOOKE)
++	/* If executing with the IMMU off, adjust pc rather
++	 * than print XXXXXXXX.
++	 */
++	if (!(regs->msr & MSR_IR)) {
++		pc = (unsigned long)phys_to_virt(pc);
++		nip = (unsigned long)phys_to_virt(regs->nip);
++	}
++#endif
++
+ 	for (i = 0; i < NR_INSN_TO_PRINT; i++) {
+ 		int instr;
+ 
+ 		if (!(i % 8))
+ 			pr_cont("\n");
+ 
+-#if !defined(CONFIG_BOOKE)
+-		/* If executing with the IMMU off, adjust pc rather
+-		 * than print XXXXXXXX.
+-		 */
+-		if (!(regs->msr & MSR_IR))
+-			pc = (unsigned long)phys_to_virt(pc);
+-#endif
+-
+ 		if (!__kernel_text_address(pc) ||
+ 		    probe_kernel_address((const void *)pc, instr)) {
+ 			pr_cont("XXXXXXXX ");
+ 		} else {
+-			if (regs->nip == pc)
++			if (nip == pc)
+ 				pr_cont("<%08x> ", instr);
+ 			else
+ 				pr_cont("%08x ", instr);
 -- 
-2.20.1
+2.26.2
 
