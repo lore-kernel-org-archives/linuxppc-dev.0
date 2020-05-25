@@ -2,79 +2,79 @@ Return-Path: <SRS0=r5XJ=7H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC146C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:06:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E461C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:13:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EC95206D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:06:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C2A672071A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:13:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ehQSl2w9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EC95206D5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gmZ8Vunc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2A672071A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Vmnn2RdBzDqD8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 16:06:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49VmxL5FwZzDqT6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 16:13:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::244;
- helo=mail-lj1-x244.google.com; envelope-from=jrdr.linux@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::742;
+ helo=mail-qk1-x742.google.com; envelope-from=shengjiu.wang@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ehQSl2w9; dkim-atps=neutral
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
- [IPv6:2a00:1450:4864:20::244])
+ header.s=20161025 header.b=gmZ8Vunc; dkim-atps=neutral
+Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
+ [IPv6:2607:f8b0:4864:20::742])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Vmll3cKDzDqQZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2020 16:05:07 +1000 (AEST)
-Received: by mail-lj1-x244.google.com with SMTP id a25so7795419ljp.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 23:05:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49VmvV23tgzDqRh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2020 16:11:49 +1000 (AEST)
+Received: by mail-qk1-x742.google.com with SMTP id 190so16728499qki.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 23:11:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=yBEIyGoELaaD+alubGuUtHR8SFOTBJNSGDV1DmXECiU=;
- b=ehQSl2w9nY5dfRV6wriDcpTZGCg4P5IKERzl8jgDRtg3uhpkzAwd3ER92Qp5OiHoL/
- +MhqCnu8zW56GE60KkTpJ3oxdAr6etM08OheP4CCIkAn/xtpCdIWN8MBUnqveJ5A4gLK
- RxkTpS7YVbBXUhcNkQ0TNE9KA9K4ocnXhAr9Xa3XG9LmJrZ/GQj5cA/ExPP8Fd98XPTh
- m6maZFzKLWQYjHH2rRA/tj3ZfnY7463WV62NMrjiV1kJ8DIfE1/EJlw3GwWSPvhUcvDT
- 16JRko4weBL9UUlbBUdoncQNMaTcFehwoljIqIq6/MYZcwy7q9UKtzsmUWudXb5uw850
- eMlg==
+ :cc; bh=zE6QF3wBuG+bbFky4XNH1ls+bDYS3myqBI0CKs9XLgY=;
+ b=gmZ8VuncLIfL+xQ1uVR/HNEXvNFmcIL7W5Uce9o/Ajf7J1PDFBxeCDlCWbnUpHE6ew
+ puJM4g0cpV7xMRSGDzwlLFFr5698CMId+R2S2OAHxbid2eP9t36+yRSdrVhVV8snbrxd
+ 6rsVpBMPe71+h9AvFol2x+TtVwUSlkSzXspe5p+Z/Hu45Wbl0bLDcp/UnIKo3WJC6lkj
+ 9ku4sr5N4poBK1P76/+PeROWEIRrwOAZCh59hVy/dGSJKfucj/zaU28pOZIwYfDI9w4P
+ oxQB6iRYVc+ONa7iQkF5QlPsVXJ4N14h1uyhvh4HkDuA5La1uzSRNtP7DQZM9lno5YQs
+ YYuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=yBEIyGoELaaD+alubGuUtHR8SFOTBJNSGDV1DmXECiU=;
- b=T3XbD9EGditXOs1MtCUysiWS7YsfxhuctZ/sY+7JYkkv+0/1fxkSZgXTG7qNFwNjAu
- yi2mQ1rfBUmqvC1g0T+g0MGtwyZQ3lsdLpPAvhQ5GcFMDhgMRIixEGDSt0UV8Tc7Usrz
- 0WzMBLlcit53GUNid48cwdJyBXnWPVg9L/b53Sm5ZQSp5NNJbtYaobGXo4OavVVCaZgF
- iDh8eDRchLuS31xXXVg6GVlmuJGC5OcVQT9D8UfUdzuqstbRRhU7kQG8PRsqplNWNGIC
- aYX+fUTBuJK8Zzxc/1oDBQjoar1K+2BUAtjg6bI26fQydFhXpyCA9s8i2P0wAXm/DGEJ
- 6Ckg==
-X-Gm-Message-State: AOAM532UkxZ3h6HO959SPieaT5kvZXQHbbpt0W59RAkf2gBYqYTKFH7W
- e5vRN48i5t1fxUAzoMirmHkx036bdq++IebZGhU=
-X-Google-Smtp-Source: ABdhPJwOO/TJa9JhhYdJXPau2E/wFjjcMVGycTDzEnfXyjgQyMTqifURPEuLOUykpugkn4KaOaj319Yr0zMyHaEJvV8=
-X-Received: by 2002:a2e:b16e:: with SMTP id a14mr12277083ljm.70.1590386703464; 
- Sun, 24 May 2020 23:05:03 -0700 (PDT)
+ bh=zE6QF3wBuG+bbFky4XNH1ls+bDYS3myqBI0CKs9XLgY=;
+ b=XTI9cH6NQnsFPxEVM/x0GeLYxYndybPdYxQfyX0b3lF10cnOlmQxpI1zGeF6d2RIb4
+ VLJZxFKSNMmtQ3P39v7ZT1GSonVAqnt/5sx+4n30bSA4GmQvFDd0+2GQR6GH/1SaBlqt
+ PEdPHYDq7V/8+V0ce/W04YJqiGefZ6dSU/Edu5tV4zxwxWies8kPifMbPZsrkKFwucym
+ 83yKp216qjEhKjZoIrpKuIWMinyr85jt2E5jg6mb4nqJGVmXUfeLAp51+2Np5NEpvO69
+ 2GWFAg6zUrZiora44Z1Mw3BsOkP7H6yQkGKbja8VHVYnTPJ0Djr4arVTu5xiZMW9V/yg
+ jgXg==
+X-Gm-Message-State: AOAM530pi6Ic730+WEgZ2h4zrETGGADiEIl3EXwKTPH7AkZoyrTRkXMU
+ QBCp3YWQsOUw1xKgp2Me0SkTLlJDZ34fL2Kods4=
+X-Google-Smtp-Source: ABdhPJydMBgq/Pjn4/khBBaHIGx05CEfpOqguypnLj9qdpyApo26fr/GyQlog+GyRmcHhBgT4Rg6CgKdiB76ee7lE7c=
+X-Received: by 2002:a37:b50:: with SMTP id 77mr22555339qkl.152.1590387105305; 
+ Sun, 24 May 2020 23:11:45 -0700 (PDT)
 MIME-Version: 1.0
-References: <1590294434-19125-1-git-send-email-jrdr.linux@gmail.com>
- <c70dc7fa-352d-9f61-abb9-d578072978c9@nvidia.com>
-In-Reply-To: <c70dc7fa-352d-9f61-abb9-d578072978c9@nvidia.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Mon, 25 May 2020 11:43:08 +0530
-Message-ID: <CAFqt6zbYbnbc9VHsOJu8J5QFGqSksHVyWF+bD3JqHhxaFeG2Tg@mail.gmail.com>
-Subject: Re: [linux-next RFC v2] mm/gup.c: Convert to use
- get_user_{page|pages}_fast_only()
-To: John Hubbard <jhubbard@nvidia.com>
+References: <1590141444-28668-1-git-send-email-shengjiu.wang@nxp.com>
+ <20200525050950.GA1244@Asurada>
+In-Reply-To: <20200525050950.GA1244@Asurada>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Mon, 25 May 2020 14:11:18 +0800
+Message-ID: <CAA+D8AML7P3j+14w5PywPy4QEcxw09z1izZSZbrOB_nte+XDmA@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_asrc: Merge suspend/resume function to
+ runtime_suspend/resume
+To: Nicolin Chen <nicoleotsuka@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,90 +87,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, kvm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Linux-MM <linux-mm@kvack.org>,
- jolsa@redhat.com, Stephen Rothwell <sfr@canb.auug.org.au>,
- Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Ingo Molnar <mingo@redhat.com>, msuchanek@suse.de, kvm-ppc@vger.kernel.org,
- acme@kernel.org, namhyung@kernel.org, linux-kernel@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, pbonzini@redhat.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 25, 2020 at 6:36 AM John Hubbard <jhubbard@nvidia.com> wrote:
+On Mon, May 25, 2020 at 1:12 PM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
 >
-> On 2020-05-23 21:27, Souptick Joarder wrote:
-> > API __get_user_pages_fast() renamed to get_user_pages_fast_only()
-> > to align with pin_user_pages_fast_only().
+> On Fri, May 22, 2020 at 05:57:24PM +0800, Shengjiu Wang wrote:
+> > With dedicated power domain for asrc, power can be disabled after
+> > probe and pm runtime suspend, then the value of all registers need to
+> > be restored in pm runtime resume. So we can merge suspend/resume function
+> > to runtime_suspend/resume function and enable regcache only in end of
+> > probe.
 > >
-> > As part of this we will get rid of write parameter. Instead caller
-> > will pass FOLL_WRITE to get_user_pages_fast_only(). This will not
-> > change any existing functionality of the API.
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  sound/soc/fsl/fsl_asrc.c | 70 ++++++++++++++++------------------------
+> >  1 file changed, 27 insertions(+), 43 deletions(-)
 > >
-> > All the callers are changed to pass FOLL_WRITE.
->
-> This looks good. A few nits below, but with those fixed, feel free to
-> add:
->
->      Reviewed-by: John Hubbard <jhubbard@nvidia.com>
->
+> > diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> > index 432936039de4..3ebbe15ac378 100644
+> > --- a/sound/soc/fsl/fsl_asrc.c
+> > +++ b/sound/soc/fsl/fsl_asrc.c
+> > @@ -1100,6 +1100,7 @@ static int fsl_asrc_probe(struct platform_device *pdev)
+> >       platform_set_drvdata(pdev, asrc);
+> >       pm_runtime_enable(&pdev->dev);
+> >       spin_lock_init(&asrc->lock);
+> > +     regcache_cache_only(asrc->regmap, true);
 > >
-> > There are few places where 1 is passed to 2nd parameter of
-> > __get_user_pages_fast() and return value is checked for 1
-> > like [1]. Those are replaced with new inline
-> > get_user_page_fast_only().
+> >       ret = devm_snd_soc_register_component(&pdev->dev, &fsl_asrc_component,
+> >                                             &fsl_asrc_dai, 1);
+> > @@ -1117,6 +1118,7 @@ static int fsl_asrc_runtime_resume(struct device *dev)
+> >       struct fsl_asrc *asrc = dev_get_drvdata(dev);
+> >       struct fsl_asrc_priv *asrc_priv = asrc->private;
+> >       int i, ret;
+> > +     u32 asrctr;
 > >
-> > [1] if (__get_user_pages_fast(hva, 1, 1, &page) == 1)
+> >       ret = clk_prepare_enable(asrc->mem_clk);
+> >       if (ret)
+> > @@ -1135,6 +1137,24 @@ static int fsl_asrc_runtime_resume(struct device *dev)
+> >                       goto disable_asrck_clk;
+> >       }
 > >
->
-> We try to avoid talking *too* much about the previous version of
-> the code. Just enough. So, instead of the above two paragraphs,
-> I'd compress it down to:
->
-> Also: introduce get_user_page_fast_only(), and use it in a few
-> places that hard-code nr_pages to 1.
->
-> ...
-> > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > index 93d93bd..8d4597f 100644
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
-> > @@ -1817,10 +1817,16 @@ extern int mprotect_fixup(struct vm_area_struct *vma,
-> >   /*
-> >    * doesn't attempt to fault and will return short.
-> >    */
-> > -int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
-> > -                       struct page **pages);
-> > +int get_user_pages_fast_only(unsigned long start, int nr_pages,
-> > +                     unsigned int gup_flags, struct page **pages);
->
-> Silly nit:
->
-> Can you please leave the original indentation in place? I don't normally
-> comment about this, but I like the original indentation better, and it matches
-> the pin_user_pages_fast() below, too.
->
-> ...
-> > @@ -2786,8 +2792,8 @@ static int internal_get_user_pages_fast(unsigned long start, int nr_pages,
-> >    * If the architecture does not support this function, simply return with no
-> >    * pages pinned.
-> >    */
-> > -int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
-> > -                       struct page **pages)
-> > +int get_user_pages_fast_only(unsigned long start, int nr_pages,
-> > +                     unsigned int gup_flags, struct page **pages)
+> > +     /* Stop all pairs provisionally */
+> > +     regmap_read(asrc->regmap, REG_ASRCTR, &asrctr);
+> > +     regmap_update_bits(asrc->regmap, REG_ASRCTR,
+> > +                        ASRCTR_ASRCEi_ALL_MASK, 0);
+> > +
+> > +     /* Restore all registers */
+> > +     regcache_cache_only(asrc->regmap, false);
+> > +     regcache_mark_dirty(asrc->regmap);
 >
 >
-> Same thing here: you've changed the original indentation, which was (arguably, but
-> to my mind anyway) more readable, and for no reason. It still would have fit within
-> 80 cols.
+> I see you doing regcache_mark_dirty() in the resume() now,
+> being different from previously doing in suspend()?
 >
-> I'm sure it's a perfect 50/50 mix of people who prefer either indentation style, and
-> so for brand new code, I'll remain silent, as long as it is consistent with either
-> itself and/or the surrounding code. But changing it back and forth is a bit
-> aggravating, and best avoided. :)
+> Thanks
+> Nic
 
-Ok, along with these changes I will remove the *RFC* tag and repost it.
+Which is for probe -> runtime_resume case.
+After probe, the power may be disabled, so move mark_dirtry
+to runtime_resume, then regcache can re-write all the registers.
+
+best regards
+wang shengjiu
+
+>
+>
+> > +     regcache_sync(asrc->regmap);
+> > +
+> > +     regmap_update_bits(asrc->regmap, REG_ASRCFG,
+> > +                        ASRCFG_NDPRi_ALL_MASK | ASRCFG_POSTMODi_ALL_MASK |
+> > +                        ASRCFG_PREMODi_ALL_MASK, asrc_priv->regcache_cfg);
+> > +
+> > +     /* Restart enabled pairs */
+> > +     regmap_update_bits(asrc->regmap, REG_ASRCTR,
+> > +                        ASRCTR_ASRCEi_ALL_MASK, asrctr);
+> > +
+> >       return 0;
+> >
+> >  disable_asrck_clk:
+> > @@ -1155,6 +1175,11 @@ static int fsl_asrc_runtime_suspend(struct device *dev)
+> >       struct fsl_asrc_priv *asrc_priv = asrc->private;
+> >       int i;
+> >
+> > +     regmap_read(asrc->regmap, REG_ASRCFG,
+> > +                 &asrc_priv->regcache_cfg);
+> > +
+> > +     regcache_cache_only(asrc->regmap, true);
+> > +
+> >       for (i = 0; i < ASRC_CLK_MAX_NUM; i++)
+> >               clk_disable_unprepare(asrc_priv->asrck_clk[i]);
+> >       if (!IS_ERR(asrc->spba_clk))
+> > @@ -1166,51 +1191,10 @@ static int fsl_asrc_runtime_suspend(struct device *dev)
+> >  }
+> >  #endif /* CONFIG_PM */
+> >
+> > -#ifdef CONFIG_PM_SLEEP
+> > -static int fsl_asrc_suspend(struct device *dev)
+> > -{
+> > -     struct fsl_asrc *asrc = dev_get_drvdata(dev);
+> > -     struct fsl_asrc_priv *asrc_priv = asrc->private;
+> > -
+> > -     regmap_read(asrc->regmap, REG_ASRCFG,
+> > -                 &asrc_priv->regcache_cfg);
+> > -
+> > -     regcache_cache_only(asrc->regmap, true);
+> > -     regcache_mark_dirty(asrc->regmap);
+> > -
+> > -     return 0;
+> > -}
+> > -
+> > -static int fsl_asrc_resume(struct device *dev)
+> > -{
+> > -     struct fsl_asrc *asrc = dev_get_drvdata(dev);
+> > -     struct fsl_asrc_priv *asrc_priv = asrc->private;
+> > -     u32 asrctr;
+> > -
+> > -     /* Stop all pairs provisionally */
+> > -     regmap_read(asrc->regmap, REG_ASRCTR, &asrctr);
+> > -     regmap_update_bits(asrc->regmap, REG_ASRCTR,
+> > -                        ASRCTR_ASRCEi_ALL_MASK, 0);
+> > -
+> > -     /* Restore all registers */
+> > -     regcache_cache_only(asrc->regmap, false);
+> > -     regcache_sync(asrc->regmap);
+> > -
+> > -     regmap_update_bits(asrc->regmap, REG_ASRCFG,
+> > -                        ASRCFG_NDPRi_ALL_MASK | ASRCFG_POSTMODi_ALL_MASK |
+> > -                        ASRCFG_PREMODi_ALL_MASK, asrc_priv->regcache_cfg);
+> > -
+> > -     /* Restart enabled pairs */
+> > -     regmap_update_bits(asrc->regmap, REG_ASRCTR,
+> > -                        ASRCTR_ASRCEi_ALL_MASK, asrctr);
+> > -
+> > -     return 0;
+> > -}
+> > -#endif /* CONFIG_PM_SLEEP */
+> > -
+> >  static const struct dev_pm_ops fsl_asrc_pm = {
+> >       SET_RUNTIME_PM_OPS(fsl_asrc_runtime_suspend, fsl_asrc_runtime_resume, NULL)
+> > -     SET_SYSTEM_SLEEP_PM_OPS(fsl_asrc_suspend, fsl_asrc_resume)
+> > +     SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+> > +                             pm_runtime_force_resume)
+> >  };
+> >
+> >  static const struct fsl_asrc_soc_data fsl_asrc_imx35_data = {
+> > --
+> > 2.21.0
+> >
