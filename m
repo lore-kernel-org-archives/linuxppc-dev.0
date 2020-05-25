@@ -6,65 +6,65 @@ X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37789C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 14:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF8F3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 14:44:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB5F82073B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 14:20:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5A70B2071A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 14:44:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="1LaOXVpx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB5F82073B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="EerNxe3s"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A70B2071A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49VzlJ6x44zDqQ0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 00:20:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49W0Gh213WzDqPg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 00:44:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
  envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=merlin.20170209 header.b=1LaOXVpx; 
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=EerNxe3s; 
  dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Vzgr1spqzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2020 00:17:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49W08z5ZL0zDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2020 00:39:15 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=Kr9buj3Bzk9juOwV9KAH42CouIIua7TPJ6CsB4FDIvo=; b=1LaOXVpxbh4kKq0WRwK771k5k+
- IFL66RFj2QvC04aQnG2UgDS6g2q4/9jSBXN9vYRSH9Lvv+WIGEtu9XIF6sbUnlGLoB+1Ex4Btc1ha
- KDeEetD7C/tNJJWw/yY6CfkHu22dmwWwUG12Sf4sl3e372SyF7Z9Xq9PZW596ONN1EBZPgBF8nyOF
- jPdH7j7JcyxfjEiqCllRK4JPte946n6+tBD6nRh1X35GPD8vEEe7iRMFByyGqEB+3CoTYVgHt1JE7
- TvUZSQTwMVSg8EVEt9ffMKMFrwRL3vnU04Tr2Tylxs4S7KaTSGkFbGcQSdmAUXaHtWEI5XGpQF+tv
- 3GDKOqzg==;
+ bh=sDmy5Xm2F2pY2KhwGXNcV6+J3j89es51xHtTpy+cA+A=; b=EerNxe3smaAc3YWerSP2Lw+Npr
+ tFZ8sQaFtxsOb746sxudWvYOKBpBmZArB9MeYtZyCdI7JxOYogp1YFwif7kF+W6eubgzeaPlDYfZ7
+ mpuchARpKoY0U/x7lncesvfyIRe7TxxaR1mgsoLlp459I9SptO5dMVSiVZzaQU8PZPvFyrxvNBnJ+
+ 5/SJQNk2nO9Br7ajHJO+rCGLWC91fkjWpFEvebYohEYV5jIB3UQ082WzxdEDn4F0k/3uD4Fuk9+lP
+ k7gAu3DiVqtBhknvniOaWGeNCpeTG/dkMyTQZfvl0dngm0Oqy7wVgO+CiGsSPJTZRqXHbXDRCPRP7
+ Q11KbcNQ==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=noisy.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jdDuk-0000Ae-0B; Mon, 25 May 2020 14:17:14 +0000
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jdEFq-000050-T9; Mon, 25 May 2020 14:39:03 +0000
 Received: from hirez.programming.kicks-ass.net
  (hirez.programming.kicks-ass.net [192.168.1.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 94E6B300478;
- Mon, 25 May 2020 16:17:11 +0200 (CEST)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id F0E6B300B38;
+ Mon, 25 May 2020 16:38:59 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 800832389FE09; Mon, 25 May 2020 16:17:11 +0200 (CEST)
-Date: Mon, 25 May 2020 16:17:11 +0200
+ id D689D2389FE1F; Mon, 25 May 2020 16:38:59 +0200 (CEST)
+Date: Mon, 25 May 2020 16:38:59 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Frederic Weisbecker <frederic@kernel.org>
 Subject: Re: Endless soft-lockups for compiling workload since next-20200519
-Message-ID: <20200525141711.GI325303@hirez.programming.kicks-ass.net>
+Message-ID: <20200525143859.GX325280@hirez.programming.kicks-ass.net>
 References: <CAG=TAF6jUsQrW-fjbS3vpjkMfn8=MUDsuQxjk3NMfvQa250RHA@mail.gmail.com>
  <20200520125056.GC325280@hirez.programming.kicks-ass.net>
  <20200521004035.GA15455@lenoir>
@@ -73,10 +73,11 @@ References: <CAG=TAF6jUsQrW-fjbS3vpjkMfn8=MUDsuQxjk3NMfvQa250RHA@mail.gmail.com>
  <20200521110027.GC325303@hirez.programming.kicks-ass.net>
  <20200521124113.GC15455@lenoir>
  <20200525132105.GW325280@hirez.programming.kicks-ass.net>
+ <20200525140541.GA28923@lenoir>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200525132105.GW325280@hirez.programming.kicks-ass.net>
+In-Reply-To: <20200525140541.GA28923@lenoir>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,12 +98,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 25, 2020 at 03:21:05PM +0200, Peter Zijlstra wrote:
-> -	flags = atomic_fetch_andnot(NOHZ_KICK_MASK, nohz_flags(this_cpu));
-> -	if (!(flags & NOHZ_KICK_MASK))
-> +	if (idle != CPU_IDLE)
->  		return false;
->  
->  	_nohz_idle_balance(this_rq, flags, idle);
+On Mon, May 25, 2020 at 04:05:49PM +0200, Frederic Weisbecker wrote:
+> On Mon, May 25, 2020 at 03:21:05PM +0200, Peter Zijlstra wrote:
+> > @@ -2320,7 +2304,7 @@ static void ttwu_queue_remote(struct task_struct *p, int cpu, int wake_flags)
+> >  
+> >  	if (llist_add(&p->wake_entry, &rq->wake_list)) {
+> >  		if (!set_nr_if_polling(rq->idle))
+> > -			smp_call_function_single_async(cpu, &rq->wake_csd);
+> > +			smp_call_function_single_async(cpu, &p->wake_csd);
+> >  		else
+> >  			trace_sched_wake_idle_without_ipi(cpu);
+> 
+> Ok that's of course very unlikely but could it be possible to have the
+> following:
+> 
+> CPU 0                         CPU 1                                     CPU 2
+> -----       
+> 
+> //Wake up A
+> ttwu_queue(TASK A, CPU 1)     idle_loop {
+>                                   ttwu_queue_pending {
+>                                       ....
+>                                       raw_spin_unlock_irqrestore(rq)
+>                                       # VMEXIT (with IPI still pending)
+>                                                                         //task A migrates here
+>                                                                         wait_event(....)
+>                                                                         //sleep
+> 
+> //Wake up A
+> ttwu_queue(TASK A, CPU 2) {
+>     //IPI on CPU 2 ignored
+>     // due to csd->flags == CSD_LOCK
+> 
 
-Bah, I think I broke something there. Lemme go mend.
+Right you are.
+
+Bah!
+
+More thinking....
