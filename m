@@ -2,60 +2,80 @@ Return-Path: <SRS0=r5XJ=7H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 375B6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 05:51:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC146C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:06:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA4BB2075F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 05:51:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1EC95206D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 06:06:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="rIekukJH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA4BB2075F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ehQSl2w9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EC95206D5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49VmRy5KPLzDqSQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 15:51:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Vmnn2RdBzDqD8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 16:06:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::244;
+ helo=mail-lj1-x244.google.com; envelope-from=jrdr.linux@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=ehQSl2w9; dkim-atps=neutral
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49VmQ2473rzDqHR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2020 15:49:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=rIekukJH; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 49VmQ21FFKz9sSd; Mon, 25 May 2020 15:49:46 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 49VmQ20HV4z9sSg; Mon, 25 May 2020 15:49:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1590385786;
- bh=KWjSOfqqI9h/ttyQwQourNPrF84xkR9tSSEw7GUTOVE=;
- h=From:To:Cc:Subject:Date:From;
- b=rIekukJHYv9tbBYvtC5o/oOTaoimO8Cifbfu7HoEmxdToZ5FBUF2z7b1H1FxkPc+a
- SdOeNX/Qmllf5Jz1bt5dfwZOQ18QDN5gADiPopsNgSXXBRYmWNq8XjF4i9/SZpAfJb
- 7bIpxsIa2ZBnwELdDPHVZKslKFt07PLssd6uxCktkhghQbhmxL/JTsce/CCTtpqd8h
- ptr2gK72O0Xzy3Vaz3IfZbp7OlXt//4WiHRDbbaaxncUSZBPKvzBCJKADPO3wzo8YZ
- bgS3KFViv5SzHERvPt5CEPnqgmp4CO15F3ojzs9rR/qSEB1/GbPEIuLyxluq6JtD41
- 1NS72HxsuNoog==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Add ppc_inst_as_u64()
-Date: Mon, 25 May 2020 15:50:04 +1000
-Message-Id: <20200525055004.2182328-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Vmll3cKDzDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2020 16:05:07 +1000 (AEST)
+Received: by mail-lj1-x244.google.com with SMTP id a25so7795419ljp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2020 23:05:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=yBEIyGoELaaD+alubGuUtHR8SFOTBJNSGDV1DmXECiU=;
+ b=ehQSl2w9nY5dfRV6wriDcpTZGCg4P5IKERzl8jgDRtg3uhpkzAwd3ER92Qp5OiHoL/
+ +MhqCnu8zW56GE60KkTpJ3oxdAr6etM08OheP4CCIkAn/xtpCdIWN8MBUnqveJ5A4gLK
+ RxkTpS7YVbBXUhcNkQ0TNE9KA9K4ocnXhAr9Xa3XG9LmJrZ/GQj5cA/ExPP8Fd98XPTh
+ m6maZFzKLWQYjHH2rRA/tj3ZfnY7463WV62NMrjiV1kJ8DIfE1/EJlw3GwWSPvhUcvDT
+ 16JRko4weBL9UUlbBUdoncQNMaTcFehwoljIqIq6/MYZcwy7q9UKtzsmUWudXb5uw850
+ eMlg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=yBEIyGoELaaD+alubGuUtHR8SFOTBJNSGDV1DmXECiU=;
+ b=T3XbD9EGditXOs1MtCUysiWS7YsfxhuctZ/sY+7JYkkv+0/1fxkSZgXTG7qNFwNjAu
+ yi2mQ1rfBUmqvC1g0T+g0MGtwyZQ3lsdLpPAvhQ5GcFMDhgMRIixEGDSt0UV8Tc7Usrz
+ 0WzMBLlcit53GUNid48cwdJyBXnWPVg9L/b53Sm5ZQSp5NNJbtYaobGXo4OavVVCaZgF
+ iDh8eDRchLuS31xXXVg6GVlmuJGC5OcVQT9D8UfUdzuqstbRRhU7kQG8PRsqplNWNGIC
+ aYX+fUTBuJK8Zzxc/1oDBQjoar1K+2BUAtjg6bI26fQydFhXpyCA9s8i2P0wAXm/DGEJ
+ 6Ckg==
+X-Gm-Message-State: AOAM532UkxZ3h6HO959SPieaT5kvZXQHbbpt0W59RAkf2gBYqYTKFH7W
+ e5vRN48i5t1fxUAzoMirmHkx036bdq++IebZGhU=
+X-Google-Smtp-Source: ABdhPJwOO/TJa9JhhYdJXPau2E/wFjjcMVGycTDzEnfXyjgQyMTqifURPEuLOUykpugkn4KaOaj319Yr0zMyHaEJvV8=
+X-Received: by 2002:a2e:b16e:: with SMTP id a14mr12277083ljm.70.1590386703464; 
+ Sun, 24 May 2020 23:05:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1590294434-19125-1-git-send-email-jrdr.linux@gmail.com>
+ <c70dc7fa-352d-9f61-abb9-d578072978c9@nvidia.com>
+In-Reply-To: <c70dc7fa-352d-9f61-abb9-d578072978c9@nvidia.com>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Mon, 25 May 2020 11:43:08 +0530
+Message-ID: <CAFqt6zbYbnbc9VHsOJu8J5QFGqSksHVyWF+bD3JqHhxaFeG2Tg@mail.gmail.com>
+Subject: Re: [linux-next RFC v2] mm/gup.c: Convert to use
+ get_user_{page|pages}_fast_only()
+To: John Hubbard <jhubbard@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,78 +87,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jniethe5@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>, kvm@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, Linux-MM <linux-mm@kvack.org>,
+ jolsa@redhat.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, msuchanek@suse.de, kvm-ppc@vger.kernel.org,
+ acme@kernel.org, namhyung@kernel.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, pbonzini@redhat.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The code patching code wants to get the value of a struct ppc_inst as
-a u64 when the instruction is prefixed, so we can pass the u64 down to
-__put_user_asm() and write it with a single store.
+On Mon, May 25, 2020 at 6:36 AM John Hubbard <jhubbard@nvidia.com> wrote:
+>
+> On 2020-05-23 21:27, Souptick Joarder wrote:
+> > API __get_user_pages_fast() renamed to get_user_pages_fast_only()
+> > to align with pin_user_pages_fast_only().
+> >
+> > As part of this we will get rid of write parameter. Instead caller
+> > will pass FOLL_WRITE to get_user_pages_fast_only(). This will not
+> > change any existing functionality of the API.
+> >
+> > All the callers are changed to pass FOLL_WRITE.
+>
+> This looks good. A few nits below, but with those fixed, feel free to
+> add:
+>
+>      Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+>
+> >
+> > There are few places where 1 is passed to 2nd parameter of
+> > __get_user_pages_fast() and return value is checked for 1
+> > like [1]. Those are replaced with new inline
+> > get_user_page_fast_only().
+> >
+> > [1] if (__get_user_pages_fast(hva, 1, 1, &page) == 1)
+> >
+>
+> We try to avoid talking *too* much about the previous version of
+> the code. Just enough. So, instead of the above two paragraphs,
+> I'd compress it down to:
+>
+> Also: introduce get_user_page_fast_only(), and use it in a few
+> places that hard-code nr_pages to 1.
+>
+> ...
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 93d93bd..8d4597f 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -1817,10 +1817,16 @@ extern int mprotect_fixup(struct vm_area_struct *vma,
+> >   /*
+> >    * doesn't attempt to fault and will return short.
+> >    */
+> > -int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> > -                       struct page **pages);
+> > +int get_user_pages_fast_only(unsigned long start, int nr_pages,
+> > +                     unsigned int gup_flags, struct page **pages);
+>
+> Silly nit:
+>
+> Can you please leave the original indentation in place? I don't normally
+> comment about this, but I like the original indentation better, and it matches
+> the pin_user_pages_fast() below, too.
+>
+> ...
+> > @@ -2786,8 +2792,8 @@ static int internal_get_user_pages_fast(unsigned long start, int nr_pages,
+> >    * If the architecture does not support this function, simply return with no
+> >    * pages pinned.
+> >    */
+> > -int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> > -                       struct page **pages)
+> > +int get_user_pages_fast_only(unsigned long start, int nr_pages,
+> > +                     unsigned int gup_flags, struct page **pages)
+>
+>
+> Same thing here: you've changed the original indentation, which was (arguably, but
+> to my mind anyway) more readable, and for no reason. It still would have fit within
+> 80 cols.
+>
+> I'm sure it's a perfect 50/50 mix of people who prefer either indentation style, and
+> so for brand new code, I'll remain silent, as long as it is consistent with either
+> itself and/or the surrounding code. But changing it back and forth is a bit
+> aggravating, and best avoided. :)
 
-This is a bit awkward because the value differs based on the CPU
-endianness, so add a helper to do the conversion.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/inst.h  | 9 +++++++++
- arch/powerpc/kernel/optprobes.c  | 3 +--
- arch/powerpc/lib/code-patching.c | 8 +-------
- 3 files changed, 11 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index d82e0c99cfa1..d61e07fb2937 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -100,6 +100,15 @@ static inline int ppc_inst_len(struct ppc_inst x)
- 	return ppc_inst_prefixed(x) ? 8 : 4;
- }
- 
-+static inline u64 ppc_inst_as_u64(struct ppc_inst x)
-+{
-+#ifdef CONFIG_CPU_LITTLE_ENDIAN
-+	return (u64)ppc_inst_suffix(x) << 32 | ppc_inst_val(x);
-+#else
-+	return (u64)ppc_inst_val(x) << 32 | ppc_inst_suffix(x);
-+#endif
-+}
-+
- int probe_user_read_inst(struct ppc_inst *inst,
- 			 struct ppc_inst __user *nip);
- 
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-index 3ac105e7faae..69bfe96884e2 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -283,8 +283,7 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
- 	 * 3. load instruction to be emulated into relevant register, and
- 	 */
- 	temp = ppc_inst_read((struct ppc_inst *)p->ainsn.insn);
--	patch_imm64_load_insns(ppc_inst_val(temp) | ((u64)ppc_inst_suffix(temp) << 32),
--			       4, buff + TMPL_INSN_IDX);
-+	patch_imm64_load_insns(ppc_inst_as_u64(temp), 4, buff + TMPL_INSN_IDX);
- 
- 	/*
- 	 * 4. branch back from trampoline
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 64cf621e5b00..5ecf0d635a8d 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -27,13 +27,7 @@ static int __patch_instruction(struct ppc_inst *exec_addr, struct ppc_inst instr
- 	if (!ppc_inst_prefixed(instr)) {
- 		__put_user_asm(ppc_inst_val(instr), patch_addr, err, "stw");
- 	} else {
--#ifdef CONFIG_CPU_LITTLE_ENDIAN
--		__put_user_asm((u64)ppc_inst_suffix(instr) << 32 |
--			       ppc_inst_val(instr), patch_addr, err, "std");
--#else
--		__put_user_asm((u64)ppc_inst_val(instr) << 32 |
--			       ppc_inst_suffix(instr), patch_addr, err, "std");
--#endif
-+		__put_user_asm(ppc_inst_as_u64(instr), patch_addr, err, "std");
- 	}
- 
- 	if (err)
--- 
-2.25.1
-
+Ok, along with these changes I will remove the *RFC* tag and repost it.
