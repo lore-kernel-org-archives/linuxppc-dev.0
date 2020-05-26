@@ -1,80 +1,95 @@
-Return-Path: <SRS0=r5XJ=7H=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=jSyS=7I=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 431C8C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 15:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A645C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 02:41:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1133620888
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 May 2020 15:17:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 818DF206D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 02:41:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=fudan.edu.cn header.i=@fudan.edu.cn header.b="vr25gmg4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1133620888
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=fudan.edu.cn
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oOg3PmaW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 818DF206D5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49W11Y1xcwzDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 01:17:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=fudan.edu.cn (client-ip=202.120.224.73; helo=fudan.edu.cn;
- envelope-from=xiyuyang19@fudan.edu.cn; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none)
- header.from=fudan.edu.cn
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=fudan.edu.cn header.i=@fudan.edu.cn header.a=rsa-sha256
- header.s=dkim header.b=vr25gmg4; dkim-atps=neutral
-X-Greylist: delayed 339 seconds by postgrey-1.36 at bilbo;
- Tue, 26 May 2020 00:19:22 AEST
-Received: from fudan.edu.cn (mail.fudan.edu.cn [202.120.224.73])
- by lists.ozlabs.org (Postfix) with ESMTP id 49Vzk22xLXzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2020 00:19:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fudan.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
- Message-Id; bh=jjl3+oli5pGJqLVTivxSZM0ZQQ2sMqgs051h5Kwq758=; b=v
- r25gmg4PpwrSFeC1XnleuloZOVBgVYTxlt4gM7dwkz+JPXVDOoT+TfmnSEv+r+J2
- iNisbQi218odFdWFe5VxJcnwRoEP3+kz4eyPg5AcwC+qo2I01+L7DQQIkSPCgb6e
- MIiL+Le0e/zN2HuIEfUNAMTCpKEs2UaJPtHxpLQ/90=
-Received: from localhost.localdomain (unknown [223.73.184.21])
- by app2 (Coremail) with SMTP id XQUFCgCHjPyJ0steaA6pAg--.26484S3;
- Mon, 25 May 2020 22:13:30 +0800 (CST)
-From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_asrc_dma: Fix dma_chan leak when config DMA channel
- failed
-Date: Mon, 25 May 2020 22:12:46 +0800
-Message-Id: <1590415966-52416-1-git-send-email-xiyuyang19@fudan.edu.cn>
-X-Mailer: git-send-email 2.7.4
-X-CM-TRANSID: XQUFCgCHjPyJ0steaA6pAg--.26484S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7tF45trW7uw1UZF1kXF17GFg_yoW8JFy3p3
- ykJrWqgryYyF43GFsxJws5Xr1UXrWakr4ft3y0kay3Z3s8Jr93CF1aqw109FyjvrW8Ar10
- gFWYqF1F93W3GrJanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUU9E14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
- rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
- 1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4U
- JVW0owA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
- Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
- 0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Jr0_Gr
- 1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
- rcIFxwACI402YVCY1x02628vn2kIc2xKxwCY02Avz4vE14v_Xryl42xK82IYc2Ij64vIr4
- 1l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK
- 67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI
- 8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAv
- wI8IcIk0rVW3JVWrJr1lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267
- AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VU189N7UUUUU==
-X-CM-SenderInfo: irzsiiysuqikmy6i3vldqovvfxof0/
-X-Mailman-Approved-At: Tue, 26 May 2020 01:11:47 +1000
+	by lists.ozlabs.org (Postfix) with ESMTP id 49WJ9l309QzDqPF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 12:40:59 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49WJ5Q3WZkzDqFZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2020 12:37:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=oOg3PmaW; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 49WJ5Q0jHhz8sxL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2020 12:37:14 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 49WJ5P6h1cz9sSt; Tue, 26 May 2020 12:37:13 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::344;
+ helo=mail-ot1-x344.google.com; envelope-from=jniethe5@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=oOg3PmaW; dkim-atps=neutral
+Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
+ [IPv6:2607:f8b0:4864:20::344])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 49WJ5P68YWz9sSs
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 May 2020 12:37:13 +1000 (AEST)
+Received: by mail-ot1-x344.google.com with SMTP id h7so15149823otr.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2020 19:37:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=iX25KaYxLGCAJf4jfpjLV8MVCur8Xn9EfMDu1j5KCYg=;
+ b=oOg3PmaWeuL0i2LK/4ZblmHuk9MaydSKfEHvbQp1W8fnksEcGSy4B/dNfAP4d26LIt
+ OGj1FFqlTqwd7DKmaDX8Jtnbt1p5i3byL2pcLOPIGP/9sh+qUTe9YNK69djvvB121BWZ
+ SDmqRyAsGaBfX6se7Gn0VJJCJsMmdo4kya9zVIH7U5t4qXQrc+VAJ5IPYE3TqTtpVDoY
+ 2krpGTgjjnoLFKeNPjdSDNH/1/rYqu0bRERK8sTb9VcNBEQ4Rw5JZd9v82mof6qCRZDD
+ pdGcr1wlswxj1RiCg589qqUPddC+4XNgNJWqs5oz6J/5Uef4r0M1ktCP+vj70WlrR7T+
+ U9kQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=iX25KaYxLGCAJf4jfpjLV8MVCur8Xn9EfMDu1j5KCYg=;
+ b=nGV3xK+vD6wtVYgYRSqRUvtfNiqDVqxlUTZ9jweWZ3YnAOGxFY1tD/O4zT78gEammE
+ dEO/biN4TEi8Rw66Rql+yXacGNozhFy0kqgw7qHugfaI85niMWGP4j0CvyedpqEdazNx
+ GaOgi1lkQkOSmsJlsgGFWINC2/it+91FUvTiOWs2K0m4qH2I3ApAdqVR/2m4h760cLNw
+ 18OlTzRyfJocSGvrOjbEq6gT37FyBYJtXWTDE5NPQS8tT5F9CI47Mjvs3/eNSfXC+QMv
+ OnpkRq6Y/PI2B+nogFAWyhY3NBsIWqE3L68QrqPOgUmCL99q4la49S/6nQEkDCeJbMXf
+ qzfQ==
+X-Gm-Message-State: AOAM533v7abhIDF4ba6y3O4AuXCItXE5Ge8qlKTykvpDHpdwl4+5nB+i
+ 4swqWpMAFWXAAoZLRK++qbU34DanG0t8ogXnc/zdzI+4wW8=
+X-Google-Smtp-Source: ABdhPJwd00q4GoPiLuy5ZT363bI7MtpOq5xdrdyf4XPEp7LTYz4/TAGM/EmnHSa0OUvaZWKxUM5as6yFU9f8dofmWes=
+X-Received: by 2002:a9d:220c:: with SMTP id o12mr24819228ota.155.1590460630335; 
+ Mon, 25 May 2020 19:37:10 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200525055004.2182328-1-mpe@ellerman.id.au>
+In-Reply-To: <20200525055004.2182328-1-mpe@ellerman.id.au>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Tue, 26 May 2020 12:36:59 +1000
+Message-ID: <CACzsE9r-gUUYFxfZov+KXpMVx=YpS+oS4fff=tjWTEUkWPJ3Lw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Add ppc_inst_as_u64()
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,43 +101,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xin Tan <tanxin.ctf@gmail.com>, yuanxzhang@fudan.edu.cn, kjlu@umn.edu,
- Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-fsl_asrc_dma_hw_params() invokes dma_request_channel() or
-fsl_asrc_get_dma_channel(), which returns a reference of the specified
-dma_chan object to "pair->dma_chan[dir]" with increased refcnt.
+On Mon, May 25, 2020 at 3:49 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> The code patching code wants to get the value of a struct ppc_inst as
+Might need to change the wording here as it also gets used in
+arch_prepare_optimized_kprobe()
+> a u64 when the instruction is prefixed, so we can pass the u64 down to
+> __put_user_asm() and write it with a single store.
+>
+> This is a bit awkward because the value differs based on the CPU
+> endianness, so add a helper to do the conversion.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/inst.h  | 9 +++++++++
+>  arch/powerpc/kernel/optprobes.c  | 3 +--
+>  arch/powerpc/lib/code-patching.c | 8 +-------
+>  3 files changed, 11 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
+> index d82e0c99cfa1..d61e07fb2937 100644
+> --- a/arch/powerpc/include/asm/inst.h
+> +++ b/arch/powerpc/include/asm/inst.h
+> @@ -100,6 +100,15 @@ static inline int ppc_inst_len(struct ppc_inst x)
+>         return ppc_inst_prefixed(x) ? 8 : 4;
+>  }
+>
+> +static inline u64 ppc_inst_as_u64(struct ppc_inst x)
+> +{
+> +#ifdef CONFIG_CPU_LITTLE_ENDIAN
+> +       return (u64)ppc_inst_suffix(x) << 32 | ppc_inst_val(x);
+> +#else
+> +       return (u64)ppc_inst_val(x) << 32 | ppc_inst_suffix(x);
+> +#endif
+> +}
+> +
+>  int probe_user_read_inst(struct ppc_inst *inst,
+>                          struct ppc_inst __user *nip);
+>
+> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+> index 3ac105e7faae..69bfe96884e2 100644
+> --- a/arch/powerpc/kernel/optprobes.c
+> +++ b/arch/powerpc/kernel/optprobes.c
+> @@ -283,8 +283,7 @@ int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+>          * 3. load instruction to be emulated into relevant register, and
+>          */
+>         temp = ppc_inst_read((struct ppc_inst *)p->ainsn.insn);
+> -       patch_imm64_load_insns(ppc_inst_val(temp) | ((u64)ppc_inst_suffix(temp) << 32),
+> -                              4, buff + TMPL_INSN_IDX);
+> +       patch_imm64_load_insns(ppc_inst_as_u64(temp), 4, buff + TMPL_INSN_IDX);
+>
+>         /*
+>          * 4. branch back from trampoline
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 64cf621e5b00..5ecf0d635a8d 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -27,13 +27,7 @@ static int __patch_instruction(struct ppc_inst *exec_addr, struct ppc_inst instr
+>         if (!ppc_inst_prefixed(instr)) {
+>                 __put_user_asm(ppc_inst_val(instr), patch_addr, err, "stw");
+>         } else {
+> -#ifdef CONFIG_CPU_LITTLE_ENDIAN
+> -               __put_user_asm((u64)ppc_inst_suffix(instr) << 32 |
+> -                              ppc_inst_val(instr), patch_addr, err, "std");
+> -#else
+> -               __put_user_asm((u64)ppc_inst_val(instr) << 32 |
+> -                              ppc_inst_suffix(instr), patch_addr, err, "std");
+> -#endif
+> +               __put_user_asm(ppc_inst_as_u64(instr), patch_addr, err, "std");
+>         }
+>
+>         if (err)
+> --
+> 2.25.1
+>
+I booted a BE and LE kernel - test_prefixed_patching() worked on both.
+Also on BE and LE kernels I put optprobes on prefixed and non prefixed
+instructions.
+The correct value was passed via r4 to emulate_step().
 
-The reference counting issue happens in one exception handling path of
-fsl_asrc_dma_hw_params(). When config DMA channel failed for Back-End,
-the function forgets to decrease the refcnt increased by
-dma_request_channel() or fsl_asrc_get_dma_channel(), causing a refcnt
-leak.
-
-Fix this issue by calling dma_release_channel() when config DMA channel
-failed.
-
-Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
----
- sound/soc/fsl/fsl_asrc_dma.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index e7178817d7a7..1ee10eafe3e6 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -252,6 +252,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	ret = dmaengine_slave_config(pair->dma_chan[dir], &config_be);
- 	if (ret) {
- 		dev_err(dev, "failed to config DMA channel for Back-End\n");
-+		dma_release_channel(pair->dma_chan[dir]);
- 		return ret;
- 	}
- 
--- 
-2.7.4
-
+Tested-by: Jordan Niethe <jniethe5@gmail.com>
