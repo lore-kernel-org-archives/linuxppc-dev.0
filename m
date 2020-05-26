@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70674C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 17:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C865AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 17:18:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24A552073B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 17:17:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24A552073B
+	by mail.kernel.org (Postfix) with ESMTPS id 82C8D2073B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 May 2020 17:18:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82C8D2073B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49WgcV4TVjzDqD4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:16:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Wgfl1v7lzDqQ0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:18:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (domain owner discourages use of this
  host) smtp.mailfrom=kernel.org (client-ip=217.140.110.172; helo=foss.arm.com;
@@ -26,26 +26,26 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 49WgXq5w7QzDqPl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 03:13:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 49WgZn2GTtzDqPM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 03:15:29 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9101C55D;
- Tue, 26 May 2020 10:13:45 -0700 (PDT)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 72B96101E;
+ Tue, 26 May 2020 10:15:27 -0700 (PDT)
 Received: from gaia (unknown [172.31.20.19])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1C3C03F52E;
- Tue, 26 May 2020 10:13:36 -0700 (PDT)
-Date: Tue, 26 May 2020 18:13:34 +0100
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EE9B33F52E;
+ Tue, 26 May 2020 10:15:19 -0700 (PDT)
+Date: Tue, 26 May 2020 18:15:17 +0100
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v2 05/20] mm: use free_area_init() instead of
- free_area_init_nodes()
-Message-ID: <20200526171334.GK17051@gaia>
+Subject: Re: [PATCH v2 08/20] arm64: simplify detection of memory zone
+ boundaries for UMA configs
+Message-ID: <20200526171516.GL17051@gaia>
 References: <20200429121126.17989-1-rppt@kernel.org>
- <20200429121126.17989-6-rppt@kernel.org>
+ <20200429121126.17989-9-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200429121126.17989-6-rppt@kernel.org>
+In-Reply-To: <20200429121126.17989-9-rppt@kernel.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,17 +93,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 29, 2020 at 03:11:11PM +0300, Mike Rapoport wrote:
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index e42727e3568e..a650adb358ee 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -206,7 +206,7 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max)
->  #endif
->  	max_zone_pfns[ZONE_NORMAL] = max;
->  
-> -	free_area_init_nodes(max_zone_pfns);
-> +	free_area_init(max_zone_pfns);
->  }
+On Wed, Apr 29, 2020 at 03:11:14PM +0300, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> The free_area_init() function only requires the definition of maximal PFN
+> for each of the supported zone rater than calculation of actual zone sizes
+> and the sizes of the holes between the zones.
+> 
+> After removal of CONFIG_HAVE_MEMBLOCK_NODE_MAP the free_area_init() is
+> available to all architectures.
+> 
+> Using this function instead of free_area_init_node() simplifies the zone
+> detection.
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+
+(BTW, none of my acks so far made it to the linux-arm-kernel list
+because of the large number of people on cc)
