@@ -2,55 +2,67 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLACK,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FD0FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 662B5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:54:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AED4420776
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:52:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AED4420776
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id CC87320776
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 03:54:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="oI5FyY7R"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC87320776
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49WxjM0ZVvzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 13:52:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oss.nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=biwen.li@oss.nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=oss.nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Wxlv6nzNzDqPc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 13:54:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49WxcN05XPzDqJc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 13:47:45 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 02B251A05E9;
- Wed, 27 May 2020 05:47:42 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 76C441A060C;
- Wed, 27 May 2020 05:47:37 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 816D5402BC;
- Wed, 27 May 2020 11:47:31 +0800 (SGT)
-From: Biwen Li <biwen.li@oss.nxp.com>
-To: leoyang.li@nxp.com, robh+dt@kernel.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, a.zummo@towertech.it,
- alexandre.belloni@bootlin.com
-Subject: [v3 2/2] dts: ppc: t1024rdb: remove interrupts property
-Date: Wed, 27 May 2020 11:42:28 +0800
-Message-Id: <20200527034228.23793-2-biwen.li@oss.nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200527034228.23793-1-biwen.li@oss.nxp.com>
-References: <20200527034228.23793-1-biwen.li@oss.nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Wxcf1LyjzDqJs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 13:48:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=oI5FyY7R; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Wxcb6J2Dz9sSW;
+ Wed, 27 May 2020 13:47:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1590551281;
+ bh=kI4fWu01aAN5kkMbR2omD94nPbM41iSYIq/ZpnS4LRk=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=oI5FyY7RWtkPZVcglYtyJNoptpcFbPkUcK/mFv5enSpYaU31ydlO8aaEp5dhJcFIY
+ S2pDEG3XQ9M3tpJrSdT5CgIX/9Z/qsjGk3rYH8D05UNK+at8GBFgd0kC4biPCVXCy4
+ 0qIPceh8PPZIpN6st/yPJk+x29Cvo9Cog9UZXHFh/ZS3gpOMp0UGPjaObU8QS3vaXu
+ bvQr/lKlrQ0z4SGb8ule2ebBmq+uOvhV9CpjXWufVopv2wiDX83DtP/D1uxbEb24dB
+ CSPG+zFEAzeV5ZMdnA5+dFzJVHsBFjpV2+pC7rc4lzzMIMrLz1pU2iARxOc4M2pIOu
+ dIF/mkwXX21yg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] powerpc/XIVE: SVM: share the event-queue page with the
+ Hypervisor.
+In-Reply-To: <20200426072724.GB5865@oc0525413822.ibm.com>
+References: <1585211927-784-1-git-send-email-linuxram@us.ibm.com>
+ <20200426020518.GC5853@oc0525413822.ibm.com>
+ <20200426072724.GB5865@oc0525413822.ibm.com>
+Date: Wed, 27 May 2020 13:48:23 +1000
+Message-ID: <87r1v6domw.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,41 +74,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Biwen Li <biwen.li@nxp.com>
+Cc: aik@ozlabs.ru, andmike@linux.ibm.com, groug@kaod.org, clg@kaod.org,
+ sukadev@linux.vnet.ibm.com, bauerman@linux.ibm.com,
+ david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Biwen Li <biwen.li@nxp.com>
+Ram Pai <linuxram@us.ibm.com> writes:
+> XIVE interrupt controller uses an Event Queue (EQ) to enqueue event
+> notifications when an exception occurs. The EQ is a single memory page
+> provided by the O/S defining a circular buffer, one per server and
+> priority couple.
+>
+> On baremetal, the EQ page is configured with an OPAL call. On pseries,
+> an extra hop is necessary and the guest OS uses the hcall
+> H_INT_SET_QUEUE_CONFIG to configure the XIVE interrupt controller.
+>
+> The XIVE controller being Hypervisor privileged, it will not be allowed
+> to enqueue event notifications for a Secure VM unless the EQ pages are
+> shared by the Secure VM.
+>
+> Hypervisor/Ultravisor still requires support for the TIMA and ESB page
+> fault handlers. Until this is complete, QEMU can use the emulated XIVE
+> device for Secure VMs, option "kernel_irqchip=off" on the QEMU pseries
+> machine.
+>
+> Cc: kvm-ppc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> Cc: Michael Anderson <andmike@linux.ibm.com>
+> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: David Gibson <david@gibson.dropbear.id.au>
+> Reviewed-by: Cedric Le Goater <clg@kaod.org>
+> Reviewed-by: Greg Kurz <groug@kaod.org>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+>
+> v3: fix a minor semantics in description.
+>     and added reviewed-by from Cedric and Greg.
+> v2: better description of the patch from Cedric.
+> ---
 
-Since the interrupt pin for RTC DS1339 is not connected
-to the CPU on T1024RDB, remove the interrupt property
-from the device tree.
+Please put the change history after the '---' break in future please, I
+had to fix this up manually.
 
-This also fix the following warning for hwclock.util-linux:
-$ hwclock.util-linux
-hwclock.util-linux: select() to /dev/rtc0
-to wait for clock tick timed out
-
-Signed-off-by: Biwen Li <biwen.li@nxp.com>
----
- arch/powerpc/boot/dts/fsl/t1024rdb.dts | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-index 645caff98ed1..605ceec66af3 100644
---- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-@@ -161,7 +161,6 @@
- 			rtc@68 {
- 				compatible = "dallas,ds1339";
- 				reg = <0x68>;
--				interrupts = <0x1 0x1 0 0>;
- 			};
- 		};
- 
--- 
-2.17.1
-
+cheers
