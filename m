@@ -2,58 +2,57 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 919BBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21BE4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:18:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4308E2084C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:13:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9AEC72088E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:18:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="UISXtkJ1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4308E2084C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="CQJkgLch"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AEC72088E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49XDqv2Dk1zDqVK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 01:13:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XDwj28P2zDqJs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 01:17:57 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XDWH4ZSWzDqKD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 00:59:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XDWJ5G2SzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 00:59:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=UISXtkJ1; 
+ header.a=rsa-sha256 header.s=201909 header.b=CQJkgLch; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 49XDWB06Zxz9sTk; Thu, 28 May 2020 00:59:18 +1000 (AEST)
+ id 49XDWC0R6Pz9sTY; Thu, 28 May 2020 00:59:19 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49XDW85kpTz9sTN; Thu, 28 May 2020 00:59:12 +1000 (AEST)
+ id 49XDWB05S1z9sTV; Thu, 28 May 2020 00:59:17 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1590591556;
- bh=Mx9wkwSKR46Eja8f0fUCjU0Z3LqMh1qJlLO0gH08bDI=;
+ s=201909; t=1590591558;
+ bh=xwHXSW2WmdPsV01i/0H3mbEwnlHtfhLgd1eRL7/iGKk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=UISXtkJ1OAts55yuOU8Xuw1GfKwbuPBqobjdpA7Jd1wj179H+uvJvx1TO7XAUzFXk
- xQsUu+QjM03hfr6pTkU11C9v/1u0y8hzjMQXKMhWkziRfd+hQGiEIpSgSeYP5xfeBi
- Esf4m6gwyWduWA4H0qIQrJ5pmnbhepXPeStqD3bjFhPinT5Krtoaf8YjfmmPJ77RfI
- K8M9RTegbvEejYgpd7RxhaFIqCE/KjxFybl1ks1NRSmv3dPr949Cw1cLd/BMjOpYob
- 3SH6piBirGgng6g9uIgWKJePaqiI7wfZFxLosYZtABzrGFRvCy1FkH+1t8eCOHKkJz
- r2JLfjpP52R6g==
+ b=CQJkgLchlzsNt1zo0Q3Nv+G/NAoSIaqfW/OKuSzUkCxn6L6XhVwttI32l+PudClQt
+ hHYKoXXjDklMXeaaLXIKy4I/oDP+O3DGnWa1jDVGdGm33BmSGydPG1NDt+vfBAJH2t
+ 2EGAxc8pAY6wzIdfogCCD8P7O6x53CSQ7l41mBbZ9jR3KSxCYbI9gxOC5sg1C89z5V
+ VuCEXo0SJM/HC4YnOkhztaGBkWsBzcGrKek+mmMcWZd4UUtYbQlY9Ad6+Ww1KZK264
+ eUbufUmZSFDC3OCOylnmZ+JP/QEpNxzqPpFARr0leqqbeZx8m6tMc5x4mtq24uZ0jY
+ 1NJHFgTpU0GMw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 3/4] powerpc/64s: Save FSCR to init_task.thread.fscr after
- feature init
-Date: Thu, 28 May 2020 00:58:42 +1000
-Message-Id: <20200527145843.2761782-3-mpe@ellerman.id.au>
+Subject: [RFC PATCH 4/4] powerpc/64s: Don't set FSCR bits in INIT_THREAD
+Date: Thu, 28 May 2020 00:58:43 +1000
+Message-Id: <20200527145843.2761782-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200527145843.2761782-1-mpe@ellerman.id.au>
 References: <20200527145843.2761782-1-mpe@ellerman.id.au>
@@ -76,77 +75,33 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At boot the FSCR is initialised via one of two paths. On most systems
-it's set to a hard coded value in __init_FSCR().
+Since the previous commit that saves the value of FSCR configured at
+boot into init_task.thread.fscr, the static initialisation in
+INIT_THREAD now no longer has any effect.
 
-On newer skiboot systems we use the device tree CPU features binding,
-where firmware can tell Linux what bits to set in FSCR (and HFSCR).
+So remove it.
 
-In both cases the value that's configured at boot is not propagated
-into the init_task.thread.fscr value prior to the initial fork of init
-(pid 1), which means the value is not used by any processes other than
-swapper (the idle task).
+For non DT CPU features, the end result is the same, because
+__init_FSCR() is called on all CPUs that have an FSCR (Power8,
+Power9), and it sets FSCR_TAR & FSCR_EBB.
 
-For the __init_FSCR() case this is OK, because the value in
-init_task.thread.fscr is initialised to something sensible. However it
-does mean that the value set in __init_FSCR() is not used other than
-for swapper, which is odd and confusing.
-
-The bigger problem is for the device tree CPU features case it
-prevents firmware from setting (or clearing) FSCR bits for use by user
-space. This means all existing kernels can not have features
-enabled/disabled by firmware if those features require
-setting/clearing FSCR bits.
-
-We can handle both cases by saving the FSCR value into
-init_task.thread.fscr after we have initialised it at boot. This fixes
-the bug for device tree CPU features, and will allow us to simplify
-the initialisation for the __init_FSCR() case in a future patch.
-
-Fixes: 5a61ef74f269 ("powerpc/64s: Support new device tree binding for discovering CPU features")
-Cc: stable@vger.kernel.org # v4.12+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/include/asm/processor.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 1dcf0e214a22..a74bfd09cb38 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -685,6 +685,23 @@ static void __init tm_init(void)
- static void tm_init(void) { }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 4e53df163b92..52a67835057a 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -302,7 +302,6 @@ struct thread_struct {
+ 	.ksp = INIT_SP, \
+ 	.addr_limit = KERNEL_DS, \
+ 	.fpexc_mode = 0, \
+-	.fscr = FSCR_TAR | FSCR_EBB \
+ }
+ #endif
  
-+#ifdef CONFIG_PPC64
-+static void __init save_fscr_to_task(void)
-+{
-+	/*
-+	 * Ensure the init_task (pid 0, aka swapper) uses the value of FSCR we
-+	 * have configured via the device tree features or via __init_FSCR().
-+	 * That value will then be propagated to pid 1 (init) and all future
-+	 * processes.
-+	 */
-+	if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
-+		init_task.thread.fscr = mfspr(SPRN_FSCR);
-+}
-+#else
-+static inline void save_fscr_to_task(void) {};
-+#endif
-+
-+
- void __init early_init_devtree(void *params)
- {
- 	phys_addr_t limit;
-@@ -773,6 +790,8 @@ void __init early_init_devtree(void *params)
- 		BUG();
- 	}
- 
-+	save_fscr_to_task();
-+
- #if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
- 	/* We'll later wait for secondaries to check in; there are
- 	 * NCPUS-1 non-boot CPUs  :-)
 -- 
 2.25.1
 
