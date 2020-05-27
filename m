@@ -7,73 +7,73 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EC59C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:49:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3EE9C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:51:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A3C6020663
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:49:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8DBCC20835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:51:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="zvG0G9oL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3C6020663
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="reCN7ZDh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DBCC20835
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49XJH92QKNzDqMn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 03:49:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XJKK12kzzDqL5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 03:51:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.85; helo=userp2120.oracle.com;
+ smtp.mailfrom=oracle.com (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
  envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=zvG0G9oL; 
+ header.s=corp-2020-01-29 header.b=reCN7ZDh; 
  dkim-atps=neutral
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XJ1Z2cY9zDqVD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 03:37:21 +1000 (AEST)
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHRkt0158992;
- Wed, 27 May 2020 17:36:31 GMT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XJ1b34bhzDqT5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 03:37:22 +1000 (AEST)
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+ by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHS8xU066133;
+ Wed, 27 May 2020 17:36:32 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
  h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=corp-2020-01-29;
- bh=ZJOarWh9CgJXEAOVZAeqqgIPtu275WxEdY7spy9pBHI=;
- b=zvG0G9oLT+zza60H7oY5fBnslNMsVp0U//B5bfkPtJj3HC+x12/s4OpqjajE7Xh1KTLI
- guVG2wdby+T9u7CvLjT6wkVblmLvq2tXzLjtV204AOhObiYeTTm4KKKuPUKHog2l15/5
- 93UBPOQavAd2GCaEHQNnZo7cjVAbxgLYPPPR13hK1JQFQiMIcyCy/Fw5w8v+fTKnEVfx
- 6sPGkDy0QwOwpUNb0+zQaYrCuLslTNMdzpIwHDHq2wuNW0+r7FxXHuQJJA/upSmaxIjK
- 6mw+lpPNhMKtB+Df5TqtpAh8W2f1o3W+UgaNSXnIPpisMjqrvGGHSR26FQcUwfwJNC0E pg== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
- by userp2120.oracle.com with ESMTP id 318xbk0v55-1
+ bh=yPUXFWPL94bqTXYWjhf36bOZIYPC2tWDc5RPRYWRQpc=;
+ b=reCN7ZDhlWpd3nB6imCa52znFT7mP1fOUN2XCQQ631F1ma2oxX577K3URLMu6DcgEmYc
+ 9SzOSPQUOj3SMYETsYmmw8Gl621nAz5lbRotfYPZF2vFTfB8aEpbbZvxKAwsTD2iAC4f
+ uH9PUDI9zDyhtj82I2gJvjyomGX/+XFWkYJDEqdSIofBdYhajQmQtvs+KBoH05hu9m4v
+ O8OX/i87vC0fKYZnKE3j6wRzs0TQlzC67GIUO0w5JQooN99R3qvXEGQhrRg/1h7/iKDO
+ yl1QBJ8gcMuCPJfzXBLg2QEJF45uqhx78MNKx7H2ed7ngfom+HlWlCOWkP5x4Y1le2et 3A== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+ by aserp2120.oracle.com with ESMTP id 318xe1gubg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 27 May 2020 17:36:31 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
- by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHXbxw105368;
- Wed, 27 May 2020 17:36:30 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserp3020.oracle.com with ESMTP id 317j5sfs4j-1
+ Wed, 27 May 2020 17:36:32 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+ by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHXdpC142867;
+ Wed, 27 May 2020 17:36:32 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+ by userp3020.oracle.com with ESMTP id 317dkutu4g-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 May 2020 17:36:30 +0000
+ Wed, 27 May 2020 17:36:31 +0000
 Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 04RHaM2x013632;
- Wed, 27 May 2020 17:36:23 GMT
+ by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 04RHaRuB012736;
+ Wed, 27 May 2020 17:36:27 GMT
 Received: from localhost.localdomain (/98.229.125.203)
  by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 27 May 2020 10:36:22 -0700
+ with ESMTP ; Wed, 27 May 2020 10:36:27 -0700
 From: Daniel Jordan <daniel.m.jordan@oracle.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  Herbert Xu <herbert@gondor.apana.org.au>,
  Steffen Klassert <steffen.klassert@secunet.com>
-Subject: [PATCH v3 3/8] padata: allocate work structures for parallel jobs
- from a pool
-Date: Wed, 27 May 2020 13:36:03 -0400
-Message-Id: <20200527173608.2885243-4-daniel.m.jordan@oracle.com>
+Subject: [PATCH v3 5/8] mm: don't track number of pages during deferred
+ initialization
+Date: Wed, 27 May 2020 13:36:05 -0400
+Message-Id: <20200527173608.2885243-6-daniel.m.jordan@oracle.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
 References: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
@@ -81,19 +81,20 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
  signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0
- spamscore=0 suspectscore=2
- mlxlogscore=999 mlxscore=0 adultscore=0 phishscore=0 malwarescore=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ malwarescore=0 bulkscore=0
+ spamscore=0 suspectscore=0 mlxscore=0 adultscore=0 mlxlogscore=999
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
  definitions=main-2005270137
 X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
  signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
- spamscore=0 mlxscore=0
- lowpriorityscore=0 priorityscore=1501 phishscore=0 cotscore=-2147483648
- suspectscore=2 bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2004280000 definitions=main-2005270136
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0
+ mlxlogscore=999
+ adultscore=0 cotscore=-2147483648 mlxscore=0 bulkscore=0
+ priorityscore=1501 phishscore=0 lowpriorityscore=0 malwarescore=0
+ clxscore=1015 impostorscore=0 suspectscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2005270136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -125,283 +126,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-padata allocates per-CPU, per-instance work structs for parallel jobs.
-A do_parallel call assigns a job to a sequence number and hashes the
-number to a CPU, where the job will eventually run using the
-corresponding work.
+Deferred page init used to report the number of pages initialized:
 
-This approach fit with how padata used to bind a job to each CPU
-round-robin, makes less sense after commit bfde23ce200e6 ("padata:
-unbind parallel jobs from specific CPUs") because a work isn't bound to
-a particular CPU anymore, and isn't needed at all for multithreaded jobs
-because they don't have sequence numbers.
+  node 0 initialised, 32439114 pages in 97ms
 
-Replace the per-CPU works with a preallocated pool, which allows sharing
-them between existing padata users and the upcoming multithreaded user.
-The pool will also facilitate setting NUMA-aware concurrency limits with
-later users.
+Tracking this makes the code more complicated when using multiple
+threads.  Given that the statistic probably has limited value,
+especially since a zone grows on demand so that the page count can vary,
+just remove it.
 
-The pool is sized according to the number of possible CPUs.  With this
-limit, MAX_OBJ_NUM no longer makes sense, so remove it.
+The boot message now looks like
 
-If the global pool is exhausted, a parallel job is run in the current
-task instead to throttle a system trying to do too much in parallel.
+  node 0 deferred pages initialised in 97ms
 
 Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Tested-by: Josh Triplett <josh@joshtriplett.org>
+Suggested-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
- include/linux/padata.h |   8 +--
- kernel/padata.c        | 118 +++++++++++++++++++++++++++--------------
- 2 files changed, 78 insertions(+), 48 deletions(-)
+ mm/page_alloc.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/padata.h b/include/linux/padata.h
-index 476ecfa41f363..3bfa503503ac5 100644
---- a/include/linux/padata.h
-+++ b/include/linux/padata.h
-@@ -24,7 +24,6 @@
-  * @list: List entry, to attach to the padata lists.
-  * @pd: Pointer to the internal control structure.
-  * @cb_cpu: Callback cpu for serializatioon.
-- * @cpu: Cpu for parallelization.
-  * @seq_nr: Sequence number of the parallelized data object.
-  * @info: Used to pass information from the parallel to the serial function.
-  * @parallel: Parallel execution function.
-@@ -34,7 +33,6 @@ struct padata_priv {
- 	struct list_head	list;
- 	struct parallel_data	*pd;
- 	int			cb_cpu;
--	int			cpu;
- 	unsigned int		seq_nr;
- 	int			info;
- 	void                    (*parallel)(struct padata_priv *padata);
-@@ -68,15 +66,11 @@ struct padata_serial_queue {
- /**
-  * struct padata_parallel_queue - The percpu padata parallel queue
-  *
-- * @parallel: List to wait for parallelization.
-  * @reorder: List to wait for reordering after parallel processing.
-- * @work: work struct for parallelization.
-  * @num_obj: Number of objects that are processed by this cpu.
-  */
- struct padata_parallel_queue {
--       struct padata_list    parallel;
-        struct padata_list    reorder;
--       struct work_struct    work;
-        atomic_t              num_obj;
- };
- 
-@@ -111,7 +105,7 @@ struct parallel_data {
- 	struct padata_parallel_queue	__percpu *pqueue;
- 	struct padata_serial_queue	__percpu *squeue;
- 	atomic_t			refcnt;
--	atomic_t			seq_nr;
-+	unsigned int			seq_nr;
- 	unsigned int			processed;
- 	int				cpu;
- 	struct padata_cpumask		cpumask;
-diff --git a/kernel/padata.c b/kernel/padata.c
-index 6f709bc0fc413..78ff9aa529204 100644
---- a/kernel/padata.c
-+++ b/kernel/padata.c
-@@ -32,7 +32,15 @@
- #include <linux/sysfs.h>
- #include <linux/rcupdate.h>
- 
--#define MAX_OBJ_NUM 1000
-+struct padata_work {
-+	struct work_struct	pw_work;
-+	struct list_head	pw_list;  /* padata_free_works linkage */
-+	void			*pw_data;
-+};
-+
-+static DEFINE_SPINLOCK(padata_works_lock);
-+static struct padata_work *padata_works;
-+static LIST_HEAD(padata_free_works);
- 
- static void padata_free_pd(struct parallel_data *pd);
- 
-@@ -58,30 +66,44 @@ static int padata_cpu_hash(struct parallel_data *pd, unsigned int seq_nr)
- 	return padata_index_to_cpu(pd, cpu_index);
- }
- 
--static void padata_parallel_worker(struct work_struct *parallel_work)
-+static struct padata_work *padata_work_alloc(void)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d0c0d9364aa6d..d64f3027fdfa6 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1819,7 +1819,7 @@ static int __init deferred_init_memmap(void *data)
  {
--	struct padata_parallel_queue *pqueue;
--	LIST_HEAD(local_list);
-+	struct padata_work *pw;
- 
--	local_bh_disable();
--	pqueue = container_of(parallel_work,
--			      struct padata_parallel_queue, work);
-+	lockdep_assert_held(&padata_works_lock);
- 
--	spin_lock(&pqueue->parallel.lock);
--	list_replace_init(&pqueue->parallel.list, &local_list);
--	spin_unlock(&pqueue->parallel.lock);
-+	if (list_empty(&padata_free_works))
-+		return NULL;	/* No more work items allowed to be queued. */
- 
--	while (!list_empty(&local_list)) {
--		struct padata_priv *padata;
-+	pw = list_first_entry(&padata_free_works, struct padata_work, pw_list);
-+	list_del(&pw->pw_list);
-+	return pw;
-+}
- 
--		padata = list_entry(local_list.next,
--				    struct padata_priv, list);
-+static void padata_work_init(struct padata_work *pw, work_func_t work_fn,
-+			     void *data)
-+{
-+	INIT_WORK(&pw->pw_work, work_fn);
-+	pw->pw_data = data;
-+}
- 
--		list_del_init(&padata->list);
-+static void padata_work_free(struct padata_work *pw)
-+{
-+	lockdep_assert_held(&padata_works_lock);
-+	list_add(&pw->pw_list, &padata_free_works);
-+}
- 
--		padata->parallel(padata);
--	}
-+static void padata_parallel_worker(struct work_struct *parallel_work)
-+{
-+	struct padata_work *pw = container_of(parallel_work, struct padata_work,
-+					      pw_work);
-+	struct padata_priv *padata = pw->pw_data;
- 
-+	local_bh_disable();
-+	padata->parallel(padata);
-+	spin_lock(&padata_works_lock);
-+	padata_work_free(pw);
-+	spin_unlock(&padata_works_lock);
- 	local_bh_enable();
- }
- 
-@@ -105,9 +127,9 @@ int padata_do_parallel(struct padata_shell *ps,
- 		       struct padata_priv *padata, int *cb_cpu)
- {
- 	struct padata_instance *pinst = ps->pinst;
--	int i, cpu, cpu_index, target_cpu, err;
--	struct padata_parallel_queue *queue;
-+	int i, cpu, cpu_index, err;
- 	struct parallel_data *pd;
-+	struct padata_work *pw;
- 
- 	rcu_read_lock_bh();
- 
-@@ -135,25 +157,25 @@ int padata_do_parallel(struct padata_shell *ps,
- 	if ((pinst->flags & PADATA_RESET))
- 		goto out;
- 
--	if (atomic_read(&pd->refcnt) >= MAX_OBJ_NUM)
--		goto out;
--
--	err = 0;
- 	atomic_inc(&pd->refcnt);
- 	padata->pd = pd;
- 	padata->cb_cpu = *cb_cpu;
- 
--	padata->seq_nr = atomic_inc_return(&pd->seq_nr);
--	target_cpu = padata_cpu_hash(pd, padata->seq_nr);
--	padata->cpu = target_cpu;
--	queue = per_cpu_ptr(pd->pqueue, target_cpu);
--
--	spin_lock(&queue->parallel.lock);
--	list_add_tail(&padata->list, &queue->parallel.list);
--	spin_unlock(&queue->parallel.lock);
-+	rcu_read_unlock_bh();
- 
--	queue_work(pinst->parallel_wq, &queue->work);
-+	spin_lock(&padata_works_lock);
-+	padata->seq_nr = ++pd->seq_nr;
-+	pw = padata_work_alloc();
-+	spin_unlock(&padata_works_lock);
-+	if (pw) {
-+		padata_work_init(pw, padata_parallel_worker, padata);
-+		queue_work(pinst->parallel_wq, &pw->pw_work);
-+	} else {
-+		/* Maximum works limit exceeded, run in the current task. */
-+		padata->parallel(padata);
-+	}
- 
-+	return 0;
- out:
- 	rcu_read_unlock_bh();
- 
-@@ -324,8 +346,9 @@ static void padata_serial_worker(struct work_struct *serial_work)
- void padata_do_serial(struct padata_priv *padata)
- {
- 	struct parallel_data *pd = padata->pd;
-+	int hashed_cpu = padata_cpu_hash(pd, padata->seq_nr);
- 	struct padata_parallel_queue *pqueue = per_cpu_ptr(pd->pqueue,
--							   padata->cpu);
-+							   hashed_cpu);
- 	struct padata_priv *cur;
- 
- 	spin_lock(&pqueue->reorder.lock);
-@@ -416,8 +439,6 @@ static void padata_init_pqueues(struct parallel_data *pd)
- 		pqueue = per_cpu_ptr(pd->pqueue, cpu);
- 
- 		__padata_list_init(&pqueue->reorder);
--		__padata_list_init(&pqueue->parallel);
--		INIT_WORK(&pqueue->work, padata_parallel_worker);
- 		atomic_set(&pqueue->num_obj, 0);
+ 	pg_data_t *pgdat = data;
+ 	const struct cpumask *cpumask = cpumask_of_node(pgdat->node_id);
+-	unsigned long spfn = 0, epfn = 0, nr_pages = 0;
++	unsigned long spfn = 0, epfn = 0;
+ 	unsigned long first_init_pfn, flags;
+ 	unsigned long start = jiffies;
+ 	struct zone *zone;
+@@ -1868,15 +1868,15 @@ static int __init deferred_init_memmap(void *data)
+ 	 * allocator.
+ 	 */
+ 	while (spfn < epfn) {
+-		nr_pages += deferred_init_maxorder(&i, zone, &spfn, &epfn);
++		deferred_init_maxorder(&i, zone, &spfn, &epfn);
+ 		cond_resched();
  	}
- }
-@@ -451,7 +472,7 @@ static struct parallel_data *padata_alloc_pd(struct padata_shell *ps)
+ zone_empty:
+ 	/* Sanity check that the next zone really is unpopulated */
+ 	WARN_ON(++zid < MAX_NR_ZONES && populated_zone(++zone));
  
- 	padata_init_pqueues(pd);
- 	padata_init_squeues(pd);
--	atomic_set(&pd->seq_nr, -1);
-+	pd->seq_nr = -1;
- 	atomic_set(&pd->refcnt, 1);
- 	spin_lock_init(&pd->lock);
- 	pd->cpu = cpumask_first(pd->cpumask.pcpu);
-@@ -1051,6 +1072,7 @@ EXPORT_SYMBOL(padata_free_shell);
+-	pr_info("node %d initialised, %lu pages in %ums\n",
+-		pgdat->node_id,	nr_pages, jiffies_to_msecs(jiffies - start));
++	pr_info("node %d deferred pages initialised in %ums\n",
++		pgdat->node_id, jiffies_to_msecs(jiffies - start));
  
- void __init padata_init(void)
- {
-+	unsigned int i, possible_cpus;
- #ifdef CONFIG_HOTPLUG_CPU
- 	int ret;
- 
-@@ -1062,13 +1084,27 @@ void __init padata_init(void)
- 
- 	ret = cpuhp_setup_state_multi(CPUHP_PADATA_DEAD, "padata:dead",
- 				      NULL, padata_cpu_dead);
--	if (ret < 0) {
--		cpuhp_remove_multi_state(hp_online);
--		goto err;
--	}
-+	if (ret < 0)
-+		goto remove_online_state;
-+#endif
-+
-+	possible_cpus = num_possible_cpus();
-+	padata_works = kmalloc_array(possible_cpus, sizeof(struct padata_work),
-+				     GFP_KERNEL);
-+	if (!padata_works)
-+		goto remove_dead_state;
-+
-+	for (i = 0; i < possible_cpus; ++i)
-+		list_add(&padata_works[i].pw_list, &padata_free_works);
- 
- 	return;
-+
-+remove_dead_state:
-+#ifdef CONFIG_HOTPLUG_CPU
-+	cpuhp_remove_multi_state(CPUHP_PADATA_DEAD);
-+remove_online_state:
-+	cpuhp_remove_multi_state(hp_online);
- err:
--	pr_warn("padata: initialization failed\n");
- #endif
-+	pr_warn("padata: initialization failed\n");
- }
+ 	pgdat_init_report_one_done();
+ 	return 0;
 -- 
 2.26.2
 
