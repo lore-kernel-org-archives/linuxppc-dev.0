@@ -4,55 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D956C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:29:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B703BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:30:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00160207E8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:29:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 63683207E8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:30:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Uuow4kSI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00160207E8
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="I3B2gb+C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63683207E8
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49WyWz0BR5zDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 14:29:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49WyYv33XczDqSc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 14:30:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49WyLj6q0pzDqRw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 14:21:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49WyLh6nYJzDqP6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 14:21:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=Uuow4kSI; dkim-atps=neutral
+ header.s=201707 header.b=I3B2gb+C; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 49WyLh5X25z9sSd; Wed, 27 May 2020 14:21:00 +1000 (AEST)
+ id 49WyLh3q1Kz9sSg; Wed, 27 May 2020 14:21:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1590553260; bh=cwG4p+fURpnXHo+TvskpLnMDdkg5NzfuxIxjhvAlZBs=;
+ t=1590553260; bh=Y21jN5y45Um4AYIa//KCJfpc5WBbHBo15ZjCSQkLVDQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Uuow4kSIZoBpudeIAEjeRUhg6WZ/qKlgzuTlrmt7o1LcuYWuviCtfSzgYEdaCVTDf
- HAujJrHQXHdA0LzSL8BShz4enX0Vd4uuPREjUq+a+z0B/fgwO2PFq6AWXHr8Q5NDPq
- lqZbFHZy4loznYFO8KrR6x4ud3PsAqRkMxXOJOHhdpYGqntmDbd9EsxLiCMkGbjIJ7
- civPT9ubEaEe0bvn2Atua3R8FbSDPEPpOnnFiOjL9Q/Za6Mrzlmfuj3cG2FGUgJD6z
- uR7jXTJwQnTnhXHn50MT6Df5rSaZMpV4OsQgdjlLJw/VPlTNhcuHiJzSB6Af23sprs
- b/mgQEtnVQbOA==
-Date: Wed, 27 May 2020 14:19:53 +1000
+ b=I3B2gb+CqUvnQTciOQNbK+Nanl0aafykbtezdHL4nEHndD94WUy5NzD9feSxRyj49
+ QsAoqdEtwRtAS8YCi93WAfbLMVvB2u67ufu53/SWaWwAfhLRaSO6XcMDVAXKpSEbi3
+ 2nhgX+lFSTNVaNijRZ+Lopo0iA+wnctLMQABLJZDyy8DXRlW0v+qY/763/ZZy1EujN
+ UeYyAXI/IzV1D7lbTueJ5plZCHBnk9MrHForXAsPE/LBrl2Ip0AooCH6/mkwiczEgn
+ 8zvYmomsomo+Sh0iv8WMogEZTERJrj5XG7mnchJAoBaMlm2C5D4ruHw65MLKrLHbZz
+ RPtepX0/K25jQ==
+Date: Wed, 27 May 2020 14:16:49 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Qian Cai <cai@lca.pw>
-Subject: Re: [PATCH] powerpc/kvm/radix: ignore kmemleak false positives
-Message-ID: <20200527041953.GF293451@thinks.paulus.ozlabs.org>
-References: <20200513133915.1040-1-cai@lca.pw>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: relax check on H_SVM_INIT_ABORT
+Message-ID: <20200527041649.GD293451@thinks.paulus.ozlabs.org>
+References: <20200520193259.0b66db32@bahia.lan>
+ <20200520174308.77820-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200513133915.1040-1-cai@lca.pw>
+In-Reply-To: <20200520174308.77820-1-ldufour@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,63 +65,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- catalin.marinas@arm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxram@us.ibm.com, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ groug@kaod.org, sukadev@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 13, 2020 at 09:39:15AM -0400, Qian Cai wrote:
-> kvmppc_pmd_alloc() and kvmppc_pte_alloc() allocate some memory but then
-> pud_populate() and pmd_populate() will use __pa() to reference the newly
-> allocated memory.
+On Wed, May 20, 2020 at 07:43:08PM +0200, Laurent Dufour wrote:
+> The commit 8c47b6ff29e3 ("KVM: PPC: Book3S HV: Check caller of H_SVM_*
+> Hcalls") added checks of secure bit of SRR1 to filter out the Hcall
+> reserved to the Ultravisor.
 > 
-> Since kmemleak is unable to track the physical memory resulting in false
-> positives, silence those by using kmemleak_ignore().
+> However, the Hcall H_SVM_INIT_ABORT is made by the Ultravisor passing the
+> context of the VM calling UV_ESM. This allows the Hypervisor to return to
+> the guest without going through the Ultravisor. Thus the Secure bit of SRR1
+> is not set in that particular case.
 > 
-> unreferenced object 0xc000201c382a1000 (size 4096):
->  comm "qemu-kvm", pid 124828, jiffies 4295733767 (age 341.250s)
->  hex dump (first 32 bytes):
->    c0 00 20 09 f4 60 03 87 c0 00 20 10 72 a0 03 87  .. ..`.... .r...
->    c0 00 20 0e 13 a0 03 87 c0 00 20 1b dc c0 03 87  .. ....... .....
->  backtrace:
->    [<000000004cc2790f>] kvmppc_create_pte+0x838/0xd20 [kvm_hv]
->    kvmppc_pmd_alloc at arch/powerpc/kvm/book3s_64_mmu_radix.c:366
->    (inlined by) kvmppc_create_pte at arch/powerpc/kvm/book3s_64_mmu_radix.c:590
->    [<00000000d123c49a>] kvmppc_book3s_instantiate_page+0x2e0/0x8c0 [kvm_hv]
->    [<00000000bb549087>] kvmppc_book3s_radix_page_fault+0x1b4/0x2b0 [kvm_hv]
->    [<0000000086dddc0e>] kvmppc_book3s_hv_page_fault+0x214/0x12a0 [kvm_hv]
->    [<000000005ae9ccc2>] kvmppc_vcpu_run_hv+0xc5c/0x15f0 [kvm_hv]
->    [<00000000d22162ff>] kvmppc_vcpu_run+0x34/0x48 [kvm]
->    [<00000000d6953bc4>] kvm_arch_vcpu_ioctl_run+0x314/0x420 [kvm]
->    [<000000002543dd54>] kvm_vcpu_ioctl+0x33c/0x950 [kvm]
->    [<0000000048155cd6>] ksys_ioctl+0xd8/0x130
->    [<0000000041ffeaa7>] sys_ioctl+0x28/0x40
->    [<000000004afc4310>] system_call_exception+0x114/0x1e0
->    [<00000000fb70a873>] system_call_common+0xf0/0x278
-> unreferenced object 0xc0002001f0c03900 (size 256):
->  comm "qemu-kvm", pid 124830, jiffies 4295735235 (age 326.570s)
->  hex dump (first 32 bytes):
->    c0 00 20 10 fa a0 03 87 c0 00 20 10 fa a1 03 87  .. ....... .....
->    c0 00 20 10 fa a2 03 87 c0 00 20 10 fa a3 03 87  .. ....... .....
->  backtrace:
->    [<0000000023f675b8>] kvmppc_create_pte+0x854/0xd20 [kvm_hv]
->    kvmppc_pte_alloc at arch/powerpc/kvm/book3s_64_mmu_radix.c:356
->    (inlined by) kvmppc_create_pte at arch/powerpc/kvm/book3s_64_mmu_radix.c:593
->    [<00000000d123c49a>] kvmppc_book3s_instantiate_page+0x2e0/0x8c0 [kvm_hv]
->    [<00000000bb549087>] kvmppc_book3s_radix_page_fault+0x1b4/0x2b0 [kvm_hv]
->    [<0000000086dddc0e>] kvmppc_book3s_hv_page_fault+0x214/0x12a0 [kvm_hv]
->    [<000000005ae9ccc2>] kvmppc_vcpu_run_hv+0xc5c/0x15f0 [kvm_hv]
->    [<00000000d22162ff>] kvmppc_vcpu_run+0x34/0x48 [kvm]
->    [<00000000d6953bc4>] kvm_arch_vcpu_ioctl_run+0x314/0x420 [kvm]
->    [<000000002543dd54>] kvm_vcpu_ioctl+0x33c/0x950 [kvm]
->    [<0000000048155cd6>] ksys_ioctl+0xd8/0x130
->    [<0000000041ffeaa7>] sys_ioctl+0x28/0x40
->    [<000000004afc4310>] system_call_exception+0x114/0x1e0
->    [<00000000fb70a873>] system_call_common+0xf0/0x278
+> In the case a regular VM is calling H_SVM_INIT_ABORT, this hcall will be
+> filtered out in kvmppc_h_svm_init_abort() because kvm->arch.secure_guest is
+> not set in that case.
 > 
-> Signed-off-by: Qian Cai <cai@lca.pw>
+> Fixes: 8c47b6ff29e3 ("KVM: PPC: Book3S HV: Check caller of H_SVM_* Hcalls")
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 
-Thanks, applied to my kvm-ppc-next branch.
+Thanks, applied to my kvm-ppc-next branch.  I expanded the comment in
+the code a little.
 
 Paul.
