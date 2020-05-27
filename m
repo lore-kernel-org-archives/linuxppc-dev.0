@@ -2,58 +2,61 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5AEAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:10:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 919BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:13:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF3642084C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:10:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4308E2084C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:13:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="MbHk9+Vf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF3642084C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="UISXtkJ1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4308E2084C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49XDlq2Y8SzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 01:10:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XDqv2Dk1zDqVK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 01:13:47 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XDWC5NgPzDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 00:59:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XDWH4ZSWzDqKD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 00:59:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=MbHk9+Vf; 
+ header.a=rsa-sha256 header.s=201909 header.b=UISXtkJ1; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 49XDW01ztbz9sT3; Thu, 28 May 2020 00:59:08 +1000 (AEST)
+ id 49XDWB06Zxz9sTk; Thu, 28 May 2020 00:59:18 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49XDVz03BKz9sTR; Thu, 28 May 2020 00:59:06 +1000 (AEST)
+ id 49XDW85kpTz9sTN; Thu, 28 May 2020 00:59:12 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1590591547;
- bh=BvWiH6DJ6bg3iEE5caKgNywjq4d7ySljM3mSfKfv6R0=;
- h=From:To:Cc:Subject:Date:From;
- b=MbHk9+VfvAQiEkaEVHPFIlGU3YCCtvd9Wa1nZIDqzH6+FMSoIwDJG8TczUOj1s4T1
- LmojhInu+t4y8b/1J8w5W/CY6PhiiuNriHirwfuI64toyDUPCrC9xpfbUrc8kf+Dqr
- T5ISxe2AqU8NyTiyFUOO2y/J1e73hIMJX0QWzyq7bjkIW+0n/S9BUCqlyYgwzLsuCw
- oY7jR6eV0PAsmuKtzTzHorOItn+f1iUBkgTLwcaELocK7f/noNBychrmTpSS5mphQR
- T6boOHb+D31836ptInnIw6dVHfLqj1ynvSLh9j/QD7DYKQOS8qGYf0i8NJ+I/MCokC
- aM77Ae/Iyfs/w==
+ s=201909; t=1590591556;
+ bh=Mx9wkwSKR46Eja8f0fUCjU0Z3LqMh1qJlLO0gH08bDI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=UISXtkJ1OAts55yuOU8Xuw1GfKwbuPBqobjdpA7Jd1wj179H+uvJvx1TO7XAUzFXk
+ xQsUu+QjM03hfr6pTkU11C9v/1u0y8hzjMQXKMhWkziRfd+hQGiEIpSgSeYP5xfeBi
+ Esf4m6gwyWduWA4H0qIQrJ5pmnbhepXPeStqD3bjFhPinT5Krtoaf8YjfmmPJ77RfI
+ K8M9RTegbvEejYgpd7RxhaFIqCE/KjxFybl1ks1NRSmv3dPr949Cw1cLd/BMjOpYob
+ 3SH6piBirGgng6g9uIgWKJePaqiI7wfZFxLosYZtABzrGFRvCy1FkH+1t8eCOHKkJz
+ r2JLfjpP52R6g==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 1/4] powerpc/64s: Don't init FSCR_DSCR in __init_FSCR()
-Date: Thu, 28 May 2020 00:58:40 +1000
-Message-Id: <20200527145843.2761782-1-mpe@ellerman.id.au>
+Subject: [RFC PATCH 3/4] powerpc/64s: Save FSCR to init_task.thread.fscr after
+ feature init
+Date: Thu, 28 May 2020 00:58:42 +1000
+Message-Id: <20200527145843.2761782-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200527145843.2761782-1-mpe@ellerman.id.au>
+References: <20200527145843.2761782-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,73 +76,77 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__init_FSCR() was added originally in commit 2468dcf641e4 ("powerpc:
-Add support for context switching the TAR register") (Feb 2013), and
-only set FSCR_TAR.
+At boot the FSCR is initialised via one of two paths. On most systems
+it's set to a hard coded value in __init_FSCR().
 
-At that point FSCR (Facility Status and Control Register) was not
-context switched, so the setting was permanent after boot.
+On newer skiboot systems we use the device tree CPU features binding,
+where firmware can tell Linux what bits to set in FSCR (and HFSCR).
 
-Later we added initialisation of FSCR_DSCR to __init_FSCR(), in commit
-54c9b2253d34 ("powerpc: Set DSCR bit in FSCR setup") (Mar 2013), again
-that was permanent after boot.
+In both cases the value that's configured at boot is not propagated
+into the init_task.thread.fscr value prior to the initial fork of init
+(pid 1), which means the value is not used by any processes other than
+swapper (the idle task).
 
-Then commit 2517617e0de6 ("powerpc: Fix context switch DSCR on
-POWER8") (Aug 2013) added a limited context switch of FSCR, just the
-FSCR_DSCR bit was context switched based on thread.dscr_inherit. That
-commit said "This clears the H/FSCR DSCR bit initially", but it
-didn't, it left the initialisation of FSCR_DSCR in __init_FSCR().
-However the initial context switch from init_task to pid 1 would clear
-FSCR_DSCR because thread.dscr_inherit was 0.
+For the __init_FSCR() case this is OK, because the value in
+init_task.thread.fscr is initialised to something sensible. However it
+does mean that the value set in __init_FSCR() is not used other than
+for swapper, which is odd and confusing.
 
-That commit also introduced the requirement that FSCR_DSCR be clear
-for user processes, so that we can take the facility unavailable
-interrupt in order to manage dscr_inherit.
+The bigger problem is for the device tree CPU features case it
+prevents firmware from setting (or clearing) FSCR bits for use by user
+space. This means all existing kernels can not have features
+enabled/disabled by firmware if those features require
+setting/clearing FSCR bits.
 
-Then in commit 152d523e6307 ("powerpc: Create context switch helpers
-save_sprs() and restore_sprs()") (Dec 2015) FSCR was added to
-thread_struct. However it still wasn't fully context switched, we just
-took the existing value and set FSCR_DSCR if the new thread had
-dscr_inherit set. FSCR was still initialised at boot to FSCR_DSCR |
-FSCR_TAR, but that value was not propagated into the thread_struct, so
-the initial context switch set FSCR_DSCR back to 0.
+We can handle both cases by saving the FSCR value into
+init_task.thread.fscr after we have initialised it at boot. This fixes
+the bug for device tree CPU features, and will allow us to simplify
+the initialisation for the __init_FSCR() case in a future patch.
 
-Finally commit b57bd2de8c6c ("powerpc: Improve FSCR init and context
-switching") (Jun 2016) added a full context switch of the FSCR, and
-added an initialisation of init_task.thread.fscr to FSCR_TAR |
-FSCR_EBB, but omitted FSCR_DSCR.
-
-The end result is that swapper runs with FSCR_DSCR set because of the
-initialisation in __init_FSCR(), but no other processes do, they use
-the value from init_task.thread.fscr.
-
-Having FSCR_DSCR set for swapper allows it to access SPR 3 from
-userspace, but swapper never runs userspace, so it has no useful
-effect. It's also confusing to have the value initialised in two
-places to two different values.
-
-So remove FSCR_DSCR from __init_FSCR(), this at least gets us to the
-point where there's a single value of FSCR, even if it's still set in
-two places.
-
+Fixes: 5a61ef74f269 ("powerpc/64s: Support new device tree binding for discovering CPU features")
+Cc: stable@vger.kernel.org # v4.12+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/cpu_setup_power.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index a460298c7ddb..f91ecb10d0ae 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -184,7 +184,7 @@ _GLOBAL(__restore_cpu_power9)
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 1dcf0e214a22..a74bfd09cb38 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -685,6 +685,23 @@ static void __init tm_init(void)
+ static void tm_init(void) { }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
- __init_FSCR:
- 	mfspr	r3,SPRN_FSCR
--	ori	r3,r3,FSCR_TAR|FSCR_DSCR|FSCR_EBB
-+	ori	r3,r3,FSCR_TAR|FSCR_EBB
- 	mtspr	SPRN_FSCR,r3
- 	blr
++#ifdef CONFIG_PPC64
++static void __init save_fscr_to_task(void)
++{
++	/*
++	 * Ensure the init_task (pid 0, aka swapper) uses the value of FSCR we
++	 * have configured via the device tree features or via __init_FSCR().
++	 * That value will then be propagated to pid 1 (init) and all future
++	 * processes.
++	 */
++	if (early_cpu_has_feature(CPU_FTR_ARCH_207S))
++		init_task.thread.fscr = mfspr(SPRN_FSCR);
++}
++#else
++static inline void save_fscr_to_task(void) {};
++#endif
++
++
+ void __init early_init_devtree(void *params)
+ {
+ 	phys_addr_t limit;
+@@ -773,6 +790,8 @@ void __init early_init_devtree(void *params)
+ 		BUG();
+ 	}
  
++	save_fscr_to_task();
++
+ #if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
+ 	/* We'll later wait for secondaries to check in; there are
+ 	 * NCPUS-1 non-boot CPUs  :-)
 -- 
 2.25.1
 
