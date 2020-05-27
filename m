@@ -2,97 +2,82 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57C30C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:57:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA1F3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 19:00:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C05E320835
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:57:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 48DA8206C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 19:00:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="KPhP5B3V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C05E320835
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="AFDSD49c"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48DA8206C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49XJSH3QvjzDqMG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 03:57:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XKsW6l7VzDqVN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 05:00:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.86; helo=userp2130.oracle.com;
- envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=2a00:1450:4864:20::541;
+ helo=mail-ed1-x541.google.com; envelope-from=dan.j.williams@intel.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
+ dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=KPhP5B3V; 
- dkim-atps=neutral
-Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=intel-com.20150623.gappssmtp.com
+ header.i=@intel-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=AFDSD49c; dkim-atps=neutral
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
+ [IPv6:2a00:1450:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XJ3K2FXTzDqTW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 03:38:53 +1000 (AEST)
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
- by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHbsA9183555;
- Wed, 27 May 2020 17:38:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=corp-2020-01-29;
- bh=Ve6Yl+N+FKzwOLaiMokVozZ/Xsbw/tJM0PDnM1M2bLw=;
- b=KPhP5B3VnbXMOtbNZ54G+vZILsYNlQp8UP60R5QsSphEho41GTVCzv2gZBwR3Q2cAM2J
- jWV5TLidJNGGMhuuZbXNYktjTfecnE3t6AuUHS0yHt2nIvrD7dzijDNTOkcp/7W+jdA6
- j1KaY+jka0JetgwQpY9rOESXuosDJIby3aijphchgW9NjJX55V10NWaCLgcN+4JXqfxn
- tc1lix3WUIzyHqY9IMFORc4wWPPeolL6d5/WPzmfQ8oEHGMAHUuVB7u22DuirIs5o3Q9
- C9eUmrrk0BdUi7FctPpsuUbfX/b44oUrfeS3deWK4CFXNU5WCEUZBJo/WrDTwCSB64Mu ew== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
- by userp2130.oracle.com with ESMTP id 316u8r0uaa-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 27 May 2020 17:38:34 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
- by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHX4l4195469;
- Wed, 27 May 2020 17:36:34 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserp3030.oracle.com with ESMTP id 317ddr6jxm-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 May 2020 17:36:34 +0000
-Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 04RHaViR013711;
- Wed, 27 May 2020 17:36:32 GMT
-Received: from localhost.localdomain (/98.229.125.203)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Wed, 27 May 2020 10:36:31 -0700
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Steffen Klassert <steffen.klassert@secunet.com>
-Subject: [PATCH v3 7/8] mm: make deferred init's max threads arch-specific
-Date: Wed, 27 May 2020 13:36:07 -0400
-Message-Id: <20200527173608.2885243-8-daniel.m.jordan@oracle.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
-References: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XKnb6pgWzDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 04:56:59 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id e10so21176072edq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 11:56:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=intel-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=yhcFFsKj7N+XV8AMHJECIG5DAX+f8KJohJMbtgsnPKk=;
+ b=AFDSD49cFylraLBD8OCsBvKLCgfANQjtXQzpSAYlTF6Rv8Dyagb3TLPZK1G4myVkYi
+ cgrEWZNeCtmNDURPKDi156IaV5KGpxIVtFJq1iysfivwJJn+Hqk6RHU+hxBMeGeHJItx
+ qrrdgEi8Tk4gM7dnw9RHhVlFwcE2Vs4DRPoYlcHOd8rW8L5cDBPOhMKneNPwniAKfSoM
+ qYrZxyEpn9GeZhMDVEie/I+AKvGmV+tKYBTpLQA06+dcCFjFFUriCuv45ObESJGVixQn
+ O0UBFJhYwsMUNrOWlOLZBzc8n/Ci/6z3XT8+LU0DgS8TI1HKkWmsED5ysHTFpPNc2+eC
+ /iJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=yhcFFsKj7N+XV8AMHJECIG5DAX+f8KJohJMbtgsnPKk=;
+ b=ij2h/BgLAmS7tkBJLgtxH4wtBRBBek/QuYo0dnrZVc4reigKRQWeO84BtGXlRVOKrS
+ 9RrR9qC6zxE8/CkrHMxOeRSx5FxYu8ERE1nK4RxollP7d4XuNcKd60KBPKttg7SR0Pgn
+ zNDJPTCqXg31KjZnJTZc7Yj7MefSXJgTXAP13BkfM2afL7Mk6uq4D8I1fh6fzH4MS2Jd
+ 7fKCujkTFamZXr4eO+KE71wxB5SlQzr0yMZN7sH07zg2gBgCkTGorrkT/Hwoy7UhlrWp
+ UdEhXY5RFC/bBBg/szRsxqigYZab3KXlFKI0VJ2UyNvJRephmYIp2ZtyKs3Ac1Nkm9EN
+ RerQ==
+X-Gm-Message-State: AOAM531RyS1bVn6W7T4cjHmVMBtAAAdCPPVRduvhvMjZDNOWWPuC8AAm
+ SbY4zilyWh9dl/PdimsqpEl+qgcFCjMn4a1hCaSaWQ==
+X-Google-Smtp-Source: ABdhPJwI+ATlYbLOn+OYCZPcy6MrH5Uw8AiuZ7BVCw67ST1mkLWvplIHlYCQn8Tp39Sljyhjk/Tm+0wSN17kQ6/Jzk4=
+X-Received: by 2002:a05:6402:1c1e:: with SMTP id
+ ck30mr24473373edb.154.1590605815518; 
+ Wed, 27 May 2020 11:56:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
- bulkscore=0 mlxscore=0
- phishscore=0 adultscore=0 suspectscore=2 spamscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2005270137
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
- signatures=668686
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0
- mlxscore=0
- priorityscore=1501 spamscore=0 cotscore=-2147483648 suspectscore=2
- phishscore=0 clxscore=1015 mlxlogscore=999 bulkscore=0 adultscore=0
- lowpriorityscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2005270137
+References: <20200527041244.37821-1-vaibhav@linux.ibm.com>
+ <20200527041244.37821-2-vaibhav@linux.ibm.com>
+In-Reply-To: <20200527041244.37821-2-vaibhav@linux.ibm.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Wed, 27 May 2020 11:56:44 -0700
+Message-ID: <CAPcyv4jXp1FocSe-fFBA_00TnsjPudrBCuHBfv+zwHA_R0353A@mail.gmail.com>
+Subject: Re: [PATCH v8 1/5] powerpc: Document details on H_SCM_HEALTH hcall
+To: Vaibhav Jain <vaibhav@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,108 +89,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm@kvack.org, Steven Sistare <steven.sistare@oracle.com>,
- Pavel Machek <pavel@ucw.cz>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- Zi Yan <ziy@nvidia.com>, Robert Elliott <elliott@hpe.com>,
- Pavel Tatashin <pasha.tatashin@soleen.com>,
- Shile Zhang <shile.zhang@linux.alibaba.com>,
- Josh Triplett <josh@joshtriplett.org>,
- Alex Williamson <alex.williamson@redhat.com>,
- Kirill Tkhai <ktkhai@virtuozzo.com>, Dan Williams <dan.j.williams@intel.com>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org, Tejun Heo <tj@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Santosh Sivaraj <santosh@fossix.org>, Ira Weiny <ira.weiny@intel.com>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Oliver O'Halloran <oohall@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using padata during deferred init has only been tested on x86, so for
-now limit it to this architecture.
+On Tue, May 26, 2020 at 9:13 PM Vaibhav Jain <vaibhav@linux.ibm.com> wrote:
+>
+> Add documentation to 'papr_hcalls.rst' describing the bitmap flags
+> that are returned from H_SCM_HEALTH hcall as per the PAPR-SCM
+> specification.
+>
 
-If another arch wants this, it can find the max thread limit that's best
-for it and override deferred_page_init_max_threads().
+Please do a global s/SCM/PMEM/ or s/SCM/NVDIMM/. It's unfortunate that
+we already have 2 ways to describe persistent memory devices, let's
+not perpetuate a third so that "grep" has a chance to find
+interrelated code across architectures. Other than that this looks
+good to me.
 
-Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
-Tested-by: Josh Triplett <josh@joshtriplett.org>
----
- arch/x86/mm/init_64.c    | 12 ++++++++++++
- include/linux/memblock.h |  3 +++
- mm/page_alloc.c          | 13 ++++++++-----
- 3 files changed, 23 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 8b5f73f5e207c..2d749ec12ea8a 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1260,6 +1260,18 @@ void __init mem_init(void)
- 	mem_init_print_info(NULL);
- }
- 
-+#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-+int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask)
-+{
-+	/*
-+	 * More CPUs always led to greater speedups on tested systems, up to
-+	 * all the nodes' CPUs.  Use all since the system is otherwise idle
-+	 * now.
-+	 */
-+	return max_t(int, cpumask_weight(node_cpumask), 1);
-+}
-+#endif
-+
- int kernel_set_to_readonly;
- 
- void mark_rodata_ro(void)
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index 6bc37a731d27b..2b289df44194f 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -275,6 +275,9 @@ void __next_mem_pfn_range_in_zone(u64 *idx, struct zone *zone,
- #define for_each_free_mem_pfn_range_in_zone_from(i, zone, p_start, p_end) \
- 	for (; i != U64_MAX;					  \
- 	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end))
-+
-+int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask);
-+
- #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
- 
- /**
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1d47016849531..329fd1a809c59 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1835,6 +1835,13 @@ deferred_init_memmap_chunk(unsigned long start_pfn, unsigned long end_pfn,
- 	}
- }
- 
-+/* An arch may override for more concurrency. */
-+__weak int __init
-+deferred_page_init_max_threads(const struct cpumask *node_cpumask)
-+{
-+	return 1;
-+}
-+
- /* Initialise remaining memory on a node */
- static int __init deferred_init_memmap(void *data)
- {
-@@ -1883,11 +1890,7 @@ static int __init deferred_init_memmap(void *data)
- 						 first_init_pfn))
- 		goto zone_empty;
- 
--	/*
--	 * More CPUs always led to greater speedups on tested systems, up to
--	 * all the nodes' CPUs.  Use all since the system is otherwise idle now.
--	 */
--	max_threads = max(cpumask_weight(cpumask), 1u);
-+	max_threads = deferred_page_init_max_threads(cpumask);
- 
- 	while (spfn < epfn) {
- 		unsigned long epfn_align = ALIGN(epfn, PAGES_PER_SECTION);
--- 
-2.26.2
-
+> Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ira Weiny <ira.weiny@intel.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> ---
+> Changelog:
+> v7..v8:
+> * Added a clarification on bit-ordering of Health Bitmap
+>
+> Resend:
+> * None
+>
+> v6..v7:
+> * None
+>
+> v5..v6:
+> * New patch in the series
+> ---
+>  Documentation/powerpc/papr_hcalls.rst | 45 ++++++++++++++++++++++++---
+>  1 file changed, 41 insertions(+), 4 deletions(-)
+>
+> diff --git a/Documentation/powerpc/papr_hcalls.rst b/Documentation/powerpc/papr_hcalls.rst
+> index 3493631a60f8..45063f305813 100644
+> --- a/Documentation/powerpc/papr_hcalls.rst
+> +++ b/Documentation/powerpc/papr_hcalls.rst
+> @@ -220,13 +220,50 @@ from the LPAR memory.
+>  **H_SCM_HEALTH**
+>
+>  | Input: drcIndex
+> -| Out: *health-bitmap, health-bit-valid-bitmap*
+> +| Out: *health-bitmap (r4), health-bit-valid-bitmap (r5)*
+>  | Return Value: *H_Success, H_Parameter, H_Hardware*
+>
+>  Given a DRC Index return the info on predictive failure and overall health of
+> -the NVDIMM. The asserted bits in the health-bitmap indicate a single predictive
+> -failure and health-bit-valid-bitmap indicate which bits in health-bitmap are
+> -valid.
+> +the NVDIMM. The asserted bits in the health-bitmap indicate one or more states
+> +(described in table below) of the NVDIMM and health-bit-valid-bitmap indicate
+> +which bits in health-bitmap are valid. The bits are reported in
+> +reverse bit ordering for example a value of 0xC400000000000000
+> +indicates bits 0, 1, and 5 are valid.
+> +
+> +Health Bitmap Flags:
+> +
+> ++------+-----------------------------------------------------------------------+
+> +|  Bit |               Definition                                              |
+> ++======+=======================================================================+
+> +|  00  | SCM device is unable to persist memory contents.                      |
+> +|      | If the system is powered down, nothing will be saved.                 |
+> ++------+-----------------------------------------------------------------------+
+> +|  01  | SCM device failed to persist memory contents. Either contents were not|
+> +|      | saved successfully on power down or were not restored properly on     |
+> +|      | power up.                                                             |
+> ++------+-----------------------------------------------------------------------+
+> +|  02  | SCM device contents are persisted from previous IPL. The data from    |
+> +|      | the last boot were successfully restored.                             |
+> ++------+-----------------------------------------------------------------------+
+> +|  03  | SCM device contents are not persisted from previous IPL. There was no |
+> +|      | data to restore from the last boot.                                   |
+> ++------+-----------------------------------------------------------------------+
+> +|  04  | SCM device memory life remaining is critically low                    |
+> ++------+-----------------------------------------------------------------------+
+> +|  05  | SCM device will be garded off next IPL due to failure                 |
+> ++------+-----------------------------------------------------------------------+
+> +|  06  | SCM contents cannot persist due to current platform health status. A  |
+> +|      | hardware failure may prevent data from being saved or restored.       |
+> ++------+-----------------------------------------------------------------------+
+> +|  07  | SCM device is unable to persist memory contents in certain conditions |
+> ++------+-----------------------------------------------------------------------+
+> +|  08  | SCM device is encrypted                                               |
+> ++------+-----------------------------------------------------------------------+
+> +|  09  | SCM device has successfully completed a requested erase or secure     |
+> +|      | erase procedure.                                                      |
+> ++------+-----------------------------------------------------------------------+
+> +|10:63 | Reserved / Unused                                                     |
+> ++------+-----------------------------------------------------------------------+
+>
+>  **H_SCM_PERFORMANCE_STATS**
+>
+> --
+> 2.26.2
+>
