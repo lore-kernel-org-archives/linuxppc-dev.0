@@ -2,48 +2,56 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DF31C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 05:12:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61EF9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 05:26:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E679207E8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 05:12:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E679207E8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 1B33820776
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 05:26:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B33820776
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49WzTg1Xp3zDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:12:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Wzpc5yCCzDqNw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:26:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.43;
+ helo=out30-43.freemail.mail.aliyun.com;
+ envelope-from=tianjia.zhang@linux.alibaba.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.alibaba.com
+Received: from out30-43.freemail.mail.aliyun.com
+ (out30-43.freemail.mail.aliyun.com [115.124.30.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49WzRd3xV1zDqNZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 15:10:20 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id 627CA68B02; Wed, 27 May 2020 07:10:12 +0200 (CEST)
-Date: Wed, 27 May 2020 07:10:11 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Nathan Chancellor <natechancellor@gmail.com>
-Subject: Re: [PATCH] media: omap3isp: Shuffle cacheflush.h and include mm.h
-Message-ID: <20200527051011.GB16317@lst.de>
-References: <20200515143646.3857579-7-hch@lst.de>
- <20200527043426.3242439-1-natechancellor@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Wzlq3CM8zDqNg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 15:24:22 +1000 (AEST)
+X-Alimail-AntiSpam: AC=PASS; BC=-1|-1; BR=01201311R191e4; CH=green; DM=||false|;
+ DS=||; FP=0|-1|-1|-1|0|-1|-1|-1; HT=e01e01358;
+ MF=tianjia.zhang@linux.alibaba.com; NM=1; PH=DS; RN=37; SR=0;
+ TI=SMTPD_---0TzmMcE-_1590557034; 
+Received: from 30.27.118.64(mailfrom:tianjia.zhang@linux.alibaba.com
+ fp:SMTPD_---0TzmMcE-_1590557034) by smtp.aliyun-inc.com(127.0.0.1);
+ Wed, 27 May 2020 13:23:56 +0800
+Subject: Re: [PATCH v4 3/7] KVM: PPC: Remove redundant kvm_run from vcpu_arch
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20200427043514.16144-1-tianjia.zhang@linux.alibaba.com>
+ <20200427043514.16144-4-tianjia.zhang@linux.alibaba.com>
+ <20200527042055.GG293451@thinks.paulus.ozlabs.org>
+From: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+Message-ID: <56064e35-583f-0dc8-9156-aabebdb8aff4@linux.alibaba.com>
+Date: Wed, 27 May 2020 13:23:54 +0800
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200527043426.3242439-1-natechancellor@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20200527042055.GG293451@thinks.paulus.ozlabs.org>
+Content-Type: text/plain; charset=gbk; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,26 +63,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, zippel@linux-m68k.org,
- linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, hch@lst.de, linux-arch@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- linux-xtensa@linux-xtensa.org, arnd@arndb.de, linux-alpha@vger.kernel.org,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org,
- monstr@monstr.eu, linux-kernel@vger.kernel.org, jeyu@kernel.org,
- linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+Cc: wanpengli@tencent.com, kvm@vger.kernel.org, david@redhat.com,
+ heiko.carstens@de.ibm.com, peterx@redhat.com, linux-mips@vger.kernel.org,
+ hpa@zytor.com, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
+ frankja@linux.ibm.com, chenhuacai@gmail.com, maz@kernel.org, joro@8bytes.org,
+ x86@kernel.org, borntraeger@de.ibm.com, mingo@redhat.com,
+ julien.thierry.kdev@gmail.com, thuth@redhat.com, gor@linux.ibm.com,
+ suzuki.poulose@arm.com, kvm-ppc@vger.kernel.org, bp@alien8.de,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, jmattson@google.com,
+ tsbogend@alpha.franken.de, cohuck@redhat.com, christoffer.dall@arm.com,
+ sean.j.christopherson@intel.com, linux-kernel@vger.kernel.org,
+ james.morse@arm.com, pbonzini@redhat.com, vkuznets@redhat.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 26, 2020 at 09:34:27PM -0700, Nathan Chancellor wrote:
-> After mm.h was removed from the asm-generic version of cacheflush.h,
-> s390 allyesconfig shows several warnings of the following nature:
 
-Hmm, I'm pretty sure I sent the same fix a few days ago in response to
-a build bot report.  But if that didn't get picked up I'm fine with
-your version of it as well of course:
 
-Acked-by: Christoph Hellwig <hch@lst.de>
+On 2020/5/27 12:20, Paul Mackerras wrote:
+> On Mon, Apr 27, 2020 at 12:35:10PM +0800, Tianjia Zhang wrote:
+>> The 'kvm_run' field already exists in the 'vcpu' structure, which
+>> is the same structure as the 'kvm_run' in the 'vcpu_arch' and
+>> should be deleted.
+>>
+>> Signed-off-by: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
+> 
+> Thanks, patches 3 and 4 of this series applied to my kvm-ppc-next branch.
+> 
+> Paul.
+> 
+
+Thanks for your suggestion, for 5/7, I will submit a new version patch.
+
+Thanks,
+Tianjia
