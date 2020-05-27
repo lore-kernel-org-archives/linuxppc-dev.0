@@ -2,97 +2,57 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A72EFC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC754C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:27:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53461207E8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:25:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53461207E8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9C393207E8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 04:27:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Y+vOgomL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C393207E8
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49WySH0fdFzDqQ0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 14:25:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49WyV66PRvzDqLT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 14:27:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49WyC56sk5zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 14:14:25 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 04R41oHZ102740; Wed, 27 May 2020 00:13:17 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 316ytub4g3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 27 May 2020 00:13:17 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04R4251u103745;
- Wed, 27 May 2020 00:13:17 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 316ytub4ff-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 27 May 2020 00:13:17 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 04R4BBHT001131;
- Wed, 27 May 2020 04:13:15 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03ams.nl.ibm.com with ESMTP id 316uf873gv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 27 May 2020 04:13:15 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 04R4Bw7052494678
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 May 2020 04:11:59 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7E875A4053;
- Wed, 27 May 2020 04:13:12 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 61EE6A4040;
- Wed, 27 May 2020 04:13:06 +0000 (GMT)
-Received: from vajain21-in-ibm-com (unknown [9.85.121.50])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed, 27 May 2020 04:13:06 +0000 (GMT)
-Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
- Wed, 27 May 2020 09:43:04 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v8 2/5] seq_buf: Export seq_buf_printf
-Date: Wed, 27 May 2020 09:42:41 +0530
-Message-Id: <20200527041244.37821-3-vaibhav@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200527041244.37821-1-vaibhav@linux.ibm.com>
-References: <20200527041244.37821-1-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49WyLj6rZhzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 14:21:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=Y+vOgomL; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 49WyLj3GH6z9sSn; Wed, 27 May 2020 14:21:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1590553261; bh=LuXoMj6P54e5QxwVC+3xCxjAdWePyW9Cgdi4Q0bcS1k=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Y+vOgomLr6ESV/IJP7UO0AaXuz/DuXxNtue37EXI8dBVu7nQizh6dPqM13DMY4Xot
+ 2Q0a3sMEwLN2dZVj+YYn6wT65hE5ztVdWE5U3QsIzlO6NKWthROchj188cmcehgnLC
+ 78E8ff33tvHuAaN8ovmpMXfU2JK0NyCN77HTz2NsQh8d3+elhTBehkDmXG+ZmPrasS
+ RYyUDLxZH/7owlxyQJbCNUc+gUkjrgVGesWtgB+OmvpGx7qQIsVfPxyFdUmJBastdX
+ PEupmA6lBUNmssjgyTfDWtyEob1mJX6LKewQVZoVp7dENIfz1hNnsshLIdnCg+kA8w
+ phOvtndHgXIRw==
+Date: Wed, 27 May 2020 14:19:22 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Qian Cai <cai@lca.pw>
+Subject: Re: [PATCH] powerpc/kvm/book3s64/vio: fix some RCU-list locks
+Message-ID: <20200527041922.GE293451@thinks.paulus.ozlabs.org>
+References: <20200510051834.2011-1-cai@lca.pw>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-05-26_04:2020-05-26,
- 2020-05-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 phishscore=0
- malwarescore=0 suspectscore=0 priorityscore=1501 lowpriorityscore=0
- clxscore=1011 impostorscore=0 mlxlogscore=999 cotscore=-2147483648
- spamscore=0 adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2005270024
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200510051834.2011-1-cai@lca.pw>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,63 +64,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>,
- Cezary Rojewski <cezary.rojewski@intel.com>,
- Piotr Maziarz <piotrx.maziarz@linux.intel.com>,
- Steven Rostedt <rostedt@goodmis.org>, Christoph Hellwig <hch@infradead.org>,
- Oliver O'Halloran <oohall@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Vaibhav Jain <vaibhav@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
+Cc: paulmck@kernel.org, aik@ozlabs.ru, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'seq_buf' provides a very useful abstraction for writing to a string
-buffer without needing to worry about it over-flowing. However even
-though the API has been stable for couple of years now its still not
-exported to kernel loadable modules limiting its usage.
+On Sun, May 10, 2020 at 01:18:34AM -0400, Qian Cai wrote:
+> It is unsafe to traverse kvm->arch.spapr_tce_tables and
+> stt->iommu_tables without the RCU read lock held. Also, add
+> cond_resched_rcu() in places with the RCU read lock held that could take
+> a while to finish.
+> 
+>  arch/powerpc/kvm/book3s_64_vio.c:76 RCU-list traversed in non-reader section!!
+> 
+>  other info that might help us debug this:
+> 
+>  rcu_scheduler_active = 2, debug_locks = 1
+>  no locks held by qemu-kvm/4265.
+> 
+>  stack backtrace:
+>  CPU: 96 PID: 4265 Comm: qemu-kvm Not tainted 5.7.0-rc4-next-20200508+ #2
+>  Call Trace:
+>  [c000201a8690f720] [c000000000715948] dump_stack+0xfc/0x174 (unreliable)
+>  [c000201a8690f770] [c0000000001d9470] lockdep_rcu_suspicious+0x140/0x164
+>  [c000201a8690f7f0] [c008000010b9fb48] kvm_spapr_tce_release_iommu_group+0x1f0/0x220 [kvm]
+>  [c000201a8690f870] [c008000010b8462c] kvm_spapr_tce_release_vfio_group+0x54/0xb0 [kvm]
+>  [c000201a8690f8a0] [c008000010b84710] kvm_vfio_destroy+0x88/0x140 [kvm]
+>  [c000201a8690f8f0] [c008000010b7d488] kvm_put_kvm+0x370/0x600 [kvm]
+>  [c000201a8690f990] [c008000010b7e3c0] kvm_vm_release+0x38/0x60 [kvm]
+>  [c000201a8690f9c0] [c0000000005223f4] __fput+0x124/0x330
+>  [c000201a8690fa20] [c000000000151cd8] task_work_run+0xb8/0x130
+>  [c000201a8690fa70] [c0000000001197e8] do_exit+0x4e8/0xfa0
+>  [c000201a8690fb70] [c00000000011a374] do_group_exit+0x64/0xd0
+>  [c000201a8690fbb0] [c000000000132c90] get_signal+0x1f0/0x1200
+>  [c000201a8690fcc0] [c000000000020690] do_notify_resume+0x130/0x3c0
+>  [c000201a8690fda0] [c000000000038d64] syscall_exit_prepare+0x1a4/0x280
+>  [c000201a8690fe20] [c00000000000c8f8] system_call_common+0xf8/0x278
+> 
+>  ====
+>  arch/powerpc/kvm/book3s_64_vio.c:368 RCU-list traversed in non-reader section!!
+> 
+>  other info that might help us debug this:
+> 
+>  rcu_scheduler_active = 2, debug_locks = 1
+>  2 locks held by qemu-kvm/4264:
+>   #0: c000201ae2d000d8 (&vcpu->mutex){+.+.}-{3:3}, at: kvm_vcpu_ioctl+0xdc/0x950 [kvm]
+>   #1: c000200c9ed0c468 (&kvm->srcu){....}-{0:0}, at: kvmppc_h_put_tce+0x88/0x340 [kvm]
+> 
+>  ====
+>  arch/powerpc/kvm/book3s_64_vio.c:108 RCU-list traversed in non-reader section!!
+> 
+>  other info that might help us debug this:
+> 
+>  rcu_scheduler_active = 2, debug_locks = 1
+>  1 lock held by qemu-kvm/4257:
+>   #0: c000200b1b363a40 (&kv->lock){+.+.}-{3:3}, at: kvm_vfio_set_attr+0x598/0x6c0 [kvm]
+> 
+>  ====
+>  arch/powerpc/kvm/book3s_64_vio.c:146 RCU-list traversed in non-reader section!!
+> 
+>  other info that might help us debug this:
+> 
+>  rcu_scheduler_active = 2, debug_locks = 1
+>  1 lock held by qemu-kvm/4257:
+>   #0: c000200b1b363a40 (&kv->lock){+.+.}-{3:3}, at: kvm_vfio_set_attr+0x598/0x6c0 [kvm]
+> 
+> Signed-off-by: Qian Cai <cai@lca.pw>
 
-Hence this patch proposes update to 'seq_buf.c' to mark
-seq_buf_printf() which is part of the seq_buf API to be exported to
-kernel loadable GPL modules. This symbol will be used in later parts
-of this patch-set to simplify content creation for a sysfs attribute.
+Thanks, applied to my kvm-ppc-next branch, with the cond_resched_rcu()
+in kvmppc_tce_validate removed.
 
-Cc: Piotr Maziarz <piotrx.maziarz@linux.intel.com>
-Cc: Cezary Rojewski <cezary.rojewski@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Borislav Petkov <bp@alien8.de>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
----
-Changelog:
-
-v7..v8:
-* Updated the patch title [ Christoph Hellwig ]
-* Updated patch description to replace confusing term 'external kernel
-  modules' to 'kernel lodable modules'.
-
-Resend:
-* Added ack from Steven Rostedt
-
-v6..v7:
-* New patch in the series
----
- lib/seq_buf.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/lib/seq_buf.c b/lib/seq_buf.c
-index 4e865d42ab03..707453f5d58e 100644
---- a/lib/seq_buf.c
-+++ b/lib/seq_buf.c
-@@ -91,6 +91,7 @@ int seq_buf_printf(struct seq_buf *s, const char *fmt, ...)
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(seq_buf_printf);
- 
- #ifdef CONFIG_BINARY_PRINTF
- /**
--- 
-2.26.2
-
+Paul.
