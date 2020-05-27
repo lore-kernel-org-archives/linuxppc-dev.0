@@ -2,117 +2,97 @@ Return-Path: <SRS0=LEFZ=7J=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0B6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7000C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:40:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C411207D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 15:24:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5E7C320663
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 May 2020 17:40:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="g2rrPUM7";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="g2rrPUM7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C411207D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="GMaJk/YN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E7C320663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49XF495cbNzDqPF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 01:24:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XJ4s6XYRzDqVk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 03:40:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=pbonzini@redhat.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=oracle.com (client-ip=156.151.31.85; helo=userp2120.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=g2rrPUM7; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=g2rrPUM7; 
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=GMaJk/YN; 
  dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [205.139.110.61])
+Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XDYS6H5czDqTx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 01:01:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1590591649;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=S79dLGaDC34U88k/muBN2/cWWvIJSeZD2zX/jWO3DQQ=;
- b=g2rrPUM75riI+DtvHnoF2WAwoBSONDpP+AtLrZcuUs1JNfZcqfBFhxH72/4KJowcc3Fq9d
- HiWYmmiLxY94abgy4EmKJnTOqWMO3kX8KAQSHdZNsilBFmB848B/7rOZU2d+FIh9CD2UlQ
- QU0UQbHwvwsJXnc0RWrjisGI+J75pk0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1590591649;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=S79dLGaDC34U88k/muBN2/cWWvIJSeZD2zX/jWO3DQQ=;
- b=g2rrPUM75riI+DtvHnoF2WAwoBSONDpP+AtLrZcuUs1JNfZcqfBFhxH72/4KJowcc3Fq9d
- HiWYmmiLxY94abgy4EmKJnTOqWMO3kX8KAQSHdZNsilBFmB848B/7rOZU2d+FIh9CD2UlQ
- QU0UQbHwvwsJXnc0RWrjisGI+J75pk0=
-Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
- [209.85.218.69]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-256-ciqSvmrMOFKIbbsN8-GHHw-1; Wed, 27 May 2020 11:00:48 -0400
-X-MC-Unique: ciqSvmrMOFKIbbsN8-GHHw-1
-Received: by mail-ej1-f69.google.com with SMTP id s13so8986710ejc.18
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2020 08:00:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=S79dLGaDC34U88k/muBN2/cWWvIJSeZD2zX/jWO3DQQ=;
- b=KiLwvCjy7UO9Yfbx5U7SlPyzN2hvlXWaPnwBGdtboCQdkJHXPEeF4njxvPI5tnpnqD
- Iffdllr5eD9eLAOdEws5OP+AIqBrTcdrHyigpP8F8GLY5ip0JWfpoLYgjx2hi0cWj25W
- EIcPQsjzMmXa6lihJID1rROotpVzryKIYuwJJQJMZyTU51Bdp+DqzftOMX0LLHkEUB7/
- QY56+bgeKQbf8geaOsfPeW0Pzw3LNAhlz0H2j0nJVvLzB4PeMk839z57+rSUW1ocvV8B
- c93t12cpNCdtGLbnILrk6dAr0NF/kHMFQoS4UY9d0ki3RE8EWmAIivb9IjKUXpWBRHQ2
- ipfw==
-X-Gm-Message-State: AOAM532vuJ42eRnczUlhe+qUvsQ/y19vAty5cFcZEIsHZoCCxymAfnJw
- Yswq03RvQhd100Th2LqOY9qqRphYEO3JXpQ0WPq0ONKiGIcAyuZcxbioBpzPn5GIim908yxLlHy
- kDYXjL+nmPqyQyqR746YXncUSSQ==
-X-Received: by 2002:a17:906:1442:: with SMTP id
- q2mr3491285ejc.33.1590591646004; 
- Wed, 27 May 2020 08:00:46 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzxzNY5UhO1mssuYEm2F2UYGESNfuhTc2d/FaV+VoTyW39e+803AKyGa34dCi6Lxc3HyJGruA==
-X-Received: by 2002:a17:906:1442:: with SMTP id
- q2mr3491234ejc.33.1590591645542; 
- Wed, 27 May 2020 08:00:45 -0700 (PDT)
-Received: from ?IPv6:2001:b07:6468:f312:3c1c:ffba:c624:29b8?
- ([2001:b07:6468:f312:3c1c:ffba:c624:29b8])
- by smtp.gmail.com with ESMTPSA id l1sm3053400ejd.114.2020.05.27.08.00.44
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 27 May 2020 08:00:45 -0700 (PDT)
-Subject: Re: [PATCH v3 0/7] Statsfs: a new ram-based file system for Linux
- kernel statistics
-To: Andrew Lunn <andrew@lunn.ch>,
- Emanuele Giuseppe Esposito <eesposit@redhat.com>
-References: <20200526110318.69006-1-eesposit@redhat.com>
- <20200526153128.448bfb43@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
- <6a754b40-b148-867d-071d-8f31c5c0d172@redhat.com>
- <20200527133309.GC793752@lunn.ch>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <b0d11337-3ea4-d874-6013-ff8c3e9d6f26@redhat.com>
-Date: Wed, 27 May 2020 17:00:41 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XJ1Z2Fz6zDqTN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 03:37:21 +1000 (AEST)
+Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
+ by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHRk7S158957;
+ Wed, 27 May 2020 17:36:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2020-01-29;
+ bh=efP/mXxmY+Jo1bVM+X6fJTP9YFt5MPHFZ0S23zpocQ4=;
+ b=GMaJk/YNJ4X9LiJmPh3oard50FHo21spuc/kg1iGAYwJbub5g3aVkizfWzf5MWkgAXSz
+ cAInd1o+XcfcRT1zq7MYQ/T2yadm7PdQ5FgyDlNmYilNPP6N374z/jzHL/r5OwiyDAGl
+ +HbXKaIqWQBZcDb73/aT3iXS4Dh9oOR6H85HxlbIogB+mQvaaTOZWpq/4hMH3ci+dTDQ
+ /WTcXndjy0DWdNku1rOf9G4K2HWec6h3ehxzMUTk9MBYtP+byjAFRvWrNheA0SToMGbq
+ 5pYQuGRhbmCpsAZs8Q96+c/iXK9z0BKRpJ2sZq8RfXxKM5NUw1TG8OOxhGwvbRcOYQ8T 1Q== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+ by userp2120.oracle.com with ESMTP id 318xbk0v58-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 27 May 2020 17:36:32 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+ by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 04RHXbJm142828;
+ Wed, 27 May 2020 17:36:31 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by userp3020.oracle.com with ESMTP id 317dkutu3u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 27 May 2020 17:36:31 +0000
+Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
+ by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 04RHaK0V003965;
+ Wed, 27 May 2020 17:36:20 GMT
+Received: from localhost.localdomain (/98.229.125.203)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 27 May 2020 10:36:20 -0700
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Steffen Klassert <steffen.klassert@secunet.com>
+Subject: [PATCH v3 2/8] padata: initialize earlier
+Date: Wed, 27 May 2020 13:36:02 -0400
+Message-Id: <20200527173608.2885243-3-daniel.m.jordan@oracle.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
+References: <20200527173608.2885243-1-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <20200527133309.GC793752@lunn.ch>
-Content-Language: en-US
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
+ signatures=668686
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ malwarescore=0 bulkscore=0
+ spamscore=0 suspectscore=2 mlxscore=0 adultscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2005270137
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9633
+ signatures=668686
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999
+ spamscore=0 mlxscore=0
+ lowpriorityscore=0 priorityscore=1501 phishscore=0 cotscore=-2147483648
+ suspectscore=2 bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2004280000 definitions=main-2005270136
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,39 +104,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- netdev@vger.kernel.org,
- Emanuele Giuseppe Esposito <e.emanuelegiuseppe@gmail.com>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Jonathan Adams <jwadams@google.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, David Rientjes <rientjes@google.com>,
- linux-fsdevel@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, Jim Mattson <jmattson@google.com>
+Cc: David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm@kvack.org, Steven Sistare <steven.sistare@oracle.com>,
+ Pavel Machek <pavel@ucw.cz>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ linux-s390@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Zi Yan <ziy@nvidia.com>, Robert Elliott <elliott@hpe.com>,
+ Pavel Tatashin <pasha.tatashin@soleen.com>,
+ Shile Zhang <shile.zhang@linux.alibaba.com>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Kirill Tkhai <ktkhai@virtuozzo.com>, Dan Williams <dan.j.williams@intel.com>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27/05/20 15:33, Andrew Lunn wrote:
->> I don't really know a lot about the networking subsystem, and as it was
->> pointed out in another email on patch 7 by Andrew, networking needs to
->> atomically gather and display statistics in order to make them consistent,
->> and currently this is not supported by stats_fs but could be added in
->> future.
-> 
-> Do you have any idea how you will support atomic access? It does not
-> seem easy to implement in a filesystem based model.
+padata will soon initialize the system's struct pages in parallel, so it
+needs to be ready by page_alloc_init_late().
 
-Hi Andrew,
+The error return from padata_driver_init() triggers an initcall warning,
+so add a warning to padata_init() to avoid silent failure.
 
-there are plans to support binary access.  Emanuele and I don't really
-have a plan for how to implement it, but there are developers from
-Google that have ideas (because Google has a similar "metricfs" thing
-in-house).
+Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+Tested-by: Josh Triplett <josh@joshtriplett.org>
+---
+ include/linux/padata.h |  6 ++++++
+ init/main.c            |  2 ++
+ kernel/padata.c        | 17 ++++++++---------
+ 3 files changed, 16 insertions(+), 9 deletions(-)
 
-I think atomic access would use some kind of "source_ops" struct
-containing create_snapshot and release_snapshot function pointers.
-
-Paolo
+diff --git a/include/linux/padata.h b/include/linux/padata.h
+index a0d8b41850b25..476ecfa41f363 100644
+--- a/include/linux/padata.h
++++ b/include/linux/padata.h
+@@ -164,6 +164,12 @@ struct padata_instance {
+ #define	PADATA_INVALID	4
+ };
+ 
++#ifdef CONFIG_PADATA
++extern void __init padata_init(void);
++#else
++static inline void __init padata_init(void) {}
++#endif
++
+ extern struct padata_instance *padata_alloc_possible(const char *name);
+ extern void padata_free(struct padata_instance *pinst);
+ extern struct padata_shell *padata_alloc_shell(struct padata_instance *pinst);
+diff --git a/init/main.c b/init/main.c
+index 03371976d3872..df32f67214d23 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -63,6 +63,7 @@
+ #include <linux/debugobjects.h>
+ #include <linux/lockdep.h>
+ #include <linux/kmemleak.h>
++#include <linux/padata.h>
+ #include <linux/pid_namespace.h>
+ #include <linux/device/driver.h>
+ #include <linux/kthread.h>
+@@ -1482,6 +1483,7 @@ static noinline void __init kernel_init_freeable(void)
+ 	smp_init();
+ 	sched_init_smp();
+ 
++	padata_init();
+ 	page_alloc_init_late();
+ 	/* Initialize page ext after all struct pages are initialized. */
+ 	page_ext_init();
+diff --git a/kernel/padata.c b/kernel/padata.c
+index 835919c745266..6f709bc0fc413 100644
+--- a/kernel/padata.c
++++ b/kernel/padata.c
+@@ -31,7 +31,6 @@
+ #include <linux/slab.h>
+ #include <linux/sysfs.h>
+ #include <linux/rcupdate.h>
+-#include <linux/module.h>
+ 
+ #define MAX_OBJ_NUM 1000
+ 
+@@ -1050,26 +1049,26 @@ void padata_free_shell(struct padata_shell *ps)
+ }
+ EXPORT_SYMBOL(padata_free_shell);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+-static __init int padata_driver_init(void)
++void __init padata_init(void)
+ {
++#ifdef CONFIG_HOTPLUG_CPU
+ 	int ret;
+ 
+ 	ret = cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN, "padata:online",
+ 				      padata_cpu_online, NULL);
+ 	if (ret < 0)
+-		return ret;
++		goto err;
+ 	hp_online = ret;
+ 
+ 	ret = cpuhp_setup_state_multi(CPUHP_PADATA_DEAD, "padata:dead",
+ 				      NULL, padata_cpu_dead);
+ 	if (ret < 0) {
+ 		cpuhp_remove_multi_state(hp_online);
+-		return ret;
++		goto err;
+ 	}
+-	return 0;
+-}
+-module_init(padata_driver_init);
+ 
++	return;
++err:
++	pr_warn("padata: initialization failed\n");
+ #endif
++}
+-- 
+2.26.2
 
