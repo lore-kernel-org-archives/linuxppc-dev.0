@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17199C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B059C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:17:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 896F320C56
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:15:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D96D0207F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:17:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="KmJSAOTj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 896F320C56
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FMa964tY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D96D0207F5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Xmqd6ssNzDqXY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 22:15:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Xmt11JcXzDqYW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 22:17:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=KmJSAOTj; dkim-atps=neutral
+ header.s=default header.b=FMa964tY; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XmRj08VZzDqXV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 21:58:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XmRv6SH8zDq9R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 21:58:19 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3EF5921841;
- Thu, 28 May 2020 11:58:06 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6B96C216C4;
+ Thu, 28 May 2020 11:58:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1590667087;
- bh=Vt+tQ8r4JroSvjV9yqFTGu4XM4PnfjNQGVy7NaaM+X0=;
+ s=default; t=1590667097;
+ bh=vQz5uSiKzqmVGiwcla8GBB0B8mU94hU5bML76SFcTO8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=KmJSAOTjm54FsGdqdogboqEnUDuXz9SJqYkjPO1YXHKRsKzADKlcipCY8znW5gf7S
- tp47nqs0r/dTGzwIcy83YvMCAVxAPl4RiwdedT0tiHa97rLnKL7DkQtAplKgzpbWUs
- WPOKj7Q+ASxxBnENAvX8my+IV4pGZfm/5P4XpxAw=
+ b=FMa964tYzve+KXsEczPJN0Bx1v/IFPx0pxAppfsVdpqckXJmN3EBV1pCn7m3Kc9SC
+ 9b17DcThh5g5+sYwdiYbCGb+R/Jbh28ZfAkcqxjRnLw3nhR+FqQ6QIYITfijln7sXo
+ gYM0VCoRlMBBkP5BJFAukRKeAM9LGSehLs3jpFb0=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 5/9] net/ethernet/freescale: rework
+Subject: [PATCH AUTOSEL 4.4 4/7] net/ethernet/freescale: rework
  quiesce/activate for ucc_geth
-Date: Thu, 28 May 2020 07:57:56 -0400
-Message-Id: <20200528115800.1406703-5-sashal@kernel.org>
+Date: Thu, 28 May 2020 07:58:08 -0400
+Message-Id: <20200528115811.1406810-4-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200528115800.1406703-1-sashal@kernel.org>
-References: <20200528115800.1406703-1-sashal@kernel.org>
+In-Reply-To: <20200528115811.1406810-1-sashal@kernel.org>
+References: <20200528115811.1406810-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -113,12 +113,12 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 714593023bbc..af922bac19ae 100644
+index 55ac00055977..96a1f62cc148 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.c
 +++ b/drivers/net/ethernet/freescale/ucc_geth.c
 @@ -45,6 +45,7 @@
- #include <soc/fsl/qe/ucc.h>
- #include <soc/fsl/qe/ucc_fast.h>
+ #include <asm/ucc.h>
+ #include <asm/ucc_fast.h>
  #include <asm/machdep.h>
 +#include <net/sch_generic.h>
  
