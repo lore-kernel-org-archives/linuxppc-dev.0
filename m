@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AEDEC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:04:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1C3FC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:08:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D256215A4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:04:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6793C215A4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 12:08:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="J24SwH7V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D256215A4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GKe537KL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6793C215A4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Xmb02HWVzDqXT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 22:04:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49XmgJ51MvzDqKX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 May 2020 22:08:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=J24SwH7V; dkim-atps=neutral
+ header.s=default header.b=GKe537KL; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49XmQf0cG9zDqXl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 21:57:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49XmR870JFzDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2020 21:57:40 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C06BF21582;
- Thu, 28 May 2020 11:57:10 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E038C2177B;
+ Thu, 28 May 2020 11:57:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1590667031;
- bh=eBo08nm/PDjGdcH7DqDvvbaUmTpnzTyrigqj4+vtVHQ=;
+ s=default; t=1590667058;
+ bh=kFj+SjSIbGOFJxaG38QX2KW45bxkUIIoObfSmZsIAV8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=J24SwH7VsRMqEWXmk/wb4bYDQBPOqXV8fjrEOIfSm50ygf9IMQfnVOjZmd9tOGV8H
- FOgLXw0h7XeeC/XW+U57KkZKBP/wkU9MQM7cz2ZvnEsnfzOLS6iTbor/70CYM1ie9E
- b0WDMEN09XY1C7pBOuN1HxnoFjvDAQuKmP/avt7w=
+ b=GKe537KLDvouZpjAmVCpwhqkble0fse3SX4YlOTi9pB2AJL8CPlrL5CxrgoC5H3bN
+ XCthiBqRkrOmRD8+v/YougZI/S3N0TPqTBY+BwoSAqHLAZ4bnK8HPgE9lsGpuyzfWT
+ fvj8XA/He+aZAf8NyN29KAAkNk1645IfUeqZWm08=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 15/26] net/ethernet/freescale: rework
+Subject: [PATCH AUTOSEL 4.19 12/17] net/ethernet/freescale: rework
  quiesce/activate for ucc_geth
-Date: Thu, 28 May 2020 07:56:43 -0400
-Message-Id: <20200528115654.1406165-15-sashal@kernel.org>
+Date: Thu, 28 May 2020 07:57:19 -0400
+Message-Id: <20200528115724.1406376-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200528115654.1406165-1-sashal@kernel.org>
-References: <20200528115654.1406165-1-sashal@kernel.org>
+In-Reply-To: <20200528115724.1406376-1-sashal@kernel.org>
+References: <20200528115724.1406376-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -113,10 +113,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index f839fa94ebdd..d3b8ce734c1b 100644
+index a5bf02ae4bc5..5de6f7c73c1f 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.c
 +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -42,6 +42,7 @@
+@@ -45,6 +45,7 @@
  #include <soc/fsl/qe/ucc.h>
  #include <soc/fsl/qe/ucc_fast.h>
  #include <asm/machdep.h>
@@ -124,7 +124,7 @@ index f839fa94ebdd..d3b8ce734c1b 100644
  
  #include "ucc_geth.h"
  
-@@ -1548,11 +1549,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
+@@ -1551,11 +1552,8 @@ static int ugeth_disable(struct ucc_geth_private *ugeth, enum comm_dir mode)
  
  static void ugeth_quiesce(struct ucc_geth_private *ugeth)
  {
@@ -138,7 +138,7 @@ index f839fa94ebdd..d3b8ce734c1b 100644
  
  	/* Disable the interrupt to avoid NAPI rescheduling. */
  	disable_irq(ugeth->ug_info->uf_info.irq);
-@@ -1565,7 +1563,10 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
+@@ -1568,7 +1566,10 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
  {
  	napi_enable(&ugeth->napi);
  	enable_irq(ugeth->ug_info->uf_info.irq);
