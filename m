@@ -3,58 +3,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E8B3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CB8FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:06:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBD8E208A7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:04:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBD8E208A7
+	by mail.kernel.org (Postfix) with ESMTPS id 561CB206A4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:06:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 561CB206A4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YHC96Y78zDqdg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 18:04:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YHFn1txtzDqGq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 18:06:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.216.67; helo=mail-pj1-f67.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.216.65; helo=mail-pj1-f65.google.com;
  envelope-from=mcgrof@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com
- [209.85.216.67])
+Received: from mail-pj1-f65.google.com (mail-pj1-f65.google.com
+ [209.85.216.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YGj1364pzDqT9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:25 +1000 (AEST)
-Received: by mail-pj1-f67.google.com with SMTP id t8so827091pju.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YGj351hfzDqYL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:27 +1000 (AEST)
+Received: by mail-pj1-f65.google.com with SMTP id ci21so847509pjb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=OeMaeWf8ySHfvuEzWncwhX9a4D5s1xQoEDO3/r/aYzY=;
- b=txYYxCBwESHs0hIpJsyBG/0fPKQRpxQxLmXInu1R6lrfcr/yFySwE/ScVJN+ABQdhw
- 1GsOltM68eKGCujQDFSn6T9VfJv8z0LEAY361Z/+sW8VFFJU/maTcVHmLZ2eMsO8gR5b
- J8c7a1rRk2Zaj+SFkiNy9S9QmsJHhXIaxrJ+Mw463ln4VET1QObL7vnupps003aeJY3G
- z/wCxWhnNge+4ySlTEmm3RR7s1Hfagiry2tXqaEJdy2FPAyHOENa8jpW2NfB2Jrg+LSw
- 9/tUYwrpp+qo0okTjTuvqc7/QuoVZi4sKUTfNaJQPMjVU/GUpwx8OoP4yNclSw+pVq0S
- qi2Q==
-X-Gm-Message-State: AOAM532+bKI3kCaYHpmsfeCKadwuDjLb2CbTBAlAgvQZza34eKwuN7DG
- bjirhKZpPWLtbbirZYrCWKY=
-X-Google-Smtp-Source: ABdhPJyZTqVeXpnC780yNsYcAysPbnmEI2o7s7rzYFo+LKi1oKtcOEgW9W/Zd68h1pyiVT90AxPOjw==
-X-Received: by 2002:a17:90a:2807:: with SMTP id e7mr7981405pjd.6.1590738083514; 
- Fri, 29 May 2020 00:41:23 -0700 (PDT)
+ bh=DDbHuQyYpIA+NrKXcOMmKPCGJcWzsoGwYaKrbY/Qlik=;
+ b=VWqA0uVxhc/ZjupIIY3itLe8lIfh+T3po8W67FM7WRURtU9sIkA8PK2UgU2EjdgFg8
+ iCF3HXqjfh5ncunfke2JWgu4gz3kGD3lq8iAHQA9Sqcj55UDqfLbG2esA5JXCVtol8E6
+ D0Av0V3lR/ONVttrfrmvhxxt71w/2XoQruKPfIBhmFLVssV435HbbZyqUnIV57ULes52
+ zFHCIKpVbDygayc9F9Vwv1dgvgE5sduUcfUElOmpJ2m7sA+IBU6yjhupeg3HlLtCFwhv
+ 3qYKCGLjaVSNrklkxu3UATmjlvZHuv5mffrO4LQCUKIq5DnrVJryuFrSKeF9UwwPidw6
+ k3pA==
+X-Gm-Message-State: AOAM531BsGhYEonIXhtQCh2pj+6tmhWdmOCosEeTF9zzZIEHsrq6imd2
+ VpvqxKEc3Qi4NZs9e2AfXrw=
+X-Google-Smtp-Source: ABdhPJwGzuqDcH6Vkxqbl1C5ZMUAQstwFZ+JipZBre8wnuBfBUsU2v0rs/LBQURtmvm2RkRrx2hGlQ==
+X-Received: by 2002:a17:90a:fe0c:: with SMTP id
+ ck12mr973724pjb.209.1590738085315; 
+ Fri, 29 May 2020 00:41:25 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id jx10sm6903511pjb.46.2020.05.29.00.41.15
+ by smtp.gmail.com with ESMTPSA id t201sm3703652pfc.104.2020.05.29.00.41.16
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Fri, 29 May 2020 00:41:16 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id DDE9C42376; Fri, 29 May 2020 07:41:10 +0000 (UTC)
+ id 08CEC42394; Fri, 29 May 2020 07:41:11 +0000 (UTC)
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  ebiederm@xmission.com, axboe@kernel.dk, clemens@ladisch.de, arnd@arndb.de,
@@ -64,10 +65,9 @@ To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  viro@zeniv.linux.org.uk, mark@fasheh.com, jlbec@evilplan.org,
  joseph.qi@linux.alibaba.com, vbabka@suse.cz, sfr@canb.auug.org.au,
  jack@suse.cz, amir73il@gmail.com, rafael@kernel.org, tytso@mit.edu
-Subject: [PATCH 09/13] firmware_loader: simplify sysctl declaration with
- register_sysctl_subdir()
-Date: Fri, 29 May 2020 07:41:04 +0000
-Message-Id: <20200529074108.16928-10-mcgrof@kernel.org>
+Subject: [PATCH 12/13] sysctl: add helper to register empty subdir
+Date: Fri, 29 May 2020 07:41:07 +0000
+Message-Id: <20200529074108.16928-13-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.23.0.rc1
 In-Reply-To: <20200529074108.16928-1-mcgrof@kernel.org>
 References: <20200529074108.16928-1-mcgrof@kernel.org>
@@ -92,132 +92,79 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Xiaoming Ni <nixiaoming@huawei.com>
+The way to create a subdirectory from the base set of directories
+is a bit obscure, so provide a helper which makes this clear, and
+also helps remove boiler plate code required to do this work.
 
-Move the firmware config sysctl table to fallback_table.c and use the
-new register_sysctl_subdir() helper. This removes the clutter from
-kernel/sysctl.c.
-
-Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/base/firmware_loader/fallback.c       |  4 ++++
- drivers/base/firmware_loader/fallback.h       | 11 ++++++++++
- drivers/base/firmware_loader/fallback_table.c | 22 +++++++++++++++++--
- include/linux/sysctl.h                        |  1 -
- kernel/sysctl.c                               |  7 ------
- 5 files changed, 35 insertions(+), 10 deletions(-)
+ include/linux/sysctl.h |  7 +++++++
+ kernel/sysctl.c        | 16 +++++++++++++---
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/firmware_loader/fallback.c b/drivers/base/firmware_loader/fallback.c
-index d9ac7296205e..8190653ae9a3 100644
---- a/drivers/base/firmware_loader/fallback.c
-+++ b/drivers/base/firmware_loader/fallback.c
-@@ -200,12 +200,16 @@ static struct class firmware_class = {
- 
- int register_sysfs_loader(void)
- {
-+	int ret = register_firmware_config_sysctl();
-+	if (ret != 0)
-+		return ret;
- 	return class_register(&firmware_class);
- }
- 
- void unregister_sysfs_loader(void)
- {
- 	class_unregister(&firmware_class);
-+	unregister_firmware_config_sysctl();
- }
- 
- static ssize_t firmware_loading_show(struct device *dev,
-diff --git a/drivers/base/firmware_loader/fallback.h b/drivers/base/firmware_loader/fallback.h
-index 06f4577733a8..7d2cb5f6ceb8 100644
---- a/drivers/base/firmware_loader/fallback.h
-+++ b/drivers/base/firmware_loader/fallback.h
-@@ -42,6 +42,17 @@ void fw_fallback_set_default_timeout(void);
- 
- int register_sysfs_loader(void);
- void unregister_sysfs_loader(void);
-+#ifdef CONFIG_SYSCTL
-+extern int register_firmware_config_sysctl(void);
-+extern void unregister_firmware_config_sysctl(void);
-+#else
-+static inline int register_firmware_config_sysctl(void)
-+{
-+	return 0;
-+}
-+static inline void unregister_firmware_config_sysctl(void) { }
-+#endif /* CONFIG_SYSCTL */
-+
- #else /* CONFIG_FW_LOADER_USER_HELPER */
- static inline int firmware_fallback_sysfs(struct firmware *fw, const char *name,
- 					  struct device *device,
-diff --git a/drivers/base/firmware_loader/fallback_table.c b/drivers/base/firmware_loader/fallback_table.c
-index 46a731dede6f..4234aa5ee5df 100644
---- a/drivers/base/firmware_loader/fallback_table.c
-+++ b/drivers/base/firmware_loader/fallback_table.c
-@@ -24,7 +24,7 @@ struct firmware_fallback_config fw_fallback_config = {
- EXPORT_SYMBOL_NS_GPL(fw_fallback_config, FIRMWARE_LOADER_PRIVATE);
- 
- #ifdef CONFIG_SYSCTL
--struct ctl_table firmware_config_table[] = {
-+static struct ctl_table firmware_config_table[] = {
- 	{
- 		.procname	= "force_sysfs_fallback",
- 		.data		= &fw_fallback_config.force_sysfs_fallback,
-@@ -45,4 +45,22 @@ struct ctl_table firmware_config_table[] = {
- 	},
- 	{ }
- };
--#endif
-+
-+static struct ctl_table_header *hdr;
-+int register_firmware_config_sysctl(void)
-+{
-+	if (hdr)
-+		return -EEXIST;
-+	hdr = register_sysctl_subdir("kernel", "firmware_config",
-+				     firmware_config_table);
-+	if (!hdr)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+void unregister_firmware_config_sysctl(void)
-+{
-+	if (hdr)
-+		unregister_sysctl_table(hdr);
-+}
-+#endif /* CONFIG_SYSCTL */
 diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 58bc978d4f03..aa01f54d0442 100644
+index 33a471b56345..89c92390e6de 100644
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
-@@ -217,7 +217,6 @@ extern int no_unaligned_warning;
+@@ -208,6 +208,8 @@ extern void register_sysctl_init(const char *path, struct ctl_table *table,
+ extern struct ctl_table_header *register_sysctl_subdir(const char *base,
+ 						       const char *subdir,
+ 						       struct ctl_table *table);
++extern void register_sysctl_empty_subdir(const char *base, const char *subdir);
++
+ void do_sysctl_args(void);
  
- extern struct ctl_table sysctl_mount_point[];
- extern struct ctl_table random_table[];
--extern struct ctl_table firmware_config_table[];
- extern struct ctl_table epoll_table[];
+ extern int pwrsw_enabled;
+@@ -231,6 +233,11 @@ inline struct ctl_table_header *register_sysctl_subdir(const char *base,
+ 	return NULL;
+ }
  
- #else /* CONFIG_SYSCTL */
++static inline void register_sysctl_empty_subdir(const char *base,
++						const char *subdir)
++{
++}
++
+ static inline struct ctl_table_header *register_sysctl_paths(
+ 			const struct ctl_path *path, struct ctl_table *table)
+ {
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 30c2d521502a..e007375c8a11 100644
+index f9a35325d5d5..460532cd5ac8 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -2088,13 +2088,6 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0555,
- 		.child		= usermodehelper_table,
- 	},
--#ifdef CONFIG_FW_LOADER_USER_HELPER
--	{
--		.procname	= "firmware_config",
--		.mode		= 0555,
--		.child		= firmware_config_table,
--	},
--#endif
- 	{
- 		.procname	= "overflowuid",
- 		.data		= &overflowuid,
+@@ -3188,13 +3188,17 @@ struct ctl_table_header *register_sysctl_subdir(const char *base,
+ 		{ }
+ 	};
+ 
+-	if (!table->procname)
++	if (table != sysctl_mount_point && !table->procname)
+ 		goto out;
+ 
+ 	hdr = register_sysctl_table(base_table);
+ 	if (unlikely(!hdr)) {
+-		pr_err("failed when creating subdirectory sysctl %s/%s/%s\n",
+-		       base, subdir, table->procname);
++		if (table != sysctl_mount_point)
++			pr_err("failed when creating subdirectory sysctl %s/%s/%s\n",
++			       base, subdir, table->procname);
++		else
++			pr_err("failed when creating empty subddirectory %s/%s\n",
++			       base, subdir);
+ 		goto out;
+ 	}
+ 	kmemleak_not_leak(hdr);
+@@ -3202,6 +3206,12 @@ struct ctl_table_header *register_sysctl_subdir(const char *base,
+ 	return hdr;
+ }
+ EXPORT_SYMBOL_GPL(register_sysctl_subdir);
++
++void register_sysctl_empty_subdir(const char *base,
++				  const char *subdir)
++{
++	register_sysctl_subdir(base, subdir, sysctl_mount_point);
++}
+ #endif /* CONFIG_SYSCTL */
+ /*
+  * No sense putting this after each symbol definition, twice,
 -- 
 2.26.2
 
