@@ -6,57 +6,56 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35B78C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:59:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7975C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:02:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5296207D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:59:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5296207D4
+	by mail.kernel.org (Postfix) with ESMTPS id 75AD0206F1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 08:02:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75AD0206F1
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YH5w6FrKzDqjg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:59:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YH8v029VzDqbW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 18:02:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.214.193;
- helo=mail-pl1-f193.google.com; envelope-from=mcgrof@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.215.195;
+ helo=mail-pg1-f195.google.com; envelope-from=mcgrof@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pl1-f193.google.com (mail-pl1-f193.google.com
- [209.85.214.193])
+Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
+ [209.85.215.195])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YGhz5cJmzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:23 +1000 (AEST)
-Received: by mail-pl1-f193.google.com with SMTP id d3so773356pln.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YGj05QPJzDqQy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:24 +1000 (AEST)
+Received: by mail-pg1-f195.google.com with SMTP id p21so1002703pgm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=EMTldmiu4HpdS3+bhynB06GHRs/PyLwICOClb2SLlV8=;
- b=gjS/j4Dardo0/UhHHdngBZiwbcQzg5DYxyALZYI0lkKOvV6g9cok3XZyzbqtwGBHPH
- shA3oV92kskOTx0g5hKGv2LWjOqKkkvuAn9ls2RwbUDzgPY1f9RuadeQRStLel502GKX
- 7ruvR18RHn2stu4Yqd3ZleDCw7VrYp9yhNeaAKQJPkdMusZB2Iem9W6RrWkZsm6PG1hL
- A2jjvyOUA7qeVUabvpCIuxWaRTtgeEJaZoQwvkRpiTgWnGNlVQXCu1i3caKxIMcgvTqL
- kTx3a0PcSWe5lnKBHmeoAHz+wlkK1IR41+swFzK8aPOW6zxCojlwxIOjHabhNEMCz/2Q
- lntw==
-X-Gm-Message-State: AOAM532lW31kS2uvWBHNeCL6BG3b0jMdd001z4Pe0wLABopThYCPJka0
- f313gdypXgY5lGEkfIDHfyo=
-X-Google-Smtp-Source: ABdhPJw+tLCz0Ai55w1J/TSc/SJ1hmAb/QR0nXrNQObS7m5mw2Mpybr+mAQiJMcxaaq1sxYWrYa58A==
-X-Received: by 2002:a17:902:7281:: with SMTP id
- d1mr7887571pll.78.1590738081442; 
- Fri, 29 May 2020 00:41:21 -0700 (PDT)
+ bh=C2AME75dBsNApuZxoQz+ouSeETod/FSpHW6fOtIBoA8=;
+ b=EGpSvQWQa7i30PSmap9deiRq0IefK8YpsI7c2kkpLHjhoblPRXhuWlf84H+MFZ9dmA
+ AzGDwXxA+T1CEFoljzW2K3We5bl8M0SEfVBUYRVvoh0XArrMBS7e5R31WdnFe3OizrF9
+ czhHbDYj77nvfbXvlC/dG7VgXKNL1X4v1yv+E+JAVzQ6hnGTWKAr07okivcEMhHwJIIN
+ 4kJuBe3qQmshy30dvQ+duG1sbbpoj+NCo93uOnp85/9XyR037onANcnwZYEU+ZFxMOXx
+ 23/M9xTxM3FDxV0NUgIsF1hqZj7s2xmpnLgQ3CNe2gxEsEKANMME4ja3TG1T9FRSHED2
+ 1Mjg==
+X-Gm-Message-State: AOAM531SAph29MewrAYC1Wt1nb4BUE3VEIblTaFVJ9kTzCU1Ej6CmSsu
+ Zx2oCmx9g3Ofut1zCHCappE=
+X-Google-Smtp-Source: ABdhPJxK/ukzZZOooA7TqKRX6aKFoBfWQ0FrPQYbK4i1DMtq53A2mx5D7MUo+TbjaMx4o+x/3KgfHw==
+X-Received: by 2002:a63:711b:: with SMTP id m27mr6911712pgc.324.1590738082579; 
+ Fri, 29 May 2020 00:41:22 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id gd8sm101244pjb.28.2020.05.29.00.41.15
+ by smtp.gmail.com with ESMTPSA id a7sm6766024pfa.187.2020.05.29.00.41.16
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Fri, 29 May 2020 00:41:16 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id E7F0642380; Fri, 29 May 2020 07:41:10 +0000 (UTC)
+ id F2CEA4238B; Fri, 29 May 2020 07:41:10 +0000 (UTC)
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  ebiederm@xmission.com, axboe@kernel.dk, clemens@ladisch.de, arnd@arndb.de,
@@ -66,10 +65,10 @@ To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  viro@zeniv.linux.org.uk, mark@fasheh.com, jlbec@evilplan.org,
  joseph.qi@linux.alibaba.com, vbabka@suse.cz, sfr@canb.auug.org.au,
  jack@suse.cz, amir73il@gmail.com, rafael@kernel.org, tytso@mit.edu
-Subject: [PATCH 10/13] eventpoll: simplify sysctl declaration with
+Subject: [PATCH 11/13] random: simplify sysctl declaration with
  register_sysctl_subdir()
-Date: Fri, 29 May 2020 07:41:05 +0000
-Message-Id: <20200529074108.16928-11-mcgrof@kernel.org>
+Date: Fri, 29 May 2020 07:41:06 +0000
+Message-Id: <20200529074108.16928-12-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.23.0.rc1
 In-Reply-To: <20200529074108.16928-1-mcgrof@kernel.org>
 References: <20200529074108.16928-1-mcgrof@kernel.org>
@@ -96,100 +95,78 @@ Sender: "Linuxppc-dev"
 
 From: Xiaoming Ni <nixiaoming@huawei.com>
 
-Move epoll_table sysctl to fs/eventpoll.c and remove the
-clutter out of kernel/sysctl.c by using register_sysctl_subdir()..
+Move random_table sysctl from kernel/sysctl.c to drivers/char/random.c
+and use register_sysctl_subdir() to help remove the clutter out of
+kernel/sysctl.c.
 
 Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- fs/eventpoll.c         | 10 +++++++++-
- include/linux/poll.h   |  2 --
+ drivers/char/random.c  | 14 ++++++++++++--
  include/linux/sysctl.h |  1 -
- kernel/sysctl.c        |  7 -------
- 4 files changed, 9 insertions(+), 11 deletions(-)
+ kernel/sysctl.c        |  5 -----
+ 3 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 12eebcdea9c8..957ebc9700e3 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -299,7 +299,7 @@ static LIST_HEAD(tfile_check_list);
- static long long_zero;
- static long long_max = LONG_MAX;
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index a7cf6aa65908..73fd4b6e9c18 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -2101,8 +2101,7 @@ static int proc_do_entropy(struct ctl_table *table, int write,
+ }
  
--struct ctl_table epoll_table[] = {
-+static struct ctl_table epoll_table[] = {
+ static int sysctl_poolsize = INPUT_POOL_WORDS * 32;
+-extern struct ctl_table random_table[];
+-struct ctl_table random_table[] = {
++static struct ctl_table random_table[] = {
  	{
- 		.procname	= "max_user_watches",
- 		.data		= &max_user_watches,
-@@ -311,6 +311,13 @@ struct ctl_table epoll_table[] = {
- 	},
+ 		.procname	= "poolsize",
+ 		.data		= &sysctl_poolsize,
+@@ -2164,6 +2163,17 @@ struct ctl_table random_table[] = {
+ #endif
  	{ }
  };
 +
-+static void __init epoll_sysctls_init(void)
++/*
++ * rand_initialize() is called before sysctl_init(),
++ * so we cannot call register_sysctl_init() in rand_initialize()
++ */
++static int __init random_sysctls_init(void)
 +{
-+	register_sysctl_subdir("fs", "epoll", epoll_table);
++	register_sysctl_subdir("kernel", "random", random_table);
++	return 0;
 +}
-+#else
-+#define epoll_sysctls_init() do { } while (0)
- #endif /* CONFIG_SYSCTL */
++device_initcall(random_sysctls_init);
+ #endif 	/* CONFIG_SYSCTL */
  
- static const struct file_operations eventpoll_fops;
-@@ -2422,6 +2429,7 @@ static int __init eventpoll_init(void)
- 	/* Allocates slab cache used to allocate "struct eppoll_entry" */
- 	pwq_cache = kmem_cache_create("eventpoll_pwq",
- 		sizeof(struct eppoll_entry), 0, SLAB_PANIC|SLAB_ACCOUNT, NULL);
-+	epoll_sysctls_init();
- 
- 	return 0;
- }
-diff --git a/include/linux/poll.h b/include/linux/poll.h
-index 1cdc32b1f1b0..a9e0e1c2d1f2 100644
---- a/include/linux/poll.h
-+++ b/include/linux/poll.h
-@@ -8,12 +8,10 @@
- #include <linux/wait.h>
- #include <linux/string.h>
- #include <linux/fs.h>
--#include <linux/sysctl.h>
- #include <linux/uaccess.h>
- #include <uapi/linux/poll.h>
- #include <uapi/linux/eventpoll.h>
- 
--extern struct ctl_table epoll_table[]; /* for sysctl */
- /* ~832 bytes of stack space used max in sys_select/sys_poll before allocating
-    additional memory. */
- #ifdef __clang__
+ struct batched_entropy {
 diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index aa01f54d0442..e5364b69dd95 100644
+index e5364b69dd95..33a471b56345 100644
 --- a/include/linux/sysctl.h
 +++ b/include/linux/sysctl.h
-@@ -217,7 +217,6 @@ extern int no_unaligned_warning;
+@@ -216,7 +216,6 @@ extern int unaligned_dump_stack;
+ extern int no_unaligned_warning;
  
  extern struct ctl_table sysctl_mount_point[];
- extern struct ctl_table random_table[];
--extern struct ctl_table epoll_table[];
+-extern struct ctl_table random_table[];
  
  #else /* CONFIG_SYSCTL */
  static inline struct ctl_table_header *register_sysctl_table(struct ctl_table * table)
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index e007375c8a11..5c116904feb7 100644
+index 5c116904feb7..f9a35325d5d5 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -3001,13 +3001,6 @@ static struct ctl_table fs_table[] = {
- 		.proc_handler	= proc_dointvec,
+@@ -2078,11 +2078,6 @@ static struct ctl_table kern_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= sysctl_max_threads,
  	},
- #endif
--#ifdef CONFIG_EPOLL
 -	{
--		.procname	= "epoll",
+-		.procname	= "random",
 -		.mode		= 0555,
--		.child		= epoll_table,
+-		.child		= random_table,
 -	},
--#endif
- #endif
  	{
- 		.procname	= "protected_symlinks",
+ 		.procname	= "usermodehelper",
+ 		.mode		= 0555,
 -- 
 2.26.2
 
