@@ -2,60 +2,60 @@ Return-Path: <SRS0=W4Hs=7L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3C71C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A72F0C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:45:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 379762074D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:43:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 379762074D
+	by mail.kernel.org (Postfix) with ESMTPS id 587522074D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:45:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 587522074D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YGlh4Hd0zDqPf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:43:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YGp54t0yzDqTL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:45:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.216.67; helo=mail-pj1-f67.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.216.66; helo=mail-pj1-f66.google.com;
  envelope-from=mcgrof@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com
- [209.85.216.67])
+Received: from mail-pj1-f66.google.com (mail-pj1-f66.google.com
+ [209.85.216.66])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YGht46ghzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:14 +1000 (AEST)
-Received: by mail-pj1-f67.google.com with SMTP id a45so1480002pje.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YGht5grczDqSv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:18 +1000 (AEST)
+Received: by mail-pj1-f66.google.com with SMTP id n15so826544pjt.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=cxdWIOmMtZof5Zd2ToCNUZnFH4PwEYqbI1WQa7Nahtk=;
- b=fITNbtmKO/NZsBJOTtBdxB1NSj24gwn1dzJ2ZfqvleVHNiGHWlU1757iAMmNyoDAh1
- 3rK4S/mK73TcY7GT+h1ZVOxz505dKbRCrRXpFkXL+00AhUnjtjfOnjzkbFhtcH3u060+
- 0E50j7Hb1QjryQwo4iQQY06az6S9d3X4cyl/KlGJ0uonVq7tV9IjEuktfEoF7FCtqPOg
- OVwFaig3eHfTY7krbOlEqGIGJHuMVLwRQ1hAZe7OWL9PfwZ38p3UIveJH4fqpcNcP1jJ
- 8NfjxI2Ll/kOPnHJioX40Hw5Jvc+5hdq86PyteEFsVBeTqrlTFo6GYWD7hbiTyJexuoJ
- P0Jg==
-X-Gm-Message-State: AOAM531ana9N4jwnsEERHtGEPi/Byu6AzryNpyPsYq185hrSQusR6UMK
- wOwje1fw4cBA6PiUjmonp3k=
-X-Google-Smtp-Source: ABdhPJx/Y2UkOfRCeSrfHd17IdoL/kq5WzGQ2U9aMMVJNt5xrKYQiwN4acpehMl/gpWlkneskvxS6A==
-X-Received: by 2002:a17:90b:1002:: with SMTP id
- gm2mr8188726pjb.197.1590738072133; 
- Fri, 29 May 2020 00:41:12 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=2jHA8VIMvKgrxc1AW+DPbkuZZuKskUQcNv9lMPkimBs=;
+ b=aG96GcT+VUiri8TIypfXyPOwZnynbGA8fAQCnrQkMPDtjr+8VP/vcBcm/1uUrig8hr
+ oM+4T0lgE7Y6vVPbMCBLFERtcJUeeZQL0GO67SoHcwr5MmfYs9ckOpZHPmQfKCb94f0O
+ R5JB1bcjP3iZey+5+R5I/vxEsuJJLbqej28rEQRC4HsinfYtSGAvQQ/Aq6iDAdHT4Agl
+ 3mOFMKybHqjCh19M3hxLokEhAxjIHZ+KK0vaYb3sOkMvzTNCB5NHk3jAMWAugdsUcnXj
+ LjudufW5XMEfJNnEsKoliVm1HHgRe4EjO06tUoIgvH+pJuAYqCHbSuEON6AN37XuFCNR
+ yfCQ==
+X-Gm-Message-State: AOAM532psRmQKIv5T4MlkaRhdJNc9rHkUUkYcM3wPGqKKJxHHev/WBZD
+ K3wzJndpDvm3oV+sgfwnZeg=
+X-Google-Smtp-Source: ABdhPJwLKp4Ek16GIR6wfTGzoNi9sGCN2B5VA54FGeDyqorTPtnWjcRjvN0kcQMGbXM4anhxYRPvyw==
+X-Received: by 2002:a17:90a:b011:: with SMTP id
+ x17mr8088274pjq.175.1590738075444; 
+ Fri, 29 May 2020 00:41:15 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id s1sm6842049pjp.27.2020.05.29.00.41.10
+ by smtp.gmail.com with ESMTPSA id a7sm6765760pfa.187.2020.05.29.00.41.11
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 29 May 2020 00:41:10 -0700 (PDT)
+ Fri, 29 May 2020 00:41:12 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id E3ADF40605; Fri, 29 May 2020 07:41:09 +0000 (UTC)
+ id 67FA942309; Fri, 29 May 2020 07:41:10 +0000 (UTC)
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  ebiederm@xmission.com, axboe@kernel.dk, clemens@ladisch.de, arnd@arndb.de,
@@ -65,10 +65,13 @@ To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  viro@zeniv.linux.org.uk, mark@fasheh.com, jlbec@evilplan.org,
  joseph.qi@linux.alibaba.com, vbabka@suse.cz, sfr@canb.auug.org.au,
  jack@suse.cz, amir73il@gmail.com, rafael@kernel.org, tytso@mit.edu
-Subject: [PATCH 00/13] sysctl: spring cleaning
-Date: Fri, 29 May 2020 07:40:55 +0000
-Message-Id: <20200529074108.16928-1-mcgrof@kernel.org>
+Subject: [PATCH 03/13] hpet: use new sysctl subdir helper
+ register_sysctl_subdir()
+Date: Fri, 29 May 2020 07:40:58 +0000
+Message-Id: <20200529074108.16928-4-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.23.0.rc1
+In-Reply-To: <20200529074108.16928-1-mcgrof@kernel.org>
+References: <20200529074108.16928-1-mcgrof@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,69 +93,140 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Me and Xiaoming are working on some kernel/sysctl.c spring cleaning.
-During a recent linux-next merge conflict it became clear that
-the kitchen sink on kernel/sysctl.c creates too many conflicts,
-and so we need to do away with stuffing everyone's knobs on this
-one file.
+This simplifies the code considerably. The following coccinelle
+SmPL grammar rule was used to transform this code.
 
-This is part of that work. This is not expected to get merged yet, but
-since our delta is pretty considerable at this point, we need to piece
-meal this and collect reviews for what we have so far. This follows up
-on some of his recent work.
+// pycocci sysctl-subdir.cocci drivers/char/hpet.c
 
-This series focuses on a new helper to deal with subdirectories and
-empty subdirectories. The terminology that we will embrace will be
-that things like "fs", "kernel", "debug" are based directories, and
-directories underneath this are subdirectories.
+@c1@
+expression E1;
+identifier subdir, sysctls;
+@@
 
-In this case, the cleanup ends up also trimming the amount of
-code we have for sysctls.
+static struct ctl_table subdir[] = {
+	{
+		.procname = E1,
+		.maxlen = 0,
+		.mode = 0555,
+		.child = sysctls,
+	},
+	{ }
+};
 
-If this seems reasonable we'll kdocify this a bit too.
+@c2@
+identifier c1.subdir;
 
-This code has been boot tested without issues, and I'm letting 0day do
-its thing to test against many kconfig builds. If you however spot
-any issues please let us know.
+expression E2;
+identifier base;
+@@
 
-Luis Chamberlain (9):
-  sysctl: add new register_sysctl_subdir() helper
-  cdrom: use new sysctl subdir helper register_sysctl_subdir()
-  hpet: use new sysctl subdir helper register_sysctl_subdir()
-  i915: use new sysctl subdir helper register_sysctl_subdir()
-  macintosh/mac_hid.c: use new sysctl subdir helper
-    register_sysctl_subdir()
-  ocfs2: use new sysctl subdir helper register_sysctl_subdir()
-  test_sysctl: use new sysctl subdir helper register_sysctl_subdir()
-  sysctl: add helper to register empty subdir
-  fs: move binfmt_misc sysctl to its own file
+static struct ctl_table base[] = {
+	{
+		.procname = E2,
+		.maxlen = 0,
+		.mode = 0555,
+		.child = subdir,
+	},
+	{ }
+};
 
-Xiaoming Ni (4):
-  inotify: simplify sysctl declaration with register_sysctl_subdir()
-  firmware_loader: simplify sysctl declaration with
-    register_sysctl_subdir()
-  eventpoll: simplify sysctl declaration with register_sysctl_subdir()
-  random: simplify sysctl declaration with register_sysctl_subdir()
+@c3@
+identifier c2.base;
+identifier header;
+@@
 
- drivers/base/firmware_loader/fallback.c       |  4 +
- drivers/base/firmware_loader/fallback.h       | 11 +++
- drivers/base/firmware_loader/fallback_table.c | 22 ++++-
- drivers/cdrom/cdrom.c                         | 23 +----
- drivers/char/hpet.c                           | 22 +----
- drivers/char/random.c                         | 14 +++-
- drivers/gpu/drm/i915/i915_perf.c              | 22 +----
- drivers/macintosh/mac_hid.c                   | 25 +-----
- fs/binfmt_misc.c                              |  1 +
- fs/eventpoll.c                                | 10 ++-
- fs/notify/inotify/inotify_user.c              | 11 ++-
- fs/ocfs2/stackglue.c                          | 27 +-----
- include/linux/inotify.h                       |  3 -
- include/linux/poll.h                          |  2 -
- include/linux/sysctl.h                        | 21 ++++-
- kernel/sysctl.c                               | 84 +++++++++++--------
- lib/test_sysctl.c                             | 23 +----
- 17 files changed, 144 insertions(+), 181 deletions(-)
+header = register_sysctl_table(base);
 
+@r1 depends on c1 && c2 && c3@
+expression c1.E1;
+identifier c1.subdir, c1.sysctls;
+@@
+
+-static struct ctl_table subdir[] = {
+-	{
+-		.procname = E1,
+-		.maxlen = 0,
+-		.mode = 0555,
+-		.child = sysctls,
+-	},
+-	{ }
+-};
+
+@r2 depends on c1 && c2 && c3@
+identifier c1.subdir;
+
+expression c2.E2;
+identifier c2.base;
+@@
+-static struct ctl_table base[] = {
+-	{
+-		.procname = E2,
+-		.maxlen = 0,
+-		.mode = 0555,
+-		.child = subdir,
+-	},
+-	{ }
+-};
+
+@r3 depends on c1 && c2 && c3@
+expression c1.E1;
+identifier c1.sysctls;
+expression c2.E2;
+identifier c2.base;
+identifier c3.header;
+@@
+
+header =
+-register_sysctl_table(base);
++register_sysctl_subdir(E2, E1, sysctls);
+
+Generated-by: Coccinelle SmPL
+
+Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
+---
+ drivers/char/hpet.c | 22 +---------------------
+ 1 file changed, 1 insertion(+), 21 deletions(-)
+
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index ed3b7dab678d..169c970d5ff8 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -746,26 +746,6 @@ static struct ctl_table hpet_table[] = {
+ 	{}
+ };
+ 
+-static struct ctl_table hpet_root[] = {
+-	{
+-	 .procname = "hpet",
+-	 .maxlen = 0,
+-	 .mode = 0555,
+-	 .child = hpet_table,
+-	 },
+-	{}
+-};
+-
+-static struct ctl_table dev_root[] = {
+-	{
+-	 .procname = "dev",
+-	 .maxlen = 0,
+-	 .mode = 0555,
+-	 .child = hpet_root,
+-	 },
+-	{}
+-};
+-
+ static struct ctl_table_header *sysctl_header;
+ 
+ /*
+@@ -1059,7 +1039,7 @@ static int __init hpet_init(void)
+ 	if (result < 0)
+ 		return -ENODEV;
+ 
+-	sysctl_header = register_sysctl_table(dev_root);
++	sysctl_header = register_sysctl_subdir("dev", "hpet", hpet_table);
+ 
+ 	result = acpi_bus_register_driver(&hpet_acpi_driver);
+ 	if (result < 0) {
 -- 
 2.26.2
 
