@@ -6,56 +6,56 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C213BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 074A0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:52:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7656B207D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:51:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7656B207D4
+	by mail.kernel.org (Postfix) with ESMTPS id B3E34207D4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:52:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3E34207D4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YGwJ1mClzDqdp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:51:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YGyF3r2tzDqgN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:52:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.216.67; helo=mail-pj1-f67.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.216.68; helo=mail-pj1-f68.google.com;
  envelope-from=mcgrof@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pj1-f67.google.com (mail-pj1-f67.google.com
- [209.85.216.67])
+Received: from mail-pj1-f68.google.com (mail-pj1-f68.google.com
+ [209.85.216.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YGhv5CptzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:19 +1000 (AEST)
-Received: by mail-pj1-f67.google.com with SMTP id ci21so847372pjb.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YGhw1Cr5zDqQy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:16 +1000 (AEST)
+Received: by mail-pj1-f68.google.com with SMTP id z15so2903021pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=iFuOAMMzx366XD73njtfa9qdyal/YI+SEog1dnntDeg=;
- b=Uzl6ma2BEb+VL81+JKpLRyt0rCbXuP2W6PrZdu5Bt0qu1LWc3rFx5y0ahI1PIcR5Yd
- QUt1rbz1ZfcciskpgKdkZLlEWZdYWBVud3OB6k0mf1e9qjFH3Ii+2QuJIkgDjLB4uXtM
- FKAcD98/qi6HJeE926EApZGNcSLdj+GSYxz58uLRc1y7qlBc4U2is1j38xz3/tdhTn9I
- RvK5OCFgA8HovU9YA6iAOCx237plXO9QCZ97b+Mz+Hu7Q8SQQSIpAmC6vt/V9nrWx2Sa
- V500PP54Tfi8X2Y/1LwCSJN7y2OX7Up+rsFbFeLyoxYE3hEYa2z7nLTnbGlN9Yi95Ezq
- 4iyQ==
-X-Gm-Message-State: AOAM531AV0LnwZIqJQmpAZmg9K1XHSNGpqKKatxZVps0ZznxWqWWuMYQ
- S0tifuZfZ4r5HjJBJGIojnQ=
-X-Google-Smtp-Source: ABdhPJyWq+uNBt+z7g4lF4BNt9x39LLqlR7x3RVbHVyGUC5VKz7sfj4vqnpPnSKalsV1vnr314j4sQ==
-X-Received: by 2002:a17:902:82c9:: with SMTP id
- u9mr7568085plz.179.1590738077450; 
- Fri, 29 May 2020 00:41:17 -0700 (PDT)
+ bh=ztkbZyMAj8QAP+BJLtRR/lmTCR2M8J8E3LJknwjviqU=;
+ b=sPIfjg4i6A+5Hz8tOb/6TxyLFY3vQwH6VR6K2yPKBpAvVwUty/2RHkdErtrz/RvuTy
+ T3K0kSCLAS27etIlOEP29/bvCxM/G5UXEP1Xr0O4JrEK9KoLi92mRD7pkOiRtJ8itCB+
+ VoeAzzHkFMjL8E9gu2h3HqkDLAkslI+8eJYIKIddWcQdbDi8BKCKRDYaviOLaQ2yRiso
+ awUKHLcF9/Mpc9PUL20CQnaoPiQ0i61V20r78zdytBD3QYumpBUkodBcWOA8IrRRIPQC
+ LIF9oxfi+bBCMbp2ELIeTD0MaQEnSJopE1FZU6bEfEbg5euDLiXBl2ybT9HUsjSPw7RD
+ fgXg==
+X-Gm-Message-State: AOAM532ChG6CVUbggDU5fFGrqTpPXCXk/KQnGus78Wkm2uhJcLMnaEwA
+ ZK394s0FezouzuwzSbgRHBk=
+X-Google-Smtp-Source: ABdhPJwef9VnxevTutof/OWjXxMen8nqP316VSHb8lndoYqWe0y1ALBADBIyXeEXdBPr/HgBfKduig==
+X-Received: by 2002:a17:902:bd95:: with SMTP id
+ q21mr7959305pls.238.1590738074446; 
+ Fri, 29 May 2020 00:41:14 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id 70sm6443717pfx.78.2020.05.29.00.41.12
+ by smtp.gmail.com with ESMTPSA id e26sm6189878pgl.27.2020.05.29.00.41.11
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 29 May 2020 00:41:16 -0700 (PDT)
+ Fri, 29 May 2020 00:41:12 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id B233242337; Fri, 29 May 2020 07:41:10 +0000 (UTC)
+ id 10D65418C0; Fri, 29 May 2020 07:41:10 +0000 (UTC)
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  ebiederm@xmission.com, axboe@kernel.dk, clemens@ladisch.de, arnd@arndb.de,
@@ -65,10 +65,9 @@ To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  viro@zeniv.linux.org.uk, mark@fasheh.com, jlbec@evilplan.org,
  joseph.qi@linux.alibaba.com, vbabka@suse.cz, sfr@canb.auug.org.au,
  jack@suse.cz, amir73il@gmail.com, rafael@kernel.org, tytso@mit.edu
-Subject: [PATCH 05/13] macintosh/mac_hid.c: use new sysctl subdir helper
- register_sysctl_subdir()
-Date: Fri, 29 May 2020 07:41:00 +0000
-Message-Id: <20200529074108.16928-6-mcgrof@kernel.org>
+Subject: [PATCH 01/13] sysctl: add new register_sysctl_subdir() helper
+Date: Fri, 29 May 2020 07:40:56 +0000
+Message-Id: <20200529074108.16928-2-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.23.0.rc1
 In-Reply-To: <20200529074108.16928-1-mcgrof@kernel.org>
 References: <20200529074108.16928-1-mcgrof@kernel.org>
@@ -93,140 +92,97 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This simplifies the code considerably. The following coccinelle
-SmPL grammar rule was used to transform this code.
+Often enough all we need to do is create a subdirectory so that
+we can stuff sysctls underneath it. However, *if* that directory
+was already created early on the boot sequence we really have no
+need to use the full boiler plate code for it, we can just use
+local variables to help us guide sysctl to place the new leaf files.
 
-// pycocci sysctl-subdir.cocci drivers/macintosh/mac_hid.c
-
-@c1@
-expression E1;
-identifier subdir, sysctls;
-@@
-
-static struct ctl_table subdir[] = {
-	{
-		.procname = E1,
-		.maxlen = 0,
-		.mode = 0555,
-		.child = sysctls,
-	},
-	{ }
-};
-
-@c2@
-identifier c1.subdir;
-
-expression E2;
-identifier base;
-@@
-
-static struct ctl_table base[] = {
-	{
-		.procname = E2,
-		.maxlen = 0,
-		.mode = 0555,
-		.child = subdir,
-	},
-	{ }
-};
-
-@c3@
-identifier c2.base;
-identifier header;
-@@
-
-header = register_sysctl_table(base);
-
-@r1 depends on c1 && c2 && c3@
-expression c1.E1;
-identifier c1.subdir, c1.sysctls;
-@@
-
--static struct ctl_table subdir[] = {
--	{
--		.procname = E1,
--		.maxlen = 0,
--		.mode = 0555,
--		.child = sysctls,
--	},
--	{ }
--};
-
-@r2 depends on c1 && c2 && c3@
-identifier c1.subdir;
-
-expression c2.E2;
-identifier c2.base;
-@@
--static struct ctl_table base[] = {
--	{
--		.procname = E2,
--		.maxlen = 0,
--		.mode = 0555,
--		.child = subdir,
--	},
--	{ }
--};
-
-@r3 depends on c1 && c2 && c3@
-expression c1.E1;
-identifier c1.sysctls;
-expression c2.E2;
-identifier c2.base;
-identifier c3.header;
-@@
-
-header =
--register_sysctl_table(base);
-+register_sysctl_subdir(E2, E1, sysctls);
-
-Generated-by: Coccinelle SmPL
+So use a helper to do precisely this.
 
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- drivers/macintosh/mac_hid.c | 25 ++-----------------------
- 1 file changed, 2 insertions(+), 23 deletions(-)
+ include/linux/sysctl.h | 11 +++++++++++
+ kernel/sysctl.c        | 37 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
 
-diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
-index 28b8581b44dd..736d0e151716 100644
---- a/drivers/macintosh/mac_hid.c
-+++ b/drivers/macintosh/mac_hid.c
-@@ -239,33 +239,12 @@ static struct ctl_table mac_hid_files[] = {
- 	{ }
- };
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index ddaa06ddd852..58bc978d4f03 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -205,6 +205,9 @@ void unregister_sysctl_table(struct ctl_table_header * table);
+ extern int sysctl_init(void);
+ extern void register_sysctl_init(const char *path, struct ctl_table *table,
+ 				 const char *table_name);
++extern struct ctl_table_header *register_sysctl_subdir(const char *base,
++						       const char *subdir,
++						       struct ctl_table *table);
+ void do_sysctl_args(void);
  
--/* dir in /proc/sys/dev */
--static struct ctl_table mac_hid_dir[] = {
--	{
--		.procname	= "mac_hid",
--		.maxlen		= 0,
--		.mode		= 0555,
--		.child		= mac_hid_files,
--	},
--	{ }
--};
--
--/* /proc/sys/dev itself, in case that is not there yet */
--static struct ctl_table mac_hid_root_dir[] = {
--	{
--		.procname	= "dev",
--		.maxlen		= 0,
--		.mode		= 0555,
--		.child		= mac_hid_dir,
--	},
--	{ }
--};
--
- static struct ctl_table_header *mac_hid_sysctl_header;
+ extern int pwrsw_enabled;
+@@ -223,6 +226,14 @@ static inline struct ctl_table_header *register_sysctl_table(struct ctl_table *
+ 	return NULL;
+ }
  
- static int __init mac_hid_init(void)
++static
++inline struct ctl_table_header *register_sysctl_subdir(const char *base,
++						       const char *subdir,
++						       struct ctl_table *table)
++{
++	return NULL;
++}
++
+ static inline struct ctl_table_header *register_sysctl_paths(
+ 			const struct ctl_path *path, struct ctl_table *table)
  {
--	mac_hid_sysctl_header = register_sysctl_table(mac_hid_root_dir);
-+	mac_hid_sysctl_header = register_sysctl_subdir("dev", "mac_hid",
-+						       mac_hid_files);
- 	if (!mac_hid_sysctl_header)
- 		return -ENOMEM;
- 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 008ac0576ae5..04ff032f2863 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -3195,6 +3195,43 @@ void __init register_sysctl_init(const char *path, struct ctl_table *table,
+ 	}
+ 	kmemleak_not_leak(hdr);
+ }
++
++struct ctl_table_header *register_sysctl_subdir(const char *base,
++						const char *subdir,
++						struct ctl_table *table)
++{
++	struct ctl_table_header *hdr = NULL;
++	struct ctl_table subdir_table[] = {
++		{
++			.procname	= subdir,
++			.mode		= 0555,
++			.child		= table,
++		},
++		{ }
++	};
++	struct ctl_table base_table[] = {
++		{
++			.procname	= base,
++			.mode		= 0555,
++			.child		= subdir_table,
++		},
++		{ }
++	};
++
++	if (!table->procname)
++		goto out;
++
++	hdr = register_sysctl_table(base_table);
++	if (unlikely(!hdr)) {
++		pr_err("failed when creating subdirectory sysctl %s/%s/%s\n",
++		       base, subdir, table->procname);
++		goto out;
++	}
++	kmemleak_not_leak(hdr);
++out:
++	return hdr;
++}
++EXPORT_SYMBOL_GPL(register_sysctl_subdir);
+ #endif /* CONFIG_SYSCTL */
+ /*
+  * No sense putting this after each symbol definition, twice,
 -- 
 2.26.2
 
