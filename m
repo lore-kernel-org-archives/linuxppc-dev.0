@@ -2,59 +2,49 @@ Return-Path: <SRS0=W4Hs=7L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 178CAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 01:18:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57F23C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 01:26:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 771E02078C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 01:18:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 771E02078C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id B5B1B20829
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 01:26:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5B1B20829
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=popple.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Y6Bl3hm9zDqZL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 11:18:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=zte.com.cn (client-ip=202.103.147.169; helo=mxct.zte.com.cn;
- envelope-from=wang.yi59@zte.com.cn; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zte.com.cn
-X-Greylist: delayed 972 seconds by postgrey-1.36 at bilbo;
- Fri, 29 May 2020 11:16:35 AEST
-Received: from mxct.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Y6Nf4KJPzDqZN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 11:26:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Y68z3wCvzDqXg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 11:16:34 +1000 (AEST)
-Received: from mse-fl1.zte.com.cn (unknown [10.30.14.238])
- by Forcepoint Email with ESMTPS id A9EB6564EFBEC90C84D5;
- Fri, 29 May 2020 09:00:13 +0800 (CST)
-Received: from notes_smtp.zte.com.cn (notes_smtp.zte.com.cn [10.30.1.239])
- by mse-fl1.zte.com.cn with ESMTP id 04T105YD060302;
- Fri, 29 May 2020 09:00:05 +0800 (GMT-8)
- (envelope-from wang.yi59@zte.com.cn)
-Received: from fox-host8.localdomain ([10.74.120.8])
- by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
- with ESMTP id 2020052909003964-3735731 ;
- Fri, 29 May 2020 09:00:39 +0800 
-From: Yi Wang <wang.yi59@zte.com.cn>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/nvram: Replace kmalloc with kzalloc in the error
- message
-Date: Fri, 29 May 2020 09:02:15 +0800
-Message-Id: <1590714135-15818-1-git-send-email-wang.yi59@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
- 8.5.3FP6|November 21, 2013) at 2020-05-29 09:00:39,
- Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2020-05-29 09:00:10, Serialize complete at 2020-05-29 09:00:10
-X-MAIL: mse-fl1.zte.com.cn 04T105YD060302
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Y6Lf2YHgzDqYd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 11:24:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=popple.id.au
+Received: by ozlabs.org (Postfix)
+ id 49Y6Lc5m18z9sSn; Fri, 29 May 2020 11:24:56 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49Y6Lc3prxz9sSm;
+ Fri, 29 May 2020 11:24:56 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/4] powerpc/64s: Don't init FSCR_DSCR in __init_FSCR()
+Date: Fri, 29 May 2020 11:24:55 +1000
+Message-ID: <1626791.NDfB26j6xz@townsend>
+In-Reply-To: <20200527145843.2761782-1-mpe@ellerman.id.au>
+References: <20200527145843.2761782-1-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,39 +56,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, tony.luck@intel.com, keescook@chromium.org,
- wang.liang82@zte.com.cn, gregkh@linuxfoundation.org, anton@enomsg.org,
- linux-kernel@vger.kernel.org, paulus@samba.org,
- Liao Pingfang <liao.pingfang@zte.com.cn>, xue.zhihong@zte.com.cn,
- ccross@android.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- allison@lohutok.net
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, npiggin@gmail.com,
+ jniethe5@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Liao Pingfang <liao.pingfang@zte.com.cn>
+For what it's worth I tested this series on Mambo PowerNV and it seems to 
+correctly enable/disable the prefix FSCR bit based on the cpu feature so feel 
+free to add:
 
-Use kzalloc instead of kmalloc in the error message according to
-the previous kzalloc() call.
+Tested-by: Alistair Popple <alistair@popple.id.au>
 
-Signed-off-by: Liao Pingfang <liao.pingfang@zte.com.cn>
----
- arch/powerpc/kernel/nvram_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Mikey is going to test out pseries.
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index fb4f610..c3a0c8d 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -892,7 +892,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	/* Create our OS partition */
- 	new_part = kzalloc(sizeof(*new_part), GFP_KERNEL);
- 	if (!new_part) {
--		pr_err("%s: kmalloc failed\n", __func__);
-+		pr_err("%s: kzalloc failed\n", __func__);
- 		return -ENOMEM;
- 	}
- 
--- 
-2.9.5
+- Alistair
+
+On Thursday, 28 May 2020 12:58:40 AM AEST Michael Ellerman wrote:
+> __init_FSCR() was added originally in commit 2468dcf641e4 ("powerpc:
+> Add support for context switching the TAR register") (Feb 2013), and
+> only set FSCR_TAR.
+> 
+> At that point FSCR (Facility Status and Control Register) was not
+> context switched, so the setting was permanent after boot.
+> 
+> Later we added initialisation of FSCR_DSCR to __init_FSCR(), in commit
+> 54c9b2253d34 ("powerpc: Set DSCR bit in FSCR setup") (Mar 2013), again
+> that was permanent after boot.
+> 
+> Then commit 2517617e0de6 ("powerpc: Fix context switch DSCR on
+> POWER8") (Aug 2013) added a limited context switch of FSCR, just the
+> FSCR_DSCR bit was context switched based on thread.dscr_inherit. That
+> commit said "This clears the H/FSCR DSCR bit initially", but it
+> didn't, it left the initialisation of FSCR_DSCR in __init_FSCR().
+> However the initial context switch from init_task to pid 1 would clear
+> FSCR_DSCR because thread.dscr_inherit was 0.
+> 
+> That commit also introduced the requirement that FSCR_DSCR be clear
+> for user processes, so that we can take the facility unavailable
+> interrupt in order to manage dscr_inherit.
+> 
+> Then in commit 152d523e6307 ("powerpc: Create context switch helpers
+> save_sprs() and restore_sprs()") (Dec 2015) FSCR was added to
+> thread_struct. However it still wasn't fully context switched, we just
+> took the existing value and set FSCR_DSCR if the new thread had
+> dscr_inherit set. FSCR was still initialised at boot to FSCR_DSCR |
+> FSCR_TAR, but that value was not propagated into the thread_struct, so
+> the initial context switch set FSCR_DSCR back to 0.
+> 
+> Finally commit b57bd2de8c6c ("powerpc: Improve FSCR init and context
+> switching") (Jun 2016) added a full context switch of the FSCR, and
+> added an initialisation of init_task.thread.fscr to FSCR_TAR |
+> FSCR_EBB, but omitted FSCR_DSCR.
+> 
+> The end result is that swapper runs with FSCR_DSCR set because of the
+> initialisation in __init_FSCR(), but no other processes do, they use
+> the value from init_task.thread.fscr.
+> 
+> Having FSCR_DSCR set for swapper allows it to access SPR 3 from
+> userspace, but swapper never runs userspace, so it has no useful
+> effect. It's also confusing to have the value initialised in two
+> places to two different values.
+> 
+> So remove FSCR_DSCR from __init_FSCR(), this at least gets us to the
+> point where there's a single value of FSCR, even if it's still set in
+> two places.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/cpu_setup_power.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/cpu_setup_power.S
+> b/arch/powerpc/kernel/cpu_setup_power.S index a460298c7ddb..f91ecb10d0ae
+> 100644
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -184,7 +184,7 @@ _GLOBAL(__restore_cpu_power9)
+> 
+>  __init_FSCR:
+>  	mfspr	r3,SPRN_FSCR
+> -	ori	r3,r3,FSCR_TAR|FSCR_DSCR|FSCR_EBB
+> +	ori	r3,r3,FSCR_TAR|FSCR_EBB
+>  	mtspr	SPRN_FSCR,r3
+>  	blr
+
+
+
 
