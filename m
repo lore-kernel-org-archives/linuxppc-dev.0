@@ -3,59 +3,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54810C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:56:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7E5CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:57:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08A30207D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:56:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08A30207D4
+	by mail.kernel.org (Postfix) with ESMTPS id 9A846207D4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 07:57:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A846207D4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YH1v5P9nzDqjJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:56:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YH432BKTzDqfb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 17:57:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.215.196;
- helo=mail-pg1-f196.google.com; envelope-from=mcgrof@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.215.195;
+ helo=mail-pg1-f195.google.com; envelope-from=mcgrof@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-pg1-f196.google.com (mail-pg1-f196.google.com
- [209.85.215.196])
+Received: from mail-pg1-f195.google.com (mail-pg1-f195.google.com
+ [209.85.215.195])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YGhy2JH4zDqQy
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YGhy6pGRzDqQy
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 17:41:22 +1000 (AEST)
-Received: by mail-pg1-f196.google.com with SMTP id o6so191112pgh.2
+Received: by mail-pg1-f195.google.com with SMTP id o6so191126pgh.2
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 00:41:22 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Gyi+SSBMYaz8TR5pIeizC0x+opRDWqonQ2PbJtJFBcU=;
- b=hF9Zqoy/iTgVF6pOAoEQC+aC0craTW/GvM8V1DWHXK+SHfIlEc0Od/id/k2dYww4Ls
- sCPQ8AuFgxxu9+Xq9pdCRRrIkm3d7tA2Q3pyaJzTstwHBJP/LU1NJwkA7ijm+pVfSlF3
- wrnZmkXHhgVsqlhEIJKZJxUIc2cP2HfQbT5hH438gsvPuL99J/GvZrqSloXMWqkEblxW
- zgDZkAmbluwdwSqFYBgsuArssp6yIezzYSz2vsfhBEYIED7d26DKqFwuCeDhMhTg8RQ0
- sfWZFMRzsvClTZNl5fSV29HvpNoPxShS3Z6c0e0K5jdU0SklqMAuSH193wTLOf/X9DJJ
- 1rNA==
-X-Gm-Message-State: AOAM531WFM2GmJ9QYZ6t+R4fIcIJmezyOLbmrnPPpzzv9bjR8U86PBYE
- A1muxcM+R7b6Z+Ur552T2do=
-X-Google-Smtp-Source: ABdhPJx56643L02wDwth5rceoeGJdrDM09GlBME9Pg+5yDtZkMeY7H83kJ7EluZRQYSUUOaPNTyILA==
-X-Received: by 2002:aa7:9510:: with SMTP id b16mr7400994pfp.265.1590738079523; 
- Fri, 29 May 2020 00:41:19 -0700 (PDT)
+ bh=sBgsWCIFjc1dCALH3PIiiJW4ZW3ozJ7JvpAnInxDZto=;
+ b=UCwx5hxZ2daHjNgWu8a4asDxueDyWW2gHCEDJ/Rg/qLhIs/SUlXC+leSvj5qPBBE9q
+ ggZzYLwKApj1w2Q3QIWkhA5DagxQTVpJbI3YWgj72NbmWrZeg97du/k19GMFp474mmz6
+ ct5OY7hy1Cna/L09nVhVPW6ScX6UxomVZNaW0vAmXUui5whzIj8Ue5QMCTkKGKIjYSCO
+ iVYQ4hkxUQ0lDWQFMIx3M5UNRv3XylHuHmGxD4VkvrtbhigAOlKIfiU2ZTkzrdRcIOHg
+ iCK9Vb2zTXiZzKVFHDccoOUU3BSla+LgeB4YpuTBc+CpHPjfkSuMz8LBZapuAi/4jjY7
+ RYKQ==
+X-Gm-Message-State: AOAM5330OdVNNlGu2sC8sFX9md+dPw3oj7qX9PNM2e2cQVuf07AFOm5Q
+ do+H1MjLNwJ4FdFyHEgp55Q=
+X-Google-Smtp-Source: ABdhPJzuX8lSSg8Aasn2k4DvlaVD+6USysUPj9KRkIoQC5Conauc3KXazu1gR/0/ORcChuqRpyUMwQ==
+X-Received: by 2002:aa7:9f5a:: with SMTP id h26mr7127671pfr.51.1590738080556; 
+ Fri, 29 May 2020 00:41:20 -0700 (PDT)
 Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
- by smtp.gmail.com with ESMTPSA id s63sm7735409pjj.16.2020.05.29.00.41.13
+ by smtp.gmail.com with ESMTPSA id p19sm6115830pfn.216.2020.05.29.00.41.13
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Fri, 29 May 2020 00:41:16 -0700 (PDT)
 Received: by 42.do-not-panic.com (Postfix, from userid 1000)
- id D3A3042349; Fri, 29 May 2020 07:41:10 +0000 (UTC)
+ id C929442341; Fri, 29 May 2020 07:41:10 +0000 (UTC)
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  ebiederm@xmission.com, axboe@kernel.dk, clemens@ladisch.de, arnd@arndb.de,
@@ -65,10 +65,10 @@ To: keescook@chromium.org, yzaikin@google.com, nixiaoming@huawei.com,
  viro@zeniv.linux.org.uk, mark@fasheh.com, jlbec@evilplan.org,
  joseph.qi@linux.alibaba.com, vbabka@suse.cz, sfr@canb.auug.org.au,
  jack@suse.cz, amir73il@gmail.com, rafael@kernel.org, tytso@mit.edu
-Subject: [PATCH 08/13] inotify: simplify sysctl declaration with
+Subject: [PATCH 07/13] test_sysctl: use new sysctl subdir helper
  register_sysctl_subdir()
-Date: Fri, 29 May 2020 07:41:03 +0000
-Message-Id: <20200529074108.16928-9-mcgrof@kernel.org>
+Date: Fri, 29 May 2020 07:41:02 +0000
+Message-Id: <20200529074108.16928-8-mcgrof@kernel.org>
 X-Mailer: git-send-email 2.23.0.rc1
 In-Reply-To: <20200529074108.16928-1-mcgrof@kernel.org>
 References: <20200529074108.16928-1-mcgrof@kernel.org>
@@ -93,100 +93,140 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Xiaoming Ni <nixiaoming@huawei.com>
+This simplifies the code considerably. The following coccinelle
+SmPL grammar rule was used to transform this code.
 
-move inotify_user sysctl to inotify_user.c and use the new
-register_sysctl_subdir() helper.
+// pycocci sysctl-subdir.cocci lib/test_sysctl.c
 
-Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
+@c1@
+expression E1;
+identifier subdir, sysctls;
+@@
+
+static struct ctl_table subdir[] = {
+	{
+		.procname = E1,
+		.maxlen = 0,
+		.mode = 0555,
+		.child = sysctls,
+	},
+	{ }
+};
+
+@c2@
+identifier c1.subdir;
+
+expression E2;
+identifier base;
+@@
+
+static struct ctl_table base[] = {
+	{
+		.procname = E2,
+		.maxlen = 0,
+		.mode = 0555,
+		.child = subdir,
+	},
+	{ }
+};
+
+@c3@
+identifier c2.base;
+identifier header;
+@@
+
+header = register_sysctl_table(base);
+
+@r1 depends on c1 && c2 && c3@
+expression c1.E1;
+identifier c1.subdir, c1.sysctls;
+@@
+
+-static struct ctl_table subdir[] = {
+-	{
+-		.procname = E1,
+-		.maxlen = 0,
+-		.mode = 0555,
+-		.child = sysctls,
+-	},
+-	{ }
+-};
+
+@r2 depends on c1 && c2 && c3@
+identifier c1.subdir;
+
+expression c2.E2;
+identifier c2.base;
+@@
+-static struct ctl_table base[] = {
+-	{
+-		.procname = E2,
+-		.maxlen = 0,
+-		.mode = 0555,
+-		.child = subdir,
+-	},
+-	{ }
+-};
+
+@r3 depends on c1 && c2 && c3@
+expression c1.E1;
+identifier c1.sysctls;
+expression c2.E2;
+identifier c2.base;
+identifier c3.header;
+@@
+
+header =
+-register_sysctl_table(base);
++register_sysctl_subdir(E2, E1, sysctls);
+
+Generated-by: Coccinelle SmPL
 Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
 ---
- fs/notify/inotify/inotify_user.c | 11 ++++++++++-
- include/linux/inotify.h          |  3 ---
- kernel/sysctl.c                  | 11 -----------
- 3 files changed, 10 insertions(+), 15 deletions(-)
+ lib/test_sysctl.c | 23 ++---------------------
+ 1 file changed, 2 insertions(+), 21 deletions(-)
 
-diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
-index f88bbcc9efeb..64859fbf8463 100644
---- a/fs/notify/inotify/inotify_user.c
-+++ b/fs/notify/inotify/inotify_user.c
-@@ -46,7 +46,7 @@ struct kmem_cache *inotify_inode_mark_cachep __read_mostly;
- 
- #include <linux/sysctl.h>
- 
--struct ctl_table inotify_table[] = {
-+static struct ctl_table inotify_table[] = {
- 	{
- 		.procname	= "max_user_instances",
- 		.data		= &init_user_ns.ucount_max[UCOUNT_INOTIFY_INSTANCES],
-@@ -73,6 +73,14 @@ struct ctl_table inotify_table[] = {
- 	},
+diff --git a/lib/test_sysctl.c b/lib/test_sysctl.c
+index 84eaae22d3a6..b17581307756 100644
+--- a/lib/test_sysctl.c
++++ b/lib/test_sysctl.c
+@@ -128,26 +128,6 @@ static struct ctl_table test_table[] = {
  	{ }
  };
-+
-+static void __init inotify_sysctls_init(void)
-+{
-+	register_sysctl_subdir("fs", "inotify", inotify_table);
-+}
-+
-+#else
-+#define inotify_sysctls_init() do { } while (0)
- #endif /* CONFIG_SYSCTL */
  
- static inline __u32 inotify_arg_to_mask(u32 arg)
-@@ -826,6 +834,7 @@ static int __init inotify_user_setup(void)
- 	inotify_max_queued_events = 16384;
- 	init_user_ns.ucount_max[UCOUNT_INOTIFY_INSTANCES] = 128;
- 	init_user_ns.ucount_max[UCOUNT_INOTIFY_WATCHES] = 8192;
-+	inotify_sysctls_init();
- 
- 	return 0;
- }
-diff --git a/include/linux/inotify.h b/include/linux/inotify.h
-index 6a24905f6e1e..8d20caa1b268 100644
---- a/include/linux/inotify.h
-+++ b/include/linux/inotify.h
-@@ -7,11 +7,8 @@
- #ifndef _LINUX_INOTIFY_H
- #define _LINUX_INOTIFY_H
- 
--#include <linux/sysctl.h>
- #include <uapi/linux/inotify.h>
- 
--extern struct ctl_table inotify_table[]; /* for sysctl */
--
- #define ALL_INOTIFY_BITS (IN_ACCESS | IN_MODIFY | IN_ATTRIB | IN_CLOSE_WRITE | \
- 			  IN_CLOSE_NOWRITE | IN_OPEN | IN_MOVED_FROM | \
- 			  IN_MOVED_TO | IN_CREATE | IN_DELETE | \
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 04ff032f2863..30c2d521502a 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -123,10 +123,6 @@ static const int maxolduid = 65535;
- static int ngroups_max = NGROUPS_MAX;
- static const int cap_last_cap = CAP_LAST_CAP;
- 
--#ifdef CONFIG_INOTIFY_USER
--#include <linux/inotify.h>
--#endif
--
- #ifdef CONFIG_PROC_SYSCTL
- 
- /**
-@@ -3012,13 +3008,6 @@ static struct ctl_table fs_table[] = {
- 		.proc_handler	= proc_dointvec,
- 	},
- #endif
--#ifdef CONFIG_INOTIFY_USER
+-static struct ctl_table test_sysctl_table[] = {
 -	{
--		.procname	= "inotify",
+-		.procname	= "test_sysctl",
+-		.maxlen		= 0,
 -		.mode		= 0555,
--		.child		= inotify_table,
+-		.child		= test_table,
 -	},
--#endif	
- #ifdef CONFIG_EPOLL
- 	{
- 		.procname	= "epoll",
+-	{ }
+-};
+-
+-static struct ctl_table test_sysctl_root_table[] = {
+-	{
+-		.procname	= "debug",
+-		.maxlen		= 0,
+-		.mode		= 0555,
+-		.child		= test_sysctl_table,
+-	},
+-	{ }
+-};
+-
+ static struct ctl_table_header *test_sysctl_header;
+ 
+ static int __init test_sysctl_init(void)
+@@ -155,7 +135,8 @@ static int __init test_sysctl_init(void)
+ 	test_data.bitmap_0001 = kzalloc(SYSCTL_TEST_BITMAP_SIZE/8, GFP_KERNEL);
+ 	if (!test_data.bitmap_0001)
+ 		return -ENOMEM;
+-	test_sysctl_header = register_sysctl_table(test_sysctl_root_table);
++	test_sysctl_header = register_sysctl_subdir("debug", "test_sysctl",
++						    test_table);
+ 	if (!test_sysctl_header) {
+ 		kfree(test_data.bitmap_0001);
+ 		return -ENOMEM;
 -- 
 2.26.2
 
