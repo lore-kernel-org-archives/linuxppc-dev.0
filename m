@@ -2,56 +2,73 @@ Return-Path: <SRS0=W4Hs=7L=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35FDFC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 12:18:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3819AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 12:21:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E125E2074D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 12:18:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E125E2074D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id E3B7320723
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 12:21:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3B7320723
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49YNs93W2JzDqfy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 22:18:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49YNwC2VCkzDqjM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 May 2020 22:21:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
- envelope-from=nixiaoming@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.215.193;
+ helo=mail-pg1-f193.google.com; envelope-from=mcgrof@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-pg1-f193.google.com (mail-pg1-f193.google.com
+ [209.85.215.193])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49YNmv1lftzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 22:15:10 +1000 (AEST)
-Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 9A782686155B6A948EA5;
- Fri, 29 May 2020 19:59:12 +0800 (CST)
-Received: from [127.0.0.1] (10.67.102.197) by DGGEMS411-HUB.china.huawei.com
- (10.3.19.211) with Microsoft SMTP Server id 14.3.487.0; Fri, 29 May 2020
- 19:59:08 +0800
-Subject: Re: [PATCH 09/13] firmware_loader: simplify sysctl declaration with
- register_sysctl_subdir()
-To: Greg KH <gregkh@linuxfoundation.org>, Luis Chamberlain <mcgrof@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49YNpk5ZP6zDqfd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 22:16:46 +1000 (AEST)
+Received: by mail-pg1-f193.google.com with SMTP id d10so1417383pgn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2020 05:16:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=1QRcJc+0V37tU9/CoMttBOeUhGM/q++JCRSrvKfZi1c=;
+ b=fqG4bLy1TRVuFELdorsqknCk8ONEkHcZI4c02GoFRogMnGsZyQK2UjW3jM0H2knYlh
+ 9tcXb5jM2dC1dsEcMtDaikARE953wr87bhq+9fQIRlzL10tk6ZpshTTKuBZex86k7boQ
+ 6vXIFj5oTmA6iYYD7jZdeuc76jxXtkJUxekVY7O6WYQHbfdaz5rFCAIHeRzpDcY9/Wgr
+ xQnwhT6lDtZ6wGgu7PEzSsBDR3xiONTZ380UktHaEfzSooXE1DF3VMhecHWB/lePtAzy
+ b/xGzJhcoIGII7TwoLCmF0GHua+P65DZ2ZDG4UoHu/DYyk/eJDlI7GtKhlleuaGpYD/2
+ ffSg==
+X-Gm-Message-State: AOAM533+Fch2NUORZIqgecqOKpQpYZzxQSt1MIWy0FBLPitoK5+s7P4m
+ HrLOAAWRGNkGUYRoociLNo8=
+X-Google-Smtp-Source: ABdhPJyXXen44MBfu6MyEx4C7z2Ttl/Mr2eBWsGlqpPiqejkkDLE4gTu0+5b69yRv2/USHCPT392yg==
+X-Received: by 2002:a63:dc0f:: with SMTP id s15mr7843478pgg.182.1590754602683; 
+ Fri, 29 May 2020 05:16:42 -0700 (PDT)
+Received: from 42.do-not-panic.com (42.do-not-panic.com. [157.230.128.187])
+ by smtp.gmail.com with ESMTPSA id z13sm7663876pfj.153.2020.05.29.05.16.41
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 29 May 2020 05:16:41 -0700 (PDT)
+Received: by 42.do-not-panic.com (Postfix, from userid 1000)
+ id 982654046C; Fri, 29 May 2020 12:16:40 +0000 (UTC)
+Date: Fri, 29 May 2020 12:16:40 +0000
+From: Luis Chamberlain <mcgrof@kernel.org>
+To: Jani Nikula <jani.nikula@linux.intel.com>
+Subject: Re: [PATCH 01/13] sysctl: add new register_sysctl_subdir() helper
+Message-ID: <20200529121640.GE11244@42.do-not-panic.com>
 References: <20200529074108.16928-1-mcgrof@kernel.org>
- <20200529074108.16928-10-mcgrof@kernel.org>
- <20200529102613.GA1345939@kroah.com>
-From: Xiaoming Ni <nixiaoming@huawei.com>
-Message-ID: <066dcdb1-c1db-e154-8697-f3a8907a538c@huawei.com>
-Date: Fri, 29 May 2020 19:59:07 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.2
+ <20200529074108.16928-2-mcgrof@kernel.org>
+ <87d06n17mm.fsf@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20200529102613.GA1345939@kroah.com>
-Content-Type: text/plain; charset="gbk"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.102.197]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87d06n17mm.fsf@intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,162 +85,53 @@ Cc: jack@suse.cz, rafael@kernel.org, airlied@linux.ie, amir73il@gmail.com,
  joseph.qi@linux.alibaba.com, sfr@canb.auug.org.au, mark@fasheh.com,
  rdna@fb.com, yzaikin@google.com, joonas.lahtinen@linux.intel.com,
  keescook@chromium.org, arnd@arndb.de, intel-gfx@lists.freedesktop.org,
- jani.nikula@linux.intel.com, julia.lawall@lip6.fr, jlbec@evilplan.org,
- rodrigo.vivi@intel.com, vbabka@suse.cz, axboe@kernel.dk, tytso@mit.edu,
- linux-kernel@vger.kernel.org, ebiederm@xmission.com, daniel@ffwll.ch,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- ocfs2-devel@oss.oracle.com, viro@zeniv.linux.org.uk
+ julia.lawall@lip6.fr, jlbec@evilplan.org, rodrigo.vivi@intel.com,
+ nixiaoming@huawei.com, vbabka@suse.cz, axboe@kernel.dk, tytso@mit.edu,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ ebiederm@xmission.com, daniel@ffwll.ch, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, ocfs2-devel@oss.oracle.com,
+ viro@zeniv.linux.org.uk
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2020/5/29 18:26, Greg KH wrote:
-> On Fri, May 29, 2020 at 07:41:04AM +0000, Luis Chamberlain wrote:
->> From: Xiaoming Ni <nixiaoming@huawei.com>
->>
->> Move the firmware config sysctl table to fallback_table.c and use the
->> new register_sysctl_subdir() helper. This removes the clutter from
->> kernel/sysctl.c.
->>
->> Signed-off-by: Xiaoming Ni <nixiaoming@huawei.com>
->> Signed-off-by: Luis Chamberlain <mcgrof@kernel.org>
->> ---
->>   drivers/base/firmware_loader/fallback.c       |  4 ++++
->>   drivers/base/firmware_loader/fallback.h       | 11 ++++++++++
->>   drivers/base/firmware_loader/fallback_table.c | 22 +++++++++++++++++--
->>   include/linux/sysctl.h                        |  1 -
->>   kernel/sysctl.c                               |  7 ------
->>   5 files changed, 35 insertions(+), 10 deletions(-)
+On Fri, May 29, 2020 at 11:13:21AM +0300, Jani Nikula wrote:
+> On Fri, 29 May 2020, Luis Chamberlain <mcgrof@kernel.org> wrote:
+> > Often enough all we need to do is create a subdirectory so that
+> > we can stuff sysctls underneath it. However, *if* that directory
+> > was already created early on the boot sequence we really have no
+> > need to use the full boiler plate code for it, we can just use
+> > local variables to help us guide sysctl to place the new leaf files.
 > 
-> So it now takes more lines than the old stuff?  :(
-> 
-CONFIG_FW_LOADER = m
-Before cleaning, no matter whether ko is loaded or not, the sysctl
-interface will be created, but now we need to add register and
-unregister interfaces, so the number of lines of code has increased
+> I find it hard to figure out the lifetime requirements for the tables
+> passed in; when it's okay to use local variables and when you need
+> longer lifetimes. It's not documented, everyone appears to be using
+> static tables for this. It's far from obvious.
 
->>
->> diff --git a/drivers/base/firmware_loader/fallback.c b/drivers/base/firmware_loader/fallback.c
->> index d9ac7296205e..8190653ae9a3 100644
->> --- a/drivers/base/firmware_loader/fallback.c
->> +++ b/drivers/base/firmware_loader/fallback.c
->> @@ -200,12 +200,16 @@ static struct class firmware_class = {
->>   
->>   int register_sysfs_loader(void)
->>   {
->> +	int ret = register_firmware_config_sysctl();
->> +	if (ret != 0)
->> +		return ret;
-> 
-> checkpatch :(
-This is my fault,  thanks for your guidance
+I agree 2000% that it is not obvious. What made me consider it was that
+I *knew* that the base directory would already exist, so it wouldn't
+make sense for the code to rely on earlier parts of a table if part
+of the hierarchy already existed.
 
-> 
->>   	return class_register(&firmware_class);
-> 
-> And if that fails?
-> 
-Yes, it is better to call register_firmware_config_sysctl() after 
-class_register().
-thanks for your guidance.
+In fact, a *huge* part of the due dilligence on this and futre series
+on this cleanup will be to be 100% sure that the base path is already
+created. And so this use is obviously dangerous, you just *need* to
+know that the base path is created before.
 
+Non-posted changes also deal with link order to help address this
+in other places, given that link order controls how *initcalls()
+(early_initcall(), late_initcall(), etc) are ordered if you have
+multiple of these.
 
->>   }
->>   
->>   void unregister_sysfs_loader(void)
->>   {
->>   	class_unregister(&firmware_class);
->> +	unregister_firmware_config_sysctl();
->>   }
->>   
->>   static ssize_t firmware_loading_show(struct device *dev,
->> diff --git a/drivers/base/firmware_loader/fallback.h b/drivers/base/firmware_loader/fallback.h
->> index 06f4577733a8..7d2cb5f6ceb8 100644
->> --- a/drivers/base/firmware_loader/fallback.h
->> +++ b/drivers/base/firmware_loader/fallback.h
->> @@ -42,6 +42,17 @@ void fw_fallback_set_default_timeout(void);
->>   
->>   int register_sysfs_loader(void);
->>   void unregister_sysfs_loader(void);
->> +#ifdef CONFIG_SYSCTL
->> +extern int register_firmware_config_sysctl(void);
->> +extern void unregister_firmware_config_sysctl(void);
->> +#else
->> +static inline int register_firmware_config_sysctl(void)
->> +{
->> +	return 0;
->> +}
->> +static inline void unregister_firmware_config_sysctl(void) { }
->> +#endif /* CONFIG_SYSCTL */
->> +
->>   #else /* CONFIG_FW_LOADER_USER_HELPER */
->>   static inline int firmware_fallback_sysfs(struct firmware *fw, const char *name,
->>   					  struct device *device,
->> diff --git a/drivers/base/firmware_loader/fallback_table.c b/drivers/base/firmware_loader/fallback_table.c
->> index 46a731dede6f..4234aa5ee5df 100644
->> --- a/drivers/base/firmware_loader/fallback_table.c
->> +++ b/drivers/base/firmware_loader/fallback_table.c
->> @@ -24,7 +24,7 @@ struct firmware_fallback_config fw_fallback_config = {
->>   EXPORT_SYMBOL_NS_GPL(fw_fallback_config, FIRMWARE_LOADER_PRIVATE);
->>   
->>   #ifdef CONFIG_SYSCTL
->> -struct ctl_table firmware_config_table[] = {
->> +static struct ctl_table firmware_config_table[] = {
->>   	{
->>   		.procname	= "force_sysfs_fallback",
->>   		.data		= &fw_fallback_config.force_sysfs_fallback,
->> @@ -45,4 +45,22 @@ struct ctl_table firmware_config_table[] = {
->>   	},
->>   	{ }
->>   };
->> -#endif
->> +
->> +static struct ctl_table_header *hdr;
->> +int register_firmware_config_sysctl(void)
->> +{
->> +	if (hdr)
->> +		return -EEXIST;
-> 
-> How can hdr be set?
-> 
-It's my mistake, register_firmware_config_sysctl() is not exported,
-there will be no repeated calls.
-thanks for your guidance.
+I had a link order series long ago which augmented our ability to make
+things clearer at a link order. Eventually I believe this will become
+more important, specially as we end up wanting to async more code.
 
->> +	hdr = register_sysctl_subdir("kernel", "firmware_config",
->> +				     firmware_config_table);
->> +	if (!hdr)
->> +		return -ENOMEM;
->> +	return 0;
->> +}
->> +
->> +void unregister_firmware_config_sysctl(void)
->> +{
->> +	if (hdr)
->> +		unregister_sysctl_table(hdr);
-> 
-> Why can't unregister_sysctl_table() take a null pointer value?
-Sorry, I didn't notice that the unregister_sysctl_table() already checks
-the input parameters.
-thanks for your guidance.
+For now, we can only rely on manual code inspection for ensuring
+proper ordering. Part of the implicit aspects of this cleanup is
+to slowly make these things clearer for each base path.
 
+So... the "fs" base path will actually end up being created in
+fs/sysctl.c after we are *fully* done with the fs sysctl cleanups.
 
-> And what sets 'hdr' (worst name for a static variable) to NULL so that
-> it knows not to be unregistered again as it looks like
-> register_firmware_config_sysctl() could be called multiple times.
-
-How about renaming hdr to firmware_config_sysct_table_header?
-
-+ if (hdr)
-+ 	return -EEXIST;
-After deleting this code in register_firmware_config_sysctl(), and 
-considering register_firmware_config_sysctl() and 
-unregister_firmware_config_sysctl() are not exported, whether there is
-no need to add  "hdr = NULL;" ?
-
-Thanks
-Xiaoming Ni
-
-
-
-
+  Luis
