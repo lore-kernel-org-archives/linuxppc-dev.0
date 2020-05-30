@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A2BDC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8811C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:20:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0F6A3207BC
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:18:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F6A3207BC
+	by mail.kernel.org (Postfix) with ESMTPS id 57D5A207BC
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:20:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57D5A207BC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ZQ681BHhzDqtW
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 14:18:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ZQ7q60gRzDqtK
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 14:20:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -27,16 +27,17 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 49ZPw76nP2zDqly
+ by lists.ozlabs.org (Postfix) with ESMTP id 49ZPw769PFzDqlr
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2020 14:09:59 +1000 (AEST)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 5FCE927F1F; Sat, 30 May 2020 19:20:33 -0400 (EDT)
+ id 80AD027F9A; Sat, 30 May 2020 19:20:33 -0400 (EDT)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <996f835d2f3d90baaaf9ee954e252d06e8886c6f.1590880623.git.fthain@telegraphics.com.au>
+Message-Id: <b63d56ecb6e75f11a0bf02231f3b2db656a528a3.1590880623.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1590880623.git.fthain@telegraphics.com.au>
 References: <cover.1590880623.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 2/8] macintosh/adb-iop: Correct comment text
+Subject: [PATCH 3/8] macintosh/adb-iop: Adopt bus reset algorithm from
+ via-macii driver
 Date: Sun, 31 May 2020 09:17:03 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,78 +56,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch improves comment style and corrects some misunderstandings
-in the text.
+This algorithm is slightly shorter and avoids the surprising
+adb_iop_start() call in adb_iop_poll().
 
 Cc: Joshua Thompson <funaho@jurai.org>
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/adb-iop.c | 29 +++++++++++++----------------
- 1 file changed, 13 insertions(+), 16 deletions(-)
+ drivers/macintosh/adb-iop.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
-index ce28ff40fb9c..ca3b411b0742 100644
+index ca3b411b0742..c3089dacf2e2 100644
 --- a/drivers/macintosh/adb-iop.c
 +++ b/drivers/macintosh/adb-iop.c
-@@ -101,11 +101,10 @@ static void adb_iop_listen(struct iop_msg *msg)
+@@ -238,24 +238,19 @@ int adb_iop_autopoll(int devs)
  
- 	req = current_req;
+ void adb_iop_poll(void)
+ {
+-	if (adb_iop_state == idle)
+-		adb_iop_start();
+ 	iop_ism_irq_poll(ADB_IOP);
+ }
  
--	/* Handle a timeout. Timeout packets seem to occur even after */
--	/* we've gotten a valid reply to a TALK, so I'm assuming that */
--	/* a "timeout" is actually more like an "end-of-data" signal. */
--	/* We need to send back a timeout packet to the IOP to shut   */
--	/* it up, plus complete the current request, if any.          */
-+	/* Handle a timeout. Timeout packets seem to occur even after
-+	 * we've gotten a valid reply to a TALK, presumably because of
-+	 * autopolling.
-+	 */
- 
- 	if (amsg->flags & ADB_IOP_TIMEOUT) {
- 		msg->reply[0] = ADB_IOP_TIMEOUT | ADB_IOP_AUTOPOLL;
-@@ -115,9 +114,6 @@ static void adb_iop_listen(struct iop_msg *msg)
- 			adb_iop_end_req(req, idle);
- 		}
- 	} else {
--		/* TODO: is it possible for more than one chunk of data  */
--		/*       to arrive before the timeout? If so we need to */
--		/*       use reply_ptr here like the other drivers do.  */
- 		if ((adb_iop_state == awaiting_reply) &&
- 		    (amsg->flags & ADB_IOP_EXPLICIT)) {
- 			req->reply_len = amsg->count + 1;
-@@ -152,23 +148,24 @@ static void adb_iop_start(void)
- 
- 	local_irq_save(flags);
- 
--	/* The IOP takes MacII-style packets, so */
--	/* strip the initial ADB_PACKET byte.    */
+ int adb_iop_reset_bus(void)
+ {
+-	struct adb_request req = {
+-		.reply_expected = 0,
+-		.nbytes = 2,
+-		.data = { ADB_PACKET, 0 },
+-	};
 -
-+	/* The IOP takes MacII-style packets, so strip the initial
-+	 * ADB_PACKET byte.
-+	 */
- 	amsg.flags = ADB_IOP_EXPLICIT;
- 	amsg.count = req->nbytes - 2;
+-	adb_iop_write(&req);
+-	while (!req.complete) {
+-		adb_iop_poll();
+-		schedule();
+-	}
++	struct adb_request req;
++
++	/* Command = 0, Address = ignored */
++	adb_request(&req, NULL, ADBREQ_NOSEND, 1, ADB_BUSRESET);
++	adb_iop_send_request(&req, 1);
++
++	/* Don't want any more requests during the Global Reset low time. */
++	mdelay(3);
  
--	/* amsg.data immediately follows amsg.cmd, effectively making */
--	/* amsg.cmd a pointer to the beginning of a full ADB packet.  */
-+	/* amsg.data immediately follows amsg.cmd, effectively making
-+	 * &amsg.cmd a pointer to the beginning of a full ADB packet.
-+	 */
- 	memcpy(&amsg.cmd, req->data + 1, req->nbytes - 1);
- 
- 	req->sent = 1;
- 	adb_iop_state = sending;
- 	local_irq_restore(flags);
- 
--	/* Now send it. The IOP manager will call adb_iop_complete */
--	/* when the packet has been sent.                          */
--
-+	/* Now send it. The IOP manager will call adb_iop_complete
-+	 * when the message has been sent.
-+	 */
- 	iop_send_message(ADB_IOP, ADB_CHAN, req, sizeof(amsg), (__u8 *)&amsg,
- 			 adb_iop_complete);
+ 	return 0;
  }
 -- 
 2.26.2
