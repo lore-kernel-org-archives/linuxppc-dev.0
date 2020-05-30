@@ -2,23 +2,24 @@ Return-Path: <SRS0=qrpl=7M=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4865C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2020 17:18:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ED18C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2020 17:24:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 545A22077D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2020 17:18:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 545A22077D
+	by mail.kernel.org (Postfix) with ESMTPS id 0788920723
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 May 2020 17:24:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0788920723
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49Z7SB4HM6zDqlV
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 03:18:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49Z7b36vPszDqXM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 03:24:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,37 +28,42 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49Z7QK0XwWzDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2020 03:16:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49Z7YF2MvBzDqfv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2020 03:22:39 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49Z7Q8101rzB09b6;
- Sat, 30 May 2020 19:16:32 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49Z7Y64FKHzB09b6;
+ Sat, 30 May 2020 19:22:34 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id LtJtec1cgfzR; Sat, 30 May 2020 19:16:32 +0200 (CEST)
+ with ESMTP id oBdg8nh7GnbL; Sat, 30 May 2020 19:22:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49Z7Q802qdzB09b5;
- Sat, 30 May 2020 19:16:32 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49Z7Y62k5CzB09b5;
+ Sat, 30 May 2020 19:22:34 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 543C28B7B1;
- Sat, 30 May 2020 19:16:34 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B0A798B7B1;
+ Sat, 30 May 2020 19:22:36 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id CG9nwzsSTvMY; Sat, 30 May 2020 19:16:34 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 230B98B75E;
- Sat, 30 May 2020 19:16:34 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DBD8265A0D; Sat, 30 May 2020 17:16:33 +0000 (UTC)
-Message-Id: <b459e1600b969047a74e34251a84a3d6fdf1f312.1590858925.git.christophe.leroy@csgroup.eu>
+ with ESMTP id PZJBAGeee5Vz; Sat, 30 May 2020 19:22:36 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A9AD8B75E;
+ Sat, 30 May 2020 19:22:36 +0200 (CEST)
+Subject: Re: [PATCH] powerpc/32: disable KASAN with pages bigger than 16k
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2] powerpc/32s: Fix another build failure with
- CONFIG_PPC_KUAP_DEBUG
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 30 May 2020 17:16:33 +0000 (UTC)
+References: <7195fcde7314ccbf7a081b356084a69d421b10d4.1590660977.git.christophe.leroy@csgroup.eu>
+Message-ID: <afb1a3a9-8d7d-4c99-d42f-f6d78dcef0a5@csgroup.eu>
+Date: Sat, 30 May 2020 19:22:28 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.1
+MIME-Version: 1.0
+In-Reply-To: <7195fcde7314ccbf7a081b356084a69d421b10d4.1590660977.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,46 +80,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'thread' doesn't exist in kuap_check() macro.
 
-Use 'current' instead.
 
-Reported-by: kbuild test robot <lkp@intel.com>
-Fixes: a68c31fc01ef ("powerpc/32s: Implement Kernel Userspace Access Protection")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v2: Changed author and signed-off-by ... and added asm/bug.h
+Le 28/05/2020 à 12:17, Christophe Leroy a écrit :
+> Mapping of early shadow area is implemented by using a single static
+> page table having all entries pointing to the same early shadow page.
+> The shadow area must therefore occupy full PGD entries.
+> 
+> The shadow area has a size of 128Mbytes starting at 0xf8000000.
+> With 4k pages, a PGD entry is 4Mbytes
+> With 16k pages, a PGD entry is 64Mbytes
+> With 64k pages, a PGD entry is 256Mbytes which is too big.
 
-There are days when you'd better go sleeping instead of wanting to send the fix.
-And there are days you stare at your code, think it is good, prepare the patch,
-test it, find another bug, fix it, test it ... and send the first patch you prepared :(
-hence this second fix for the same bug.
----
- arch/powerpc/include/asm/book3s/32/kup.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+That's for 32k pages that a PGD is 256Mbytes.
 
-diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
-index db0a1c281587..a41cfc7cc669 100644
---- a/arch/powerpc/include/asm/book3s/32/kup.h
-+++ b/arch/powerpc/include/asm/book3s/32/kup.h
-@@ -2,6 +2,7 @@
- #ifndef _ASM_POWERPC_BOOK3S_32_KUP_H
- #define _ASM_POWERPC_BOOK3S_32_KUP_H
- 
-+#include <asm/bug.h>
- #include <asm/book3s/32/mmu-hash.h>
- 
- #ifdef __ASSEMBLY__
-@@ -75,7 +76,7 @@
- 
- .macro kuap_check	current, gpr
- #ifdef CONFIG_PPC_KUAP_DEBUG
--	lwz	\gpr, KUAP(thread)
-+	lwz	\gpr, THREAD + KUAP(\current)
- 999:	twnei	\gpr, 0
- 	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
- #endif
--- 
-2.25.0
+With 64k pages, a PGD entry is 1Gbytes which is too big.
 
+Michael, can you fix the commit log ?
+
+Thanks
+Christophe
+
+> 
+> Until we rework the early shadow mapping, disable KASAN when the
+> page size is too big.
+> 
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Fixes: 2edb16efc899 ("powerpc/32: Add KASAN support")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>   arch/powerpc/Kconfig | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1dfa59126fcf..066b36bf9efa 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -169,8 +169,8 @@ config PPC
+>   	select HAVE_ARCH_AUDITSYSCALL
+>   	select HAVE_ARCH_HUGE_VMAP		if PPC_BOOK3S_64 && PPC_RADIX_MMU
+>   	select HAVE_ARCH_JUMP_LABEL
+> -	select HAVE_ARCH_KASAN			if PPC32
+> -	select HAVE_ARCH_KASAN_VMALLOC		if PPC32
+> +	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
+> +	select HAVE_ARCH_KASAN_VMALLOC		if PPC32 && PPC_PAGE_SHIFT <= 14
+>   	select HAVE_ARCH_KGDB
+>   	select HAVE_ARCH_MMAP_RND_BITS
+>   	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
+> 
