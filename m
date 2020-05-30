@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D286C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15B8EC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:23:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DEE42070B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:21:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DEE42070B
+	by mail.kernel.org (Postfix) with ESMTPS id BB3F92070B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 04:23:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB3F92070B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ZQ9m3Pb9zDqdZ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 14:21:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ZQCP05y8zDqxM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 May 2020 14:23:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 49ZPw769LLzDqll
+ by lists.ozlabs.org (Postfix) with ESMTP id 49ZPw807s4zDqmC
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2020 14:09:59 +1000 (AEST)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id A111127F9B; Sat, 30 May 2020 19:20:33 -0400 (EDT)
+ id 8E2D627FEF; Sat, 30 May 2020 19:20:34 -0400 (EDT)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <bbe32b087c7e04d68e2425f6a2df4a414d167c32.1590880623.git.fthain@telegraphics.com.au>
+Message-Id: <6991996dd4aaf0b52cfd650172bf0f6fbe37a452.1590880623.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1590880623.git.fthain@telegraphics.com.au>
 References: <cover.1590880623.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 4/8] macintosh/adb-iop: Access current_req and adb_iop_state
- when inside lock
+Subject: [PATCH 7/8] macintosh/adb-iop: Implement sending -> idle state
+ transition
 Date: Sun, 31 May 2020 09:17:03 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,75 +56,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the redundant local_irq_save/restore() from adb_iop_start() because
-the caller has to do it anyway. This is the pattern used in via-macii.
+On leaving the 'sending' state, proceed to the 'idle' state if no reply is
+expected. Drop redundant test for adb_iop_state == sending && current_req.
 
 Cc: Joshua Thompson <funaho@jurai.org>
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/adb-iop.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ drivers/macintosh/adb-iop.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/macintosh/adb-iop.c b/drivers/macintosh/adb-iop.c
-index c3089dacf2e2..7ecc41bc7358 100644
+index f22792c95d4f..8594e4f9a830 100644
 --- a/drivers/macintosh/adb-iop.c
 +++ b/drivers/macintosh/adb-iop.c
-@@ -137,7 +137,6 @@ static void adb_iop_listen(struct iop_msg *msg)
+@@ -77,15 +77,14 @@ static void adb_iop_done(void)
  
- static void adb_iop_start(void)
+ static void adb_iop_complete(struct iop_msg *msg)
  {
--	unsigned long flags;
- 	struct adb_request *req;
- 	struct adb_iopmsg amsg;
+-	struct adb_request *req;
+ 	unsigned long flags;
  
-@@ -146,8 +145,6 @@ static void adb_iop_start(void)
- 	if (!req)
- 		return;
+ 	local_irq_save(flags);
  
--	local_irq_save(flags);
--
- 	/* The IOP takes MacII-style packets, so strip the initial
- 	 * ADB_PACKET byte.
- 	 */
-@@ -161,7 +158,6 @@ static void adb_iop_start(void)
+-	req = current_req;
+-	if ((adb_iop_state == sending) && req && req->reply_expected) {
++	if (current_req->reply_expected)
+ 		adb_iop_state = awaiting_reply;
+-	}
++	else
++		adb_iop_done();
  
- 	req->sent = 1;
- 	adb_iop_state = sending;
--	local_irq_restore(flags);
- 
- 	/* Now send it. The IOP manager will call adb_iop_complete
- 	 * when the message has been sent.
-@@ -208,13 +204,13 @@ static int adb_iop_write(struct adb_request *req)
- 		return -EINVAL;
- 	}
- 
--	local_irq_save(flags);
--
- 	req->next = NULL;
- 	req->sent = 0;
- 	req->complete = 0;
- 	req->reply_len = 0;
- 
-+	local_irq_save(flags);
-+
- 	if (current_req != 0) {
- 		last_req->next = req;
- 		last_req = req;
-@@ -223,10 +219,11 @@ static int adb_iop_write(struct adb_request *req)
- 		last_req = req;
- 	}
- 
--	local_irq_restore(flags);
--
- 	if (adb_iop_state == idle)
- 		adb_iop_start();
-+
-+	local_irq_restore(flags);
-+
- 	return 0;
+ 	local_irq_restore(flags);
  }
- 
 -- 
 2.26.2
 
