@@ -2,96 +2,57 @@ Return-Path: <SRS0=Yz/e=7O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14086C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 12:06:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 909D3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 12:09:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2FF820772
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 12:06:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2FF820772
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4829E20772
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 12:09:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4829E20772
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49bDRN24lTzDqF6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 22:06:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49bDVZ5hRbzDqH4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 22:09:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49bDMT3pTHzDqLR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2020 22:03:00 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 051C21KT085887; Mon, 1 Jun 2020 08:02:08 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31d0ns97xd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jun 2020 08:02:07 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 051C22SM085957;
- Mon, 1 Jun 2020 08:02:02 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31d0ns97q6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jun 2020 08:02:02 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 051C0aQe025954;
- Mon, 1 Jun 2020 12:01:41 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma05fra.de.ibm.com with ESMTP id 31bf481m2n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 01 Jun 2020 12:01:40 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 051C0OoI54853974
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 1 Jun 2020 12:00:24 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7BFE7A406D;
- Mon,  1 Jun 2020 12:01:38 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DB21FA4057;
- Mon,  1 Jun 2020 12:01:32 +0000 (GMT)
-Received: from vajain21-in-ibm-com (unknown [9.85.104.164])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  1 Jun 2020 12:01:32 +0000 (GMT)
-Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
- Mon, 01 Jun 2020 17:31:31 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v8 2/5] seq_buf: Export seq_buf_printf
-In-Reply-To: <20200527041244.37821-3-vaibhav@linux.ibm.com>
-References: <20200527041244.37821-1-vaibhav@linux.ibm.com>
- <20200527041244.37821-3-vaibhav@linux.ibm.com>
-Date: Mon, 01 Jun 2020 17:31:31 +0530
-Message-ID: <87367f9eqs.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49bDSH3pNGzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2020 22:07:11 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 58ABFABE6;
+ Mon,  1 Jun 2020 12:07:09 +0000 (UTC)
+Date: Mon, 1 Jun 2020 14:07:05 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [RFC PATCH 1/2] libnvdimm: Add prctl control for disabling
+ synchronous fault support.
+Message-ID: <20200601120705.GQ25173@kitsune.suse.cz>
+References: <20200529054141.156384-1-aneesh.kumar@linux.ibm.com>
+ <20200529093310.GL25173@kitsune.suse.cz>
+ <6183cf4a-d134-99e5-936e-ef35f530c2ec@linux.ibm.com>
+ <20200529095250.GP14550@quack2.suse.cz>
+ <7e8ee9e3-4d4d-e4b9-913b-1c2448adc62a@linux.ibm.com>
+ <20200601100925.GC3960@quack2.suse.cz>
+ <2bf026cc-2ed0-70b6-bf99-ecfd0fa3dac4@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-01_07:2020-06-01,
- 2020-06-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 spamscore=0
- adultscore=0 clxscore=1015 cotscore=-2147483648 malwarescore=0
- mlxlogscore=999 bulkscore=0 priorityscore=1501 impostorscore=0
- lowpriorityscore=0 phishscore=0 suspectscore=1 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006010087
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2bf026cc-2ed0-70b6-bf99-ecfd0fa3dac4@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,75 +64,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>, linux-nvdimm@lists.01.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Cezary Rojewski <cezary.rojewski@intel.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Piotr Maziarz <piotrx.maziarz@linux.intel.com>,
- Christoph Hellwig <hch@infradead.org>, Oliver O'Halloran <oohall@gmail.com>,
- Borislav Petkov <bp@alien8.de>, Dan Williams <dan.j.williams@intel.com>,
- Ira Weiny <ira.weiny@intel.com>, linux-kernel@vger.kernel.org
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org, jack@suse.de,
+ Jeff Moyer <jmoyer@redhat.com>, oohall@gmail.com, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jun 01, 2020 at 05:31:50PM +0530, Aneesh Kumar K.V wrote:
+> On 6/1/20 3:39 PM, Jan Kara wrote:
+> > On Fri 29-05-20 16:25:35, Aneesh Kumar K.V wrote:
+> > > On 5/29/20 3:22 PM, Jan Kara wrote:
+> > > > On Fri 29-05-20 15:07:31, Aneesh Kumar K.V wrote:
+> > > > > Thanks Michal. I also missed Jeff in this email thread.
+> > > > 
+> > > > And I think you'll also need some of the sched maintainers for the prctl
+> > > > bits...
+> > > > 
+> > > > > On 5/29/20 3:03 PM, Michal Suchánek wrote:
+> > > > > > Adding Jan
+> > > > > > 
+> > > > > > On Fri, May 29, 2020 at 11:11:39AM +0530, Aneesh Kumar K.V wrote:
+> > > > > > > With POWER10, architecture is adding new pmem flush and sync instructions.
+> > > > > > > The kernel should prevent the usage of MAP_SYNC if applications are not using
+> > > > > > > the new instructions on newer hardware.
+> > > > > > > 
+> > > > > > > This patch adds a prctl option MAP_SYNC_ENABLE that can be used to enable
+> > > > > > > the usage of MAP_SYNC. The kernel config option is added to allow the user
+> > > > > > > to control whether MAP_SYNC should be enabled by default or not.
+> > > > > > > 
+> > > > > > > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> > > > ...
+> > > > > > > diff --git a/kernel/fork.c b/kernel/fork.c
+> > > > > > > index 8c700f881d92..d5a9a363e81e 100644
+> > > > > > > --- a/kernel/fork.c
+> > > > > > > +++ b/kernel/fork.c
+> > > > > > > @@ -963,6 +963,12 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
+> > > > > > >     static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
+> > > > > > > +#ifdef CONFIG_ARCH_MAP_SYNC_DISABLE
+> > > > > > > +unsigned long default_map_sync_mask = MMF_DISABLE_MAP_SYNC_MASK;
+> > > > > > > +#else
+> > > > > > > +unsigned long default_map_sync_mask = 0;
+> > > > > > > +#endif
+> > > > > > > +
+> > > > 
+> > > > I'm not sure CONFIG is really the right approach here. For a distro that would
+> > > > basically mean to disable MAP_SYNC for all PPC kernels unless application
+> > > > explicitly uses the right prctl. Shouldn't we rather initialize
+> > > > default_map_sync_mask on boot based on whether the CPU we run on requires
+> > > > new flush instructions or not? Otherwise the patch looks sensible.
+> > > > 
+> > > 
+> > > yes that is correct. We ideally want to deny MAP_SYNC only w.r.t POWER10.
+> > > But on a virtualized platform there is no easy way to detect that. We could
+> > > ideally hook this into the nvdimm driver where we look at the new compat
+> > > string ibm,persistent-memory-v2 and then disable MAP_SYNC
+> > > if we find a device with the specific value.
+> > 
+> > Hum, couldn't we set some flag for nvdimm devices with
+> > "ibm,persistent-memory-v2" property and then check it during mmap(2) time
+> > and when the device has this propery and the mmap(2) caller doesn't have
+> > the prctl set, we'd disallow MAP_SYNC? That should make things mostly
+> > seamless, shouldn't it? Only apps that want to use MAP_SYNC on these
+> > devices would need to use prctl(MMF_DISABLE_MAP_SYNC, 0) but then these
+> > applications need to be aware of new instructions so this isn't that much
+> > additional burden...
+> 
+> I am not sure application would want to add that much details/knowledge
+> about a platform in their code. I was expecting application to do
+> 
+> #ifdef __ppc64__
+>         prctl(MAP_SYNC_ENABLE, 1, 0, 0, 0));
+> #endif
+>         a = mmap(NULL, PAGE_SIZE, PROT_READ|PROT_WRITE,
+>                         MAP_SHARED_VALIDATE | MAP_SYNC, fd, 0);
+> 
+> 
+> For that code all the complexity that we add w.r.t ibm,persistent-memory-v2
+> is not useful. Do you see a value in making all these device specific rather
+> than a conditional on  __ppc64__?
+If the vpmem devices continue to work with the old instruction on
+POWER10 then it makes sense to make this per-device.
 
-Hi Christoph and Steven,
+Also adding a message to kernel log in case the application does not do
+the prctl would be helful for people migrating old code to POWER10.
 
-Have addressed your review comment to update the patch description and
-title for this patch. Can you please provide your ack to this patch.
+Thanks
 
-Thanks,
-~ Vaibhav
-
-Vaibhav Jain <vaibhav@linux.ibm.com> writes:
-
-> 'seq_buf' provides a very useful abstraction for writing to a string
-> buffer without needing to worry about it over-flowing. However even
-> though the API has been stable for couple of years now its still not
-> exported to kernel loadable modules limiting its usage.
->
-> Hence this patch proposes update to 'seq_buf.c' to mark
-> seq_buf_printf() which is part of the seq_buf API to be exported to
-> kernel loadable GPL modules. This symbol will be used in later parts
-> of this patch-set to simplify content creation for a sysfs attribute.
->
-> Cc: Piotr Maziarz <piotrx.maziarz@linux.intel.com>
-> Cc: Cezary Rojewski <cezary.rojewski@intel.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> ---
-> Changelog:
->
-> v7..v8:
-> * Updated the patch title [ Christoph Hellwig ]
-> * Updated patch description to replace confusing term 'external kernel
->   modules' to 'kernel lodable modules'.
->
-> Resend:
-> * Added ack from Steven Rostedt
->
-> v6..v7:
-> * New patch in the series
-> ---
->  lib/seq_buf.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/lib/seq_buf.c b/lib/seq_buf.c
-> index 4e865d42ab03..707453f5d58e 100644
-> --- a/lib/seq_buf.c
-> +++ b/lib/seq_buf.c
-> @@ -91,6 +91,7 @@ int seq_buf_printf(struct seq_buf *s, const char *fmt, ...)
->  
->  	return ret;
->  }
-> +EXPORT_SYMBOL_GPL(seq_buf_printf);
->  
->  #ifdef CONFIG_BINARY_PRINTF
->  /**
-> -- 
-> 2.26.2
->
--- 
+Michal
