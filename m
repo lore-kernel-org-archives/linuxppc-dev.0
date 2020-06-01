@@ -2,55 +2,55 @@ Return-Path: <SRS0=Yz/e=7O=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DFD4C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 05:19:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAEA1C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 05:22:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA024206C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 05:19:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA024206C3
+	by mail.kernel.org (Postfix) with ESMTPS id 6207F206E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 05:22:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6207F206E2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49b3Pm6SnbzDqMK
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 15:19:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49b3TC4WCqzDqKs
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jun 2020 15:22:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49b3KT6WR1zDqR1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2020 15:15:40 +1000 (AEST)
-IronPort-SDR: /Jh/jUeywItcc3kCT44xZPSoWNDDntL6wZDQP3KK3Ywa+pHsOmzGgtbWP2lf/aLkZspOMMJMdg
- uIDvzwGo0beg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49b3R81KdfzDqJQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2020 15:20:36 +1000 (AEST)
+IronPort-SDR: ZIqYAM2xIpyDXFwvbxA2ZxKaaJFan5xOSXOwJBUdjAGzp9sGxB1xqVxbQNXX+kuUS37xadvaBn
+ ZFezG/Y/Bkqw==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 May 2020 22:15:33 -0700
-IronPort-SDR: YVz1+DxgPnCNsltKBymtEqKuE49VSFdfvXX2s5BVQojiF7CM/S/m+sh1TzrdVAgBp/fKBrMPHk
- YWbSqXe4/RJg==
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 May 2020 22:20:33 -0700
+IronPort-SDR: 6LSEttQRc9u7WMhw7EQhN4O5962xm33vzL4HMQLT5Tl/Hx2JwWbT9UuxTcOrKP6TEYmH86XVBa
+ gyxMo/YIx3NA==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,459,1583222400"; d="scan'208";a="293066547"
+X-IronPort-AV: E=Sophos;i="5.73,459,1583222400"; d="scan'208";a="268202349"
 Received: from lkp-server01.sh.intel.com (HELO 49d03d9b0ee7) ([10.239.97.150])
- by fmsmga004.fm.intel.com with ESMTP; 31 May 2020 22:15:32 -0700
+ by orsmga003.jf.intel.com with ESMTP; 31 May 2020 22:20:31 -0700
 Received: from kbuild by 49d03d9b0ee7 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1jfcnL-0000C3-Vc; Mon, 01 Jun 2020 05:15:31 +0000
-Date: Mon, 01 Jun 2020 13:14:16 +0800
+ id 1jfcsA-0000FU-Bf; Mon, 01 Jun 2020 05:20:30 +0000
+Date: Mon, 01 Jun 2020 13:19:28 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 2f26ed1764b42a8c40d9c48441c73a70d805decf
-Message-ID: <5ed48ea8.BueO6D0YTStFxPdK%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ e376ca093587eafd840bb0f9df04090e2a54249c
+Message-ID: <5ed48fe0.pTi7Yry8+hoSh2pW%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -71,13 +71,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 2f26ed1764b42a8c40d9c48441c73a70d805decf  powerpc/64s: Disable sanitisers for C syscall/interrupt entry/exit code
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: e376ca093587eafd840bb0f9df04090e2a54249c  powerpc/module_64: Use special stub for _mcount() with -mprofile-kernel
 
-elapsed time: 3867m
+Warning in current branch:
 
-configs tested: 186
-configs skipped: 14
+kernel/events/hw_breakpoint.c:216:12: warning: no previous prototype for 'arch_reserve_bp_slot' [-Wmissing-prototypes]
+kernel/events/hw_breakpoint.c:221:13: warning: no previous prototype for 'arch_release_bp_slot' [-Wmissing-prototypes]
+
+Warning ids grouped by kconfigs:
+
+recent_errors
+|-- arm64-allmodconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- arm64-allyesconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- arm64-defconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- i386-allnoconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- i386-randconfig-m021-20200529
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- i386-tinyconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- sh-shmin_defconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+|-- x86_64-defconfig
+|   |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+|   `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+`-- x86_64-randconfig-m001-20200531
+    |-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_release_bp_slot
+    `-- kernel-events-hw_breakpoint.c:warning:no-previous-prototype-for-arch_reserve_bp_slot
+
+elapsed time: 3868m
+
+configs tested: 143
+configs skipped: 11
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -95,11 +131,7 @@ arm                         palmz72_defconfig
 sh                            shmin_defconfig
 ia64                            zx1_defconfig
 riscv                          rv32_defconfig
-um                           x86_64_defconfig
-m68k                       m5249evb_defconfig
-sh                   sh7770_generic_defconfig
-arm                         vf610m4_defconfig
-arm                        trizeps4_defconfig
+xtensa                          iss_defconfig
 powerpc                      pasemi_defconfig
 sparc                       sparc64_defconfig
 mips                  decstation_64_defconfig
@@ -109,15 +141,6 @@ mips                        qi_lb60_defconfig
 sh                            migor_defconfig
 sh                     magicpanelr2_defconfig
 mips                   sb1250_swarm_defconfig
-sh                        sh7763rdp_defconfig
-s390                              allnoconfig
-mips                         tb0226_defconfig
-m68k                          multi_defconfig
-h8300                            allyesconfig
-sh                             sh03_defconfig
-sh                           se7343_defconfig
-arm                          badge4_defconfig
-sh                           se7780_defconfig
 powerpc                  mpc885_ads_defconfig
 arm                       aspeed_g5_defconfig
 mips                        maltaup_defconfig
@@ -125,54 +148,40 @@ arc                             nps_defconfig
 sh                          rsk7269_defconfig
 mips                             allyesconfig
 ia64                        generic_defconfig
-arm                       mainstone_defconfig
-arm                            hisi_defconfig
-powerpc                     mpc83xx_defconfig
-m68k                             allyesconfig
-xtensa                           allyesconfig
-sh                          sdk7780_defconfig
-mips                        jmr3927_defconfig
-riscv                               defconfig
-sh                           cayman_defconfig
+m68k                            q40_defconfig
+sh                           se7724_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                            e55_defconfig
+mips                       lemote2f_defconfig
 arm                         ebsa110_defconfig
 arm                            lart_defconfig
 sh                         microdev_defconfig
+arm                          badge4_defconfig
 arm                        oxnas_v6_defconfig
 x86_64                              defconfig
 powerpc                    adder875_defconfig
 mips                            ar7_defconfig
 arm                        keystone_defconfig
 arm                           viper_defconfig
-ia64                              allnoconfig
-powerpc                     pseries_defconfig
-arm                            dove_defconfig
-h8300                            alldefconfig
 arm                            pleb_defconfig
 sh                             espt_defconfig
 arm                           omap1_defconfig
 arm                       spear13xx_defconfig
 sparc64                          allyesconfig
 microblaze                    nommu_defconfig
-arc                          axs101_defconfig
-powerpc                       maple_defconfig
-nds32                             allnoconfig
-sh                               allmodconfig
 arm                     davinci_all_defconfig
 c6x                                 defconfig
 i386                              allnoconfig
+arm                            qcom_defconfig
+powerpc                    amigaone_defconfig
+nios2                         10m50_defconfig
+arm                         s3c6400_defconfig
+openrisc                            defconfig
 powerpc                             defconfig
 arc                           tb10x_defconfig
 arm                        mvebu_v7_defconfig
 powerpc                mpc7448_hpc2_defconfig
 xtensa                              defconfig
-c6x                         dsk6455_defconfig
-riscv                    nommu_virt_defconfig
-sh                        apsh4ad0a_defconfig
-openrisc                            defconfig
-mips                          rb532_defconfig
-arm                         assabet_defconfig
-arc                              alldefconfig
-xtensa                       common_defconfig
 s390                       zfcpdump_defconfig
 s390                             allyesconfig
 arm                       cns3420vb_defconfig
@@ -182,24 +191,30 @@ i386                                defconfig
 i386                              debian-10.3
 ia64                             allmodconfig
 ia64                                defconfig
+ia64                              allnoconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                              allnoconfig
 m68k                           sun3_defconfig
 m68k                                defconfig
+m68k                             allyesconfig
 nios2                               defconfig
 nios2                            allyesconfig
 c6x                              allyesconfig
 c6x                               allnoconfig
 openrisc                         allyesconfig
 nds32                               defconfig
+nds32                             allnoconfig
 csky                             allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
 h8300                            allmodconfig
 arc                                 defconfig
 arc                              allyesconfig
+sh                               allmodconfig
 sh                                allnoconfig
 microblaze                        allnoconfig
 mips                             allmodconfig
@@ -217,39 +232,17 @@ i386                 randconfig-a002-20200529
 i386                 randconfig-a006-20200529
 i386                 randconfig-a003-20200529
 i386                 randconfig-a005-20200529
-i386                 randconfig-a004-20200531
-i386                 randconfig-a003-20200531
-i386                 randconfig-a006-20200531
-i386                 randconfig-a002-20200531
-i386                 randconfig-a005-20200531
-i386                 randconfig-a001-20200531
-x86_64               randconfig-a002-20200529
-x86_64               randconfig-a006-20200529
-x86_64               randconfig-a005-20200529
-x86_64               randconfig-a001-20200529
-x86_64               randconfig-a004-20200529
-x86_64               randconfig-a003-20200529
-x86_64               randconfig-a011-20200531
-x86_64               randconfig-a016-20200531
-x86_64               randconfig-a012-20200531
-x86_64               randconfig-a014-20200531
-x86_64               randconfig-a013-20200531
-x86_64               randconfig-a015-20200531
 i386                 randconfig-a013-20200529
 i386                 randconfig-a011-20200529
 i386                 randconfig-a012-20200529
 i386                 randconfig-a015-20200529
 i386                 randconfig-a016-20200529
 i386                 randconfig-a014-20200529
-i386                 randconfig-a013-20200531
-i386                 randconfig-a012-20200531
-i386                 randconfig-a015-20200531
-i386                 randconfig-a011-20200531
-i386                 randconfig-a016-20200531
-i386                 randconfig-a014-20200531
 riscv                            allyesconfig
 riscv                             allnoconfig
+riscv                               defconfig
 riscv                            allmodconfig
+s390                              allnoconfig
 s390                             allmodconfig
 s390                                defconfig
 sparc                            allyesconfig
@@ -259,8 +252,8 @@ sparc64                           allnoconfig
 sparc64                          allmodconfig
 um                               allmodconfig
 um                                allnoconfig
-um                               allyesconfig
 um                                  defconfig
+um                               allyesconfig
 x86_64                                   rhel
 x86_64                               rhel-7.6
 x86_64                    rhel-7.6-kselftests
