@@ -6,50 +6,50 @@ X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71F6CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 04:36:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFD3CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 04:38:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E369A2053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 04:36:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E369A2053B
+	by mail.kernel.org (Postfix) with ESMTPS id 88B132053B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 04:38:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88B132053B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cGMf6kgPzDqT2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:36:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cGPr4cx2zDqbs
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:38:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cGK72RqczDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 14:34:28 +1000 (AEST)
-IronPort-SDR: uRM42tm0rA/Dihchwak0eTikZWajhWSHhsKoldAn3IpXUscmYddJyMzwx+uHZKWPXXc44wPHIw
- N/cZBqy0dvjA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cGK705kGzDqQH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 14:34:31 +1000 (AEST)
+IronPort-SDR: D/8hXr9ky6YYFJEhwjPameL8vYWVZC+TgynaRf9suBwmdiBnydbouHmrLhYyb27Yiy97L/mO47
+ EYuAq1apwPDQ==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jun 2020 21:34:25 -0700
-IronPort-SDR: rdRrZjXSFI9omg4aUKNa+rvmyxgWKVQetnqC+PKUuTN4bYdPkabaVSJYH88NFoFX0kBUQn5Cfq
- MSVxB/vvoqLg==
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Jun 2020 21:34:28 -0700
+IronPort-SDR: E+r0GeqB693gTmuO8cL92NlgYIrVb/xVJRGpNk3kX3JtHjrCBUIOQcyQCBqeunF6dBC273aclh
+ F7f5CQqulNdw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,467,1583222400"; d="scan'208";a="268943038"
+X-IronPort-AV: E=Sophos;i="5.73,467,1583222400"; d="scan'208";a="257326631"
 Received: from lkp-server01.sh.intel.com (HELO e5a7ad696f24) ([10.239.97.150])
- by orsmga003.jf.intel.com with ESMTP; 02 Jun 2020 21:34:23 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 02 Jun 2020 21:34:26 -0700
 Received: from kbuild by e5a7ad696f24 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1jgL6d-0000Mc-3o; Wed, 03 Jun 2020 04:34:23 +0000
-Date: Wed, 03 Jun 2020 12:34:01 +0800
+ id 1jgL6f-0000Mf-NX; Wed, 03 Jun 2020 04:34:25 +0000
+Date: Wed, 03 Jun 2020 12:33:58 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS 4336b9337824a60a0b10013c622caeee99460db5
-Message-ID: <5ed72839.K/YIDrieULN7eOZr%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS 4d8244d005b2a92c872a0a993c3aa94b5842e56b
+Message-ID: <5ed72836.qH0im3ifOaDxK6rM%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -70,13 +70,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
-branch HEAD: 4336b9337824a60a0b10013c622caeee99460db5  powerpc/pseries: Make vio and ibmebus initcalls pseries specific
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 4d8244d005b2a92c872a0a993c3aa94b5842e56b  Automatic merge of 'master', 'next' and 'fixes' (2020-06-02 11:51)
 
-elapsed time: 919m
+elapsed time: 922m
 
-configs tested: 118
-configs skipped: 12
+configs tested: 119
+configs skipped: 10
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -86,17 +86,21 @@ arm                              allyesconfig
 arm                              allmodconfig
 arm                               allnoconfig
 arm64                            allyesconfig
-arm64                               defconfig
 arm64                            allmodconfig
 arm64                             allnoconfig
+arm64                               defconfig
+arm                       imx_v4_v5_defconfig
+h8300                     edosk2674_defconfig
+parisc                generic-64bit_defconfig
+m68k                         amcore_defconfig
 arm                     davinci_all_defconfig
 m68k                            q40_defconfig
 sh                           se7343_defconfig
 mips                        nlm_xlp_defconfig
 arm                           corgi_defconfig
-sparc                            allyesconfig
 mips                      bmips_stb_defconfig
 arm                        realview_defconfig
+sparc                            allyesconfig
 alpha                               defconfig
 arm                          prima2_defconfig
 s390                              allnoconfig
@@ -111,9 +115,6 @@ sh                     magicpanelr2_defconfig
 parisc                            allnoconfig
 mips                           ci20_defconfig
 mips                           ip22_defconfig
-powerpc                          alldefconfig
-mips                        maltaup_defconfig
-mips                        jmr3927_defconfig
 s390                             alldefconfig
 c6x                        evmc6472_defconfig
 i386                              allnoconfig
