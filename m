@@ -6,45 +6,45 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD6E8C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82343C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:54:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A8C920738
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:50:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A8C920738
+	by mail.kernel.org (Postfix) with ESMTPS id 3F1BD20738
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:54:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1BD20738
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cX0D0XRczDqQW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 00:50:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cX4w4Zr2zDqd0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 00:54:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=bootlin.com (client-ip=217.70.183.199;
- helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com;
+ smtp.mailfrom=bootlin.com (client-ip=217.70.178.242;
+ helo=mslow2.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=bootlin.com
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
- [217.70.183.199])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cVqX2KT1zDqRX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 23:58:14 +1000 (AEST)
-X-Originating-IP: 91.224.148.103
+Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cVrc0SSFzDqbl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 23:59:11 +1000 (AEST)
+Received: from relay10.mail.gandi.net (unknown [217.70.178.230])
+ by mslow2.mail.gandi.net (Postfix) with ESMTP id 9FC0A3A1D7B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 13:51:09 +0000 (UTC)
 Received: from xps13 (unknown [91.224.148.103])
  (Authenticated sender: miquel.raynal@bootlin.com)
- by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id DE971FF80B;
- Wed,  3 Jun 2020 13:58:03 +0000 (UTC)
-Date: Wed, 3 Jun 2020 15:58:02 +0200
+ by relay10.mail.gandi.net (Postfix) with ESMTPSA id 489CA240011;
+ Wed,  3 Jun 2020 13:50:29 +0000 (UTC)
+Date: Wed, 3 Jun 2020 15:50:27 +0200
 From: Miquel Raynal <miquel.raynal@bootlin.com>
 To: Boris Brezillon <boris.brezillon@collabora.com>
-Subject: Re: [PATCH 05/10] mtd: rawnand: fsl_upm: Use
- platform_get_resource() + devm_ioremap_resource()
-Message-ID: <20200603155802.12165328@xps13>
-In-Reply-To: <20200603134922.1352340-6-boris.brezillon@collabora.com>
+Subject: Re: [PATCH 01/10] mtd: rawnand: fsl_upm: Remove unused mtd var
+Message-ID: <20200603155027.6ab65597@xps13>
+In-Reply-To: <20200603134922.1352340-2-boris.brezillon@collabora.com>
 References: <20200603134922.1352340-1-boris.brezillon@collabora.com>
- <20200603134922.1352340-6-boris.brezillon@collabora.com>
+ <20200603134922.1352340-2-boris.brezillon@collabora.com>
 Organization: Bootlin
 X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
@@ -72,49 +72,28 @@ Sender: "Linuxppc-dev"
 
 
 Boris Brezillon <boris.brezillon@collabora.com> wrote on Wed,  3 Jun
-2020 15:49:17 +0200:
+2020 15:49:13 +0200:
 
-> Replace the of_address_to_resource() + devm_ioremap() calls by
-> platform_get_resource() + devm_ioremap_resource() ones which allows us
-> to get rid of one error message since devm_ioremap_resource() already
-> takes care of that.
+> The mtd var in fun_wait_rnb() is now unused, let's get rid of it and
+> fix the warning resulting from this unused var.
 > 
+> Fixes: 50a487e7719c ("mtd: rawnand: Pass a nand_chip object to chip->dev_ready()")
 > Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
 > ---
->  drivers/mtd/nand/raw/fsl_upm.c | 23 +++++++----------------
->  1 file changed, 7 insertions(+), 16 deletions(-)
+>  drivers/mtd/nand/raw/fsl_upm.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
 > diff --git a/drivers/mtd/nand/raw/fsl_upm.c b/drivers/mtd/nand/raw/fsl_upm.c
-> index a3e3a968891d..54851e9ea784 100644
+> index 627deb26db51..76d1032cd35e 100644
 > --- a/drivers/mtd/nand/raw/fsl_upm.c
 > +++ b/drivers/mtd/nand/raw/fsl_upm.c
-> @@ -14,7 +14,6 @@
->  #include <linux/mtd/nand_ecc.h>
->  #include <linux/mtd/partitions.h>
->  #include <linux/mtd/mtd.h>
-> -#include <linux/of_address.h>
->  #include <linux/of_platform.h>
->  #include <linux/of_gpio.h>
->  #include <linux/io.h>
-> @@ -197,7 +196,7 @@ static int fun_chip_init(struct fsl_upm_nand *fun,
->  static int fun_probe(struct platform_device *ofdev)
+> @@ -62,7 +62,6 @@ static int fun_chip_ready(struct nand_chip *chip)
+>  static void fun_wait_rnb(struct fsl_upm_nand *fun)
 >  {
->  	struct fsl_upm_nand *fun;
-> -	struct resource io_res;
-> +	struct resource *io_res;
->  	const __be32 *prop;
->  	int rnb_gpio;
->  	int ret;
-> @@ -208,13 +207,12 @@ static int fun_probe(struct platform_device *ofdev)
->  	if (!fun)
->  		return -ENOMEM;
+>  	if (fun->rnb_gpio[fun->mchip_number] >= 0) {
+> -		struct mtd_info *mtd = nand_to_mtd(&fun->chip);
+>  		int cnt = 1000000;
 >  
-> -	ret = of_address_to_resource(ofdev->dev.of_node, 0, &io_res);
-> -	if (ret) {
-> -		dev_err(&ofdev->dev, "can't get IO base\n");
-> -		return ret;
-> -	}
-> +	io_res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
-> +	fun->io_base = devm_ioremap_resource(&ofdev->dev, io_res);
+>  		while (--cnt && !fun_chip_ready(&fun->chip))
 
-Why not even using devm_platform_ioremap_resource() resource directly?
+Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
