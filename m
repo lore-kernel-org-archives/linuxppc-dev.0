@@ -2,135 +2,60 @@ Return-Path: <SRS0=sLSx=7Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8170C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE351C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:19:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5055D20679
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:09:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="n5BBIUPK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5055D20679
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
+	by mail.kernel.org (Postfix) with ESMTPS id 9705120678
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:19:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9705120678
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cH5b0ZtKzDqWj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:09:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=web.de
- (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cHKF49mfzDqb9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:19:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=informatik.wtf (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
- header.s=dbaedf251592 header.b=n5BBIUPK; 
- dkim-atps=neutral
-Received: from mout.web.de (mout.web.de [212.227.15.3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cH3S4VmTzDqT7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 15:07:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1591160843;
- bh=5YtTV9QSRV+W9hQitTlstdO3VpKB4X79hpPCb9EhlAY=;
- h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
- b=n5BBIUPKa72MBvV9Qhh1lFX2Iv7HE4yRgRbKKjYyP23udXa68YoRrc3r+UI9F1vZV
- qpcJsE2RMgU0p7GhoVrZutf6yh36GrCKtyD6ooDm1Bk/R+kreRzwsuoTHArUAYshn3
- vacRr3ifyXELDxlMXpz4zeXXVG38BuDJVW5m1AmA=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([93.131.82.231]) by smtp.web.de (mrweb002
- [213.165.67.108]) with ESMTPSA (Nemesis) id 0MUEsc-1jX2FN0Tas-00Qzie; Wed, 03
- Jun 2020 07:07:23 +0200
-Subject: Re: cxl: Fix kobject memory leak in cxl_sysfs_afu_new_cr()
-To: Michael Ellerman <mpe@ellerman.id.au>, Wang Hai <wanghai38@huawei.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <b9791ff3-8397-f6e9-ca88-59c9bbe8c78f@web.de>
- <25ad528b-beaf-820f-9738-ea304dcbc0d7@huawei.com>
- <877dwoj1hz.fsf@mpe.ellerman.id.au>
-From: Markus Elfring <Markus.Elfring@web.de>
-Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
- mQINBFg2+xABEADBJW2hoUoFXVFWTeKbqqif8VjszdMkriilx90WB5c0ddWQX14h6w5bT/A8
- +v43YoGpDNyhgA0w9CEhuwfZrE91GocMtjLO67TAc2i2nxMc/FJRDI0OemO4VJ9RwID6ltwt
- mpVJgXGKkNJ1ey+QOXouzlErVvE2fRh+KXXN1Q7fSmTJlAW9XJYHS3BDHb0uRpymRSX3O+E2
- lA87C7R8qAigPDZi6Z7UmwIA83ZMKXQ5stA0lhPyYgQcM7fh7V4ZYhnR0I5/qkUoxKpqaYLp
- YHBczVP+Zx/zHOM0KQphOMbU7X3c1pmMruoe6ti9uZzqZSLsF+NKXFEPBS665tQr66HJvZvY
- GMDlntZFAZ6xQvCC1r3MGoxEC1tuEa24vPCC9RZ9wk2sY5Csbva0WwYv3WKRZZBv8eIhGMxs
- rcpeGShRFyZ/0BYO53wZAPV1pEhGLLxd8eLN/nEWjJE0ejakPC1H/mt5F+yQBJAzz9JzbToU
- 5jKLu0SugNI18MspJut8AiA1M44CIWrNHXvWsQ+nnBKHDHHYZu7MoXlOmB32ndsfPthR3GSv
- jN7YD4Ad724H8fhRijmC1+RpuSce7w2JLj5cYj4MlccmNb8YUxsE8brY2WkXQYS8Ivse39MX
- BE66MQN0r5DQ6oqgoJ4gHIVBUv/ZwgcmUNS5gQkNCFA0dWXznQARAQABtCZNYXJrdXMgRWxm
- cmluZyA8TWFya3VzLkVsZnJpbmdAd2ViLmRlPokCVAQTAQgAPhYhBHDP0hzibeXjwQ/ITuU9
- Figxg9azBQJYNvsQAhsjBQkJZgGABQsJCAcCBhUICQoLAgQWAgMBAh4BAheAAAoJEOU9Figx
- g9azcyMP/iVihZkZ4VyH3/wlV3nRiXvSreqg+pGPI3c8J6DjP9zvz7QHN35zWM++1yNek7Ar
- OVXwuKBo18ASlYzZPTFJZwQQdkZSV+atwIzG3US50ZZ4p7VyUuDuQQVVqFlaf6qZOkwHSnk+
- CeGxlDz1POSHY17VbJG2CzPuqMfgBtqIU1dODFLpFq4oIAwEOG6fxRa59qbsTLXxyw+PzRaR
- LIjVOit28raM83Efk07JKow8URb4u1n7k9RGAcnsM5/WMLRbDYjWTx0lJ2WO9zYwPgRykhn2
- sOyJVXk9xVESGTwEPbTtfHM+4x0n0gC6GzfTMvwvZ9G6xoM0S4/+lgbaaa9t5tT/PrsvJiob
- kfqDrPbmSwr2G5mHnSM9M7B+w8odjmQFOwAjfcxoVIHxC4Cl/GAAKsX3KNKTspCHR0Yag78w
- i8duH/eEd4tB8twcqCi3aCgWoIrhjNS0myusmuA89kAWFFW5z26qNCOefovCx8drdMXQfMYv
- g5lRk821ZCNBosfRUvcMXoY6lTwHLIDrEfkJQtjxfdTlWQdwr0mM5ye7vd83AManSQwutgpI
- q+wE8CNY2VN9xAlE7OhcmWXlnAw3MJLW863SXdGlnkA3N+U4BoKQSIToGuXARQ14IMNvfeKX
- NphLPpUUnUNdfxAHu/S3tPTc/E/oePbHo794dnEm57LuuQINBFg2+xABEADZg/T+4o5qj4cw
- nd0G5pFy7ACxk28mSrLuva9tyzqPgRZ2bdPiwNXJUvBg1es2u81urekeUvGvnERB/TKekp25
- 4wU3I2lEhIXj5NVdLc6eU5czZQs4YEZbu1U5iqhhZmKhlLrhLlZv2whLOXRlLwi4jAzXIZAu
- 76mT813jbczl2dwxFxcT8XRzk9+dwzNTdOg75683uinMgskiiul+dzd6sumdOhRZR7YBT+xC
- wzfykOgBKnzfFscMwKR0iuHNB+VdEnZw80XGZi4N1ku81DHxmo2HG3icg7CwO1ih2jx8ik0r
- riIyMhJrTXgR1hF6kQnX7p2mXe6K0s8tQFK0ZZmYpZuGYYsV05OvU8yqrRVL/GYvy4Xgplm3
- DuMuC7/A9/BfmxZVEPAS1gW6QQ8vSO4zf60zREKoSNYeiv+tURM2KOEj8tCMZN3k3sNASfoG
- fMvTvOjT0yzMbJsI1jwLwy5uA2JVdSLoWzBD8awZ2X/eCU9YDZeGuWmxzIHvkuMj8FfX8cK/
- 2m437UA877eqmcgiEy/3B7XeHUipOL83gjfq4ETzVmxVswkVvZvR6j2blQVr+MhCZPq83Ota
- xNB7QptPxJuNRZ49gtT6uQkyGI+2daXqkj/Mot5tKxNKtM1Vbr/3b+AEMA7qLz7QjhgGJcie
- qp4b0gELjY1Oe9dBAXMiDwARAQABiQI8BBgBCAAmFiEEcM/SHOJt5ePBD8hO5T0WKDGD1rMF
- Alg2+xACGwwFCQlmAYAACgkQ5T0WKDGD1rOYSw/+P6fYSZjTJDAl9XNfXRjRRyJSfaw6N1pA
- Ahuu0MIa3djFRuFCrAHUaaFZf5V2iW5xhGnrhDwE1Ksf7tlstSne/G0a+Ef7vhUyeTn6U/0m
- +/BrsCsBUXhqeNuraGUtaleatQijXfuemUwgB+mE3B0SobE601XLo6MYIhPh8MG32MKO5kOY
- hB5jzyor7WoN3ETVNQoGgMzPVWIRElwpcXr+yGoTLAOpG7nkAUBBj9n9TPpSdt/npfok9ZfL
- /Q+ranrxb2Cy4tvOPxeVfR58XveX85ICrW9VHPVq9sJf/a24bMm6+qEg1V/G7u/AM3fM8U2m
- tdrTqOrfxklZ7beppGKzC1/WLrcr072vrdiN0icyOHQlfWmaPv0pUnW3AwtiMYngT96BevfA
- qlwaymjPTvH+cTXScnbydfOQW8220JQwykUe+sHRZfAF5TS2YCkQvsyf7vIpSqo/ttDk4+xc
- Z/wsLiWTgKlih2QYULvW61XU+mWsK8+ZlYUrRMpkauN4CJ5yTpvp+Orcz5KixHQmc5tbkLWf
- x0n1QFc1xxJhbzN+r9djSGGN/5IBDfUqSANC8cWzHpWaHmSuU3JSAMB/N+yQjIad2ztTckZY
- pwT6oxng29LzZspTYUEzMz3wK2jQHw+U66qBFk8whA7B2uAU1QdGyPgahLYSOa4XAEGb6wbI FEE=
-Message-ID: <1d9752bf-fe39-6e1d-bda1-47c90ef9c37d@web.de>
-Date: Wed, 3 Jun 2020 07:07:20 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.1
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cHH10znvzDqTK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 15:17:48 +1000 (AEST)
+Received: from MTA-07-4.privateemail.com (mta-07.privateemail.com
+ [198.54.127.57])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id DFBFA80B2E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 01:17:46 -0400 (EDT)
+Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
+ by MTA-07.privateemail.com (Postfix) with ESMTP id E956560056;
+ Wed,  3 Jun 2020 01:17:36 -0400 (EDT)
+Received: from geist.attlocal.net (unknown [10.20.151.239])
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id 78E4D6004D;
+ Wed,  3 Jun 2020 05:17:35 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@informatik.wtf>
+To: linuxppc-dev@lists.ozlabs.org,
+	kernel-hardening@lists.openwall.com
+Subject: [PATCH 1/5] powerpc/mm: Introduce temporary mm
+Date: Wed,  3 Jun 2020 00:19:08 -0500
+Message-Id: <20200603051912.23296-2-cmr@informatik.wtf>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200603051912.23296-1-cmr@informatik.wtf>
+References: <20200603051912.23296-1-cmr@informatik.wtf>
 MIME-Version: 1.0
-In-Reply-To: <877dwoj1hz.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:clihFhtMBl0JjcLlTwGdMqBQupmYB68FkNlkt7J4zx9z/l27qca
- qhW+fVO9cfO5V/ATXnh9Wbu72iLpk01kQpUOUGhOzniyoTkptNrEQrevH8s/9T6nV3Y3Ywk
- djoC6wxM5r4HD3BgPIDnnLbCjlEy6EjhWRC+Ru9mARiEnDaCX9JFmC3MM26IRqq4qxsmupK
- pW0TFAsWHTwOMum5/VfwA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:0rkCxrChgxA=:lV7CqI362TV7K5ZFxV7ILy
- bAVBnGfJRyiroWeEW1LP3U9x15QUUCqnehHl9ZJAOxFMK97+z6tVi1RDGuxpTX3N3gy/o/XWP
- eoauJocZeNRsSylW4YXaA4fHqYj1PhxygyxsxnNn/kE6QiYtEK3RKkVK89pbUD/7DEdVE8LMS
- 1aWBhib6P6/AP8ZFwW2jeCMAnYvRMVG4ODKA7tujfly7DC3stLm1SATE76vnhI+CrStmIf2b6
- DRGW8n9s313nlJusAyCW+AEttLkVUATICd8x742N5PXGpqc9pY3nH+aLQJOHcNxaa00tL6nsH
- ZdAxrtLLpBzO0uKMl8I0iwo5UQDlnjD+YNPnkUbygPuDn3UFQnK1/NamvpsPZOJehlqTOlS/E
- oykKHcEQZgNG7VICz/qenfqRQtF1SRH7tA6SgZwOGW97ignCghRePtH11dYSE0ywP36ahfIik
- xrkeMt1Jfuvc/SRSfX/gch1ke6/5eIAp02PxIimj23BqrdEtPSCFGFvNWXstrhdIX/RAaR6M4
- 38dilnZTchlggflzRK8ubTJWUqP8gMlNAXB+kNaXSox8EsUAoyUg1su1xDs6bV4gLkHAnuEdt
- z8cfx8lz2JhTfuYwz5ImuPkhVGDwbgiW7sO9/QBcKffOvkdtYatvWGQBwQCpVd9rUyEpQUcNN
- +TskoVkLSaaBajqnS0CLM+XpEvODhxdVNQQ7QeSSoLRTB6F0xHJGhOdrSYq7aN+bxt2KqKZQo
- Wa82CgRV+MuUTO6Jr4zjwiBOpO5UN+/vS06SaHLfOjk+Dd66KIRNoH6MJI7KoanC1NJreECmj
- gTfX9d8uq6U6UI0ED4HWa185nBTeY/ovNA2iswbrwyDms9VrxGGybvZf5ziBOkWDvBm6qpbEU
- adN68pNTHAQ1YfL8gqMkMVTchtmd51qL+CWDyBoSnjOxADRrCn/ySzTAh9wAJQMXwdFxbq3nG
- ZHUJTVnpr6N9zBmIIqXKUdgaBFTLP7Y/CeRrJeApfC/63dHSFFV4Z1z9J4ALC5HPb91HGS/4+
- rTsDGxrhOaBa5DNneVaj+KxQ0rOBNxe1s45iI7fqyU2nyOPXwblCdsLbqSMeeTiCsNZ2V341x
- u67kp9zZN9kCBDTfb2lczcDumnovZp8M206F0I3+MJEz3EjecuF53siyzvVy+HZWW+z433LCc
- 8d5gFxXyVal7OBaU1l133hYhuq8ONFax/QXONiSNbrtwc/hDTZixKXxxGxveYWHNN3KXvU5C0
- GJ3COdDK+DpY+HiTy
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -142,24 +67,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ian Munsie <imunsie@au1.ibm.com>, Frederic Barrat <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tre=
-e/Documentation/process/coding-style.rst?id=3Df359287765c04711ff54fbd11645=
-271d8e5ff763#n465
->> I just used the original author's label, should I replace all his label=
-s
->> like'err','err1' with reasonable one.
->
-> No.
+x86 supports the notion of a temporary mm which restricts access to
+temporary PTEs to a single CPU. A temporary mm is useful for situations
+where a CPU needs to perform sensitive operations (such as patching a
+STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
+said mappings to other CPUs. A side benefit is that other CPU TLBs do
+not need to be flushed when the temporary mm is torn down.
 
-Do you insist to deviate from the current Linux coding style?
+Mappings in the temporary mm can be set in the userspace portion of the
+address-space.
 
-Regards,
-Markus
+Interrupts must be disabled while the temporary mm is in use. HW
+breakpoints, which may have been set by userspace as watchpoints on
+addresses now within the temporary mm, are saved and disabled when
+loading the temporary mm. The HW breakpoints are restored when unloading
+the temporary mm. All HW breakpoints are indiscriminately disabled while
+the temporary mm is in use.
+
+Based on x86 implementation:
+
+commit cefa929c034e
+("x86/mm: Introduce temporary mm structs")
+
+Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+---
+ arch/powerpc/include/asm/debug.h       |  1 +
+ arch/powerpc/include/asm/mmu_context.h | 64 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/process.c          |  5 ++
+ 3 files changed, 70 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index ec57daf87f40..827350c9bcf3 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -46,6 +46,7 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
+ 
+ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk);
++void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk);
+ bool ppc_breakpoint_available(void);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 1a474f6b1992..9269c7c7b04e 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -10,6 +10,7 @@
+ #include <asm/mmu.h>	
+ #include <asm/cputable.h>
+ #include <asm/cputhreads.h>
++#include <asm/debug.h>
+ 
+ /*
+  * Most if the context management is out of line
+@@ -300,5 +301,68 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
+ 	return 0;
+ }
+ 
++struct temp_mm {
++	struct mm_struct *temp;
++	struct mm_struct *prev;
++	bool is_kernel_thread;
++	struct arch_hw_breakpoint brk[HBP_NUM_MAX];
++};
++
++static inline void init_temp_mm(struct temp_mm *temp_mm, struct mm_struct *mm)
++{
++	temp_mm->temp = mm;
++	temp_mm->prev = NULL;
++	temp_mm->is_kernel_thread = false;
++	memset(&temp_mm->brk, 0, sizeof(temp_mm->brk));
++}
++
++static inline void use_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	temp_mm->is_kernel_thread = current->mm == NULL;
++	if (temp_mm->is_kernel_thread)
++		temp_mm->prev = current->active_mm;
++	else
++		temp_mm->prev = current->mm;
++
++	/*
++	 * Hash requires a non-NULL current->mm to allocate a userspace address
++	 * when handling a page fault. Does not appear to hurt in Radix either.
++	 */
++	current->mm = temp_mm->temp;
++	switch_mm_irqs_off(NULL, temp_mm->temp, current);
++
++	if (ppc_breakpoint_available()) {
++		struct arch_hw_breakpoint null_brk = {0};
++		int i = 0;
++
++		for (; i < nr_wp_slots(); ++i) {
++			__get_breakpoint(i, &temp_mm->brk[i]);
++			if (temp_mm->brk[i].type != 0)
++				__set_breakpoint(i, &null_brk);
++		}
++	}
++}
++
++static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
++{
++	lockdep_assert_irqs_disabled();
++
++	if (temp_mm->is_kernel_thread)
++		current->mm = NULL;
++	else
++		current->mm = temp_mm->prev;
++	switch_mm_irqs_off(NULL, temp_mm->prev, current);
++
++	if (ppc_breakpoint_available()) {
++		int i = 0;
++
++		for (; i < nr_wp_slots(); ++i)
++			if (temp_mm->brk[i].type != 0)
++				__set_breakpoint(i, &temp_mm->brk[i]);
++	}
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 048d64c4e115..3973144f6980 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -825,6 +825,11 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+ 	return 0;
+ }
+ 
++void __get_breakpoint(int nr, struct arch_hw_breakpoint *brk)
++{
++	memcpy(brk, this_cpu_ptr(&current_brk[nr]), sizeof(*brk));
++}
++
+ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
+ {
+ 	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
+-- 
+2.26.2
+
