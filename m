@@ -2,97 +2,73 @@ Return-Path: <SRS0=sLSx=7Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76971C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 10:32:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6838C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 10:54:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0279A20679
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 10:32:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0279A20679
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5D9872067B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 10:54:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="GI4BOJdI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D9872067B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cQGC6m1NzDqcN
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 20:32:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cQlF09PDzDqYM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 20:54:17 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cQDJ0lVkzDqMt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 20:30:55 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 053A1xJZ048766; Wed, 3 Jun 2020 06:30:50 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31e3rj32yc-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Jun 2020 06:30:50 -0400
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 053AN1lh149754;
- Wed, 3 Jun 2020 06:30:50 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31e3rj32y3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Jun 2020 06:30:50 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 053AUksd019049;
- Wed, 3 Jun 2020 10:30:49 GMT
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26]) by ppma03wdc.us.ibm.com with ESMTP id 31bf48pwab-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 03 Jun 2020 10:30:49 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 053AUnrO36634976
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 3 Jun 2020 10:30:49 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1A028124054;
- Wed,  3 Jun 2020 10:30:49 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6A893124053;
- Wed,  3 Jun 2020 10:30:48 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.59.7])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  3 Jun 2020 10:30:48 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 081292E30FB; Wed,  3 Jun 2020 16:00:44 +0530 (IST)
-Date: Wed, 3 Jun 2020 16:00:44 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/pseries: remove cede offline state for CPUs
-Message-ID: <20200603103044.GB25460@in.ibm.com>
-References: <20200602043140.397746-1-nathanl@linux.ibm.com>
- <20200602043140.397746-2-nathanl@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cQhV4x4NzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 20:51:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=GI4BOJdI; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49cQhG1cflz9sPF;
+ Wed,  3 Jun 2020 20:51:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1591181513;
+ bh=HEbuUuqzYKRzFAwS9qP/euNBCXXIojtAorAtB55RG+g=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=GI4BOJdI7R9phxlk9/LTfiVhHEoI1zIW/xMxkhszVjxonI1SySK9IBC78y3O/4vDf
+ eDoCS1hCFhiIYou6IKgadBDdl5sdOlAMjQC1875eHFGwk92+YhsxEXxQeo65cXx+7q
+ w4oK9KvmKJ1GhlrJO3nt+9OXCwfLwm5X2U9SOzYjAbNe0KzJOOKaMq1ONpfm0tBBM3
+ fH45gWmBBXN7fZIiP0s3Sgnn2FkHp5kQh4anTXDctIZyBr8OZVRgP+1o8SdAdmUCX0
+ gNwbf+nfmQfigEhG0OEKVTeNnYZzewHe51L+YkLeIayUTLrVNDdhXqJak/DOs8mdcD
+ LbJXwhVjiT3UA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michal Simek <michal.simek@xilinx.com>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH v2 0/2] powerpc: Remove support for ppc405/440 Xilinx
+ platforms
+In-Reply-To: <aad5c6c5-b84a-7a6d-3f07-f45dd1dd85d1@csgroup.eu>
+References: <cover.1585575111.git.michal.simek@xilinx.com>
+ <87imikufes.fsf@mpe.ellerman.id.au>
+ <12db51d6-d848-118e-5ec1-a4172bd47aa4@xilinx.com>
+ <87y2rftrx7.fsf@mpe.ellerman.id.au> <s5hk12z4hj5.wl-tiwai@suse.de>
+ <02e7f790-b105-de67-799c-0fe065e58320@xilinx.com>
+ <c22540fb-1c54-b718-9045-3ee645c30322@monstr.eu>
+ <87wo4yerom.fsf@mpe.ellerman.id.au>
+ <4b807ebc-8d8f-ad76-f5e2-9ce8410dc70c@xilinx.com>
+ <aad5c6c5-b84a-7a6d-3f07-f45dd1dd85d1@csgroup.eu>
+Date: Wed, 03 Jun 2020 20:52:07 +1000
+Message-ID: <87wo4oh160.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200602043140.397746-2-nathanl@linux.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-03_06:2020-06-02,
- 2020-06-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- malwarescore=0 mlxlogscore=999 cotscore=-2147483648 adultscore=0
- mlxscore=0 spamscore=0 phishscore=0 clxscore=1015 impostorscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006030074
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,493 +80,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- ego@linux.vnet.ibm.com
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org,
+ alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org,
+ Jaroslav Kysela <perex@perex.cz>, Richard Fontana <rfontana@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Miquel Raynal <miquel.raynal@bootlin.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, Sasha Levin <sashal@kernel.org>,
+ sfr@canb.auug.org.au, Jonathan Corbet <corbet@lwn.net>, maz@kernel.org,
+ Masahiro Yamada <masahiroy@kernel.org>, Takashi Iwai <tiwai@suse.com>,
+ YueHaibing <yuehaibing@huawei.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Allison Randal <allison@lohutok.net>, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, Andrew Donnellan <ajd@linux.ibm.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, Alexios Zavras <alexios.zavras@intel.com>,
+ Mark Brown <broonie@kernel.org>, git@xilinx.com, linux-fbdev@vger.kernel.org,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ Wei Hu <weh@microsoft.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Enrico Weigelt <info@metux.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Nathan,
-
-On Mon, Jun 01, 2020 at 11:31:39PM -0500, Nathan Lynch wrote:
-> This effectively reverts commit 3aa565f53c39 ("powerpc/pseries: Add
-> hooks to put the CPU into an appropriate offline state"), which added
-> an offline mode for CPUs which uses the H_CEDE hcall instead of the
-> architected stop-self RTAS function in order to facilitate "folding"
-> of dedicated mode processors on PowerVM platforms to achieve energy
-> savings. This has been the default offline mode since its
-> introduction.
-> 
-> There's nothing about stop-self that would prevent the hypervisor from
-> achieving the energy savings available via H_CEDE, so the original
-> premise of this change appears to be flawed.
-
-
-IIRC, back in 2009, when the Extended-CEDE was introduced, it couldn't
-be exposed via the cpuidle subsystem since this state needs an
-explicit H_PROD as opposed to the H_IPI which wakes up the regular
-CEDE call. So, the alterative was to use the CPU-Hotplug way by having
-a userspace daemon fold the cores which weren't needed currently and
-bring them back online when they were needed. Back then, Long Term
-CEDE was definitely faster compared to stop-self call (It is a pity
-that I didn't post the numbers when I wrote the patch) and the
-time-taken to unfold a core was definitely one of the concerns.
-(https://lkml.org/lkml/2009/9/23/522).
-
-However, on current systems, this is not the case as you rightly
-mention below. Based on the measurements that I did last year, there
-is no significant difference in the time taken for a CPU-Hotplug
-operation while using stop-self vs Extended-CEDE CPU-Hotplug.
-
-
-Time taken to offline a core (in seconds)
-With stop-self
-    N           Min           Max        Median           Avg        Stddev
-   20          0.93          1.31         1.161        1.1308    0.11776721
-With Extended cede
-    N           Min           Max        Median           Avg        Stddev
-   20          1.12          1.65          1.39        1.3929    0.13363379
-
-
-Time taken to online a core (in seconds)
-With stop-self
-    N           Min           Max        Median           Avg        Stddev
-   20          1.82          2.22          1.96       1.97605   0.093984587
-With Extended cede
-    N           Min           Max        Median           Avg        Stddev
-   20          1.65           2.1           1.9        1.8916    0.13074902
-
-
-> I also have encountered the claim that the transition to and from
-> ceded state is much faster than stop-self/start-cpu. Certainly we
-> would not want to use stop-self as an *idle* mode. That is what H_CEDE
-> is for.
-
-True. However the regular H_CEDE doesn't get mapped to a deeper
-platform idle state, while Extended H_CEDE does. And the deeper
-platform idle states have associated performance benefits, such as the
-online cores being able to execute Turbo frequencies.  However, the
-right thing to do would be for the hypervisor provide us with a new
-latency-hint for a extended H_CEDE which can wakeup on H_IPI, instead
-of needing an explicit H_PROD.
-
-
-> However, this difference is insignificant in the context of
-> Linux CPU hotplug, where the latency of an offline or online operation
-> on current systems is on the order of 100ms, mainly attributable to
-> all the various subsystems' cpuhp callbacks.
-> 
-> The cede offline mode also prevents accurate accounting, as discussed
-> before:
-> https://lore.kernel.org/linuxppc-dev/1571740391-3251-1-git-send-email-ego@linux.vnet.ibm.com/
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Hi,
 >
-> Unconditionally use stop-self to offline processor threads. This is
-> the architected method for offlining CPUs on PAPR systems.
-> 
-> The "cede_offline" boot parameter is rendered obsolete.
-> 
-> Removing this code enables the removal of the partition suspend code
-> which temporarily onlines all present CPUs.
-> 
-> Fixes: 3aa565f53c39 ("powerpc/pseries: Add hooks to put the CPU into an appropriate offline state")
-> 
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+> Le 03/06/2020 =C3=A0 10:10, Michal Simek a =C3=A9crit=C2=A0:
+>> Hi Michael,
+>>=20
+>> On 26. 05. 20 15:44, Michael Ellerman wrote:
+>>> Michal Simek <monstr@monstr.eu> writes:
+>>>> Hi Michael,
+>>>>
+>>>> On 01. 04. 20 13:30, Michal Simek wrote:
+>>>>> On 01. 04. 20 12:38, Takashi Iwai wrote:
+>>>>>> On Wed, 01 Apr 2020 12:35:16 +0200,
+>>>>>> Michael Ellerman wrote:
+>>>>>>>
+>>>>>>> Michal Simek <michal.simek@xilinx.com> writes:
+>>>>>>>> On 01. 04. 20 4:07, Michael Ellerman wrote:
+>>>>>>>>> Michal Simek <michal.simek@xilinx.com> writes:
+>>>>>>>>>> Hi,
+>>>>>>>>>>
+>>>>>>>>>> recently we wanted to update xilinx intc driver and we found tha=
+t function
+>>>>>>>>>> which we wanted to remove is still wired by ancient Xilinx Power=
+PC
+>>>>>>>>>> platforms. Here is the thread about it.
+>>>>>>>>>> https://lore.kernel.org/linux-next/48d3232d-0f1d-42ea-3109-f44bb=
+abfa2e8@xilinx.com/
+>>>>>>>>>>
+>>>>>>>>>> I have been talking about it internally and there is no interest=
+ in these
+>>>>>>>>>> platforms and it is also orphan for quite a long time. None is r=
+eally
+>>>>>>>>>> running/testing these platforms regularly that's why I think it =
+makes sense
+>>>>>>>>>> to remove them also with drivers which are specific to this plat=
+form.
+>>>>>>>>>>
+>>>>>>>>>> U-Boot support was removed in 2017 without anybody complain abou=
+t it
+>>>>>>>>>> https://github.com/Xilinx/u-boot-xlnx/commit/98f705c9cefdfdba62c=
+069821bbba10273a0a8ed
+>>>>>>>>>>
+>>>>>>>>>> Based on current ppc/next.
+>>>>>>>>>>
+>>>>>>>>>> If anyone has any objection about it, please let me know.
+>>>>>>>>>
+>>>>>>>>> Thanks for taking the time to find all this code and remove it.
+>>>>>>>>>
+>>>>>>>>> I'm not going to take this series for v5.7, it was posted too clo=
+se to
+>>>>>>>>> the merge window, and doing so wouldn't give people much time to =
+object,
+>>>>>>>>> especially given people are distracted at the moment.
+>>>>>>>>>
+>>>>>>>>> I'm happy to take it for v5.8, assuming there's no major objectio=
+ns.
+>>>>>>>>
+>>>>>>>> Sure. Just to let you know Christophe Leroy included this patch in=
+ his
+>>>>>>>> series about ppc405 removal. It should be the same.
+>>>>>>>>
+>>>>>>>> If you don't want to take that alsa patch I can send it separately=
+ and
+>>>>>>>> this patch can be taken from his series. I don't really mind but p=
+lease
+>>>>>>>> let me know what way you prefer.
+>>>>>>>
+>>>>>>> It's better to keep it all together, so I'm happy take the alsa pat=
+ch as
+>>>>>>> well, it's already been acked.
+>>>>
+>>>> Can you please take this series? I know that there is v5 from Christop=
+he
+>>>> which has this 1/2 as 1/13. But I need this alsa patch too and I would
+>>>> like to close this because it is around for almost 2 months and none
+>>>> raised a concern about removing just these Xilinx platforms.
+>>>
+>>> Sorry I meant to reply to your last mail.
+>>>
+>>> I have Christophe's series in my testing branch, planning for it to be
+>>> in v5.8.
+>>>
+>>> Even if the rest of his series doesn't make it for some reason, as you
+>>> say the Xilinx removal is uncontroversial so I'll keep that in.
+>>>
+>>> I forgot about the sound patch, I'll pick that up as well.
+>>=20
+>> I took a look at your
+>> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git repo
+>> and I can't see any branch with my patches.
+>> Also was checking linux-next and my patches are also not there.
+>> That's why I am curious if this will be go v5.8 in MW.
+>
+> I see them in=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git in=20
+> next-test branch.
 
-The patch looks good to me.
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Which =3D=3D the next branch, which is what will go into v5.8, all going
+well.
 
-> ---
->  Documentation/core-api/cpu_hotplug.rst        |   7 -
->  arch/powerpc/platforms/pseries/hotplug-cpu.c  | 170 ++----------------
->  .../platforms/pseries/offline_states.h        |  38 ----
->  arch/powerpc/platforms/pseries/pmem.c         |   1 -
->  arch/powerpc/platforms/pseries/smp.c          |  28 +--
->  5 files changed, 15 insertions(+), 229 deletions(-)
->  delete mode 100644 arch/powerpc/platforms/pseries/offline_states.h
-> 
-> diff --git a/Documentation/core-api/cpu_hotplug.rst b/Documentation/core-api/cpu_hotplug.rst
-> index 4a50ab7817f7..b1ae1ac159cf 100644
-> --- a/Documentation/core-api/cpu_hotplug.rst
-> +++ b/Documentation/core-api/cpu_hotplug.rst
-> @@ -50,13 +50,6 @@ Command Line Switches
-> 
->    This option is limited to the X86 and S390 architecture.
-> 
-> -``cede_offline={"off","on"}``
-> -  Use this option to disable/enable putting offlined processors to an extended
-> -  ``H_CEDE`` state on supported pseries platforms. If nothing is specified,
-> -  ``cede_offline`` is set to "on".
-> -
-> -  This option is limited to the PowerPC architecture.
-> -
->  ``cpu0_hotplug``
->    Allow to shutdown CPU0.
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 3e8cbfe7a80f..d4b346355bb9 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -35,54 +35,10 @@
->  #include <asm/topology.h>
-> 
->  #include "pseries.h"
-> -#include "offline_states.h"
-> 
->  /* This version can't take the spinlock, because it never returns */
->  static int rtas_stop_self_token = RTAS_UNKNOWN_SERVICE;
-> 
-> -static DEFINE_PER_CPU(enum cpu_state_vals, preferred_offline_state) =
-> -							CPU_STATE_OFFLINE;
-> -static DEFINE_PER_CPU(enum cpu_state_vals, current_state) = CPU_STATE_OFFLINE;
-> -
-> -static enum cpu_state_vals default_offline_state = CPU_STATE_OFFLINE;
-> -
-> -static bool cede_offline_enabled __read_mostly = true;
-> -
-> -/*
-> - * Enable/disable cede_offline when available.
-> - */
-> -static int __init setup_cede_offline(char *str)
-> -{
-> -	return (kstrtobool(str, &cede_offline_enabled) == 0);
-> -}
-> -
-> -__setup("cede_offline=", setup_cede_offline);
-> -
-> -enum cpu_state_vals get_cpu_current_state(int cpu)
-> -{
-> -	return per_cpu(current_state, cpu);
-> -}
-> -
-> -void set_cpu_current_state(int cpu, enum cpu_state_vals state)
-> -{
-> -	per_cpu(current_state, cpu) = state;
-> -}
-> -
-> -enum cpu_state_vals get_preferred_offline_state(int cpu)
-> -{
-> -	return per_cpu(preferred_offline_state, cpu);
-> -}
-> -
-> -void set_preferred_offline_state(int cpu, enum cpu_state_vals state)
-> -{
-> -	per_cpu(preferred_offline_state, cpu) = state;
-> -}
-> -
-> -void set_default_offline_state(int cpu)
-> -{
-> -	per_cpu(preferred_offline_state, cpu) = default_offline_state;
-> -}
-> -
->  static void rtas_stop_self(void)
->  {
->  	static struct rtas_args args;
-> @@ -101,9 +57,7 @@ static void rtas_stop_self(void)
-> 
->  static void pseries_mach_cpu_die(void)
->  {
-> -	unsigned int cpu = smp_processor_id();
->  	unsigned int hwcpu = hard_smp_processor_id();
-> -	u8 cede_latency_hint = 0;
-> 
->  	local_irq_disable();
->  	idle_task_exit();
-> @@ -112,49 +66,6 @@ static void pseries_mach_cpu_die(void)
->  	else
->  		xics_teardown_cpu();
-> 
-> -	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-> -		set_cpu_current_state(cpu, CPU_STATE_INACTIVE);
-> -		if (ppc_md.suspend_disable_cpu)
-> -			ppc_md.suspend_disable_cpu();
-> -
-> -		cede_latency_hint = 2;
-> -
-> -		get_lppaca()->idle = 1;
-> -		if (!lppaca_shared_proc(get_lppaca()))
-> -			get_lppaca()->donate_dedicated_cpu = 1;
-> -
-> -		while (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-> -			while (!prep_irq_for_idle()) {
-> -				local_irq_enable();
-> -				local_irq_disable();
-> -			}
-> -
-> -			extended_cede_processor(cede_latency_hint);
-> -		}
-> -
-> -		local_irq_disable();
-> -
-> -		if (!lppaca_shared_proc(get_lppaca()))
-> -			get_lppaca()->donate_dedicated_cpu = 0;
-> -		get_lppaca()->idle = 0;
-> -
-> -		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
-> -			unregister_slb_shadow(hwcpu);
-> -
-> -			hard_irq_disable();
-> -			/*
-> -			 * Call to start_secondary_resume() will not return.
-> -			 * Kernel stack will be reset and start_secondary()
-> -			 * will be called to continue the online operation.
-> -			 */
-> -			start_secondary_resume();
-> -		}
-> -	}
-> -
-> -	/* Requested state is CPU_STATE_OFFLINE at this point */
-> -	WARN_ON(get_preferred_offline_state(cpu) != CPU_STATE_OFFLINE);
-> -
-> -	set_cpu_current_state(cpu, CPU_STATE_OFFLINE);
->  	unregister_slb_shadow(hwcpu);
->  	rtas_stop_self();
-> 
-> @@ -200,24 +111,13 @@ static void pseries_cpu_die(unsigned int cpu)
->  	int cpu_status = 1;
->  	unsigned int pcpu = get_hard_smp_processor_id(cpu);
-> 
-> -	if (get_preferred_offline_state(cpu) == CPU_STATE_INACTIVE) {
-> -		cpu_status = 1;
-> -		for (tries = 0; tries < 5000; tries++) {
-> -			if (get_cpu_current_state(cpu) == CPU_STATE_INACTIVE) {
-> -				cpu_status = 0;
-> -				break;
-> -			}
-> -			msleep(1);
-> -		}
-> -	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
-> +	for (tries = 0; tries < 25; tries++) {
-> +		cpu_status = smp_query_cpu_stopped(pcpu);
-> +		if (cpu_status == QCSS_STOPPED ||
-> +		    cpu_status == QCSS_HARDWARE_ERROR)
-> +			break;
-> +		cpu_relax();
-> 
-> -		for (tries = 0; tries < 25; tries++) {
-> -			cpu_status = smp_query_cpu_stopped(pcpu);
-> -			if (cpu_status == QCSS_STOPPED ||
-> -			    cpu_status == QCSS_HARDWARE_ERROR)
-> -				break;
-> -			cpu_relax();
-> -		}
->  	}
-> 
->  	if (cpu_status != 0) {
-> @@ -359,28 +259,15 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
-> 
-> -			if (get_cpu_current_state(cpu) == CPU_STATE_OFFLINE)
-> +			if (!cpu_online(cpu))
->  				break;
-> 
-> -			if (get_cpu_current_state(cpu) == CPU_STATE_ONLINE) {
-> -				set_preferred_offline_state(cpu,
-> -							    CPU_STATE_OFFLINE);
-> -				cpu_maps_update_done();
-> -				timed_topology_update(1);
-> -				rc = device_offline(get_cpu_device(cpu));
-> -				if (rc)
-> -					goto out;
-> -				cpu_maps_update_begin();
-> -				break;
-> -			}
-> -
-> -			/*
-> -			 * The cpu is in CPU_STATE_INACTIVE.
-> -			 * Upgrade it's state to CPU_STATE_OFFLINE.
-> -			 */
-> -			set_preferred_offline_state(cpu, CPU_STATE_OFFLINE);
-> -			WARN_ON(plpar_hcall_norets(H_PROD, thread) != H_SUCCESS);
-> -			__cpu_die(cpu);
-> +			cpu_maps_update_done();
-> +			timed_topology_update(1);
-> +			rc = device_offline(get_cpu_device(cpu));
-> +			if (rc)
-> +				goto out;
-> +			cpu_maps_update_begin();
->  			break;
->  		}
->  		if (cpu == num_possible_cpus()) {
-> @@ -414,8 +301,6 @@ static int dlpar_online_cpu(struct device_node *dn)
->  		for_each_present_cpu(cpu) {
->  			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
-> -			BUG_ON(get_cpu_current_state(cpu)
-> -					!= CPU_STATE_OFFLINE);
->  			cpu_maps_update_done();
->  			timed_topology_update(1);
->  			find_and_online_cpu_nid(cpu);
-> @@ -1013,27 +898,8 @@ static struct notifier_block pseries_smp_nb = {
->  	.notifier_call = pseries_smp_notifier,
->  };
-> 
-> -#define MAX_CEDE_LATENCY_LEVELS		4
-> -#define	CEDE_LATENCY_PARAM_LENGTH	10
-> -#define CEDE_LATENCY_PARAM_MAX_LENGTH	\
-> -	(MAX_CEDE_LATENCY_LEVELS * CEDE_LATENCY_PARAM_LENGTH * sizeof(char))
-> -#define CEDE_LATENCY_TOKEN		45
-> -
-> -static char cede_parameters[CEDE_LATENCY_PARAM_MAX_LENGTH];
-> -
-> -static int parse_cede_parameters(void)
-> -{
-> -	memset(cede_parameters, 0, CEDE_LATENCY_PARAM_MAX_LENGTH);
-> -	return rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
-> -			 NULL,
-> -			 CEDE_LATENCY_TOKEN,
-> -			 __pa(cede_parameters),
-> -			 CEDE_LATENCY_PARAM_MAX_LENGTH);
-> -}
-> -
->  static int __init pseries_cpu_hotplug_init(void)
->  {
-> -	int cpu;
->  	int qcss_tok;
-> 
->  #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-> @@ -1056,16 +922,8 @@ static int __init pseries_cpu_hotplug_init(void)
->  	smp_ops->cpu_die = pseries_cpu_die;
-> 
->  	/* Processors can be added/removed only on LPAR */
-> -	if (firmware_has_feature(FW_FEATURE_LPAR)) {
-> +	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		of_reconfig_notifier_register(&pseries_smp_nb);
-> -		cpu_maps_update_begin();
-> -		if (cede_offline_enabled && parse_cede_parameters() == 0) {
-> -			default_offline_state = CPU_STATE_INACTIVE;
-> -			for_each_online_cpu(cpu)
-> -				set_default_offline_state(cpu);
-> -		}
-> -		cpu_maps_update_done();
-> -	}
-> 
->  	return 0;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
-> deleted file mode 100644
-> index 51414aee2862..000000000000
-> --- a/arch/powerpc/platforms/pseries/offline_states.h
-> +++ /dev/null
-> @@ -1,38 +0,0 @@
-> -/* SPDX-License-Identifier: GPL-2.0 */
-> -#ifndef _OFFLINE_STATES_H_
-> -#define _OFFLINE_STATES_H_
-> -
-> -/* Cpu offline states go here */
-> -enum cpu_state_vals {
-> -	CPU_STATE_OFFLINE,
-> -	CPU_STATE_INACTIVE,
-> -	CPU_STATE_ONLINE,
-> -	CPU_MAX_OFFLINE_STATES
-> -};
-> -
-> -#ifdef CONFIG_HOTPLUG_CPU
-> -extern enum cpu_state_vals get_cpu_current_state(int cpu);
-> -extern void set_cpu_current_state(int cpu, enum cpu_state_vals state);
-> -extern void set_preferred_offline_state(int cpu, enum cpu_state_vals state);
-> -extern void set_default_offline_state(int cpu);
-> -#else
-> -static inline enum cpu_state_vals get_cpu_current_state(int cpu)
-> -{
-> -	return CPU_STATE_ONLINE;
-> -}
-> -
-> -static inline void set_cpu_current_state(int cpu, enum cpu_state_vals state)
-> -{
-> -}
-> -
-> -static inline void set_preferred_offline_state(int cpu, enum cpu_state_vals state)
-> -{
-> -}
-> -
-> -static inline void set_default_offline_state(int cpu)
-> -{
-> -}
-> -#endif
-> -
-> -extern enum cpu_state_vals get_preferred_offline_state(int cpu);
-> -#endif
-> diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
-> index f860a897a9e0..f827de7087e9 100644
-> --- a/arch/powerpc/platforms/pseries/pmem.c
-> +++ b/arch/powerpc/platforms/pseries/pmem.c
-> @@ -24,7 +24,6 @@
->  #include <asm/topology.h>
-> 
->  #include "pseries.h"
-> -#include "offline_states.h"
-> 
->  static struct device_node *pmem_node;
-> 
-> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-> index ad61e90032da..a8a070269151 100644
-> --- a/arch/powerpc/platforms/pseries/smp.c
-> +++ b/arch/powerpc/platforms/pseries/smp.c
-> @@ -44,8 +44,6 @@
->  #include <asm/svm.h>
-> 
->  #include "pseries.h"
-> -#include "offline_states.h"
-> -
-> 
->  /*
->   * The Primary thread of each non-boot processor was started from the OF client
-> @@ -108,10 +106,7 @@ static inline int smp_startup_cpu(unsigned int lcpu)
-> 
->  	/* Fixup atomic count: it exited inside IRQ handler. */
->  	task_thread_info(paca_ptrs[lcpu]->__current)->preempt_count	= 0;
-> -#ifdef CONFIG_HOTPLUG_CPU
-> -	if (get_cpu_current_state(lcpu) == CPU_STATE_INACTIVE)
-> -		goto out;
-> -#endif
-> +
->  	/* 
->  	 * If the RTAS start-cpu token does not exist then presume the
->  	 * cpu is already spinning.
-> @@ -126,9 +121,6 @@ static inline int smp_startup_cpu(unsigned int lcpu)
->  		return 0;
->  	}
-> 
-> -#ifdef CONFIG_HOTPLUG_CPU
-> -out:
-> -#endif
->  	return 1;
->  }
-> 
-> @@ -143,10 +135,6 @@ static void smp_setup_cpu(int cpu)
->  		vpa_init(cpu);
-> 
->  	cpumask_clear_cpu(cpu, of_spin_mask);
-> -#ifdef CONFIG_HOTPLUG_CPU
-> -	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
-> -	set_default_offline_state(cpu);
-> -#endif
->  }
-> 
->  static int smp_pSeries_kick_cpu(int nr)
-> @@ -163,20 +151,6 @@ static int smp_pSeries_kick_cpu(int nr)
->  	 * the processor will continue on to secondary_start
->  	 */
->  	paca_ptrs[nr]->cpu_start = 1;
-> -#ifdef CONFIG_HOTPLUG_CPU
-> -	set_preferred_offline_state(nr, CPU_STATE_ONLINE);
-> -
-> -	if (get_cpu_current_state(nr) == CPU_STATE_INACTIVE) {
-> -		long rc;
-> -		unsigned long hcpuid;
-> -
-> -		hcpuid = get_hard_smp_processor_id(nr);
-> -		rc = plpar_hcall_norets(H_PROD, hcpuid);
-> -		if (rc != H_SUCCESS)
-> -			printk(KERN_ERR "Error: Prod to wake up processor %d "
-> -						"Ret= %ld\n", nr, rc);
-> -	}
-> -#endif
-> 
->  	return 0;
->  }
-> -- 
-> 2.25.4
-> 
+cheers
