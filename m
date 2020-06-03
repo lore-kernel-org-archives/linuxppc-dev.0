@@ -2,53 +2,64 @@ Return-Path: <SRS0=sLSx=7Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1BE7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 01:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 830EEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 02:04:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2ADFA206E9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 01:44:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2ADFA206E9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id DC2C720663
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 02:04:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="ax87zDA2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC2C720663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cBXt5kYgzDqYX
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 11:44:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
- envelope-from=wanghai38@huawei.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cBzR4vnQzDqVj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 12:04:03 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cBW521r3zDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 11:42:53 +1000 (AEST)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 607BF51E75753D39F3C8;
- Wed,  3 Jun 2020 09:42:46 +0800 (CST)
-Received: from [127.0.0.1] (10.166.215.205) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.487.0;
- Wed, 3 Jun 2020 09:42:42 +0800
-Subject: Re: [PATCH] cxl: Fix kobject memory leak in cxl_sysfs_afu_new_cr()
-To: Markus Elfring <Markus.Elfring@web.de>, <linuxppc-dev@lists.ozlabs.org>
-References: <b9791ff3-8397-f6e9-ca88-59c9bbe8c78f@web.de>
-From: "wanghai (M)" <wanghai38@huawei.com>
-Message-ID: <25ad528b-beaf-820f-9738-ea304dcbc0d7@huawei.com>
-Date: Wed, 3 Jun 2020 09:42:41 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cBxN6lfMzDqDS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 12:02:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=ax87zDA2; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49cBxM6yJFz9sRR;
+ Wed,  3 Jun 2020 12:02:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1591149736;
+ bh=vhVIoWfRSqSXFrzE3g6qmYx7HtBU/h0jRCqrvADViUo=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=ax87zDA2OMU9bhGi7CX2giGqfJNRR4ffm4/mCm+/r4zM4WTK4ZIlQQVm4drgGDQV+
+ KbJKZ47lVS/axmNhj/9uGtK+wp3RTDRY/YjZ+wpMgWVm8votFb3NqT4HooByZ82Qhv
+ 72aJfQc7Ste0xwseybcO/7Xrh1/l8Nm6KOeq0j6CzD4CLs3a1jHOUaI2UJtga6Jwdk
+ z7d6kSY/KndFdKNmOIauZI2wC6qSYT09z/rew8HKknjKs0HcbV/9pav0Es5Us8lDUm
+ 92dHV8oQgaM0Ii3zbCld6TmJDPHF16/6BtLs3nMXpYcfsA7KeU5D7PvgNbRMi0K8CZ
+ dt6PFgEQd2NLg==
+Date: Wed, 3 Jun 2020 12:02:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: manual merge of the rcu tree with the powerpc tree
+Message-ID: <20200603120215.758ec1f0@canb.auug.org.au>
+In-Reply-To: <20200519172316.3b37cbae@canb.auug.org.au>
+References: <20200519172316.3b37cbae@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <b9791ff3-8397-f6e9-ca88-59c9bbe8c78f@web.de>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.166.215.205]
-X-CFilter-Loop: Reflected
+Content-Type: multipart/signed; boundary="Sig_/re/4mt4BnHhc__uwjuL5lI1";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,35 +71,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ian Munsie <imunsie@au1.ibm.com>, Frederic Barrat <fbarrat@linux.ibm.com>
+Cc: "Paul E. McKenney" <paulmck@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+--Sig_/re/4mt4BnHhc__uwjuL5lI1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-在 2020/6/3 1:20, Markus Elfring 写道:
->> Fix it by adding a call to kobject_put() in the error path of
->> kobject_init_and_add().
-> Thanks for another completion of the exception handling.
->
-> Would an other patch subject be a bit nicer?
-Thanks for the guidance, I will perfect this description and send a v2
->
-> …
->> +++ b/drivers/misc/cxl/sysfs.c
->> @@ -624,7 +624,7 @@ static struct afu_config_record *cxl_sysfs_afu_new_cr(struct cxl_afu *afu, int c
->>   	rc = kobject_init_and_add(&cr->kobj, &afu_config_record_type,
->>   				  &afu->dev.kobj, "cr%i", cr->cr);
->>   	if (rc)
->> -		goto err;
->> +		goto err1;
-> …
->
-> Can an other label be more reasonable here?
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/coding-style.rst?id=f359287765c04711ff54fbd11645271d8e5ff763#n465
-I just used the original author's label, should I replace all his labels 
-like'err','err1' with reasonable one.
+Hi all,
 
+On Tue, 19 May 2020 17:23:16 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Hi all,
+>=20
+> Today's linux-next merge of the rcu tree got a conflict in:
+>=20
+>   arch/powerpc/kernel/traps.c
+>=20
+> between commit:
+>=20
+>   116ac378bb3f ("powerpc/64s: machine check interrupt update NMI accounti=
+ng")
+>=20
+> from the powerpc tree and commit:
+>=20
+>   187416eeb388 ("hardirq/nmi: Allow nested nmi_enter()")
+>=20
+> from the rcu tree.
+
+This is now a conflict between commit
+
+  69ea03b56ed2 ("hardirq/nmi: Allow nested nmi_enter()")
+
+=46rom Linus tree and the above powerpc tree commit.
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/re/4mt4BnHhc__uwjuL5lI1
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl7XBKcACgkQAVBC80lX
+0Gz/Wgf+L+rFqD4u+L0Kv5bqDMacIs7hXXsLQI+vN7E4C2cx1LcZiI9aWrRDpUTK
+uUO5eVIwczW5tvq91C04sT7F6jrApts2PS2hbCwqPM+ZjWTI4SNO5yHopOrWKzUW
+RfV7+lCLfE+SwDlA+ZbzJotktvIL6gpUEBRpiMcSe7ka3iAiarcywWzgo/vhQ4J9
+I3oQUZiMblqFr653oSSYxwb7omI2TU3aAgV8Aheh8OmZktW90UfyYhJjoh6DYulQ
+r+qCwBkQ+MpYcRTOklfrOt9N96sJy1WuNP6bCw34/jd8L/d44loxB4YLO18igyAE
+biuCnndxOIm1utVMy+mR6g83z8twsA==
+=sOc/
+-----END PGP SIGNATURE-----
+
+--Sig_/re/4mt4BnHhc__uwjuL5lI1--
