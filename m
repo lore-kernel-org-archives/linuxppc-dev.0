@@ -6,43 +6,44 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49EA7C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:44:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D94C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:47:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1736E20679
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:44:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1736E20679
+	by mail.kernel.org (Postfix) with ESMTPS id 47514206A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 14:47:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47514206A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=collabora.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cWrx6tjDzDqbf
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 00:44:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cWwZ12tpzDqdn
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 00:47:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=46.235.227.227;
+ smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3;
  helo=bhuna.collabora.co.uk; envelope-from=boris.brezillon@collabora.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=collabora.com
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cVnR2zz2zDqSY
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
+ [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cVnR3NVQzDqST
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 23:56:26 +1000 (AEST)
 Received: from localhost.localdomain (unknown
  [IPv6:2a01:e0a:2c:6930:5cf4:84a1:2763:fe0d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested) (Authenticated sender: bbrezillon)
- by bhuna.collabora.co.uk (Postfix) with ESMTPSA id 787DA2A3D6A;
- Wed,  3 Jun 2020 14:49:27 +0100 (BST)
+ by bhuna.collabora.co.uk (Postfix) with ESMTPSA id A59162A3D7D;
+ Wed,  3 Jun 2020 14:49:29 +0100 (BST)
 From: Boris Brezillon <boris.brezillon@collabora.com>
 To: Anton Vorontsov <anton@enomsg.org>,
  Miquel Raynal <miquel.raynal@bootlin.com>, linux-mtd@lists.infradead.org
-Subject: [PATCH 04/10] mtd: rawnand: fsl_upm: Use devm_kasprintf() to allocate
- the MTD name
-Date: Wed,  3 Jun 2020 15:49:16 +0200
-Message-Id: <20200603134922.1352340-5-boris.brezillon@collabora.com>
+Subject: [PATCH 10/10] dt-bindings: mtd: fsl-upm-nand: Deprecate chip-delay
+ and fsl, upm-wait-flags
+Date: Wed,  3 Jun 2020 15:49:22 +0200
+Message-Id: <20200603134922.1352340-11-boris.brezillon@collabora.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200603134922.1352340-1-boris.brezillon@collabora.com>
 References: <20200603134922.1352340-1-boris.brezillon@collabora.com>
@@ -68,46 +69,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This simplifies the init() error path and the remove() handler.
+Those properties are no longer parsed by the driver which is being passed
+those information by the core now. Let's deprecate them.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
 ---
- drivers/mtd/nand/raw/fsl_upm.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ Documentation/devicetree/bindings/mtd/fsl-upm-nand.txt | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/mtd/nand/raw/fsl_upm.c b/drivers/mtd/nand/raw/fsl_upm.c
-index 9cf79c62ef22..a3e3a968891d 100644
---- a/drivers/mtd/nand/raw/fsl_upm.c
-+++ b/drivers/mtd/nand/raw/fsl_upm.c
-@@ -176,8 +176,9 @@ static int fun_chip_init(struct fsl_upm_nand *fun,
- 		return -ENODEV;
+diff --git a/Documentation/devicetree/bindings/mtd/fsl-upm-nand.txt b/Documentation/devicetree/bindings/mtd/fsl-upm-nand.txt
+index fce4894f5a98..25f07c1f9e44 100644
+--- a/Documentation/devicetree/bindings/mtd/fsl-upm-nand.txt
++++ b/Documentation/devicetree/bindings/mtd/fsl-upm-nand.txt
+@@ -7,14 +7,16 @@ Required properties:
+ - fsl,upm-cmd-offset : UPM pattern offset for the command latch.
  
- 	nand_set_flash_node(&fun->chip, flash_np);
--	mtd->name = kasprintf(GFP_KERNEL, "0x%llx.%pOFn", (u64)io_res->start,
--			      flash_np);
-+	mtd->name = devm_kasprintf(fun->dev, GFP_KERNEL, "0x%llx.%pOFn",
-+				   (u64)io_res->start,
-+				   flash_np);
- 	if (!mtd->name) {
- 		ret = -ENOMEM;
- 		goto err;
-@@ -190,8 +191,6 @@ static int fun_chip_init(struct fsl_upm_nand *fun,
- 	ret = mtd_device_register(mtd, NULL, 0);
- err:
- 	of_node_put(flash_np);
--	if (ret)
--		kfree(mtd->name);
- 	return ret;
- }
+ Optional properties:
+-- fsl,upm-wait-flags : add chip-dependent short delays after running the
+-	UPM pattern (0x1), after writing a data byte (0x2) or after
+-	writing out a buffer (0x4).
+ - fsl,upm-addr-line-cs-offsets : address offsets for multi-chip support.
+ 	The corresponding address lines are used to select the chip.
+ - gpios : may specify optional GPIOs connected to the Ready-Not-Busy pins
+ 	(R/B#). For multi-chip devices, "n" GPIO definitions are required
+ 	according to the number of chips.
++
++Deprecated properties:
++- fsl,upm-wait-flags : add chip-dependent short delays after running the
++	UPM pattern (0x1), after writing a data byte (0x2) or after
++	writing out a buffer (0x4).
+ - chip-delay : chip dependent delay for transferring data from array to
+ 	read registers (tR). Required if property "gpios" is not used
+ 	(R/B# pins not connected).
+@@ -52,8 +54,6 @@ upm@3,0 {
+ 	fsl,upm-cmd-offset = <0x08>;
+ 	/* Multi-chip NAND device */
+ 	fsl,upm-addr-line-cs-offsets = <0x0 0x200>;
+-	fsl,upm-wait-flags = <0x5>;
+-	chip-delay = <25>; // in micro-seconds
  
-@@ -318,7 +317,6 @@ static int fun_remove(struct platform_device *ofdev)
- 	ret = mtd_device_unregister(mtd);
- 	WARN_ON(ret);
- 	nand_cleanup(chip);
--	kfree(mtd->name);
- 
- 	for (i = 0; i < fun->mchip_count; i++) {
- 		if (fun->rnb_gpio[i] < 0)
+ 	nand@0 {
+ 		#address-cells = <1>;
 -- 
 2.25.4
 
