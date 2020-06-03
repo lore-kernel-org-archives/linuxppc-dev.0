@@ -6,47 +6,46 @@ X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A38DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:07:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D52B9C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:09:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3DEF206E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:07:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3DEF206E6
+	by mail.kernel.org (Postfix) with ESMTPS id 8644C206E6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:09:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8644C206E6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=collabora.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cXMK29MDzDqRt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 01:07:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cXQ56r7fzDqf0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 01:09:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3;
+ smtp.mailfrom=collabora.com (client-ip=46.235.227.227;
  helo=bhuna.collabora.co.uk; envelope-from=boris.brezillon@collabora.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=collabora.com
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
- [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cVsL4h0RzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 23:59:50 +1000 (AEST)
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cVtb01qTzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2020 00:00:54 +1000 (AEST)
 Received: from localhost (unknown [IPv6:2a01:e0a:2c:6930:5cf4:84a1:2763:fe0d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
  (Authenticated sender: bbrezillon)
- by bhuna.collabora.co.uk (Postfix) with ESMTPSA id 035692A0682;
- Wed,  3 Jun 2020 14:59:46 +0100 (BST)
-Date: Wed, 3 Jun 2020 15:59:44 +0200
+ by bhuna.collabora.co.uk (Postfix) with ESMTPSA id 79F3C2A0682;
+ Wed,  3 Jun 2020 15:00:51 +0100 (BST)
+Date: Wed, 3 Jun 2020 16:00:47 +0200
 From: Boris Brezillon <boris.brezillon@collabora.com>
 To: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH 04/10] mtd: rawnand: fsl_upm: Use devm_kasprintf() to
- allocate the MTD name
-Message-ID: <20200603155944.3245b31d@collabora.com>
-In-Reply-To: <20200603155531.1b43ddb7@xps13>
+Subject: Re: [PATCH 05/10] mtd: rawnand: fsl_upm: Use
+ platform_get_resource() + devm_ioremap_resource()
+Message-ID: <20200603160047.0262fcfc@collabora.com>
+In-Reply-To: <20200603155802.12165328@xps13>
 References: <20200603134922.1352340-1-boris.brezillon@collabora.com>
- <20200603134922.1352340-5-boris.brezillon@collabora.com>
- <20200603155531.1b43ddb7@xps13>
+ <20200603134922.1352340-6-boris.brezillon@collabora.com>
+ <20200603155802.12165328@xps13>
 Organization: Collabora
 X-Mailer: Claws Mail 3.17.5 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
@@ -72,35 +71,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 3 Jun 2020 15:55:31 +0200
+On Wed, 3 Jun 2020 15:58:02 +0200
 Miquel Raynal <miquel.raynal@bootlin.com> wrote:
 
 > Boris Brezillon <boris.brezillon@collabora.com> wrote on Wed,  3 Jun
-> 2020 15:49:16 +0200:
+> 2020 15:49:17 +0200:
 > 
-> > This simplifies the init() error path and the remove() handler.
+> > Replace the of_address_to_resource() + devm_ioremap() calls by
+> > platform_get_resource() + devm_ioremap_resource() ones which allows us
+> > to get rid of one error message since devm_ioremap_resource() already
+> > takes care of that.
 > > 
 > > Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
 > > ---
-> >  drivers/mtd/nand/raw/fsl_upm.c | 8 +++-----
-> >  1 file changed, 3 insertions(+), 5 deletions(-)
+> >  drivers/mtd/nand/raw/fsl_upm.c | 23 +++++++----------------
+> >  1 file changed, 7 insertions(+), 16 deletions(-)
 > > 
 > > diff --git a/drivers/mtd/nand/raw/fsl_upm.c b/drivers/mtd/nand/raw/fsl_upm.c
-> > index 9cf79c62ef22..a3e3a968891d 100644
+> > index a3e3a968891d..54851e9ea784 100644
 > > --- a/drivers/mtd/nand/raw/fsl_upm.c
 > > +++ b/drivers/mtd/nand/raw/fsl_upm.c
-> > @@ -176,8 +176,9 @@ static int fun_chip_init(struct fsl_upm_nand *fun,
-> >  		return -ENODEV;
+> > @@ -14,7 +14,6 @@
+> >  #include <linux/mtd/nand_ecc.h>
+> >  #include <linux/mtd/partitions.h>
+> >  #include <linux/mtd/mtd.h>
+> > -#include <linux/of_address.h>
+> >  #include <linux/of_platform.h>
+> >  #include <linux/of_gpio.h>
+> >  #include <linux/io.h>
+> > @@ -197,7 +196,7 @@ static int fun_chip_init(struct fsl_upm_nand *fun,
+> >  static int fun_probe(struct platform_device *ofdev)
+> >  {
+> >  	struct fsl_upm_nand *fun;
+> > -	struct resource io_res;
+> > +	struct resource *io_res;
+> >  	const __be32 *prop;
+> >  	int rnb_gpio;
+> >  	int ret;
+> > @@ -208,13 +207,12 @@ static int fun_probe(struct platform_device *ofdev)
+> >  	if (!fun)
+> >  		return -ENOMEM;
 > >  
-> >  	nand_set_flash_node(&fun->chip, flash_np);
-> > -	mtd->name = kasprintf(GFP_KERNEL, "0x%llx.%pOFn", (u64)io_res->start,
-> > -			      flash_np);
-> > +	mtd->name = devm_kasprintf(fun->dev, GFP_KERNEL, "0x%llx.%pOFn",
-> > +				   (u64)io_res->start,
-> > +				   flash_np);  
+> > -	ret = of_address_to_resource(ofdev->dev.of_node, 0, &io_res);
+> > -	if (ret) {
+> > -		dev_err(&ofdev->dev, "can't get IO base\n");
+> > -		return ret;
+> > -	}
+> > +	io_res = platform_get_resource(ofdev, IORESOURCE_MEM, 0);
+> > +	fun->io_base = devm_ioremap_resource(&ofdev->dev, io_res);  
 > 
-> Shouldn't we check if mtd->name was not already set by
-> nand_set_flash_node() first?
-> 
+> Why not even using devm_platform_ioremap_resource() resource directly?
 
-We could, but let's see if we find someone to test those changes first.
+Because I need to pass the resource to fsl_upm_find().
