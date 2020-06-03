@@ -4,51 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B43C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE4BBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:27:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6475206E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:25:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6475206E6
+	by mail.kernel.org (Postfix) with ESMTPS id 87A612065C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 05:27:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87A612065C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cHRG2sYBzDqd0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:24:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cHTf2FS5zDqLh
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 15:27:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=informatik.wtf (client-ip=131.153.2.45;
- helo=h4.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
+ smtp.mailfrom=informatik.wtf (client-ip=131.153.2.43;
+ helo=h2.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=informatik.wtf
-Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
- [131.153.2.45])
+Received: from h2.fbrelay.privateemail.com (h2.fbrelay.privateemail.com
+ [131.153.2.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cHH10w06zDqTF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 15:17:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cHH14FrNzDqX6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 15:17:49 +1000 (AEST)
 Received: from MTA-07-4.privateemail.com (mta-07.privateemail.com
  [198.54.127.57])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 665A980ADB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 01:17:45 -0400 (EDT)
+ by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id 2F42D80847
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 01:17:47 -0400 (EDT)
 Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
- by MTA-07.privateemail.com (Postfix) with ESMTP id E0A8560046;
- Wed,  3 Jun 2020 01:17:36 -0400 (EDT)
+ by MTA-07.privateemail.com (Postfix) with ESMTP id 08D5160059;
+ Wed,  3 Jun 2020 01:17:37 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.239])
- by MTA-07.privateemail.com (Postfix) with ESMTPA id C5F7E6004E;
- Wed,  3 Jun 2020 05:17:35 +0000 (UTC)
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id B944060052;
+ Wed,  3 Jun 2020 05:17:36 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@informatik.wtf>
 To: linuxppc-dev@lists.ozlabs.org,
 	kernel-hardening@lists.openwall.com
-Subject: [PATCH 2/5] powerpc/lib: Initialize a temporary mm for code patching
-Date: Wed,  3 Jun 2020 00:19:09 -0500
-Message-Id: <20200603051912.23296-3-cmr@informatik.wtf>
+Subject: [PATCH 5/5] powerpc: Add LKDTM test to hijack a patch mapping
+Date: Wed,  3 Jun 2020 00:19:12 -0500
+Message-Id: <20200603051912.23296-6-cmr@informatik.wtf>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200603051912.23296-1-cmr@informatik.wtf>
 References: <20200603051912.23296-1-cmr@informatik.wtf>
@@ -70,81 +71,178 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When code patching a STRICT_KERNEL_RWX kernel the page containing the
-address to be patched is temporarily mapped with permissive memory
-protections. Currently, a per-cpu vmalloc patch area is used for this
-purpose. While the patch area is per-cpu, the temporary page mapping is
-inserted into the kernel page tables for the duration of the patching.
-The mapping is exposed to CPUs other than the patching CPU - this is
-undesirable from a hardening perspective.
+When live patching with STRICT_KERNEL_RWX, the CPU doing the patching
+must use a temporary mapping which allows for writing to kernel text.
+During the entire window of time when this temporary mapping is in use,
+another CPU could write to the same mapping and maliciously alter kernel
+text. Implement a LKDTM test to attempt to exploit such a openings when
+a CPU is patching under STRICT_KERNEL_RWX. The test is only implemented
+on powerpc for now.
 
-Use the `poking_init` init hook to prepare a temporary mm and patching
-address. Initialize the temporary mm by copying the init mm. Choose a
-randomized patching address inside the temporary mm userspace address
-portion. The next patch uses the temporary mm and patching address for
-code patching.
+The LKDTM "hijack" test works as follows:
 
-Based on x86 implementation:
+	1. A CPU executes an infinite loop to patch an instruction.
+	   This is the "patching" CPU.
+	2. Another CPU attempts to write to the address of the temporary
+	   mapping used by the "patching" CPU. This other CPU is the
+	   "hijacker" CPU. The hijack either fails with a segfault or
+	   succeeds, in which case some kernel text is now overwritten.
 
-commit 4fc19708b165
-("x86/alternatives: Initialize temporary mm for patching")
+How to run the test:
+
+	mount -t debugfs none /sys/kernel/debug
+	(echo HIJACK_PATCH > /sys/kernel/debug/provoke-crash/DIRECT)
 
 Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
 ---
- arch/powerpc/lib/code-patching.c | 33 ++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ drivers/misc/lkdtm/core.c  |   1 +
+ drivers/misc/lkdtm/lkdtm.h |   1 +
+ drivers/misc/lkdtm/perms.c | 101 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 103 insertions(+)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 5ecf0d635a8d..599114f63b44 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -11,6 +11,8 @@
- #include <linux/cpuhotplug.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/sched/task.h>
-+#include <linux/random.h>
+diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
+index a5e344df9166..482e72f6a1e1 100644
+--- a/drivers/misc/lkdtm/core.c
++++ b/drivers/misc/lkdtm/core.c
+@@ -145,6 +145,7 @@ static const struct crashtype crashtypes[] = {
+ 	CRASHTYPE(WRITE_RO),
+ 	CRASHTYPE(WRITE_RO_AFTER_INIT),
+ 	CRASHTYPE(WRITE_KERN),
++	CRASHTYPE(HIJACK_PATCH),
+ 	CRASHTYPE(REFCOUNT_INC_OVERFLOW),
+ 	CRASHTYPE(REFCOUNT_ADD_OVERFLOW),
+ 	CRASHTYPE(REFCOUNT_INC_NOT_ZERO_OVERFLOW),
+diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
+index 601a2156a0d4..bfcf3542370d 100644
+--- a/drivers/misc/lkdtm/lkdtm.h
++++ b/drivers/misc/lkdtm/lkdtm.h
+@@ -62,6 +62,7 @@ void lkdtm_EXEC_USERSPACE(void);
+ void lkdtm_EXEC_NULL(void);
+ void lkdtm_ACCESS_USERSPACE(void);
+ void lkdtm_ACCESS_NULL(void);
++void lkdtm_HIJACK_PATCH(void);
  
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
-@@ -45,6 +47,37 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
+ /* lkdtm_refcount.c */
+ void lkdtm_REFCOUNT_INC_OVERFLOW(void);
+diff --git a/drivers/misc/lkdtm/perms.c b/drivers/misc/lkdtm/perms.c
+index 62f76d506f04..8bda3b56bc78 100644
+--- a/drivers/misc/lkdtm/perms.c
++++ b/drivers/misc/lkdtm/perms.c
+@@ -9,6 +9,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/mman.h>
+ #include <linux/uaccess.h>
++#include <linux/kthread.h>
+ #include <asm/cacheflush.h>
+ 
+ /* Whether or not to fill the target memory area with do_nothing(). */
+@@ -213,6 +214,106 @@ void lkdtm_ACCESS_NULL(void)
+ 	*ptr = tmp;
  }
  
- #ifdef CONFIG_STRICT_KERNEL_RWX
++#if defined(CONFIG_PPC) && defined(CONFIG_STRICT_KERNEL_RWX)
++#include <include/asm/code-patching.h>
 +
-+static struct mm_struct *patching_mm __ro_after_init;
-+static unsigned long patching_addr __ro_after_init;
++extern unsigned long read_cpu_patching_addr(unsigned int cpu);
 +
-+void __init poking_init(void)
++static struct ppc_inst * const patch_site = (struct ppc_inst *)&do_nothing;
++
++static int lkdtm_patching_cpu(void *data)
 +{
-+	spinlock_t *ptl; /* for protecting pte table */
-+	pte_t *ptep;
++	int err = 0;
++	struct ppc_inst insn = ppc_inst(0xdeadbeef);
 +
-+	/*
-+	 * Some parts of the kernel (static keys for example) depend on
-+	 * successful code patching. Code patching under STRICT_KERNEL_RWX
-+	 * requires this setup - otherwise we cannot patch at all. We use
-+	 * BUG_ON() here and later since an early failure is preferred to
-+	 * buggy behavior and/or strange crashes later.
-+	 */
-+	patching_mm = copy_init_mm();
-+	BUG_ON(!patching_mm);
++	pr_info("starting patching_cpu=%d\n", smp_processor_id());
++	do {
++		err = patch_instruction(patch_site, insn);
++	} while (ppc_inst_equal(ppc_inst_read(READ_ONCE(patch_site)), insn) &&
++			!err && !kthread_should_stop());
 +
-+	/*
-+	 * In hash we cannot go above DEFAULT_MAP_WINDOW easily.
-+	 * XXX: Do we want additional bits of entropy for radix?
-+	 */
-+	patching_addr = (get_random_long() & PAGE_MASK) %
-+		(DEFAULT_MAP_WINDOW - PAGE_SIZE);
++	if (err)
++		pr_warn("patch_instruction returned error: %d\n", err);
 +
-+	ptep = get_locked_pte(patching_mm, patching_addr, &ptl);
-+	BUG_ON(!ptep);
-+	pte_unmap_unlock(ptep, ptl);
++	set_current_state(TASK_INTERRUPTIBLE);
++	while (!kthread_should_stop()) {
++		schedule();
++		set_current_state(TASK_INTERRUPTIBLE);
++	}
++
++	return err;
 +}
 +
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
- 
- static int text_area_cpu_up(unsigned int cpu)
++void lkdtm_HIJACK_PATCH(void)
++{
++	struct task_struct *patching_kthrd;
++	struct ppc_inst original_insn;
++	int patching_cpu, hijacker_cpu, attempts;
++	unsigned long addr;
++	bool hijacked;
++
++	if (num_online_cpus() < 2) {
++		pr_warn("need at least two cpus\n");
++		return;
++	}
++
++	original_insn = ppc_inst_read(READ_ONCE(patch_site));
++
++	hijacker_cpu = smp_processor_id();
++	patching_cpu = cpumask_any_but(cpu_online_mask, hijacker_cpu);
++
++	patching_kthrd = kthread_create_on_node(&lkdtm_patching_cpu, NULL,
++						cpu_to_node(patching_cpu),
++						"lkdtm_patching_cpu");
++	kthread_bind(patching_kthrd, patching_cpu);
++	wake_up_process(patching_kthrd);
++
++	addr = offset_in_page(patch_site) | read_cpu_patching_addr(patching_cpu);
++
++	pr_info("starting hijacker_cpu=%d\n", hijacker_cpu);
++	for (attempts = 0; attempts < 100000; ++attempts) {
++		/* Use __put_user to catch faults without an Oops */
++		hijacked = !__put_user(0xbad00bad, (unsigned int *)addr);
++
++		if (hijacked) {
++			if (kthread_stop(patching_kthrd))
++				goto out;
++			break;
++		}
++	}
++	pr_info("hijack attempts: %d\n", attempts);
++
++	if (hijacked) {
++		if (*(unsigned int *)READ_ONCE(patch_site) == 0xbad00bad)
++			pr_err("overwrote kernel text\n");
++		/*
++		 * There are window conditions where the hijacker cpu manages to
++		 * write to the patch site but the site gets overwritten again by
++		 * the patching cpu. We still consider that a "successful" hijack
++		 * since the hijacker cpu did not fault on the write.
++		 */
++		pr_err("FAIL: wrote to another cpu's patching area\n");
++	} else {
++		kthread_stop(patching_kthrd);
++	}
++
++out:
++	/* Restore the original insn for any future lkdtm tests */
++	patch_instruction(patch_site, original_insn);
++}
++
++#else
++
++void lkdtm_HIJACK_PATCH(void)
++{
++	if (!IS_ENABLED(CONFIG_PPC))
++		pr_err("XFAIL: this test is powerpc-only\n");
++	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX))
++		pr_err("XFAIL: this test requires CONFIG_STRICT_KERNEL_RWX\n");
++}
++
++#endif /* CONFIG_PPC && CONFIG_STRICT_KERNEL_RWX */
++
+ void __init lkdtm_perms_init(void)
+ {
+ 	/* Make sure we can write to __ro_after_init values during __init */
 -- 
 2.26.2
 
