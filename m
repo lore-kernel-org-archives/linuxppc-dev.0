@@ -2,64 +2,59 @@ Return-Path: <SRS0=sLSx=7Q=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58DFFC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 03:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41EA3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 03:52:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ADE78206E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 03:19:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="D1YJ8z1j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADE78206E6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id EE24B20674
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 03:52:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE24B20674
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cDf30rmGzDqc6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 13:19:07 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49cFNn0QtXzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jun 2020 13:52:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cDbv6VlHzDqTw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 13:17:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=D1YJ8z1j; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 49cDbv1XvHz9sT6;
- Wed,  3 Jun 2020 13:17:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1591154235;
- bh=uintxDiAciJeRkXP2QAEgPNXQ1TlHkQqHNM+h3XDTJg=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=D1YJ8z1jUmP7VPVEOtM2ePoCV/gTAwBb44vlUyvNv0J6GiU3GI7AddxKofUytBd2e
- XhW65lPAoqAPC+ghCKZSC+Lnh/tSks8oPOaAZ4RBNSGbggzBG47SxIkmnyqtmJaP+X
- TVst86QD2N5bsQ7RGR+ru1ZzZmDt5r6LVIMWWlu/LvIwdzEUsUU55drbgeAx/N0Pjt
- 0XVMoxmQ2TobzpOoZZczPDIm1aCJhcNF7HLjSkCb9Quthz0YZV+kX9OT00aG0fjBJ1
- /xNSq+6fTqdVfIiCSa98Bb9Hxtv2Glo2Ghx1s5u+QXuCc7c12BOU5a+VMA4l048Qyt
- 5uOFTpT4690BA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sandipan Das <sandipan@linux.ibm.com>
-Subject: Re: [PATCH v2] selftests: powerpc: Add test for execute-disabled pkeys
-In-Reply-To: <1eb388dc-0fde-64f3-9c05-7f9f2a398543@linux.ibm.com>
-References: <20200527030342.13712-1-sandipan@linux.ibm.com>
- <87tuzzik8q.fsf@mpe.ellerman.id.au>
- <1eb388dc-0fde-64f3-9c05-7f9f2a398543@linux.ibm.com>
-Date: Wed, 03 Jun 2020 13:17:41 +1000
-Message-ID: <874krsj0ru.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cFL32cq9zDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2020 13:50:18 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0561A200CE0;
+ Wed,  3 Jun 2020 05:50:15 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4DA95200CDB;
+ Wed,  3 Jun 2020 05:50:10 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6D883402B1;
+ Wed,  3 Jun 2020 11:50:04 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com
+Subject: [PATCH 1/3] ASoC: fsl_easrc: Fix -Wmissing-prototypes warning
+Date: Wed,  3 Jun 2020 11:39:39 +0800
+Message-Id: <ab1b83a56c71f4159a98e6da5602c2c36fe59f4d.1591155860.git.shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1591155860.git.shengjiu.wang@nxp.com>
+References: <cover.1591155860.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1591155860.git.shengjiu.wang@nxp.com>
+References: <cover.1591155860.git.shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,150 +66,168 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fweimer@redhat.com, aneesh.kumar@linux.ibm.com, linuxram@us.ibm.com,
- linux-mm@kvack.org, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sandipan Das <sandipan@linux.ibm.com> writes:
-> Hi Michael,
->
-> Thanks for your suggestions. I had a few questions regarding some
-> of them.
->
-> On 29/05/20 7:18 am, Michael Ellerman wrote:
->>> [...]
->>> +
->>> +static void pkeyreg_set(unsigned long uamr)
->>> +{
->>> +	asm volatile("isync; mtspr	0xd, %0; isync;" : : "r"(uamr));
->>> +}
->> 
->> You can use mtspr() there, but you'll need to add the isync's yourself.
->> 
->
-> Would it make sense to add a new macro that adds the CSI instructions?
-> Something like this.
+Obtained with:
+$ make W=1
 
-I guess. I'm not sure there's that many places that need it, it's just
-the pkey tests I think.
+sound/soc/fsl/fsl_easrc.c:967:5: warning: no previous prototype for function 'fsl_easrc_config_context' [-Wmissing-prototypes]
+int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
+    ^
+sound/soc/fsl/fsl_easrc.c:967:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1128:5: warning: no previous prototype for function 'fsl_easrc_set_ctx_format' [-Wmissing-prototypes]
+int fsl_easrc_set_ctx_format(struct fsl_asrc_pair *ctx,
+    ^
+sound/soc/fsl/fsl_easrc.c:1128:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_set_ctx_format(struct fsl_asrc_pair *ctx,
+^
+static
+sound/soc/fsl/fsl_easrc.c:1201:5: warning: no previous prototype for function 'fsl_easrc_set_ctx_organziation' [-Wmissing-prototypes]
+int fsl_easrc_set_ctx_organziation(struct fsl_asrc_pair *ctx)
+    ^
+sound/soc/fsl/fsl_easrc.c:1201:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_set_ctx_organziation(struct fsl_asrc_pair *ctx)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1245:5: warning: no previous prototype for function 'fsl_easrc_request_context' [-Wmissing-prototypes]
+int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+    ^
+sound/soc/fsl/fsl_easrc.c:1245:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1290:6: warning: no previous prototype for function 'fsl_easrc_release_context' [-Wmissing-prototypes]
+void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
+     ^
+sound/soc/fsl/fsl_easrc.c:1290:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1317:5: warning: no previous prototype for function 'fsl_easrc_start_context' [-Wmissing-prototypes]
+int fsl_easrc_start_context(struct fsl_asrc_pair *ctx)
+    ^
+sound/soc/fsl/fsl_easrc.c:1317:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_start_context(struct fsl_asrc_pair *ctx)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1335:5: warning: no previous prototype for function 'fsl_easrc_stop_context' [-Wmissing-prototypes]
+int fsl_easrc_stop_context(struct fsl_asrc_pair *ctx)
+    ^
+sound/soc/fsl/fsl_easrc.c:1335:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+int fsl_easrc_stop_context(struct fsl_asrc_pair *ctx)
+^
+static
+sound/soc/fsl/fsl_easrc.c:1382:18: warning: no previous prototype for function 'fsl_easrc_get_dma_channel' [-Wmissing-prototypes]
+struct dma_chan *fsl_easrc_get_dma_channel(struct fsl_asrc_pair *ctx,
+                 ^
+sound/soc/fsl/fsl_easrc.c:1382:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+struct dma_chan *fsl_easrc_get_dma_channel(struct fsl_asrc_pair *ctx,
+^
+static
 
-I'd be more inclined to have a set_amr() helper that includes the
-isyncs, rather than a generic mtspr() version.
+Fixes: 955ac624058f ("ASoC: fsl_easrc: Add EASRC ASoC CPU DAI drivers")
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Reported-by: kbuild test robot <lkp@intel.com>
+---
+ sound/soc/fsl/fsl_easrc.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-> diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
-> index 022c5076b2c5..d60f66380cad 100644
-> --- a/tools/testing/selftests/powerpc/include/reg.h
-> +++ b/tools/testing/selftests/powerpc/include/reg.h
-> @@ -15,6 +15,10 @@
->  #define mtspr(rn, v)   asm volatile("mtspr " _str(rn) ",%0" : \
->                                     : "r" ((unsigned long)(v)) \
->                                     : "memory")
-> +#define mtspr_csi(rn, v)       ({ \
-> +                       asm volatile("isync; mtspr " _str(rn) ",%0; isync;" : \
-> +                                   : "r" ((unsigned long)(v)) \
-> +                                   : "memory"); })
->  
->  #define mb()           asm volatile("sync" : : : "memory");
->  #define barrier()      asm volatile("" : : : "memory");
->
->
-> I also noticed that two of the ptrace-related pkey tests were also not
-> using CSIs. I will fix those too.
->
->>> [...]
->>> +	/* The following two cases will avoid SEGV_PKUERR */
->>> +	ftype = -1;
->>> +	fpkey = -1;
->>> +
->>> +	/*
->>> +	 * Read an instruction word from the address when AMR bits
->>> +	 * are not set.
->> 
->> You should explain for people who aren't familiar with the ISA that "AMR
->> bits not set" means "read/write access allowed".
->> 
->>> +	 *
->>> +	 * This should not generate a fault as having PROT_EXEC
->>> +	 * implicitly allows reads. The pkey currently restricts
->> 
->> Whether PROT_EXEC implies read is not well defined (see the man page).
->> If you want to test this case I think you'd be better off specifying
->> PROT_EXEC | PROT_READ explicitly.
->> 
->
-> But I guess specifying PROT_EXEC | PROT_READ defeats the purpose? I can
-> tweak the passing condition though based on whether READ_IMPLIES_EXEC is
-> set in the personality.
->
->> [...]
->>> +	FAIL_IF(faults != 0 || fcode != SEGV_ACCERR);
->>> +
->>> +	/* The following three cases will generate SEGV_PKUERR */
->>> +	ftype = PKEY_DISABLE_ACCESS;
->>> +	fpkey = pkey;
->>> +
->>> +	/*
->>> +	 * Read an instruction word from the address when AMR bits
->>> +	 * are set.
->>> +	 *
->>> +	 * This should generate a pkey fault based on AMR bits only
->>> +	 * as having PROT_EXEC implicitly allows reads.
->> 
->> Again would be better to specify PROT_READ IMHO.
->> 
->
-> I can use a personality check here too.
->
->>> +	 */
->>> +	faults = 1;
->>> +	FAIL_IF(sys_pkey_mprotect(insns, pgsize, PROT_EXEC, pkey) != 0);
->>> +	printf("read from %p, pkey is execute-disabled, access-disabled\n",
->>> +	       (void *) faddr);
->>> +	pkey_set_rights(pkey, PKEY_DISABLE_ACCESS);
->>> +	i = *faddr;
->>> +	FAIL_IF(faults != 0 || fcode != SEGV_PKUERR);
->>> +
->>> +	/*
->>> +	 * Write an instruction word to the address when AMR bits
->>> +	 * are set.
->>> +	 *
->>> +	 * This should generate two faults. First, a pkey fault based
->>> +	 * on AMR bits and then an access fault based on PROT_EXEC.
->>> +	 */
->>> +	faults = 2;
->> 
->> Setting faults to the expected value and decrementing it in the fault
->> handler is kind of weird.
->> 
->> I think it would be clearer if faults was just a zero-based counter of
->> how many faults we've taken, and then you test that it's == 2 below.
->> 
->>> +	FAIL_IF(sys_pkey_mprotect(insns, pgsize, PROT_EXEC, pkey) != 0);
->>> +	printf("write to %p, pkey is execute-disabled, access-disabled\n",
->>> +	       (void *) faddr);
->>> +	pkey_set_rights(pkey, PKEY_DISABLE_ACCESS);
->>> +	*faddr = 0x60000000;	/* nop */
->>> +	FAIL_IF(faults != 0 || fcode != SEGV_ACCERR);
->> 
->> ie. FAIL_IF(faults != 2 || ... )
->> 
->
-> Agreed, it is weird. IIRC, I did this to make sure that if the test
-> kept getting repeated faults at the same address and exceeded the
-> maximum number of expected faults i.e. it gets another fault when
-> 'faults' is already zero, then the signal handler will attempt to
-> let the program continue by giving all permissions to the page and
-> also the pkey. Would it make sense to just rename 'faults' to
-> something like 'remaining_faults'?
+diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+index c6b5eb2d2af7..f227308a50e2 100644
+--- a/sound/soc/fsl/fsl_easrc.c
++++ b/sound/soc/fsl/fsl_easrc.c
+@@ -964,7 +964,7 @@ static int fsl_easrc_release_slot(struct fsl_asrc *easrc, unsigned int ctx_id)
+  *
+  * Configure the register relate with context.
+  */
+-int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
++static int fsl_easrc_config_context(struct fsl_asrc *easrc, unsigned int ctx_id)
+ {
+ 	struct fsl_easrc_ctx_priv *ctx_priv;
+ 	struct fsl_asrc_pair *ctx;
+@@ -1125,9 +1125,9 @@ static int fsl_easrc_process_format(struct fsl_asrc_pair *ctx,
+ 	return 0;
+ }
+ 
+-int fsl_easrc_set_ctx_format(struct fsl_asrc_pair *ctx,
+-			     snd_pcm_format_t *in_raw_format,
+-			     snd_pcm_format_t *out_raw_format)
++static int fsl_easrc_set_ctx_format(struct fsl_asrc_pair *ctx,
++				    snd_pcm_format_t *in_raw_format,
++				    snd_pcm_format_t *out_raw_format)
+ {
+ 	struct fsl_asrc *easrc = ctx->asrc;
+ 	struct fsl_easrc_ctx_priv *ctx_priv = ctx->private;
+@@ -1198,7 +1198,7 @@ int fsl_easrc_set_ctx_format(struct fsl_asrc_pair *ctx,
+  * to conform with this format. Interleaving parameters are accessed
+  * through the ASRC_CTRL_IN_ACCESSa and ASRC_CTRL_OUT_ACCESSa registers
+  */
+-int fsl_easrc_set_ctx_organziation(struct fsl_asrc_pair *ctx)
++static int fsl_easrc_set_ctx_organziation(struct fsl_asrc_pair *ctx)
+ {
+ 	struct fsl_easrc_ctx_priv *ctx_priv;
+ 	struct device *dev;
+@@ -1242,7 +1242,7 @@ int fsl_easrc_set_ctx_organziation(struct fsl_asrc_pair *ctx)
+  * Returns a negative number on error and >=0 as context id
+  * on success
+  */
+-int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
++static int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+ {
+ 	enum asrc_pair_index index = ASRC_INVALID_PAIR;
+ 	struct fsl_asrc *easrc = ctx->asrc;
+@@ -1287,7 +1287,7 @@ int fsl_easrc_request_context(int channels, struct fsl_asrc_pair *ctx)
+  *
+  * This funciton is mainly doing the revert thing in request context
+  */
+-void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
++static void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
+ {
+ 	unsigned long lock_flags;
+ 	struct fsl_asrc *easrc;
+@@ -1314,7 +1314,7 @@ void fsl_easrc_release_context(struct fsl_asrc_pair *ctx)
+  *
+  * Enable the DMA request and context
+  */
+-int fsl_easrc_start_context(struct fsl_asrc_pair *ctx)
++static int fsl_easrc_start_context(struct fsl_asrc_pair *ctx)
+ {
+ 	struct fsl_asrc *easrc = ctx->asrc;
+ 
+@@ -1332,7 +1332,7 @@ int fsl_easrc_start_context(struct fsl_asrc_pair *ctx)
+  *
+  * Disable the DMA request and context
+  */
+-int fsl_easrc_stop_context(struct fsl_asrc_pair *ctx)
++static int fsl_easrc_stop_context(struct fsl_asrc_pair *ctx)
+ {
+ 	struct fsl_asrc *easrc = ctx->asrc;
+ 	int val, i;
+@@ -1379,8 +1379,8 @@ int fsl_easrc_stop_context(struct fsl_asrc_pair *ctx)
+ 	return 0;
+ }
+ 
+-struct dma_chan *fsl_easrc_get_dma_channel(struct fsl_asrc_pair *ctx,
+-					   bool dir)
++static struct dma_chan *fsl_easrc_get_dma_channel(struct fsl_asrc_pair *ctx,
++						  bool dir)
+ {
+ 	struct fsl_asrc *easrc = ctx->asrc;
+ 	enum asrc_pair_index index = ctx->index;
+@@ -1391,7 +1391,6 @@ struct dma_chan *fsl_easrc_get_dma_channel(struct fsl_asrc_pair *ctx,
+ 
+ 	return dma_request_slave_channel(&easrc->pdev->dev, name);
+ };
+-EXPORT_SYMBOL_GPL(fsl_easrc_get_dma_channel);
+ 
+ static const unsigned int easrc_rates[] = {
+ 	8000, 11025, 12000, 16000,
+-- 
+2.21.0
 
-It seems like you've tried to make the code cope with a situation that
-should not happen, and would indicate a bug if it did happen, in which
-case I think it would be fine if the test just timed out.
-
-But if you want to handle it that's up to you, renaming the variable
-might help a bit.
-
-cheers
