@@ -2,65 +2,73 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81854C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B5FBC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:43:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CAFC1206E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:38:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C301A204EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:43:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qq+Vitsm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAFC1206E6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="C0D4Ai1a"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C301A204EF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49dHg14FGzzDqth
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:38:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Qq+Vitsm; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49dHmw5X9nzDqtt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:43:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=merlin.20170209 header.b=C0D4Ai1a; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49dHcV379qzDqfL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 06:36:26 +1000 (AEST)
-Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
- [73.231.172.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D6040206E6;
- Thu,  4 Jun 2020 20:36:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1591302983;
- bh=6tdvI6hVT12tR559Y0x/YhFiPVzayDyW2O1N/hc9g6c=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=Qq+Vitsm0LE8dgUTqTQ0PJt10JogRLNno17Te9gJX7oxFW7ATDBP35tpCOhVoRSDf
- ZLU6bXMm6yBmbq5o/AWzp33kWB8jss/xeVh6VQgYho6GvCdUNO06ShJ+VY6nDm9gw3
- UwiCaH4RqhPdb2XgCFpWNw4rgGS2KH5U7jjAZFbI=
-Date: Thu, 4 Jun 2020 13:36:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH] mm: Fix pud_alloc_track()
-Message-Id: <20200604133622.c23b365066af0b14a9f04961@linux-foundation.org>
-In-Reply-To: <20200604164814.GA7600@kernel.org>
-References: <20200604074446.23944-1-joro@8bytes.org>
- <20200604164814.GA7600@kernel.org>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49dHkX4yQczDqNx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 06:41:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=RRQblA+6bnMhS+1SeeEZEKS/yygoKGFKeYypCO41S+w=; b=C0D4Ai1alqr8n5EZ4NTgLMZNjz
+ FhgjMiyvs2pElhVDljwJfczLn/lUbRXtxNiNgZlQ26DdYPKuvFDQcj+WPlebJAlKW13CQib6OpZLB
+ O1sZhbeGkYwrCro0S/96SpLGo/EuJX6bmfFEoZa5VHq8RJezHp0KiwdqcnzPWh0OsALyAC696r4WF
+ KFFKqcdLiszkPv3L5bz9uK35dmbij3evt7cNScCz5vIyUO4HFM2UrJHrzBx9PWKR8di8Vplku1MgN
+ SxxLVmSByLs94EzRvfh+cnSMfBhSuBFGd7BD4rgxW7dW+yiGBZd/CEjmVOt3k2WfWqjeEn0c6vLKh
+ 8tRyt0dw==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=worktop.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jgwfv-0002aT-Rn; Thu, 04 Jun 2020 20:41:20 +0000
+Received: by worktop.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 578649838B9; Thu,  4 Jun 2020 22:41:16 +0200 (CEST)
+Date: Thu, 4 Jun 2020 22:41:16 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [RFC][PATCH v3 1/5] sparc64: Fix asm/percpu.h build error
+Message-ID: <20200604204116.GD4496@worktop.programming.kicks-ass.net>
+References: <20200529213550.683440625@infradead.org>
+ <20200529214203.673108357@infradead.org>
+ <20200529.162917.1970892823680223252.davem@davemloft.net>
+ <20200604165703.GG3976@hirez.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200604165703.GG3976@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,41 +80,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- jroedel@suse.de, linux-mm@kvack.org, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, Joerg Roedel <joro@8bytes.org>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Andy Lutomirski <luto@kernel.org>, manvanth@linux.vnet.ibm.com, hch@lst.de
+Cc: linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bigeasy@linutronix.de, x86@kernel.org, heiko.carstens@de.ibm.com,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org, a.darwish@linutronix.de,
+ sparclinux@vger.kernel.org, tglx@linutronix.de, will@kernel.org,
+ mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 4 Jun 2020 19:48:14 +0300 Mike Rapoport <rppt@kernel.org> wrote:
+On Thu, Jun 04, 2020 at 06:57:03PM +0200, Peter Zijlstra wrote:
 
-> On Thu, Jun 04, 2020 at 09:44:46AM +0200, Joerg Roedel wrote:
-> > From: Joerg Roedel <jroedel@suse.de>
-> > 
-> > The pud_alloc_track() needs to do different checks based on whether
-> > __ARCH_HAS_5LEVEL_HACK is defined, like it already does in
-> > pud_alloc(). Otherwise it causes boot failures on PowerPC.
-> > 
-> > Provide the correct implementations for both possible settings of
-> > __ARCH_HAS_5LEVEL_HACK to fix the boot problems.
+> I think I see, what happens is that these headers end up in the VDSO
+> build, and that doesn't have these CFLAGS, because userspace.
 > 
-> There is a patch in mmotm [1] that completely removes
-> __ARCH_HAS_5LEVEL_HACK which is a part of the series [2] that updates
-> p4d folding accross architectures. This should fix boot on PowerPC and
-> the addition of pXd_alloc_track() for __ARCH_HAS_5LEVEL_HACK wouldn't be
-> necessary.
-> 
-> 
-> [1] https://github.com/hnaz/linux-mm/commit/cfae68792af3731ac902ea6ba5ed8df5a0f6bd2f
-> [2] https://lore.kernel.org/kvmarm/20200414153455.21744-1-rppt@kernel.org/
+> Let me see what to do about that.
 
-That patchset is stacked up behind many other patches, including all
-the powerpc stuff in linux-next :(
+I feel like the below is cheating, but it's the best I could find :/
+VDSO including kernel headers and the utter maze that our kernel headers
+are makes it really hard to untangle :/
 
-As it's a big bug fix, I'll pull those patches forward, hopefully send it
-all Linuswards later today...
+This builds sparc64-defconfig and sparc64-all{no,mod}config.
+
+Dave, does this work for you, or should I try hardder?
+
+---
+ arch/sparc/include/asm/percpu_64.h  | 2 ++
+ arch/sparc/include/asm/trap_block.h | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/arch/sparc/include/asm/percpu_64.h b/arch/sparc/include/asm/percpu_64.h
+index 32ef6f05cc565..a8786a4b90b6b 100644
+--- a/arch/sparc/include/asm/percpu_64.h
++++ b/arch/sparc/include/asm/percpu_64.h
+@@ -4,7 +4,9 @@
+
+ #include <linux/compiler.h>
+
++#ifndef BUILD_VDSO
+ register unsigned long __local_per_cpu_offset asm("g5");
++#endif
+
+ #ifdef CONFIG_SMP
+
+diff --git a/arch/sparc/include/asm/trap_block.h b/arch/sparc/include/asm/trap_block.h
+index 0f6d0c4f66838..ace0d48e837e5 100644
+--- a/arch/sparc/include/asm/trap_block.h
++++ b/arch/sparc/include/asm/trap_block.h
+@@ -2,6 +2,8 @@
+ #ifndef _SPARC_TRAP_BLOCK_H
+ #define _SPARC_TRAP_BLOCK_H
+
++#include <linux/threads.h>
++
+ #include <asm/hypervisor.h>
+ #include <asm/asi.h>
+
+
