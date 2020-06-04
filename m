@@ -2,64 +2,60 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39A4AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 16:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24153C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 16:51:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A186D20738
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 16:12:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7B7A020738
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 16:51:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nw/1Groc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A186D20738
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bpAs4zNr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B7A020738
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49d9lx3HKJzDqqW
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 02:12:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49dBdJ3THQzDqC0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 02:51:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=nw/1Groc; dkim-atps=neutral
+ header.s=default header.b=bpAs4zNr; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49d9jf2VKtzDqq7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 02:10:30 +1000 (AEST)
-Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3C1CA20738;
- Thu,  4 Jun 2020 16:10:26 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49dBYS4SxtzDqnZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 02:48:28 +1000 (AEST)
+Received: from kernel.org (unknown [87.71.78.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 785802072E;
+ Thu,  4 Jun 2020 16:48:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1591287027;
- bh=0xmK7trSvCLIVSPDo+pXJAAicS42nP1V3Qi4wuKk5Qk=;
+ s=default; t=1591289305;
+ bh=Oz7w8Vy9BhqBNcFPLUtkFBwlNSjLFu/N//zwBWU6z1E=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=nw/1GrocGPE0GznF1zC3U0ogIwPCKs9DWk9Lc+DYjoRtVRPOX9TQ2jaxpJQKRDDwc
- JJ+PXKmpftVKhaxobhlE2k3dWm8TmCbU/ZOkbjf5YXY5w78w+zaobynIBRchsjQAuB
- 9njWGL+bdNgxaOZyCgCTgbYQus9uy4JyXZ8cBOQk=
-Date: Thu, 4 Jun 2020 17:10:22 +0100
-From: Will Deacon <will@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: linux-next: build failure on powerpc 8xx with 16k pages
-Message-ID: <20200604161022.GD3650@willie-the-truck>
-References: <dc2b16e1-b719-5500-508d-ae97bf50c4a6@csgroup.eu>
- <20200604111723.GA1267@willie-the-truck>
- <20200604120007.GA4117@hirez.programming.kicks-ass.net>
- <1160ea76-729b-60a2-31d6-998c57b77858@csgroup.eu>
+ b=bpAs4zNrGftDH+mfIB6aH7FBHvii0eyFF4eGfjNke4KBrTczckrLCgkHoW5LOpXab
+ zMovWEZ1cKUI1IRRf1GxOef/x+71d/03HlotOfi7JHLcWxCSSw/A7XESVjnbIVd0DK
+ VihEcbNVmahz/dpMfM+c4PiM52AoOgpr7v341OcA=
+Date: Thu, 4 Jun 2020 19:48:14 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH] mm: Fix pud_alloc_track()
+Message-ID: <20200604164814.GA7600@kernel.org>
+References: <20200604074446.23944-1-joro@8bytes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1160ea76-729b-60a2-31d6-998c57b77858@csgroup.eu>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200604074446.23944-1-joro@8bytes.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,76 +67,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, arnd@arndb.de,
- Peter Zijlstra <peterz@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ jroedel@suse.de, linux-mm@kvack.org, peterz@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ manvanth@linux.vnet.ibm.com, hch@lst.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+Arnd since I think we spoke about this on IRC once]
-
-On Thu, Jun 04, 2020 at 02:35:14PM +0000, Christophe Leroy wrote:
-> Now I get the same issue at
+On Thu, Jun 04, 2020 at 09:44:46AM +0200, Joerg Roedel wrote:
+> From: Joerg Roedel <jroedel@suse.de>
 > 
->    CC      mm/mincore.o
-> In file included from ./include/asm-generic/bug.h:5:0,
->                  from ./arch/powerpc/include/asm/bug.h:109,
->                  from ./include/linux/bug.h:5,
->                  from ./include/linux/mmdebug.h:5,
->                  from ./include/linux/mm.h:9,
->                  from ./include/linux/pagemap.h:8,
->                  from mm/mincore.c:11:
-> In function 'huge_ptep_get',
->     inlined from 'mincore_hugetlb' at mm/mincore.c:35:20:
-> ./include/linux/compiler.h:392:38: error: call to '__compiletime_assert_218'
-> declared with attribute error: Unsupported access size for
-> {READ,WRITE}_ONCE().
->   _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
->                                       ^
-> ./include/linux/compiler.h:373:4: note: in definition of macro
-> '__compiletime_assert'
->     prefix ## suffix();    \
->     ^
-> ./include/linux/compiler.h:392:2: note: in expansion of macro
-> '_compiletime_assert'
->   _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
->   ^
-> ./include/linux/compiler.h:405:2: note: in expansion of macro
-> 'compiletime_assert'
->   compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long), \
->   ^
-> ./include/linux/compiler.h:291:2: note: in expansion of macro
-> 'compiletime_assert_rwonce_type'
->   compiletime_assert_rwonce_type(x);    \
->   ^
-> ./include/asm-generic/hugetlb.h:125:9: note: in expansion of macro
-> 'READ_ONCE'
->   return READ_ONCE(*ptep);
->          ^
-> make[2]: *** [mm/mincore.o] Error 1
+> The pud_alloc_track() needs to do different checks based on whether
+> __ARCH_HAS_5LEVEL_HACK is defined, like it already does in
+> pud_alloc(). Otherwise it causes boot failures on PowerPC.
 > 
-> I guess for this one I have to implement platform specific huge_ptep_get()
+> Provide the correct implementations for both possible settings of
+> __ARCH_HAS_5LEVEL_HACK to fix the boot problems.
 
-Yeah, or bite the bullet and introduce proper accessors for all these
-things:
+There is a patch in mmotm [1] that completely removes
+__ARCH_HAS_5LEVEL_HACK which is a part of the series [2] that updates
+p4d folding accross architectures. This should fix boot on PowerPC and
+the addition of pXd_alloc_track() for __ARCH_HAS_5LEVEL_HACK wouldn't be
+necessary.
 
-	pte_read()
-	pmd_read()
-	pud_read()
-	etc
 
-with the default implementation pointing at READ_ONCE(), but allowing an
-architecture override. It's a big job because mm/ would need repainting,
-but it would have the benefit of being able to remove aggregate types from
-READ_ONCE() entirely and using a special accessor just for the page-table
-types.
+[1] https://github.com/hnaz/linux-mm/commit/cfae68792af3731ac902ea6ba5ed8df5a0f6bd2f
+[2] https://lore.kernel.org/kvmarm/20200414153455.21744-1-rppt@kernel.org/
 
-That might also mean that we could have asm-generic versions of things
-like ptep_get_and_clear() that work for architectures with hardware
-update and need atomic rmw. But I'm getting ahead of myself.
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> Tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+> Fixes: d8626138009b ("mm: add functions to track page directory modifications")
+> Signed-off-by: Joerg Roedel <jroedel@suse.de>
+> ---
+>  include/asm-generic/5level-fixup.h |  5 +++++
+>  include/linux/mm.h                 | 26 +++++++++++++-------------
+>  2 files changed, 18 insertions(+), 13 deletions(-)
+> 
+> diff --git a/include/asm-generic/5level-fixup.h b/include/asm-generic/5level-fixup.h
+> index 58046ddc08d0..afbab31fbd7e 100644
+> --- a/include/asm-generic/5level-fixup.h
+> +++ b/include/asm-generic/5level-fixup.h
+> @@ -17,6 +17,11 @@
+>  	((unlikely(pgd_none(*(p4d))) && __pud_alloc(mm, p4d, address)) ? \
+>  		NULL : pud_offset(p4d, address))
+>  
+> +#define pud_alloc_track(mm, p4d, address, mask)					\
+> +	((unlikely(pgd_none(*(p4d))) &&						\
+> +	  (__pud_alloc(mm, p4d, address) || ({*(mask)|=PGTBL_P4D_MODIFIED;0;})))?	\
+> +	  NULL : pud_offset(p4d, address))
+> +
+>  #define p4d_alloc(mm, pgd, address)		(pgd)
+>  #define p4d_alloc_track(mm, pgd, address, mask)	(pgd)
+>  #define p4d_offset(pgd, start)			(pgd)
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 66e0977f970a..ad3b31c5bcc3 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2088,35 +2088,35 @@ static inline pud_t *pud_alloc(struct mm_struct *mm, p4d_t *p4d,
+>  		NULL : pud_offset(p4d, address);
+>  }
+>  
+> -static inline p4d_t *p4d_alloc_track(struct mm_struct *mm, pgd_t *pgd,
+> +static inline pud_t *pud_alloc_track(struct mm_struct *mm, p4d_t *p4d,
+>  				     unsigned long address,
+>  				     pgtbl_mod_mask *mod_mask)
+> -
+>  {
+> -	if (unlikely(pgd_none(*pgd))) {
+> -		if (__p4d_alloc(mm, pgd, address))
+> +	if (unlikely(p4d_none(*p4d))) {
+> +		if (__pud_alloc(mm, p4d, address))
+>  			return NULL;
+> -		*mod_mask |= PGTBL_PGD_MODIFIED;
+> +		*mod_mask |= PGTBL_P4D_MODIFIED;
+>  	}
+>  
+> -	return p4d_offset(pgd, address);
+> +	return pud_offset(p4d, address);
+>  }
+>  
+> -#endif /* !__ARCH_HAS_5LEVEL_HACK */
+> -
+> -static inline pud_t *pud_alloc_track(struct mm_struct *mm, p4d_t *p4d,
+> +static inline p4d_t *p4d_alloc_track(struct mm_struct *mm, pgd_t *pgd,
+>  				     unsigned long address,
+>  				     pgtbl_mod_mask *mod_mask)
+> +
+>  {
+> -	if (unlikely(p4d_none(*p4d))) {
+> -		if (__pud_alloc(mm, p4d, address))
+> +	if (unlikely(pgd_none(*pgd))) {
+> +		if (__p4d_alloc(mm, pgd, address))
+>  			return NULL;
+> -		*mod_mask |= PGTBL_P4D_MODIFIED;
+> +		*mod_mask |= PGTBL_PGD_MODIFIED;
+>  	}
+>  
+> -	return pud_offset(p4d, address);
+> +	return p4d_offset(pgd, address);
+>  }
+>  
+> +#endif /* !__ARCH_HAS_5LEVEL_HACK */
+> +
+>  static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+>  {
+>  	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
+> -- 
+> 2.26.2
+> 
 
-Will
+-- 
+Sincerely yours,
+Mike.
