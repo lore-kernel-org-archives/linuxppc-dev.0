@@ -2,45 +2,98 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 246BFC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 07:56:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED34C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 08:18:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF517206DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 07:56:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF517206DC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 93B42206C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 08:17:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93B42206C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49cylk0XXHzDqlh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 17:56:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49czDN6JxxzDqV3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 18:17:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
- helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=8bytes.org
-X-Greylist: delayed 575 seconds by postgrey-1.36 at bilbo;
- Thu, 04 Jun 2020 17:54:36 AEST
-Received: from theia.8bytes.org (8bytes.org
- [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49cyjS2Gp6zDqkq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2020 17:54:36 +1000 (AEST)
-Received: by theia.8bytes.org (Postfix, from userid 1000)
- id A93F826F; Thu,  4 Jun 2020 09:44:48 +0200 (CEST)
-From: Joerg Roedel <joro@8bytes.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] mm: Fix pud_alloc_track()
-Date: Thu,  4 Jun 2020 09:44:46 +0200
-Message-Id: <20200604074446.23944-1-joro@8bytes.org>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49cz8t4RmrzDqnM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2020 18:14:54 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05480krg021845
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2020 04:14:51 -0400
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31eq3nspyt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2020 04:14:50 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0548BqhZ015707
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2020 08:14:49 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma03fra.de.ibm.com with ESMTP id 31bf47bvrc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Jun 2020 08:14:49 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0548Ekba37421112
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 4 Jun 2020 08:14:46 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2CE29A4054;
+ Thu,  4 Jun 2020 08:14:46 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CB748A405B;
+ Thu,  4 Jun 2020 08:14:45 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  4 Jun 2020 08:14:45 +0000 (GMT)
+Received: from [9.206.169.223] (unknown [9.206.169.223])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 18FD4A01A8;
+ Thu,  4 Jun 2020 18:14:44 +1000 (AEST)
+Subject: Re: [PATCH v4] ocxl: control via sysfs whether the FPGA is reloaded
+ on a link reset
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ clombard@linux.ibm.com, alastair@au1.ibm.com
+References: <20200330083422.34230-1-fbarrat@linux.ibm.com>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Message-ID: <81b3446e-5547-220f-c167-6f79bcde9b0d@linux.ibm.com>
+Date: Thu, 4 Jun 2020 18:14:43 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
+MIME-Version: 1.0
+In-Reply-To: <20200330083422.34230-1-fbarrat@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-04_04:2020-06-02,
+ 2020-06-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0
+ cotscore=-2147483648 mlxlogscore=999 mlxscore=0 bulkscore=0 spamscore=0
+ impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0
+ phishscore=0 suspectscore=0 lowpriorityscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006040052
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,105 +105,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- jroedel@suse.de, linux-mm@kvack.org, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Andy Lutomirski <luto@kernel.org>, manvanth@linux.vnet.ibm.com, hch@lst.de
+Cc: felix@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Joerg Roedel <jroedel@suse.de>
+On 30/3/20 7:34 pm, Frederic Barrat wrote:
+> From: Philippe Bergheaud <felix@linux.ibm.com>
+> 
+> Some opencapi FPGA images allow to control if the FPGA should be reloaded
+> on the next adapter reset. If it is supported, the image specifies it
+> through a Vendor Specific DVSEC in the config space of function 0.
+> 
+> Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-The pud_alloc_track() needs to do different checks based on whether
-__ARCH_HAS_5LEVEL_HACK is defined, like it already does in
-pud_alloc(). Otherwise it causes boot failures on PowerPC.
+Thanks for the cleanups.
 
-Provide the correct implementations for both possible settings of
-__ARCH_HAS_5LEVEL_HACK to fix the boot problems.
+My earlier concerns have been addressed thanks to an update to the 
+relevant specification - a Vendor Specific DVSEC with an IBM vendor ID 
+and IBM-specific DVSEC ID is specific to the IBM CFG subsystem 
+implementation, alternative implementations will need to use a different 
+vendor IDs and DVSEC IDs.
 
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Fixes: d8626138009b ("mm: add functions to track page directory modifications")
-Signed-off-by: Joerg Roedel <jroedel@suse.de>
----
- include/asm-generic/5level-fixup.h |  5 +++++
- include/linux/mm.h                 | 26 +++++++++++++-------------
- 2 files changed, 18 insertions(+), 13 deletions(-)
+> ---
+> 
+> Changelog:
+> v2:
+>    - refine ResetReload debug message
+>    - do not call get_function_0() if pci_dev is for function 0
+> v3:
+>    - avoid get_function_0() in ocxl_config_set_reset_reload also
+> v4:
+>    - simplify parsing of Vendor Specific DVSEC during AFU init
+>    - only set/unset bit 0 of the config space register
+>    - commonize code to fetch the right PCI function and DVSEC offset
+>    - use kstrtoint() when parsing the sysfs buffer
+> 
+> 
+>   Documentation/ABI/testing/sysfs-class-ocxl | 10 +++
+>   drivers/misc/ocxl/config.c                 | 81 ++++++++++++++++++++--
+>   drivers/misc/ocxl/ocxl_internal.h          |  6 ++
+>   drivers/misc/ocxl/sysfs.c                  | 35 ++++++++++
+>   include/misc/ocxl-config.h                 |  1 +
+>   5 files changed, 128 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-ocxl b/Documentation/ABI/testing/sysfs-class-ocxl
+> index b5b1fa197592..b9ea671d5805 100644
+> --- a/Documentation/ABI/testing/sysfs-class-ocxl
+> +++ b/Documentation/ABI/testing/sysfs-class-ocxl
+> @@ -33,3 +33,13 @@ Date:		January 2018
+>   Contact:	linuxppc-dev@lists.ozlabs.org
+>   Description:	read/write
+>   		Give access the global mmio area for the AFU
+> +
+> +What:		/sys/class/ocxl/<afu name>/reload_on_reset
+> +Date:		February 2020
+> +Contact:	linuxppc-dev@lists.ozlabs.org
+> +Description:	read/write
+> +		Control whether the FPGA is reloaded on a link reset
+> +			0	Do not reload FPGA image from flash
+> +			1	Reload FPGA image from flash
+> +			unavailable
+> +				The device does not support this capability
 
-diff --git a/include/asm-generic/5level-fixup.h b/include/asm-generic/5level-fixup.h
-index 58046ddc08d0..afbab31fbd7e 100644
---- a/include/asm-generic/5level-fixup.h
-+++ b/include/asm-generic/5level-fixup.h
-@@ -17,6 +17,11 @@
- 	((unlikely(pgd_none(*(p4d))) && __pud_alloc(mm, p4d, address)) ? \
- 		NULL : pud_offset(p4d, address))
- 
-+#define pud_alloc_track(mm, p4d, address, mask)					\
-+	((unlikely(pgd_none(*(p4d))) &&						\
-+	  (__pud_alloc(mm, p4d, address) || ({*(mask)|=PGTBL_P4D_MODIFIED;0;})))?	\
-+	  NULL : pud_offset(p4d, address))
-+
- #define p4d_alloc(mm, pgd, address)		(pgd)
- #define p4d_alloc_track(mm, pgd, address, mask)	(pgd)
- #define p4d_offset(pgd, start)			(pgd)
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 66e0977f970a..ad3b31c5bcc3 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2088,35 +2088,35 @@ static inline pud_t *pud_alloc(struct mm_struct *mm, p4d_t *p4d,
- 		NULL : pud_offset(p4d, address);
- }
- 
--static inline p4d_t *p4d_alloc_track(struct mm_struct *mm, pgd_t *pgd,
-+static inline pud_t *pud_alloc_track(struct mm_struct *mm, p4d_t *p4d,
- 				     unsigned long address,
- 				     pgtbl_mod_mask *mod_mask)
--
- {
--	if (unlikely(pgd_none(*pgd))) {
--		if (__p4d_alloc(mm, pgd, address))
-+	if (unlikely(p4d_none(*p4d))) {
-+		if (__pud_alloc(mm, p4d, address))
- 			return NULL;
--		*mod_mask |= PGTBL_PGD_MODIFIED;
-+		*mod_mask |= PGTBL_P4D_MODIFIED;
- 	}
- 
--	return p4d_offset(pgd, address);
-+	return pud_offset(p4d, address);
- }
- 
--#endif /* !__ARCH_HAS_5LEVEL_HACK */
--
--static inline pud_t *pud_alloc_track(struct mm_struct *mm, p4d_t *p4d,
-+static inline p4d_t *p4d_alloc_track(struct mm_struct *mm, pgd_t *pgd,
- 				     unsigned long address,
- 				     pgtbl_mod_mask *mod_mask)
-+
- {
--	if (unlikely(p4d_none(*p4d))) {
--		if (__pud_alloc(mm, p4d, address))
-+	if (unlikely(pgd_none(*pgd))) {
-+		if (__p4d_alloc(mm, pgd, address))
- 			return NULL;
--		*mod_mask |= PGTBL_P4D_MODIFIED;
-+		*mod_mask |= PGTBL_PGD_MODIFIED;
- 	}
- 
--	return pud_offset(p4d, address);
-+	return p4d_offset(pgd, address);
- }
- 
-+#endif /* !__ARCH_HAS_5LEVEL_HACK */
-+
- static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
- {
- 	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
+We should perhaps document here that this is specific to the IBM CFG 
+implementation and the IBM-specific DVSEC?
+
 -- 
-2.26.2
-
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
