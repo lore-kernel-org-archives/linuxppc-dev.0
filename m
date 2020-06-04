@@ -2,98 +2,61 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBBE7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 23:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A239C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 23:56:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82D46206DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 23:54:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82D46206DC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B6AA7206F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 23:56:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6AA7206F8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49dN1G67qSzDqhC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 09:54:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49dN3Y64TqzDqxW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 09:56:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49dMlY1Bv7zDqgL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 09:42:48 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 054NWV6p070089; Thu, 4 Jun 2020 19:42:03 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31f9dsj2b4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 19:42:03 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 054NXpeR073871;
- Thu, 4 Jun 2020 19:42:02 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31f9dsj2am-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 19:42:02 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 054NecCA015089;
- Thu, 4 Jun 2020 23:42:00 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma04ams.nl.ibm.com with ESMTP id 31bf482wxq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 23:42:00 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 054NfvwL56033430
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 4 Jun 2020 23:41:57 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6F7104C040;
- Thu,  4 Jun 2020 23:41:57 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DC8B54C04E;
- Thu,  4 Jun 2020 23:41:51 +0000 (GMT)
-Received: from vajain21-in-ibm-com (unknown [9.85.71.124])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  4 Jun 2020 23:41:51 +0000 (GMT)
-Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
- Fri, 05 Jun 2020 05:11:50 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v10 2/6] seq_buf: Export seq_buf_printf
-Date: Fri,  5 Jun 2020 05:11:32 +0530
-Message-Id: <20200604234136.253703-3-vaibhav@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200604234136.253703-1-vaibhav@linux.ibm.com>
-References: <20200604234136.253703-1-vaibhav@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-04_13:2020-06-04,
- 2020-06-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- cotscore=-2147483648
- bulkscore=0 priorityscore=1501 suspectscore=0 malwarescore=0
- mlxlogscore=999 clxscore=1015 lowpriorityscore=0 impostorscore=0
- phishscore=0 spamscore=0 mlxscore=0 adultscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006040160
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49dMlf1DtSzDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 09:42:53 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 054NgZQw017974;
+ Thu, 4 Jun 2020 18:42:36 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 054NgZ8U017973;
+ Thu, 4 Jun 2020 18:42:35 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 4 Jun 2020 18:42:35 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Joseph Myers <joseph@codesourcery.com>
+Subject: Re: [musl] Re: ppc64le and 32-bit LE userland compatibility
+Message-ID: <20200604234234.GN31009@gate.crashing.org>
+References: <alpine.DEB.2.21.2006021334170.24059@digraph.polyomino.org.uk>
+ <20200602142337.GS25173@kitsune.suse.cz>
+ <3aeb6dfe-ae23-42f9-ac23-16be6b54a850@www.fastmail.com>
+ <20200604171232.GG31009@gate.crashing.org>
+ <20200604171844.GO1079@brightrain.aerifal.cx>
+ <20200604173312.GI31009@gate.crashing.org>
+ <a43aeb5d-3704-4540-969e-085790ff0477@www.fastmail.com>
+ <20200604211009.GK31009@gate.crashing.org>
+ <60fa8bd7-2439-4403-a0eb-166a2fb49a4b@www.fastmail.com>
+ <alpine.DEB.2.21.2006042154060.8237@digraph.polyomino.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.2006042154060.8237@digraph.polyomino.org.uk>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,73 +68,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>,
- Cezary Rojewski <cezary.rojewski@intel.com>,
- Piotr Maziarz <piotrx.maziarz@linux.intel.com>,
- Steven Rostedt <rostedt@goodmis.org>, Christoph Hellwig <hch@infradead.org>,
- Oliver O'Halloran <oohall@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Vaibhav Jain <vaibhav@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
+Cc: Rich Felker <dalias@libc.org>, libc-alpha@sourceware.org, eery@paperfox.es,
+ Daniel Kolesa <daniel@octaforge.org>, musl@lists.openwall.com,
+ Will Springer <skirmisher@protonmail.com>,
+ Palmer Dabbelt via binutils <binutils@sourceware.org>,
+ via libc-dev <libc-dev@lists.llvm.org>,
+ Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'seq_buf' provides a very useful abstraction for writing to a string
-buffer without needing to worry about it over-flowing. However even
-though the API has been stable for couple of years now its still not
-exported to kernel loadable modules limiting its usage.
+Hi!
 
-Hence this patch proposes update to 'seq_buf.c' to mark
-seq_buf_printf() which is part of the seq_buf API to be exported to
-kernel loadable GPL modules. This symbol will be used in later parts
-of this patch-set to simplify content creation for a sysfs attribute.
+On Thu, Jun 04, 2020 at 10:08:02PM +0000, Joseph Myers wrote:
+> > The ELFv2 document specifies things like passing of quadruple precision 
+> > floats. Indeed, VSX is needed there, but that's not a concern if you 
+> > *don't* use quadruple precision floats.
+> 
+> My understanding is that the registers used for argument passing are all 
+> ones that exactly correspond to the Vector registers in earlier 
+> instruction set versions.  In other words, you could *in principle* 
+> produce an object, or a whole libm shared library,  [...]
 
-Cc: Piotr Maziarz <piotrx.maziarz@linux.intel.com>
-Cc: Cezary Rojewski <cezary.rojewski@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Borislav Petkov <bp@alien8.de>
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
----
-Changelog:
+And then there is the VRSAVE register, if your OS still uses that.
+Let's hope not :-)
 
-v9..v10:
-* None
+This is similar to what -mno-float128-hardware does (which actually
+requires VSX hardware for the emulation library currently).
 
-Resend:
-* Added ack from Steven Rostedt
 
-v8..v9:
-* None
-
-v7..v8:
-* Updated the patch title [ Christoph Hellwig ]
-* Updated patch description to replace confusing term 'external kernel
-  modules' to 'kernel lodable modules'.
-
-Resend:
-* Added ack from Steven Rostedt
-
-v6..v7:
-* New patch in the series
----
- lib/seq_buf.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/lib/seq_buf.c b/lib/seq_buf.c
-index 4e865d42ab03..707453f5d58e 100644
---- a/lib/seq_buf.c
-+++ b/lib/seq_buf.c
-@@ -91,6 +91,7 @@ int seq_buf_printf(struct seq_buf *s, const char *fmt, ...)
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(seq_buf_printf);
- 
- #ifdef CONFIG_BINARY_PRINTF
- /**
--- 
-2.26.2
-
+Segher
