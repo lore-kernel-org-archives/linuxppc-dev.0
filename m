@@ -2,93 +2,68 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CF25C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 13:07:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91DF3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 14:05:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E8C0020772
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 13:07:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8C0020772
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1361A207DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 14:05:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1361A207DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49d5f11LLMzDqsl
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 23:07:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49d6xC0jC9zDqYY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 00:05:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=sandipan@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49d5QH0MCZzDqnv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2020 22:56:54 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 054CXZD2178236; Thu, 4 Jun 2020 08:56:48 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31c542fnjg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 08:56:45 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 054CXkpx178889;
- Thu, 4 Jun 2020 08:56:35 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31c542fnet-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 08:56:35 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 054CtqE4026050;
- Thu, 4 Jun 2020 12:56:17 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma05fra.de.ibm.com with ESMTP id 31bf4842tn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 04 Jun 2020 12:56:17 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 054CuEWd10092926
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 4 Jun 2020 12:56:14 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65F36AE056;
- Thu,  4 Jun 2020 12:56:14 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C3E71AE05A;
- Thu,  4 Jun 2020 12:56:12 +0000 (GMT)
-Received: from fir03.in.ibm.com (unknown [9.121.59.65])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  4 Jun 2020 12:56:12 +0000 (GMT)
-From: Sandipan Das <sandipan@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v3 1/3] selftests: powerpc: Fix pkey access right updates
-Date: Thu,  4 Jun 2020 18:26:08 +0530
-Message-Id: <20200604125610.649668-2-sandipan@linux.ibm.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200604125610.649668-1-sandipan@linux.ibm.com>
-References: <20200604125610.649668-1-sandipan@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49d6pt56lGzDqmJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2020 23:59:47 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49d6pf2rwCzB09Zt;
+ Thu,  4 Jun 2020 15:59:38 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id xNYjkAss7B_l; Thu,  4 Jun 2020 15:59:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49d6pf1vcCzB09Zq;
+ Thu,  4 Jun 2020 15:59:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 30FE18B8C6;
+ Thu,  4 Jun 2020 15:59:40 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 7rmDmWjkLUfq; Thu,  4 Jun 2020 15:59:40 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [10.25.210.22])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B7C278B8C4;
+ Thu,  4 Jun 2020 15:59:39 +0200 (CEST)
+Subject: Re: linux-next: build failure on powerpc 8xx with 16k pages
+To: Will Deacon <will@kernel.org>
+References: <dc2b16e1-b719-5500-508d-ae97bf50c4a6@csgroup.eu>
+ <20200604111723.GA1267@willie-the-truck>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <96fdc23c-ca08-6b6a-ebdd-23cedfada77d@csgroup.eu>
+Date: Thu, 4 Jun 2020 13:55:45 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-04_07:2020-06-02,
- 2020-06-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0
- mlxlogscore=999 cotscore=-2147483648 mlxscore=0 adultscore=0 spamscore=0
- lowpriorityscore=0 suspectscore=1 malwarescore=0 phishscore=0 bulkscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2004280000 definitions=main-2006040085
+In-Reply-To: <20200604111723.GA1267@willie-the-truck>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,70 +75,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fweimer@redhat.com, aneesh.kumar@linux.ibm.com, linuxram@us.ibm.com,
- linux-mm@kvack.org, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, peterz@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Power ISA mandates that all writes to the Authority
-Mask Register (AMR) must always be preceded as well as
-succeeded by a context synchronizing instruction.
 
-This makes sure that the tests follow this requirement
-when attempting to update a pkey's access rights.
 
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
----
- tools/testing/selftests/powerpc/include/reg.h        | 6 ++++++
- tools/testing/selftests/powerpc/ptrace/core-pkey.c   | 2 +-
- tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c | 2 +-
- 3 files changed, 8 insertions(+), 2 deletions(-)
+On 06/04/2020 11:17 AM, Will Deacon wrote:
+> Hi, [+Peter]
+> 
+> On Thu, Jun 04, 2020 at 10:48:03AM +0000, Christophe Leroy wrote:
+>> Using mpc885_ads_defconfig with CONFIG_PPC_16K_PAGES instead of
+>> CONFIG_PPC_4K_PAGES, getting the following build failure:
+>>
+>>    CC      mm/gup.o
+>> In file included from ./include/linux/kernel.h:11:0,
+>>                   from mm/gup.c:2:
+>> In function 'gup_hugepte.constprop',
+>>      inlined from 'gup_huge_pd.isra.78' at mm/gup.c:2465:8:
+>> ./include/linux/compiler.h:392:38: error: call to '__compiletime_assert_257'
+>> declared with attribute error: Unsupported access size for
+>> {READ,WRITE}_ONCE().
+>>    _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+>>                                        ^
+>> ./include/linux/compiler.h:373:4: note: in definition of macro
+>> '__compiletime_assert'
+>>      prefix ## suffix();    \
+>>      ^
+>> ./include/linux/compiler.h:392:2: note: in expansion of macro
+>> '_compiletime_assert'
+>>    _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+>>    ^
+>> ./include/linux/compiler.h:405:2: note: in expansion of macro
+>> 'compiletime_assert'
+>>    compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long), \
+>>    ^
+>> ./include/linux/compiler.h:291:2: note: in expansion of macro
+>> 'compiletime_assert_rwonce_type'
+>>    compiletime_assert_rwonce_type(x);    \
+>>    ^
+>> mm/gup.c:2428:8: note: in expansion of macro 'READ_ONCE'
+>>    pte = READ_ONCE(*ptep);
+>>          ^
+>> In function 'gup_get_pte',
+>>      inlined from 'gup_pte_range' at mm/gup.c:2228:9,
+>>      inlined from 'gup_pmd_range' at mm/gup.c:2613:15,
+>>      inlined from 'gup_pud_range' at mm/gup.c:2641:15,
+>>      inlined from 'gup_p4d_range' at mm/gup.c:2666:15,
+>>      inlined from 'gup_pgd_range' at mm/gup.c:2694:15,
+>>      inlined from 'internal_get_user_pages_fast' at mm/gup.c:2785:3:
+> 
+> At first glance, this looks like a real bug in the 16k page code -- you're
+> loading the pte non-atomically on the fast GUP path and so you're prone to
+> tearing, which probably isn't what you want. For a short-term hack, I'd
+> suggest having CONFIG_HAVE_FAST_GUP depend on !CONFIG_PPC_16K_PAGES, but if
+> you want to support this them you'll need to rework your pte_t so that it
+> can be loaded atomically.
 
-diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
-index 022c5076b2c5..c0f2742a3a59 100644
---- a/tools/testing/selftests/powerpc/include/reg.h
-+++ b/tools/testing/selftests/powerpc/include/reg.h
-@@ -57,6 +57,12 @@
- #define SPRN_PPR       896	/* Program Priority Register */
- #define SPRN_AMR       13	/* Authority Mask Register - problem state */
- 
-+#define set_amr(v)	asm volatile("isync;" \
-+				     "mtspr " __stringify(SPRN_AMR) ",%0;" \
-+				     "isync" : \
-+				    : "r" ((unsigned long)(v)) \
-+				    : "memory")
-+
- /* TEXASR register bits */
- #define TEXASR_FC	0xFE00000000000000
- #define TEXASR_FP	0x0100000000000000
-diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-index d5c64fee032d..bbc05ffc5860 100644
---- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-+++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-@@ -150,7 +150,7 @@ static int child(struct shared_info *info)
- 	printf("%-30s AMR: %016lx pkey1: %d pkey2: %d pkey3: %d\n",
- 	       user_write, info->amr, pkey1, pkey2, pkey3);
- 
--	mtspr(SPRN_AMR, info->amr);
-+	set_amr(info->amr);
- 
- 	/*
- 	 * We won't use pkey3. This tests whether the kernel restores the UAMOR
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-index bdbbbe8431e0..904c04f8c919 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-@@ -126,7 +126,7 @@ static int child(struct shared_info *info)
- 	printf("%-30s AMR: %016lx pkey1: %d pkey2: %d pkey3: %d\n",
- 	       user_write, info->amr1, pkey1, pkey2, pkey3);
- 
--	mtspr(SPRN_AMR, info->amr1);
-+	set_amr(info->amr1);
- 
- 	/* Wait for parent to read our AMR value and write a new one. */
- 	ret = prod_parent(&info->child_sync);
--- 
-2.25.1
+What do you mean by *rework* pte_t ?
+pte are 32 bits words in size and are spread every 4 words in memory. 
+Therefore pte_t has to be 128 bits because unlike huge_pte handling 
+which always use huge_pte_offset() in loops, many many places in the 
+kernel do pte++, so we need the pte type to be the size of the interval 
+from one pte to the next one.
 
+Christophe
