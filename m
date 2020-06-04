@@ -2,109 +2,68 @@ Return-Path: <SRS0=7wTx=7R=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA329C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:49:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 472EAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:53:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BE6F206DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:49:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=octaforge.org header.i=@octaforge.org header.b="RAxXaGYP";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="bn/EpETP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BE6F206DC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=octaforge.org
+	by mail.kernel.org (Postfix) with ESMTPS id C47372075B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Jun 2020 20:53:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C47372075B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49dHv41tYFzDqvy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:49:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49dJ0R151XzDqvT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:53:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=octaforge.org (client-ip=64.147.123.27;
- helo=wnew2-smtp.messagingengine.com; envelope-from=daniel@octaforge.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=octaforge.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=octaforge.org header.i=@octaforge.org
- header.a=rsa-sha256 header.s=fm3 header.b=RAxXaGYP; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.a=rsa-sha256 header.s=fm2 header.b=bn/EpETP; 
- dkim-atps=neutral
-X-Greylist: delayed 422 seconds by postgrey-1.36 at bilbo;
- Fri, 05 Jun 2020 06:47:01 AEST
-Received: from wnew2-smtp.messagingengine.com (wnew2-smtp.messagingengine.com
- [64.147.123.27])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49dHrj2Vt4zDqsm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 06:47:01 +1000 (AEST)
-Received: from compute7.internal (compute7.nyi.internal [10.202.2.47])
- by mailnew.west.internal (Postfix) with ESMTP id E46DC50C;
- Thu,  4 Jun 2020 16:39:52 -0400 (EDT)
-Received: from imap1 ([10.202.2.51])
- by compute7.internal (MEProxy); Thu, 04 Jun 2020 16:39:53 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=octaforge.org;
- h=mime-version:message-id:in-reply-to:references:date:from:to
- :cc:subject:content-type; s=fm3; bh=MUHn5s5Nt7GGkqN++AgnN3kqO2g2
- mXg1y0pbVUfJVho=; b=RAxXaGYPaDHVlTsCg7c6bk5/hdnUFoTM0zWfQeMAuVN+
- sQM7ylaBZHR0uZVXv1pGL5DRyspm2+zddgbcaBp+Z7Kh8/pJNpDjvZV69YvWXjG8
- jlvrD7/kH3N3j9ejwQsx0bOFagRLyJlWE1JzCLIZeMhWD5SBKbSPcL7iy6LvnuK0
- ZFxIPmy+6FDpen1sZAi36Wk9/yHLvR47YID51dPLUYk5Vq573/D9tMgE39/5/Ygr
- knwjcs8nnl9J4Ypv3o05+TNgZqbKgLlQpkWGu1anVotVj47vbEIkF9DIx2lgExia
- mXO7ORtTxmihDihAEC5Y0bBuIO/smlcNPfFITeMzfw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-type:date:from:in-reply-to
- :message-id:mime-version:references:subject:to:x-me-proxy
- :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=MUHn5s
- 5Nt7GGkqN++AgnN3kqO2g2mXg1y0pbVUfJVho=; b=bn/EpETPJIpWcqB1b3Uee1
- +fK8nlBBDfXpN6RKNORw0k1TLX/xwxSQMhZ0y9I4ceMzbD11ddApv2U9/QNCnlca
- aGdGVsPxw3pGpYxvM/nCyeTSKpmMkr7+4EzGbYa4emJuc5q7UuTD7Uu/sdM2zYcd
- 9Tk/qEpAkoGQqxJalQRlJusMdhvE8593YNYffV7Z/tOyjAeswr0AkDglYa5d20LE
- D7I9XMIE1ES3XX7hyHImRIXhc92i0FVDwuVn6m/lHz9wXfRtsrjwFDT7oazfMuHA
- UvP3etZG+NcteyRJd68B8X6tv/dS2pUpiUwTedkRqASM3t4GVTGC/cgGvYCwqPcA
- ==
-X-ME-Sender: <xms:F1zZXqVP-ZbKDVwaYBYADXrHMTwUGGoXmdL-7m9mcw3SzDMGZyZDcw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudeguddgudegfecutefuodetggdotefrod
- ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
- necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
- enucfjughrpefofgggkfgjfhffhffvufgtsehttdertderredtnecuhfhrohhmpedfffgr
- nhhivghlucfmohhlvghsrgdfuceouggrnhhivghlsehotghtrghfohhrghgvrdhorhhgqe
- enucggtffrrghtthgvrhhnpeeivedvvdejheeitddvlefgueeihffgtedvuefhffethedu
- udffgfduhfffhfelfeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrih
- hlfhhrohhmpegurghnihgvlhesohgtthgrfhhorhhgvgdrohhrgh
-X-ME-Proxy: <xmx:F1zZXmlDxw8oVuwv7Wxv5fX9cwhNaU7xXBPQaMyS_vc1Lu6d8i-QBA>
- <xmx:F1zZXuZhlOja9tr-gT78GuPFjZ1-2t3zz2Cwgfpy1gPyjKpnm2bJUw>
- <xmx:F1zZXhW_DVBB1Wh95eEOOhslRp7DgXPPIDhzfiET7_-6jP5sISFJ2w>
- <xmx:GFzZXuV5HG6cAePppidEhZPcYr-iRoD1IRMH8hhGHb_2RZwSkewXUdRMQzM>
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
- id 2756EC200A4; Thu,  4 Jun 2020 16:39:51 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.3.0-dev0-519-g0f677ba-fm-20200601.001-g0f677ba6
-Mime-Version: 1.0
-Message-Id: <a43aeb5d-3704-4540-969e-085790ff0477@www.fastmail.com>
-In-Reply-To: <20200604173312.GI31009@gate.crashing.org>
-References: <2047231.C4sosBPzcN@sheen>
- <alpine.DEB.2.21.2006012119010.11121@digraph.polyomino.org.uk>
- <c821b608-f14f-4a68-bbec-b7b6c1d8bddc@www.fastmail.com>
- <alpine.DEB.2.21.2006012329420.11121@digraph.polyomino.org.uk>
- <b44b3aa7-f9cc-43e1-b2c4-0edb6ea06189@www.fastmail.com>
- <alpine.DEB.2.21.2006021334170.24059@digraph.polyomino.org.uk>
- <20200602142337.GS25173@kitsune.suse.cz>
- <3aeb6dfe-ae23-42f9-ac23-16be6b54a850@www.fastmail.com>
- <20200604171232.GG31009@gate.crashing.org>
- <20200604171844.GO1079@brightrain.aerifal.cx>
- <20200604173312.GI31009@gate.crashing.org>
-Date: Thu, 04 Jun 2020 22:39:30 +0200
-From: "Daniel Kolesa" <daniel@octaforge.org>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
- "Rich Felker" <dalias@libc.org>
-Subject: Re: [musl] Re: ppc64le and 32-bit LE userland compatibility
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49dHyB5G8DzDqQY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 06:51:44 +1000 (AEST)
+IronPort-SDR: 1aZzdj9NlFfaJts/qRZl5tpixg4L8rwpf5QkgrcsoC2jCoLkDoTKm/SCyyBAvivucpgZWplcbi
+ u09qcTLl5TEQ==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Jun 2020 13:51:41 -0700
+IronPort-SDR: zs+MMvxWw13sjlZ9Bw72P4E7fjGK2DTGpjrAZCIfDuEufJrPSBND+RoMuQFrepsdDPuoy+96Bf
+ +AJaXGZ7wG6g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,472,1583222400"; d="scan'208";a="348215104"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.147])
+ by orsmga001.jf.intel.com with ESMTP; 04 Jun 2020 13:51:40 -0700
+Date: Thu, 4 Jun 2020 13:51:40 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH] arch/{mips,sparc,microblaze,powerpc}: Don't enable
+ pagefault/preempt twice
+Message-ID: <20200604205140.GN1505637@iweiny-DESK2.sc.intel.com>
+References: <20200519165422.GA5838@roeck-us.net>
+ <20200519184031.GB3356843@iweiny-DESK2.sc.intel.com>
+ <20200519194215.GA71941@roeck-us.net>
+ <20200520051315.GA3660833@iweiny-DESK2.sc.intel.com>
+ <d86dba19-4f4b-061e-a2c7-4f037e9e2de2@roeck-us.net>
+ <20200521174250.GB176262@iweiny-DESK2.sc.intel.com>
+ <20200603135736.e7b5ded0082a81ae6d9067a0@linux-foundation.org>
+ <20200603211416.GA1740285@iweiny-DESK2.sc.intel.com>
+ <3538c8ad-674e-d310-d870-4ef6888092ed@roeck-us.net>
+ <20200604094133.GC202650@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200604094133.GC202650@kernel.org>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,49 +75,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-alpha@sourceware.org, eery@paperfox.es, musl@lists.openwall.com,
- Will Springer <skirmisher@protonmail.com>,
- Palmer Dabbelt via binutils <binutils@sourceware.org>,
- via libc-dev <libc-dev@lists.llvm.org>,
- =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, Joseph Myers <joseph@codesourcery.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
+ linux-mips@vger.kernel.org,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, linux-csky@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+ Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org,
+ Guenter Roeck <linux@roeck-us.net>, linux-xtensa@linux-xtensa.org,
+ Borislav Petkov <bp@alien8.de>, Al Viro <viro@zeniv.linux.org.uk>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Christian Koenig <christian.koenig@amd.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 4, 2020, at 19:33, Segher Boessenkool wrote:
-> On Thu, Jun 04, 2020 at 01:18:44PM -0400, Rich Felker wrote:
-> > On Thu, Jun 04, 2020 at 12:12:32PM -0500, Segher Boessenkool wrote:
-> > > On Tue, Jun 02, 2020 at 05:13:25PM +0200, Daniel Kolesa wrote:
-> > > > well, ppc64le already cannot be run on those, as far as I know (I
-> > > > don't think it's possible to build ppc64le userland without VSX in
-> > > > any configuration)
-> > > 
-> > > VSX is required by the ELFv2 ABI:
-> > > 
-> > > """
-> > > Specifically, to use this ABI and ABI-compliant programs, OpenPOWER-
-> > > compliant processors must implement the following categories:
+On Thu, Jun 04, 2020 at 12:41:33PM +0300, Mike Rapoport wrote:
+> On Wed, Jun 03, 2020 at 04:44:17PM -0700, Guenter Roeck wrote:
 > > 
-> > This is not actually ABI but IBM policy laundered into an ABI
-> > document, which musl does not honor.
+> > sparc32 smp images in next-20200603 still crash for me with a spinlock
+> > recursion. s390 images hang early in boot. Several others (alpha, arm64,
+> > various ppc) don't even compile. I can run some more bisects over time,
+> > but this is becoming a full-time job :-(.
 > 
-> It is the ABI.  If you think it should be different, make your own ABI,
-> don't pretend the existing ABI is different than what it is.  Thank you.
+> I've been able to bisect s390 hang to commit b614345f52bc ("x86/entry:
+> Clarify irq_{enter,exit}_rcu()").
 > 
+> After this commit, lockdep_hardirq_exit() is called twice on s390 (and
+> others) - one time in irq_exit_rcu() and another one in irq_exit():
+> 
+> /**
+>  * irq_exit_rcu() - Exit an interrupt context without updating RCU
+>  *
+>  * Also processes softirqs if needed and possible.
+>  */
+> void irq_exit_rcu(void)
+> {
+> 	__irq_exit_rcu();
+> 	 /* must be last! */
+> 	lockdep_hardirq_exit();
+> }
+> 
+> /**
+>  * irq_exit - Exit an interrupt context, update RCU and lockdep
+>  *
+>  * Also processes softirqs if needed and possible.
+>  */
+> void irq_exit(void)
+> {
+> 	irq_exit_rcu();
+> 	rcu_irq_exit();
+> 	 /* must be last! */
+> 	lockdep_hardirq_exit();
+> }
+> 
+> Removing the call in irq_exit() make s390 boot again, and judgung by the
+> x86 entry code, the comment /* must be last! */ is stale...
 
-Well then - in that case, what do you suggest that I do?
+FWIW I got s390 to compile and this patch fixes s390 booting for me as well.
 
-Void currently ships an ELFv2 (or apparently not, I guess) 64-bit big endian port that works on 970/G5 up. It is important to me that it stays that way (a large amount of users are running 970s, so introducing a VSX dependency means I might as well abandon the port entirely).
+13:05:25 > /home/iweiny/dev/linux-build-test/rootfs/s390/run-qemu-s390.sh 
+Build reference: next-20200603-4-g840714292d8c
 
-It currently works out of box - there are no changes required in glibc, and nearly the entire userland builds and works (about ~11500 out of ~12000 software packages, those that don't work either don't work on ppc64le either, or have issues related to endianness, or some other unrelated reason).
+Building s390:defconfig:initrd ... running ........... passed
+Building s390:defconfig:virtio-blk-ccw:rootfs ... running ........... passed
+Building s390:defconfig:scsi[virtio-ccw]:rootfs ... running ..............  passed
+Building s390:defconfig:virtio-pci:rootfs ... running ........... passed
+Building s390:defconfig:scsi[virtio-pci]:rootfs ... running ........... passed
 
-I'd like to eventually get this into a state where I don't have to worry about glibc arbitrarily breaking it - which means it would be necessary to stabilize it upstream. While I can probably maintain a downstream patchset when it comes to it, I'd much prefer if I didn't have to - but this sounds like an official ELFv2 glibc BE port would be impossible unless the VSX requirement (and thus IEEE 128-bit long double and so on) was in place, which would defeat the point of the port.
-
-Is there *any* way I can take that would make upstreams of all parts of the toolchain happy? I explicitly don't want to go back to ELFv1. While at it, I'd like to transition to ld64 long double format, to match musl and improve software compatibility, which I feel will raise more objections from IBM side.
+Ira
 
 > 
-> Segher
->
-
-Daniel
+> @Peter, @Thomas, can you comment please?
+> 
+> From e51d50ee6f4d1f446decf91c2c67230da14ff82c Mon Sep 17 00:00:00 2001
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> Date: Thu, 4 Jun 2020 12:37:03 +0300
+> Subject: [PATCH] softirq: don't call lockdep_hardirq_exit() twice
+> 
+> After commit b614345f52bc ("x86/entry: Clarify irq_{enter,exit}_rcu()")
+> lockdep_hardirq_exit() is called twice on every architecture that uses
+> irq_exit(): one time in irq_exit_rcu() and another one in irq_exit().
+> 
+> Remove the extra call in irq_exit().
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> ---
+>  kernel/softirq.c | 3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index a3eb6eba8c41..7523f4ce4c1d 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -427,7 +427,6 @@ static inline void __irq_exit_rcu(void)
+>  void irq_exit_rcu(void)
+>  {
+>  	__irq_exit_rcu();
+> -	 /* must be last! */
+>  	lockdep_hardirq_exit();
+>  }
+>  
+> @@ -440,8 +439,6 @@ void irq_exit(void)
+>  {
+>  	irq_exit_rcu();
+>  	rcu_irq_exit();
+> -	 /* must be last! */
+> -	lockdep_hardirq_exit();
+>  }
+>  
+>  /*
+> -- 
+> 2.26.2
+> 
+> 
+> 
+> > Guenter
+> 
+> -- 
+> Sincerely yours,
+> Mike.
