@@ -2,61 +2,62 @@ Return-Path: <SRS0=3D1i=7S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB48C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 23:47:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9125C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 23:56:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95F24206E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 23:47:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95F24206E6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3612D206E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 23:56:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=protonmail.com header.i=@protonmail.com header.b="jqxmSjo8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3612D206E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=protonmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49dzpp1rRNzDr2s
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2020 09:47:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 49dzmW2b0nzDr0Q
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jun 2020 09:45:45 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 055NjQXo031764;
- Fri, 5 Jun 2020 18:45:26 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 055NjNbh031763;
- Fri, 5 Jun 2020 18:45:23 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 5 Jun 2020 18:45:23 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Rich Felker <dalias@libc.org>
-Subject: Re: [musl] Re: ppc64le and 32-bit LE userland compatibility
-Message-ID: <20200605234523.GU31009@gate.crashing.org>
-References: <20200604171232.GG31009@gate.crashing.org>
- <20200604171844.GO1079@brightrain.aerifal.cx>
- <20200604173312.GI31009@gate.crashing.org>
- <a43aeb5d-3704-4540-969e-085790ff0477@www.fastmail.com>
- <20200604211009.GK31009@gate.crashing.org>
- <60fa8bd7-2439-4403-a0eb-166a2fb49a4b@www.fastmail.com>
- <20200604233516.GM31009@gate.crashing.org>
- <17459c98-3bd3-4a5d-a828-993b6deef44f@www.fastmail.com>
- <20200605172702.GP31009@gate.crashing.org>
- <20200605175045.GW1079@brightrain.aerifal.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200605175045.GW1079@brightrain.aerifal.cx>
-User-Agent: Mutt/1.4.2.3i
+	by lists.ozlabs.org (Postfix) with ESMTP id 49f00j2PrWzDqgn
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jun 2020 09:56:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=protonmail.com (client-ip=185.70.40.134;
+ helo=mail-40134.protonmail.ch; envelope-from=skirmisher@protonmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=protonmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=protonmail.com header.i=@protonmail.com header.a=rsa-sha256
+ header.s=protonmail header.b=jqxmSjo8; 
+ dkim-atps=neutral
+Received: from mail-40134.protonmail.ch (mail-40134.protonmail.ch
+ [185.70.40.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49dzyf3mY0zDqjL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jun 2020 09:54:32 +1000 (AEST)
+Date: Fri, 05 Jun 2020 23:54:22 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
+ s=protonmail; t=1591401267;
+ bh=JKks3LOMQ1NeFcSN16pzvwRRT3Htb5zFNM9rJBc29R8=;
+ h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
+ b=jqxmSjo84b4+OfM9DtmNEXkt2gAOy9gj58dlnN+ObQlaVihWYs89OX9b1Oz6btKZs
+ 3yPmNTgoI8z+6HE2dAT1hLu/O9+BCz7SGzfmscljf9FsUKLBHGUiDcoQObmWdkPhWo
+ GE9+YODGho/zsVIAvn2tkYS6N9FwxBGDenThiUjM=
+To: linuxppc-dev@lists.ozlabs.org,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+From: Will Springer <skirmisher@protonmail.com>
+Subject: Re: ppc64le and 32-bit LE userland compatibility
+Message-ID: <1787237.g5d078U9FE@sheen>
+In-Reply-To: <2498690.q0ZmV6gNhb@sheen>
+References: <2047231.C4sosBPzcN@sheen>
+ <8be94d2e-8e20-52b6-22e6-152b79a94139@csgroup.eu>
+ <2498690.q0ZmV6gNhb@sheen>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,67 +69,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-alpha@sourceware.org, eery@paperfox.es,
- Daniel Kolesa <daniel@octaforge.org>, musl@lists.openwall.com,
- Will Springer <skirmisher@protonmail.com>,
- Palmer Dabbelt via binutils <binutils@sourceware.org>,
- via libc-dev <libc-dev@lists.llvm.org>,
- Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
- linuxppc-dev@lists.ozlabs.org, Joseph Myers <joseph@codesourcery.com>
+Reply-To: Will Springer <skirmisher@protonmail.com>
+Cc: libc-alpha@sourceware.org, eery@paperfox.es, daniel@octaforge.org,
+ musl@lists.openwall.com, binutils@sourceware.org, libc-dev@lists.llvm.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+On Saturday, May 30, 2020 3:17:24 PM PDT Will Springer wrote:
+> On Saturday, May 30, 2020 8:37:43 AM PDT Christophe Leroy wrote:
+> > There is a series at
+> > https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=3D173231
+> > to switch powerpc to the Generic C VDSO.
+> >=20
+> > Can you try and see whether it fixes your issue ?
+> >=20
+> > Christophe
+>=20
+> Sure thing, I spotted that after making the initial post. Will report
+> back with results.
+>=20
+> Will [she/her]
 
-On Fri, Jun 05, 2020 at 01:50:46PM -0400, Rich Felker wrote:
-> On Fri, Jun 05, 2020 at 12:27:02PM -0500, Segher Boessenkool wrote:
-> > > I'm also not really all that convinced that vectors make a huge difference in non-specialized code (autovectorization still has a way to go)
-> > 
-> > They do make a huge difference, depending on the application of course.
-> > But VSX is not just vectors even: it also gives you twice as many
-> > floating point scalars (64 now), and in newer versions of the ISA it can
-> > be beneficially used for integer scalars even.
-> 
-> Vectorization is useful for a lot of things, and I'm sure there are
-> specialized workloads that benefit from 64 scalars, but I've never
-> encountered a place where having more than 16 registers made a
-> practical difference.
+Sorry for the wait, I just sat down to work on this again yesterday.
 
-20 years ago 32 FP registers was already often a limitation, making FFT
-and similar kernels almost twice slower than they could otherwise be.
-Things are only *worse* with short vectors, not better.  In general with
-floating point data you need more registers (because you have more state
-to look at concurrently) than with integer data.
+Tested this series on top of stable/linux-5.7.y (5.7.0 at the time of=20
+writing), plus the one-line signal handler patch. Had to rewind to the=20
+state of powerpc/merge at the time of the mail before the patch would=20
+apply, then cherry-picked to 5.6 until I realized the patchset used some=20
+functionality that didn't land until 5.7, so I moved it there.
 
-*Of course* having 64 floating point registers does not matter if your
-whole program only ever uses three floating point values, total, let
-alone concurrently.
+Good news is that `date` now works correctly with the vdso call in 32-bit=
+=20
+LE. Bad news is it seems to have broken things on the 64-bit side=E2=80=
+=94in my=20
+testing, Void kicks off runit but hangs after starting eudev, and in a=20
+Debian Stretch system, systemd doesn't get to the point of printing=20
+anything whatsoever. (I had to `init=3D/bin/sh` to confirm the date worked=
+=20
+in ppcle, although in ppc64le running `date` also hung the system when it=
+=20
+made the vdso call...) Not sure how to approach debugging that, so I'd=20
+appreciate any pointers.
 
-> The fact that there are specialized areas where this stuff matters
-> does not imply there aren't huge domains where it's completely
-> irrelevant.
-
-There are very few domains where ISA 2.07 does not have significant
-advantages over ISA 2.01.  That is Power8 vs. Power4.
-
-> > No, that is exactly the point of requiring ISA 2.07.  Anything can use
-> > ISA 2.07 (incl. VSX) without checking first, and without having a
-> > fallback to some other implementation.  Going from ISA 2.01 to 2.07 is
-> > more than a decade of improvements, it is not trivial at all.
-> 
-> This only affects code that's non-portable and PPC-specific, which a
-
-No, it does not.  It is not only about vector registers, either.
-
-> I think a lot of the unnecessary fighting on this topic is arising
-> from differences of opinion over what an ABI entails. I would call
-> what you're talking about a "platform" and more of a platform-specific
-> *API* than an ABI -- it's about guarantees of interfaces available to
-> the programmer, not implementation details of linkage.
-
-No, this is very much about the ABI.  The B stands for Binary.  Which
-is what this is about.
+Will [she/her]
 
 
-Segher
+
