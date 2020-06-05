@@ -2,59 +2,82 @@ Return-Path: <SRS0=3D1i=7S=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A92AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:43:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFEE7C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 07:59:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A1FAC207D5
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 06:43:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="IrxIHTOt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1FAC207D5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6A42C206E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 07:59:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A42C206E6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49dY574sdkzDqvn
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 16:43:39 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49dY354zZMzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 16:41:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49dZmP16CBzDqxj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Jun 2020 17:59:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=IrxIHTOt; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 49dY336tn3z9sT8; Fri,  5 Jun 2020 16:41:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1591339311;
- bh=4xfwcfWg3fYDkvoSshyHr3xzme+hp4xxgCEBnrJPiQA=;
- h=From:To:Cc:Subject:Date:From;
- b=IrxIHTOtq36n7hL5oemlz8t7GEAZpF+h8mTGZWroOBqSOJhlOm51dSAX5GS8JjdQw
- WHPJOGd2sMRNJx6TszW1g1u49Df8BhbVSg50aDEDD0Kr11VDFLFtDyVVb6LQh/IizZ
- 9MyDft/8Rp9JAU6KU9KeE06jCzBBToAxZF9pO1V4=
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Peter Huewe <peterhuewe@gmx.de>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Stefan Berger <stefanb@linux.ibm.com>,
- Nayna Jain <nayna@linux.ibm.com>
-Subject: [PATCH] tpm: ibmvtpm: Wait for ready buffer before probing for TPM2
- attributes
-Date: Fri,  5 Jun 2020 16:37:19 +1000
-Message-Id: <20200605063719.456277-1-david@gibson.dropbear.id.au>
-X-Mailer: git-send-email 2.26.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49dZkB6ChrzDqvN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2020 17:57:22 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0557PHjQ119376; Fri, 5 Jun 2020 03:57:16 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31fhn4gyxt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 05 Jun 2020 03:57:16 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0557oUI0003694;
+ Fri, 5 Jun 2020 07:57:14 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04ams.nl.ibm.com with ESMTP id 31bf483nq3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 05 Jun 2020 07:57:14 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0557vC9324707074
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 5 Jun 2020 07:57:12 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 440934C05A;
+ Fri,  5 Jun 2020 07:57:12 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 033294C04E;
+ Fri,  5 Jun 2020 07:57:11 +0000 (GMT)
+Received: from localhost.localdomain.localdomain (unknown [9.85.92.6])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri,  5 Jun 2020 07:57:10 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 0/7] powerpc/perf: Add support for power10 PMU Hardware
+Date: Fri,  5 Jun 2020 03:57:03 -0400
+Message-Id: <1591343830-8286-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-05_01:2020-06-04,
+ 2020-06-05 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1011
+ cotscore=-2147483648 priorityscore=1501 adultscore=0 malwarescore=0
+ lowpriorityscore=0 suspectscore=1 spamscore=0 bulkscore=0 phishscore=0
+ mlxscore=0 mlxlogscore=694 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2004280000 definitions=main-2006050053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,60 +89,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: mikey@linux.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, atrajeev@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The tpm2_get_cc_attrs_tbl() call will result in TPM commands being issued,
-which will need the use of the internal command/response buffer.  But,
-we're issuing this *before* we've waited to make sure that buffer is
-allocated.
+The patch series adds support for power10 PMU hardware.
+And code changes are based on powerpc/next.
 
-This can result in intermittent failures to probe if the hypervisor / TPM
-implementation doesn't respond quickly enough.  I find it fails almost
-every time with an 8 vcpu guest under KVM with software emulated TPM.
+Athira Rajeev (4):
+  KVM: PPC: Book3S HV: Save/restore new PMU registers
+  powerpc/perf: Update Power PMU cache_events to u64 type
+  powerpc/perf: power10 Performance Monitoring support
+  powerpc/perf: support BHRB disable bit and new filtering modes
 
-Fixes: 18b3670d79ae9 "tpm: ibmvtpm: Add support for TPM2"
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- drivers/char/tpm/tpm_ibmvtpm.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+Madhavan Srinivasan (3):
+  powerpc/perf: Add support for ISA3.1 PMU SPRs
+  powerpc/xmon: Add PowerISA v3.1 PMU SPRs
+  powerpc/perf: Add power10_feat to dt_cpu_ftrs
 
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 09fe45246b8c..994385bf37c0 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -683,13 +683,6 @@ static int tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
- 	if (rc)
- 		goto init_irq_cleanup;
- 
--	if (!strcmp(id->compat, "IBM,vtpm20")) {
--		chip->flags |= TPM_CHIP_FLAG_TPM2;
--		rc = tpm2_get_cc_attrs_tbl(chip);
--		if (rc)
--			goto init_irq_cleanup;
--	}
--
- 	if (!wait_event_timeout(ibmvtpm->crq_queue.wq,
- 				ibmvtpm->rtce_buf != NULL,
- 				HZ)) {
-@@ -697,6 +690,13 @@ static int tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
- 		goto init_irq_cleanup;
- 	}
- 
-+	if (!strcmp(id->compat, "IBM,vtpm20")) {
-+		chip->flags |= TPM_CHIP_FLAG_TPM2;
-+		rc = tpm2_get_cc_attrs_tbl(chip);
-+		if (rc)
-+			goto init_irq_cleanup;
-+	}
-+
- 	return tpm_chip_register(chip);
- init_irq_cleanup:
- 	do {
+ arch/powerpc/include/asm/kvm_book3s_asm.h    |   2 +-
+ arch/powerpc/include/asm/kvm_host.h          |   4 +-
+ arch/powerpc/include/asm/perf_event_server.h |   3 +-
+ arch/powerpc/include/asm/processor.h         |   4 +
+ arch/powerpc/include/asm/reg.h               |   9 +
+ arch/powerpc/kernel/asm-offsets.c            |   3 +
+ arch/powerpc/kernel/cpu_setup_power.S        |   7 +
+ arch/powerpc/kernel/dt_cpu_ftrs.c            |  26 ++
+ arch/powerpc/kernel/sysfs.c                  |   8 +
+ arch/powerpc/kvm/book3s_hv.c                 |   6 +-
+ arch/powerpc/kvm/book3s_hv_interrupts.S      |   8 +
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S      |  24 ++
+ arch/powerpc/perf/Makefile                   |   2 +-
+ arch/powerpc/perf/core-book3s.c              |  60 +++-
+ arch/powerpc/perf/generic-compat-pmu.c       |   2 +-
+ arch/powerpc/perf/internal.h                 |   1 +
+ arch/powerpc/perf/isa207-common.c            |  72 ++++-
+ arch/powerpc/perf/isa207-common.h            |  33 +-
+ arch/powerpc/perf/mpc7450-pmu.c              |   2 +-
+ arch/powerpc/perf/power10-events-list.h      |  81 +++++
+ arch/powerpc/perf/power10-pmu.c              | 431 +++++++++++++++++++++++++++
+ arch/powerpc/perf/power5+-pmu.c              |   2 +-
+ arch/powerpc/perf/power5-pmu.c               |   2 +-
+ arch/powerpc/perf/power6-pmu.c               |   2 +-
+ arch/powerpc/perf/power7-pmu.c               |   2 +-
+ arch/powerpc/perf/power8-pmu.c               |   2 +-
+ arch/powerpc/perf/power9-pmu.c               |   2 +-
+ arch/powerpc/perf/ppc970-pmu.c               |   2 +-
+ arch/powerpc/platforms/powernv/idle.c        |  14 +
+ arch/powerpc/xmon/xmon.c                     |  15 +
+ 30 files changed, 796 insertions(+), 35 deletions(-)
+ create mode 100644 arch/powerpc/perf/power10-events-list.h
+ create mode 100644 arch/powerpc/perf/power10-pmu.c
+
 -- 
-2.26.2
+1.8.3.1
 
