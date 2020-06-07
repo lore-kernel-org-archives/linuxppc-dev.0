@@ -2,57 +2,84 @@ Return-Path: <SRS0=kDqf=7U=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58266C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 08:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B77CEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 12:04:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DF79206D5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 08:08:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DF79206D5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 6296820663
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 12:04:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pS45+YEy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6296820663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49fpt5208xzDql9
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 18:08:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49fw60396LzDqcD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jun 2020 22:04:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
- [217.70.183.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=pS45+YEy; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49fpnL6qZszDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jun 2020 18:04:21 +1000 (AEST)
-X-Originating-IP: 90.112.45.105
-Received: from localhost.localdomain
- (lfbn-gre-1-325-105.w90-112.abo.wanadoo.fr [90.112.45.105])
- (Authenticated sender: alex@ghiti.fr)
- by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id 8C217240003;
- Sun,  7 Jun 2020 08:04:12 +0000 (UTC)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Anup Patel <Anup.Patel@wdc.com>, Atish Patra <Atish.Patra@wdc.com>,
- Zong Li <zong.li@sifive.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org
-Subject: [PATCH v5 4/4] riscv: Check relocations at compile time
-Date: Sun,  7 Jun 2020 03:59:49 -0400
-Message-Id: <20200607075949.665-5-alex@ghiti.fr>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200607075949.665-1-alex@ghiti.fr>
-References: <20200607075949.665-1-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49fw414DZmzDqT8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jun 2020 22:02:25 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id y17so5537046plb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Jun 2020 05:02:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=hSYjfHJ8+STByhPKXHr46UIyEIebKceDyam7oa7YMgs=;
+ b=pS45+YEy8k8TtQzURz/729dp6F0p3vD3PZv6XLCkmcNkWa8BvuLv2RFhp4gXtnL/i3
+ gwrBLAAomqF6KRkpWot0rgrinjBd+ifKBzDfkzqifUIjDIxgT7KWJ6lidRtdwvUmBwhA
+ NoQH/RW+eISDOXUp0ODC9tACFHKkBg0I5sPsAgXSVWzqKxVQp1rYFLhKVUA1unRu3R9N
+ o70fvWY2kVWICfnHeF8I9hSHkKz88PKgEfx9GaDKJdArpIweuqOquqY3mBXxkGTguasq
+ HthrCkVr96paj9VawBDQnxdc1lqKGRHZyY7//wGGKHOlZNaHd2o90lWtDf4bYbt40Gfe
+ 0slQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=hSYjfHJ8+STByhPKXHr46UIyEIebKceDyam7oa7YMgs=;
+ b=ars9HKPYi/HRrlq6xq4hMjfi0fvjNBoBVPOzgCxS8qIdZC0YRbrp6AFbVfp6vbQCta
+ 1T8CvvUPBryeJR57gU/ZXncpammh5SrdZUv4oeUrGu9SdNme/36BzZaPs6TNTx7qdmp6
+ x9FIOrP30kRKBspICDyh37Z0agmkx92z97uSzb123R5erbI5Yvy1LD1HbAdH+Un6Vjsa
+ q6AdgIr1ZrpJUN4FhMEv0eNE8svav4/Qc5F21tB/zS2Z6aVJhS3tNRWDBeRjEOjXkPNp
+ KVrOiE8wPogHW2qcMd+PwARV/cAxB3/qIgpY4eVVmT49wZZy1vlHMcBuOSTQK5hrQZ0R
+ /gdw==
+X-Gm-Message-State: AOAM533YVVmNjk0Tzwc4TZdIyKQw2SYCIhwjoqf1f5DYfeaeDeJHqWtw
+ Tsh9s5rUqx/tW17QmVL3zTaPGRHh
+X-Google-Smtp-Source: ABdhPJzywC4Bajm2lXN5AsN+WlwR6dBUmZfwgphAslAHPsaq3pbadZUAb9LkVh0Xy7lTJA1PM8b4RA==
+X-Received: by 2002:a17:90a:1aaa:: with SMTP id
+ p39mr12610214pjp.127.1591531342442; 
+ Sun, 07 Jun 2020 05:02:22 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com ([202.125.31.243])
+ by smtp.gmail.com with ESMTPSA id b29sm4411482pfr.159.2020.06.07.05.02.20
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 07 Jun 2020 05:02:22 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/64s/hash: disable subpage_prot syscall by default
+Date: Sun,  7 Jun 2020 22:02:09 +1000
+Message-Id: <20200607120209.463501-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20200607120209.463501-1-npiggin@gmail.com>
+References: <20200607120209.463501-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -66,101 +93,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anup Patel <anup@brainfault.org>, Alexandre Ghiti <alex@ghiti.fr>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Relocating kernel at runtime is done very early in the boot process, so
-it is not convenient to check for relocations there and react in case a
-relocation was not expected.
+The subpage_prot syscall was added for specialised system software
+(Lx86) that has been discontinued for about 7 years, and is not thought
+to be used elsewhere, so disable it by default.
 
-There exists a script in scripts/ that extracts the relocations from
-vmlinux that is then used at postlink to check the relocations.
-
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Reviewed-by: Anup Patel <anup@brainfault.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/riscv/Makefile.postlink     | 36 ++++++++++++++++++++++++++++++++
- arch/riscv/tools/relocs_check.sh | 26 +++++++++++++++++++++++
- 2 files changed, 62 insertions(+)
- create mode 100644 arch/riscv/Makefile.postlink
- create mode 100755 arch/riscv/tools/relocs_check.sh
+ arch/powerpc/Kconfig                   | 1 +
+ arch/powerpc/configs/powernv_defconfig | 1 -
+ arch/powerpc/configs/pseries_defconfig | 1 -
+ 3 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/riscv/Makefile.postlink b/arch/riscv/Makefile.postlink
-new file mode 100644
-index 000000000000..bf2b2bca1845
---- /dev/null
-+++ b/arch/riscv/Makefile.postlink
-@@ -0,0 +1,36 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# ===========================================================================
-+# Post-link riscv pass
-+# ===========================================================================
-+#
-+# Check that vmlinux relocations look sane
-+
-+PHONY := __archpost
-+__archpost:
-+
-+-include include/config/auto.conf
-+include scripts/Kbuild.include
-+
-+quiet_cmd_relocs_check = CHKREL  $@
-+cmd_relocs_check = 							\
-+	$(CONFIG_SHELL) $(srctree)/arch/riscv/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
-+
-+# `@true` prevents complaint when there is nothing to be done
-+
-+vmlinux: FORCE
-+	@true
-+ifdef CONFIG_RELOCATABLE
-+	$(call if_changed,relocs_check)
-+endif
-+
-+%.ko: FORCE
-+	@true
-+
-+clean:
-+	@true
-+
-+PHONY += FORCE clean
-+
-+FORCE:
-+
-+.PHONY: $(PHONY)
-diff --git a/arch/riscv/tools/relocs_check.sh b/arch/riscv/tools/relocs_check.sh
-new file mode 100755
-index 000000000000..baeb2e7b2290
---- /dev/null
-+++ b/arch/riscv/tools/relocs_check.sh
-@@ -0,0 +1,26 @@
-+#!/bin/sh
-+# SPDX-License-Identifier: GPL-2.0-or-later
-+# Based on powerpc relocs_check.sh
-+
-+# This script checks the relocations of a vmlinux for "suspicious"
-+# relocations.
-+
-+if [ $# -lt 3 ]; then
-+        echo "$0 [path to objdump] [path to nm] [path to vmlinux]" 1>&2
-+        exit 1
-+fi
-+
-+bad_relocs=$(
-+${srctree}/scripts/relocs_check.sh "$@" |
-+	# These relocations are okay
-+	#	R_RISCV_RELATIVE
-+	grep -F -w -v 'R_RISCV_RELATIVE'
-+)
-+
-+if [ -z "$bad_relocs" ]; then
-+	exit 0
-+fi
-+
-+num_bad=$(echo "$bad_relocs" | wc -l)
-+echo "WARNING: $num_bad bad relocations"
-+echo "$bad_relocs"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9fa23eb320ff..1701646f845d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -834,6 +834,7 @@ config FORCE_MAX_ZONEORDER
+ 
+ config PPC_SUBPAGE_PROT
+ 	bool "Support setting protections for 4k subpages"
++	default n
+ 	depends on PPC_BOOK3S_64 && PPC_64K_PAGES
+ 	help
+ 	  This option adds support for a system call to allow user programs
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 2de9aadf0f50..afc0dd73a1e6 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -64,7 +64,6 @@ CONFIG_HWPOISON_INJECT=m
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_DEFERRED_STRUCT_PAGE_INIT=y
+ CONFIG_PPC_64K_PAGES=y
+-CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_PM=y
+ CONFIG_HOTPLUG_PCI=y
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index dfa4a726333b..894e8d85fb48 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -57,7 +57,6 @@ CONFIG_MEMORY_HOTREMOVE=y
+ CONFIG_KSM=y
+ CONFIG_TRANSPARENT_HUGEPAGE=y
+ CONFIG_PPC_64K_PAGES=y
+-CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_HOTPLUG_PCI=y
+ CONFIG_HOTPLUG_PCI_RPA=m
 -- 
-2.20.1
+2.23.0
 
