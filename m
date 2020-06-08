@@ -2,95 +2,53 @@ Return-Path: <SRS0=iV47=7V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D076C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 11:00:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC5E3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 11:03:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9C6E2076A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 11:00:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9C6E2076A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 69C9F2076A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 11:03:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69C9F2076A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gVfR2C6wzDqTC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 21:00:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gVjc32cTzDqTy
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 21:03:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gVQm6cTLzDqS7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 20:50:40 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 058AWtYY081785
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Jun 2020 06:50:38 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31g77q0xk7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2020 06:50:38 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 058AmCOG154557
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Jun 2020 06:50:36 -0400
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31g77q0x3g-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 06:50:36 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 058AkDdR031695;
- Mon, 8 Jun 2020 10:49:31 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03fra.de.ibm.com with ESMTP id 31g2s81h45-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 10:49:31 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 058AnShH50397198
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 8 Jun 2020 10:49:28 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 715CE4C04A;
- Mon,  8 Jun 2020 10:49:28 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 75CB24C040;
- Mon,  8 Jun 2020 10:49:27 +0000 (GMT)
-Received: from bharata.ibmuc.com (unknown [9.199.48.183])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  8 Jun 2020 10:49:27 +0000 (GMT)
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v0 3/4] powerpc/pseries: H_REGISTER_PROC_TBL should ask
- for GTSE only if enabled
-Date: Mon,  8 Jun 2020 16:19:08 +0530
-Message-Id: <20200608104909.14350-4-bharata@linux.ibm.com>
-X-Mailer: git-send-email 2.21.3
-In-Reply-To: <20200608104909.14350-1-bharata@linux.ibm.com>
-References: <20200608104909.14350-1-bharata@linux.ibm.com>
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49gVgt3jt9zDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 21:01:56 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0778A1FB;
+ Mon,  8 Jun 2020 04:01:54 -0700 (PDT)
+Received: from [10.163.79.100] (unknown [10.163.79.100])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 53A293F73D;
+ Mon,  8 Jun 2020 04:01:52 -0700 (PDT)
+Subject: Re: [PATCH] mm/debug_vm_pgtable: Fix kernel crash with page table
+ validate
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org
+References: <20200608062739.378902-1-aneesh.kumar@linux.ibm.com>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <2497c7b7-b5cf-8df4-dc82-efefe2fb6f5a@arm.com>
+Date: Mon, 8 Jun 2020 16:31:51 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-08_07:2020-06-08,
- 2020-06-08 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- suspectscore=1 impostorscore=0 mlxscore=0 adultscore=0 clxscore=1015
- cotscore=-2147483648 malwarescore=0 spamscore=0 phishscore=0 bulkscore=0
- mlxlogscore=889 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006080081
+In-Reply-To: <20200608062739.378902-1-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,39 +60,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, npiggin@gmail.com,
- Bharata B Rao <bharata@linux.ibm.com>
+Cc: akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-H_REGISTER_PROC_TBL asks for GTSE by default. GTSE flag bit should
-be set only when GTSE is supported.
+Hi Aneesh,
 
-Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/lpar.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+On 06/08/2020 11:57 AM, Aneesh Kumar K.V wrote:
+> Architectures can have CONFIG_TRANSPARENT_HUGEPAGE enabled but
+> no THP support enabled based on platforms. For ex: with 4K
+> PAGE_SIZE ppc64 supports THP only with radix translation.
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index e4ed5317f117..58ba76bc1964 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -1680,9 +1680,11 @@ static int pseries_lpar_register_process_table(unsigned long base,
- 
- 	if (table_size)
- 		flags |= PROC_TABLE_NEW;
--	if (radix_enabled())
--		flags |= PROC_TABLE_RADIX | PROC_TABLE_GTSE;
--	else
-+	if (radix_enabled()) {
-+		flags |= PROC_TABLE_RADIX;
-+		if (mmu_has_feature(MMU_FTR_GTSE))
-+			flags |= PROC_TABLE_GTSE;
-+	} else
- 		flags |= PROC_TABLE_HPT_SLB;
- 	for (;;) {
- 		rc = plpar_hcall_norets(H_REGISTER_PROC_TBL, flags, base,
--- 
-2.21.3
+Good catch, never hit this before.
 
+> 
+> This results in below crash when running with hash translation and
+> 4K PAGE_SIZE.
+> 
+> kernel BUG at arch/powerpc/include/asm/book3s/64/hash-4k.h:140!
+> cpu 0x61: Vector: 700 (Program Check) at [c000000ff948f860]
+>     pc: c0000000018810f8: debug_vm_pgtable+0x480/0x8b0
+>     lr: c0000000018810ec: debug_vm_pgtable+0x474/0x8b0
+> ...
+> [c000000ff948faf0] c000000001880fec debug_vm_pgtable+0x374/0x8b0 (unreliable)
+> [c000000ff948fbf0] c000000000011648 do_one_initcall+0x98/0x4f0
+> [c000000ff948fcd0] c000000001843928 kernel_init_freeable+0x330/0x3fc
+> [c000000ff948fdb0] c0000000000122ac kernel_init+0x24/0x148
+> [c000000ff948fe20] c00000000000cc44 ret_from_kernel_thread+0x5c/0x78
+> 
+> Check for THP support correctly
+
+Makes sense, is this the only configuration which hit the problem ?
+
+> 
+> Cc: anshuman.khandual@arm.com
+> Fixes: 399145f9eb6c ("mm/debug: add tests validating architecture page table helpers")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  mm/debug_vm_pgtable.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+> index 188c18908964..e60151c5e997 100644
+> --- a/mm/debug_vm_pgtable.c
+> +++ b/mm/debug_vm_pgtable.c
+> @@ -61,6 +61,9 @@ static void __init pmd_basic_tests(unsigned long pfn, pgprot_t prot)
+>  {
+>  	pmd_t pmd = pfn_pmd(pfn, prot);
+>  
+> +	if (!has_transparent_hugepage())
+> +		return;
+> +
+
+We should also add this check to pud_basic_tests() as well.
+
+>  	WARN_ON(!pmd_same(pmd, pmd));
+>  	WARN_ON(!pmd_young(pmd_mkyoung(pmd_mkold(pmd))));
+>  	WARN_ON(!pmd_dirty(pmd_mkdirty(pmd_mkclean(pmd))));
+> 
+
+The subject line here should mention about correct THP support
+detection which fixes the problem. Probably something like this
+or similar ("Fix kernel crash with correct THP support check").
+
+- Anshuman
