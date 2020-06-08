@@ -6,67 +6,70 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F356C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 206A5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:15:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC692204EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:13:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC692204EF
+	by mail.kernel.org (Postfix) with ESMTPS id CD191204EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:15:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD191204EF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gPcH69nKzDqQD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:13:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gPfF4LZXzDqH4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:15:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gPWp0rRmzDqFM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:09:41 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05872VEn139204; Mon, 8 Jun 2020 03:09:33 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31hd5w4jdp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gPWs27D4zDqTC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:09:45 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05872G7n067703; Mon, 8 Jun 2020 03:09:41 -0400
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31geq6kt7y-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 03:09:33 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05874pp0005445;
- Mon, 8 Jun 2020 07:09:32 GMT
+ Mon, 08 Jun 2020 03:09:40 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05875J7n018517;
+ Mon, 8 Jun 2020 07:09:39 GMT
 Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma01dal.us.ibm.com with ESMTP id 31g2s9afg5-1
+ [9.57.198.25]) by ppma03wdc.us.ibm.com with ESMTP id 31gxfk3uk5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 07:09:32 +0000
+ Mon, 08 Jun 2020 07:09:39 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
  [9.57.199.106])
  by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05879WAh50004226
+ 05879dqx48693622
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 8 Jun 2020 07:09:32 GMT
+ Mon, 8 Jun 2020 07:09:39 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5AF428059;
- Mon,  8 Jun 2020 07:09:31 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1B5942805A;
+ Mon,  8 Jun 2020 07:09:39 +0000 (GMT)
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 471CC28058;
- Mon,  8 Jun 2020 07:09:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5093828059;
+ Mon,  8 Jun 2020 07:09:37 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.85.88.17])
  by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  8 Jun 2020 07:09:29 +0000 (GMT)
+ Mon,  8 Jun 2020 07:09:36 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v2 1/4] powerpc/percpu: Update percpu bootmem allocator
-Date: Mon,  8 Jun 2020 12:39:01 +0530
-Message-Id: <20200608070904.387440-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 4/4] powerpc/mm/book3s: Split radix and hash MAX_PHYSMEM
+ limit
+Date: Mon,  8 Jun 2020 12:39:04 +0530
+Message-Id: <20200608070904.387440-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200608070904.387440-1-aneesh.kumar@linux.ibm.com>
+References: <20200608070904.387440-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -74,12 +77,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-08_03:2020-06-08,
  2020-06-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 cotscore=-2147483648 priorityscore=1501 suspectscore=2
- bulkscore=0 mlxlogscore=999 phishscore=0 clxscore=1015 mlxscore=0
- impostorscore=0 spamscore=0 malwarescore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006080049
+ bulkscore=0 spamscore=0
+ impostorscore=0 clxscore=1015 mlxscore=0 lowpriorityscore=0 adultscore=0
+ malwarescore=0 suspectscore=0 mlxlogscore=999 cotscore=-2147483648
+ phishscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006080049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,80 +98,182 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This update the ppc64 version to be closer to x86/sparc.
+MAX_PHYSMEM #define is used along with sparsemem to determine the SECTION_SHIFT
+value. Powerpc also uses the same value to limit the max memory enabled on the
+system. With 4K PAGE_SIZE and hash translation mode, we want to limit the max
+memory enabled to 64TB due to page table size restrictions. However, with
+radix translation, we don't have these restrictions. Hence split the radix
+and hash MA_PHYSMEM limit and use different limit for each of them.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/kernel/setup_64.c | 45 ++++++++++++++++++++++++++++------
- 1 file changed, 37 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  5 +++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 13 +++++++++++++
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |  4 ++--
+ arch/powerpc/include/asm/book3s/64/mmu.h      | 15 ---------------
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  7 +++++++
+ arch/powerpc/include/asm/book3s/64/radix.h    | 16 ++++++++++++++++
+ arch/powerpc/kernel/prom.c                    |  5 +++++
+ arch/powerpc/mm/book3s64/slb.c                |  4 ++--
+ 8 files changed, 50 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index bb47555d48a2..eaddd53a0e13 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -753,17 +753,46 @@ void __init emergency_stack_init(void)
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 80c953414882..2e86d9b35766 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -22,6 +22,11 @@
+ #define REGION_SHIFT		(40)
+ #define H_KERN_MAP_SIZE		(ASM_CONST(1) << REGION_SHIFT)
  
- #ifdef CONFIG_SMP
--#define PCPU_DYN_SIZE		()
--
--static void * __init pcpu_fc_alloc(unsigned int cpu, size_t size, size_t align)
-+/**
-+ * pcpu_alloc_bootmem - NUMA friendly alloc_bootmem wrapper for percpu
-+ * @cpu: cpu to allocate for
-+ * @size: size allocation in bytes
-+ * @align: alignment
-+ *
-+ * Allocate @size bytes aligned at @align for cpu @cpu.  This wrapper
-+ * does the right thing for NUMA regardless of the current
-+ * configuration.
-+ *
-+ * RETURNS:
-+ * Pointer to the allocated area on success, NULL on failure.
++/*
++ * Limits the linear mapping range
 + */
-+static void * __init pcpu_alloc_bootmem(unsigned int cpu, size_t size,
-+					size_t align)
- {
--	return memblock_alloc_try_nid(size, align, __pa(MAX_DMA_ADDRESS),
--				      MEMBLOCK_ALLOC_ACCESSIBLE,
--				      early_cpu_to_node(cpu));
-+	const unsigned long goal = __pa(MAX_DMA_ADDRESS);
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+	int node = early_cpu_to_node(cpu);
-+	void *ptr;
++#define H_MAX_PHYSMEM_BITS	46
++
+ /*
+  * Define the address range of the kernel non-linear virtual area (61TB)
+  */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 0729c034e56f..16c040d19a2b 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -7,6 +7,19 @@
+ #define H_PUD_INDEX_SIZE  10  // size: 8B << 10 = 8KB, maps 2^10 x 16GB = 16TB
+ #define H_PGD_INDEX_SIZE   8  // size: 8B <<  8 = 2KB, maps 2^8  x 16TB =  4PB
  
-+	if (!node_online(node) || !NODE_DATA(node)) {
-+		ptr = memblock_alloc_from(size, align, goal);
-+		pr_info("cpu %d has no node %d or node-local memory\n",
-+			cpu, node);
-+		pr_debug("per cpu data for cpu%d %lu bytes at %016lx\n",
-+			 cpu, size, __pa(ptr));
-+	} else {
-+		ptr = memblock_alloc_try_nid(size, align, goal,
-+					     MEMBLOCK_ALLOC_ACCESSIBLE, node);
-+		pr_debug("per cpu data for cpu%d %lu bytes on node%d at "
-+			 "%016lx\n", cpu, size, node, __pa(ptr));
-+	}
-+	return ptr;
++/*
++ * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
++ * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
++ * page_to_nid does a page->section->node lookup
++ * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
++ * memory requirements with large number of sections.
++ * 51 bits is the max physical real address on POWER9
++ */
++#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME)
++#define H_MAX_PHYSMEM_BITS	51
 +#else
-+	return memblock_alloc_from(size, align, goal);
++#define H_MAX_PHYSMEM_BITS	46
 +#endif
- }
  
--static void __init pcpu_fc_free(void *ptr, size_t size)
-+static void __init pcpu_free_bootmem(void *ptr, size_t size)
- {
- 	memblock_free(__pa(ptr), size);
- }
-@@ -798,7 +827,7 @@ void __init setup_per_cpu_areas(void)
- 		atom_size = 1 << 20;
+ /*
+  * Each context is 512TB size. SLB miss for first context/default context
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 3fa1b962dc27..84817466a3dd 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -577,8 +577,8 @@ extern void slb_set_size(u16 size);
+  * For vmalloc and memmap, we use just one context with 512TB. With 64 byte
+  * struct page size, we need ony 32 TB in memmap for 2PB (51 bits (MAX_PHYSMEM_BITS)).
+  */
+-#if (MAX_PHYSMEM_BITS > MAX_EA_BITS_PER_CONTEXT)
+-#define MAX_KERNEL_CTX_CNT	(1UL << (MAX_PHYSMEM_BITS - MAX_EA_BITS_PER_CONTEXT))
++#if (H_MAX_PHYSMEM_BITS > MAX_EA_BITS_PER_CONTEXT)
++#define MAX_KERNEL_CTX_CNT	(1UL << (H_MAX_PHYSMEM_BITS - MAX_EA_BITS_PER_CONTEXT))
+ #else
+ #define MAX_KERNEL_CTX_CNT	1
+ #endif
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 5393a535240c..6202649e3e11 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -27,21 +27,6 @@ struct mmu_psize_def {
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+ #endif /* __ASSEMBLY__ */
  
- 	rc = pcpu_embed_first_chunk(0, dyn_size, atom_size, pcpu_cpu_distance,
--				    pcpu_fc_alloc, pcpu_fc_free);
-+				    pcpu_alloc_bootmem, pcpu_free_bootmem);
- 	if (rc < 0)
- 		panic("cannot initialize percpu area (err=%d)", rc);
+-/*
+- * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
+- * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
+- * page_to_nid does a page->section->node lookup
+- * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
+- * memory requirements with large number of sections.
+- * 51 bits is the max physical real address on POWER9
+- */
+-#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME) &&  \
+-	defined(CONFIG_PPC_64K_PAGES)
+-#define MAX_PHYSMEM_BITS 51
+-#else
+-#define MAX_PHYSMEM_BITS 46
+-#endif
+-
+ /* 64-bit classic hash table MMU */
+ #include <asm/book3s/64/mmu-hash.h>
  
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index f17442c3a092..4a6a0c51a733 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -295,6 +295,13 @@ extern unsigned long pci_io_base;
+ #include <asm/book3s/64/hash.h>
+ #include <asm/book3s/64/radix.h>
+ 
++#if H_MAX_PHYSMEM_BITS > R_MAX_PHYSMEM_BITS
++#define  MAX_PHYSMEM_BITS	H_MAX_PHYSMEM_BITS
++#else
++#define  MAX_PHYSMEM_BITS	R_MAX_PHYSMEM_BITS
++#endif
++
++
+ #ifdef CONFIG_PPC_64K_PAGES
+ #include <asm/book3s/64/pgtable-64k.h>
+ #else
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 0cba794c4fb8..c7813dc628fc 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -91,6 +91,22 @@
+  * +------------------------------+  Kernel linear (0xc.....)
+  */
+ 
++
++/*
++ * If we store section details in page->flags we can't increase the MAX_PHYSMEM_BITS
++ * if we increase SECTIONS_WIDTH we will not store node details in page->flags and
++ * page_to_nid does a page->section->node lookup
++ * Hence only increase for VMEMMAP. Further depending on SPARSEMEM_EXTREME reduce
++ * memory requirements with large number of sections.
++ * 51 bits is the max physical real address on POWER9
++ */
++
++#if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME)
++#define R_MAX_PHYSMEM_BITS	51
++#else
++#define R_MAX_PHYSMEM_BITS	46
++#endif
++
+ #define RADIX_KERN_VIRT_START	ASM_CONST(0xc008000000000000)
+ /*
+  * 49 =  MAX_EA_BITS_PER_CONTEXT (hash specific). To make sure we pick
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 6a3bac357e24..238349dd101a 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -771,6 +771,11 @@ void __init early_init_devtree(void *params)
+ 	limit = ALIGN(memory_limit ?: memblock_phys_mem_size(), PAGE_SIZE);
+ 	memblock_enforce_memory_limit(limit);
+ 
++#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_4K_PAGES)
++	if (!early_radix_enabled())
++		memblock_cap_memory_range(0, 1UL << (H_MAX_PHYSMEM_BITS));
++#endif
++
+ 	memblock_allow_resize();
+ 	memblock_dump_all();
+ 
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index 8141e8b40ee5..11d65de400e1 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -765,8 +765,8 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
+ 
+ 	if (id == LINEAR_MAP_REGION_ID) {
+ 
+-		/* We only support upto MAX_PHYSMEM_BITS */
+-		if ((ea & EA_MASK) > (1UL << MAX_PHYSMEM_BITS))
++		/* We only support upto H_MAX_PHYSMEM_BITS */
++		if ((ea & EA_MASK) > (1UL << H_MAX_PHYSMEM_BITS))
+ 			return -EFAULT;
+ 
+ 		flags = SLB_VSID_KERNEL | mmu_psize_defs[mmu_linear_psize].sllp;
 -- 
 2.26.2
 
