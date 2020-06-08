@@ -2,56 +2,104 @@ Return-Path: <SRS0=iV47=7V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93CE9C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB14C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:44:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FACA204EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:20:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FACA204EF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8E143206A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:44:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E143206A4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gPmj3bqnzDqHH
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:20:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gQJL3wq2zDqSL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:44:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gPjF0pV4zDqQB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:17:52 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id F1EA3200D08;
- Mon,  8 Jun 2020 09:17:47 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E1738200D10;
- Mon,  8 Jun 2020 09:17:42 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 964B340299;
- Mon,  8 Jun 2020 15:17:36 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: lars@metafoo.de, perex@perex.cz, tiwai@suse.com, lgirdwood@gmail.com,
- broonie@kernel.org, timur@kernel.org, nicoleotsuka@gmail.com,
- Xiubo.Lee@gmail.com, festevam@gmail.com, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH] ASoC: fsl_asrc_dma: Fix warning "Cannot create DMA dma:tx
- symlink"
-Date: Mon,  8 Jun 2020 15:07:00 +0800
-Message-Id: <83e1682e88baf127d25e3470011bd034cfc32032.1591598561.git.shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gQGW1vNRzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:43:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0587ZFTq189619; Mon, 8 Jun 2020 03:43:07 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31geq6mqtt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jun 2020 03:43:07 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0587aTBM194869;
+ Mon, 8 Jun 2020 03:43:06 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31geq6mqt7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jun 2020 03:43:06 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0587eplR024525;
+ Mon, 8 Jun 2020 07:43:05 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma01dal.us.ibm.com with ESMTP id 31g2s9as81-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 08 Jun 2020 07:43:05 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0587h4VB42336708
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 8 Jun 2020 07:43:04 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4A02AAE066;
+ Mon,  8 Jun 2020 07:43:04 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3D2C0AE05C;
+ Mon,  8 Jun 2020 07:43:01 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.88.17])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Jun 2020 07:43:00 +0000 (GMT)
+X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Jan Kara <jack@suse.cz>, "Williams, Dan J" <dan.j.williams@intel.com>
+Subject: Re: [RFC PATCH 1/2] libnvdimm: Add prctl control for disabling
+ synchronous fault support.
+In-Reply-To: <f8113a5b-be3b-3627-7535-ed2c9e0293f9@linux.ibm.com>
+References: <20200529054141.156384-1-aneesh.kumar@linux.ibm.com>
+ <20200529093310.GL25173@kitsune.suse.cz>
+ <6183cf4a-d134-99e5-936e-ef35f530c2ec@linux.ibm.com>
+ <20200529095250.GP14550@quack2.suse.cz>
+ <7e8ee9e3-4d4d-e4b9-913b-1c2448adc62a@linux.ibm.com>
+ <CAPcyv4jrss3dFcCOar3JTFnuN0_pgFNtBPiJzUdKxtiax6pPgQ@mail.gmail.com>
+ <7f163562-e7e3-7668-7415-c40e57c32582@linux.ibm.com>
+ <CAPcyv4i7k7t8is_6FKAWbWsGHVO0kvj-OqqqJTzw=VS7xtZVvQ@mail.gmail.com>
+ <20200601095049.GB3960@quack2.suse.cz>
+ <BN6PR11MB41328EB6F894DB391DC09DAEC68B0@BN6PR11MB4132.namprd11.prod.outlook.com>
+ <20200603082628.GE19165@quack2.suse.cz>
+ <f8113a5b-be3b-3627-7535-ed2c9e0293f9@linux.ibm.com>
+Date: Mon, 08 Jun 2020 13:12:58 +0530
+Message-ID: <877dwi9f5p.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-08_03:2020-06-08,
+ 2020-06-08 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 spamscore=0
+ impostorscore=0 clxscore=1015 mlxscore=0 lowpriorityscore=0 adultscore=0
+ malwarescore=0 suspectscore=0 mlxlogscore=999 cotscore=-2147483648
+ phishscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006080053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,261 +111,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-nvdimm <linux-nvdimm@lists.01.org>, "jack@suse.de" <jack@suse.de>,
+ Jeff Moyer <jmoyer@redhat.com>,
+ Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The issue log is:
 
-[   48.021506] CPU: 0 PID: 664 Comm: aplay Not tainted 5.7.0-rc1-13120-g12b434cbbea0 #343
-[   48.031063] Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
-[   48.037638] [<c0110dd8>] (unwind_backtrace) from [<c010b8ec>] (show_stack+0x10/0x14)
-[   48.045413] [<c010b8ec>] (show_stack) from [<c0557fc0>] (dump_stack+0xe4/0x118)
-[   48.052757] [<c0557fc0>] (dump_stack) from [<c032aeb4>] (sysfs_warn_dup+0x50/0x64)
-[   48.060357] [<c032aeb4>] (sysfs_warn_dup) from [<c032b1a8>] (sysfs_do_create_link_sd+0xc8/0xd4)
-[   48.069086] [<c032b1a8>] (sysfs_do_create_link_sd) from [<c05dc668>] (dma_request_chan+0xb0/0x210)
-[   48.078068] [<c05dc668>] (dma_request_chan) from [<c05dc7d0>] (dma_request_slave_channel+0x8/0x14)
-[   48.087060] [<c05dc7d0>] (dma_request_slave_channel) from [<c09d5cd4>] (fsl_asrc_dma_hw_params+0x1dc/0x434)
-[   48.096831] [<c09d5cd4>] (fsl_asrc_dma_hw_params) from [<c09c143c>] (soc_pcm_hw_params+0x4b0/0x650)
-[   48.105903] [<c09c143c>] (soc_pcm_hw_params) from [<c09c36a8>] (dpcm_fe_dai_hw_params+0x70/0xe4)
-[   48.114715] [<c09c36a8>] (dpcm_fe_dai_hw_params) from [<c099b274>] (snd_pcm_hw_params+0x158/0x418)
-[   48.123701] [<c099b274>] (snd_pcm_hw_params) from [<c099c5a0>] (snd_pcm_ioctl+0x734/0x183c)
-[   48.132079] [<c099c5a0>] (snd_pcm_ioctl) from [<c029ff94>] (ksys_ioctl+0x2ac/0xb98)
-[   48.139765] [<c029ff94>] (ksys_ioctl) from [<c0100080>] (ret_fast_syscall+0x0/0x28)
-[   48.147440] Exception stack(0xed3c5fa8 to 0xed3c5ff0)
-[   48.152515] 5fa0:                   bec28670 00e92870 00000004 c25c4111 bec28670 0002000f
-[   48.160716] 5fc0: bec28670 00e92870 00e92820 00000036 0000bb80 00000000 0002c2f8 00000003
-[   48.168913] 5fe0: b6f4d3fc bec2853c b6ee7655 b6e22cf8
-[   48.174236] fsl-esai-dai 2024000.esai: Cannot create DMA dma:tx symlink
 
-The dma channel is already requested by Back-End cpu dai driver,
-if fsl_asrc_dma requests dma chan with same dma:tx symlink, then
-this warning comes out.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-The warning is added by
-commit 71723a96b8b1 ("dmaengine: Create symlinks between DMA channels and slaves")
-commit bad83565eafe ("dmaengine: Cleanups for the slave <-> channel symlink support")
+> On 6/3/20 1:56 PM, Jan Kara wrote:
+>> On Tue 02-06-20 17:59:08, Williams, Dan J wrote:
+>>> [ forgive formatting, a series of unfortunate events has me using Outlook for the moment ]
+>>>
+>>>> From: Jan Kara <jack@suse.cz>
+>>>>>>> These flags are device properties that affect the kernel and
+>>>>>>> userspace's handling of persistence.
+>>>>>>>
+>>>>>>
+>>>>>> That will not handle the scenario with multiple applications using
+>>>>>> the same fsdax mount point where one is updated to use the new
+>>>>>> instruction and the other is not.
+>>>>>
+>>>>> Right, it needs to be a global setting / flag day to switch from one
+>>>>> regime to another. Per-process control is a recipe for disaster.
+>>>>
+>>>> First I'd like to mention that hopefully the concern is mostly theoretical since
+>>>> as Aneesh wrote above, real persistent memory never shipped for PPC and
+>>>> so there are very few apps (if any) using the old way to ensure cache
+>>>> flushing.
+>>>>
+>>>> But I'd like to understand why do you think per-process control is a recipe for
+>>>> disaster? Because from my POV the sysfs interface you propose is actually
+>>>> difficult to use in practice. As a distributor, you have hard time picking the
+>>>> default because you have a choice between picking safe option which is
+>>>> going to confuse users because of failing MAP_SYNC and unsafe option
+>>>> where everyone will be happy until someone looses data because of some
+>>>> ancient application using wrong instructions to persist data. Poor experience
+>>>> for users in either way. And when distro defaults to "safe option", then the
+>>>> burden is on the sysadmin to toggle the switch but how is he supposed to
+>>>> decide when that is safe? First he has to understand what the problem
+>>>> actually is, then he has to audit all the applications using pmem whether they
+>>>> use the new instruction - which is IMO a lot of effort if you have a couple of
+>>>> applications and practically infeasible if you have more of them.
+>>>> So IMO the burden should be *on the application* to declare that it is aware
+>>>> of the new instructions to flush pmem on the platform and only to such
+>>>> application the kernel should give the trust to use MAP_SYNC mappings.
+>>>
+>>> The "disaster" in my mind is this need to globally change the ABI for
+>>> persistence semantics for all of Linux because one CPU wants a do over.
+>>> What does a generic "MAP_SYNC_ENABLE" knob even mean to the existing
+>>> deployed base of persistent memory applications? Yes, sysfs is awkward,
+>>> but it's trying to provide some relief without imposing unexplainable
+>>> semantics on everyone else. I think a comprehensive (overengineered)
+>>> solution would involve not introducing another "I know what I'm doing"
+>>> flag to the interface, but maybe requiring applications to call a pmem
+>>> sync API in something like a vsyscall. Or, also overengineered, some
+>>> binary translation / interpretation to actively detect and kill
+>>> applications that deploy the old instructions. Something horrid like on
+>>> first write fault to a MAP_SYNC try to look ahead in the binary for the
+>>> correct sync sequence and kill the application otherwise. That would at
+>>> least provide some enforcement and safety without requiring other
+>>> architectures to consider what MAP_SYNC_ENABLE means to them.
+>> 
+>> Thanks for explanation. So I absolutely agree that other architectures (and
+>> even older versions of POWER architecture) must not be influenced by the new
+>> tunable. That's why I wrote in my reply to Aneesh that I'd be for checking
+>> during mmap(2) with MAP_SYNC, whether we are in a situation where new PPC
+>> flush instructions are required and *only in that case* decide based on the
+>> prctl value whether MAP_SYNC should be allowed or not.
+>> 
+>
+> v2 version of the patch series does that
+>
+> https://lore.kernel.org/linuxppc-dev/20200602074909.36738-1-aneesh.kumar@linux.ibm.com/
+>
+>> Whether this solution is overengineering or not depends on how you think
+>> it's likely there will be applications trying to use old flush instructions
+>> with MAP_SYNC on POWER10 platforms...
+>> 
+>
+> Now considering that with ppc64 we never had a real persistent memory 
+> device available for the end-user to try and the new instructions are 
+> only needed on newer hardware, can we assume we have enough time to get 
+> the userspace to use new instructions?
+>
+> As a safety net, we can keep the dax device-specific sysfs control. But 
+> in reality, by the time newer hardware gets released, we can get the 
+> distributions updated to flip the CONFIG_ARCH_MAP_SYNC_DISABLE=n?
+>
+> With this:
+> 1) vPMEM continues to work and since it is a volatile region. That 
+> doesn't need any flush instructions.
+>
+> 2) We get pmdk and other user applications updated to use new 
+> instructions and make sure updated packages are made available to all 
+> distributions
+>
+> 3) On newer hardware, the device will appear with a new compat string. 
+> Hence older distributions won't initialize pmem on newer hardware.
+>
+> 4) If we have a newer kernel with an older distro, we use the per 
+> namespace sysfs knob that prevents the usage of MAP_SYNC.
+>
+> 5) After a year or so we mark the CONFIG_ARCH_MAP_SYNC_DISABLE=n
+> on ppc64 when we are confident that everybody is using the new flush 
+> instruction.
+>
 
-As the dma channel is requested by Back-End, we need to reuse the channel
-and avoid to request a new one, then the issue can be fixed.
+Is this approach ok for distributions? If so I can repost the series
+dropping the prctl change.
 
-In order to get the dma channel which is already requested in Back-End.
-we export two functions (snd_soc_lookup_component_nolocked and
-soc_component_to_pcm), if we can get the dma channel, then reuse it.
-if can't, then request a new one.
-
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- include/sound/dmaengine_pcm.h         | 11 ++++++
- include/sound/soc.h                   |  2 ++
- sound/soc/fsl/fsl_asrc_common.h       |  2 ++
- sound/soc/fsl/fsl_asrc_dma.c          | 49 +++++++++++++++++++++------
- sound/soc/soc-core.c                  |  3 +-
- sound/soc/soc-generic-dmaengine-pcm.c | 12 -------
- 6 files changed, 55 insertions(+), 24 deletions(-)
-
-diff --git a/include/sound/dmaengine_pcm.h b/include/sound/dmaengine_pcm.h
-index b65220685920..8c5e38180fb0 100644
---- a/include/sound/dmaengine_pcm.h
-+++ b/include/sound/dmaengine_pcm.h
-@@ -161,4 +161,15 @@ int snd_dmaengine_pcm_prepare_slave_config(struct snd_pcm_substream *substream,
- 
- #define SND_DMAENGINE_PCM_DRV_NAME "snd_dmaengine_pcm"
- 
-+struct dmaengine_pcm {
-+	struct dma_chan *chan[SNDRV_PCM_STREAM_LAST + 1];
-+	const struct snd_dmaengine_pcm_config *config;
-+	struct snd_soc_component component;
-+	unsigned int flags;
-+};
-+
-+static inline struct dmaengine_pcm *soc_component_to_pcm(struct snd_soc_component *p)
-+{
-+	return container_of(p, struct dmaengine_pcm, component);
-+}
- #endif
-diff --git a/include/sound/soc.h b/include/sound/soc.h
-index 74868436ac79..565612a8d690 100644
---- a/include/sound/soc.h
-+++ b/include/sound/soc.h
-@@ -444,6 +444,8 @@ int devm_snd_soc_register_component(struct device *dev,
- 			 const struct snd_soc_component_driver *component_driver,
- 			 struct snd_soc_dai_driver *dai_drv, int num_dai);
- void snd_soc_unregister_component(struct device *dev);
-+struct snd_soc_component *snd_soc_lookup_component_nolocked(struct device *dev,
-+							    const char *driver_name);
- struct snd_soc_component *snd_soc_lookup_component(struct device *dev,
- 						   const char *driver_name);
- 
-diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
-index 77665b15c8db..09512bc79b80 100644
---- a/sound/soc/fsl/fsl_asrc_common.h
-+++ b/sound/soc/fsl/fsl_asrc_common.h
-@@ -32,6 +32,7 @@ enum asrc_pair_index {
-  * @dma_chan: inputer and output DMA channels
-  * @dma_data: private dma data
-  * @pos: hardware pointer position
-+ * @req_dma_chan_dev_to_dev: flag for release dev_to_dev chan
-  * @private: pair private area
-  */
- struct fsl_asrc_pair {
-@@ -45,6 +46,7 @@ struct fsl_asrc_pair {
- 	struct dma_chan *dma_chan[2];
- 	struct imx_dma_data dma_data;
- 	unsigned int pos;
-+	bool req_dma_chan_dev_to_dev;
- 
- 	void *private;
- };
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index d6a3fc5f87e5..3ad862225326 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -135,6 +135,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	struct snd_dmaengine_dai_dma_data *dma_params_be = NULL;
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct fsl_asrc_pair *pair = runtime->private_data;
-+	struct snd_soc_component *component_be = NULL;
- 	struct fsl_asrc *asrc = pair->asrc;
- 	struct dma_slave_config config_fe, config_be;
- 	enum asrc_pair_index index = pair->index;
-@@ -142,7 +143,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	int stream = substream->stream;
- 	struct imx_dma_data *tmp_data;
- 	struct snd_soc_dpcm *dpcm;
--	struct dma_chan *tmp_chan;
-+	struct dma_chan *tmp_chan = NULL, *tmp_chan_new = NULL;
- 	struct device *dev_be;
- 	u8 dir = tx ? OUT : IN;
- 	dma_cap_mask_t mask;
-@@ -160,6 +161,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 		substream_be = snd_soc_dpcm_get_substream(be, stream);
- 		dma_params_be = snd_soc_dai_get_dma_data(dai, substream_be);
- 		dev_be = dai->dev;
-+		component_be = snd_soc_lookup_component_nolocked(dev_be, SND_DMAENGINE_PCM_DRV_NAME);
- 		break;
- 	}
- 
-@@ -205,10 +207,16 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	 */
- 	if (!asrc->use_edma) {
- 		/* Get DMA request of Back-End */
--		tmp_chan = dma_request_slave_channel(dev_be, tx ? "tx" : "rx");
-+		if (component_be)
-+			tmp_chan = soc_component_to_pcm(component_be)->chan[substream->stream];
-+		if (!tmp_chan) {
-+			tmp_chan_new = dma_request_slave_channel(dev_be, tx ? "tx" : "rx");
-+			tmp_chan = tmp_chan_new;
-+		}
- 		tmp_data = tmp_chan->private;
- 		pair->dma_data.dma_request = tmp_data->dma_request;
--		dma_release_channel(tmp_chan);
-+		if (tmp_chan_new)
-+			dma_release_channel(tmp_chan_new);
- 
- 		/* Get DMA request of Front-End */
- 		tmp_chan = asrc->get_dma_channel(pair, dir);
-@@ -220,9 +228,26 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 
- 		pair->dma_chan[dir] =
- 			dma_request_channel(mask, filter, &pair->dma_data);
-+		pair->req_dma_chan_dev_to_dev = true;
- 	} else {
--		pair->dma_chan[dir] =
--			asrc->get_dma_channel(pair, dir);
-+		/* With EDMA, there is two dma channels can be used for p2p,
-+		 * one is from ASRC, one is from another peripheral
-+		 * (ESAI or SAI) previously we select the dma channel of ASRC,
-+		 * but find an issue for ideal ratio case, there is no control
-+		 * for data copy speed, the speed is faster than sample
-+		 * frequency.
-+		 *
-+		 * So we switch to dma channel of peripheral (ESAI or SAI),
-+		 * that copy speed of DMA is controlled by data consumption
-+		 * speed in the peripheral FIFO.
-+		 */
-+		pair->req_dma_chan_dev_to_dev = false;
-+		if (component_be)
-+			pair->dma_chan[dir] = soc_component_to_pcm(component_be)->chan[substream->stream];;
-+		if (!pair->dma_chan[dir]) {
-+			pair->dma_chan[dir] = dma_request_slave_channel(dev_be, tx ? "tx" : "rx");
-+			pair->req_dma_chan_dev_to_dev = true;
-+		}
- 	}
- 
- 	if (!pair->dma_chan[dir]) {
-@@ -273,19 +298,21 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- static int fsl_asrc_dma_hw_free(struct snd_soc_component *component,
- 				struct snd_pcm_substream *substream)
- {
-+	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	struct snd_pcm_runtime *runtime = substream->runtime;
- 	struct fsl_asrc_pair *pair = runtime->private_data;
-+	u8 dir = tx ? OUT : IN;
- 
- 	snd_pcm_set_runtime_buffer(substream, NULL);
- 
--	if (pair->dma_chan[IN])
--		dma_release_channel(pair->dma_chan[IN]);
-+	if (pair->dma_chan[!dir])
-+		dma_release_channel(pair->dma_chan[!dir]);
- 
--	if (pair->dma_chan[OUT])
--		dma_release_channel(pair->dma_chan[OUT]);
-+	if (pair->dma_chan[dir] && pair->req_dma_chan_dev_to_dev)
-+		dma_release_channel(pair->dma_chan[dir]);
- 
--	pair->dma_chan[IN] = NULL;
--	pair->dma_chan[OUT] = NULL;
-+	pair->dma_chan[!dir] = NULL;
-+	pair->dma_chan[dir] = NULL;
- 
- 	return 0;
- }
-diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
-index b07eca2c6ccc..d4c73e86d058 100644
---- a/sound/soc/soc-core.c
-+++ b/sound/soc/soc-core.c
-@@ -310,7 +310,7 @@ struct snd_soc_component *snd_soc_rtdcom_lookup(struct snd_soc_pcm_runtime *rtd,
- }
- EXPORT_SYMBOL_GPL(snd_soc_rtdcom_lookup);
- 
--static struct snd_soc_component
-+struct snd_soc_component
- *snd_soc_lookup_component_nolocked(struct device *dev, const char *driver_name)
- {
- 	struct snd_soc_component *component;
-@@ -329,6 +329,7 @@ static struct snd_soc_component
- 
- 	return found_component;
- }
-+EXPORT_SYMBOL_GPL(snd_soc_lookup_component_nolocked);
- 
- struct snd_soc_component *snd_soc_lookup_component(struct device *dev,
- 						   const char *driver_name)
-diff --git a/sound/soc/soc-generic-dmaengine-pcm.c b/sound/soc/soc-generic-dmaengine-pcm.c
-index f728309a0833..80a4e71f2d95 100644
---- a/sound/soc/soc-generic-dmaengine-pcm.c
-+++ b/sound/soc/soc-generic-dmaengine-pcm.c
-@@ -21,18 +21,6 @@
-  */
- #define SND_DMAENGINE_PCM_FLAG_NO_RESIDUE BIT(31)
- 
--struct dmaengine_pcm {
--	struct dma_chan *chan[SNDRV_PCM_STREAM_LAST + 1];
--	const struct snd_dmaengine_pcm_config *config;
--	struct snd_soc_component component;
--	unsigned int flags;
--};
--
--static struct dmaengine_pcm *soc_component_to_pcm(struct snd_soc_component *p)
--{
--	return container_of(p, struct dmaengine_pcm, component);
--}
--
- static struct device *dmaengine_dma_dev(struct dmaengine_pcm *pcm,
- 	struct snd_pcm_substream *substream)
- {
--- 
-2.21.0
-
+-aneesh
