@@ -1,27 +1,27 @@
-Return-Path: <SRS0=iV47=7V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Er2m=7W=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4DCCC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 23:58:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C991C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 00:01:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 731792078C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 23:58:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CBA312074B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 00:01:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="JwD3Vluw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 731792078C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="QH0eG5uq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBA312074B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gqvC0pHSzDqSm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 09:57:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gqz524tXzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 10:01:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,34 +29,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=JwD3Vluw; dkim-atps=neutral
+ header.s=default header.b=QH0eG5uq; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gqCs6m71zDqSN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 09:27:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gqF274hZzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 09:28:22 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 062972078D;
- Mon,  8 Jun 2020 23:27:18 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id C6FBB207C3;
+ Mon,  8 Jun 2020 23:28:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1591658839;
- bh=p64kvqwdHjvutBUyLKF79Z35nfL8WtrSF/yQ7hkXSUQ=;
+ s=default; t=1591658899;
+ bh=15G2WrLT5ho92pvElXiZtGefRTswewW2AuRsk1d7vHY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=JwD3Vluw56S2UsLNgbawsF4NalKa+IfKTS5QIPLfzLgPHJT8E8/4fgMhrII14DDPm
- 3zzlk5Hy71TPlxDhmgL62JkfQMw9gldBiNGR+NzcgZhfsUsdUQtZ/D/qlaN8UhreO5
- onLRjmLV1LZlJSkRlt4g0v2zgZZbaFsd8E/+cs3U=
+ b=QH0eG5uqTJvb152+2WlKMfCgbCx8E4UYTxEnYzKaQsBk5CVmXdObFBQ6ito2pwnnr
+ rZI/wprmaRJ1NU24WImkmw1XSNKoBTzrvY7G6rBzWRQImUo54Id04C5ugAWQVejkl7
+ XwJ4Btl3lPklbLb/k0C+NJxOVnMuyHy86Q4SsdJ8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 29/50] powerpc/spufs: fix copy_to_user while atomic
-Date: Mon,  8 Jun 2020 19:26:19 -0400
-Message-Id: <20200608232640.3370262-29-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 21/37] powerpc/spufs: fix copy_to_user while atomic
+Date: Mon,  8 Jun 2020 19:27:33 -0400
+Message-Id: <20200608232750.3370747-21-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200608232640.3370262-1-sashal@kernel.org>
-References: <20200608232640.3370262-1-sashal@kernel.org>
+In-Reply-To: <20200608232750.3370747-1-sashal@kernel.org>
+References: <20200608232750.3370747-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -104,7 +104,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 75 insertions(+), 38 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index 06254467e4dd..f12b00a056cb 100644
+index 5038fd578e65..e708c163fd6d 100644
 --- a/arch/powerpc/platforms/cell/spufs/file.c
 +++ b/arch/powerpc/platforms/cell/spufs/file.c
 @@ -2044,8 +2044,9 @@ static ssize_t __spufs_mbox_info_read(struct spu_context *ctx,
