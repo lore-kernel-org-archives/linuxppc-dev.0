@@ -2,97 +2,65 @@ Return-Path: <SRS0=iV47=7V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63D8EC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 21:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28DF5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 23:09:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19BF2206D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 21:24:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19BF2206D5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9455F20C09
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 23:09:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qw225oKv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9455F20C09
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gmV12Fb6zDqVm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 07:24:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gpql6SDLzDqQr
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 09:09:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Qw225oKv; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gmDT4K7FzDqQk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 07:12:41 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 058L3qj9025611; Mon, 8 Jun 2020 17:11:49 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31grrhe9yk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 17:11:49 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 058L4YCk034022;
- Mon, 8 Jun 2020 17:11:48 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31grrhe9y0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 17:11:48 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 058LBFuD001059;
- Mon, 8 Jun 2020 21:11:47 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 31g2s7vp3u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 21:11:46 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 058LBiZB9437520
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 8 Jun 2020 21:11:44 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1E464A404D;
- Mon,  8 Jun 2020 21:11:44 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC440A4040;
- Mon,  8 Jun 2020 21:11:38 +0000 (GMT)
-Received: from vajain21-in-ibm-com (unknown [9.85.74.153])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon,  8 Jun 2020 21:11:38 +0000 (GMT)
-Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
- Tue, 09 Jun 2020 02:41:37 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v12 2/6] seq_buf: Export seq_buf_printf
-Date: Tue,  9 Jun 2020 02:40:22 +0530
-Message-Id: <20200608211026.67573-3-vaibhav@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200608211026.67573-1-vaibhav@linux.ibm.com>
-References: <20200608211026.67573-1-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gpmL4kKxzDqQk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 09:06:58 +1000 (AEST)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 40E6720842;
+ Mon,  8 Jun 2020 23:06:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1591657616;
+ bh=l4UrxZfPytW7PlaB2VeAq30RXCOzD1wa7DQI7P+EKhQ=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=Qw225oKv1tBngdkVT2YvDqZlHfZBpcNREI7ipI6UPfl9PXNVki0m6kAhUmTywou3O
+ UQj5JgYkHpOzJ8VOPgcD07vEdRB2IZkQi2+qJL6Ib68fY2K5RNDdDvt/PZXbtzuE7w
+ 90vxWZFDKQqb0CvzhsnwxVQ5NAmC7ykz8dZPDuHA=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.7 038/274] soc: fsl: dpio: properly compute the
+ consumer index
+Date: Mon,  8 Jun 2020 19:02:11 -0400
+Message-Id: <20200608230607.3361041-38-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200608230607.3361041-1-sashal@kernel.org>
+References: <20200608230607.3361041-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-08_18:2020-06-08,
- 2020-06-08 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- lowpriorityscore=0 phishscore=0 impostorscore=0 priorityscore=1501
- cotscore=-2147483648 malwarescore=0 mlxlogscore=999 bulkscore=0
- spamscore=0 mlxscore=0 adultscore=0 clxscore=1015 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006080147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,79 +72,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>,
- Cezary Rojewski <cezary.rojewski@intel.com>,
- Piotr Maziarz <piotrx.maziarz@linux.intel.com>,
- Steven Rostedt <rostedt@goodmis.org>, Christoph Hellwig <hch@infradead.org>,
- Oliver O'Halloran <oohall@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Borislav Petkov <bp@alien8.de>, Vaibhav Jain <vaibhav@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
+Cc: Sasha Levin <sashal@kernel.org>, Li Yang <leoyang.li@nxp.com>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'seq_buf' provides a very useful abstraction for writing to a string
-buffer without needing to worry about it over-flowing. However even
-though the API has been stable for couple of years now its still not
-exported to kernel loadable modules limiting its usage.
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
 
-Hence this patch proposes update to 'seq_buf.c' to mark
-seq_buf_printf() which is part of the seq_buf API to be exported to
-kernel loadable GPL modules. This symbol will be used in later parts
-of this patch-set to simplify content creation for a sysfs attribute.
+[ Upstream commit 7596ac9d19a9df25707ecaac0675881f62dd8c18 ]
 
-Cc: Piotr Maziarz <piotrx.maziarz@linux.intel.com>
-Cc: Cezary Rojewski <cezary.rojewski@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Borislav Petkov <bp@alien8.de>
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Mask the consumer index before using it. Without this, we would be
+writing frame descriptors beyond the ring size supported by the QBMAN
+block.
+
+Fixes: 3b2abda7d28c ("soc: fsl: dpio: Replace QMAN array mode with ring mode enqueue")
+Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+Acked-by: Li Yang <leoyang.li@nxp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-Changelog:
-
-v11..v12:
-* None
-
-v10..v11:
-* None
-
-v9..v10:
-* None
-
-Resend:
-* Added ack from Steven Rostedt
-
-v8..v9:
-* None
-
-v7..v8:
-* Updated the patch title [ Christoph Hellwig ]
-* Updated patch description to replace confusing term 'external kernel
-  modules' to 'kernel lodable modules'.
-
-Resend:
-* Added ack from Steven Rostedt
-
-v6..v7:
-* New patch in the series
----
- lib/seq_buf.c | 1 +
+ drivers/soc/fsl/dpio/qbman-portal.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/lib/seq_buf.c b/lib/seq_buf.c
-index 4e865d42ab03..707453f5d58e 100644
---- a/lib/seq_buf.c
-+++ b/lib/seq_buf.c
-@@ -91,6 +91,7 @@ int seq_buf_printf(struct seq_buf *s, const char *fmt, ...)
+diff --git a/drivers/soc/fsl/dpio/qbman-portal.c b/drivers/soc/fsl/dpio/qbman-portal.c
+index 804b8ba9bf5c..23a1377971f4 100644
+--- a/drivers/soc/fsl/dpio/qbman-portal.c
++++ b/drivers/soc/fsl/dpio/qbman-portal.c
+@@ -669,6 +669,7 @@ int qbman_swp_enqueue_multiple_direct(struct qbman_swp *s,
+ 		eqcr_ci = s->eqcr.ci;
+ 		p = s->addr_cena + QBMAN_CENA_SWP_EQCR_CI;
+ 		s->eqcr.ci = qbman_read_register(s, QBMAN_CINH_SWP_EQCR_CI);
++		s->eqcr.ci &= full_mask;
  
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(seq_buf_printf);
- 
- #ifdef CONFIG_BINARY_PRINTF
- /**
+ 		s->eqcr.available = qm_cyc_diff(s->eqcr.pi_ring_size,
+ 					eqcr_ci, s->eqcr.ci);
 -- 
-2.26.2
+2.25.1
 
