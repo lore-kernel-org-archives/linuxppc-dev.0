@@ -2,87 +2,87 @@ Return-Path: <SRS0=iV47=7V=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA8C2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6713CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:19:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80DEB204EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:17:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80DEB204EF
+	by mail.kernel.org (Postfix) with ESMTPS id 1E3B8204EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 07:19:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E3B8204EF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gPhW1GHQzDqN2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:17:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gPkZ143czDqH4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Jun 2020 17:19:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gPXh47GdzDqTd
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:10:28 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05872UDS139186; Mon, 8 Jun 2020 03:10:23 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31hd5w4kev-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gPbP1yLnzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2020 17:12:49 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05873DDs027213; Mon, 8 Jun 2020 03:12:44 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31g7p3tmg0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 03:10:23 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05876496020331;
- Mon, 8 Jun 2020 07:10:22 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma05wdc.us.ibm.com with ESMTP id 31g2smhvaj-1
+ Mon, 08 Jun 2020 03:12:43 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05879ssO006032;
+ Mon, 8 Jun 2020 07:12:42 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma04wdc.us.ibm.com with ESMTP id 31hdb38t5d-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 08 Jun 2020 07:10:22 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05879aHX50528688
+ Mon, 08 Jun 2020 07:12:42 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0587Cglx45285848
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 8 Jun 2020 07:09:36 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B0F3F28058;
- Mon,  8 Jun 2020 07:09:36 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D210B2805E;
- Mon,  8 Jun 2020 07:09:34 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.88.17])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon,  8 Jun 2020 07:09:34 +0000 (GMT)
+ Mon, 8 Jun 2020 07:12:42 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0FB02124058;
+ Mon,  8 Jun 2020 07:12:42 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 81C0A124052;
+ Mon,  8 Jun 2020 07:12:40 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.88.17])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon,  8 Jun 2020 07:12:40 +0000 (GMT)
+X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v2 3/4] powerpc/book3s64/hash/4k: Support large linear mapping
- range with 4K
-Date: Mon,  8 Jun 2020 12:39:03 +0530
-Message-Id: <20200608070904.387440-3-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200608070904.387440-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2 2/4] powerpc/64/mm: implement page mapping percpu
+ first chunk allocator
+In-Reply-To: <20200608070904.387440-2-aneesh.kumar@linux.ibm.com>
 References: <20200608070904.387440-1-aneesh.kumar@linux.ibm.com>
+ <20200608070904.387440-2-aneesh.kumar@linux.ibm.com>
+Date: Mon, 08 Jun 2020 12:42:37 +0530
+Message-ID: <87a71e9gka.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-08_03:2020-06-08,
  2020-06-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 cotscore=-2147483648 priorityscore=1501 suspectscore=0
- bulkscore=0 mlxlogscore=999 phishscore=0 clxscore=1015 mlxscore=0
- impostorscore=0 spamscore=0 malwarescore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006080049
+ phishscore=0 clxscore=1015
+ malwarescore=0 spamscore=0 bulkscore=0 priorityscore=1501 adultscore=0
+ mlxlogscore=981 impostorscore=0 suspectscore=0 cotscore=-2147483648
+ lowpriorityscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006080053
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,70 +94,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cam@neo-zeon.de, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: cam@neo-zeon.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With commit: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel
-regions in the same 0xc range"), we now split the 64TB address range
-into 4 contexts each of 16TB. That implies we can do only 16TB linear
-mapping.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-On some systems, eg. Power9, memory attached to nodes > 0 will appear
-above 16TB in the linear mapping. This resulted in kernel crash when
-we boot such systems in hash translation mode with 4K PAGE_SIZE.
+> Implement page mapping percpu first chunk allocator as a fallback to
+> the embedding allocator. With 4K hash translation we limit our page
+> table range to 64TB and commit: 0034d395f89d ("powerpc/mm/hash64: Map all the
+> kernel regions in the same 0xc range") moved all kernel mapping to
+> that 64TB range. In-order to support sparse memory layout we need
+> to increase our linear mapping space and reduce other mappings.
+>
+> With such a layout percpu embedded first chunk allocator will fail
+> because of small vmalloc range. Add a fallback to page mapping
+> percpu first chunk allocator for such failures.
+>
+> The below dmesg output can be observed in such case.
+>
+>  percpu: max_distance=0x1ffffef00000 too large for vmalloc space 0x10000000000
+>  PERCPU: auto allocator failed (-22), falling back to page size
+>  percpu: 40 4K pages/cpu s148816 r0 d15024
+>
 
-This patch updates the kernel mapping such that we now start supporting upto
-61TB of memory with 4K. The kernel mapping now looks like below 4K PAGE_SIZE
-and hash translation.
+This patch requires powersave=off kernel command line to boot. We are
+working to make sure we don't access per cpu variables in real mode.
+Additionally, you can also try the below workaround patch
 
-    vmalloc start     = 0xc0003d0000000000
-    IO start          = 0xc0003e0000000000
-    vmemmap start     = 0xc0003f0000000000
-
-Our MAX_PHYSMEM_BITS for 4K is still 64TB even though we can only map 61TB.
-We prevent bolt mapping anything outside 61TB range by checking against
-H_VMALLOC_START.
-
-Fixes: 0034d395f89d ("powerpc/mm/hash64: Map all the kernel regions in the same 0xc range")
-Reported-by: Cameron Berkenpas <cam@neo-zeon.de>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hash-4k.h | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 3f9ae3585ab9..80c953414882 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -13,20 +13,19 @@
-  */
- #define MAX_EA_BITS_PER_CONTEXT		46
+modified   arch/powerpc/kernel/mce.c
+@@ -711,7 +711,7 @@ long hmi_exception_realmode(struct pt_regs *regs)
+ {	
+ 	int ret;
  
--#define REGION_SHIFT		(MAX_EA_BITS_PER_CONTEXT - 2)
+-	__this_cpu_inc(irq_stat.hmi_exceptions);
++//	__this_cpu_inc(irq_stat.hmi_exceptions);
  
- /*
-- * Our page table limit us to 64TB. Hence for the kernel mapping,
-- * each MAP area is limited to 16 TB.
-- * The four map areas are:  linear mapping, vmap, IO and vmemmap
-+ * Our page table limit us to 64TB. For 64TB physical memory, we only need 64GB
-+ * of vmemmap space. To better support sparse memory layout, we use 61TB
-+ * linear map range, 1TB of vmalloc, 1TB of I/O and 1TB of vmememmap.
-  */
-+#define REGION_SHIFT		(40)
- #define H_KERN_MAP_SIZE		(ASM_CONST(1) << REGION_SHIFT)
- 
- /*
-- * Define the address range of the kernel non-linear virtual area
-- * 16TB
-+ * Define the address range of the kernel non-linear virtual area (61TB)
-  */
--#define H_KERN_VIRT_START	ASM_CONST(0xc000100000000000)
-+#define H_KERN_VIRT_START	ASM_CONST(0xc0003d0000000000)
- 
- #ifndef __ASSEMBLY__
- #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
--- 
-2.26.2
+ 	ret = hmi_handle_debugtrig(regs);
+ 	if (ret >= 0)
 
+
+-aneesh
