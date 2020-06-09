@@ -3,39 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 275EFC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:52:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 086EDC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:54:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99C822074B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:52:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99C822074B
+	by mail.kernel.org (Postfix) with ESMTPS id B21A72074B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:54:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B21A72074B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49h15S0qShzDq61
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:52:28 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49h17M1ZVxzDqfG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:54:07 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gzG42HGXzDqRq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gzG42HHhzDqRr
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:29:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49gzFy57Skz9sV3; Tue,  9 Jun 2020 15:29:42 +1000 (AEST)
+ id 49gzFx0nsDz9sVM; Tue,  9 Jun 2020 15:29:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <20200602041208.128913-1-ravi.bangoria@linux.ibm.com>
-References: <20200602041208.128913-1-ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH] hw_breakpoint: Fix build warnings with clang
-Message-Id: <159168035653.1381411.3943139630396101455.b4-ty@ellerman.id.au>
-Date: Tue,  9 Jun 2020 15:29:42 +1000 (AEST)
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20200421081539.7485-1-oohall@gmail.com>
+References: <20200421081539.7485-1-oohall@gmail.com>
+Subject: Re: [PATCH v2] powerpc/pseries: Make vio and ibmebus initcalls
+ pseries specific
+Message-Id: <159168035695.1381411.10896696979740885287.b4-ty@ellerman.id.au>
+Date: Tue,  9 Jun 2020 15:29:40 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,22 +48,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, apopple@linux.ibm.com, mikey@neuling.org,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, paulus@samba.org,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2 Jun 2020 09:42:08 +0530, Ravi Bangoria wrote:
-> kbuild test robot reported few build warnings with hw_breakpoint code
-> when compiled with clang[1]. Fix those.
+On Tue, 21 Apr 2020 18:15:39 +1000, Oliver O'Halloran wrote:
+> The vio and ibmebus buses are used for pseries specific paravirtualised
+> devices and currently they're initialised by the generic initcall types.
+> This is mostly fine, but it can result in some nuisance errors in dmesg
+> when booting on PowerNV on some OSes, e.g.
 > 
-> [1]: https://lore.kernel.org/linuxppc-dev/202005192233.oi9CjRtA%25lkp@intel.com/
+> [    2.984439] synth uevent: /devices/vio: failed to send uevent
+> [    2.984442] vio vio: uevent: failed to send synthetic uevent
+> [   17.968551] synth uevent: /devices/vio: failed to send uevent
+> [   17.968554] vio vio: uevent: failed to send synthetic uevent
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] hw-breakpoints: Fix build warnings with clang
-      https://git.kernel.org/powerpc/c/ef3534a94fdbdeab4c89d18d0164be2ad5d6dbb7
+[1/1] powerpc/pseries: Make vio and ibmebus initcalls pseries specific
+      https://git.kernel.org/powerpc/c/4336b9337824a60a0b10013c622caeee99460db5
 
 cheers
