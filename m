@@ -6,39 +6,38 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57090C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:32:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EBB3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:34:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A53320760
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:32:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A53320760
+	by mail.kernel.org (Postfix) with ESMTPS id 4651420760
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:34:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4651420760
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49h0fw34g5zDqPc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:32:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49h0hm1K2szDr49
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:34:32 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFn66c5zDqRm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFn3n1fzDqRt
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:29:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 49gzFX2df1z9sVK; Tue,  9 Jun 2020 15:29:20 +1000 (AEST)
+ id 49gzFT17gDz9sV7; Tue,  9 Jun 2020 15:29:17 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49gzFX0KD0z9sVL; Tue,  9 Jun 2020 15:29:19 +1000 (AEST)
+ id 49gzFS129vz9sSy; Tue,  9 Jun 2020 15:29:15 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20200511125825.3081305-1-mpe@ellerman.id.au>
-References: <20200511125825.3081305-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH v4 1/2] powerpc/64s/hash: Add stress_slb kernel boot
- option to increase SLB faults
-Message-Id: <159168031419.1381411.8472597556422768570.b4-ty@ellerman.id.au>
-Date: Tue,  9 Jun 2020 15:29:19 +1000 (AEST)
+In-Reply-To: <20200520111740.953679-1-mpe@ellerman.id.au>
+References: <20200520111740.953679-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/xmon: Show task->thread.regs in process display
+Message-Id: <159168034411.1381411.2398287367773987604.b4-ty@ellerman.id.au>
+Date: Tue,  9 Jun 2020 15:29:15 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,22 +49,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 May 2020 22:58:24 +1000, Michael Ellerman wrote:
-> This option increases the number of SLB misses by limiting the number
-> of kernel SLB entries, and increased flushing of cached lookaside
-> information. This helps stress test difficult to hit paths in the
-> kernel.
-> 
-> [mpe: Relocate the code into arch/powerpc/mm, s/torture/stress/]
+On Wed, 20 May 2020 21:17:40 +1000, Michael Ellerman wrote:
+> Show the address of the tasks regs in the process listing in xmon. The
+> regs should always be on the stack page that we also print the address
+> of, but it's still helpful not to have to find them by hand.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s/hash: Add stress_slb kernel boot option to increase SLB faults
-      https://git.kernel.org/powerpc/c/82a1b8ed5604cccf30b6ff03bcd61640cd26369b
+[1/1] powerpc/xmon: Show task->thread.regs in process display
+      https://git.kernel.org/powerpc/c/0e7e92efe11bc5993def689e10f7bcb36f127651
 
 cheers
