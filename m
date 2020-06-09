@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75AD4C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:18:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE3D8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:19:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A4CF207F9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:18:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A4CF207F9
+	by mail.kernel.org (Postfix) with ESMTPS id 64939207F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:19:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64939207F9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49h0Kf0B0QzDqPT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:17:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49h0Mh1YHBzDql0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:19:44 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFL3xL1zDqRv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:29:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFS2q64zDqRf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:29:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49gzFL0WpHz9sV2; Tue,  9 Jun 2020 15:29:09 +1000 (AEST)
+ id 49gzFM1nvnz9sV1; Tue,  9 Jun 2020 15:29:10 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: mpe@ellerman.id.au, Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20200528230731.1235752-1-mikey@neuling.org>
-References: <20200528230731.1235752-1-mikey@neuling.org>
-Subject: Re: [PATCH] powerpc: Fix misleading small cores print
-Message-Id: <159168034354.1381411.1178658127765747776.b4-ty@ellerman.id.au>
-Date: Tue,  9 Jun 2020 15:29:09 +1000 (AEST)
+In-Reply-To: <20200325040546.3091563-1-mikey@neuling.org>
+References: <20200325040546.3091563-1-mikey@neuling.org>
+Subject: Re: [PATCH] powerpc/tm: Document h/rfid and mtmsrd quirk
+Message-Id: <159168031362.1381411.6046975795047644711.b4-ty@ellerman.id.au>
+Date: Tue,  9 Jun 2020 15:29:10 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,24 +47,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ Gustavo Romero <gromero@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 29 May 2020 09:07:31 +1000, Michael Neuling wrote:
-> Currently when we boot on a big core system, we get this print:
->   [    0.040500] Using small cores at SMT level
-> 
-> This is misleading as we've actually detected big cores.
-> 
-> This patch clears up the print to say we've detect big cores but are
-> using small cores for scheduling.
+On Wed, 25 Mar 2020 15:05:46 +1100, Michael Neuling wrote:
+> The ISA has a quirk that's useful for the Linux implementation.
+> Document it here so others are less likely to trip over it.
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Fix misleading small cores print
-      https://git.kernel.org/powerpc/c/82a7cebdd95cffa55449d6c1d97cc9b743a66056
+[1/1] powerpc/tm: Document h/rfid and mtmsrd quirk
+      https://git.kernel.org/powerpc/c/b8707e2374f68cac79de553ae1ee5c35913813bd
 
 cheers
