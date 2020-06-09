@@ -6,39 +6,40 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 538C6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 05:48:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46769C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 05:50:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 027CB20774
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 05:48:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 027CB20774
+	by mail.kernel.org (Postfix) with ESMTPS id F0C95207F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 05:50:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0C95207F9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49gzgz11VyzDqTy
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 15:48:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49gzjm134czDqZX
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 15:50:20 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gzDr2TlXzDqRs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:28:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gzDs4P39zDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:28:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49gzDn4DqFz9sTV; Tue,  9 Jun 2020 15:28:41 +1000 (AEST)
+ id 49gzDq4Mzpz9sTY; Tue,  9 Jun 2020 15:28:42 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <1492bb150c1aaa53d99a604b49992e60ea20cd5f.1586962582.git.christophe.leroy@c-s.fr>
-References: <1492bb150c1aaa53d99a604b49992e60ea20cd5f.1586962582.git.christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] powerpc/uaccess: Don't set KUEP by default on book3s/32
-Message-Id: <159168035085.1381411.2229684027587649281.b4-ty@ellerman.id.au>
-Date: Tue,  9 Jun 2020 15:28:41 +1000 (AEST)
+ Michael Ellerman <mpe@ellerman.id.au>, naveen.n.rao@linux.vnet.ibm.com
+In-Reply-To: <1ae02b6637b87fc5aaa1d5012c3e2cb30e62b4a3.1585670437.git.christophe.leroy@c-s.fr>
+References: <1ae02b6637b87fc5aaa1d5012c3e2cb30e62b4a3.1585670437.git.christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 01/12] powerpc/52xx: Blacklist functions running with
+ MMU disabled for kprobe
+Message-Id: <159168034995.1381411.12691438266986038237.b4-ty@ellerman.id.au>
+Date: Tue,  9 Jun 2020 15:28:42 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,16 +56,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Apr 2020 14:57:11 +0000 (UTC), Christophe Leroy wrote:
-> On book3s/32, KUEP is an heavy process as it requires to
-> set/unset the NX bit in each of the 12 user segments
-> everytime the kernel is entered/exited from/to user space.
-> 
-> Don't select KUEP by default on book3s/32.
+On Tue, 31 Mar 2020 16:03:36 +0000 (UTC), Christophe Leroy wrote:
+> kprobe does not handle events happening in real mode, all
+> functions running with MMU disabled have to be blacklisted.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/uaccess: Don't set KUEP by default on book3s/32
-      https://git.kernel.org/powerpc/c/c3ba4dbbd1d05b49ec01efe098e0a78857d3ce22
+[01/12] powerpc/52xx: Blacklist functions running with MMU disabled for kprobe
+        https://git.kernel.org/powerpc/c/e83f01fdb9143a4f90b17fbf7d8b8b21efb2f968
+[02/12] powerpc/82xx: Blacklist pq2_restart() for kprobe
+        https://git.kernel.org/powerpc/c/1740f15a99d30a5e2710b2b0754e65fc5ba68d1d
+[03/12] powerpc/83xx: Blacklist mpc83xx_deep_resume() for kprobe
+        https://git.kernel.org/powerpc/c/7aa85127b1a170694b042cbc35a07afe3904173e
+[04/12] powerpc/powermac: Blacklist functions running with MMU disabled for kprobe
+        https://git.kernel.org/powerpc/c/32a820670fa00419375a964ca8bc569e1499b90d
+[05/12] powerpc/mem: Blacklist flush_dcache_icache_phys() for kprobe
+        https://git.kernel.org/powerpc/c/a64371b5d4fb37199dcd04cb7bf0132894018e33
+[06/12] powerpc/32s: Make local symbols non visible in hash_low.
+        https://git.kernel.org/powerpc/c/f892c21d2efb3b86ecbf8f5a95ea4abeedcc91b0
+[07/12] powerpc/32s: Blacklist functions running with MMU disabled for kprobe
+        https://git.kernel.org/powerpc/c/e6209318d63e2774c5ab214b14b948079e040064
+[08/12] powerpc/rtas: Remove machine_check_in_rtas()
+        https://git.kernel.org/powerpc/c/32746dfe4cf37f4077929601e8877a7fd02676e8
+[09/12] powerpc/32: Blacklist functions running with MMU disabled for kprobe
+        https://git.kernel.org/powerpc/c/5f32e8361cba8c58c4f272a389296f489ecc2823
+[10/12] powerpc/entry32: Blacklist exception entry points for kprobe.
+        https://git.kernel.org/powerpc/c/a616c442119f2ea5641e6abc215d7255b73b982b
+[11/12] powerpc/entry32: Blacklist syscall exit points for kprobe.
+        https://git.kernel.org/powerpc/c/7cdf4401388572f720403a7038a178a4b30ac14c
+[12/12] powerpc/entry32: Blacklist exception exit points for kprobe.
+        https://git.kernel.org/powerpc/c/e51c3e13709fe55d4d0eb50ba435bc53a64152bf
 
 cheers
