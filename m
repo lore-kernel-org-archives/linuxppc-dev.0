@@ -3,48 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7686C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65B02C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:14:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AB0C207F9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:13:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AB0C207F9
+	by mail.kernel.org (Postfix) with ESMTPS id 17D69207F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 06:14:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17D69207F9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49h0D65fkhzDqZR
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:13:10 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 49h0Fq1VJqzDqqY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jun 2020 16:14:39 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFL2LzgzDqRf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49gzFL3Sl6zDqRs
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2020 15:29:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 49gzFF26KKz9sTl; Tue,  9 Jun 2020 15:29:03 +1000 (AEST)
+ id 49gzFJ1zhtz9sTw; Tue,  9 Jun 2020 15:29:07 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Leonardo Bras <leonardo@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>,
- Allison Randal <allison@lohutok.net>,
- Claudio Carvalho <cclaudio@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.ibm.com>
-In-Reply-To: <20200402195156.626430-1-leonardo@linux.ibm.com>
-References: <20200402195156.626430-1-leonardo@linux.ibm.com>
-Subject: Re: [PATCH v3 1/1] powerpc/kernel: Enables memory hot-remove after
- reboot on pseries guests
-Message-Id: <159168034470.1381411.12073746896730178123.b4-ty@ellerman.id.au>
-Date: Tue,  9 Jun 2020 15:29:03 +1000 (AEST)
+To: monstr@monstr.eu, sfr@canb.auug.org.au,
+ Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org,
+ maz@kernel.org, git@xilinx.com
+In-Reply-To: <cover.1585575111.git.michal.simek@xilinx.com>
+References: <cover.1585575111.git.michal.simek@xilinx.com>
+Subject: Re: [PATCH v2 0/2] powerpc: Remove support for ppc405/440 Xilinx
+ platforms
+Message-Id: <159168034162.1381411.7450247221070569122.b4-ty@ellerman.id.au>
+Date: Tue,  9 Jun 2020 15:29:07 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,24 +50,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>, linux-fbdev@vger.kernel.org,
+ Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org,
+ alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org,
+ Richard Fontana <rfontana@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Fabio Estevam <festevam@gmail.com>, Sasha Levin <sashal@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Masahiro Yamada <masahiroy@kernel.org>,
+ YueHaibing <yuehaibing@huawei.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Dmitry Vyukov <dvyukov@google.com>, devicetree@vger.kernel.org,
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Alistair Popple <alistair@popple.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Alexios Zavras <alexios.zavras@intel.com>,
+ "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>,
+ Mark Brown <broonie@kernel.org>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Allison Randal <allison@lohutok.net>, linux-arm-kernel@lists.infradead.org,
+ Enrico Weigelt <info@metux.net>, Wei Hu <weh@microsoft.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Nick Desaulniers <ndesaulniers@google.com>, Takashi Iwai <tiwai@suse.com>,
+ Rob Herring <robh+dt@kernel.org>, C hristophe Leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2 Apr 2020 16:51:57 -0300, Leonardo Bras wrote:
-> While providing guests, it's desirable to resize it's memory on demand.
+On Mon, 30 Mar 2020 15:32:15 +0200, Michal Simek wrote:
+> recently we wanted to update xilinx intc driver and we found that function
+> which we wanted to remove is still wired by ancient Xilinx PowerPC
+> platforms. Here is the thread about it.
+> https://lore.kernel.org/linux-next/48d3232d-0f1d-42ea-3109-f44bbabfa2e8@xilinx.com/
 > 
-> By now, it's possible to do so by creating a guest with a small base
-> memory, hot-plugging all the rest, and using 'movable_node' kernel
-> command-line parameter, which puts all hot-plugged memory in
-> ZONE_MOVABLE, allowing it to be removed whenever needed.
+> I have been talking about it internally and there is no interest in these
+> platforms and it is also orphan for quite a long time. None is really
+> running/testing these platforms regularly that's why I think it makes sense
+> to remove them also with drivers which are specific to this platform.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/kernel: Enables memory hot-remove after reboot on pseries guests
-      https://git.kernel.org/powerpc/c/b6eca183e23e7a6625a0d2cdb806b7cd1abcd2d2
+[1/2] sound: ac97: Remove sound driver for ancient platform
+      https://git.kernel.org/powerpc/c/f16dca3e30c14aff545a834a7c1a1bb02b9edb48
+[2/2] powerpc: Remove Xilinx PPC405/PPC440 support
+      https://git.kernel.org/powerpc/c/7ade8495dcfd788a76e6877c9ea86f5207369ea4
 
 cheers
