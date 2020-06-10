@@ -6,66 +6,67 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F9EC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69BF3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:45:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF26120656
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:43:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF26120656
+	by mail.kernel.org (Postfix) with ESMTPS id DC7B420656
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:45:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC7B420656
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hk9D0ZwyzDq5n
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:43:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hkCv5LYgzDqfb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:45:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hj3t1TWKzDqCH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:53:29 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hj3y4rBMzDqN3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:53:34 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05A9Xc26088351; Wed, 10 Jun 2020 05:53:25 -0400
+ 05A9XW36011381; Wed, 10 Jun 2020 05:53:26 -0400
 Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
  [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31j4up4tcr-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31grrk14mp-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 05:53:25 -0400
+ Wed, 10 Jun 2020 05:53:26 -0400
 Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9fBBt029376;
- Wed, 10 Jun 2020 09:53:24 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma03dal.us.ibm.com with ESMTP id 31hw1bnykt-1
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9fCRK029489;
+ Wed, 10 Jun 2020 09:53:25 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 31hw1bnyky-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 09:53:24 +0000
+ Wed, 10 Jun 2020 09:53:25 +0000
 Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
  [9.57.199.109])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05A9rNP054526316
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05A9qPea39780854
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 09:53:24 GMT
+ Wed, 10 Jun 2020 09:52:25 GMT
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D2DB8112067;
- Wed, 10 Jun 2020 09:53:23 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0317F112063;
+ Wed, 10 Jun 2020 09:52:25 +0000 (GMT)
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E8B77112062;
- Wed, 10 Jun 2020 09:53:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2AB95112061;
+ Wed, 10 Jun 2020 09:52:23 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.79.180.2])
  by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 09:53:21 +0000 (GMT)
+ Wed, 10 Jun 2020 09:52:22 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 26/41] powerpc/book3s64/pkeys: Inherit correctly on fork.
-Date: Wed, 10 Jun 2020 15:21:49 +0530
-Message-Id: <20200610095204.608183-27-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v3 03/41] powerpc/book3s64/pkeys: Move pkey related bits in
+ the linux page table
+Date: Wed, 10 Jun 2020 15:21:26 +0530
+Message-Id: <20200610095204.608183-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
 References: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
@@ -73,14 +74,15 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-10_04:2020-06-10,
+ definitions=2020-06-10_06:2020-06-10,
  2020-06-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0
- cotscore=-2147483648 mlxlogscore=762 priorityscore=1501 bulkscore=0
- phishscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0 mlxscore=0
- adultscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006100070
+ suspectscore=2
+ lowpriorityscore=0 phishscore=0 impostorscore=0 priorityscore=1501
+ cotscore=-2147483648 malwarescore=0 mlxlogscore=931 bulkscore=0
+ spamscore=0 mlxscore=0 adultscore=0 clxscore=1015 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006100073
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,35 +100,146 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Child thread.kuap value is inherited from the parent in copy_thread_tls. We still
-need to make sure when the child returns from a fork in the kernel we start with the kernel
-default AMR value.
+To keep things simple, all the pkey related bits are kept together
+in linux page table for 64K config with hash translation. With hash-4k
+kernel requires 4 bits to store slots details. This is done by overloading
+some of the RPN bits for storing the slot details. Due to this PKEY_BIT0 on
+the 4K config is used for storing hash slot details.
+
+64K before
+
+|....|RSV1| RSV2| RSV3 | RSV4 | RPN44| RPN43   |.... | RSV5|
+|....| P4 |  P3 |  P2  |  P1  | Busy | HASHPTE |.... |  P0 |
+
+after
+
+|....|RSV1| RSV2| RSV3 | RSV4 | RPN44 | RPN43   |.... | RSV5 |
+|....| P4 |  P3 |  P2  |  P1  | P0    | HASHPTE |.... | Busy |
+
+4k before
+
+|....| RSV1 | RSV2     | RSV3 | RSV4 | RPN44| RPN43.... | RSV5|
+|....| Busy |  HASHPTE |  P2  |  P1  | F_SEC| F_GIX.... |  P0 |
+
+after
+
+|....| RSV1    | RSV2| RSV3 | RSV4 | Free | RPN43.... | RSV5 |
+|....| HASHPTE |  P2 |  P1  |  P0  | F_SEC| F_GIX.... | BUSY |
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/kernel/process.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 16 ++++++++--------
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 12 ++++++------
+ arch/powerpc/include/asm/book3s/64/pgtable.h  | 17 ++++++++---------
+ 3 files changed, 22 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 14599c7e4a37..dbce0b1daf2f 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1705,6 +1705,15 @@ int copy_thread_tls(unsigned long clone_flags, unsigned long usp,
- 		childregs->ppr = DEFAULT_PPR;
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index f889d56bf8cf..082b98808701 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -34,11 +34,11 @@
+ #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << H_PUD_INDEX_SIZE)
+ #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << H_PGD_INDEX_SIZE)
  
- 	p->thread.tidr = 0;
-+#endif
-+	/*
-+	 * Run with the current AMR value of the kernel
-+	 */
-+#if defined(CONFIG_PPC_MEM_KEYS)
-+	if (mmu_has_feature(MMU_FTR_KUAP))
-+		kregs->kuap = AMR_KUAP_BLOCKED;
-+	if (mmu_has_feature(MMU_FTR_KUEP))
-+		kregs->kuep = AMR_KUEP_BLOCKED;
- #endif
- 	kregs->nip = ppc_function_entry(f);
- 	return 0;
+-#define H_PAGE_F_GIX_SHIFT	53
+-#define H_PAGE_F_SECOND	_RPAGE_RPN44	/* HPTE is in 2ndary HPTEG */
+-#define H_PAGE_F_GIX	(_RPAGE_RPN43 | _RPAGE_RPN42 | _RPAGE_RPN41)
+-#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
+-#define H_PAGE_HASHPTE	_RPAGE_RSV2     /* software: PTE & hash are busy */
++#define H_PAGE_F_GIX_SHIFT	_PAGE_PA_MAX
++#define H_PAGE_F_SECOND		_RPAGE_PKEY_BIT0 /* HPTE is in 2ndary HPTEG */
++#define H_PAGE_F_GIX		(_RPAGE_RPN43 | _RPAGE_RPN42 | _RPAGE_RPN41)
++#define H_PAGE_BUSY		_RPAGE_RSV1
++#define H_PAGE_HASHPTE		_RPAGE_PKEY_BIT4
+ 
+ /* PTE flags to conserve for HPTE identification */
+ #define _PAGE_HPTEFLAGS (H_PAGE_BUSY | H_PAGE_HASHPTE | \
+@@ -59,9 +59,9 @@
+ /* memory key bits, only 8 keys supported */
+ #define H_PTE_PKEY_BIT4	0
+ #define H_PTE_PKEY_BIT3	0
+-#define H_PTE_PKEY_BIT2	_RPAGE_RSV3
+-#define H_PTE_PKEY_BIT1	_RPAGE_RSV4
+-#define H_PTE_PKEY_BIT0	_RPAGE_RSV5
++#define H_PTE_PKEY_BIT2	_RPAGE_PKEY_BIT3
++#define H_PTE_PKEY_BIT1	_RPAGE_PKEY_BIT2
++#define H_PTE_PKEY_BIT0	_RPAGE_PKEY_BIT1
+ 
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index 0a15fd14cf72..f20de1149ebe 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -32,15 +32,15 @@
+  */
+ #define H_PAGE_COMBO	_RPAGE_RPN0 /* this is a combo 4k page */
+ #define H_PAGE_4K_PFN	_RPAGE_RPN1 /* PFN is for a single 4k page */
+-#define H_PAGE_BUSY	_RPAGE_RPN44     /* software: PTE & hash are busy */
++#define H_PAGE_BUSY	_RPAGE_RSV1     /* software: PTE & hash are busy */
+ #define H_PAGE_HASHPTE	_RPAGE_RPN43	/* PTE has associated HPTE */
+ 
+ /* memory key bits. */
+-#define H_PTE_PKEY_BIT4	_RPAGE_RSV1
+-#define H_PTE_PKEY_BIT3	_RPAGE_RSV2
+-#define H_PTE_PKEY_BIT2	_RPAGE_RSV3
+-#define H_PTE_PKEY_BIT1	_RPAGE_RSV4
+-#define H_PTE_PKEY_BIT0	_RPAGE_RSV5
++#define H_PTE_PKEY_BIT4		_RPAGE_PKEY_BIT4
++#define H_PTE_PKEY_BIT3		_RPAGE_PKEY_BIT3
++#define H_PTE_PKEY_BIT2		_RPAGE_PKEY_BIT2
++#define H_PTE_PKEY_BIT1		_RPAGE_PKEY_BIT1
++#define H_PTE_PKEY_BIT0		_RPAGE_PKEY_BIT0
+ 
+ /*
+  * We need to differentiate between explicit huge page and THP huge
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index f17442c3a092..b7c0ba977d6a 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -32,11 +32,13 @@
+ #define _RPAGE_SW1		0x00800
+ #define _RPAGE_SW2		0x00400
+ #define _RPAGE_SW3		0x00200
+-#define _RPAGE_RSV1		0x1000000000000000UL
+-#define _RPAGE_RSV2		0x0800000000000000UL
+-#define _RPAGE_RSV3		0x0400000000000000UL
+-#define _RPAGE_RSV4		0x0200000000000000UL
+-#define _RPAGE_RSV5		0x00040UL
++#define _RPAGE_RSV1		0x00040UL
++
++#define _RPAGE_PKEY_BIT4	0x1000000000000000UL
++#define _RPAGE_PKEY_BIT3	0x0800000000000000UL
++#define _RPAGE_PKEY_BIT2	0x0400000000000000UL
++#define _RPAGE_PKEY_BIT1	0x0200000000000000UL
++#define _RPAGE_PKEY_BIT0	0x0100000000000000UL
+ 
+ #define _PAGE_PTE		0x4000000000000000UL	/* distinguishes PTEs from pointers */
+ #define _PAGE_PRESENT		0x8000000000000000UL	/* pte contains a translation */
+@@ -58,13 +60,12 @@
+  */
+ #define _RPAGE_RPN0		0x01000
+ #define _RPAGE_RPN1		0x02000
+-#define _RPAGE_RPN44		0x0100000000000000UL
+ #define _RPAGE_RPN43		0x0080000000000000UL
+ #define _RPAGE_RPN42		0x0040000000000000UL
+ #define _RPAGE_RPN41		0x0020000000000000UL
+ 
+ /* Max physical address bit as per radix table */
+-#define _RPAGE_PA_MAX		57
++#define _RPAGE_PA_MAX		56
+ 
+ /*
+  * Max physical address bit we will use for now.
+@@ -125,8 +126,6 @@
+ 			 _PAGE_ACCESSED | _PAGE_SPECIAL | _PAGE_PTE |	\
+ 			 _PAGE_SOFT_DIRTY | _PAGE_DEVMAP)
+ 
+-#define H_PTE_PKEY  (H_PTE_PKEY_BIT0 | H_PTE_PKEY_BIT1 | H_PTE_PKEY_BIT2 | \
+-		     H_PTE_PKEY_BIT3 | H_PTE_PKEY_BIT4)
+ /*
+  * We define 2 sets of base prot bits, one for basic pages (ie,
+  * cacheable kernel and user pages) and one for non cacheable
 -- 
 2.26.2
 
