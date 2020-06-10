@@ -2,79 +2,81 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE25C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD9D3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:58:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 466AC2072E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:56:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 466AC2072E
+	by mail.kernel.org (Postfix) with ESMTPS id 641C12072E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:58:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 641C12072E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49j1612MqBzDqkj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 07:56:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49j17x1xgTzDqlB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 07:58:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=muriloo@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49j1196W79zDqjv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 07:52:07 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05ALWudx098327; Wed, 10 Jun 2020 17:51:59 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49j11C15nVzDqjp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 07:52:14 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05ALWfbf054734; Wed, 10 Jun 2020 17:52:08 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31k5hxktj1-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31k4kvng52-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 17:51:59 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05ALmuDn152648;
- Wed, 10 Jun 2020 17:51:59 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31k5hxkthm-1
+ Wed, 10 Jun 2020 17:52:08 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05ALeF2F077170;
+ Wed, 10 Jun 2020 17:52:07 -0400
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31k4kvng4s-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 17:51:59 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05ALV67p011105;
- Wed, 10 Jun 2020 21:51:58 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma01dal.us.ibm.com with ESMTP id 31hygymn8v-1
+ Wed, 10 Jun 2020 17:52:07 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05ALTU5q032306;
+ Wed, 10 Jun 2020 21:52:07 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma03wdc.us.ibm.com with ESMTP id 31gxfkk4v2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 21:51:58 +0000
+ Wed, 10 Jun 2020 21:52:06 +0000
 Received: from b03ledav005.gho.boulder.ibm.com
  (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05ALptTj9175430
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05ALq5l934799926
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 21:51:55 GMT
+ Wed, 10 Jun 2020 21:52:05 GMT
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AAFABBE04F;
- Wed, 10 Jun 2020 21:51:56 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9B398BE056;
+ Wed, 10 Jun 2020 21:52:05 +0000 (GMT)
 Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F2156BE056;
- Wed, 10 Jun 2020 21:51:52 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CD56DBE04F;
+ Wed, 10 Jun 2020 21:52:01 +0000 (GMT)
 Received: from kermit.br.ibm.com.com (unknown [9.163.42.87])
  by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 21:51:52 +0000 (GMT)
+ Wed, 10 Jun 2020 21:52:01 +0000 (GMT)
 From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] powerpc/dt_cpu_ftrs: Make use of ISA_V3_* macros
-Date: Wed, 10 Jun 2020 18:51:11 -0300
-Message-Id: <20200610215114.167544-1-muriloo@linux.ibm.com>
+Subject: [PATCH 2/3] powerpc/dt_cpu_ftrs: Make use of macro ISA_V3_0B
+Date: Wed, 10 Jun 2020 18:51:13 -0300
+Message-Id: <20200610215114.167544-3-muriloo@linux.ibm.com>
 X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200610215114.167544-1-muriloo@linux.ibm.com>
+References: <20200610215114.167544-1-muriloo@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -83,11 +85,12 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-10_13:2020-06-10,
  2020-06-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 spamscore=0
- mlxscore=0 mlxlogscore=479 suspectscore=0 bulkscore=0 impostorscore=0
- cotscore=-2147483648 phishscore=0 malwarescore=0 lowpriorityscore=0
- adultscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006100156
+ clxscore=1015
+ lowpriorityscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
+ priorityscore=1501 adultscore=0 phishscore=0 impostorscore=0
+ suspectscore=0 mlxscore=0 spamscore=0 cotscore=-2147483648 classifier=spam
+ adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006100155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,17 +112,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The first patch removes unused macro ISA_V2_07B.  The second and third
-patches make use of macros ISA_V3_0B and ISA_V3_1, respectively,
-instead their corresponding literals.
+Macro ISA_V3_0B was defined but never used.  Use it instead of
+literal.
 
-Murilo Opsfelder Araujo (3):
-  powerpc/dt_cpu_ftrs: Remove unused macro ISA_V2_07B
-  powerpc/dt_cpu_ftrs: Make use of macro ISA_V3_0B
-  powerpc/dt_cpu_ftrs: Make use of macro ISA_V3_1
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+---
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/kernel/dt_cpu_ftrs.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
---
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 1b7da8b5ce0d..9d6e833da2bd 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -673,7 +673,7 @@ static void __init cpufeatures_setup_start(u32 isa)
+ {
+ 	pr_info("setup for ISA %d\n", isa);
+ 
+-	if (isa >= 3000) {
++	if (isa >= ISA_V3_0B) {
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_ARCH_300;
+ 		cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_ARCH_3_00;
+ 	}
+-- 
 2.25.4
+
