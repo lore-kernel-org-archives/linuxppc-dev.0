@@ -2,23 +2,23 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 811CCC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 850B9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:29:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 38A0D20734
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:27:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38A0D20734
+	by mail.kernel.org (Postfix) with ESMTPS id 3ADD92074B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:29:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3ADD92074B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hl8C6CpmzDqDl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:27:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hlBR2ZTZzDqlh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:29:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
@@ -28,29 +28,32 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hjZj4pqdzDqVd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 20:16:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hjZn4QkvzDqbg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 20:16:49 +1000 (AEST)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 408921A0482;
- Wed, 10 Jun 2020 12:16:41 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 91C491A0447;
+ Wed, 10 Jun 2020 12:16:43 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E6251A02CE;
- Wed, 10 Jun 2020 12:16:36 +0200 (CEST)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id AE2F31A046E;
+ Wed, 10 Jun 2020 12:16:38 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E5B81402FB;
- Wed, 10 Jun 2020 18:16:29 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 4C632402F3;
+ Wed, 10 Jun 2020 18:16:32 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: lars@metafoo.de, perex@perex.cz, tiwai@suse.com, lgirdwood@gmail.com,
  broonie@kernel.org, timur@kernel.org, nicoleotsuka@gmail.com,
  Xiubo.Lee@gmail.com, festevam@gmail.com, alsa-devel@alsa-project.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 0/3] ASoC: fsl_asrc_dma: Reuse the dma channel if
- available in Back-End
-Date: Wed, 10 Jun 2020 18:05:46 +0800
-Message-Id: <cover.1591783089.git.shengjiu.wang@nxp.com>
+Subject: [RFC PATCH v2 2/3] ASoC: dmaengine_pcm: export soc_component_to_pcm
+Date: Wed, 10 Jun 2020 18:05:48 +0800
+Message-Id: <429c6ae1f3c5b47eb893f475d531d71cdcfe34c0.1591783089.git.shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1591783089.git.shengjiu.wang@nxp.com>
+References: <cover.1591783089.git.shengjiu.wang@nxp.com>
+In-Reply-To: <cover.1591783089.git.shengjiu.wang@nxp.com>
+References: <cover.1591783089.git.shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,25 +70,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reuse the dma channel if available in Back-End
+In DPCM case, Front-End needs to get the dma chan which has
+been requested by Back-End and reuse it.
 
-Shengjiu Wang (3):
-  ASoC: soc-card: export snd_soc_lookup_component_nolocked
-  ASoC: dmaengine_pcm: export soc_component_to_pcm
-  ASoC: fsl_asrc_dma: Reuse the dma channel if available in Back-End
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ include/sound/dmaengine_pcm.h         | 11 +++++++++++
+ sound/soc/soc-generic-dmaengine-pcm.c | 12 ------------
+ 2 files changed, 11 insertions(+), 12 deletions(-)
 
-changes in v2:
-- update according to Mark's comments and split the patch
-
-
- include/sound/dmaengine_pcm.h         | 11 ++++++
- include/sound/soc.h                   |  2 ++
- sound/soc/fsl/fsl_asrc_common.h       |  2 ++
- sound/soc/fsl/fsl_asrc_dma.c          | 52 ++++++++++++++++++++-------
- sound/soc/soc-core.c                  |  3 +-
- sound/soc/soc-generic-dmaengine-pcm.c | 12 -------
- 6 files changed, 57 insertions(+), 25 deletions(-)
-
+diff --git a/include/sound/dmaengine_pcm.h b/include/sound/dmaengine_pcm.h
+index b65220685920..8c5e38180fb0 100644
+--- a/include/sound/dmaengine_pcm.h
++++ b/include/sound/dmaengine_pcm.h
+@@ -161,4 +161,15 @@ int snd_dmaengine_pcm_prepare_slave_config(struct snd_pcm_substream *substream,
+ 
+ #define SND_DMAENGINE_PCM_DRV_NAME "snd_dmaengine_pcm"
+ 
++struct dmaengine_pcm {
++	struct dma_chan *chan[SNDRV_PCM_STREAM_LAST + 1];
++	const struct snd_dmaengine_pcm_config *config;
++	struct snd_soc_component component;
++	unsigned int flags;
++};
++
++static inline struct dmaengine_pcm *soc_component_to_pcm(struct snd_soc_component *p)
++{
++	return container_of(p, struct dmaengine_pcm, component);
++}
+ #endif
+diff --git a/sound/soc/soc-generic-dmaengine-pcm.c b/sound/soc/soc-generic-dmaengine-pcm.c
+index f728309a0833..80a4e71f2d95 100644
+--- a/sound/soc/soc-generic-dmaengine-pcm.c
++++ b/sound/soc/soc-generic-dmaengine-pcm.c
+@@ -21,18 +21,6 @@
+  */
+ #define SND_DMAENGINE_PCM_FLAG_NO_RESIDUE BIT(31)
+ 
+-struct dmaengine_pcm {
+-	struct dma_chan *chan[SNDRV_PCM_STREAM_LAST + 1];
+-	const struct snd_dmaengine_pcm_config *config;
+-	struct snd_soc_component component;
+-	unsigned int flags;
+-};
+-
+-static struct dmaengine_pcm *soc_component_to_pcm(struct snd_soc_component *p)
+-{
+-	return container_of(p, struct dmaengine_pcm, component);
+-}
+-
+ static struct device *dmaengine_dma_dev(struct dmaengine_pcm *pcm,
+ 	struct snd_pcm_substream *substream)
+ {
 -- 
 2.21.0
 
