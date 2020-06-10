@@ -2,23 +2,23 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D88B3C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:26:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1712DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:27:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9497A20760
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:26:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9497A20760
+	by mail.kernel.org (Postfix) with ESMTPS id BFC9420760
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:27:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFC9420760
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hcSh2BxFzDqXQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 16:26:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hcVg67qzzDqXm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 16:27:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
@@ -29,53 +29,55 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hcQJ5Q3RzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 16:24:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hcQR3pPlzDqLY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 16:24:15 +1000 (AEST)
 Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05A61s5T167325; Wed, 10 Jun 2020 02:24:00 -0400
+ 05A61scq167319; Wed, 10 Jun 2020 02:24:11 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31gg82jhjs-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31gg82jhp3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 02:24:00 -0400
+ Wed, 10 Jun 2020 02:24:11 -0400
 Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05A62WFv168497;
- Wed, 10 Jun 2020 02:23:59 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31gg82jhjb-1
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05A62BxJ167790;
+ Wed, 10 Jun 2020 02:24:10 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31gg82jhnp-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 02:23:59 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A6KoO9023946;
- Wed, 10 Jun 2020 06:23:58 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma02wdc.us.ibm.com with ESMTP id 31g2s8n8a8-1
+ Wed, 10 Jun 2020 02:24:10 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A6Kl63020543;
+ Wed, 10 Jun 2020 06:24:09 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma02dal.us.ibm.com with ESMTP id 31jqyk9cv0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 06:23:58 +0000
+ Wed, 10 Jun 2020 06:24:09 +0000
 Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
  [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05A6NwTs50004446
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05A6O89a55378364
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 06:23:58 GMT
+ Wed, 10 Jun 2020 06:24:08 GMT
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4981AC05B;
- Wed, 10 Jun 2020 06:23:57 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DAE05AC05B;
+ Wed, 10 Jun 2020 06:24:08 +0000 (GMT)
 Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B7552AC059;
- Wed, 10 Jun 2020 06:23:54 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CD767AC059;
+ Wed, 10 Jun 2020 06:24:05 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.58.158])
  by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 06:23:54 +0000 (GMT)
+ Wed, 10 Jun 2020 06:24:05 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  linux-nvdimm@lists.01.org, dan.j.williams@intel.com
-Subject: [PATCH v5 00/10] Support new pmem flush and sync instructions for
- POWER
-Date: Wed, 10 Jun 2020 11:53:33 +0530
-Message-Id: <20200610062343.492293-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v5 03/10] powerpc/pmem: Add flush routines using new pmem
+ store and sync instruction
+Date: Wed, 10 Jun 2020 11:53:36 +0530
+Message-Id: <20200610062343.492293-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200610062343.492293-1-aneesh.kumar@linux.ibm.com>
+References: <20200610062343.492293-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -105,82 +107,116 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series enables the usage os new pmem flush and sync instructions on POWER
-architecture. POWER10 introduces two new variants of dcbf instructions (dcbstps and dcbfps)
-that can be used to write modified locations back to persistent storage. Additionally,
-POWER10 also introduce phwsync and plwsync which can be used to establish order of these
-writes to persistent storage.
-    
-This series exposes these instructions to the rest of the kernel. The existing
-dcbf and hwsync instructions in P8 and P9 are adequate to enable appropriate
-synchronization with OpenCAPI-hosted persistent storage. Hence the new instructions
-are added as a variant of the old ones that old hardware won't differentiate.
+Start using dcbstps; phwsync; sequence for flushing persistent memory range.
+The new instructions are implemented as a variant of dcbf and hwsync and on
+P8 and P9 they will be executed as those instructions. We avoid using them on
+older hardware. This helps to avoid difficult to debug bugs.
 
-On POWER10, pmem devices will be represented by a different device tree compat
-strings. This ensures that older kernels won't initialize pmem devices on POWER10.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/include/asm/cacheflush.h |  1 +
+ arch/powerpc/lib/pmem.c               | 50 ++++++++++++++++++++++++---
+ 2 files changed, 47 insertions(+), 4 deletions(-)
 
-W.r.t userspace we want to make sure applications are enabled to use MAP_SYNC only
-if they are using the new instructions. To avoid the wrong usage of MAP_SYNC on
-newer hardware, we disable MAP_SYNC by default on newer hardware. The namespace specific
-attribute /sys/block/pmem0/dax/sync_fault can be used to enable MAP_SYNC later.
-
-With this:
-1) vPMEM continues to work since it is a volatile region. That 
-doesn't need any flush instructions.
-
-2) pmdk and other user applications get updated to use new instructions
-and updated packages are made available to all distributions
-
-3) On newer hardware, the device will appear with a new compat string. 
-Hence older distributions won't initialize pmem on newer hardware.
-
-4) If we have a newer kernel with an older distro, we use the per 
-namespace sysfs knob that prevents the usage of MAP_SYNC.
-
-5) Sometime in the future, we mark the CONFIG_ARCH_MAP_SYNC_DISABLE=n
-on ppc64 when we are confident that everybody is using the new flush 
-instruction.
-
-Chaanges from V4:
-* Add namespace specific sychronous fault control.
-
-Changes from V3:
-* Add new compat string to be used for the device.
-* Use arch_pmem_flush_barrier() in dm-writecache.
-
-Aneesh Kumar K.V (10):
-  powerpc/pmem: Restrict papr_scm to P8 and above.
-  powerpc/pmem: Add new instructions for persistent storage and sync
-  powerpc/pmem: Add flush routines using new pmem store and sync
-    instruction
-  libnvdimm/nvdimm/flush: Allow architecture to override the flush
-    barrier
-  powerpc/pmem/of_pmem: Update of_pmem to use the new barrier
-    instruction.
-  powerpc/pmem: Avoid the barrier in flush routines
-  powerpc/book3s/pmem: Add WARN_ONCE to catch the wrong usage of pmem
-    flush functions.
-  libnvdimm/dax: Add a dax flag to control synchronous fault support
-  powerpc/pmem: Disable synchronous fault by default
-  powerpc/pmem: Initialize pmem device on newer hardware
-
- arch/powerpc/include/asm/cacheflush.h     | 10 ++++
- arch/powerpc/include/asm/ppc-opcode.h     | 12 ++++
- arch/powerpc/lib/pmem.c                   | 46 ++++++++++++--
- arch/powerpc/platforms/Kconfig.cputype    |  9 +++
- arch/powerpc/platforms/pseries/papr_scm.c | 31 +++++++++-
- arch/powerpc/platforms/pseries/pmem.c     |  6 ++
- drivers/dax/bus.c                         |  2 +-
- drivers/dax/super.c                       | 73 +++++++++++++++++++++++
- drivers/md/dm-writecache.c                |  2 +-
- drivers/nvdimm/of_pmem.c                  |  8 +++
- drivers/nvdimm/pmem.c                     |  4 ++
- drivers/nvdimm/region_devs.c              | 24 ++++++--
- include/linux/dax.h                       | 16 +++++
- include/linux/libnvdimm.h                 |  8 +++
- mm/Kconfig                                |  3 +
- 15 files changed, 243 insertions(+), 11 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index e92191b390f3..81808d1b54ca 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/mm.h>
+ #include <asm/cputable.h>
++#include <asm/cpu_has_feature.h>
+ 
+ /*
+  * No cache flushing is required when address mappings are changed,
+diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
+index 0666a8d29596..5a61aaeb6930 100644
+--- a/arch/powerpc/lib/pmem.c
++++ b/arch/powerpc/lib/pmem.c
+@@ -9,20 +9,62 @@
+ 
+ #include <asm/cacheflush.h>
+ 
++static inline void __clean_pmem_range(unsigned long start, unsigned long stop)
++{
++	unsigned long shift = l1_dcache_shift();
++	unsigned long bytes = l1_dcache_bytes();
++	void *addr = (void *)(start & ~(bytes - 1));
++	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> shift; i++, addr += bytes)
++		asm volatile(PPC_DCBSTPS(%0, %1): :"i"(0), "r"(addr): "memory");
++
++
++	asm volatile(PPC_PHWSYNC ::: "memory");
++}
++
++static inline void __flush_pmem_range(unsigned long start, unsigned long stop)
++{
++	unsigned long shift = l1_dcache_shift();
++	unsigned long bytes = l1_dcache_bytes();
++	void *addr = (void *)(start & ~(bytes - 1));
++	unsigned long size = stop - (unsigned long)addr + (bytes - 1);
++	unsigned long i;
++
++	for (i = 0; i < size >> shift; i++, addr += bytes)
++		asm volatile(PPC_DCBFPS(%0, %1): :"i"(0), "r"(addr): "memory");
++
++
++	asm volatile(PPC_PHWSYNC ::: "memory");
++}
++
++static inline void clean_pmem_range(unsigned long start, unsigned long stop)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		return __clean_pmem_range(start, stop);
++}
++
++static inline void flush_pmem_range(unsigned long start, unsigned long stop)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		return __flush_pmem_range(start, stop);
++}
++
+ /*
+  * CONFIG_ARCH_HAS_PMEM_API symbols
+  */
+ void arch_wb_cache_pmem(void *addr, size_t size)
+ {
+ 	unsigned long start = (unsigned long) addr;
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ }
+ EXPORT_SYMBOL_GPL(arch_wb_cache_pmem);
+ 
+ void arch_invalidate_pmem(void *addr, size_t size)
+ {
+ 	unsigned long start = (unsigned long) addr;
+-	flush_dcache_range(start, start + size);
++	flush_pmem_range(start, start + size);
+ }
+ EXPORT_SYMBOL_GPL(arch_invalidate_pmem);
+ 
+@@ -35,7 +77,7 @@ long __copy_from_user_flushcache(void *dest, const void __user *src,
+ 	unsigned long copied, start = (unsigned long) dest;
+ 
+ 	copied = __copy_from_user(dest, src, size);
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ 
+ 	return copied;
+ }
+@@ -45,7 +87,7 @@ void *memcpy_flushcache(void *dest, const void *src, size_t size)
+ 	unsigned long start = (unsigned long) dest;
+ 
+ 	memcpy(dest, src, size);
+-	flush_dcache_range(start, start + size);
++	clean_pmem_range(start, start + size);
+ 
+ 	return dest;
+ }
 -- 
 2.26.2
 
