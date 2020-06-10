@@ -2,66 +2,94 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 623A6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AC6DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:54:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B02F9204EC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:42:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B02F9204EC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8D2D12072E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:54:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D2D12072E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hzS831cyzDqly
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 06:42:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49j13t6cbdzDqgS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 07:54:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.96.102; helo=10.mo1.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=muriloo@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 7801 seconds by postgrey-1.36 at bilbo;
- Thu, 11 Jun 2020 06:39:43 AEST
-Received: from 10.mo1.mail-out.ovh.net (10.mo1.mail-out.ovh.net
- [178.32.96.102])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hzPW4CjnzDqXW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 06:39:40 +1000 (AEST)
-Received: from player770.ha.ovh.net (unknown [10.110.171.238])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 6F7561C9B4A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 20:10:47 +0200 (CEST)
-Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
- (Authenticated sender: clg@kaod.org)
- by player770.ha.ovh.net (Postfix) with ESMTPSA id A84EF1354809F;
- Wed, 10 Jun 2020 18:10:43 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass
- (GARM-98R0021237021f-a9c9-4fe4-9f61-9e47efb287b5,91A17D08FEC2D827093C484F3AC0D39512A9663F)
- smtp.auth=clg@kaod.org
-Subject: Re: [PATCH 2/3] powerpc/pci: unmap legacy INTx interrupts of
- passthrough IO adapters
-To: Oliver O'Halloran <oohall@gmail.com>
-References: <20200429075122.1216388-1-clg@kaod.org>
- <20200429075122.1216388-3-clg@kaod.org>
- <CAOSf1CHZ4+vEHotKzPDu2czVDBBM_oerxcCRS5QOFxsMbSknKQ@mail.gmail.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <f5060dbc-e110-29cb-28b6-d1345b02fd67@kaod.org>
-Date: Wed, 10 Jun 2020 20:10:41 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49j11948szzDqjp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 07:52:10 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05ALVYmb050649; Wed, 10 Jun 2020 17:52:04 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31k3q6qadd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 10 Jun 2020 17:52:03 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05ALjG5N090995;
+ Wed, 10 Jun 2020 17:52:03 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31k3q6qad6-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 10 Jun 2020 17:52:03 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05ALUShN019080;
+ Wed, 10 Jun 2020 21:52:02 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by ppma04dal.us.ibm.com with ESMTP id 31g2saha8s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 10 Jun 2020 21:52:02 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05ALq0sA30343616
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 10 Jun 2020 21:52:00 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 381B1BE053;
+ Wed, 10 Jun 2020 21:52:01 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 38F12BE051;
+ Wed, 10 Jun 2020 21:51:57 +0000 (GMT)
+Received: from kermit.br.ibm.com.com (unknown [9.163.42.87])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 10 Jun 2020 21:51:56 +0000 (GMT)
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] powerpc/dt_cpu_ftrs: Remove unused macro ISA_V2_07B
+Date: Wed, 10 Jun 2020 18:51:12 -0300
+Message-Id: <20200610215114.167544-2-muriloo@linux.ibm.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200610215114.167544-1-muriloo@linux.ibm.com>
+References: <20200610215114.167544-1-muriloo@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CHZ4+vEHotKzPDu2czVDBBM_oerxcCRS5QOFxsMbSknKQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 2460654249076296637
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrudehiedguddvgecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkffgfgggjtgfgsehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepfeffvddtudegieefudeugffhjefgieegieegleettdehgfeiieevueeihfegfefgnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejtddrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-10_13:2020-06-10,
+ 2020-06-10 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0
+ spamscore=0 adultscore=0 mlxscore=0 cotscore=-2147483648 impostorscore=0
+ phishscore=0 clxscore=1015 bulkscore=0 mlxlogscore=920 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2004280000 definitions=main-2006100155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,172 +101,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Murilo Opsfelder Araujo <mopsfelder@gmail.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Alistair Popple <alistair@popple.id.au>, Jordan Niethe <jniethe5@gmail.com>,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 5/27/20 2:57 AM, Oliver O'Halloran wrote:
-> On Wed, Apr 29, 2020 at 5:51 PM Cédric Le Goater <clg@kaod.org> wrote:
->>
->> When a passthrough IO adapter is removed from a pseries machine using
->> hash MMU and the XIVE interrupt mode, the POWER hypervisor, pHyp,
->> expects the guest OS to have cleared all page table entries related to
->> the adapter. If some are still present, the RTAS call which isolates
->> the PCI slot returns error 9001 "valid outstanding translations" and
->> the removal of the IO adapter fails.
->>
->> INTx interrupt numbers need special care because Linux maps the
->> interrupts automatically in the Linux interrupt number space if they
->> are presented in the device tree node describing the IO adapter. These
->> interrupts are not un-mapped automatically and in case of an hot-plug
->> adapter, the PCI hot-plug layer needs to handle the cleanup to make
->> sure that all the page table entries of the XIVE ESB pages are
->> cleared.
->>
->> Cc: "Oliver O'Halloran" <oohall@gmail.com>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  arch/powerpc/kernel/pci-hotplug.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
->> index bf83f76563a3..9e9c6befd7ea 100644
->> --- a/arch/powerpc/kernel/pci-hotplug.c
->> +++ b/arch/powerpc/kernel/pci-hotplug.c
->> @@ -57,6 +57,8 @@ void pcibios_release_device(struct pci_dev *dev)
->>         struct pci_controller *phb = pci_bus_to_host(dev->bus);
->>         struct pci_dn *pdn = pci_get_pdn(dev);
->>
->> +       irq_dispose_mapping(dev->irq);
-> 
-> What does the original mapping? Powerpc arch code or the PCI core?
-> Tearing down the mapping in pcibios_release_device() seems a bit fishy
-> to me since the PCI core has already torn down the device state at
-> that point. If the release is delayed it's possible that another
-> pci_dev has mapped the IRQ before we get here, but maybe that's ok.
+Macro ISA_V2_07B is defined but not used anywhere else in the code.
 
-How's that below ? INTx mappings are cleared only when the PHB is removed.
-It applies to all platforms but we could limit the removal to PHB hotplug
-on pseries. 
-
-C.
-
-
-From 10794159567552355f87e86e24002641c54e7ab5 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Date: Wed, 10 Jun 2020 19:55:24 +0200
-Subject: [PATCH] powerpc/pci: unmap legacy INTx interrupts of passthrough IO
- adapters
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-When a passthrough IO adapter is removed from a pseries machine using
-hash MMU and the XIVE interrupt mode, the POWER hypervisor, pHyp,
-expects the guest OS to have cleared all page table entries related to
-the adapter. If some are still present, the RTAS call which isolates
-the PCI slot returns error 9001 "valid outstanding translations" and
-the removal of the IO adapter fails.
-
-INTx interrupt numbers need special care because Linux maps the
-interrupts automatically in the Linux interrupt number space. These
-interrupts are not un-mapped automatically and in case of an hot-plug
-adapter, the PCI hot-plug layer needs to handle the cleanup to make
-sure that all the page table entries of the ESB pages are cleared.
-
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h |  4 +++
- arch/powerpc/kernel/pci-common.c      | 47 +++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index b92e81b256e5..9960dd249079 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -48,6 +48,8 @@ struct pci_controller_ops {
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 3a409517c031..1b7da8b5ce0d 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -24,7 +24,6 @@
  
- /*
-  * Structure of a PCI controller (host bridge)
-+ *
-+ * @intx: legacy INTx mappings
-  */
- struct pci_controller {
- 	struct pci_bus *bus;
-@@ -127,6 +129,8 @@ struct pci_controller {
  
- 	void *private_data;
- 	struct npu *npu;
-+
-+	unsigned int intx[PCI_NUM_INTX];
- };
- 
- /* These are used for config access before all the PCI probing
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index be108616a721..795a9b49e0d6 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -353,6 +353,48 @@ struct pci_controller *pci_find_controller_for_domain(int domain_nr)
- 	return NULL;
- }
- 
-+static void pci_intx_register(struct pci_dev *pdev, int virq)
-+{
-+	struct pci_controller *phb = pci_bus_to_host(pdev->bus);
-+	int i;
-+
-+	for (i = 0; i < PCI_NUM_INTX; i++) {
-+		/*
-+		 * Look for an empty or an equivalent slot, IRQs can be
-+		 * shared
-+		 */
-+		if (phb->intx[i] == virq || !phb->intx[i]) {
-+			phb->intx[i] = virq;
-+			break;
-+		}
-+	}
-+
-+	if (i == PCI_NUM_INTX)
-+		pr_err("PCI:%s INTx all mapped\n", pci_name(pdev));
-+}
-+
-+/*
-+ * Clearing the mapped INTx interrupts will also clear the underlying
-+ * mappings of the ESB pages of the interrupts when under XIVE. It is
-+ * a requirement of PowerVM to clear all memory mappings before
-+ * removing a PHB.
-+ */
-+static void pci_intx_dispose(struct pci_controller *phb)
-+{
-+	int i;
-+
-+	for (i = 0; i < PCI_NUM_INTX; i++)
-+		irq_dispose_mapping(phb->intx[i]);
-+}
-+
-+void pcibios_remove_bus(struct pci_bus *bus)
-+{
-+	pr_debug("PCI: Clearing PHB %04x:%02x...\n",
-+		 pci_domain_nr(bus), bus->number);
-+	pci_intx_dispose(pci_bus_to_host(bus));
-+}
-+EXPORT_SYMBOL_GPL(pcibios_remove_bus);
-+
- /*
-  * Reads the interrupt pin to determine if interrupt is use by card.
-  * If the interrupt is used, then gets the interrupt line from the
-@@ -401,6 +443,11 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
- 
- 	pci_dev->irq = virq;
- 
-+	/*
-+	 * Record all INTx mappings to clear them if the PHB is
-+	 * dynamically removed.
-+	 */
-+	pci_intx_register(pci_dev, virq);
- 	return 0;
- }
+ /* Device-tree visible constants follow */
+-#define ISA_V2_07B      2070
+ #define ISA_V3_0B       3000
+ #define ISA_V3_1        3100
  
 -- 
 2.25.4
