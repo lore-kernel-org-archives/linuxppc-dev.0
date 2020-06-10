@@ -2,72 +2,71 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D8FAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:00:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0607BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:02:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C915D206F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:00:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C915D206F7
+	by mail.kernel.org (Postfix) with ESMTPS id 7DB41206F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 11:02:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DB41206F7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hkXt08mwzDqBX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:00:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hkbw1df3zDqB5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 21:02:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hj496p2fzDqZ2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:53:45 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05A9Xr2x056740; Wed, 10 Jun 2020 05:53:41 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31jaye0403-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hj4C5qVJzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:53:47 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05A9XUrZ101763; Wed, 10 Jun 2020 05:53:43 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31jbvyn2a9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 05:53:41 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9jV7S028121;
- Wed, 10 Jun 2020 09:53:39 GMT
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29]) by ppma03wdc.us.ibm.com with ESMTP id 31gxfkfydr-1
+ Wed, 10 Jun 2020 05:53:43 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9j656017179;
+ Wed, 10 Jun 2020 09:53:42 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma01wdc.us.ibm.com with ESMTP id 31g2s8x1b8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 09:53:39 +0000
+ Wed, 10 Jun 2020 09:53:42 +0000
 Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
  [9.57.199.109])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05A9rdgf55509368
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05A9rgFJ36438386
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 09:53:39 GMT
+ Wed, 10 Jun 2020 09:53:42 GMT
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 722D2112062;
+ by IMSVA (Postfix) with ESMTP id 1F5A5112065;
+ Wed, 10 Jun 2020 09:53:42 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EE563112061;
  Wed, 10 Jun 2020 09:53:39 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65E31112061;
- Wed, 10 Jun 2020 09:53:37 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.79.180.2])
  by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 09:53:37 +0000 (GMT)
+ Wed, 10 Jun 2020 09:53:39 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 32/41] powerpc/book3s64/kuap: Use Key 3 to implement KUAP
+Subject: [PATCH v3 33/41] powerpc/book3s64/kuep: Use Key 3 to implement KUEP
  with hash translation.
-Date: Wed, 10 Jun 2020 15:21:55 +0530
-Message-Id: <20200610095204.608183-33-aneesh.kumar@linux.ibm.com>
+Date: Wed, 10 Jun 2020 15:21:56 +0530
+Message-Id: <20200610095204.608183-34-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
 References: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
@@ -75,14 +74,14 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-10_06:2020-06-10,
+ definitions=2020-06-10_04:2020-06-10,
  2020-06-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=936 spamscore=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 bulkscore=0
- impostorscore=0 mlxscore=0 phishscore=0 adultscore=0 cotscore=-2147483648
- malwarescore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006100073
+ malwarescore=0 mlxscore=0
+ clxscore=1015 impostorscore=0 phishscore=0 suspectscore=0 bulkscore=0
+ cotscore=-2147483648 adultscore=0 spamscore=0 mlxlogscore=857
+ priorityscore=1501 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006100070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,42 +99,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Radix use AMR Key 0 and hash translation use AMR key 3.
+Radix use IAMR Key 0 and hash translation use IAMR key 3.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/kup.h | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/book3s/64/kup.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-index 64774ebf78c9..6d7c2de0d7f6 100644
+index 6d7c2de0d7f6..f38748e1e37e 100644
 --- a/arch/powerpc/include/asm/book3s/64/kup.h
 +++ b/arch/powerpc/include/asm/book3s/64/kup.h
-@@ -5,11 +5,10 @@
- #include <linux/const.h>
- #include <asm/reg.h>
+@@ -7,7 +7,7 @@
  
--#define AMR_KUAP_BLOCK_READ	UL(0x4000000000000000)
--#define AMR_KUAP_BLOCK_WRITE	UL(0x8000000000000000)
-+#define AMR_KUAP_BLOCK_READ	UL(0x5455555555555555)
-+#define AMR_KUAP_BLOCK_WRITE	UL(0xa8aaaaaaaaaaaaaa)
- #define AMR_KUEP_BLOCKED	(1UL << 62)
+ #define AMR_KUAP_BLOCK_READ	UL(0x5455555555555555)
+ #define AMR_KUAP_BLOCK_WRITE	UL(0xa8aaaaaaaaaaaaaa)
+-#define AMR_KUEP_BLOCKED	(1UL << 62)
++#define AMR_KUEP_BLOCKED	UL(0x5455555555555555)
  #define AMR_KUAP_BLOCKED	(AMR_KUAP_BLOCK_READ | AMR_KUAP_BLOCK_WRITE)
--#define AMR_KUAP_SHIFT		62
  
  #ifdef __ASSEMBLY__
- 
-@@ -75,8 +74,8 @@
- #ifdef CONFIG_PPC_KUAP_DEBUG
- 	BEGIN_MMU_FTR_SECTION_NESTED(67)
- 	mfspr	\gpr1, SPRN_AMR
--	li	\gpr2, (AMR_KUAP_BLOCKED >> AMR_KUAP_SHIFT)
--	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
-+	/* Prevent access to userspace using any key values */
-+	LOAD_REG_IMMEDIATE(\gpr2, AMR_KUAP_BLOCKED)
- 999:	tdne	\gpr1, \gpr2
- 	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
- 	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
 -- 
 2.26.2
 
