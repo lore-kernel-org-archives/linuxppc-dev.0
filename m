@@ -2,94 +2,66 @@ Return-Path: <SRS0=USe9=7X=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25625C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22755C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 09:00:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE2392074B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 06:43:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE2392074B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 92A83204EA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 09:00:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="rMaeFtN/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92A83204EA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hcrz5sbYzDqbB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 16:43:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hgtJ58GRzDqZb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 19:00:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+0cefd36029696be727ef+6135+infradead.org+hch@bombadil.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hcRh1ndYzDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 16:25:20 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05A62VMj090732; Wed, 10 Jun 2020 02:25:15 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31jgshxh7a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 02:25:14 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05A63umf095751;
- Wed, 10 Jun 2020 02:25:14 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31jgshxh6v-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 02:25:14 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A6KlaY020532;
- Wed, 10 Jun 2020 06:25:13 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma02dal.us.ibm.com with ESMTP id 31jqyk9d7j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 06:25:13 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05A6OC5f23920934
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 06:24:12 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A6780AC05B;
- Wed, 10 Jun 2020 06:24:12 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7C57BAC059;
- Wed, 10 Jun 2020 06:24:09 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.58.158])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 06:24:09 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- linux-nvdimm@lists.01.org, dan.j.williams@intel.com
-Subject: [PATCH v5 04/10] libnvdimm/nvdimm/flush: Allow architecture to
- override the flush barrier
-Date: Wed, 10 Jun 2020 11:53:37 +0530
-Message-Id: <20200610062343.492293-5-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hgr51GjgzDqNg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 18:58:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:In-Reply-To:References;
+ bh=RoWl7habK/jUuINMMvGIQ6fXacHcTIf9gpnh29uDOPI=; b=rMaeFtN/3bKy60cRlpBiIltSU4
+ 6PG1A5wVk7ZfnZmVJ7s27HcLPwiLq9TJAgahNioUx6vXCkvtchMvUIHtrgbPDykjTR/6ZS16LrPsC
+ qwBb5PDbgZBuTsUN7IVcdfrfZApEVXfgef23gaya+zklrDnFrd5tz5hW2hqkwF9p9dfAQnjlZvuwA
+ jJzKYUH87wq/2k9kILvOA5B4tvWwMWbQwtMOBi8B8c79qT/S4Tqe6lIPOJDIFS/goNLi7JGVnYry4
+ uWxfsWiCrgAmdXe7sfLt7JGQq+00NcQu0bffHDOxyXbo5bgt/ke3pFxhWjZCc6DlxoxqM3EhNaLpc
+ UChtimGg==;
+Received: from 213-225-38-56.nat.highway.a1.net ([213.225.38.56]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jiwYh-00036D-3w; Wed, 10 Jun 2020 08:58:07 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: jk@ozlabs.org,
+	arnd@arndb.de,
+	mpe@ellerman.id.au
+Subject: [PATCH] powerpc/spufs: fix the type of ret in spufs_arch_write_note
+Date: Wed, 10 Jun 2020 10:55:54 +0200
+Message-Id: <20200610085554.5647-1-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200610062343.492293-1-aneesh.kumar@linux.ibm.com>
-References: <20200610062343.492293-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-10_02:2020-06-10,
- 2020-06-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- impostorscore=0 mlxscore=0 mlxlogscore=999 bulkscore=0 lowpriorityscore=0
- phishscore=0 adultscore=0 malwarescore=0 spamscore=0 suspectscore=0
- clxscore=1015 cotscore=-2147483648 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006100041
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,78 +73,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, Jeff Moyer <jmoyer@redhat.com>, msuchanek@suse.de,
- oohall@gmail.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kbuild test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Architectures like ppc64 provide persistent memory specific barriers
-that will ensure that all stores for which the modifications are
-written to persistent storage by preceding dcbfps and dcbstps
-instructions have updated persistent storage before any data
-access or data transfer caused by subsequent instructions is initiated.
-This is in addition to the ordering done by wmb()
+Both the ->dump method and snprintf return an int.  So switch to an
+int and properly handle errors from ->dump.
 
-Update nvdimm core such that architecture can use barriers other than
-wmb to ensure all previous writes are architecturally visible for
-the platform buffer flush.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Fixes: 5456ffdee666 ("powerpc/spufs: simplify spufs core dumping")
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/md/dm-writecache.c   | 2 +-
- drivers/nvdimm/region_devs.c | 8 ++++----
- include/linux/libnvdimm.h    | 4 ++++
- 3 files changed, 9 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/cell/spufs/coredump.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/md/dm-writecache.c b/drivers/md/dm-writecache.c
-index 613c171b1b6d..904fdbf2b089 100644
---- a/drivers/md/dm-writecache.c
-+++ b/drivers/md/dm-writecache.c
-@@ -540,7 +540,7 @@ static void ssd_commit_superblock(struct dm_writecache *wc)
- static void writecache_commit_flushed(struct dm_writecache *wc, bool wait_for_ios)
- {
- 	if (WC_MODE_PMEM(wc))
--		wmb();
-+		arch_pmem_flush_barrier();
- 	else
- 		ssd_commit_flushed(wc, wait_for_ios);
- }
-diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
-index ccbb5b43b8b2..88ea34a9c7fd 100644
---- a/drivers/nvdimm/region_devs.c
-+++ b/drivers/nvdimm/region_devs.c
-@@ -1216,13 +1216,13 @@ int generic_nvdimm_flush(struct nd_region *nd_region)
- 	idx = this_cpu_add_return(flush_idx, hash_32(current->pid + idx, 8));
+diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
+index 3b75e8f60609cb..014d1c045bc3cf 100644
+--- a/arch/powerpc/platforms/cell/spufs/coredump.c
++++ b/arch/powerpc/platforms/cell/spufs/coredump.c
+@@ -105,7 +105,7 @@ static int spufs_arch_write_note(struct spu_context *ctx, int i,
+ 	size_t sz = spufs_coredump_read[i].size;
+ 	char fullname[80];
+ 	struct elf_note en;
+-	size_t ret;
++	int ret;
  
- 	/*
--	 * The first wmb() is needed to 'sfence' all previous writes
--	 * such that they are architecturally visible for the platform
--	 * buffer flush.  Note that we've already arranged for pmem
-+	 * The first arch_pmem_flush_barrier() is needed to 'sfence' all
-+	 * previous writes such that they are architecturally visible for
-+	 * the platform buffer flush. Note that we've already arranged for pmem
- 	 * writes to avoid the cache via memcpy_flushcache().  The final
- 	 * wmb() ensures ordering for the NVDIMM flush write.
- 	 */
--	wmb();
-+	arch_pmem_flush_barrier();
- 	for (i = 0; i < nd_region->ndr_mappings; i++)
- 		if (ndrd_get_flush_wpq(ndrd, i, 0))
- 			writeq(1, ndrd_get_flush_wpq(ndrd, i, idx));
-diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
-index 18da4059be09..66f6c65bd789 100644
---- a/include/linux/libnvdimm.h
-+++ b/include/linux/libnvdimm.h
-@@ -286,4 +286,8 @@ static inline void arch_invalidate_pmem(void *addr, size_t size)
- }
- #endif
- 
-+#ifndef arch_pmem_flush_barrier
-+#define arch_pmem_flush_barrier() wmb()
-+#endif
-+
- #endif /* __LIBNVDIMM_H__ */
+ 	sprintf(fullname, "SPU/%d/%s", dfd, spufs_coredump_read[i].name);
+ 	en.n_namesz = strlen(fullname) + 1;
 -- 
 2.26.2
 
