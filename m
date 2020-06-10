@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8397C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:09:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA0D1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:11:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 811A92072F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:09:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 811A92072F
+	by mail.kernel.org (Postfix) with ESMTPS id 5A2F32072F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 10:11:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A2F32072F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49hjQL6SDzzDqdm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:09:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49hjT24W40zDqc3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Jun 2020 20:11:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
@@ -29,44 +29,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49hj342x4gzDqN3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:52:48 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49hj371hXfzDqCH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2020 19:52:51 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05A9XL4q091171; Wed, 10 Jun 2020 05:52:44 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31jks4yrmh-1
+ 05A9Xsu3056797; Wed, 10 Jun 2020 05:52:47 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31jaye037m-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 05:52:44 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9j2Sv017164;
- Wed, 10 Jun 2020 09:52:43 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma01wdc.us.ibm.com with ESMTP id 31g2s8x18c-1
+ Wed, 10 Jun 2020 05:52:46 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05A9fCQP029489;
+ Wed, 10 Jun 2020 09:52:46 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma03dal.us.ibm.com with ESMTP id 31hw1bnye5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 10 Jun 2020 09:52:43 +0000
+ Wed, 10 Jun 2020 09:52:46 +0000
 Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
  [9.57.199.109])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05A9qgFg31719836
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05A9qi8Z50463122
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 10 Jun 2020 09:52:42 GMT
+ Wed, 10 Jun 2020 09:52:44 GMT
 Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 787D2112062;
+ by IMSVA (Postfix) with ESMTP id B5E8D112061;
+ Wed, 10 Jun 2020 09:52:44 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 00157112063;
  Wed, 10 Jun 2020 09:52:42 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8766112061;
- Wed, 10 Jun 2020 09:52:40 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.79.180.2])
  by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 10 Jun 2020 09:52:40 +0000 (GMT)
+ Wed, 10 Jun 2020 09:52:42 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 10/41] powerpc/book3s64/pkeys: Convert pkey_total to
- max_pkey
-Date: Wed, 10 Jun 2020 15:21:33 +0530
-Message-Id: <20200610095204.608183-11-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v3 11/41] powerpc/book3s64/pkeys: Make initial_allocation_mask
+ static
+Date: Wed, 10 Jun 2020 15:21:34 +0530
+Message-Id: <20200610095204.608183-12-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
 References: <20200610095204.608183-1-aneesh.kumar@linux.ibm.com>
@@ -77,12 +77,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-10_06:2020-06-10,
  2020-06-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- cotscore=-2147483648
- bulkscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
- priorityscore=1501 spamscore=0 mlxlogscore=999 impostorscore=0 mlxscore=0
- malwarescore=0 suspectscore=0 adultscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006100073
+ mlxlogscore=999 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 suspectscore=0 bulkscore=0
+ impostorscore=0 mlxscore=0 phishscore=0 adultscore=0 cotscore=-2147483648
+ malwarescore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006100073
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,90 +99,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-max_pkey now represents max key value that userspace can allocate.
+initial_allocation_mask is not used outside this file.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/pkeys.h |  7 +++++--
- arch/powerpc/mm/book3s64/pkeys.c | 14 +++++++-------
- 2 files changed, 12 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/pkeys.h | 1 -
+ arch/powerpc/mm/book3s64/pkeys.c | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 75d2a2c19c04..652bad7334f3 100644
+index 652bad7334f3..47c81d41ea9a 100644
 --- a/arch/powerpc/include/asm/pkeys.h
 +++ b/arch/powerpc/include/asm/pkeys.h
-@@ -12,7 +12,7 @@
- #include <asm/firmware.h>
+@@ -13,7 +13,6 @@
  
  DECLARE_STATIC_KEY_FALSE(pkey_disabled);
--extern int pkeys_total; /* total pkeys as per device tree */
-+extern int max_pkey;
- extern u32 initial_allocation_mask; /*  bits set for the initially allocated keys */
+ extern int max_pkey;
+-extern u32 initial_allocation_mask; /*  bits set for the initially allocated keys */
  extern u32 reserved_allocation_mask; /* bits set for reserved keys */
  
-@@ -44,7 +44,10 @@ static inline int vma_pkey(struct vm_area_struct *vma)
- 	return (vma->vm_flags & ARCH_VM_PKEY_FLAGS) >> VM_PKEY_SHIFT;
- }
- 
--#define arch_max_pkey() pkeys_total
-+static inline int arch_max_pkey(void)
-+{
-+	return max_pkey;
-+}
- 
- #define pkey_alloc_mask(pkey) (0x1 << pkey)
- 
+ #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
 diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index 87d882a9aaf2..a4d7287082a8 100644
+index a4d7287082a8..73b5ef1490c8 100644
 --- a/arch/powerpc/mm/book3s64/pkeys.c
 +++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -14,7 +14,7 @@
- 
+@@ -15,11 +15,11 @@
  DEFINE_STATIC_KEY_FALSE(pkey_disabled);
  DEFINE_STATIC_KEY_FALSE(execute_pkey_disabled);
--int  pkeys_total;		/* Total pkeys as per device tree */
-+int  max_pkey;			/* Maximum key value supported */
- u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
+ int  max_pkey;			/* Maximum key value supported */
+-u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
  /*
   *  Keys marked in the reservation list cannot be allocated by  userspace
-@@ -84,7 +84,7 @@ static int scan_pkey_feature(void)
- 
- static int pkey_initialize(void)
- {
--	int os_reserved, i;
-+	int pkeys_total, i;
- 
- 	/*
- 	 * We define PKEY_DISABLE_EXECUTE in addition to the arch-neutral
-@@ -122,12 +122,12 @@ static int pkey_initialize(void)
- 	 * The OS can manage only 8 pkeys due to its inability to represent them
- 	 * in the Linux 4K PTE. Mark all other keys reserved.
- 	 */
--	os_reserved = pkeys_total - 8;
-+	max_pkey = min(8, pkeys_total);
- #else
--	os_reserved = 0;
-+	max_pkey = pkeys_total;
- #endif
- 
--	if (unlikely((pkeys_total - os_reserved) <= execute_only_key)) {
-+	if (unlikely(max_pkey <= execute_only_key)) {
- 		/*
- 		 * Insufficient number of keys to support
- 		 * execute only key. Mark it unavailable.
-@@ -174,10 +174,10 @@ static int pkey_initialize(void)
- 	default_uamor &= ~(0x3ul << pkeyshift(1));
- 
- 	/*
--	 * Prevent the usage of OS reserved the keys. Update UAMOR
-+	 * Prevent the usage of OS reserved keys. Update UAMOR
- 	 * for those keys.
- 	 */
--	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++) {
-+	for (i = max_pkey; i < pkeys_total; i++) {
- 		reserved_allocation_mask |= (0x1 << i);
- 		default_uamor &= ~(0x3ul << pkeyshift(i));
- 	}
+  */
+ u32  reserved_allocation_mask;
++static u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
+ static u64 default_amr;
+ static u64 default_iamr;
+ /* Allow all keys to be modified by default */
 -- 
 2.26.2
 
