@@ -2,92 +2,84 @@ Return-Path: <SRS0=eRxT=7Y=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73BA6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 11:13:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0B11C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 12:05:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E76822063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 11:13:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="KLbdk8iR";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="F0HOu6f8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E76822063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 371A920760
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 12:05:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 371A920760
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49jLnx5CLqzDqnV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 21:13:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49jMy42nfKzDqrF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Jun 2020 22:05:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
- helo=us-smtp-1.mimecast.com; envelope-from=jan.kratochvil@redhat.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=KLbdk8iR; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=F0HOu6f8; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [205.139.110.120])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49jLm64C6WzDqnT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 21:12:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1591873919;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ln6QALRhxv7uPBeSI/LQxIC2Skc7oRoqql/+AUub+X8=;
- b=KLbdk8iRVn+210eVct4BAf6BlyJqzDYsasmc6KQgNMMURheG0njZmMu4mYDet/yeSirfyz
- bxjcQaTLBYmv2eO0IFaf/iKiN3ipb6xFub3Mu1cskgRpKM6Mg4kR1eh16f+qZKw+xpWrMZ
- cf8Xsg1GiJFzJ1R+rDCJsom+lFfaOrI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1591873920;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ln6QALRhxv7uPBeSI/LQxIC2Skc7oRoqql/+AUub+X8=;
- b=F0HOu6f8m5eFsAORpoOmiCrWKDhsMtKnEHVSvrnee/P6TYEILht5HLT23CJYlpGJWxBent
- KiFZ5lhRKgpBb+lSPz6W/no3/2qu1Iifv+XhrBjpkV167npq8vPfAZNnT4Gahr0POSEGiU
- 3Op7rAxfIQkk5ADmwzJCKt6zW2quKm8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-406-bmfQ44nXPWWKgSHAOfrtLw-1; Thu, 11 Jun 2020 07:11:55 -0400
-X-MC-Unique: bmfQ44nXPWWKgSHAOfrtLw-1
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B4E2A107ACCA;
- Thu, 11 Jun 2020 11:11:53 +0000 (UTC)
-Received: from host1.jankratochvil.net (ovpn-112-104.ams2.redhat.com
- [10.36.112.104])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 8127E60BF3;
- Thu, 11 Jun 2020 11:11:48 +0000 (UTC)
-Date: Thu, 11 Jun 2020 13:11:45 +0200
-From: Jan Kratochvil <jan.kratochvil@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH? v2] powerpc: Hard wire PT_SOFTE value to 1 in gpr_get()
- too
-Message-ID: <20200611111145.GA1564154@host1.jankratochvil.net>
-References: <20190917121256.GA8659@redhat.com>
- <20190917143753.GA12300@redhat.com>
- <20200610150224.GA6793@redhat.com>
- <321e6865-1762-c459-56c4-0cc89c7c2a7e@linux.ibm.com>
- <20200611105830.GB12500@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49jMvj1wytzDqZF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2020 22:03:45 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05BC3YYF160965; Thu, 11 Jun 2020 08:03:42 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31k27s6bjs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 11 Jun 2020 08:03:39 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05BC0r4m000874;
+ Thu, 11 Jun 2020 12:02:08 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma02wdc.us.ibm.com with ESMTP id 31g2s8v99e-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 11 Jun 2020 12:02:08 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05BC26Om31785228
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 11 Jun 2020 12:02:06 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E4CD76A051;
+ Thu, 11 Jun 2020 12:02:07 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 457706A05F;
+ Thu, 11 Jun 2020 12:02:06 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.62.196])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 11 Jun 2020 12:02:05 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: paulus@ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc/kvm/book3s64/nested: Fix kernel crash with nested kvm
+Date: Thu, 11 Jun 2020 17:31:59 +0530
+Message-Id: <20200611120159.680284-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="EVF5PPMfhYS0aIcm"
-Content-Disposition: inline
-In-Reply-To: <20200611105830.GB12500@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-11_11:2020-06-10,
+ 2020-06-11 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 phishscore=0
+ suspectscore=0 lowpriorityscore=0 priorityscore=1501 spamscore=0
+ adultscore=0 clxscore=1015 bulkscore=0 mlxlogscore=684 malwarescore=0
+ impostorscore=0 cotscore=-2147483648 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006110091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,418 +91,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+__pa() do check for addr value passed and if < PAGE_OFFSET
+results in BUG.
 
---EVF5PPMfhYS0aIcm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+ #define __pa(x)								\
+({									\
+	VIRTUAL_BUG_ON((unsigned long)(x) < PAGE_OFFSET);		\
+	(unsigned long)(x) & 0x0fffffffffffffffUL;			\
+})
 
-On Thu, 11 Jun 2020 12:58:31 +0200, Oleg Nesterov wrote:
-> On 06/11, Madhavan Srinivasan wrote:
-> > On 6/10/20 8:37 PM, Oleg Nesterov wrote:
-> > > > This is not consistent and this breaks
-> > > > http://sourceware.org/systemtap/wiki/utrace/tests/user-regs-peekpoke
-> 
-> this is 404.
+kvmhv_copy_tofrom_guest_radix() use a NULL value for
+to/from to indicate direction of copy. Avoid calling __pa() if the
+value is NULL
 
-Attaching the testcase, the CVS web interface no longer works on
-sourceware.org.
+kernel BUG at arch/powerpc/kvm/book3s_64_mmu_radix.c:43!
+cpu 0x70: Vector: 700 (Program Check) at [c0000018a2187360]
+    pc: c000000000161b30: __kvmhv_copy_tofrom_guest_radix+0x130/0x1f0
+    lr: c000000000161d5c: kvmhv_copy_from_guest_radix+0x3c/0x80
 
+....
 
-Jan
+[c0000018a2187670] c000000000161d5c kvmhv_copy_from_guest_radix+0x3c/0x80
+[c0000018a21876b0] c00000000014feb8 kvmhv_load_from_eaddr+0x48/0xc0
+[c0000018a21876e0] c000000000135828 kvmppc_ld+0x98/0x1e0
+[c0000018a2187780] c00000000013bc20 kvmppc_load_last_inst+0x50/0x90
+[c0000018a21877b0] c00000000015e9e8 kvmppc_hv_emulate_mmio+0x288/0x2b0
+[c0000018a2187810] c000000000164888 kvmppc_book3s_radix_page_fault+0xd8/0x2b0
+[c0000018a21878c0] c00000000015ed8c kvmppc_book3s_hv_page_fault+0x37c/0x1050
+[c0000018a2187a00] c00000000015a518 kvmppc_vcpu_run_hv+0xbb8/0x1080
+[c0000018a2187b20] c00000000013d204 kvmppc_vcpu_run+0x34/0x50
+[c0000018a2187b40] c00000000013949c kvm_arch_vcpu_ioctl_run+0x2fc/0x410
+[c0000018a2187bd0] c00000000012a2a4 kvm_vcpu_ioctl+0x2b4/0x8f0
+[c0000018a2187d50] c0000000005b12a4 ksys_ioctl+0xf4/0x150
+[c0000018a2187da0] c0000000005b1328 sys_ioctl+0x28/0x80
+[c0000018a2187dc0] c000000000030584 system_call_exception+0x104/0x1d0
+[c0000018a2187e20] c00000000000ca68 system_call_common+0xe8/0x214
 
---EVF5PPMfhYS0aIcm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="user-regs-peekpoke.c"
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-/* Test case for PTRACE_SETREGS modifying the requested ragisters.
-   x86* counterpart of the s390* testcase `user-area-access.c'.
-
-   This software is provided 'as-is', without any express or implied
-   warranty.  In no event will the authors be held liable for any damages
-   arising from the use of this software.
-
-   Permission is granted to anyone to use this software for any purpose,
-   including commercial applications, and to alter it and redistribute it
-   freely.  */
-
-/* FIXME: EFLAGS should be tested restricted on the appropriate bits.  */
-
-#define _GNU_SOURCE 1
-
-#if defined __powerpc__ || defined __sparc__
-# define user_regs_struct pt_regs
-#endif
-
-#ifdef __ia64__
-#define ia64_fpreg ia64_fpreg_DISABLE
-#define pt_all_user_regs pt_all_user_regs_DISABLE
-#endif	/* __ia64__ */
-#include <sys/ptrace.h>
-#ifdef __ia64__
-#undef ia64_fpreg
-#undef pt_all_user_regs
-#endif	/* __ia64__ */
-#include <linux/ptrace.h>
-#include <sys/types.h>
-#include <sys/user.h>
-#if defined __i386__ || defined __x86_64__
-#include <sys/debugreg.h>
-#endif
-#include <asm/unistd.h>
-
-#include <assert.h>
-#include <errno.h>
-#include <error.h>
-#include <unistd.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <string.h>
-#include <stddef.h>
-
-/* ia64 has PTRACE_SETREGS but it has no USER_REGS_STRUCT.  */
-#if !defined PTRACE_SETREGS || defined __ia64__
-
-int
-main (void)
-{
-  return 77;
-}
-
-#else	/* PTRACE_SETREGS */
-
-/* The minimal alignment we use for the random access ranges.  */
-#define REGALIGN (sizeof (long))
-
-static pid_t child;
-
-static void
-cleanup (void)
-{
-  if (child > 0)
-    kill (child, SIGKILL);
-  child = 0;
-}
-
-static void
-handler_fail (int signo)
-{
-  cleanup ();
-  signal (SIGABRT, SIG_DFL);
-  abort ();
-}
-
-int
-main (void)
-{
-  long l;
-  int status, i;
-  pid_t pid;
-  union
-    {
-      struct user_regs_struct user;
-      unsigned char byte[sizeof (struct user_regs_struct)];
-    } u, u2;
-  int start;
-
-  setbuf (stdout, NULL);
-  atexit (cleanup);
-  signal (SIGABRT, handler_fail);
-  signal (SIGALRM, handler_fail);
-  signal (SIGINT, handler_fail);
-  i = alarm (10);
-  assert (i == 0);
-
-  child = fork ();
-  switch (child)
-    {
-    case -1:
-      assert_perror (errno);
-      assert (0);
-
-    case 0:
-      l = ptrace (PTRACE_TRACEME, 0, NULL, NULL);
-      assert (l == 0);
-
-      // Prevent rt_sigprocmask() call called by glibc after raise().
-      syscall (__NR_tkill, getpid (), SIGSTOP);
-      assert (0);
-
-    default:
-      break;
-    }
-
-  pid = waitpid (child, &status, 0);
-  assert (pid == child);
-  assert (WIFSTOPPED (status));
-  assert (WSTOPSIG (status) == SIGSTOP);
-
-  /* Fetch U2 from the inferior.  */
-  errno = 0;
-# ifdef __sparc__
-  l = ptrace (PTRACE_GETREGS, child, &u2.user, NULL);
-# else
-  l = ptrace (PTRACE_GETREGS, child, NULL, &u2.user);
-# endif
-  assert_perror (errno);
-  assert (l == 0);
-
-  /* Initialize U with a pattern.  */
-  for (i = 0; i < sizeof u.byte; i++)
-    u.byte[i] = i;
-#ifdef __x86_64__
-  /* non-EFLAGS modifications fail with EIO,  EFLAGS gets back different.  */
-  u.user.eflags = u2.user.eflags;
-  u.user.cs = u2.user.cs;
-  u.user.ds = u2.user.ds;
-  u.user.es = u2.user.es;
-  u.user.fs = u2.user.fs;
-  u.user.gs = u2.user.gs;
-  u.user.ss = u2.user.ss;
-  u.user.fs_base = u2.user.fs_base;
-  u.user.gs_base = u2.user.gs_base;
-  /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-  u.user.rip = (unsigned long) handler_fail;
-  /* 2.6.25 always truncates and sign-extends orig_rax.  */
-  u.user.orig_rax = (int) u.user.orig_rax;
-#endif	/* __x86_64__ */
-#ifdef __i386__
-  /* These values get back different.  */
-  u.user.xds = u2.user.xds;
-  u.user.xes = u2.user.xes;
-  u.user.xfs = u2.user.xfs;
-  u.user.xgs = u2.user.xgs;
-  u.user.xcs = u2.user.xcs;
-  u.user.eflags = u2.user.eflags;
-  u.user.xss = u2.user.xss;
-  /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-  u.user.eip = (unsigned long) handler_fail;
-#endif	/* __i386__ */
-#ifdef __powerpc__
-  /* These fields are constrained.  */
-  u.user.msr = u2.user.msr;
-# ifdef __powerpc64__
-  u.user.softe = u2.user.softe;
-# else
-  u.user.mq = u2.user.mq;
-# endif	/* __powerpc64__ */
-  u.user.trap = u2.user.trap;
-  u.user.dar = u2.user.dar;
-  u.user.dsisr = u2.user.dsisr;
-  u.user.result = u2.user.result;
-#endif	/* __powerpc__ */
-
-  /* Poke U.  */
-# ifdef __sparc__
-  l = ptrace (PTRACE_SETREGS, child, &u.user, NULL);
-# else
-  l = ptrace (PTRACE_SETREGS, child, NULL, &u.user);
-# endif
-  assert (l == 0);
-
-  /* Peek into U2.  */
-# ifdef __sparc__
-  l = ptrace (PTRACE_GETREGS, child, &u2.user, NULL);
-# else
-  l = ptrace (PTRACE_GETREGS, child, NULL, &u2.user);
-# endif
-  assert (l == 0);
-
-  /* Verify it matches.  */
-  if (memcmp (&u.user, &u2.user, sizeof u.byte) != 0)
-    {
-      for (start = 0; start + REGALIGN <= sizeof u.byte; start += REGALIGN)
-	if (*(unsigned long *) (u.byte + start)
-	    != *(unsigned long *) (u2.byte + start))
-	  printf ("\
-mismatch at offset %#x: SETREGS wrote %lx GETREGS read %lx\n",
-		  start, *(unsigned long *) (u.byte + start),
-		  *(unsigned long *) (u2.byte + start));
-      return 1;
-    }
-
-  /* Reverse the pattern.  */
-  for (i = 0; i < sizeof u.byte; i++)
-    u.byte[i] ^= -1;
-#ifdef __x86_64__
-  /* non-EFLAGS modifications fail with EIO,  EFLAGS gets back different.  */
-  u.user.eflags = u2.user.eflags;
-  u.user.cs = u2.user.cs;
-  u.user.ds = u2.user.ds;
-  u.user.es = u2.user.es;
-  u.user.fs = u2.user.fs;
-  u.user.gs = u2.user.gs;
-  u.user.ss = u2.user.ss;
-  u.user.fs_base = u2.user.fs_base;
-  u.user.gs_base = u2.user.gs_base;
-  /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-  u.user.rip = (unsigned long) handler_fail;
-  /* 2.6.25 always truncates and sign-extends orig_rax.  */
-  u.user.orig_rax = (int) u.user.orig_rax;
-#endif	/* __x86_64__ */
-#ifdef __i386__
-  /* These values get back different.  */
-  u.user.xds = u2.user.xds;
-  u.user.xes = u2.user.xes;
-  u.user.xfs = u2.user.xfs;
-  u.user.xgs = u2.user.xgs;
-  u.user.xcs = u2.user.xcs;
-  u.user.eflags = u2.user.eflags;
-  u.user.xss = u2.user.xss;
-  /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-  u.user.eip = (unsigned long) handler_fail;
-#endif	/* __i386__ */
-#ifdef __powerpc__
-  /* These fields are constrained.  */
-  u.user.msr = u2.user.msr;
-# ifdef __powerpc64__
-  u.user.softe = u2.user.softe;
-# else
-  u.user.mq = u2.user.mq;
-# endif	/* __powerpc64__ */
-  u.user.trap = u2.user.trap;
-  u.user.dar = u2.user.dar;
-  u.user.dsisr = u2.user.dsisr;
-  u.user.result = u2.user.result;
-#endif	/* __powerpc__ */
-
-  /* Poke U.  */
-# ifdef __sparc__
-  l = ptrace (PTRACE_SETREGS, child, &u.user, NULL);
-# else
-  l = ptrace (PTRACE_SETREGS, child, NULL, &u.user);
-# endif
-  assert (l == 0);
-
-  /* Peek into U2.  */
-# ifdef __sparc__
-  l = ptrace (PTRACE_GETREGS, child, &u2.user, NULL);
-# else
-  l = ptrace (PTRACE_GETREGS, child, NULL, &u2.user);
-# endif
-  assert (l == 0);
-
-  /* Verify it matches.  */
-  if (memcmp (&u.user, &u2.user, sizeof u.byte) != 0)
-    {
-      for (start = 0; start + REGALIGN <= sizeof u.byte; start += REGALIGN)
-	if (*(unsigned long *) (u.byte + start)
-	    != *(unsigned long *) (u2.byte + start))
-	  printf ("\
-mismatch at offset %#x: SETREGS wrote %lx GETREGS read %lx\n",
-		  start, *(unsigned long *) (u.byte + start),
-		  *(unsigned long *) (u2.byte + start));
-      return 1;
-    }
-
-  /* Now try poking arbitrary ranges and verifying it reads back right.
-     We expect the U area is already a random enough pattern.  */
-  for (start = 0; start + REGALIGN <= sizeof u.byte; start += REGALIGN)
-    {
-      for (i = start; i < start + REGALIGN; i++)
-	u.byte[i]++;
-#ifdef __x86_64__
-      /* non-EFLAGS modifications fail with EIO,  EFLAGS gets back different.  */
-      u.user.eflags = u2.user.eflags;
-      u.user.cs = u2.user.cs;
-      u.user.ds = u2.user.ds;
-      u.user.es = u2.user.es;
-      u.user.fs = u2.user.fs;
-      u.user.gs = u2.user.gs;
-      u.user.ss = u2.user.ss;
-      u.user.fs_base = u2.user.fs_base;
-      u.user.gs_base = u2.user.gs_base;
-      /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-      u.user.rip = (unsigned long) handler_fail;
-      /* 2.6.25 always truncates and sign-extends orig_rax.  */
-      u.user.orig_rax = (int) u.user.orig_rax;
-#endif	/* __x86_64__ */
-#ifdef __i386__
-      /* These values get back different.  */
-      u.user.xds = u2.user.xds;
-      u.user.xes = u2.user.xes;
-      u.user.xfs = u2.user.xfs;
-      u.user.xgs = u2.user.xgs;
-      u.user.xcs = u2.user.xcs;
-      u.user.eflags = u2.user.eflags;
-      u.user.xss = u2.user.xss;
-      /* RHEL-4 refuses to set too high (and invalid) PC values.  */
-      u.user.eip = (unsigned long) handler_fail;
-#endif	/* __i386__ */
-#ifdef __powerpc__
-      /* These fields are constrained.  */
-      u.user.msr = u2.user.msr;
-# ifdef __powerpc64__
-      u.user.softe = u2.user.softe;
-# else
-      u.user.mq = u2.user.mq;
-# endif	/* __powerpc64__ */
-      u.user.trap = u2.user.trap;
-      u.user.dar = u2.user.dar;
-      u.user.dsisr = u2.user.dsisr;
-      u.user.result = u2.user.result;
-      if (start > offsetof (struct pt_regs, ccr))
-	break;
-#endif	/* __powerpc__ */
-
-      /* Poke U.  */
-      l = ptrace (PTRACE_POKEUSER, child, (void *) (unsigned long) start,
-		  (void *) *(unsigned long *) (u.byte + start));
-      if (l != 0)
-	error (1, errno, "PTRACE_POKEUSER at %x", start);
-
-      /* Peek into U2.  */
-# ifdef __sparc__
-      l = ptrace (PTRACE_GETREGS, child, &u2.user, NULL);
-# else
-      l = ptrace (PTRACE_GETREGS, child, NULL, &u2.user);
-# endif
-      assert (l == 0);
-
-      /* Verify it matches.  */
-      if (memcmp (&u.user, &u2.user, sizeof u.byte) != 0)
-	{
-	  printf ("mismatch at offset %#x: poked %lx but GETREGS read %lx\n",
-		  start, *(unsigned long *) (u.byte + start),
-		  *(unsigned long *) (u2.byte + start));
-	  return 1;
-	}
-    }
-
-
-  /* Now try peeking arbitrary ranges and verifying it is the same.
-     We expect the U area is already a random enough pattern.  */
-  for (start = 0; start + REGALIGN <= sizeof u.byte; start += REGALIGN)
-    {
-      /* Peek for the U comparation.  */
-      errno = 0;
-      l = ptrace (PTRACE_PEEKUSER, child, (void *) (unsigned long) start,
-		  NULL);
-      assert_perror (errno);
-
-      /* Verify it matches.  */
-      if (*(unsigned long *) (u.byte + start) != l)
-	{
-	  printf ("mismatch at offset %#x: poked %lx but peeked %lx\n",
-		  start, *(unsigned long *) (u.byte + start), l);
-	  return 1;
-	}
-    }
-
-
-  return 0;
-}
-
-#endif	/* PTRACE_SETREGS */
-
---EVF5PPMfhYS0aIcm--
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 02219e28b1e4..84acb4769487 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -40,7 +40,8 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+ 	/* Can't access quadrants 1 or 2 in non-HV mode, call the HV to do it */
+ 	if (kvmhv_on_pseries())
+ 		return plpar_hcall_norets(H_COPY_TOFROM_GUEST, lpid, pid, eaddr,
+-					  __pa(to), __pa(from), n);
++					  (to != NULL) ? __pa(to): 0,
++					  (from != NULL) ? __pa(from): 0, n);
+ 
+ 	quadrant = 1;
+ 	if (!pid)
+-- 
+2.26.2
 
