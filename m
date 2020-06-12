@@ -2,79 +2,80 @@ Return-Path: <SRS0=EtvQ=7Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40160C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4801C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:17:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E903A20836
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:16:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E903A20836
+	by mail.kernel.org (Postfix) with ESMTPS id 958B520801
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:17:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 958B520801
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49jppx3cs9zDqv1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:16:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49jps15D9VzDqwB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:17:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49jpl36d0SzDqgl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:12:47 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49jpl55WNnzDqDd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:12:49 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05C528SR138913; Fri, 12 Jun 2020 01:12:41 -0400
+ 05C53UfQ117003; Fri, 12 Jun 2020 01:12:43 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31kyekndmv-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ktp1c2s4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 01:12:41 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05C529UW138940;
- Fri, 12 Jun 2020 01:12:41 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31kyekndmj-1
+ Fri, 12 Jun 2020 01:12:43 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05C559NU121253;
+ Fri, 12 Jun 2020 01:12:43 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ktp1c2ru-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 01:12:41 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05C5AXtX021982;
- Fri, 12 Jun 2020 05:12:40 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma04dal.us.ibm.com with ESMTP id 31g2sb2xtf-1
+ Fri, 12 Jun 2020 01:12:43 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05C59MsN011062;
+ Fri, 12 Jun 2020 05:12:42 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma03dal.us.ibm.com with ESMTP id 31hw1cftxf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 05:12:40 +0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05C5CdmV42467598
+ Fri, 12 Jun 2020 05:12:42 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05C5CfQG46792970
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 12 Jun 2020 05:12:39 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 59F122805A;
- Fri, 12 Jun 2020 05:12:39 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2A74228068;
- Fri, 12 Jun 2020 05:12:39 +0000 (GMT)
+ Fri, 12 Jun 2020 05:12:42 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D511B124052;
+ Fri, 12 Jun 2020 05:12:41 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9CC4C124053;
+ Fri, 12 Jun 2020 05:12:41 +0000 (GMT)
 Received: from localhost (unknown [9.65.252.60])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 12 Jun 2020 05:12:39 +0000 (GMT)
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 12 Jun 2020 05:12:41 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 00/18] remove extended cede offline mode and bogus topology
- update code
-Date: Fri, 12 Jun 2020 00:12:20 -0500
-Message-Id: <20200612051238.1007764-1-nathanl@linux.ibm.com>
+Subject: [PATCH 03/18] powerpc/numa: remove ability to enable topology updates
+Date: Fri, 12 Jun 2020 00:12:23 -0500
+Message-Id: <20200612051238.1007764-4-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200612051238.1007764-1-nathanl@linux.ibm.com>
+References: <20200612051238.1007764-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -82,10 +83,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-11_23:2020-06-11,
  2020-06-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=0
- adultscore=0 malwarescore=0 spamscore=0 bulkscore=0 lowpriorityscore=0
- mlxlogscore=999 clxscore=1015 cotscore=-2147483648 phishscore=0
- priorityscore=1501 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 mlxscore=0
+ bulkscore=0 malwarescore=0 adultscore=0 cotscore=-2147483648 spamscore=0
+ impostorscore=0 phishscore=0 clxscore=1015 suspectscore=1
+ priorityscore=1501 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2004280000 definitions=main-2006110174
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,70 +105,111 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Two major parts to this series:
+Remove the /proc/powerpc/topology_updates interface and the
+topology_updates=on/off command line argument. The internal
+topology_updates_enabled flag remains for now, but always false.
 
-1. Removal of the extended cede offline mode for CPUs as well as the
-   partition suspend code which accommodates it by temporarily
-   onlining all CPUs prior to suspending the LPAR. This solves some
-   accounting problems, simplifies the pseries CPU hotplug code, and
-   greatly uncomplicates the existing partition suspend code, easing
-   a much-needed transition to the Linux suspend framework. The two
-   patches which make up this part have been posted before:
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 71 +-----------------------------------------
+ 1 file changed, 1 insertion(+), 70 deletions(-)
 
-   https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=180718
-
-   and they are simply incorporated unchanged into the larger series
-   here, with Gautham's Reviewed-by added to patch #1.
-
-2. Removal of the long-disabled "topology update" code, most of which
-   resides in mm/numa.c, but there are pieces in pseries and rtasd to
-   excise as well. This code was an attempt to honor changes in a
-   partition's NUMA properties arising from resource reassignments
-   which occur as part of a migration, VPHN change, or a Dynamic
-   Platform Optimizer operation. Its main technique is to remove and
-   re-add affected processors and LMBs and hope in vain that the
-   changes in cpu-node and physaddr-node relationships aren't
-   disruptive. We want to provide user space with some indication that
-   Linux's logical NUMA representation has become out of sync with the
-   platform's assignments, but we need to get this unusable stuff out
-   of the way before this code can sustain new features.
-
-Nathan Lynch (18):
-  powerpc/pseries: remove cede offline state for CPUs
-  powerpc/rtas: don't online CPUs for partition suspend
-  powerpc/numa: remove ability to enable topology updates
-  powerpc/numa: remove unreachable topology update code
-  powerpc/numa: make vphn_enabled, prrn_enabled flags const
-  powerpc/numa: remove unreachable topology timer code
-  powerpc/numa: remove unreachable topology workqueue code
-  powerpc/numa: remove vphn_enabled and prrn_enabled internal flags
-  powerpc/numa: stub out numa_update_cpu_topology()
-  powerpc/numa: remove timed_topology_update()
-  powerpc/numa: remove start/stop_topology_update()
-  powerpc/rtasd: simplify handle_rtas_event(), emit message on events
-  powerpc/numa: remove prrn_is_enabled()
-  powerpc/numa: remove arch_update_cpu_topology
-  powerpc/pseries: remove prrn special case from DT update path
-  powerpc/pseries: remove memory "re-add" implementation
-  powerpc/pseries: remove dlpar_cpu_readd()
-  powerpc/pseries: remove obsolete memory hotplug DT notifier code
-
- Documentation/core-api/cpu_hotplug.rst        |   7 -
- arch/powerpc/include/asm/rtas.h               |   3 -
- arch/powerpc/include/asm/topology.h           |  27 -
- arch/powerpc/kernel/rtas.c                    | 122 +----
- arch/powerpc/kernel/rtasd.c                   |  28 +-
- arch/powerpc/mm/numa.c                        | 486 ------------------
- arch/powerpc/platforms/pseries/hotplug-cpu.c  | 189 +------
- .../platforms/pseries/hotplug-memory.c        | 107 +---
- arch/powerpc/platforms/pseries/mobility.c     |  31 --
- .../platforms/pseries/offline_states.h        |  38 --
- arch/powerpc/platforms/pseries/pmem.c         |   1 -
- arch/powerpc/platforms/pseries/smp.c          |  28 +-
- arch/powerpc/platforms/pseries/suspend.c      |  27 +-
- 13 files changed, 22 insertions(+), 1072 deletions(-)
- delete mode 100644 arch/powerpc/platforms/pseries/offline_states.h
-
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 9fcf2d195830..34d95de77bdd 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -984,27 +984,7 @@ static int __init early_numa(char *p)
+ }
+ early_param("numa", early_numa);
+ 
+-/*
+- * The platform can inform us through one of several mechanisms
+- * (post-migration device tree updates, PRRN or VPHN) that the NUMA
+- * assignment of a resource has changed. This controls whether we act
+- * on that. Disabled by default.
+- */
+-static bool topology_updates_enabled;
+-
+-static int __init early_topology_updates(char *p)
+-{
+-	if (!p)
+-		return 0;
+-
+-	if (!strcmp(p, "on")) {
+-		pr_warn("Caution: enabling topology updates\n");
+-		topology_updates_enabled = true;
+-	}
+-
+-	return 0;
+-}
+-early_param("topology_updates", early_topology_updates);
++static const bool topology_updates_enabled;
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+@@ -1632,52 +1612,6 @@ int prrn_is_enabled(void)
+ 	return prrn_enabled;
+ }
+ 
+-static int topology_read(struct seq_file *file, void *v)
+-{
+-	if (vphn_enabled || prrn_enabled)
+-		seq_puts(file, "on\n");
+-	else
+-		seq_puts(file, "off\n");
+-
+-	return 0;
+-}
+-
+-static int topology_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, topology_read, NULL);
+-}
+-
+-static ssize_t topology_write(struct file *file, const char __user *buf,
+-			      size_t count, loff_t *off)
+-{
+-	char kbuf[4]; /* "on" or "off" plus null. */
+-	int read_len;
+-
+-	read_len = count < 3 ? count : 3;
+-	if (copy_from_user(kbuf, buf, read_len))
+-		return -EINVAL;
+-
+-	kbuf[read_len] = '\0';
+-
+-	if (!strncmp(kbuf, "on", 2)) {
+-		topology_updates_enabled = true;
+-		start_topology_update();
+-	} else if (!strncmp(kbuf, "off", 3)) {
+-		stop_topology_update();
+-		topology_updates_enabled = false;
+-	} else
+-		return -EINVAL;
+-
+-	return count;
+-}
+-
+-static const struct proc_ops topology_proc_ops = {
+-	.proc_read	= seq_read,
+-	.proc_write	= topology_write,
+-	.proc_open	= topology_open,
+-	.proc_release	= single_release,
+-};
+-
+ static int topology_update_init(void)
+ {
+ 	start_topology_update();
+@@ -1685,9 +1619,6 @@ static int topology_update_init(void)
+ 	if (vphn_enabled)
+ 		topology_schedule_update();
+ 
+-	if (!proc_create("powerpc/topology_updates", 0644, NULL, &topology_proc_ops))
+-		return -ENOMEM;
+-
+ 	topology_inited = 1;
+ 	return 0;
+ }
 -- 
 2.25.4
 
