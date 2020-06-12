@@ -6,74 +6,74 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15CC0C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:30:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47A6CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:32:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C187C207F7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:30:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C187C207F7
+	by mail.kernel.org (Postfix) with ESMTPS id F16EA207F7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:32:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F16EA207F7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49jq7p1rxmzDqDq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:30:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49jq9p6MKSzDqDq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:32:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49jplB68jrzDqlf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:12:54 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05C55w7k062522; Fri, 12 Jun 2020 01:12:50 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49jplF0vN6zDqgC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:12:56 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05C52iHL034806; Fri, 12 Jun 2020 01:12:52 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31m1snjccc-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31kvmvh76q-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 01:12:50 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05C58W7i068507;
- Fri, 12 Jun 2020 01:12:50 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31m1snjcc1-1
+ Fri, 12 Jun 2020 01:12:52 -0400
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05C535hq037029;
+ Fri, 12 Jun 2020 01:12:51 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31kvmvh76j-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 01:12:50 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05C59K2u022132;
- Fri, 12 Jun 2020 05:12:49 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01dal.us.ibm.com with ESMTP id 31hyh06a8y-1
+ Fri, 12 Jun 2020 01:12:51 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05C5B448009886;
+ Fri, 12 Jun 2020 05:12:51 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma01wdc.us.ibm.com with ESMTP id 31g2s98566-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 12 Jun 2020 05:12:49 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05C5CmbV50200888
+ Fri, 12 Jun 2020 05:12:51 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05C5Co9b22216968
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 12 Jun 2020 05:12:48 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E77BC13604F;
- Fri, 12 Jun 2020 05:12:47 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 83757136055;
- Fri, 12 Jun 2020 05:12:47 +0000 (GMT)
+ Fri, 12 Jun 2020 05:12:50 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2D1C678060;
+ Fri, 12 Jun 2020 05:12:50 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E7B9A7805F;
+ Fri, 12 Jun 2020 05:12:49 +0000 (GMT)
 Received: from localhost (unknown [9.65.252.60])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 12 Jun 2020 05:12:47 +0000 (GMT)
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 12 Jun 2020 05:12:49 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 09/18] powerpc/numa: stub out numa_update_cpu_topology()
-Date: Fri, 12 Jun 2020 00:12:29 -0500
-Message-Id: <20200612051238.1007764-10-nathanl@linux.ibm.com>
+Subject: [PATCH 11/18] powerpc/numa: remove start/stop_topology_update()
+Date: Fri, 12 Jun 2020 00:12:31 -0500
+Message-Id: <20200612051238.1007764-12-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200612051238.1007764-1-nathanl@linux.ibm.com>
 References: <20200612051238.1007764-1-nathanl@linux.ibm.com>
@@ -84,11 +84,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-11_23:2020-06-11,
  2020-06-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 clxscore=1015
- malwarescore=0 mlxlogscore=999 phishscore=0 spamscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 cotscore=-2147483648 mlxscore=0
- suspectscore=1 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006110174
+ phishscore=0 suspectscore=1
+ impostorscore=0 mlxscore=0 clxscore=1015 adultscore=0 lowpriorityscore=0
+ mlxlogscore=999 cotscore=-2147483648 bulkscore=0 priorityscore=1501
+ spamscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2004280000 definitions=main-2006110174
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,231 +106,124 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Previous changes have removed the code which sets bits in
-cpu_associativity_changes_mask and thus it is never modifed at
-runtime. From this we can reason that numa_update_cpu_topology()
-always returns 0 without doing anything. Remove the body of
-numa_update_cpu_topology() and remove all code which becomes
-unreachable as a result.
+These APIs have become no-ops, so remove them and all call sites.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 193 +----------------------------------------
- 1 file changed, 1 insertion(+), 192 deletions(-)
+ arch/powerpc/include/asm/topology.h       | 10 ----------
+ arch/powerpc/mm/numa.c                    | 20 --------------------
+ arch/powerpc/platforms/pseries/mobility.c |  4 ----
+ arch/powerpc/platforms/pseries/suspend.c  |  5 +----
+ 4 files changed, 1 insertion(+), 38 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 379e2cc3789f..537c638582eb 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -93,19 +93,9 @@ static inline int cpu_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
+ #endif /* CONFIG_NUMA */
+ 
+ #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
+-extern int start_topology_update(void);
+-extern int stop_topology_update(void);
+ extern int prrn_is_enabled(void);
+ extern int find_and_online_cpu_nid(int cpu);
+ #else
+-static inline int start_topology_update(void)
+-{
+-	return 0;
+-}
+-static inline int stop_topology_update(void)
+-{
+-	return 0;
+-}
+ static inline int prrn_is_enabled(void)
+ {
+ 	return 0;
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 8749d7f2b1a6..b220e5b60140 100644
+index 6c579ac3e679..dec7ce3b5e67 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -1122,14 +1122,6 @@ u64 memory_hotplug_max(void)
- 
- /* Virtual Processor Home Node (VPHN) support */
- #ifdef CONFIG_PPC_SPLPAR
--struct topology_update_data {
--	struct topology_update_data *next;
--	unsigned int cpu;
--	int old_nid;
--	int new_nid;
--};
+@@ -1157,8 +1157,6 @@ static long vphn_get_associativity(unsigned long cpu,
+ 			, rc);
+ 		break;
+ 	}
 -
--static cpumask_t cpu_associativity_changes_mask;
- static int topology_inited;
- 
- /*
-@@ -1219,192 +1211,9 @@ int find_and_online_cpu_nid(int cpu)
- 	return new_nid;
+-	stop_topology_update();
+ out:
+ 	return rc;
+ }
+@@ -1212,22 +1210,6 @@ int arch_update_cpu_topology(void)
+ 	return numa_update_cpu_topology(true);
  }
  
 -/*
-- * Update the CPU maps and sysfs entries for a single CPU when its NUMA
-- * characteristics change. This function doesn't perform any locking and is
-- * only safe to call from stop_machine().
+- * Start polling for associativity changes.
 - */
--static int update_cpu_topology(void *data)
+-int start_topology_update(void)
 -{
--	struct topology_update_data *update;
--	unsigned long cpu;
--
--	if (!data)
--		return -EINVAL;
--
--	cpu = smp_processor_id();
--
--	for (update = data; update; update = update->next) {
--		int new_nid = update->new_nid;
--		if (cpu != update->cpu)
--			continue;
--
--		unmap_cpu_from_node(cpu);
--		map_cpu_to_node(cpu, new_nid);
--		set_cpu_numa_node(cpu, new_nid);
--		set_cpu_numa_mem(cpu, local_memory_node(new_nid));
--		vdso_getcpu_init();
--	}
--
--	return 0;
--}
--
--static int update_lookup_table(void *data)
--{
--	struct topology_update_data *update;
--
--	if (!data)
--		return -EINVAL;
--
--	/*
--	 * Upon topology update, the numa-cpu lookup table needs to be updated
--	 * for all threads in the core, including offline CPUs, to ensure that
--	 * future hotplug operations respect the cpu-to-node associativity
--	 * properly.
--	 */
--	for (update = data; update; update = update->next) {
--		int nid, base, j;
--
--		nid = update->new_nid;
--		base = cpu_first_thread_sibling(update->cpu);
--
--		for (j = 0; j < threads_per_core; j++) {
--			update_numa_cpu_lookup_table(base + j, nid);
--		}
--	}
--
 -	return 0;
 -}
 -
 -/*
-- * Update the node maps and sysfs entries for each cpu whose home node
-- * has changed. Returns 1 when the topology has changed, and 0 otherwise.
-- *
-- * cpus_locked says whether we already hold cpu_hotplug_lock.
+- * Disable polling for VPHN associativity changes.
 - */
- int numa_update_cpu_topology(bool cpus_locked)
+-int stop_topology_update(void)
+-{
+-	return 0;
+-}
+-
+ int prrn_is_enabled(void)
  {
--	unsigned int cpu, sibling, changed = 0;
--	struct topology_update_data *updates, *ud;
--	cpumask_t updated_cpus;
--	struct device *dev;
--	int weight, new_nid, i = 0;
+ 	return 0;
+@@ -1235,8 +1217,6 @@ int prrn_is_enabled(void)
+ 
+ static int topology_update_init(void)
+ {
+-	start_topology_update();
 -
--	if (topology_inited)
--		return 0;
+ 	topology_inited = 1;
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 10d982997736..c0b09f6f0ae3 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -388,8 +388,6 @@ static ssize_t migration_store(struct class *class,
+ 	if (rc)
+ 		return rc;
+ 
+-	stop_topology_update();
 -
--	weight = cpumask_weight(&cpu_associativity_changes_mask);
--	if (!weight)
--		return 0;
+ 	do {
+ 		rc = rtas_ibm_suspend_me(streamid);
+ 		if (rc == -EAGAIN)
+@@ -401,8 +399,6 @@ static ssize_t migration_store(struct class *class,
+ 
+ 	post_mobility_fixup();
+ 
+-	start_topology_update();
 -
--	updates = kcalloc(weight, sizeof(*updates), GFP_KERNEL);
--	if (!updates)
--		return 0;
--
--	cpumask_clear(&updated_cpus);
--
--	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
--		/*
--		 * If siblings aren't flagged for changes, updates list
--		 * will be too short. Skip on this update and set for next
--		 * update.
--		 */
--		if (!cpumask_subset(cpu_sibling_mask(cpu),
--					&cpu_associativity_changes_mask)) {
--			pr_info("Sibling bits not set for associativity "
--					"change, cpu%d\n", cpu);
--			cpumask_or(&cpu_associativity_changes_mask,
--					&cpu_associativity_changes_mask,
--					cpu_sibling_mask(cpu));
--			cpu = cpu_last_thread_sibling(cpu);
--			continue;
--		}
--
--		new_nid = find_and_online_cpu_nid(cpu);
--
--		if (new_nid == numa_cpu_lookup_table[cpu]) {
--			cpumask_andnot(&cpu_associativity_changes_mask,
--					&cpu_associativity_changes_mask,
--					cpu_sibling_mask(cpu));
--			dbg("Assoc chg gives same node %d for cpu%d\n",
--					new_nid, cpu);
--			cpu = cpu_last_thread_sibling(cpu);
--			continue;
--		}
--
--		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
--			ud = &updates[i++];
--			ud->next = &updates[i];
--			ud->cpu = sibling;
--			ud->new_nid = new_nid;
--			ud->old_nid = numa_cpu_lookup_table[sibling];
--			cpumask_set_cpu(sibling, &updated_cpus);
--		}
--		cpu = cpu_last_thread_sibling(cpu);
--	}
--
--	/*
--	 * Prevent processing of 'updates' from overflowing array
--	 * where last entry filled in a 'next' pointer.
--	 */
--	if (i)
--		updates[i-1].next = NULL;
--
--	pr_debug("Topology update for the following CPUs:\n");
--	if (cpumask_weight(&updated_cpus)) {
--		for (ud = &updates[0]; ud; ud = ud->next) {
--			pr_debug("cpu %d moving from node %d "
--					  "to %d\n", ud->cpu,
--					  ud->old_nid, ud->new_nid);
--		}
--	}
--
--	/*
--	 * In cases where we have nothing to update (because the updates list
--	 * is too short or because the new topology is same as the old one),
--	 * skip invoking update_cpu_topology() via stop-machine(). This is
--	 * necessary (and not just a fast-path optimization) since stop-machine
--	 * can end up electing a random CPU to run update_cpu_topology(), and
--	 * thus trick us into setting up incorrect cpu-node mappings (since
--	 * 'updates' is kzalloc()'ed).
--	 *
--	 * And for the similar reason, we will skip all the following updating.
--	 */
--	if (!cpumask_weight(&updated_cpus))
--		goto out;
--
--	if (cpus_locked)
--		stop_machine_cpuslocked(update_cpu_topology, &updates[0],
--					&updated_cpus);
--	else
--		stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
--
--	/*
--	 * Update the numa-cpu lookup table with the new mappings, even for
--	 * offline CPUs. It is best to perform this update from the stop-
--	 * machine context.
--	 */
--	if (cpus_locked)
--		stop_machine_cpuslocked(update_lookup_table, &updates[0],
--					cpumask_of(raw_smp_processor_id()));
--	else
--		stop_machine(update_lookup_table, &updates[0],
--			     cpumask_of(raw_smp_processor_id()));
--
--	for (ud = &updates[0]; ud; ud = ud->next) {
--		unregister_cpu_under_node(ud->cpu, ud->old_nid);
--		register_cpu_under_node(ud->cpu, ud->new_nid);
--
--		dev = get_cpu_device(ud->cpu);
--		if (dev)
--			kobject_uevent(&dev->kobj, KOBJ_CHANGE);
--		cpumask_clear_cpu(ud->cpu, &cpu_associativity_changes_mask);
--		changed = 1;
--	}
--
--out:
--	kfree(updates);
--	return changed;
-+	return 0;
+ 	return count;
  }
  
- int arch_update_cpu_topology(void)
+diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
+index f789693f61f4..81e0ac58d620 100644
+--- a/arch/powerpc/platforms/pseries/suspend.c
++++ b/arch/powerpc/platforms/pseries/suspend.c
+@@ -145,11 +145,8 @@ static ssize_t store_hibernate(struct device *dev,
+ 			ssleep(1);
+ 	} while (rc == -EAGAIN);
+ 
+-	if (!rc) {
+-		stop_topology_update();
++	if (!rc)
+ 		rc = pm_suspend(PM_SUSPEND_MEM);
+-		start_topology_update();
+-	}
+ 
+ 	stream_id = 0;
+ 
 -- 
 2.25.4
 
