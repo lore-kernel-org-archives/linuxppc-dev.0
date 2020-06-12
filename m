@@ -2,68 +2,92 @@ Return-Path: <SRS0=EtvQ=7Z=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0064C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:48:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D07BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4DC77207ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:48:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4DC77207ED
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 08340207ED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 05:49:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08340207ED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49jqWy44dvzDr1Q
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:48:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49jqYq5lM8zDr2K
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jun 2020 15:49:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49jplp3zrCzDqk8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:13:22 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49jplb2vW1z9v0mr;
- Fri, 12 Jun 2020 07:13:15 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qopzQPgeMR79; Fri, 12 Jun 2020 07:13:15 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49jplb1SChz9v0mq;
- Fri, 12 Jun 2020 07:13:15 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C8848B77C;
- Fri, 12 Jun 2020 07:13:16 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id UVi1GQf-PVlC; Fri, 12 Jun 2020 07:13:16 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 05B688B75B;
- Fri, 12 Jun 2020 07:13:14 +0200 (CEST)
-Subject: Re: ppc64le and 32-bit LE userland compatibility
-To: Will Springer <skirmisher@protonmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <2047231.C4sosBPzcN@sheen>
- <8be94d2e-8e20-52b6-22e6-152b79a94139@csgroup.eu> <2498690.q0ZmV6gNhb@sheen>
- <1787237.g5d078U9FE@sheen>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <e395b07e-c515-9167-0799-32181e767721@csgroup.eu>
-Date: Fri, 12 Jun 2020 07:13:08 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49jpmT2bNTzDqhD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2020 15:14:01 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05C53Dxk051763; Fri, 12 Jun 2020 01:13:56 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31kx98f02w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 12 Jun 2020 01:13:56 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05C55I5f058137;
+ Fri, 12 Jun 2020 01:13:55 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31kx98f02n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 12 Jun 2020 01:13:55 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05C59KRA022133;
+ Fri, 12 Jun 2020 05:13:55 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma01dal.us.ibm.com with ESMTP id 31hyh06ahq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 12 Jun 2020 05:13:55 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05C5Csn649742086
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 12 Jun 2020 05:12:54 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F1E1B205F;
+ Fri, 12 Jun 2020 05:12:54 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 116D5B2065;
+ Fri, 12 Jun 2020 05:12:54 +0000 (GMT)
+Received: from localhost (unknown [9.65.252.60])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 12 Jun 2020 05:12:53 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 16/18] powerpc/pseries: remove memory "re-add" implementation
+Date: Fri, 12 Jun 2020 00:12:36 -0500
+Message-Id: <20200612051238.1007764-17-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200612051238.1007764-1-nathanl@linux.ibm.com>
+References: <20200612051238.1007764-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1787237.g5d078U9FE@sheen>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-11_23:2020-06-11,
+ 2020-06-11 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015
+ phishscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0 mlxscore=0
+ adultscore=0 impostorscore=0 suspectscore=1 priorityscore=1501
+ mlxlogscore=999 cotscore=-2147483648 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006110174
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,55 +99,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-alpha@sourceware.org, eery@paperfox.es, daniel@octaforge.org,
- musl@lists.openwall.com, binutils@sourceware.org, libc-dev@lists.llvm.org
+Cc: tyreld@linux.ibm.com, srikar@linux.vnet.ibm.com, ego@linux.vnet.ibm.com,
+ npiggin@gmail.com, svaidy@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+dlpar_memory() no longer has any callers which pass
+PSERIES_HP_ELOG_ACTION_READD. Remove this case and the corresponding
+unreachable code.
 
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/include/asm/rtas.h               |  1 -
+ .../platforms/pseries/hotplug-memory.c        | 42 -------------------
+ 2 files changed, 43 deletions(-)
 
-Le 06/06/2020 à 01:54, Will Springer a écrit :
-> On Saturday, May 30, 2020 3:17:24 PM PDT Will Springer wrote:
->> On Saturday, May 30, 2020 8:37:43 AM PDT Christophe Leroy wrote:
->>> There is a series at
->>> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=173231
->>> to switch powerpc to the Generic C VDSO.
->>>
->>> Can you try and see whether it fixes your issue ?
->>>
->>> Christophe
->>
->> Sure thing, I spotted that after making the initial post. Will report
->> back with results.
->>
->> Will [she/her]
-> 
-> Sorry for the wait, I just sat down to work on this again yesterday.
-> 
-> Tested this series on top of stable/linux-5.7.y (5.7.0 at the time of
-> writing), plus the one-line signal handler patch. Had to rewind to the
-> state of powerpc/merge at the time of the mail before the patch would
-> apply, then cherry-picked to 5.6 until I realized the patchset used some
-> functionality that didn't land until 5.7, so I moved it there.
-> 
-> Good news is that `date` now works correctly with the vdso call in 32-bit
-> LE. Bad news is it seems to have broken things on the 64-bit side—in my
-> testing, Void kicks off runit but hangs after starting eudev, and in a
-> Debian Stretch system, systemd doesn't get to the point of printing
-> anything whatsoever. (I had to `init=/bin/sh` to confirm the date worked
-> in ppcle, although in ppc64le running `date` also hung the system when it
-> made the vdso call...) Not sure how to approach debugging that, so I'd
-> appreciate any pointers.
-> 
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 0107d724e9da..55f9a154c95d 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -215,7 +215,6 @@ inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
+ 
+ #define PSERIES_HP_ELOG_ACTION_ADD	1
+ #define PSERIES_HP_ELOG_ACTION_REMOVE	2
+-#define PSERIES_HP_ELOG_ACTION_READD	3
+ 
+ #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+ #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 5ace2f9a277e..67ece3ac9ac2 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -487,40 +487,6 @@ static int dlpar_memory_remove_by_index(u32 drc_index)
+ 	return rc;
+ }
+ 
+-static int dlpar_memory_readd_by_index(u32 drc_index)
+-{
+-	struct drmem_lmb *lmb;
+-	int lmb_found;
+-	int rc;
+-
+-	pr_info("Attempting to update LMB, drc index %x\n", drc_index);
+-
+-	lmb_found = 0;
+-	for_each_drmem_lmb(lmb) {
+-		if (lmb->drc_index == drc_index) {
+-			lmb_found = 1;
+-			rc = dlpar_remove_lmb(lmb);
+-			if (!rc) {
+-				rc = dlpar_add_lmb(lmb);
+-				if (rc)
+-					dlpar_release_drc(lmb->drc_index);
+-			}
+-			break;
+-		}
+-	}
+-
+-	if (!lmb_found)
+-		rc = -EINVAL;
+-
+-	if (rc)
+-		pr_info("Failed to update memory at %llx\n",
+-			lmb->base_addr);
+-	else
+-		pr_info("Memory at %llx was updated\n", lmb->base_addr);
+-
+-	return rc;
+-}
+-
+ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+ 	struct drmem_lmb *lmb, *start_lmb, *end_lmb;
+@@ -617,10 +583,6 @@ static int dlpar_memory_remove_by_index(u32 drc_index)
+ {
+ 	return -EOPNOTSUPP;
+ }
+-static int dlpar_memory_readd_by_index(u32 drc_index)
+-{
+-	return -EOPNOTSUPP;
+-}
+ 
+ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
+ {
+@@ -902,10 +864,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 			break;
+ 		}
+ 
+-		break;
+-	case PSERIES_HP_ELOG_ACTION_READD:
+-		drc_index = hp_elog->_drc_u.drc_index;
+-		rc = dlpar_memory_readd_by_index(drc_index);
+ 		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+-- 
+2.25.4
 
-Does it breaks only ppc64le vdso or also ppc64 (be) vdso ?
-
-I never had a chance to run any test on ppc64 as I only have a kernel 
-cross compiler.
-
-Would you have a chance to build and run vdsotest from 
-https://github.com/nathanlynch/vdsotest ?
-
-Thanks
-Christophe
