@@ -2,23 +2,23 @@ Return-Path: <SRS0=Y7Jt=72=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2F72C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2020 21:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB727C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2020 21:22:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3ED8207BC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2020 21:18:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3ED8207BC
+	by mail.kernel.org (Postfix) with ESMTPS id 82EF92078A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jun 2020 21:22:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82EF92078A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kb.kras.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49kr6T6W7KzDqvh
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2020 07:18:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49krC53CnrzDqwV
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jun 2020 07:22:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kb.kras.ru (client-ip=62.213.33.10; helo=ispman.iskranet.ru;
  envelope-from=asolokha@kb.kras.ru; receiver=<UNKNOWN>)
@@ -27,23 +27,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49kr4S2DZ5zDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2020 07:16:22 +1000 (AEST)
-Received: by ispman.iskranet.ru (Postfix, from userid 8)
- id 1A54882179C; Sat, 13 Jun 2020 23:28:05 +0700 (KRAT)
-Received: from himel.orionnet.ru (121.253.33.171.ip.orionnet.ru
- [171.33.253.121]) (Authenticated sender: asolokha@kb.kras.ru)
- by ispman.iskranet.ru (Postfix) with ESMTPA id 9306982179C;
- Sat, 13 Jun 2020 23:28:03 +0700 (KRAT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49kr9C61nPzDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2020 07:20:31 +1000 (AEST)
+Received: from himel (121.253.33.171.ip.orionnet.ru [171.33.253.121])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ (Authenticated sender: asolokha@kb.kras.ru)
+ by ispman.iskranet.ru (Postfix) with ESMTPSA id 927FE8217A3;
+ Sun, 14 Jun 2020 04:20:27 +0700 (KRAT)
 From: Arseny Solokha <asolokha@kb.kras.ru>
-To: Michael Ellerman <mpe@ellerman.id.au>, Jason Yan <yanaijie@huawei.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/fsl_booke/32: fix build with CONFIG_RANDOMIZE_BASE
-Date: Sat, 13 Jun 2020 23:28:01 +0700
-Message-Id: <20200613162801.1946619-1-asolokha@kb.kras.ru>
-X-Mailer: git-send-email 2.27.0
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/fsl_booke/32: fix build with CONFIG_RANDOMIZE_BASE
+References: <20200613162801.1946619-1-asolokha@kb.kras.ru>
+ <754d31be-730b-8f18-4ead-ba2f303650d0@csgroup.eu>
+Date: Sun, 14 Jun 2020 04:20:25 +0700
+In-Reply-To: <754d31be-730b-8f18-4ead-ba2f303650d0@csgroup.eu> (Christophe
+ Leroy's message of "Sat, 13 Jun 2020 19:28:19 +0200")
+Message-ID: <87imfupsrq.fsf@himel>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,46 +59,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Scott Wood <oss@buserror.net>, Christophe Leroy <christophe.leroy@c-s.fr>,
- Arseny Solokha <asolokha@kb.kras.ru>, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Jason Yan <yanaijie@huawei.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Scott Wood <oss@buserror.net>, Arseny Solokha <asolokha@kb.kras.ru>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Building the current 5.8 kernel for a e500 machine with
-CONFIG_RANDOMIZE_BASE set yields the following failure:
+> Le 13/06/2020 =C3=A0 18:28, Arseny Solokha a =C3=A9crit=C2=A0:
+>> Building the current 5.8 kernel for a e500 machine with
+>> CONFIG_RANDOMIZE_BASE set yields the following failure:
+>>
+>>    arch/powerpc/mm/nohash/kaslr_booke.c: In function 'kaslr_early_init':
+>>    arch/powerpc/mm/nohash/kaslr_booke.c:387:2: error: implicit declarati=
+on
+>> of function 'flush_icache_range'; did you mean 'flush_tlb_range'?
+>> [-Werror=3Dimplicit-function-declaration]
+>>
+>> Indeed, including asm/cacheflush.h into kaslr_booke.c fixes the build.
+>>
+>> The issue dates back to the introduction of that file and probably went
+>> unnoticed because there's no in-tree defconfig with CONFIG_RANDOMIZE_BASE
+>> set.
+>
+> I don't get this problem with mpc85xx_defconfig + RELOCATABLE +
+> RANDOMIZE_BASE.
 
-  arch/powerpc/mm/nohash/kaslr_booke.c: In function 'kaslr_early_init':
-  arch/powerpc/mm/nohash/kaslr_booke.c:387:2: error: implicit declaration
-of function 'flush_icache_range'; did you mean 'flush_tlb_range'?
-[-Werror=implicit-function-declaration]
+Ah, OK. So the critical difference between mpc85xx_defconfig and our custom
+config is that the former sets CONFIG_BLOCK while ours doesn't. Then we hav=
+e the
+following dependence chain:
 
-Indeed, including asm/cacheflush.h into kaslr_booke.c fixes the build.
+arch/powerpc/mm/nohash/kaslr_booke.c
+  include/linux/swap.h
+    include/linux/memcontrol.h
+      include/linux/writeback.h
+        include/linux/blk-cgroup.h
+          include/linux/blkdev.h
 
-The issue dates back to the introduction of that file and probably went
-unnoticed because there's no in-tree defconfig with CONFIG_RANDOMIZE_BASE
-set.
+          #ifdef CONFIG_BLOCK
+          #include <linux/pagemap.h>
+          #endif
 
-Fixes: 2b0e86cc5de6 ("powerpc/fsl_booke/32: implement KASLR infrastructure")
-Cc: stable@vger.kernel.org
-Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
----
- arch/powerpc/mm/nohash/kaslr_booke.c | 1 +
- 1 file changed, 1 insertion(+)
+          include/linux/pagemap.h
+            include/linux/highmem.h
+              arch/powerpc/include/asm/cacheflush.h
 
-diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/nohash/kaslr_booke.c
-index 4a75f2d9bf0e..bce0e5349978 100644
---- a/arch/powerpc/mm/nohash/kaslr_booke.c
-+++ b/arch/powerpc/mm/nohash/kaslr_booke.c
-@@ -14,6 +14,7 @@
- #include <linux/memblock.h>
- #include <linux/libfdt.h>
- #include <linux/crash_core.h>
-+#include <asm/cacheflush.h>
- #include <asm/pgalloc.h>
- #include <asm/prom.h>
- #include <asm/kdump.h>
--- 
-2.27.0
+and that's how the latter doesn't get included in
+arch/powerpc/mm/nohash/kaslr_booke.c, because in our config CONFIG_BLOCK is=
+ not
+defined in the first place.
 
+Arseny
+
+> Christophe
+>
+>>
+>> Fixes: 2b0e86cc5de6 ("powerpc/fsl_booke/32: implement KASLR infrastructu=
+re")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
+>> ---
+>>   arch/powerpc/mm/nohash/kaslr_booke.c | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/powerpc/mm/nohash/kaslr_booke.c b/arch/powerpc/mm/noha=
+sh/kaslr_booke.c
+>> index 4a75f2d9bf0e..bce0e5349978 100644
+>> --- a/arch/powerpc/mm/nohash/kaslr_booke.c
+>> +++ b/arch/powerpc/mm/nohash/kaslr_booke.c
+>> @@ -14,6 +14,7 @@
+>>   #include <linux/memblock.h>
+>>   #include <linux/libfdt.h>
+>>   #include <linux/crash_core.h>
+>> +#include <asm/cacheflush.h>
+>>   #include <asm/pgalloc.h>
+>>   #include <asm/prom.h>
+>>   #include <asm/kdump.h>
+>>
