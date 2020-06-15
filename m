@@ -2,76 +2,75 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80286C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 14:07:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF6AAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 14:10:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F3B4207D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 14:07:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ZtjyYI1P"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F3B4207D3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 96C99207D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 14:10:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96C99207D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ltS80jHtzDqbG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 00:07:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ltWg2h8NzDqbX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 00:10:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.17.13; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=ZtjyYI1P; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=none (p=none dis=none) header.from=arndb.de
+X-Greylist: delayed 352 seconds by postgrey-1.36 at bilbo;
+ Mon, 15 Jun 2020 23:43:14 AEST
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lsTD6NL5zDqSc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 23:22:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=v1JuBkjgVZu6X7IHxoR7umQyE9OF6DuLKgiaH5Hdipo=; b=ZtjyYI1PdGCLGqQJMjknk88JGR
- DPJo+q7dRMl6FQf1kQ+G9qipHOGhNzgMsWxR6R7yPRVKFhAffl7efh8hLqcXncydwOLJLQBa1ygqZ
- yBbeegWmPfz5A/nnnuAfMFX1YCHy3fSdiOcfryly1pKErYTXfpt3bF6mNOXb4r+fAOtVmIu8cex6R
- meDI2kVU5cRGqrQvFjfJI1PYLyfrR3gF/RPlMO3LgzJZj/ouo2HFD3NURcKaw/WlWE1yGr0eJSr3y
- LhT/61NbJ5pm1cRmAI1jyU7bNUJDBec63wahNEtmR/Pl+r0jS24HybzVHNRurvsk1CHnJKB4xguqc
- 9/vUqJlQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jkp4Z-0007C9-4L; Mon, 15 Jun 2020 13:22:47 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B653D306102;
- Mon, 15 Jun 2020 15:22:44 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id A0C2C2392E70D; Mon, 15 Jun 2020 15:22:44 +0200 (CEST)
-Date: Mon, 15 Jun 2020 15:22:44 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 3/3] powerpc/8xx: Provide ptep_get() with 16k pages
-Message-ID: <20200615132244.GR2531@hirez.programming.kicks-ass.net>
-References: <cover.1592225557.git.christophe.leroy@csgroup.eu>
- <341688399c1b102756046d19ea6ce39db1ae4742.1592225558.git.christophe.leroy@csgroup.eu>
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lswf0l7lzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 23:43:12 +1000 (AEST)
+Received: from mail-qt1-f178.google.com ([209.85.160.178]) by
+ mrelayeu.kundenserver.de (mreue108 [212.227.15.145]) with ESMTPSA (Nemesis)
+ id 1MvbJw-1isS3G1W1G-00shSU for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun
+ 2020 15:43:08 +0200
+Received: by mail-qt1-f178.google.com with SMTP id j32so12535976qte.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 06:43:08 -0700 (PDT)
+X-Gm-Message-State: AOAM532lmLv71x7a8nawEzTGcUbUekS8SMM8X2iS27vFA6wMfk+4osIy
+ di8Uar/eaoLmjWDWQiXOOyRvXXX5dAUiIoTsCGs=
+X-Google-Smtp-Source: ABdhPJx0OrXbUjQwUsWKBodkMGMMvkpFLaAJzfOc49aX/puOn3OjGDjHT6HOJmLaKzQk1we2dir5thvL/kN4mVexpfQ=
+X-Received: by 2002:ac8:7417:: with SMTP id p23mr15803567qtq.204.1592228587251; 
+ Mon, 15 Jun 2020 06:43:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <341688399c1b102756046d19ea6ce39db1ae4742.1592225558.git.christophe.leroy@csgroup.eu>
+References: <20200615130032.931285-1-hch@lst.de>
+In-Reply-To: <20200615130032.931285-1-hch@lst.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 15 Jun 2020 15:42:51 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3CWhrfyR4taGip8xE3U6HcRMtKBY5A69_cqzJwU1N+Cw@mail.gmail.com>
+Message-ID: <CAK8P3a3CWhrfyR4taGip8xE3U6HcRMtKBY5A69_cqzJwU1N+Cw@mail.gmail.com>
+Subject: Re: properly support exec and wait with kernel pointers
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:Hhj12cfEI0sEMkLgti31P8yKQHGcsMLGW2Q3EBNKh4M/ltdbZeC
+ 1rJDADAejJFceflQoAIPcxk6j3knnJLI/lQbZxtDee23bl+efijOaD5Nae4xhJg4kRLlBQW
+ FR50zepJQSjmdiu4+2LX+VnLlU0cgWd3+29kJI4R2nX2VUZ5v03U3vEjMZ/A+KfGS1XJdFc
+ BzXNXy7J+J5eIqmQwuvlg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XZocXQHC56c=:GDKGcMR2ei9Dfbl4Xx7dtG
+ YzDIJv/E3/75/j3PIXlWtz4OI6mWDsiCmKHoCJkc4TNv48wYUiZiYHBN17ENzm4nCqeWdOIJT
+ OgzdedwuPqvsdcLPem2PiHzmiX4ja/s8aVOyO+okBtltZT5y2dNP/16LhSPO5Oro4DWzqoc6C
+ wzI3qno1+nm8IqGLPMCLUIWKS/cnuEoYZPeWpWRsYZOZaCTyk54V0miDFo8TIztA2wMUpUYui
+ Oh5Wz1Arf22/UGpck09mK+5bFtfDN3WcoXDfGm70KIJqwOGABm+6PeF6AsjrMfhxSCGktfXkf
+ kHj8MbSb3Nk+UIPUFRmmv/qdqHDxlB7J+4Y4EujbYy1cyjgPQLEei7Cdof0pdg4gDbbAGsTOD
+ modCO0llYTrirTeIlQiDf99IJoK6ikHxKahSWRbwtpwV4HcER3bEdKbKFcN4+Cr/eNVp/NpRH
+ rm7f7FY4h1ZIe4I4oCooRZy632NsraLGZ1+NtMbiNvK1qallyCl7KuSGZTlpJT5xI0kQeGbfO
+ S5rjfCKdEz0SrdV608NGFDxbcYEWCN6RBbowdeF65fvmcGW4wll7Xnzb3Oin1AMpWdCIyb0H3
+ ZsBKqeS6FqBlDmFS7oiEp7NUe8+mBYJsL2EHzbAk/SOZD/xTE4Gq/m7dfK+bYmBLsgXvJGsbl
+ P7vm+zNyKhkMGXe9j8C36BGQ3bbTZA9HuSrOYRluOguR3WQiAfETKriR/ghOyncu8UqLmjGtw
+ 1nEZQn0xDgqNeaEf8m4gyX/i9mRworLq0UFq7ZBI3kiLFm130/NaZJWve/Q/As/6lEhrEbqLZ
+ 9Z3bsARoYKnjfC8FCEnU3JPKZx/kxMd8wQccNSR9DgQD8WspMs=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,45 +82,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Luis Chamberlain <mcgrof@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 15, 2020 at 12:57:59PM +0000, Christophe Leroy wrote:
-> READ_ONCE() now enforces atomic read, which leads to:
+On Mon, Jun 15, 2020 at 3:00 PM Christoph Hellwig <hch@lst.de> wrote:
+>
+> Hi all,
+>
+> this series first cleans up the exec code and then adds proper
+> kernel_execveat and kernel_wait callers instead of relying on the fact
+> that the early init code and kernel threads implicitly run with
+> the address limit set to KERNEL_DS.
+>
+> Note that the cleanup removes the compat execve(at) handlers (almost)
+> entirely, as we can handle the compat difference very nicely in a
+> unified codebase.  The only exception is x86 where this would list the
+> handlers twice in the same syscall table due to the messed up x32
+> design.  I had to add an extra compat handler just for that case, but
+> maybe someone has a better idea.
 
+I looked at all the patches and I like it a lot. I replied with some suggestions
+for x32, but maybe I misunderstood what its problem is, as I don't see
+anything preventing us from having two entries in the x32 table pointing
+to the same function.
 
-> Fixes: 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for {READ,WRITE}_ONCE() memory accesses")
-> Cc: Will Deacon <will@kernel.org>
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/include/asm/nohash/32/pgtable.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> index b56f14160ae5..77addb599ce7 100644
-> --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> @@ -286,6 +286,16 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
->  	return __pte(pte_update(mm, addr, ptep, ~0, 0, 0));
->  }
->  
-> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-> +#define __HAVE_ARCH_PTEP_GET
-> +static inline pte_t ptep_get(pte_t *ptep)
-> +{
-> +	pte_t pte = {READ_ONCE(ptep->pte), 0, 0, 0};
-> +
-> +	return pte;
-> +}
-> +#endif
-
-Would it make sense to have a comment with this magic? The casual reader
-might wonder WTH just happened when he stumbles on this :-)
-
-Other than that, the series looks good to me, Thanks!
-
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+       Arnd
