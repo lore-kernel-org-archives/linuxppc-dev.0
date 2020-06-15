@@ -2,23 +2,23 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C44C0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72857C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:32:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B5B9207DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:29:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B5B9207DA
+	by mail.kernel.org (Postfix) with ESMTPS id 228DC2071A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:32:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 228DC2071A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lsd30W6lzDqQJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:29:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lshf5VRczDqYh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:32:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,39 +27,41 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lrwY386dzDqMw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 22:58:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lrwY3CC2zDqPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 22:58:03 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49lrwN3hbzz9v1fd;
- Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49lrwR2NKkz9v1fm;
+ Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Mt02zgRfRhQ2; Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ with ESMTP id IlY2ZH6Ulfbe; Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49lrwN2bq2z9v1fM;
- Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49lrwR1XZlz9v1fM;
+ Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B54988B792;
- Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 961138B792;
+ Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gAwaiMFxQKLE; Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ with ESMTP id 4D5CXE9zWnFa; Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.104])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 645BB8B75F;
- Mon, 15 Jun 2020 14:57:56 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4317D8B75F;
+ Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F187565B0E; Mon, 15 Jun 2020 12:57:55 +0000 (UTC)
-Message-Id: <cover.1592225557.git.christophe.leroy@csgroup.eu>
+ id 3DDA165B0E; Mon, 15 Jun 2020 12:57:59 +0000 (UTC)
+Message-Id: <341688399c1b102756046d19ea6ce39db1ae4742.1592225558.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1592225557.git.christophe.leroy@csgroup.eu>
+References: <cover.1592225557.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 0/3] Fix build failure with v5.8-rc1
+Subject: [PATCH 3/3] powerpc/8xx: Provide ptep_get() with 16k pages
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Will Deacon <will@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
  "Peter Zijlstra (Intel)" <peterz@infradead.org>
-Date: Mon, 15 Jun 2020 12:57:55 +0000 (UTC)
+Date: Mon, 15 Jun 2020 12:57:59 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,14 +79,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for
-{READ,WRITE}_ONCE() memory accesses") leads to following build
-failure on powerpc 8xx.
-
-To fix it, this small series introduces a new helper named ptep_get()
-to replace the direct access with READ_ONCE(). This new helper
-can be overriden by architectures.
-
+READ_ONCE() now enforces atomic read, which leads to:
 
   CC      mm/gup.o
 In file included from ./include/linux/kernel.h:11:0,
@@ -136,17 +131,36 @@ mm/gup.c:2199:9: note: in expansion of macro 'READ_ONCE'
          ^
 make[2]: *** [mm/gup.o] Error 1
 
-Christophe Leroy (3):
-  mm/gup: Use huge_ptep_get() in gup_hugepte()
-  mm: Allow arches to provide ptep_get()
-  powerpc/8xx: Provide ptep_get() with 16k pages
+Define ptep_get() on 8xx when using 16k pages.
 
+Fixes: 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for {READ,WRITE}_ONCE() memory accesses")
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
  arch/powerpc/include/asm/nohash/32/pgtable.h | 10 ++++++++++
- include/asm-generic/hugetlb.h                |  2 +-
- include/linux/pgtable.h                      |  7 +++++++
- mm/gup.c                                     |  4 ++--
- 4 files changed, 20 insertions(+), 3 deletions(-)
+ 1 file changed, 10 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index b56f14160ae5..77addb599ce7 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -286,6 +286,16 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ 	return __pte(pte_update(mm, addr, ptep, ~0, 0, 0));
+ }
+ 
++#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
++#define __HAVE_ARCH_PTEP_GET
++static inline pte_t ptep_get(pte_t *ptep)
++{
++	pte_t pte = {READ_ONCE(ptep->pte), 0, 0, 0};
++
++	return pte;
++}
++#endif
++
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
 -- 
 2.25.0
 
