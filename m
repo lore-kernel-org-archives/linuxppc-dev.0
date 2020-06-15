@@ -6,68 +6,68 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52C3FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C3AAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:37:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C03A2067B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:35:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C03A2067B
+	by mail.kernel.org (Postfix) with ESMTPS id 189862067B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:37:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 189862067B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ljmM5pSyzDqMW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 17:35:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ljpt01kLzDqSD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 17:37:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lh1Q1ws0zDqSG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 16:16:42 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lh1R4XSzzDqKT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 16:16:43 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05F622eA032504; Mon, 15 Jun 2020 02:16:36 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31ncdggq1e-1
+ 05F645ji011874; Mon, 15 Jun 2020 02:16:39 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31n9fsvgy2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 02:16:36 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6Ew2j031725;
- Mon, 15 Jun 2020 06:16:35 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma02dal.us.ibm.com with ESMTP id 31mpe991g6-1
+ Mon, 15 Jun 2020 02:16:38 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6Ekkd022967;
+ Mon, 15 Jun 2020 06:16:38 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma04dal.us.ibm.com with ESMTP id 31mpe8rywn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 06:16:35 +0000
+ Mon, 15 Jun 2020 06:16:37 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05F6GW8A4260292
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05F6Favp57868786
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 15 Jun 2020 06:16:32 GMT
+ Mon, 15 Jun 2020 06:15:36 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1115C6057;
- Mon, 15 Jun 2020 06:16:33 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 37C85C605A;
+ Mon, 15 Jun 2020 06:15:36 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E5D3FC605B;
- Mon, 15 Jun 2020 06:16:31 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 1C432C6059;
+ Mon, 15 Jun 2020 06:15:34 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.2.91])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 15 Jun 2020 06:16:31 +0000 (GMT)
+ Mon, 15 Jun 2020 06:15:33 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 40/41] powerpc/book3s64/keys/kuap: Reset AMR/IAMR values on
- kexec
-Date: Mon, 15 Jun 2020 11:44:29 +0530
-Message-Id: <20200615061430.770174-41-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 19/41] powerpc/book3s64/kuap: Rename MMU_FTR_RADIX_KUAP to
+ MMU_FTR_KUAP
+Date: Mon, 15 Jun 2020 11:44:08 +0530
+Message-Id: <20200615061430.770174-20-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
 References: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
@@ -78,11 +78,12 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-15_01:2020-06-12,
  2020-06-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 clxscore=1015
- priorityscore=1501 adultscore=0 bulkscore=0 malwarescore=0 mlxscore=0
- lowpriorityscore=0 spamscore=0 impostorscore=0 cotscore=-2147483648
- phishscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006150050
+ phishscore=0
+ priorityscore=1501 bulkscore=0 spamscore=0 suspectscore=0
+ cotscore=-2147483648 adultscore=0 lowpriorityscore=0 impostorscore=0
+ mlxlogscore=999 mlxscore=0 malwarescore=0 clxscore=1015 classifier=spam
+ adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006150050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,134 +101,141 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We can kexec into a kernel that doesn't use memory keys for kernel
-mapping (such as an older kernel which doesn't support kuap/kuep with hash
-translation). We need to make sure we reset the AMR/IAMR value on kexec
-otherwise, the new kernel will use key 0 for kernel mapping and the old
-AMR value prevents access to key 0.
-
-This patch also removes reset if IAMR and AMOR in kexec_sequence. Reset of AMOR
-is not needed and the IAMR reset is partial (it doesn't do the reset
-on secondary cpus) and is redundant with this patch.
+The next set of patches adds support for kuap with hash translation.
+In preparation for that rename/move kuap related functions to
+non radix names.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/kup.h | 20 ++++++++++++++++++++
- arch/powerpc/include/asm/kup.h           | 14 ++++++++++++++
- arch/powerpc/kernel/misc_64.S            | 14 --------------
- arch/powerpc/kexec/core_64.c             |  3 +++
- arch/powerpc/mm/book3s64/pgtable.c       |  3 +++
- 5 files changed, 40 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/book3s/64/kup.h | 18 +++++++++---------
+ arch/powerpc/include/asm/mmu.h           |  6 +++---
+ arch/powerpc/mm/book3s64/pkeys.c         |  2 +-
+ 3 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
-index 78b3f67ae8c5..be04733c89f3 100644
+index bbac8b47df13..476bcd7b0e8b 100644
 --- a/arch/powerpc/include/asm/book3s/64/kup.h
 +++ b/arch/powerpc/include/asm/book3s/64/kup.h
-@@ -365,6 +365,26 @@ static inline bool bad_kuap_fault(struct pt_regs *regs, unsigned long address,
- }
- #endif /* CONFIG_PPC_KUAP */
+@@ -24,7 +24,7 @@
+ 	mtspr	SPRN_AMR, \gpr2
+ 	/* No isync required, see kuap_restore_amr() */
+ 998:
+-	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
++	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
+ #endif
+ .endm
  
-+#define reset_kuap reset_kuap
-+static inline void reset_kuap(void)
-+{
+@@ -36,7 +36,7 @@
+ 	sldi	\gpr2, \gpr2, AMR_KUAP_SHIFT
+ 999:	tdne	\gpr1, \gpr2
+ 	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
+-	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
++	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
+ #endif
+ .endm
+ 
+@@ -56,7 +56,7 @@
+ 	mtspr	SPRN_AMR, \gpr2
+ 	isync
+ 99:
+-	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_RADIX_KUAP, 67)
++	END_MMU_FTR_SECTION_NESTED_IFSET(MMU_FTR_KUAP, 67)
+ #endif
+ .endm
+ 
+@@ -69,7 +69,7 @@
+ 
+ static inline void kuap_restore_amr(struct pt_regs *regs, unsigned long amr)
+ {
+-	if (mmu_has_feature(MMU_FTR_RADIX_KUAP) && unlikely(regs->kuap != amr)) {
++	if (mmu_has_feature(MMU_FTR_KUAP) && unlikely(regs->kuap != amr)) {
+ 		isync();
+ 		mtspr(SPRN_AMR, regs->kuap);
+ 		/*
+@@ -82,7 +82,7 @@ static inline void kuap_restore_amr(struct pt_regs *regs, unsigned long amr)
+ 
+ static inline unsigned long kuap_get_and_check_amr(void)
+ {
+-	if (mmu_has_feature(MMU_FTR_RADIX_KUAP)) {
 +	if (mmu_has_feature(MMU_FTR_KUAP)) {
-+		mtspr(SPRN_AMR, 0);
-+		/*  Do we need isync()? We are going via a kexec reset */
-+		isync();
-+	}
-+}
-+
-+#define reset_kuep reset_kuep
-+static inline void reset_kuep(void)
-+{
-+	if (mmu_has_feature(MMU_FTR_KUEP)) {
-+		mtspr(SPRN_IAMR, 0);
-+		/*  Do we need isync()? We are going via a kexec reset */
-+		isync();
-+	}
-+}
-+
- #endif /* __ASSEMBLY__ */
+ 		unsigned long amr = mfspr(SPRN_AMR);
+ 		if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG)) /* kuap_check_amr() */
+ 			WARN_ON_ONCE(amr != AMR_KUAP_BLOCKED);
+@@ -93,7 +93,7 @@ static inline unsigned long kuap_get_and_check_amr(void)
  
- #endif /* _ASM_POWERPC_BOOK3S_64_KUP_H */
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index a29f69bbf6ec..c7ab7310f230 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -113,6 +113,20 @@ static inline void prevent_current_write_to_user(void)
- 	prevent_user_access(NULL, NULL, ~0UL, KUAP_CURRENT_WRITE);
+ static inline void kuap_check_amr(void)
+ {
+-	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && mmu_has_feature(MMU_FTR_RADIX_KUAP))
++	if (IS_ENABLED(CONFIG_PPC_KUAP_DEBUG) && mmu_has_feature(MMU_FTR_KUAP))
+ 		WARN_ON_ONCE(mfspr(SPRN_AMR) != AMR_KUAP_BLOCKED);
  }
  
-+#ifndef reset_kuap
-+#define reset_kuap reset_kuap
-+static inline void reset_kuap(void)
-+{
-+}
-+#endif
-+
-+#ifndef reset_kuep
-+#define reset_kuep reset_kuep
-+static inline void reset_kuep(void)
-+{
-+}
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
+@@ -104,7 +104,7 @@ static inline void kuap_check_amr(void)
  
- #endif /* _ASM_POWERPC_KUAP_H_ */
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 1864605eca29..7bb46ad98207 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -413,20 +413,6 @@ _GLOBAL(kexec_sequence)
- 	li	r0,0
- 	std	r0,16(r1)
+ static inline unsigned long get_kuap(void)
+ {
+-	if (!early_mmu_has_feature(MMU_FTR_RADIX_KUAP))
++	if (!early_mmu_has_feature(MMU_FTR_KUAP))
+ 		return 0;
  
--BEGIN_FTR_SECTION
--	/*
--	 * This is the best time to turn AMR/IAMR off.
--	 * key 0 is used in radix for supervisor<->user
--	 * protection, but on hash key 0 is reserved
--	 * ideally we want to enter with a clean state.
--	 * NOTE, we rely on r0 being 0 from above.
--	 */
--	mtspr	SPRN_IAMR,r0
--BEGIN_FTR_SECTION_NESTED(42)
--	mtspr	SPRN_AMOR,r0
--END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
--
- 	/* save regs for local vars on new stack.
- 	 * yes, we won't go back, but ...
- 	 */
-diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-index b4184092172a..a124715f33ea 100644
---- a/arch/powerpc/kexec/core_64.c
-+++ b/arch/powerpc/kexec/core_64.c
-@@ -152,6 +152,9 @@ static void kexec_smp_down(void *arg)
- 	if (ppc_md.kexec_cpu_down)
- 		ppc_md.kexec_cpu_down(0, 1);
+ 	return mfspr(SPRN_AMR);
+@@ -112,7 +112,7 @@ static inline unsigned long get_kuap(void)
  
-+	reset_kuap();
-+	reset_kuep();
-+
- 	kexec_smp_wait();
- 	/* NOTREACHED */
+ static inline void set_kuap(unsigned long value)
+ {
+-	if (!early_mmu_has_feature(MMU_FTR_RADIX_KUAP))
++	if (!early_mmu_has_feature(MMU_FTR_KUAP))
+ 		return;
+ 
+ 	/*
+@@ -162,7 +162,7 @@ static inline void restore_user_access(unsigned long flags)
+ static inline bool
+ bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ {
+-	return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
++	return WARN(mmu_has_feature(MMU_FTR_KUAP) &&
+ 		    (regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : AMR_KUAP_BLOCK_READ)),
+ 		    "Bug: %s fault blocked by AMR!", is_write ? "Write" : "Read");
  }
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index c58ad1049909..9673f4b74c9a 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -165,6 +165,9 @@ void mmu_cleanup_all(void)
- 		radix__mmu_cleanup_all();
- 	else if (mmu_hash_ops.hpte_clear_all)
- 		mmu_hash_ops.hpte_clear_all();
-+
-+	reset_kuap();
-+	reset_kuep();
- }
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 94435f85e3bc..14d7e6803453 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -112,7 +112,7 @@
+ /*
+  * Supports KUAP (key 0 controlling userspace addresses) on radix
+  */
+-#define MMU_FTR_RADIX_KUAP		ASM_CONST(0x80000000)
++#define MMU_FTR_KUAP			ASM_CONST(0x80000000)
  
- #ifdef CONFIG_MEMORY_HOTPLUG
+ /* MMU feature bit sets for various CPUs */
+ #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
+@@ -175,10 +175,10 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_RADIX_MMU
+ 		MMU_FTR_TYPE_RADIX |
++#endif /* CONFIG_PPC_RADIX_MMU */
+ #ifdef CONFIG_PPC_KUAP
+-		MMU_FTR_RADIX_KUAP |
++	MMU_FTR_KUAP |
+ #endif /* CONFIG_PPC_KUAP */
+-#endif /* CONFIG_PPC_RADIX_MMU */
+ #ifdef CONFIG_PPC_MEM_KEYS
+ 	MMU_FTR_PKEY |
+ #endif
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index 3c048a8d238f..ad3348b7e25c 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -228,7 +228,7 @@ void __init setup_kuap(bool disabled)
+ 
+ 	if (smp_processor_id() == boot_cpuid) {
+ 		pr_info("Activating Kernel Userspace Access Prevention\n");
+-		cur_cpu_spec->mmu_features |= MMU_FTR_RADIX_KUAP;
++		cur_cpu_spec->mmu_features |= MMU_FTR_KUAP;
+ 	}
+ 
+ 	/* Make sure userspace can't change the AMR */
 -- 
 2.26.2
 
