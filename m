@@ -2,58 +2,59 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4336BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 15:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6983C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 15:18:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0FE62063A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 15:12:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0FE62063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 644B32074D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 15:18:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 644B32074D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lvvN4xy3zDqcL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 01:12:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
- envelope-from=fenghua.yu@intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lw211cjvzDqCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 01:18:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+ spf=none (no SPF record) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lvV90Y9RzDqMw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 00:53:50 +1000 (AEST)
-IronPort-SDR: i9WgiRhyqXY33+R/kP1bQ+PHlwOG7hEMIeGlwRt9Vn83t2z1HJVXkZWtRWueg+yVaJZSERofQT
- GNZLG5f9MUeg==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jun 2020 07:53:46 -0700
-IronPort-SDR: hBkuUtQL8+lhTWXLYi651EBCBrGOEnQVfzIuldPKgK9Hg1HqC5sQmkx3kq2cejv4s2HjL2N4xD
- LCQ6U6PgIXpQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.73,514,1583222400"; d="scan'208";a="382567032"
-Received: from romley-ivt3.sc.intel.com ([172.25.110.60])
- by fmsmga001.fm.intel.com with ESMTP; 15 Jun 2020 07:53:46 -0700
-Date: Mon, 15 Jun 2020 07:53:46 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 00/12] x86: tag application address space for devices
-Message-ID: <20200615145345.GA13792@romley-ivt3.sc.intel.com>
-References: <1592008893-9388-1-git-send-email-fenghua.yu@intel.com>
- <20200615075202.GI2497@hirez.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200615075202.GI2497@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lvYR6tjWzDqcF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 00:56:37 +1000 (AEST)
+Received: from [2601:449:8480:af0:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1jkqUp-0004Ge-Sr; Mon, 15 Jun 2020 09:54:05 -0500
+Message-ID: <b1aea45c882859def80d77229f36598c5fb3cd0a.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Arseny Solokha <asolokha@kb.kras.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>,  Jason Yan <yanaijie@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Mon, 15 Jun 2020 09:53:58 -0500
+In-Reply-To: <20200613162801.1946619-1-asolokha@kb.kras.ru>
+References: <20200613162801.1946619-1-asolokha@kb.kras.ru>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8480:af0:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: asolokha@kb.kras.ru, mpe@ellerman.id.au, yanaijie@huawei.com,
+ linuxppc-dev@lists.ozlabs.org, christophe.leroy@c-s.fr,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [PATCH] powerpc/fsl_booke/32: fix build with CONFIG_RANDOMIZE_BASE
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,48 +66,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@intel.com>, H Peter Anvin <hpa@zytor.com>,
- Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Joerg Roedel <joro@8bytes.org>, x86 <x86@kernel.org>,
- amd-gfx <amd-gfx@lists.freedesktop.org>, Ingo Molnar <mingo@redhat.com>,
- Ravi V Shankar <ravi.v.shankar@intel.com>, Yu-cheng Yu <yu-cheng.yu@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Sohil Mehta <sohil.mehta@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Felix Kuehling <Felix.Kuehling@amd.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- Jacob Jun Pan <jacob.jun.pan@intel.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, David Woodhouse <dwmw2@infradead.org>,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, Peter,
-On Mon, Jun 15, 2020 at 09:52:02AM +0200, Peter Zijlstra wrote:
-> On Fri, Jun 12, 2020 at 05:41:21PM -0700, Fenghua Yu wrote:
+On Sat, 2020-06-13 at 23:28 +0700, Arseny Solokha wrote:
+> Building the current 5.8 kernel for a e500 machine with
+> CONFIG_RANDOMIZE_BASE set yields the following failure:
 > 
-> > This series only provides simple and basic support for ENQCMD and the MSR:
-> > 1. Clean up type definitions (patch 1-3). These patches can be in a
-> >    separate series.
-> >    - Define "pasid" as "unsigned int" consistently (patch 1 and 2).
-> >    - Define "flags" as "unsigned int"
-> > 2. Explain different various technical terms used in the series (patch 4).
-> > 3. Enumerate support for ENQCMD in the processor (patch 5).
-> > 4. Handle FPU PASID state and the MSR during context switch (patches 6-7).
-> > 5. Define "pasid" in mm_struct (patch 8).
-> > 5. Clear PASID state for new mm and forked and cloned thread (patch 9-10).
-> > 6. Allocate and free PASID for a process (patch 11).
-> > 7. Fix up the PASID MSR in #GP handler when one thread in a process
-> >    executes ENQCMD for the first time (patches 12).
+>   arch/powerpc/mm/nohash/kaslr_booke.c: In function 'kaslr_early_init':
+>   arch/powerpc/mm/nohash/kaslr_booke.c:387:2: error: implicit declaration
+> of function 'flush_icache_range'; did you mean 'flush_tlb_range'?
+> [-Werror=implicit-function-declaration]
 > 
-> If this is per mm, should not switch_mm() update the MSR ? I'm not
-> seeing that, nor do I see it explained why not.
+> Indeed, including asm/cacheflush.h into kaslr_booke.c fixes the build.
+> 
+> The issue dates back to the introduction of that file and probably went
+> unnoticed because there's no in-tree defconfig with CONFIG_RANDOMIZE_BASE
+> set.
+> 
+> Fixes: 2b0e86cc5de6 ("powerpc/fsl_booke/32: implement KASLR infrastructure")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
+> ---
+>  arch/powerpc/mm/nohash/kaslr_booke.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-PASID value is per mm and all threads in a process have the same PASID
-value in the MSR. However, the MSR is per thread and is context switched
-by XSAVES/XRSTROS in patches 6-7.
+Acked-by: Scott Wood <oss@buserror.net>
 
-Thanks.
+-Scott
 
--Fenghua
+
