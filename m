@@ -2,75 +2,64 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C7A3C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 08:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8815CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 08:28:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E02C206E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 08:09:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oczihRk4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E02C206E2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id EABCF2074D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 08:28:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EABCF2074D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lkWD5RZgzDqNW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 18:09:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lkxN5R9yzDqNH
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 18:28:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=merlin.20170209 header.b=oczihRk4; 
- dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lkFM20KjzDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 17:57:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=IulpOX2ZXgYia0hOJz1PbMFRWrf1LR01eti82WL5/mk=; b=oczihRk4Bm3qcABlCzOnJf+2OJ
- 0XEBNhA69dQZfOVFjforrMajTMyU6oALzgTuDvb2GeMeG2T1r+tILte4kFI4uUu5taSMg3ym3qIXB
- /+SpsF9m/yFWIopT3APyh4HKoysD8lYUyRyOuZnjn6W8bh4lVl3p2NODhfXAJewux95NkSmBkzxEO
- RTgAZ+9Lvii0nNQJWkcQs7m3PJAYCZAAspLWgGZASo7fVIJQ8JP5TfSUCjCBOg204HN+5bc9ES9Xj
- +db4VuKfq1mznnM24NsJLQ4Z4kVaIXAZWi3u8V9+2eWuWqt6f5a7Pm9z7n/TEczt4pSpBO1v1vZes
- dhhuLDvA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jkjz8-0005nK-Rt; Mon, 15 Jun 2020 07:56:51 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 2D9D6301A32;
- Mon, 15 Jun 2020 09:56:49 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 1903521059BE1; Mon, 15 Jun 2020 09:56:49 +0200 (CEST)
-Date: Mon, 15 Jun 2020 09:56:49 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Subject: Re: [PATCH v2 12/12] x86/traps: Fix up invalid PASID
-Message-ID: <20200615075649.GK2497@hirez.programming.kicks-ass.net>
-References: <1592008893-9388-1-git-send-email-fenghua.yu@intel.com>
- <1592008893-9388-13-git-send-email-fenghua.yu@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1592008893-9388-13-git-send-email-fenghua.yu@intel.com>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lkvG18WrzDqW3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 18:26:31 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49lkv53h6Nz9v03C;
+ Mon, 15 Jun 2020 10:26:25 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id b_rTsqgA_kcz; Mon, 15 Jun 2020 10:26:25 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49lkv23ynTz9v1fZ;
+ Mon, 15 Jun 2020 10:26:22 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 81B3D8B786;
+ Mon, 15 Jun 2020 09:48:25 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id lsX-bHFjEBuH; Mon, 15 Jun 2020 09:48:25 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.104])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 44F098B791;
+ Mon, 15 Jun 2020 09:48:25 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 1B25265B0A; Mon, 15 Jun 2020 07:48:25 +0000 (UTC)
+Message-Id: <ca8c9f8249f523b1fab873e67b81b11989d46553.1592207216.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/fixmap: Fix FIX_EARLY_DEBUG_BASE when page size is
+ 256k
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Albert Herranz <albert_herranz@yahoo.es>
+Date: Mon, 15 Jun 2020 07:48:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,74 +71,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@intel.com>, H Peter Anvin <hpa@zytor.com>,
- Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Joerg Roedel <joro@8bytes.org>, x86 <x86@kernel.org>,
- amd-gfx <amd-gfx@lists.freedesktop.org>, Ingo Molnar <mingo@redhat.com>,
- Ravi V Shankar <ravi.v.shankar@intel.com>, Yu-cheng Yu <yu-cheng.yu@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Sohil Mehta <sohil.mehta@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Felix Kuehling <Felix.Kuehling@amd.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- Jacob Jun Pan <jacob.jun.pan@intel.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, David Woodhouse <dwmw2@infradead.org>,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 12, 2020 at 05:41:33PM -0700, Fenghua Yu wrote:
-> +/*
-> + * Apply some heuristics to see if the #GP fault was caused by a thread
-> + * that hasn't had the IA32_PASID MSR initialized.  If it looks like that
-> + * is the problem, try initializing the IA32_PASID MSR. If the heuristic
-> + * guesses incorrectly, take one more #GP fault.
+FIX_EARLY_DEBUG_BASE reserves a 128k area for debuging.
 
-How is that going to help? Aren't we then going to run this same
-heuristic again and again and again?
+When page size is 256k, the calculation results in a 0 number of
+pages, leading to the following failure:
 
-> + */
-> +bool __fixup_pasid_exception(void)
-> +{
-> +	u64 pasid_msr;
-> +	unsigned int pasid;
-> +
-> +	/*
-> +	 * This function is called only when this #GP was triggered from user
-> +	 * space. So the mm cannot be NULL.
-> +	 */
-> +	pasid = current->mm->pasid;
-> +	/* If the mm doesn't have a valid PASID, then can't help. */
-> +	if (invalid_pasid(pasid))
-> +		return false;
-> +
-> +	/*
-> +	 * Since IRQ is disabled now, the current task still owns the FPU on
+  CC      arch/powerpc/kernel/asm-offsets.s
+In file included from ./arch/powerpc/include/asm/nohash/32/pgtable.h:77:0,
+                 from ./arch/powerpc/include/asm/nohash/pgtable.h:8,
+                 from ./arch/powerpc/include/asm/pgtable.h:20,
+                 from ./include/linux/pgtable.h:6,
+                 from ./arch/powerpc/include/asm/kup.h:42,
+                 from ./arch/powerpc/include/asm/uaccess.h:9,
+                 from ./include/linux/uaccess.h:11,
+                 from ./include/linux/crypto.h:21,
+                 from ./include/crypto/hash.h:11,
+                 from ./include/linux/uio.h:10,
+                 from ./include/linux/socket.h:8,
+                 from ./include/linux/compat.h:15,
+                 from arch/powerpc/kernel/asm-offsets.c:14:
+./arch/powerpc/include/asm/fixmap.h:75:2: error: overflow in enumeration values
+  __end_of_permanent_fixed_addresses,
+  ^
+make[2]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
 
-That's just weird and confusing. What you want to say is that you rely
-on the exception disabling the interrupt.
+Ensure the debug area is at least one page.
 
-> +	 * this CPU and the PASID MSR can be directly accessed.
-> +	 *
-> +	 * If the MSR has a valid PASID, the #GP must be for some other reason.
-> +	 *
-> +	 * If rdmsr() is really a performance issue, a TIF_ flag may be
-> +	 * added to check if the thread has a valid PASID instead of rdmsr().
+Reported-by: kernel test robot <lkp@intel.com>
+Fixes: b8e8efaa8639 ("powerpc: reserve fixmap entries for early debug")
+Cc: stable@vger.kernel.org
+Cc: Albert Herranz <albert_herranz@yahoo.es>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/fixmap.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I don't understand any of this. Nobody except us writes to this MSR, we
-should bloody well know what's in it. What gives?
+diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+index 29188810ba30..925cf89cbf4b 100644
+--- a/arch/powerpc/include/asm/fixmap.h
++++ b/arch/powerpc/include/asm/fixmap.h
+@@ -52,7 +52,7 @@ enum fixed_addresses {
+ 	FIX_HOLE,
+ 	/* reserve the top 128K for early debugging purposes */
+ 	FIX_EARLY_DEBUG_TOP = FIX_HOLE,
+-	FIX_EARLY_DEBUG_BASE = FIX_EARLY_DEBUG_TOP+((128*1024)/PAGE_SIZE)-1,
++	FIX_EARLY_DEBUG_BASE = FIX_EARLY_DEBUG_TOP+(ALIGN(SZ_128, PAGE_SIZE)/PAGE_SIZE)-1,
+ #ifdef CONFIG_HIGHMEM
+ 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
+ 	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+-- 
+2.25.0
 
-> +	 */
-> +	rdmsrl(MSR_IA32_PASID, pasid_msr);
-> +	if (pasid_msr & MSR_IA32_PASID_VALID)
-> +		return false;
-> +
-> +	/* Fix up the MSR if the MSR doesn't have a valid PASID. */
-> +	wrmsrl(MSR_IA32_PASID, pasid | MSR_IA32_PASID_VALID);
-> +
-> +	return true;
-> +}
-> -- 
-> 2.19.1
-> 
