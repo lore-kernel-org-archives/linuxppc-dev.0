@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-11.8 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB86BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 09:09:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F097C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 09:12:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69C6520707
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 09:09:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69C6520707
+	by mail.kernel.org (Postfix) with ESMTPS id 2C46820679
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 09:12:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C46820679
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bootlin.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lls16KmRzDqQm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 19:09:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49llvy0ZX4zDqSG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 19:12:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=bootlin.com (client-ip=217.70.183.195;
  helo=relay3-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com;
@@ -30,26 +30,27 @@ Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net
  [217.70.183.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49llgx2yVxzDqYB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 19:01:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49llh75NHFzDqYK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 19:01:59 +1000 (AEST)
 X-Originating-IP: 91.224.148.103
 Received: from localhost.localdomain (unknown [91.224.148.103])
  (Authenticated sender: miquel.raynal@bootlin.com)
- by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id 8EB9360005;
- Mon, 15 Jun 2020 09:01:41 +0000 (UTC)
+ by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id 576FD60007;
+ Mon, 15 Jun 2020 09:01:54 +0000 (UTC)
 From: Miquel Raynal <miquel.raynal@bootlin.com>
 To: Boris Brezillon <boris.brezillon@collabora.com>,
  Anton Vorontsov <anton@enomsg.org>,
  Miquel Raynal <miquel.raynal@bootlin.com>, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 06/10] mtd: rawnand: fsl_upm: Use gpio descriptors
-Date: Mon, 15 Jun 2020 11:01:40 +0200
-Message-Id: <20200615090140.23008-1-miquel.raynal@bootlin.com>
+Subject: Re: [PATCH 05/10] mtd: rawnand: fsl_upm: Use platform_get_resource()
+ + devm_ioremap_resource()
+Date: Mon, 15 Jun 2020 11:01:53 +0200
+Message-Id: <20200615090153.23070-1-miquel.raynal@bootlin.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200603134922.1352340-7-boris.brezillon@collabora.com>
+In-Reply-To: <20200603134922.1352340-6-boris.brezillon@collabora.com>
 References: 
 MIME-Version: 1.0
 X-linux-mtd-patch-notification: thanks
-X-linux-mtd-patch-commit: b3d8506ab07fb44dd5ce5662ee9b2d16474b38b5
+X-linux-mtd-patch-commit: a41de95e2e0a835c2af86082cf664f5f5e8cf558
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,17 +71,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2020-06-03 at 13:49:18 UTC, Boris Brezillon wrote:
-> The integer-based GPIO ids are now deprecated in favor of the GPIO desc
-> API. The PPC platforms have already been converted to GPIOLIB, so let's
-> use gpio descs in the NAND driver too.
-> 
-> While at it, we use devm_gpiod_get_index_optional() so we can get rid
-> of the manual gpio desc release done in the init error path and in the
-> remove function.
+On Wed, 2020-06-03 at 13:49:17 UTC, Boris Brezillon wrote:
+> Replace the of_address_to_resource() + devm_ioremap() calls by
+> platform_get_resource() + devm_ioremap_resource() ones which allows us
+> to get rid of one error message since devm_ioremap_resource() already
+> takes care of that.
 > 
 > Signed-off-by: Boris Brezillon <boris.brezillon@collabora.com>
-> Reviewed-by: Miquel Raynal <miquel.raynal@bootlin.com>
 
 Applied to https://git.kernel.org/pub/scm/linux/kernel/git/mtd/linux.git nand/next, thanks.
 
