@@ -2,72 +2,72 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UPPERCASE_50_75,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B59F0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:12:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A11A5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:15:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6610420714
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:12:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6610420714
+	by mail.kernel.org (Postfix) with ESMTPS id EAB1A20707
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:15:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAB1A20707
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ljGB6lDPzDqXN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 17:12:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ljJf2VVYzDqM0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 17:14:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lh0n5P99zDqPw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 16:16:09 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05F64C0o044274; Mon, 15 Jun 2020 02:16:04 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lh0q3wVyzDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 16:16:11 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05F63YHt043672; Mon, 15 Jun 2020 02:16:06 -0400
 Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
  [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31n0j7d32x-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31p1krjrt5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 02:16:04 -0400
+ Mon, 15 Jun 2020 02:16:06 -0400
 Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6FVes003713;
- Mon, 15 Jun 2020 06:16:03 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by ppma01dal.us.ibm.com with ESMTP id 31mpe910w6-1
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6FUKU003671;
+ Mon, 15 Jun 2020 06:16:05 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma01dal.us.ibm.com with ESMTP id 31mpe910wj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 06:16:03 +0000
+ Mon, 15 Jun 2020 06:16:05 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05F6F0nx21299568
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05F6G2ch11403982
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 15 Jun 2020 06:15:00 GMT
+ Mon, 15 Jun 2020 06:16:02 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E255FC605B;
- Mon, 15 Jun 2020 06:15:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C2D62C605B;
+ Mon, 15 Jun 2020 06:16:03 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DF64CC6055;
- Mon, 15 Jun 2020 06:14:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BC905C6057;
+ Mon, 15 Jun 2020 06:16:01 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.2.91])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 15 Jun 2020 06:14:59 +0000 (GMT)
+ Mon, 15 Jun 2020 06:16:01 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 07/41] powerpc/book3s64/pkeys: kill cpu feature key
- CPU_FTR_PKEY
-Date: Mon, 15 Jun 2020 11:43:56 +0530
-Message-Id: <20200615061430.770174-8-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 29/41] powerpc/book3s64/pkeys: Don't update SPRN_AMR when
+ in kernel mode.
+Date: Mon, 15 Jun 2020 11:44:18 +0530
+Message-Id: <20200615061430.770174-30-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
 References: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
@@ -78,11 +78,12 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-15_01:2020-06-12,
  2020-06-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- spamscore=0 suspectscore=2 malwarescore=0 cotscore=-2147483648
- clxscore=1015 adultscore=0 phishscore=0 priorityscore=1501 mlxlogscore=999
- mlxscore=0 impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006150050
+ bulkscore=0 suspectscore=0
+ clxscore=1015 spamscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 mlxlogscore=824 mlxscore=0 cotscore=-2147483648
+ adultscore=0 phishscore=0 impostorscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006150050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,84 +101,236 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We don't use CPU_FTR_PKEY anymore. Remove the feature bit and mark it
-free.
+Now that kernel correctly store/restore userspace AMR/IAMR values, avoid
+manipulating AMR and IAMR from the kernel on behalf of userspace.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/cputable.h | 13 ++++++-------
- arch/powerpc/kernel/dt_cpu_ftrs.c   |  6 ------
- 2 files changed, 6 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/book3s/64/kup.h | 23 ++++++++
+ arch/powerpc/include/asm/processor.h     |  5 --
+ arch/powerpc/kernel/process.c            |  4 --
+ arch/powerpc/kernel/traps.c              |  6 --
+ arch/powerpc/mm/book3s64/pkeys.c         | 71 ++++--------------------
+ 5 files changed, 34 insertions(+), 75 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index bac2252c839e..dd0a2e77a695 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -198,7 +198,7 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTR_STCX_CHECKS_ADDRESS	LONG_ASM_CONST(0x0000000080000000)
- #define CPU_FTR_POPCNTB			LONG_ASM_CONST(0x0000000100000000)
- #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0000000200000000)
--#define CPU_FTR_PKEY			LONG_ASM_CONST(0x0000000400000000)
-+/* LONG_ASM_CONST(0x0000000400000000) Free */
- #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0000000800000000)
- #define CPU_FTR_TM			LONG_ASM_CONST(0x0000001000000000)
- #define CPU_FTR_CFAR			LONG_ASM_CONST(0x0000002000000000)
-@@ -438,7 +438,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | \
--	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX | CPU_FTR_PKEY)
-+	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR | CPU_FTR_DABRX )
- #define CPU_FTRS_POWER8 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -448,7 +448,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
--	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY)
-+	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP )
- #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
- #define CPU_FTRS_POWER9 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
-@@ -459,8 +459,8 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
--	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_PKEY | \
--	    CPU_FTR_P9_TLBIE_STQ_BUG | CPU_FTR_P9_TLBIE_ERAT_BUG | CPU_FTR_P9_TIDR)
-+	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_P9_TLBIE_STQ_BUG | \
-+	    CPU_FTR_P9_TLBIE_ERAT_BUG | CPU_FTR_P9_TIDR)
- #define CPU_FTRS_POWER9_DD2_0 (CPU_FTRS_POWER9 | CPU_FTR_P9_RADIX_PREFETCH_BUG)
- #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | \
- 			       CPU_FTR_P9_RADIX_PREFETCH_BUG | \
-@@ -477,8 +477,7 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
--	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_PKEY | \
--	    CPU_FTR_ARCH_31)
-+	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_ARCH_31)
- #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 3a409517c031..0acec481d4d1 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -776,12 +776,6 @@ static __init void cpufeatures_cpu_quirks(void)
- 	}
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 23d6f212d39c..557dc8b66291 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -174,6 +174,29 @@ extern u64 default_uamor;
+ extern u64 default_amr;
+ extern u64 default_iamr;
  
- 	update_tlbie_feature_flag(version);
--	/*
--	 * PKEY was not in the initial base or feature node
--	 * specification, but it should become optional in the next
--	 * cpu feature version sequence.
--	 */
--	cur_cpu_spec->cpu_features |= CPU_FTR_PKEY;
++/*
++ * For kernel thread that doesn't have thread.regs return
++ * default AMR/IAMR values.
++ */
++static inline u64 current_thread_amr(void)
++{
++	if (current->thread.regs)
++		return current->thread.regs->kuap;
++	return AMR_KUAP_BLOCKED;
++}
++
++static inline u64 current_thread_iamr(void)
++{
++	if (current->thread.regs)
++		return current->thread.regs->kuep;
++	return AMR_KUEP_BLOCKED;
++}
++
++static inline u64 read_uamor(void)
++{
++	return default_uamor;
++}
++
+ static inline void kuap_restore_user_amr(struct pt_regs *regs)
+ {
+ 	if (!mmu_has_feature(MMU_FTR_PKEY))
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 52a67835057a..bac4258a34b1 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -234,11 +234,6 @@ struct thread_struct {
+ 	struct thread_vr_state ckvr_state; /* Checkpointed VR state */
+ 	unsigned long	ckvrsave; /* Checkpointed VRSAVE */
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+-#ifdef CONFIG_PPC_MEM_KEYS
+-	unsigned long	amr;
+-	unsigned long	iamr;
+-	unsigned long	uamor;
+-#endif
+ #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
+ 	void*		kvm_shadow_vcpu; /* KVM internal data */
+ #endif /* CONFIG_KVM_BOOK3S_32_HANDLER */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 340e473e8738..7eb6598375f1 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -585,7 +585,6 @@ static void save_all(struct task_struct *tsk)
+ 		__giveup_spe(tsk);
+ 
+ 	msr_check_and_clear(msr_all_available);
+-	thread_pkey_regs_save(&tsk->thread);
  }
  
- static void __init cpufeatures_setup_finished(void)
+ void flush_all_to_thread(struct task_struct *tsk)
+@@ -1109,8 +1108,6 @@ static inline void save_sprs(struct thread_struct *t)
+ 		t->tar = mfspr(SPRN_TAR);
+ 	}
+ #endif
+-
+-	thread_pkey_regs_save(t);
+ }
+ 
+ static inline void restore_sprs(struct thread_struct *old_thread,
+@@ -1151,7 +1148,6 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ 		mtspr(SPRN_TIDR, new_thread->tidr);
+ #endif
+ 
+-	thread_pkey_regs_restore(new_thread, old_thread);
+ }
+ 
+ struct task_struct *__switch_to(struct task_struct *prev,
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 067e501f2202..e441e8eacfbc 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -348,12 +348,6 @@ static bool exception_common(int signr, struct pt_regs *regs, int code,
+ 
+ 	current->thread.trap_nr = code;
+ 
+-	/*
+-	 * Save all the pkey registers AMR/IAMR/UAMOR. Eg: Core dumps need
+-	 * to capture the content, if the task gets killed.
+-	 */
+-	thread_pkey_regs_save(&current->thread);
+-
+ 	return true;
+ }
+ 
+diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
+index 95e972d6bbfa..b260e33e4e23 100644
+--- a/arch/powerpc/mm/book3s64/pkeys.c
++++ b/arch/powerpc/mm/book3s64/pkeys.c
+@@ -265,40 +265,17 @@ void pkey_mm_init(struct mm_struct *mm)
+ 	mm->context.execute_only_pkey = execute_only_key;
+ }
+ 
+-static inline u64 read_amr(void)
++static inline void update_current_thread_amr(u64 value)
+ {
+-	return mfspr(SPRN_AMR);
++	current->thread.regs->kuap = value;
+ }
+ 
+-static inline void write_amr(u64 value)
+-{
+-	mtspr(SPRN_AMR, value);
+-}
+-
+-static inline u64 read_iamr(void)
+-{
+-	if (static_branch_unlikely(&execute_pkey_disabled))
+-		return 0x0UL;
+-
+-	return mfspr(SPRN_IAMR);
+-}
+-
+-static inline void write_iamr(u64 value)
++static inline void update_current_thread_iamr(u64 value)
+ {
+ 	if (static_branch_unlikely(&execute_pkey_disabled))
+ 		return;
+ 
+-	mtspr(SPRN_IAMR, value);
+-}
+-
+-static inline u64 read_uamor(void)
+-{
+-	return mfspr(SPRN_UAMOR);
+-}
+-
+-static inline void write_uamor(u64 value)
+-{
+-	mtspr(SPRN_UAMOR, value);
++	current->thread.regs->kuep = value;
+ }
+ 
+ static bool is_pkey_enabled(int pkey)
+@@ -315,20 +292,21 @@ static bool is_pkey_enabled(int pkey)
+ 	return !!(uamor_pkey_bits);
+ }
+ 
++/*  FIXME!! what happens to other threads AMR value? */
+ static inline void init_amr(int pkey, u8 init_bits)
+ {
+ 	u64 new_amr_bits = (((u64)init_bits & 0x3UL) << pkeyshift(pkey));
+-	u64 old_amr = read_amr() & ~((u64)(0x3ul) << pkeyshift(pkey));
++	u64 old_amr = current_thread_amr() & ~((u64)(0x3ul) << pkeyshift(pkey));
+ 
+-	write_amr(old_amr | new_amr_bits);
++	update_current_thread_amr(old_amr | new_amr_bits);
+ }
+ 
+ static inline void init_iamr(int pkey, u8 init_bits)
+ {
+ 	u64 new_iamr_bits = (((u64)init_bits & 0x1UL) << pkeyshift(pkey));
+-	u64 old_iamr = read_iamr() & ~((u64)(0x1ul) << pkeyshift(pkey));
++	u64 old_iamr = current_thread_iamr() & ~((u64)(0x1ul) << pkeyshift(pkey));
+ 
+-	write_iamr(old_iamr | new_iamr_bits);
++	update_current_thread_iamr(old_iamr | new_iamr_bits);
+ }
+ 
+ /*
+@@ -361,33 +339,6 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 	return 0;
+ }
+ 
+-void thread_pkey_regs_save(struct thread_struct *thread)
+-{
+-	if (!mmu_has_feature(MMU_FTR_PKEY))
+-		return;
+-
+-	/*
+-	 * TODO: Skip saving registers if @thread hasn't used any keys yet.
+-	 */
+-	thread->amr = read_amr();
+-	thread->iamr = read_iamr();
+-	thread->uamor = read_uamor();
+-}
+-
+-void thread_pkey_regs_restore(struct thread_struct *new_thread,
+-			      struct thread_struct *old_thread)
+-{
+-	if (!mmu_has_feature(MMU_FTR_PKEY))
+-		return;
+-
+-	if (old_thread->amr != new_thread->amr)
+-		write_amr(new_thread->amr);
+-	if (old_thread->iamr != new_thread->iamr)
+-		write_iamr(new_thread->iamr);
+-	if (old_thread->uamor != new_thread->uamor)
+-		write_uamor(new_thread->uamor);
+-}
+-
+ int execute_only_pkey(struct mm_struct *mm)
+ {
+ 	if (static_branch_likely(&execute_pkey_disabled))
+@@ -441,10 +392,10 @@ static bool pkey_access_permitted(int pkey, bool write, bool execute)
+ 		return true;
+ 
+ 	pkey_shift = pkeyshift(pkey);
+-	if (execute && !(read_iamr() & (IAMR_EX_BIT << pkey_shift)))
++	if (execute && !(current_thread_iamr() & (IAMR_EX_BIT << pkey_shift)))
+ 		return true;
+ 
+-	amr = read_amr(); /* Delay reading amr until absolutely needed */
++	amr = current_thread_amr();
+ 	return ((!write && !(amr & (AMR_RD_BIT << pkey_shift))) ||
+ 		(write &&  !(amr & (AMR_WR_BIT << pkey_shift))));
+ }
 -- 
 2.26.2
 
