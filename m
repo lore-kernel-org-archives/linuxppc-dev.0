@@ -2,64 +2,66 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CC33C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EA1CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:24:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 825882076A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:21:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="Fq/hQ2DM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 825882076A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
+	by mail.kernel.org (Postfix) with ESMTPS id DD7862076A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:24:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD7862076A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lsRh2dL3zDqYV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:21:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lsVZ6lZQzDqTJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:24:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
- helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=alien8.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
- header.s=dkim header.b=Fq/hQ2DM; dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lrtb6j02zDqLM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 22:56:20 +1000 (AEST)
-Received: from zn.tnic (p200300ec2f063c0085fbd8d4455f52fc.dip0.t-ipconnect.de
- [IPv6:2003:ec:2f06:3c00:85fb:d8d4:455f:52fc])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 4813F1EC0328;
- Mon, 15 Jun 2020 14:55:59 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
- t=1592225759;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
- bh=/AESQdNn9F5DJNAvN7Ekrb2QHr0FUj+XXTKW2C8uMmo=;
- b=Fq/hQ2DMKfbOxaJYqCYfztNBgi5oh0HsOx0x7L8VJ4cvNsn8HLUiHwhWxpSTqc4Eyh2BU2
- xRVbBQPrR+Rm8jodEQy0DsYSC7qHKiSva2/xftRAGym3Xdj+qsY8nQ7855vYkCCA2LEo2n
- 0CXcuIWGshqqPcwJ9viqJNhwPGKSnlI=
-Date: Mon, 15 Jun 2020 14:55:52 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-Subject: Re: [PATCH v13 2/6] seq_buf: Export seq_buf_printf
-Message-ID: <20200615125552.GI14668@zn.tnic>
-References: <20200615124407.32596-1-vaibhav@linux.ibm.com>
- <20200615124407.32596-3-vaibhav@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200615124407.32596-3-vaibhav@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lrwY36ZbzDqLx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 22:58:02 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49lrwQ0wthz9v1fl;
+ Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id aXFx7kJdYhJB; Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49lrwQ06Xvz9v1fM;
+ Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 77D768B796;
+ Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 25kJTR5Pyx86; Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.230.104])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3308A8B75F;
+ Mon, 15 Jun 2020 14:57:58 +0200 (CEST)
+Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 2DB5265B0E; Mon, 15 Jun 2020 12:57:58 +0000 (UTC)
+Message-Id: <087fa12b6e920e32315136b998aa834f99242695.1592225558.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1592225557.git.christophe.leroy@csgroup.eu>
+References: <cover.1592225557.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH 2/3] mm: Allow arches to provide ptep_get()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Will Deacon <will@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ "Peter Zijlstra (Intel)" <peterz@infradead.org>
+Date: Mon, 15 Jun 2020 12:57:58 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,49 +73,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>, Ira Weiny <ira.weiny@intel.com>,
- linux-nvdimm@lists.01.org, Cezary Rojewski <cezary.rojewski@intel.com>,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Piotr Maziarz <piotrx.maziarz@linux.intel.com>,
- Christoph Hellwig <hch@infradead.org>, Oliver O'Halloran <oohall@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 15, 2020 at 06:14:03PM +0530, Vaibhav Jain wrote:
-> 'seq_buf' provides a very useful abstraction for writing to a string
-> buffer without needing to worry about it over-flowing. However even
-> though the API has been stable for couple of years now its still not
-> exported to kernel loadable modules limiting its usage.
-> 
-> Hence this patch proposes update to 'seq_buf.c' to mark
-> seq_buf_printf() which is part of the seq_buf API to be exported to
-> kernel loadable GPL modules. This symbol will be used in later parts
-> of this patch-set to simplify content creation for a sysfs attribute.
-> 
-> Cc: Piotr Maziarz <piotrx.maziarz@linux.intel.com>
-> Cc: Cezary Rojewski <cezary.rojewski@intel.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> ---
-> Changelog:
-> 
-> v12..v13:
-> * None
-> 
-> v11..v12:
-> * None
+Since commit 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for
+{READ,WRITE}_ONCE() memory accesses"), it is not possible anymore
+to use READ_ONCE() to access complex page table entries like
+the one defined for powerpc 8xx with 16k size pages.
 
-Can you please resend your patchset once a week like everyone else and
-not flood inboxes with it?
+Define a ptep_get() helper that architectures can override instead
+of performing a READ_ONCE() on the page table entry pointer.
 
+Fixes: 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for {READ,WRITE}_ONCE() memory accesses")
+Cc: Will Deacon <will@kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ include/asm-generic/hugetlb.h | 2 +-
+ include/linux/pgtable.h       | 7 +++++++
+ mm/gup.c                      | 2 +-
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
+index 40f85decc2ee..8e1e6244a89d 100644
+--- a/include/asm-generic/hugetlb.h
++++ b/include/asm-generic/hugetlb.h
+@@ -122,7 +122,7 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ #ifndef __HAVE_ARCH_HUGE_PTEP_GET
+ static inline pte_t huge_ptep_get(pte_t *ptep)
+ {
+-	return READ_ONCE(*ptep);
++	return ptep_get(ptep);
+ }
+ #endif
+ 
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 32b6c52d41b9..56c1e8eb7bb0 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -249,6 +249,13 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+ }
+ #endif
+ 
++#ifndef __HAVE_ARCH_PTEP_GET
++static inline pte_t ptep_get(pte_t *ptep)
++{
++	return READ_ONCE(*ptep);
++}
++#endif
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ #ifndef __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
+ static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
+diff --git a/mm/gup.c b/mm/gup.c
+index 761df4944ef5..6f47697f8fb0 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -2196,7 +2196,7 @@ static inline pte_t gup_get_pte(pte_t *ptep)
+  */
+ static inline pte_t gup_get_pte(pte_t *ptep)
+ {
+-	return READ_ONCE(*ptep);
++	return ptep_get(ptep);
+ }
+ #endif /* CONFIG_GUP_GET_PTE_LOW_HIGH */
+ 
 -- 
-Regards/Gruss,
-    Boris.
+2.25.0
 
-https://people.kernel.org/tglx/notes-about-netiquette
