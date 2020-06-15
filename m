@@ -2,75 +2,73 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D834C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 06:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0604C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:00:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA28A2067B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 06:58:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA28A2067B
+	by mail.kernel.org (Postfix) with ESMTPS id 68DFE2068E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 07:00:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68DFE2068E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lhxW3LDFzDqJR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 16:58:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lhzS08jHzDqNk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 17:00:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lh0R4vyVzDqPS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lh0R294szDqKD
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 16:15:51 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05F62CGu166419; Mon, 15 Jun 2020 02:15:47 -0400
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31nreqmxe4-1
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05F62jY4100326; Mon, 15 Jun 2020 02:15:45 -0400
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 31np7b6w1x-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 02:15:47 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6Fbmp021366;
- Mon, 15 Jun 2020 06:15:46 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma03dal.us.ibm.com with ESMTP id 31nbytwbum-1
+ Mon, 15 Jun 2020 02:15:45 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05F6FTfM003579;
+ Mon, 15 Jun 2020 06:15:44 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01dal.us.ibm.com with ESMTP id 31mpe910tn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 15 Jun 2020 06:15:46 +0000
+ Mon, 15 Jun 2020 06:15:44 +0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05F6FgRR8061372
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05F6EgWA45154664
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 15 Jun 2020 06:15:42 GMT
+ Mon, 15 Jun 2020 06:14:42 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 72F0EC6062;
- Mon, 15 Jun 2020 06:15:44 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B411BC6057;
+ Mon, 15 Jun 2020 06:14:42 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BDFEC6057;
- Mon, 15 Jun 2020 06:15:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 88C75C6059;
+ Mon, 15 Jun 2020 06:14:40 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.2.91])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 15 Jun 2020 06:15:42 +0000 (GMT)
+ Mon, 15 Jun 2020 06:14:40 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 22/41] powerpc/book3s64/kuap: Use Key 3 for kernel mapping
- with hash translation
-Date: Mon, 15 Jun 2020 11:44:11 +0530
-Message-Id: <20200615061430.770174-23-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 00/41] Kernel userspace access/execution prevention with
+ hash translation
+Date: Mon, 15 Jun 2020 11:43:49 +0530
+Message-Id: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
-References: <20200615061430.770174-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -78,11 +76,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-12_17:2020-06-12,
  2020-06-12 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1015
- mlxlogscore=931 suspectscore=0 phishscore=0 bulkscore=0 adultscore=0
- lowpriorityscore=0 priorityscore=1501 spamscore=0 cotscore=-2147483648
- malwarescore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006150050
+ malwarescore=0 adultscore=0
+ mlxlogscore=999 priorityscore=1501 impostorscore=0 clxscore=1015
+ cotscore=-2147483648 mlxscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 spamscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006130016
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,252 +98,129 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch updates kernel hash page table entries to use storage key 3
-for its mapping. This implies all kernel access will now use key 3 to
-control READ/WRITE. The patch also prevents the allocation of key 3 from
-userspace and UAMOR value is updated such that userspace cannot modify key 3.
+This patch series implements KUAP and KUEP with hash translation mode using
+memory keys. The kernel now uses memory protection key 3 to control access
+to the kernel. Kernel page table entries are now configured with key 3.
+Access to locations configured with any other key value is denied when in
+kernel mode (MSR_PR=0). This includes userspace which is by default configured
+with key 0.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- .../powerpc/include/asm/book3s/64/hash-pkey.h | 24 ++++++++++++++-----
- arch/powerpc/include/asm/book3s/64/hash.h     |  3 ++-
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  1 +
- arch/powerpc/include/asm/mmu_context.h        |  2 +-
- arch/powerpc/mm/book3s64/hash_4k.c            |  2 +-
- arch/powerpc/mm/book3s64/hash_64k.c           |  4 ++--
- arch/powerpc/mm/book3s64/hash_hugepage.c      |  2 +-
- arch/powerpc/mm/book3s64/hash_hugetlbpage.c   |  2 +-
- arch/powerpc/mm/book3s64/hash_pgtable.c       |  2 +-
- arch/powerpc/mm/book3s64/hash_utils.c         | 10 ++++----
- arch/powerpc/mm/book3s64/pkeys.c              |  4 ++++
- 11 files changed, 38 insertions(+), 18 deletions(-)
+Changes from v3:
+* Fix build error reported by kernel test robot <lkp@intel.com>
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-pkey.h b/arch/powerpc/include/asm/book3s/64/hash-pkey.h
-index 795010897e5d..9f44e208f036 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-pkey.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-pkey.h
-@@ -2,6 +2,9 @@
- #ifndef _ASM_POWERPC_BOOK3S_64_HASH_PKEY_H
- #define _ASM_POWERPC_BOOK3S_64_HASH_PKEY_H
- 
-+/*  We use key 3 for KERNEL */
-+#define HASH_DEFAULT_KERNEL_KEY (HPTE_R_KEY_BIT0 | HPTE_R_KEY_BIT1)
-+
- static inline u64 hash__vmflag_to_pte_pkey_bits(u64 vm_flags)
- {
- 	return (((vm_flags & VM_PKEY_BIT0) ? H_PTE_PKEY_BIT0 : 0x0UL) |
-@@ -11,13 +14,22 @@ static inline u64 hash__vmflag_to_pte_pkey_bits(u64 vm_flags)
- 		((vm_flags & VM_PKEY_BIT4) ? H_PTE_PKEY_BIT4 : 0x0UL));
- }
- 
--static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
-+static inline u64 pte_to_hpte_pkey_bits(u64 pteflags, unsigned long flags)
- {
--	return (((pteflags & H_PTE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL) |
--		((pteflags & H_PTE_PKEY_BIT3) ? HPTE_R_KEY_BIT3 : 0x0UL) |
--		((pteflags & H_PTE_PKEY_BIT2) ? HPTE_R_KEY_BIT2 : 0x0UL) |
--		((pteflags & H_PTE_PKEY_BIT1) ? HPTE_R_KEY_BIT1 : 0x0UL) |
--		((pteflags & H_PTE_PKEY_BIT0) ? HPTE_R_KEY_BIT0 : 0x0UL));
-+	unsigned long pte_pkey;
-+
-+	pte_pkey = (((pteflags & H_PTE_PKEY_BIT4) ? HPTE_R_KEY_BIT4 : 0x0UL) |
-+		    ((pteflags & H_PTE_PKEY_BIT3) ? HPTE_R_KEY_BIT3 : 0x0UL) |
-+		    ((pteflags & H_PTE_PKEY_BIT2) ? HPTE_R_KEY_BIT2 : 0x0UL) |
-+		    ((pteflags & H_PTE_PKEY_BIT1) ? HPTE_R_KEY_BIT1 : 0x0UL) |
-+		    ((pteflags & H_PTE_PKEY_BIT0) ? HPTE_R_KEY_BIT0 : 0x0UL));
-+
-+	if (mmu_has_feature(MMU_FTR_KUAP) || mmu_has_feature(MMU_FTR_KUEP)) {
-+		if ((pte_pkey == 0) && (flags & HPTE_USE_KERNEL_KEY))
-+			return HASH_DEFAULT_KERNEL_KEY;
-+	}
-+
-+	return pte_pkey;
- }
- 
- static inline u16 hash__pte_to_pkey_bits(u64 pteflags)
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 73ad038ed10b..a3c0f93d2768 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -145,7 +145,8 @@ extern void hash__mark_initmem_nx(void);
- 
- extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 			    pte_t *ptep, unsigned long pte, int huge);
--extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
-+extern unsigned long htab_convert_pte_flags(unsigned long pteflags,
-+					    unsigned long flags);
- /* Atomic PTE updates */
- static inline unsigned long hash__pte_update(struct mm_struct *mm,
- 					 unsigned long addr,
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 58fcc959f9d5..eb9950043b78 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -452,6 +452,7 @@ static inline unsigned long hpt_hash(unsigned long vpn,
- 
- #define HPTE_LOCAL_UPDATE	0x1
- #define HPTE_NOHPTE_UPDATE	0x2
-+#define HPTE_USE_KERNEL_KEY	0x4
- 
- extern int __hash_page_4K(unsigned long ea, unsigned long access,
- 			  unsigned long vsid, pte_t *ptep, unsigned long trap,
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 1a474f6b1992..2d85e0ea5f1c 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -286,7 +286,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- #define thread_pkey_regs_init(thread)
- #define arch_dup_pkeys(oldmm, mm)
- 
--static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
-+static inline u64 pte_to_hpte_pkey_bits(u64 pteflags, unsigned long flags)
- {
- 	return 0x0UL;
- }
-diff --git a/arch/powerpc/mm/book3s64/hash_4k.c b/arch/powerpc/mm/book3s64/hash_4k.c
-index 22e787123cdf..7de1a8a0c62a 100644
---- a/arch/powerpc/mm/book3s64/hash_4k.c
-+++ b/arch/powerpc/mm/book3s64/hash_4k.c
-@@ -54,7 +54,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
--	rflags = htab_convert_pte_flags(new_pte);
-+	rflags = htab_convert_pte_flags(new_pte, flags);
- 	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
-diff --git a/arch/powerpc/mm/book3s64/hash_64k.c b/arch/powerpc/mm/book3s64/hash_64k.c
-index 7084ce2951e6..998c6817ed47 100644
---- a/arch/powerpc/mm/book3s64/hash_64k.c
-+++ b/arch/powerpc/mm/book3s64/hash_64k.c
-@@ -72,7 +72,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * Handle the subpage protection bits
- 	 */
- 	subpg_pte = new_pte & ~subpg_prot;
--	rflags = htab_convert_pte_flags(subpg_pte);
-+	rflags = htab_convert_pte_flags(subpg_pte, flags);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
-@@ -260,7 +260,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 			new_pte |= _PAGE_DIRTY;
- 	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
- 
--	rflags = htab_convert_pte_flags(new_pte);
-+	rflags = htab_convert_pte_flags(new_pte, flags);
- 	rpte = __real_pte(__pte(old_pte), ptep, PTRS_PER_PTE);
- 
- 	if (cpu_has_feature(CPU_FTR_NOEXECUTE) &&
-diff --git a/arch/powerpc/mm/book3s64/hash_hugepage.c b/arch/powerpc/mm/book3s64/hash_hugepage.c
-index 440823797de7..c0fabe6c5a12 100644
---- a/arch/powerpc/mm/book3s64/hash_hugepage.c
-+++ b/arch/powerpc/mm/book3s64/hash_hugepage.c
-@@ -57,7 +57,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 	if (!(old_pmd & (H_PAGE_THP_HUGE | _PAGE_DEVMAP)))
- 		return 0;
- 
--	rflags = htab_convert_pte_flags(new_pmd);
-+	rflags = htab_convert_pte_flags(new_pmd, flags);
- 
- #if 0
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
-diff --git a/arch/powerpc/mm/book3s64/hash_hugetlbpage.c b/arch/powerpc/mm/book3s64/hash_hugetlbpage.c
-index eefa89c6117b..8ce8fc327af4 100644
---- a/arch/powerpc/mm/book3s64/hash_hugetlbpage.c
-+++ b/arch/powerpc/mm/book3s64/hash_hugetlbpage.c
-@@ -72,7 +72,7 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	if (old_pte & (H_PAGE_THP_HUGE | _PAGE_DEVMAP))
- 		return 0;
- 
--	rflags = htab_convert_pte_flags(new_pte);
-+	rflags = htab_convert_pte_flags(new_pte, flags);
- 	if (unlikely(mmu_psize == MMU_PAGE_16G))
- 		offset = PTRS_PER_PUD;
- 	else
-diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
-index 8b4b0a602158..6a213e3ddd35 100644
---- a/arch/powerpc/mm/book3s64/hash_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
-@@ -445,7 +445,7 @@ void hash__mark_initmem_nx(void)
- 	start = (unsigned long)__init_begin;
- 	end = (unsigned long)__init_end;
- 
--	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL));
-+	pp = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL), HPTE_USE_KERNEL_KEY);
- 
- 	WARN_ON(!hash__change_memory_range(start, end, pp));
- }
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 0124003e60d0..9686caf36be9 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -186,7 +186,7 @@ static struct mmu_psize_def mmu_psize_defaults_gp[] = {
-  *    - We make sure R is always set and never lost
-  *    - C is _PAGE_DIRTY, and *should* always be set for a writeable mapping
-  */
--unsigned long htab_convert_pte_flags(unsigned long pteflags)
-+unsigned long htab_convert_pte_flags(unsigned long pteflags, unsigned long flags)
- {
- 	unsigned long rflags = 0;
- 
-@@ -240,7 +240,7 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
- 		 */
- 		rflags |= HPTE_R_M;
- 
--	rflags |= pte_to_hpte_pkey_bits(pteflags);
-+	rflags |= pte_to_hpte_pkey_bits(pteflags, flags);
- 	return rflags;
- }
- 
-@@ -255,7 +255,7 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 	shift = mmu_psize_defs[psize].shift;
- 	step = 1 << shift;
- 
--	prot = htab_convert_pte_flags(prot);
-+	prot = htab_convert_pte_flags(prot, HPTE_USE_KERNEL_KEY);
- 
- 	DBG("htab_bolt_mapping(%lx..%lx -> %lx (%lx,%d,%d)\n",
- 	    vstart, vend, pstart, prot, psize, ssize);
-@@ -1301,12 +1301,14 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
- 		psize = mmu_vmalloc_psize;
- 		ssize = mmu_kernel_ssize;
-+		flags |= HPTE_USE_KERNEL_KEY;
- 		break;
- 
- 	case IO_REGION_ID:
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
- 		psize = mmu_io_psize;
- 		ssize = mmu_kernel_ssize;
-+		flags |= HPTE_USE_KERNEL_KEY;
- 		break;
- 	default:
- 		/*
-@@ -1864,7 +1866,7 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- 	unsigned long hash;
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
- 	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
--	unsigned long mode = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL));
-+	unsigned long mode = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL), HPTE_USE_KERNEL_KEY);
- 	long ret;
- 
- 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
-diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index 4a7d05c1a9c7..7980b013d161 100644
---- a/arch/powerpc/mm/book3s64/pkeys.c
-+++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -190,6 +190,10 @@ void __init pkey_early_init_devtree(void)
- 	reserved_allocation_mask |= (0x1 << 1);
- 	default_uamor &= ~(0x3ul << pkeyshift(1));
- 
-+	/*  handle key 3 which is used by kernel for KAUP */
-+	reserved_allocation_mask |= (0x1 << 3);
-+	default_uamor &= ~(0x3ul << pkeyshift(3));
-+
- 	/*
- 	 * Prevent the usage of OS reserved keys. Update UAMOR
- 	 * for those keys. Also mark the rest of the bits in the
+Changes from v2:
+* Rebase to the latest kernel.
+* Fixed a bug with disabling KUEP/KUAP on kernel command line
+* Added a patch to make kup key dynamic.
+
+Changes from V1:
+* Rebased on latest kernel
+
+Aneesh Kumar K.V (41):
+  powerpc/book3s64/pkeys: Fixup bit numbering
+  powerpc/book3s64/pkeys: pkeys are supported only on hash on book3s.
+  powerpc/book3s64/pkeys: Move pkey related bits in the linux page table
+  powerpc/book3s64/pkeys: Explain key 1 reservation details
+  powerpc/book3s64/pkeys: Simplify the key initialization
+  powerpc/book3s64/pkeys: Prevent key 1 modification from userspace.
+  powerpc/book3s64/pkeys: kill cpu feature key CPU_FTR_PKEY
+  powerpc/book3s64/pkeys: Convert execute key support to static key
+  powerpc/book3s64/pkeys: Simplify pkey disable branch
+  powerpc/book3s64/pkeys: Convert pkey_total to max_pkey
+  powerpc/book3s64/pkeys: Make initial_allocation_mask static
+  powerpc/book3s64/pkeys: Mark all the pkeys above max pkey as reserved
+  powerpc/book3s64/pkeys: Enable MMU_FTR_PKEY
+  powerpc/book3s64/kuep: Add MMU_FTR_KUEP
+  powerpc/book3s64/pkeys: Use execute_pkey_disable static key
+  powerpc/book3s64/pkeys: Use MMU_FTR_PKEY instead of pkey_disabled
+    static key
+  powerpc/book3s64/kuap: Move KUAP related function outside radix
+  powerpc/book3s64/kuep: Move KUEP related function outside radix
+  powerpc/book3s64/kuap: Rename MMU_FTR_RADIX_KUAP to MMU_FTR_KUAP
+  powerpc/book3s64/kuap/kuep: Make KUAP and KUEP a subfeature of
+    PPC_MEM_KEYS
+  powerpc/book3s64/kuap: Move UAMOR setup to key init function
+  powerpc/book3s64/kuap: Use Key 3 for kernel mapping with hash
+    translation
+  powerpc/exec: Set thread.regs early during exec
+  powerpc/book3s64/pkeys: Store/restore userspace AMR correctly on entry
+    and exit from kernel
+  powerpc/book3s64/kuep: Store/restore userspace IAMR correctly on entry
+    and exit from kernel
+  powerpc/book3s64/pkeys: Inherit correctly on fork.
+  powerpc/book3s64/pkeys: Reset userspace AMR correctly on exec
+  powerpc/ptrace-view: Use pt_regs values instead of thread_struct based
+    one.
+  powerpc/book3s64/pkeys: Don't update SPRN_AMR when in kernel mode.
+  powerpc/book3s64/kuap: Restrict access to userspace based on userspace
+    AMR
+  powerpc/book3s64/kuap: Improve error reporting with KUAP
+  powerpc/book3s64/kuap: Use Key 3 to implement KUAP with hash
+    translation.
+  powerpc/book3s64/kuep: Use Key 3 to implement KUEP with hash
+    translation.
+  powerpc/book3s64/hash/kuap: Enable kuap on hash
+  powerpc/book3s64/hash/kuep: Enable KUEP on hash
+  powerpc/book3s64/keys: Print information during boot.
+  powerpc/selftest/ptrave-pkey: Rename variables to make it easier to
+    follow code
+  powerpc/selftest/ptrace-pkey: Update the test to mark an invalid pkey
+    correctly
+  powerpc/selftest/ptrace-pkey: IAMR and uamor cannot be updated by
+    ptrace
+  powerpc/book3s64/keys/kuap: Reset AMR/IAMR values on kexec
+  powerpc/book3s64/hash/kup: Don't hardcode kup key
+
+ arch/powerpc/include/asm/book3s/32/kup.h      |   4 +-
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  21 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h |  12 +-
+ .../powerpc/include/asm/book3s/64/hash-pkey.h |  24 +
+ arch/powerpc/include/asm/book3s/64/hash.h     |   3 +-
+ .../powerpc/include/asm/book3s/64/kup-radix.h | 185 --------
+ arch/powerpc/include/asm/book3s/64/kup.h      | 391 +++++++++++++++++
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   9 +-
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   6 +
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  17 +-
+ arch/powerpc/include/asm/book3s/64/pkeys.h    |  25 ++
+ arch/powerpc/include/asm/cputable.h           |  13 +-
+ arch/powerpc/include/asm/kup.h                |  20 +-
+ arch/powerpc/include/asm/mmu.h                |  17 +-
+ arch/powerpc/include/asm/mmu_context.h        |   2 +-
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h  |   4 +-
+ arch/powerpc/include/asm/pkeys.h              |  65 +--
+ arch/powerpc/include/asm/processor.h          |   5 -
+ arch/powerpc/include/asm/ptrace.h             |   8 +-
+ arch/powerpc/include/asm/thread_info.h        |   2 -
+ arch/powerpc/kernel/asm-offsets.c             |   6 +-
+ arch/powerpc/kernel/dt_cpu_ftrs.c             |   6 -
+ arch/powerpc/kernel/entry_64.S                |   6 +-
+ arch/powerpc/kernel/exceptions-64s.S          |   4 +-
+ arch/powerpc/kernel/misc_64.S                 |  14 -
+ arch/powerpc/kernel/process.c                 |  56 ++-
+ arch/powerpc/kernel/prom.c                    |   5 +
+ arch/powerpc/kernel/ptrace/ptrace-view.c      |  23 +-
+ arch/powerpc/kernel/smp.c                     |   5 +
+ arch/powerpc/kernel/syscall_64.c              |  32 +-
+ arch/powerpc/kernel/traps.c                   |   6 -
+ arch/powerpc/kexec/core_64.c                  |   3 +
+ arch/powerpc/mm/book3s64/hash_4k.c            |   2 +-
+ arch/powerpc/mm/book3s64/hash_64k.c           |   4 +-
+ arch/powerpc/mm/book3s64/hash_hugepage.c      |   2 +-
+ arch/powerpc/mm/book3s64/hash_hugetlbpage.c   |   2 +-
+ arch/powerpc/mm/book3s64/hash_pgtable.c       |   2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c         |  10 +-
+ arch/powerpc/mm/book3s64/pgtable.c            |   3 +
+ arch/powerpc/mm/book3s64/pkeys.c              | 412 +++++++++++-------
+ arch/powerpc/mm/book3s64/radix_pgtable.c      |  36 --
+ arch/powerpc/mm/fault.c                       |   2 +-
+ arch/powerpc/platforms/Kconfig.cputype        |   4 +-
+ .../selftests/powerpc/ptrace/ptrace-pkey.c    |  53 +--
+ 44 files changed, 939 insertions(+), 592 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/hash-pkey.h
+ delete mode 100644 arch/powerpc/include/asm/book3s/64/kup-radix.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/kup.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pkeys.h
+
 -- 
 2.26.2
 
