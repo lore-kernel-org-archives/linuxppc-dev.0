@@ -2,66 +2,70 @@ Return-Path: <SRS0=bXCp=74=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72857C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 032DCC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:38:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 228DC2071A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:32:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 228DC2071A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 6DA3120739
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 13:38:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TE4FcjGc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6DA3120739
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49lshf5VRczDqYh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:32:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49lsqC23DMzDqQN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Jun 2020 23:38:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+982856cf37d7c265414a+6140+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.a=rsa-sha256 header.s=bombadil.20170209 header.b=TE4FcjGc; 
+ dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49lrwY3CC2zDqPQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 22:58:03 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49lrwR2NKkz9v1fm;
- Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id IlY2ZH6Ulfbe; Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49lrwR1XZlz9v1fM;
- Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 961138B792;
- Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 4D5CXE9zWnFa; Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-Received: from pc16570vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.104])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4317D8B75F;
- Mon, 15 Jun 2020 14:57:59 +0200 (CEST)
-Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3DDA165B0E; Mon, 15 Jun 2020 12:57:59 +0000 (UTC)
-Message-Id: <341688399c1b102756046d19ea6ce39db1ae4742.1592225558.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1592225557.git.christophe.leroy@csgroup.eu>
-References: <cover.1592225557.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 3/3] powerpc/8xx: Provide ptep_get() with 16k pages
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Will Deacon <will@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>
-Date: Mon, 15 Jun 2020 12:57:59 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49lrzZ3skpzDqTN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 23:00:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description;
+ bh=R3jVFYS/2IFPi5AjMtMLrTJqX+oMKfiLgBtiR94GLYw=; b=TE4FcjGcDoL2yigYOoInoDk2TC
+ rI6G8Rnsv3Ce5/r0yBqFXXo9JbYQGXrGU2jjUWILXv5FP/UuLflI6ZrreFMIUngq8wvu37Dm/gAYc
+ cfh9WKWAVHwKbV0l8YRQ/MzuAmlrZ3igm6pGp80zOlHoTyE4FEH3lcSP/gbQjlsQ4xvmBeiN3HIri
+ lzJfZlwhBvNkFA/Fu8p3pGft8ySWLApkfdonOGtMzr64M1pa/Qd1Qb1vj7g0i4lJZcXZxzEAMq/NI
+ VQEHTJ2dxfilgUzIYZPGJb664X1E5ZN+EGs4Dwru3hZp2TVfbppjsGLSbHvufik7gv5DbXXT9klwk
+ YuU++6Pg==;
+Received: from 195-192-102-148.dyn.cablelink.at ([195.192.102.148]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jkoj6-0007nd-TW; Mon, 15 Jun 2020 13:00:37 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 1/6] exec: cleanup the execve wrappers
+Date: Mon, 15 Jun 2020 15:00:27 +0200
+Message-Id: <20200615130032.931285-2-hch@lst.de>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200615130032.931285-1-hch@lst.de>
+References: <20200615130032.931285-1-hch@lst.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,94 +77,253 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-parisc@vger.kernel.org, x86@kernel.org,
+ linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-READ_ONCE() now enforces atomic read, which leads to:
+Remove a whole bunch of wrappers that eventually all call
+__do_execve_file, and consolidate the execvce helpers to:
 
-  CC      mm/gup.o
-In file included from ./include/linux/kernel.h:11:0,
-                 from mm/gup.c:2:
-In function 'gup_hugepte.constprop',
-    inlined from 'gup_huge_pd.isra.79' at mm/gup.c:2465:8:
-./include/linux/compiler.h:392:38: error: call to '__compiletime_assert_222' declared with attribute error: Unsupported access size for {READ,WRITE}_ONCE().
-  _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-                                      ^
-./include/linux/compiler.h:373:4: note: in definition of macro '__compiletime_assert'
-    prefix ## suffix();    \
-    ^
-./include/linux/compiler.h:392:2: note: in expansion of macro '_compiletime_assert'
-  _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-  ^
-./include/linux/compiler.h:405:2: note: in expansion of macro 'compiletime_assert'
-  compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long), \
-  ^
-./include/linux/compiler.h:291:2: note: in expansion of macro 'compiletime_assert_rwonce_type'
-  compiletime_assert_rwonce_type(x);    \
-  ^
-mm/gup.c:2428:8: note: in expansion of macro 'READ_ONCE'
-  pte = READ_ONCE(*ptep);
-        ^
-In function 'gup_get_pte',
-    inlined from 'gup_pte_range' at mm/gup.c:2228:9,
-    inlined from 'gup_pmd_range' at mm/gup.c:2613:15,
-    inlined from 'gup_pud_range' at mm/gup.c:2641:15,
-    inlined from 'gup_p4d_range' at mm/gup.c:2666:15,
-    inlined from 'gup_pgd_range' at mm/gup.c:2694:15,
-    inlined from 'internal_get_user_pages_fast' at mm/gup.c:2795:3:
-./include/linux/compiler.h:392:38: error: call to '__compiletime_assert_219' declared with attribute error: Unsupported access size for {READ,WRITE}_ONCE().
-  _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-                                      ^
-./include/linux/compiler.h:373:4: note: in definition of macro '__compiletime_assert'
-    prefix ## suffix();    \
-    ^
-./include/linux/compiler.h:392:2: note: in expansion of macro '_compiletime_assert'
-  _compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
-  ^
-./include/linux/compiler.h:405:2: note: in expansion of macro 'compiletime_assert'
-  compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long), \
-  ^
-./include/linux/compiler.h:291:2: note: in expansion of macro 'compiletime_assert_rwonce_type'
-  compiletime_assert_rwonce_type(x);    \
-  ^
-mm/gup.c:2199:9: note: in expansion of macro 'READ_ONCE'
-  return READ_ONCE(*ptep);
-         ^
-make[2]: *** [mm/gup.o] Error 1
+  (1) __do_execveat, which is the lowest level helper implementing the
+      actual functionality
+  (2) do_execvat, which is used by all callers that want native
+      pointers
+  (3) do_compat_execve, which is used by all compat syscalls
 
-Define ptep_get() on 8xx when using 16k pages.
-
-Fixes: 2ab3a0a02905 ("READ_ONCE: Enforce atomicity for {READ,WRITE}_ONCE() memory accesses")
-Cc: Will Deacon <will@kernel.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ fs/exec.c               | 98 +++++++++++------------------------------
+ include/linux/binfmts.h | 12 ++---
+ init/main.c             |  7 +--
+ kernel/umh.c            | 16 +++----
+ 4 files changed, 41 insertions(+), 92 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index b56f14160ae5..77addb599ce7 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -286,6 +286,16 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
- 	return __pte(pte_update(mm, addr, ptep, ~0, 0, 0));
+diff --git a/fs/exec.c b/fs/exec.c
+index e6e8a9a7032784..354fdaa536ae7d 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1815,10 +1815,7 @@ static int exec_binprm(struct linux_binprm *bprm)
+ 	return 0;
  }
  
-+#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
-+#define __HAVE_ARCH_PTEP_GET
-+static inline pte_t ptep_get(pte_t *ptep)
+-/*
+- * sys_execve() executes a new program.
+- */
+-static int __do_execve_file(int fd, struct filename *filename,
++static int __do_execveat(int fd, struct filename *filename,
+ 			    struct user_arg_ptr argv,
+ 			    struct user_arg_ptr envp,
+ 			    int flags, struct file *file)
+@@ -1972,74 +1969,16 @@ static int __do_execve_file(int fd, struct filename *filename,
+ 	return retval;
+ }
+ 
+-static int do_execveat_common(int fd, struct filename *filename,
+-			      struct user_arg_ptr argv,
+-			      struct user_arg_ptr envp,
+-			      int flags)
+-{
+-	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
+-}
+-
+-int do_execve_file(struct file *file, void *__argv, void *__envp)
+-{
+-	struct user_arg_ptr argv = { .ptr.native = __argv };
+-	struct user_arg_ptr envp = { .ptr.native = __envp };
+-
+-	return __do_execve_file(AT_FDCWD, NULL, argv, envp, 0, file);
+-}
+-
+-int do_execve(struct filename *filename,
+-	const char __user *const __user *__argv,
+-	const char __user *const __user *__envp)
+-{
+-	struct user_arg_ptr argv = { .ptr.native = __argv };
+-	struct user_arg_ptr envp = { .ptr.native = __envp };
+-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
+-}
+-
+ int do_execveat(int fd, struct filename *filename,
+ 		const char __user *const __user *__argv,
+ 		const char __user *const __user *__envp,
+-		int flags)
++		int flags, struct file *file)
+ {
+ 	struct user_arg_ptr argv = { .ptr.native = __argv };
+ 	struct user_arg_ptr envp = { .ptr.native = __envp };
+ 
+-	return do_execveat_common(fd, filename, argv, envp, flags);
+-}
+-
+-#ifdef CONFIG_COMPAT
+-static int compat_do_execve(struct filename *filename,
+-	const compat_uptr_t __user *__argv,
+-	const compat_uptr_t __user *__envp)
+-{
+-	struct user_arg_ptr argv = {
+-		.is_compat = true,
+-		.ptr.compat = __argv,
+-	};
+-	struct user_arg_ptr envp = {
+-		.is_compat = true,
+-		.ptr.compat = __envp,
+-	};
+-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
+-}
+-
+-static int compat_do_execveat(int fd, struct filename *filename,
+-			      const compat_uptr_t __user *__argv,
+-			      const compat_uptr_t __user *__envp,
+-			      int flags)
+-{
+-	struct user_arg_ptr argv = {
+-		.is_compat = true,
+-		.ptr.compat = __argv,
+-	};
+-	struct user_arg_ptr envp = {
+-		.is_compat = true,
+-		.ptr.compat = __envp,
+-	};
+-	return do_execveat_common(fd, filename, argv, envp, flags);
++	return __do_execveat(fd, filename, argv, envp, flags, file);
+ }
+-#endif
+ 
+ void set_binfmt(struct linux_binfmt *new)
+ {
+@@ -2070,7 +2009,7 @@ SYSCALL_DEFINE3(execve,
+ 		const char __user *const __user *, argv,
+ 		const char __user *const __user *, envp)
+ {
+-	return do_execve(getname(filename), argv, envp);
++	return do_execveat(AT_FDCWD, getname(filename), argv, envp, 0, NULL);
+ }
+ 
+ SYSCALL_DEFINE5(execveat,
+@@ -2080,18 +2019,34 @@ SYSCALL_DEFINE5(execveat,
+ 		int, flags)
+ {
+ 	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
++	struct filename *name = getname_flags(filename, lookup_flags, NULL);
+ 
+-	return do_execveat(fd,
+-			   getname_flags(filename, lookup_flags, NULL),
+-			   argv, envp, flags);
++	return do_execveat(fd, name, argv, envp, flags, NULL);
+ }
+ 
+ #ifdef CONFIG_COMPAT
++static int do_compat_execve(int fd, struct filename *filename,
++		const compat_uptr_t __user *__argv,
++		const compat_uptr_t __user *__envp,
++		int flags)
 +{
-+	pte_t pte = {READ_ONCE(ptep->pte), 0, 0, 0};
++	struct user_arg_ptr argv = {
++		.is_compat = true,
++		.ptr.compat = __argv,
++	};
++	struct user_arg_ptr envp = {
++		.is_compat = true,
++		.ptr.compat = __envp,
++	};
 +
-+	return pte;
++	return __do_execveat(fd, filename, argv, envp, flags, NULL);
 +}
-+#endif
 +
- #define __HAVE_ARCH_PTEP_SET_WRPROTECT
- static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pte_t *ptep)
+ COMPAT_SYSCALL_DEFINE3(execve, const char __user *, filename,
+ 	const compat_uptr_t __user *, argv,
+ 	const compat_uptr_t __user *, envp)
+ {
+-	return compat_do_execve(getname(filename), argv, envp);
++	return do_compat_execve(AT_FDCWD, getname(filename), argv, envp, 0);
+ }
+ 
+ COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
+@@ -2101,9 +2056,8 @@ COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
+ 		       int,  flags)
+ {
+ 	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
++	struct filename *name = getname_flags(filename, lookup_flags, NULL);
+ 
+-	return compat_do_execveat(fd,
+-				  getname_flags(filename, lookup_flags, NULL),
+-				  argv, envp, flags);
++	return do_compat_execve(fd, name, argv, envp, flags);
+ }
+ #endif
+diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
+index 4a20b7517dd036..bed702e4b1fbd9 100644
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -134,13 +134,9 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
+ extern void set_binfmt(struct linux_binfmt *new);
+ extern ssize_t read_code(struct file *, unsigned long, loff_t, size_t);
+ 
+-extern int do_execve(struct filename *,
+-		     const char __user * const __user *,
+-		     const char __user * const __user *);
+-extern int do_execveat(int, struct filename *,
+-		       const char __user * const __user *,
+-		       const char __user * const __user *,
+-		       int);
+-int do_execve_file(struct file *file, void *__argv, void *__envp);
++int do_execveat(int fd, struct filename *filename,
++		const char __user *const __user *__argv,
++		const char __user *const __user *__envp,
++		int flags, struct file *file);
+ 
+ #endif /* _LINUX_BINFMTS_H */
+diff --git a/init/main.c b/init/main.c
+index 0ead83e86b5aa2..838950ea7bca22 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1329,9 +1329,10 @@ static int run_init_process(const char *init_filename)
+ 	pr_debug("  with environment:\n");
+ 	for (p = envp_init; *p; p++)
+ 		pr_debug("    %s\n", *p);
+-	return do_execve(getname_kernel(init_filename),
+-		(const char __user *const __user *)argv_init,
+-		(const char __user *const __user *)envp_init);
++	return do_execveat(AT_FDCWD, getname_kernel(init_filename),
++			(const char __user *const __user *)argv_init,
++			(const char __user *const __user *)envp_init,
++			0, NULL);
+ }
+ 
+ static int try_to_run_init_process(const char *init_filename)
+diff --git a/kernel/umh.c b/kernel/umh.c
+index 79f139a7ca03c6..7aa9a5817582ca 100644
+--- a/kernel/umh.c
++++ b/kernel/umh.c
+@@ -103,15 +103,13 @@ static int call_usermodehelper_exec_async(void *data)
+ 	commit_creds(new);
+ 
+ 	sub_info->pid = task_pid_nr(current);
+-	if (sub_info->file) {
+-		retval = do_execve_file(sub_info->file,
+-					sub_info->argv, sub_info->envp);
+-		if (!retval)
+-			current->flags |= PF_UMH;
+-	} else
+-		retval = do_execve(getname_kernel(sub_info->path),
+-				   (const char __user *const __user *)sub_info->argv,
+-				   (const char __user *const __user *)sub_info->envp);
++	retval = do_execveat(AT_FDCWD,
++			sub_info->path ? getname_kernel(sub_info->path) : NULL,
++			(const char __user *const __user *)sub_info->argv,
++			(const char __user *const __user *)sub_info->envp,
++			0, sub_info->file);
++	if (sub_info->file && !retval)
++		current->flags |= PF_UMH;
+ out:
+ 	sub_info->retval = retval;
+ 	/*
 -- 
-2.25.0
+2.26.2
 
