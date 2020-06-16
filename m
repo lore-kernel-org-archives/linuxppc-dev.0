@@ -2,88 +2,144 @@ Return-Path: <SRS0=a/z+=75=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2083C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:18:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18CC4C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:26:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0324214D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:18:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9B008208D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:26:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VwXlS1g8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0324214D8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=wdc.com header.i=@wdc.com header.b="KFwN3t2b";
+	dkim=pass (1024-bit key) header.d=sharedspace.onmicrosoft.com header.i=@sharedspace.onmicrosoft.com header.b="He+5c+Jd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B008208D5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=wdc.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49mc0G16VqzDqnT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 04:18:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::343;
- helo=mail-ot1-x343.google.com; envelope-from=natechancellor@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49mc8y5XYpzDqqW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 04:26:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ spf=pass (sender SPF authorized) smtp.mailfrom=wdc.com
+ (client-ip=216.71.154.42; helo=esa4.hgst.iphmx.com;
+ envelope-from=prvs=4292e6790=johannes.thumshirn@wdc.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=wdc.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=VwXlS1g8; dkim-atps=neutral
-Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
- [IPv6:2607:f8b0:4864:20::343])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=wdc.com header.i=@wdc.com header.a=rsa-sha256
+ header.s=dkim.wdc.com header.b=KFwN3t2b; 
+ dkim=pass (1024-bit key;
+ unprotected) header.d=sharedspace.onmicrosoft.com
+ header.i=@sharedspace.onmicrosoft.com header.a=rsa-sha256
+ header.s=selector2-sharedspace-onmicrosoft-com header.b=He+5c+Jd; 
+ dkim-atps=neutral
+X-Greylist: delayed 71 seconds by postgrey-1.36 at bilbo;
+ Wed, 17 Jun 2020 00:15:13 AEST
+Received: from esa4.hgst.iphmx.com (esa4.hgst.iphmx.com [216.71.154.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49mbxc0d3hzDqcJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 04:16:35 +1000 (AEST)
-Received: by mail-ot1-x343.google.com with SMTP id v13so16678574otp.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 11:16:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=qcuAK03LOqO5mTPh575e+XVmEJ631aNvRC62w67+4Es=;
- b=VwXlS1g8JndYAbL6AkbODMzW9aRCCeCGS0qDzu9RlCSgpRk4sUz1xBpcwv3bWNtcPB
- W5PbX2EDusVm2vo3oUJSBM4wom1W/b3YCDLBAfKfoGGI9EC2NuLeh4tg7aiN4QaJJUbi
- a1vhJXJJ02M2DXWZ5xxm1S/yEeNog5tFnNQmKawPyccleEVlnq2MkNWb/BXT30lb4oSh
- qnEDSuE/QLwmUe2FJM+olU2Jipye8MCJbU7d5AMO8s5QufzyKU2y7qVm3ocuMb+ahVrI
- 5EgNpM2mbvKXkj1x10zQh0QhEK2v/1Lww3KG8+vNLaoGZBEP1u8nVQwBYPE0ePKD9Akj
- 0hog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=qcuAK03LOqO5mTPh575e+XVmEJ631aNvRC62w67+4Es=;
- b=mzG5iUmhzu8HpEoWARPJDvoqCElf+eVzd+w2HjkuV9vXnZEQxRjQG0Dvw2fpgAv61t
- BnwGxCzacpdo98oxm0qXXd7ur3n2P2unEF2hoOPeYzpGRri8XHbtdRBtbpXKqSfthMNG
- dQ+E2VP9Bbv1nbCl+fdHhrsT+u9qC08P6cQ7zfd7bHUxOkhWMcH+QNwVDNqCfcb0UWCj
- Bahga79J4LjYYWLcLphk5u2ARmebfreZkdOhNUA/gL6BZM+BrZHp4kbJT2QdF4geocLX
- 09q9HmQEQkE3+Al7maJxoINWDkSN1K66/X3n1nSfAx21hWRYhEmFUmDbolySQEqh2hME
- Og+g==
-X-Gm-Message-State: AOAM532fHuOqzdAHB6bkJnvHBvY9wOenULu396LPhYRgHZI1wkVThn+y
- pLevlXXsYyY5vJi2bMWlUOU=
-X-Google-Smtp-Source: ABdhPJwoE+mTtd0wmJ6Kg/2ki2jL/MPCf6DRi0jct0cmYlu66QwZ4K5VQV/Otr0QY9SFijmmPVCXBw==
-X-Received: by 2002:a9d:604e:: with SMTP id v14mr3605300otj.39.1592331391962; 
- Tue, 16 Jun 2020 11:16:31 -0700 (PDT)
-Received: from ubuntu-n2-xlarge-x86 ([2604:1380:4111:8b00::3])
- by smtp.gmail.com with ESMTPSA id k84sm4329177oia.3.2020.06.16.11.16.31
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 16 Jun 2020 11:16:31 -0700 (PDT)
-Date: Tue, 16 Jun 2020 11:16:30 -0700
-From: Nathan Chancellor <natechancellor@gmail.com>
-To: Michal Simek <michal.simek@xilinx.com>
-Subject: Re: [PATCH v5 01/13] powerpc: Remove Xilinx PPC405/PPC440 support
-Message-ID: <20200616181630.GA3403678@ubuntu-n2-xlarge-x86>
-References: <cover.1590079968.git.christophe.leroy@csgroup.eu>
- <8c593895e2cb57d232d85ce4d8c3a1aa7f0869cc.1590079968.git.christophe.leroy@csgroup.eu>
- <20200616002720.GA1307277@ubuntu-n2-xlarge-x86>
- <68503e5e-7456-b81c-e43d-27cb331a4b72@xilinx.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49mVb544ktzDqq5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 00:15:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+ d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+ t=1592316913; x=1623852913;
+ h=from:to:cc:subject:date:message-id:references:
+ content-transfer-encoding:mime-version;
+ bh=5ru8INMLguJmSGjgKHqEdPjyXEvO+zybcMK9YmIq9xk=;
+ b=KFwN3t2bGkZpVYquEDFOwdrhMxF1rz/tMOEzmrZAZbT1qLUvfyJGhLPb
+ +qXh/sxKEH7ww+WLDqeucWZOLjpMju2g9967A0uA67toUe6I3dMDu5Jad
+ PnnvzMyNKltRzQfDpeAywwBOiUlZOiC3WkcrRtRdZagEn6BehMGVDyZ87
+ PCrlt2MpPXkHCMbwJBp0BNhIzdrnL25IyOmJ4z/hYSPyH+2fcEfw1qd2A
+ DjucI9wi4FhUyT9NjjlBqEZxFPNzhEqgkEQTl6mUwlPOe1I3Wf2aVgzDr
+ F8WN8SLaVYvjZG9iJqMlxlGW5zpFRPD92eWMBZzxKqsV+DKoS0bC3nQ88 A==;
+IronPort-SDR: eb1TYldMd1Mnu88G0cqZmXiReI1uNw3O7v0HvCjGcJM4k3RT3jhTf9RkwjYCRYiyoRxEF+Ezlo
+ TfvQGLaIpLZ0q0c5Cos75Ns/pf52eWH6yIRo41Gz6hWgwJtrL1b8LTQUJo5MyxsFdgFzCBgwLb
+ eQLhXYiCRP77sx5GMCauDe+Y7SSK/SXou6TUyIW6rVBCE6UjDZTHfNfo7cwPgXGo3ADAMQCK2Y
+ 6Rf33CgQH4RixLHY5UInSiDZ+Eo9ClEKrMv643A1Zd/z2JrrXN8aiVNVKizSnB0rD1iTpLD8ui
+ e6w=
+X-IronPort-AV: E=Sophos;i="5.73,518,1583164800"; d="scan'208";a="140131336"
+Received: from mail-dm6nam11lp2170.outbound.protection.outlook.com (HELO
+ NAM11-DM6-obe.outbound.protection.outlook.com) ([104.47.57.170])
+ by ob1.hgst.iphmx.com with ESMTP; 16 Jun 2020 22:13:57 +0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=S1BL/xPG/PeVHvec0QZJ/uY5lGpQnNwwd6+mo7XvXeOkOdYK3MwJ+SSMdeooMkIg6Cf8NXJlCaUe9vdzHYmYmleFb50nUDk9V4nuusduq+aV+n7i8MieWHC7ZI1xWDk4teMBTJmaGIhda68kTVWWCYnBFjPkaqoEKrktLvKYe3UwaHGv2t373hLI/Q0Q846v4wOCxeZdhc9mRHVXn8TcwkLgaEkzIyT8hRWIOoYQIX+5aq7j8ccQbt4yvVgOl0LsKsQszDb0Lq8fxtG/6whhPHl1uFp9Ra5uolAdan/2IHpzN80ltBXgyUi7biKpAXgBqCxuKAuV4fpokdHDVBOMDw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=N1ADHNg3PJ8+F4rqdl0gQ3PQ436o5b5tv/CbEdwgCQI=;
+ b=CEbVripfhKgISVX0M/QdgE8Mg9S+fjHmlH0Sbb01xAShIdPSQNbHYrZU8rXSyEz0LupXPv38eV+kR1VW5Kp0Z1WpwZ7N0B286aCntnqTgefhFgQBkhvoU6NCjiQw6sEdj/WsWizEEmxig9RKvmXwJby1Vmxd42h7owd+5KJcOsqper1oBHUKpajI9nYH1henVOCteiWrQI4sBFg51Fuih21NZXCluYZ3mQi7pvapFY9JFOM7GB/5ieHYGkHyJ1ate+Z8g/Ugaicf09nZ34ZchgZmLc++IwweF2yA3w32VrV36mnVrJO0SG3XmFlDDuZ6zRT/QEysWPGtBjtjR8E7mw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
+ header.d=wdc.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=N1ADHNg3PJ8+F4rqdl0gQ3PQ436o5b5tv/CbEdwgCQI=;
+ b=He+5c+JduqYVwDgoZLzLVAVFpWnnCKAeguaXri55yYn8dZ4stgpyo5ZOBFJZTB5yVZkrtuJSlnIxMfhHrzSvj95GGD3SjGw0jykEWOLKrfc2KTB+kXzcev9cRurv5YaaLYC69gmCP+FomngMbbgLUSX4KqRFFus3gKBA+RasdTs=
+Received: from SN4PR0401MB3598.namprd04.prod.outlook.com
+ (2603:10b6:803:47::21) by SN6PR04MB4046.namprd04.prod.outlook.com
+ (2603:10b6:805:4a::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3109.22; Tue, 16 Jun
+ 2020 14:13:54 +0000
+Received: from SN4PR0401MB3598.namprd04.prod.outlook.com
+ ([fe80::1447:186c:326e:30b2]) by SN4PR0401MB3598.namprd04.prod.outlook.com
+ ([fe80::1447:186c:326e:30b2%7]) with mapi id 15.20.3088.028; Tue, 16 Jun 2020
+ 14:13:54 +0000
+From: Johannes Thumshirn <Johannes.Thumshirn@wdc.com>
+To: Bart Van Assche <bvanassche@acm.org>, Finn Thain
+ <fthain@telegraphics.com.au>, Chris Boot <bootc@boo.tc>
+Subject: Re: [PATCH] scsi: target/sbp: remove firewire SBP target driver
+Thread-Topic: [PATCH] scsi: target/sbp: remove firewire SBP target driver
+Thread-Index: AQHWQd9L9CW+VqfbYUW2am9N2FcWXg==
+Date: Tue, 16 Jun 2020 14:13:54 +0000
+Message-ID: <SN4PR0401MB35982D889857E3C03E96E49D9B9D0@SN4PR0401MB3598.namprd04.prod.outlook.com>
+References: <01020172acd3d10f-3964f076-a820-43fc-9494-3f3946e9b7b5-000000@eu-west-1.amazonses.com>
+ <alpine.LNX.2.22.394.2006140934520.15@nippy.intranet>
+ <7ad14946-5c25-fc49-1e48-72d37a607832@boo.tc>
+ <alpine.LNX.2.22.394.2006150919110.8@nippy.intranet>
+ <8da0c285-d707-a3d2-063e-472af5cc560f@boo.tc>
+ <alpine.LNX.2.22.394.2006161929380.8@nippy.intranet>
+ <8cbab988-fba7-8e27-7faf-9f7aa36ca235@acm.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: acm.org; dkim=none (message not signed)
+ header.d=none;acm.org; dmarc=none action=none header.from=wdc.com;
+x-originating-ip: [129.253.240.72]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: f4b67696-eab0-46ae-3391-08d811ff808d
+x-ms-traffictypediagnostic: SN6PR04MB4046:
+x-microsoft-antispam-prvs: <SN6PR04MB4046EA5A9CBA518F7A07276F9B9D0@SN6PR04MB4046.namprd04.prod.outlook.com>
+wdcipoutbound: EOP-TRUE
+x-ms-oob-tlc-oobclassifiers: OLM:9508;
+x-forefront-prvs: 04362AC73B
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: YUSiJ8Hwm5WME7OmxRDuxyB71Y3IvMKlMBomEvN3y9i/j8mSnTwJNagsNBfHhvpYxwsHTGRsozO8eZT27nP27ZLLlLo7RRk87/U+INkW4F5o2H9kdKYlb1V52crQuvA8zfbgta6hLo2oBEPTUTIGsUpQ5cSYhgLn4AWbpYC5B7Ar1h06FlQM+AQOW+1JtR6yDcaMe7sFqYkMTYwoqPx4K3R70DbjngaT5iANnwAx4B4eNP6AyFXRGz2ilpJzaX76f7IMquOTGz0Lf3PZeFWjRT2mNRdLaDQa7J1M89gjeW180NABk4wYwIvl/vIX0H4ML5vzA+4d+dQO2osmaLnUFQ==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SN4PR0401MB3598.namprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFTY:;
+ SFS:(4636009)(366004)(52536014)(2906002)(9686003)(26005)(55016002)(498600001)(5660300002)(6506007)(4326008)(53546011)(4744005)(86362001)(8936002)(110136005)(7696005)(7416002)(66946007)(76116006)(186003)(91956017)(33656002)(66476007)(66556008)(64756008)(66446008)(71200400001)(54906003)(8676002)(83380400001);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata: dZrsZbRzUHnP4XBXwlFVJemPGBxUFP38bAC/JG522uMsZ6cxXI/i+92j/xcIXqn79I1MJxQwWr7al9YZknqvbv9ROOyvhma9mkRn7LcCl+BVsYwbJ6unDv+XBVSNU0UPmVscvalEiUhEjA2o44yYoXwwLieaPHgiBTeUPXTxIFmQGYZ+XksrrQKHeIbcswOSeCiiYKWDknUwhMBzIB5E6c5IqNXJAST5NKF88BX/yCUqddOLUFhnCv8Yk/qzOQbmCFLEYJxlon5Cf9M60IQgCDP9pbxLCwFRLRd0FpcM4bPApph/9FsTTcIDMD+hj0IKdEf/SKJM653mHaLR23jTtx71mvX83Xc14OEKBoc9xfviqQ81G5LLE21opmDH+jq7ZnRQ9koeqMt3UsaXPCg6icYiYsp2TyhIuutbXQMJDNbLRVi//jIKZ56IpPHH8raZU9lcewMQMfki5XtGGQwWNIAlsaA6v5Br4Hi10u6Sim/DiCJ4CN9uvaJTJJMAg01i
+x-ms-exchange-transport-forked: True
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <68503e5e-7456-b81c-e43d-27cb331a4b72@xilinx.com>
+X-OriginatorOrg: wdc.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f4b67696-eab0-46ae-3391-08d811ff808d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Jun 2020 14:13:54.2486 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: D0cCNG3TTt5CBTr4ejKQQmhSKY5P9ZXep4z+lTTVW87qxHFI4DQ2bul+90jMIcZgur/xgnaRMG3ZsJO70aPsvYzUw2KpsYc/PcNyMUoXngY=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR04MB4046
+X-Mailman-Approved-At: Wed, 17 Jun 2020 04:23:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,101 +151,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, linux-kernel@vger.kernel.org,
- clang-built-linux@googlegroups.com, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Martin K . Petersen" <martin.petersen@oracle.com>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ Chuhong Yuan <hslester96@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicholas Bellinger <nab@linux-iscsi.org>,
+ "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>,
+ "linux1394-devel@lists.sourceforge.net"
+ <linux1394-devel@lists.sourceforge.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stefan Richter <stefanr@s5r6.in-berlin.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michal,
-
-On Tue, Jun 16, 2020 at 04:45:20PM +0200, Michal Simek wrote:
-> 
-> 
-> On 16. 06. 20 2:27, Nathan Chancellor wrote:
-> > On Thu, May 21, 2020 at 04:55:52PM +0000, Christophe Leroy wrote:
-> >> From: Michal Simek <michal.simek@xilinx.com>
-> >>
-> >> The latest Xilinx design tools called ISE and EDK has been released in
-> >> October 2013. New tool doesn't support any PPC405/PPC440 new designs.
-> >> These platforms are no longer supported and tested.
-> >>
-> >> PowerPC 405/440 port is orphan from 2013 by
-> >> commit cdeb89943bfc ("MAINTAINERS: Fix incorrect status tag") and
-> >> commit 19624236cce1 ("MAINTAINERS: Update Grant's email address and maintainership")
-> >> that's why it is time to remove the support fot these platforms.
-> >>
-> >> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> >> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> >> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > 
-> > This patch causes qemu-system-ppc to fail to load ppc44x_defconfig:
-> > 
-> > $ make -skj"$(nproc)" ARCH=powerpc CROSS_COMPILE=powerpc-linux- O=out/ppc distclean ppc44x_defconfig zImage
-> > 
-> > $ timeout --foreground 30s unbuffer \
-> > qemu-system-ppc \
-> > -machine bamboo \
-> 
-> Did you bisect it that you found that this patch is causing problem for
-> you on any bamboo machine?
-> 
-> Or this was caused by the whole series?
-> 
-> Thanks,
-> Michal
-
-Yes, this conclusion was the result of the following bisect:
-
-$ cat test.sh
-#!/usr/bin/env bash
-
-cd "${HOME}"/src/linux || exit 125
-
-set -x
-
-PATH=${HOME}/toolchains/gcc/10.1.0/bin:${PATH} \
-make -skj"$(nproc)" ARCH=powerpc CROSS_COMPILE=powerpc-linux- O=out/ppc32 distclean ppc44x_defconfig zImage || exit 125
-
-"${HOME}"/cbl/github/boot-utils/boot-qemu.sh -a ppc32 -k out/ppc32 -t 30s
-
-$ git bisect start v5.8-rc1 v5.7
-...
-
-$ git bisect run test.sh
-...
-
-$ git bisect log
-# bad: [b3a9e3b9622ae10064826dccb4f7a52bd88c7407] Linux 5.8-rc1
-# good: [3d77e6a8804abcc0504c904bd6e5cdf3a5cf8162] Linux 5.7
-git bisect start 'v5.8-rc1' 'v5.7'
-# good: [ee01c4d72adffb7d424535adf630f2955748fa8b] Merge branch 'akpm' (patches from Andrew)
-git bisect good ee01c4d72adffb7d424535adf630f2955748fa8b
-# bad: [6f2dc3d335457d9c815be9f4fd3dc8eff92fcef7] Merge tag 'dma-mapping-5.8-2' of git://git.infradead.org/users/hch/dma-mapping
-git bisect bad 6f2dc3d335457d9c815be9f4fd3dc8eff92fcef7
-# skip: [828f3e18e1cb98c68fc6db4d5113513d4a267775] Merge tag 'arm-drivers-5.8' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
-git bisect skip 828f3e18e1cb98c68fc6db4d5113513d4a267775
-# good: [c46241a370a61f0f264791abb9fc869016e749ce] powerpc/pkeys: Check vma before returning key fault error to the user
-git bisect good c46241a370a61f0f264791abb9fc869016e749ce
-# good: [3f0be4df50a7854a831c80a74d7cf2cfd61f2fde] Merge tag 'versatile-dts-v5.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-integrator into arm/dt
-git bisect good 3f0be4df50a7854a831c80a74d7cf2cfd61f2fde
-# bad: [bd55e792de0844631d34487d43eaf3f13294ebfe] powerpc/module_64: Use special stub for _mcount() with -mprofile-kernel
-git bisect bad bd55e792de0844631d34487d43eaf3f13294ebfe
-# good: [303e6a9ddcdc168e92253c78cdb4bbe1e10d78b3] powerpc/watchpoint: Convert thread_struct->hw_brk to an array
-git bisect good 303e6a9ddcdc168e92253c78cdb4bbe1e10d78b3
-# good: [0755e85570a4615ca674ad6489d44d63916f1f3e] powerpc/xive: Do not expose a debugfs file when XIVE is disabled
-git bisect good 0755e85570a4615ca674ad6489d44d63916f1f3e
-# bad: [b4ac18eead28611ff470d0f47a35c4e0ac080d9c] powerpc/perf/hv-24x7: Fix inconsistent output values incase multiple hv-24x7 events run
-git bisect bad b4ac18eead28611ff470d0f47a35c4e0ac080d9c
-# bad: [3aacaa719b7bf135551cabde2480e8f7bfdf7c7d] powerpc/40x: Don't save CR in SPRN_SPRG_SCRATCH6
-git bisect bad 3aacaa719b7bf135551cabde2480e8f7bfdf7c7d
-# bad: [1b5c0967ab8aa9424cdd5108de4e055d8aeaa9d0] powerpc/40x: Remove support for IBM 403GCX
-git bisect bad 1b5c0967ab8aa9424cdd5108de4e055d8aeaa9d0
-# good: [0bdad33d6bd7b80722e2f9e588d3d7c6d6e34978] powerpc/64: Refactor interrupt exit irq disabling sequence
-git bisect good 0bdad33d6bd7b80722e2f9e588d3d7c6d6e34978
-# bad: [2c74e2586bb96012ffc05f1c819b05d9cad86d6e] powerpc/40x: Rework 40x PTE access and TLB miss
-git bisect bad 2c74e2586bb96012ffc05f1c819b05d9cad86d6e
-# bad: [7ade8495dcfd788a76e6877c9ea86f5207369ea4] powerpc: Remove Xilinx PPC405/PPC440 support
-git bisect bad 7ade8495dcfd788a76e6877c9ea86f5207369ea4
-# first bad commit: [7ade8495dcfd788a76e6877c9ea86f5207369ea4] powerpc: Remove Xilinx PPC405/PPC440 support
+On 16/06/2020 16:09, Bart Van Assche wrote:=0A=
+> On 2020-06-16 02:42, Finn Thain wrote:=0A=
+>> Martin said, "I'd appreciate a patch to remove it"=0A=
+>>=0A=
+>> And Bart said, "do you want to keep this driver in the kernel tree?"=0A=
+>>=0A=
+>> AFAICT both comments are quite ambiguous. I don't see an actionable =0A=
+>> request, just an expression of interest from people doing their jobs.=0A=
+>>=0A=
+>> Note well: there is no pay check associated with having a MAINTAINERS fi=
+le =0A=
+>> entry.=0A=
+> =0A=
+> Hi Finn,=0A=
+> =0A=
+> As far as I know the sbp driver only has had one user ever and that user=
+=0A=
+> is no longer user the sbp driver. So why to keep it in the kernel tree?=
+=0A=
+> Restoring a kernel driver can be easy - the first step is a "git revert".=
+=0A=
+=0A=
+Why not move the driver to drivers/staging for 2 or 3 kernel releases and i=
+f=0A=
+noone steps up, delete it?=0A=
+=0A=
+Just my 2 Cents,=0A=
+	Johannes=0A=
