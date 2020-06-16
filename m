@@ -2,54 +2,80 @@ Return-Path: <SRS0=a/z+=75=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78860C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 03:06:54 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAF9CC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 03:25:32 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF18D20707
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 03:06:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF18D20707
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id B5310208C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 03:25:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="wYYIk0FO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5310208C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49mClv1qpNzDqlK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 13:06:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49mD9P1vcBzDqkq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 13:25:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+ spf=softfail (domain owner discourages use of this
+ host) smtp.mailfrom=kernel.org (client-ip=210.131.2.83;
+ helo=conssluserg-04.nifty.com; envelope-from=masahiroy@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
+ header.s=dec2015msa header.b=wYYIk0FO; 
+ dkim-atps=neutral
+Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
+ [210.131.2.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49mCjj62wnzDqhl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 13:04:56 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E0AF81A0547;
- Tue, 16 Jun 2020 05:04:53 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B6E321A053B;
- Tue, 16 Jun 2020 05:04:49 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 4B8E8402D0;
- Tue, 16 Jun 2020 11:04:44 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH v3] ASoC: fsl_ssi: Fix bclk calculation for mono channel
-Date: Tue, 16 Jun 2020 10:53:48 +0800
-Message-Id: <034eff1435ff6ce300b6c781130cefd9db22ab9a.1592276147.git.shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49mD716bmJzDqdr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 13:23:25 +1000 (AEST)
+Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com
+ [209.85.222.52]) (authenticated)
+ by conssluserg-04.nifty.com with ESMTP id 05G3MwVZ003766
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 12:22:59 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com 05G3MwVZ003766
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1592277779;
+ bh=2/462jbz7jQVLiDVVWzKKcGk4qeztCSU3uhhsd45JF4=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=wYYIk0FO0sb92e2n/k8NDpk1fopYb/hY4bojA+HZaTpXZg8QWF10eTYMBVFJzMMts
+ f6EP6j6l/ayQFmsSHbv35ZUgEO5uZBLAiG+yQ3qkg5VNjtCekxFiQxOuCZdOkn6Biv
+ J88nBCSBkcZX7wW+UcHl+pvbb6APUvlSs97EBsX4+eQbtoMorRPN72yAiHi/9u4yk1
+ edXCX7WUDLOUIPyLAlUy8+5+TK/+ZysRuznDOeFpo4usH05y5bIyRCBh6EQ2JhBNho
+ WBI473G6N9PPZ84EIDgMSY6irJ5wRVKJ2ZigU9k80QpP0XLXVIZhTnGMZF4OE4l6f9
+ xG3ihqbqga5Gw==
+X-Nifty-SrcIP: [209.85.222.52]
+Received: by mail-ua1-f52.google.com with SMTP id a10so6430952uan.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2020 20:22:58 -0700 (PDT)
+X-Gm-Message-State: AOAM530Uw8Faw38ACZqy+IoF5zWkQmLQuhD967JL1Rac5go7MydI/6ua
+ W0UIuz2xgEtWcUrP/a/X8ElPHezAEJBsTBstkNs=
+X-Google-Smtp-Source: ABdhPJylS2uk1OU4K6oY6oUB9JpzLgAK28MZHSy9Ieuy0bzPvPbnNVm5vCKIc+H1HptOGXkvcNfJXLqC1s/sVZgEnTE=
+X-Received: by 2002:ab0:156d:: with SMTP id p42mr462901uae.121.1592277777648; 
+ Mon, 15 Jun 2020 20:22:57 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200521202716.193316-1-samitolvanen@google.com>
+ <CAK7LNARq3g5vA6vy9449SHsKQmbwJrQDSBz4ZbH1pBEvPmusuA@mail.gmail.com>
+ <CAK7LNASm2t-Dkr+p_EWvqf_eoKn5R2iXWuBHnTB9n6MUxr3-pQ@mail.gmail.com>
+ <1590226253.lnkg0jun9x.astroid@bobo.none>
+ <CAK7LNAR_-q3jhaUzDpkC3ej_DpAerzMsORT-tFw_3AwX7xM0Yw@mail.gmail.com>
+ <CABCJKufaMU1z-s4S+dHhg0iCyVynLGwsFJgYnYyiBaR=mZt-8w@mail.gmail.com>
+In-Reply-To: <CABCJKufaMU1z-s4S+dHhg0iCyVynLGwsFJgYnYyiBaR=mZt-8w@mail.gmail.com>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Tue, 16 Jun 2020 12:22:20 +0900
+X-Gmail-Original-Message-ID: <CAK7LNARbZhoaA=Nnuw0=gBrkuKbr_4Ng_Ei57uafujZf7Xazgw@mail.gmail.com>
+Message-ID: <CAK7LNARbZhoaA=Nnuw0=gBrkuKbr_4Ng_Ei57uafujZf7Xazgw@mail.gmail.com>
+Subject: Re: [PATCH] kbuild: reuse vmlinux.o in vmlinux_link
+To: Sami Tolvanen <samitolvanen@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,71 +87,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Michal Marek <michal.lkml@markovi.net>, Kees Cook <keescook@chromium.org>,
+ Sam Ravnborg <sam@ravnborg.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For mono channel, SSI will switch to Normal mode.
+On Tue, Jun 16, 2020 at 6:47 AM Sami Tolvanen <samitolvanen@google.com> wrote:
+>
+> On Sat, May 23, 2020 at 8:13 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+> >
+> > Hi Nicholas,
+> > (+CC: Sam Ravnborg)
+> >
+> >
+> > On Sat, May 23, 2020 at 7:06 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+> > >
+> > > Excerpts from Masahiro Yamada's message of May 23, 2020 3:44 am:
+> > > > + Michael, and PPC ML.
+> > > >
+> > > > They may know something about the reason of failure.
+> > >
+> > > Because the linker can't put branch stubs within object code sections,
+> > > so when you incrementally link them too large, the linker can't resolve
+> > > branches into other object files.
+> >
+> >
+> > Ah, you are right.
+> >
+> > So, this is a problem not only for PPC
+> > but also for ARM (both 32 and 64 bit), etc.
+> >
+> > ARM needs to insert a veneer to jump far.
+> >
+> > Prior to thin archive, we could not compile
+> > ARCH=arm allyesconfig because
+> > drivers/built-in.o was too large.
+> >
+> > This patch gets us back to the too large
+> > incremental object situation.
+> >
+> > With my quick compile-testing,
+> > ARCH=arm allyesconfig
+> > and ARCH=arm64 allyesconfig are broken.
+>
+> Thanks for looking into this! Clang doesn't appear to have this issue
+> with LTO because it always enables both -ffunction-sections and
+> -fdata-sections. I confirmed that -ffunction-sections also fixes arm64
+> allyesconfig with this patch. While I'm fine with reusing vmlinux.o
+> only with LTO, how would you feel about enabling -ffunction-sections
+> in the kernel by default?
 
-In Normal mode and Network mode, the Word Length Control bits
-control the word length divider in clock generator, which is
-different with I2S Master mode (the word length is fixed to
-32bit), it should be the value of params_width(hw_params).
 
-The condition "slots == 2" is not good for I2S Master mode,
-because for Network mode and Normal mode, the slots can also
-be 2. Then we need to use (ssi->i2s_net & SSI_SCR_I2S_MODE_MASK)
-to check if it is I2S Master mode.
+I am OK if it works.
 
-So we refine the formula for mono channel, otherwise there
-will be sound issue for S24_LE.
+Please do compile tests for some architectures.
+(especially, ARCH=powerpc defconfig, and ARCH=arm(64) allyesconfig)
 
-Fixes: b0a7043d5c2c ("ASoC: fsl_ssi: Caculate bit clock rate using slot number and width")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
-changes in v3
-- update according to Nicolin's comments
 
-changes in v2
-- refine patch for Network mode and Normal mode.
+Thank you.
 
- sound/soc/fsl/fsl_ssi.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index bad89b0d129e..1a2fa7f18142 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -678,8 +678,9 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	struct regmap *regs = ssi->regs;
- 	u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
- 	unsigned long clkrate, baudrate, tmprate;
--	unsigned int slots = params_channels(hw_params);
--	unsigned int slot_width = 32;
-+	unsigned int channels = params_channels(hw_params);
-+	unsigned int slot_width = params_width(hw_params);
-+	unsigned int slots = 2;
- 	u64 sub, savesub = 100000;
- 	unsigned int freq;
- 	bool baudclk_is_used;
-@@ -688,10 +689,14 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	/* Override slots and slot_width if being specifically set... */
- 	if (ssi->slots)
- 		slots = ssi->slots;
--	/* ...but keep 32 bits if slots is 2 -- I2S Master mode */
--	if (ssi->slot_width && slots != 2)
-+	if (ssi->slot_width)
- 		slot_width = ssi->slot_width;
- 
-+	/* ...but force 32 bits for stereo audio using I2S Master Mode */
-+	if (channels == 2 &&
-+	    (ssi->i2s_net & SSI_SCR_I2S_MODE_MASK) == SSI_SCR_I2S_MODE_MASTER)
-+		slot_width = 32;
-+
- 	/* Generate bit clock based on the slot number and slot width */
- 	freq = slots * slot_width * params_rate(hw_params);
- 
+
+
 -- 
-2.21.0
-
+Best Regards
+Masahiro Yamada
