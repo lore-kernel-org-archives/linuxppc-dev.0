@@ -2,41 +2,59 @@ Return-Path: <SRS0=a/z+=75=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 063C6C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 10:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30893C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 11:41:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8552C20776
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 10:45:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8552C20776
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 862382074D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 11:41:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qmznpg/6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 862382074D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49mPwf6dltzDqlY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 20:45:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49mRBC6rCqzDqsw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 21:41:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (unknown [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 49mPtN4NcczDqTL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 20:43:06 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 43635AE80120;
- Tue, 16 Jun 2020 06:40:12 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv/ioda: Return correct error if TCE
- level allocation failed
-Date: Tue, 16 Jun 2020 20:42:31 +1000
-Message-Id: <20200616104231.27805-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Qmznpg/6; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49mR8B5XjPzDqkW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2020 21:40:10 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id DDAF5207DD;
+ Tue, 16 Jun 2020 11:40:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1592307607;
+ bh=Y0Fm3RODkm2DHPjLeITM6HFypc3h8QJV26AcHv5bUkY=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=Qmznpg/6nGtHOwn8ClZFHWnAJl8yE0b6zPA3dcX6mSSRICCkhxf56WKO+f8nPW4Zh
+ jV1IurwJmTZuE24Rg5KW9xF6N3vMBxWEQKSwfCnDeA2LJLyzG0sQpImEPnih7lU42g
+ otM+juCJQ7HC9umbOFMLKCEVbNYBvIfz+BuocTH8=
+Date: Tue, 16 Jun 2020 12:40:05 +0100
+From: Mark Brown <broonie@kernel.org>
+To: alsa-devel@alsa-project.org, timur@kernel.org, tiwai@suse.com,
+ Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, perex@perex.cz, festevam@gmail.com
+In-Reply-To: <034eff1435ff6ce300b6c781130cefd9db22ab9a.1592276147.git.shengjiu.wang@nxp.com>
+References: <034eff1435ff6ce300b6c781130cefd9db22ab9a.1592276147.git.shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v3] ASoC: fsl_ssi: Fix bclk calculation for mono channel
+Message-Id: <159230760496.48596.14192060058649440450.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,49 +66,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The iommu_table_ops::xchg_no_kill() callback updates TCE. It is quite
-possible that not entire table is allocated if it is huge and multilevel
-so xchg may also allocate subtables. If failed, it returns H_HARDWARE
-for failed allocation and H_TOO_HARD if it needs it but cannot do because
-the alloc parameter is "false" (set when called with MMU=off to force
-retry with MMU=on).
+On Tue, 16 Jun 2020 10:53:48 +0800, Shengjiu Wang wrote:
+> For mono channel, SSI will switch to Normal mode.
+> 
+> In Normal mode and Network mode, the Word Length Control bits
+> control the word length divider in clock generator, which is
+> different with I2S Master mode (the word length is fixed to
+> 32bit), it should be the value of params_width(hw_params).
+> 
+> [...]
 
-The problem is that having separate errors only matters in real mode
-(MMU=off) but the only caller with alloc="false" does not check the exact
-error code and simply returns H_TOO_HARD; and for every other mode
-alloc is "true". Also, the function is also called from the ioctl()
-handler of the VFIO SPAPR TCE IOMMU subdriver which does not expect
-hypervisor error codes (H_xxx) and will expose them to the userspace.
+Applied to
 
-This converts wrong error codes to a simple -1.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+Thanks!
 
-I could make it "return alloc ? -ENOMEM : -EBUSY" but
-is EBUSY a good match for H_TOO_HARD?
----
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[1/1] ASoC: fsl_ssi: Fix bclk calculation for mono channel
+      commit: ed1220df6e666500ebf58c4f2fccc681941646fb
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index f923359d8afc..59d73fdadeb9 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -166,7 +166,7 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
- 	if (!ptce) {
- 		ptce = pnv_tce(tbl, false, idx, alloc);
- 		if (!ptce)
--			return alloc ? H_HARDWARE : H_TOO_HARD;
-+			return -1;
- 	}
- 
- 	if (newtce & TCE_PCI_WRITE)
--- 
-2.17.1
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
