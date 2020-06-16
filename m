@@ -2,65 +2,58 @@ Return-Path: <SRS0=a/z+=75=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB7F0C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 21:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EBAEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 22:40:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79593208B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 21:17:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oHgSA/KC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79593208B8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id C7848207E8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 22:39:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7848207E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49mgy71sL5zDqx4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 07:17:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49mjnQ72r7zDqGZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 08:39:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=oHgSA/KC; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49mgvs61CzzDqg9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 07:15:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=leEz1fiyyYNCvStCVFZ11qKUfHMh+AfUoU9zFTvCrqA=; b=oHgSA/KCDX899omYMHX4U2OLjJ
- EwMhiIoHigLxQ+MmRFcXyHzBFlTQmZXr04WRoMkHZe+LheH9bL5uSbscQsM64m29mzWCbQbg2tT8+
- 7YVv6xeVy1vViCaTYlOd/6wXfcX6a1cFVTgtaelhNr5Sx0Bq8ty7srr8SsI2tSkKUXRYqisvkGrfi
- sJiaQyRIt9mSxfwey610s9TuikWX8HXsiUmyGfH8ZS9oPdOb24GGhFyI8BfzM4UPPYgOLJ+VdR52j
- Y86D/VTQJXkQsTbKRbFAYueGk1mSp6BZ3PR31zhRZoTaAupph04Ady7RM7jEh9GkVMlChc2sCJczP
- HkwXD4Iw==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jlIv1-00069R-Gz; Tue, 16 Jun 2020 21:14:55 +0000
-Date: Tue, 16 Jun 2020 14:14:55 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v4 0/3] mm, treewide: Rename kzfree() to kfree_sensitive()
-Message-ID: <20200616211455.GB8681@bombadil.infradead.org>
-References: <20200616015718.7812-1-longman@redhat.com>
- <fe3b9a437be4aeab3bac68f04193cb6daaa5bee4.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49mjlc4RrCzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 08:38:15 +1000 (AEST)
+IronPort-SDR: W01iUW/AjAg9LiAmvtY4mHDOBcQjH25TdlQgtNvEpNm+C6z7nE57tucMguZScW/UP2nIyr0XwY
+ QoEbZP9FPbpg==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Jun 2020 15:38:12 -0700
+IronPort-SDR: Jy4Sbf9b9n0GxFM6kcpcPMSNp9n6A0AfbJfcDcN3DVVWFjSj+3H85Hnfp2arRvL3EjdKEloJhG
+ 9wtwNQyLcn1w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,520,1583222400"; d="scan'208";a="273314187"
+Received: from lkp-server01.sh.intel.com (HELO b4e26a9a4e5e) ([10.239.97.150])
+ by orsmga003.jf.intel.com with ESMTP; 16 Jun 2020 15:38:10 -0700
+Received: from kbuild by b4e26a9a4e5e with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jlKDZ-0000Gt-Kp; Tue, 16 Jun 2020 22:38:09 +0000
+Date: Wed, 17 Jun 2020 06:37:15 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS c3405d517d606e965030026daec198d314f20195
+Message-ID: <5ee9499b.X6BNJ7t1exUzsjfj%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fe3b9a437be4aeab3bac68f04193cb6daaa5bee4.camel@perches.com>
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,47 +65,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>,
- linux-btrfs@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- David Sterba <dsterba@suse.cz>, David Howells <dhowells@redhat.com>,
- linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org,
- linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org,
- linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org,
- James Morris <jmorris@namei.org>, kasan-dev@googlegroups.com,
- linux-wpan@vger.kernel.org, David Rientjes <rientjes@google.com>,
- Waiman Long <longman@redhat.com>, Dan Carpenter <dan.carpenter@oracle.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org,
- ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org,
- linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org,
- virtualization@lists.linux-foundation.org, linux-integrity@vger.kernel.org,
- linux-nfs@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org,
- target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
- linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 16, 2020 at 11:53:50AM -0700, Joe Perches wrote:
-> To this larger audience and last week without reply:
-> https://lore.kernel.org/lkml/573b3fbd5927c643920e1364230c296b23e7584d.camel@perches.com/
-> 
-> Are there _any_ fastpath uses of kfree or vfree?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: c3405d517d606e965030026daec198d314f20195  Automatic merge of 'master', 'next' and 'fixes' (2020-06-17 00:21)
 
-I worked on adding a 'free' a couple of years ago.  That was capable
-of freeing percpu, vmalloc, kmalloc and alloc_pages memory.  I ran into
-trouble when I tried to free kmem_cache_alloc memory -- it works for slab
-and slub, but not slob (because slob needs the size from the kmem_cache).
+elapsed time: 490m
 
-My motivation for this was to change kfree_rcu() to just free_rcu().
+configs tested: 108
+configs skipped: 2
 
-> To eliminate these mispairings at a runtime cost of four
-> comparisons, should the kfree/vfree/kvfree/kfree_const
-> functions be consolidated into a single kfree?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I would say to leave kfree() alone and just introduce free() as a new
-default.  There's some weird places in the kernel that have a 'free'
-symbol of their own, but those should be renamed anyway.
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm                             pxa_defconfig
+um                           x86_64_defconfig
+mips                      pic32mzda_defconfig
+arm                       versatile_defconfig
+ia64                      gensparse_defconfig
+mips                           ip28_defconfig
+mips                           ip27_defconfig
+c6x                        evmc6678_defconfig
+arm                       netwinder_defconfig
+sh                           se7721_defconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20200615
+i386                 randconfig-a002-20200615
+i386                 randconfig-a001-20200615
+i386                 randconfig-a004-20200615
+i386                 randconfig-a005-20200615
+i386                 randconfig-a003-20200615
+x86_64               randconfig-a015-20200615
+x86_64               randconfig-a011-20200615
+x86_64               randconfig-a016-20200615
+x86_64               randconfig-a012-20200615
+x86_64               randconfig-a014-20200615
+x86_64               randconfig-a013-20200615
+i386                 randconfig-a015-20200615
+i386                 randconfig-a011-20200615
+i386                 randconfig-a014-20200615
+i386                 randconfig-a013-20200615
+i386                 randconfig-a016-20200615
+i386                 randconfig-a012-20200615
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
