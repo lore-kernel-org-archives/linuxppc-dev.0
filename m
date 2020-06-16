@@ -2,94 +2,63 @@ Return-Path: <SRS0=a/z+=75=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05EEAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:38:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97411C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:55:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BB9D207C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:38:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="VsbTXqwl";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Jq2M8XJQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BB9D207C4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0504A20786
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Jun 2020 18:55:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0504A20786
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49mcQp23g0zDqqW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 04:38:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=longman@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49mcpb41SjzDqyp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 04:55:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=VsbTXqwl; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Jq2M8XJQ; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [207.211.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.149; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=perches.com
+Received: from smtprelay.hostedemail.com (smtprelay0149.hostedemail.com
+ [216.40.44.149])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49mcNh2F0QzDqqW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 04:36:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1592332591;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=7/6v2jfN6UIDhJeosnSs1R4UAP7mOiLuFVPEnJvGTnM=;
- b=VsbTXqwl7xxf+MUWbnJM4vCOVIS/iCxA1SAjzyA8FsjzrodShKHnZfMLXBOQL/GHNJH8vC
- OuxP6I6blTXluNjdUqYdGiIeMKVM7wFH4inGVQHpTaw8gw2uwB0FCvyIBJbPEBsvhu17TV
- Bbxsdyz8zlcvC51jFF/xVTwdyLhzHT8=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1592332592;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=7/6v2jfN6UIDhJeosnSs1R4UAP7mOiLuFVPEnJvGTnM=;
- b=Jq2M8XJQYS4yLWOYd0aYDCPXgeuaxKih8zAI5F8ctGoRdxQI/tTmRz9UW/x6z8nqQq9C2I
- iaKYsiiH50nmEkM0ReIF8VHF31Ck/beiP0CTmnrdOHsmKXrXDa6el7LbvQND8TmAPEFF3f
- tsNWiymQ4j8zc5OtHkDwRMCS8AiXtzs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-73-AXrSOJCONRyyvrghDqFtvA-1; Tue, 16 Jun 2020 14:36:27 -0400
-X-MC-Unique: AXrSOJCONRyyvrghDqFtvA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 2578680332A;
- Tue, 16 Jun 2020 18:36:22 +0000 (UTC)
-Received: from llong.remote.csb (ovpn-114-156.rdu2.redhat.com [10.10.114.156])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 3B77519C71;
- Tue, 16 Jun 2020 18:36:16 +0000 (UTC)
-Subject: Re: [PATCH v5 2/2] mm, treewide: Rename kzfree() to kfree_sensitive()
-To: Andrew Morton <akpm@linux-foundation.org>
-References: <20200616154311.12314-1-longman@redhat.com>
- <20200616154311.12314-3-longman@redhat.com>
- <20200616110944.c13f221e5c3f54e775190afe@linux-foundation.org>
-From: Waiman Long <longman@redhat.com>
-Organization: Red Hat
-Message-ID: <65002c1e-5e31-1f4e-283c-186e06e55ef0@redhat.com>
-Date: Tue, 16 Jun 2020 14:36:15 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49mcmq5dp8zDqjn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 04:54:01 +1000 (AEST)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay01.hostedemail.com (Postfix) with ESMTP id 1290410050792;
+ Tue, 16 Jun 2020 18:53:58 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: cent55_291055a26e01
+X-Filterd-Recvd-Size: 3364
+Received: from XPS-9350.home (unknown [47.151.136.130])
+ (Authenticated sender: joe@perches.com)
+ by omf13.hostedemail.com (Postfix) with ESMTPA;
+ Tue, 16 Jun 2020 18:53:51 +0000 (UTC)
+Message-ID: <fe3b9a437be4aeab3bac68f04193cb6daaa5bee4.camel@perches.com>
+Subject: Re: [PATCH v4 0/3] mm, treewide: Rename kzfree() to kfree_sensitive()
+From: Joe Perches <joe@perches.com>
+To: Waiman Long <longman@redhat.com>, Andrew Morton
+ <akpm@linux-foundation.org>,  David Howells <dhowells@redhat.com>, Jarkko
+ Sakkinen <jarkko.sakkinen@linux.intel.com>, James Morris
+ <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>,
+ David Rientjes <rientjes@google.com>
+Date: Tue, 16 Jun 2020 11:53:50 -0700
+In-Reply-To: <20200616015718.7812-1-longman@redhat.com>
+References: <20200616015718.7812-1-longman@redhat.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.36.2-0ubuntu1 
 MIME-Version: 1.0
-In-Reply-To: <20200616110944.c13f221e5c3f54e775190afe@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,88 +71,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Michal Hocko <mhocko@suse.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>,
- linux-mm@kvack.org, linux-sctp@vger.kernel.org, keyrings@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-stm32@st-md-mailman.stormreply.com,
- devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org,
- linux-scsi@vger.kernel.org, James Morris <jmorris@namei.org>,
- Matthew Wilcox <willy@infradead.org>, linux-wpan@vger.kernel.org,
- David Rientjes <rientjes@google.com>, Dan Carpenter <dan.carpenter@oracle.com>,
- "Serge E. Hallyn" <serge@hallyn.com>, linux-pm@vger.kernel.org,
+ linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-sctp@vger.kernel.org, target-devel@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org,
+ linux-cifs@vger.kernel.org, linux-scsi@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-wpan@vger.kernel.org,
+ Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org,
  ecryptfs@vger.kernel.org, linux-fscrypt@vger.kernel.org,
  linux-mediatek@lists.infradead.org, linux-amlogic@lists.infradead.org,
- linux-nfs@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-bluetooth@vger.kernel.org, linux-security-module@vger.kernel.org,
- target-devel@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
- linux-crypto@vger.kernel.org, Johannes Weiner <hannes@cmpxchg.org>,
- Joe Perches <joe@perches.com>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- wireguard@lists.zx2c4.com, linux-ppp@vger.kernel.org
+ virtualization@lists.linux-foundation.org, linux-nfs@vger.kernel.org,
+ netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+ David Sterba <dsterba@suse.cz>, linux-bluetooth@vger.kernel.org,
+ linux-security-module@vger.kernel.org, keyrings@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, linux-crypto@vger.kernel.org,
+ Johannes Weiner <hannes@cmpxchg.org>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com,
+ linux-ppp@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/16/20 2:09 PM, Andrew Morton wrote:
-> On Tue, 16 Jun 2020 11:43:11 -0400 Waiman Long <longman@redhat.com> wrote:
->
->> As said by Linus:
->>
->>    A symmetric naming is only helpful if it implies symmetries in use.
->>    Otherwise it's actively misleading.
->>
->>    In "kzalloc()", the z is meaningful and an important part of what the
->>    caller wants.
->>
->>    In "kzfree()", the z is actively detrimental, because maybe in the
->>    future we really _might_ want to use that "memfill(0xdeadbeef)" or
->>    something. The "zero" part of the interface isn't even _relevant_.
->>
->> The main reason that kzfree() exists is to clear sensitive information
->> that should not be leaked to other future users of the same memory
->> objects.
->>
->> Rename kzfree() to kfree_sensitive() to follow the example of the
->> recently added kvfree_sensitive() and make the intention of the API
->> more explicit. In addition, memzero_explicit() is used to clear the
->> memory to make sure that it won't get optimized away by the compiler.
->>
->> The renaming is done by using the command sequence:
->>
->>    git grep -w --name-only kzfree |\
->>    xargs sed -i 's/\bkzfree\b/kfree_sensitive/'
->>
->> followed by some editing of the kfree_sensitive() kerneldoc and adding
->> a kzfree backward compatibility macro in slab.h.
->>
->> ...
->>
->> --- a/include/linux/slab.h
->> +++ b/include/linux/slab.h
->> @@ -186,10 +186,12 @@ void memcg_deactivate_kmem_caches(struct mem_cgroup *, struct mem_cgroup *);
->>    */
->>   void * __must_check krealloc(const void *, size_t, gfp_t);
->>   void kfree(const void *);
->> -void kzfree(const void *);
->> +void kfree_sensitive(const void *);
->>   size_t __ksize(const void *);
->>   size_t ksize(const void *);
->>   
->> +#define kzfree(x)	kfree_sensitive(x)	/* For backward compatibility */
->> +
-> What was the thinking here?  Is this really necessary?
->
-> I suppose we could keep this around for a while to ease migration.  But
-> not for too long, please.
->
-It should be there just for 1 release cycle. I have broken out the btrfs 
-patch to the btrfs list and I didn't make the kzfree to kfree_sensitive 
-conversion there as that patch was in front in my patch list. So 
-depending on which one lands first, there can be a window where the 
-compilation may fail without this workaround. I am going to send out 
-another patch in the next release cycle to remove it.
+On Mon, 2020-06-15 at 21:57 -0400, Waiman Long wrote:
+>  v4:
+>   - Break out the memzero_explicit() change as suggested by Dan Carpenter
+>     so that it can be backported to stable.
+>   - Drop the "crypto: Remove unnecessary memzero_explicit()" patch for
+>     now as there can be a bit more discussion on what is best. It will be
+>     introduced as a separate patch later on after this one is merged.
 
-Cheers,
-Longman
+To this larger audience and last week without reply:
+https://lore.kernel.org/lkml/573b3fbd5927c643920e1364230c296b23e7584d.camel@perches.com/
+
+Are there _any_ fastpath uses of kfree or vfree?
+
+Many patches have been posted recently to fix mispairings
+of specific types of alloc and free functions.
+
+To eliminate these mispairings at a runtime cost of four
+comparisons, should the kfree/vfree/kvfree/kfree_const
+functions be consolidated into a single kfree?
+
+Something like the below:
+
+   void kfree(const void *addr)
+   {
+   	if (is_kernel_rodata((unsigned long)addr))
+   		return;
+
+   	if (is_vmalloc_addr(addr))
+   		_vfree(addr);
+   	else
+   		_kfree(addr);
+   }
+
+   #define kvfree		kfree
+   #define vfree		kfree
+   #define kfree_const	kfree
+
 
