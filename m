@@ -2,59 +2,62 @@ Return-Path: <SRS0=OkvJ=76=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C54A6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 12:26:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A2FEC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 12:58:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 38F562098B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 12:26:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="IQBU2NQm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38F562098B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id BB7F7207DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 12:58:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB7F7207DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49n46q6tvYzDqvY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 22:26:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49n4r62Th5zDq9Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 22:58:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.218.65; helo=mail-ej1-f65.google.com;
+ envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=bombadil.20170209 header.b=IQBU2NQm; 
- dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-ej1-f65.google.com (mail-ej1-f65.google.com
+ [209.85.218.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49n43q6rQNzDqsC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 22:23:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=kuxQjzZYMs0tFNd2RWRJXl84IRXkLYtgdsZsfAqzUYg=; b=IQBU2NQmYfbU9KEVYJFVsVFYt3
- +7GWl3H6cqgUcZ3+um4sERSLuBbzrv7jNZkdM2ZwoSGps038Nt8YY6ApW7PCwZCMfBc10Gz0GDyzO
- FLEfO9i0HAYVGksHFDKWFRCvjngG1ecDhElpGpw4HbCuIF3Vgh8+lquymjHTFre2rQkZtiIdou22y
- K/Aznp4o73iZczN2ksz99zOnq95b5QaAhubthCZzggr2DMMUwYzN2WxAT6vZxmfMDafnFj+QcCY/1
- +vXnWv1CMw2nHqOvDrXxSQKys1aoXcvwws0qgcZ/d+QvYDKvCoK1AjvkCvq5Nft1Yp25qyw3Vw/EI
- 56Yd0PTA==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.92.3 #3 (Red
- Hat Linux)) id 1jlX69-0005Xm-3Z; Wed, 17 Jun 2020 12:23:21 +0000
-Date: Wed, 17 Jun 2020 05:23:21 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Michal Hocko <mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49n4nC6B3GzDqDG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 22:55:59 +1000 (AEST)
+Received: by mail-ej1-f65.google.com with SMTP id gl26so2172389ejb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 05:55:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=fOVgSeVqTVqWvUfLoOdj4nt+48hh42lucWZp1VWswtg=;
+ b=PlD0Gx8dl1JOpVBGUpwLyNPmVxmtk2BtQ+EtjUx5vhHIGPKOLun/SgPOyGmMxCutlp
+ ijW8a8hcxSfqeC+ke2sV1/vDeAtVQ3kmPAp1vsKqxBTLJcvp81TJAJEF2tXr/MIBmXMy
+ 6kDp93Z4Nd0sC6irEJ6TBtqSDF4vkR2IcYeHYSgtjQ3rnUqgEhwTCsm3ExD4GSFFO2cJ
+ 1vqCO06Ik3OEkkW5z+2rCEgPr5toRHLeD3civ5ri9baxrkN2bDE997UAkUbMVLPPfsSy
+ IxDuJFeFb1cr3nbpYzbjKDjKEpf3CQJxGwQ19eXMsMzHUyW/+NeAzTnBwBh4H7hHnuqB
+ /Pug==
+X-Gm-Message-State: AOAM531rBZrlSO1PsR58iRHBBivbUDns8TfkjJ5O1IYfDe29nLMis6lH
+ hbK9GnAGv94LHBAU7l2S8ac=
+X-Google-Smtp-Source: ABdhPJz5smjYQcDGdXsq8Ug+fgHwHPeIMnfqM9kX0E57nHrzErZZpyVOrifVPC/iAZURBZCGoIl/9Q==
+X-Received: by 2002:a17:906:aad8:: with SMTP id
+ kt24mr7265073ejb.527.1592398555771; 
+ Wed, 17 Jun 2020 05:55:55 -0700 (PDT)
+Received: from localhost (ip-37-188-158-19.eurotel.cz. [37.188.158.19])
+ by smtp.gmail.com with ESMTPSA id mh14sm13501385ejb.116.2020.06.17.05.55.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 17 Jun 2020 05:55:54 -0700 (PDT)
+Date: Wed, 17 Jun 2020 14:55:53 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Matthew Wilcox <willy@infradead.org>
 Subject: Re: [PATCH v4 0/3] mm, treewide: Rename kzfree() to kfree_sensitive()
-Message-ID: <20200617122321.GJ8681@bombadil.infradead.org>
+Message-ID: <20200617125553.GO9499@dhcp22.suse.cz>
 References: <20200616015718.7812-1-longman@redhat.com>
  <fe3b9a437be4aeab3bac68f04193cb6daaa5bee4.camel@perches.com>
  <20200616230130.GJ27795@twin.jikos.cz>
@@ -62,10 +65,11 @@ References: <20200616015718.7812-1-longman@redhat.com>
  <20200617071212.GJ9499@dhcp22.suse.cz>
  <20200617110820.GG8681@bombadil.infradead.org>
  <20200617113157.GM9499@dhcp22.suse.cz>
+ <20200617122321.GJ8681@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200617113157.GM9499@dhcp22.suse.cz>
+In-Reply-To: <20200617122321.GJ8681@bombadil.infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,17 +106,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jun 17, 2020 at 01:31:57PM +0200, Michal Hocko wrote:
-> On Wed 17-06-20 04:08:20, Matthew Wilcox wrote:
-> > If you call vfree() under
-> > a spinlock, you're in trouble.  in_atomic() only knows if we hold a
-> > spinlock for CONFIG_PREEMPT, so it's not safe to check for in_atomic()
-> > in __vfree().  So we need the warning in order that preempt people can
-> > tell those without that there is a bug here.
+On Wed 17-06-20 05:23:21, Matthew Wilcox wrote:
+> On Wed, Jun 17, 2020 at 01:31:57PM +0200, Michal Hocko wrote:
+> > On Wed 17-06-20 04:08:20, Matthew Wilcox wrote:
+> > > If you call vfree() under
+> > > a spinlock, you're in trouble.  in_atomic() only knows if we hold a
+> > > spinlock for CONFIG_PREEMPT, so it's not safe to check for in_atomic()
+> > > in __vfree().  So we need the warning in order that preempt people can
+> > > tell those without that there is a bug here.
+> > 
+> > ... Unless I am missing something in_interrupt depends on preempt_count() as
+> > well so neither of the two is reliable without PREEMPT_COUNT configured.
 > 
-> ... Unless I am missing something in_interrupt depends on preempt_count() as
-> well so neither of the two is reliable without PREEMPT_COUNT configured.
+> preempt_count() always tracks whether we're in interrupt context,
+> regardless of CONFIG_PREEMPT.  The difference is that CONFIG_PREEMPT
+> will track spinlock acquisitions as well.
 
-preempt_count() always tracks whether we're in interrupt context,
-regardless of CONFIG_PREEMPT.  The difference is that CONFIG_PREEMPT
-will track spinlock acquisitions as well.
+Right you are! Thanks for the clarification. I find the situation
+around preempt_count quite confusing TBH. Looking at existing users
+of in_atomic() (e.g. a random one zd_usb_iowrite16v_async which check
+in_atomic and then does GFP_KERNEL allocation which would be obviously
+broken on !PREEMPT if the function can be called from an atomic
+context), I am wondering whether it would make sense to track atomic
+context also for !PREEMPT. This check is just terribly error prone.
+
+-- 
+Michal Hocko
+SUSE Labs
