@@ -2,59 +2,57 @@ Return-Path: <SRS0=OkvJ=76=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A691C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 16:49:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A566C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 17:11:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FDF12089D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 16:49:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FDF12089D
+	by mail.kernel.org (Postfix) with ESMTPS id 029D521527
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Jun 2020 17:11:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 029D521527
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49n9yt6J0PzDqyZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:49:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nBRY6yXHzDqyZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 03:11:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=87.98.173.157; helo=11.mo7.mail-out.ovh.net;
+ smtp.mailfrom=kaod.org (client-ip=178.33.251.8; helo=13.mo4.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1009 seconds by postgrey-1.36 at bilbo;
- Thu, 18 Jun 2020 02:46:44 AEST
-Received: from 11.mo7.mail-out.ovh.net (11.mo7.mail-out.ovh.net
- [87.98.173.157])
+X-Greylist: delayed 2366 seconds by postgrey-1.36 at bilbo;
+ Thu, 18 Jun 2020 03:09:28 AEST
+Received: from 13.mo4.mail-out.ovh.net (13.mo4.mail-out.ovh.net [178.33.251.8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49n9vS6TgkzDqw9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 02:46:44 +1000 (AEST)
-Received: from player760.ha.ovh.net (unknown [10.110.115.164])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id 6A14716CACA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 18:29:52 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nBPh3S9zzDqsX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 03:09:25 +1000 (AEST)
+Received: from player760.ha.ovh.net (unknown [10.108.54.13])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id CFD7E23B27D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2020 18:29:56 +0200 (CEST)
 Received: from kaod.org (82-64-250-170.subs.proxad.net [82.64.250.170])
  (Authenticated sender: clg@kaod.org)
- by player760.ha.ovh.net (Postfix) with ESMTPSA id D3716137CC678;
- Wed, 17 Jun 2020 16:29:47 +0000 (UTC)
+ by player760.ha.ovh.net (Postfix) with ESMTPSA id 222CD137CC6BC;
+ Wed, 17 Jun 2020 16:29:52 +0000 (UTC)
 Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003d11073b1-ae63-4a74-95ef-4fa7bdc8620e,ABECD89738EEB0C75E5395B338997A57DB3A3EEE)
+ (GARM-100R00348ef34b6-1737-4fc5-8c5d-321e34a98843,ABECD89738EEB0C75E5395B338997A57DB3A3EEE)
  smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 1/2] powerpc/pci: unmap legacy INTx interrupts when a PHB
- is removed
-Date: Wed, 17 Jun 2020 18:29:37 +0200
-Message-Id: <20200617162938.743439-2-clg@kaod.org>
+Subject: [PATCH v2 2/2] powerpc/pci: unmap all interrupts when a PHB is removed
+Date: Wed, 17 Jun 2020 18:29:38 +0200
+Message-Id: <20200617162938.743439-3-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200617162938.743439-1-clg@kaod.org>
 References: <20200617162938.743439-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 4971973990631050161
+X-Ovh-Tracer-Id: 4973099891372362673
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduhedrudejvddguddtudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgsehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepgfeitedvfedugeehvdevjeduiefhieetffejteejueekhffggfevudegudegudfgnecukfhppedtrddtrddtrddtpdekvddrieegrddvhedtrddujedtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeeitddrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
@@ -75,145 +73,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a passthrough IO adapter is removed from a pseries machine using
-hash MMU and the XIVE interrupt mode, the POWER hypervisor expects the
-guest OS to clear all page table entries related to the adapter. If
-some are still present, the RTAS call which isolates the PCI slot
-returns error 9001 "valid outstanding translations" and the removal of
-the IO adapter fails. This is because when the PHBs are scanned, Linux
-maps automatically the INTx interrupts in the Linux interrupt number
-space but these are never removed.
+Some PCI adapters, like GPUs, use the "interrupt-map" property to
+describe interrupt mappings other than the legacy INTx interrupts.
+There can be more than 4 mappings.
 
-To solve this problem, we introduce a PPC platform specific
-pcibios_remove_bus() routine which clears all interrupt mappings when
-the bus is removed. This also clears the associated page table entries
-of the ESB pages when using XIVE.
-
-For this purpose, we record the logical interrupt numbers of the
-mapped interrupt under the PHB structure and let pcibios_remove_bus()
-do the clean up.
+To clear all interrupts when a PHB is removed, we need to increase the
+'irq_map' array in which mappings are recorded. Compute the number of
+interrupt mappings from the "interrupt-map" property and allocate a
+bigger 'irq_map' array.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/pci-bridge.h |  6 +++
- arch/powerpc/kernel/pci-common.c      | 67 +++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+)
+ arch/powerpc/kernel/pci-common.c | 49 +++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index b92e81b256e5..ca75cf264ddf 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -48,6 +48,9 @@ struct pci_controller_ops {
- 
- /*
-  * Structure of a PCI controller (host bridge)
-+ *
-+ * @irq_count: number of interrupt mappings
-+ * @irq_map: interrupt mappings
-  */
- struct pci_controller {
- 	struct pci_bus *bus;
-@@ -127,6 +130,9 @@ struct pci_controller {
- 
- 	void *private_data;
- 	struct npu *npu;
-+
-+	unsigned int irq_count;
-+	unsigned int *irq_map;
- };
- 
- /* These are used for config access before all the PCI probing
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index be108616a721..515480a4bac6 100644
+index 515480a4bac6..deb831f0ae13 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -353,6 +353,68 @@ struct pci_controller *pci_find_controller_for_domain(int domain_nr)
+@@ -353,9 +353,56 @@ struct pci_controller *pci_find_controller_for_domain(int domain_nr)
  	return NULL;
  }
  
-+static void pcibios_irq_map_init(struct pci_controller *phb)
++/*
++ * Assumption is made on the interrupt parent. All interrupt-map
++ * entries are considered to have the same parent.
++ */
++static int pcibios_irq_map_count(struct pci_controller *phb)
 +{
-+	phb->irq_count = PCI_NUM_INTX;
++	const __be32 *imap;
++	int imaplen;
++	struct device_node *parent;
++	u32 intsize, addrsize, parintsize, paraddrsize;
 +
-+	pr_debug("%pOF : interrupt map #%d\n", phb->dn, phb->irq_count);
++	if (of_property_read_u32(phb->dn, "#interrupt-cells", &intsize))
++		return 0;
++	if (of_property_read_u32(phb->dn, "#address-cells", &addrsize))
++		return 0;
 +
-+	phb->irq_map = kcalloc(phb->irq_count, sizeof(unsigned int),
-+			       GFP_KERNEL);
-+}
++	imap = of_get_property(phb->dn, "interrupt-map", &imaplen);
++	if (!imap) {
++		pr_debug("%pOF : no interrupt-map\n", phb->dn);
++		return 0;
++	}
++	imaplen /= sizeof(u32);
++	pr_debug("%pOF : imaplen=%d\n", phb->dn, imaplen);
 +
-+static void pci_irq_map_register(struct pci_dev *pdev, unsigned int virq)
-+{
-+	struct pci_controller *phb = pci_bus_to_host(pdev->bus);
-+	int i;
++	if (imaplen < (addrsize + intsize + 1))
++		return 0;
 +
-+	if (!phb->irq_map)
-+		return;
-+
-+	for (i = 0; i < phb->irq_count; i++) {
-+		/*
-+		 * Look for an empty or an equivalent slot, as INTx
-+		 * interrupts can be shared between adapters.
-+		 */
-+		if (phb->irq_map[i] == virq || !phb->irq_map[i]) {
-+			phb->irq_map[i] = virq;
-+			break;
-+		}
++	imap += intsize + addrsize;
++	parent = of_find_node_by_phandle(be32_to_cpup(imap));
++	if (!parent) {
++		pr_debug("%pOF : no imap parent found !\n", phb->dn);
++		return 0;
 +	}
 +
-+	if (i == phb->irq_count)
-+		pr_err("PCI:%s all platform interrupts mapped\n",
-+		       pci_name(pdev));
++	if (of_property_read_u32(parent, "#interrupt-cells", &parintsize)) {
++		pr_debug("%pOF : parent lacks #interrupt-cells!\n", phb->dn);
++		return 0;
++	}
++
++	if (of_property_read_u32(parent, "#address-cells", &paraddrsize))
++		paraddrsize = 0;
++
++	return imaplen / (addrsize + intsize + 1 + paraddrsize + parintsize);
 +}
 +
-+/*
-+ * Clearing the mapped interrupts will also clear the underlying
-+ * mappings of the ESB pages of the interrupts when under XIVE. It is
-+ * a requirement of PowerVM to clear all memory mappings before
-+ * removing a PHB.
-+ */
-+static void pci_irq_map_dispose(struct pci_bus *bus)
-+{
-+	struct pci_controller *phb = pci_bus_to_host(bus);
-+	int i;
-+
-+	if (!phb->irq_map)
-+		return;
-+
-+	pr_debug("PCI: Clearing interrupt mappings for PHB %04x:%02x...\n",
-+		 pci_domain_nr(bus), bus->number);
-+	for (i = 0; i < phb->irq_count; i++)
-+		irq_dispose_mapping(phb->irq_map[i]);
-+
-+	kfree(phb->irq_map);
-+}
-+
-+void pcibios_remove_bus(struct pci_bus *bus)
-+{
-+	pci_irq_map_dispose(bus);
-+}
-+EXPORT_SYMBOL_GPL(pcibios_remove_bus);
-+
- /*
-  * Reads the interrupt pin to determine if interrupt is use by card.
-  * If the interrupt is used, then gets the interrupt line from the
-@@ -401,6 +463,8 @@ static int pci_read_irq_line(struct pci_dev *pci_dev)
+ static void pcibios_irq_map_init(struct pci_controller *phb)
+ {
+-	phb->irq_count = PCI_NUM_INTX;
++	phb->irq_count = pcibios_irq_map_count(phb);
++	if (phb->irq_count < PCI_NUM_INTX)
++		phb->irq_count = PCI_NUM_INTX;
  
- 	pci_dev->irq = virq;
- 
-+	/* Record all interrut mappings for later removal of a PHB */
-+	pci_irq_map_register(pci_dev, virq);
- 	return 0;
- }
- 
-@@ -1554,6 +1618,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
- 
- 	pr_debug("PCI: Scanning PHB %pOF\n", node);
- 
-+	/* Allocate interrupt mappings array */
-+	pcibios_irq_map_init(hose);
-+
- 	/* Get some IO space for the new PHB */
- 	pcibios_setup_phb_io_space(hose);
+ 	pr_debug("%pOF : interrupt map #%d\n", phb->dn, phb->irq_count);
  
 -- 
 2.25.4
