@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A40CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD6AC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:43:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37B33207E8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:40:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9337C21883
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:43:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="r+owO5PT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37B33207E8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Y9chRHnZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9337C21883
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nTlS5NZLzDqhY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 14:40:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nTp96srGzDr7Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 14:43:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,32 +29,31 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=r+owO5PT; dkim-atps=neutral
+ header.s=default header.b=Y9chRHnZ; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nPX15wYgzDqqJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:30:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nPXL0j06zDqGt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:30:58 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 76DA222242;
- Thu, 18 Jun 2020 01:30:39 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3255F21D82;
+ Thu, 18 Jun 2020 01:30:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592443840;
- bh=G7jXz45kghvDk1lCWqZjb90AleSud46fSmV8LzNJmvA=;
+ s=default; t=1592443855;
+ bh=sz2VY7bKf1cEfS5TP7IGpkiCBgblk54msJDFCj5Xo9w=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=r+owO5PT6HoVbHmFi5uywskHL2/avkA+SqrFbOOMSzedmMTbp8gXd0J9giNI4T5/P
- zzdJ/ocJxlZeZ+9y+O5amDBvYZJH6H2HkxKMyOQ82RgrQxF7X8Lvdq4g/Yp5+DL4MQ
- AhskzWcEwKaEjwHxvAl+nHnW3FMGN21GESSvWz34=
+ b=Y9chRHnZiQZvKxZRhB8c0EqVN2VH3jPdKw0EuzpiiZ87Ak0PBNc5wqd5ypYyWVCJ1
+ Ts1tDdqAUBjbejZCLUZLOhY4YnXvGyzngGBICe0ufCEz2jtOAigJLTlMkEc8GgXdj6
+ TFWb/LGJn9SujyKhbjOdyMhJr5IMdvuutQ4R0+EE=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 26/60] tty: hvc: Fix data abort due to race in
- hvc_open
-Date: Wed, 17 Jun 2020 21:29:30 -0400
-Message-Id: <20200618013004.610532-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 39/60] powerpc/ps3: Fix kexec shutdown hang
+Date: Wed, 17 Jun 2020 21:29:43 -0400
+Message-Id: <20200618013004.610532-39-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200618013004.610532-1-sashal@kernel.org>
 References: <20200618013004.610532-1-sashal@kernel.org>
@@ -73,84 +72,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Raghavendra Rao Ananta <rananta@codeaurora.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+Cc: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
  Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Raghavendra Rao Ananta <rananta@codeaurora.org>
+From: Geoff Levand <geoff@infradead.org>
 
-[ Upstream commit e2bd1dcbe1aa34ff5570b3427c530e4332ecf0fe ]
+[ Upstream commit 126554465d93b10662742128918a5fc338cda4aa ]
 
-Potentially, hvc_open() can be called in parallel when two tasks calls
-open() on /dev/hvcX. In such a scenario, if the hp->ops->notifier_add()
-callback in the function fails, where it sets the tty->driver_data to
-NULL, the parallel hvc_open() can see this NULL and cause a memory abort.
-Hence, serialize hvc_open and check if tty->private_data is NULL before
-proceeding ahead.
+The ps3_mm_region_destroy() and ps3_mm_vas_destroy() routines
+are called very late in the shutdown via kexec's mmu_cleanup_all
+routine.  By the time mmu_cleanup_all runs it is too late to use
+udbg_printf, and calling it will cause PS3 systems to hang.
 
-The issue can be easily reproduced by launching two tasks simultaneously
-that does nothing but open() and close() on /dev/hvcX.
-For example:
-$ ./simple_open_close /dev/hvc0 & ./simple_open_close /dev/hvc0 &
+Remove all debugging statements from ps3_mm_region_destroy() and
+ps3_mm_vas_destroy() and replace any error reporting with calls
+to lv1_panic.
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@codeaurora.org>
-Link: https://lore.kernel.org/r/20200428032601.22127-1-rananta@codeaurora.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+With this change builds with 'DEBUG' defined will not cause kexec
+reboots to hang, and builds with 'DEBUG' defined or not will end
+in lv1_panic if an error is encountered.
+
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/7325c4af2b4c989c19d6a26b90b1fec9c0615ddf.1589049250.git.geoff@infradead.org
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/ps3/mm.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index acf6d143c753..81f23af8beca 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -89,6 +89,8 @@ static LIST_HEAD(hvc_structs);
-  */
- static DEFINE_SPINLOCK(hvc_structs_lock);
- 
-+/* Mutex to serialize hvc_open */
-+static DEFINE_MUTEX(hvc_open_mutex);
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-  * upon order of exposure via hvc_probe(), when we can not match it to
-@@ -333,16 +335,24 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
-  */
- static int hvc_open(struct tty_struct *tty, struct file * filp)
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index b0f34663b1ae..19bae78b1f25 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -212,13 +212,14 @@ void ps3_mm_vas_destroy(void)
  {
--	struct hvc_struct *hp = tty->driver_data;
-+	struct hvc_struct *hp;
- 	unsigned long flags;
- 	int rc = 0;
+ 	int result;
  
-+	mutex_lock(&hvc_open_mutex);
+-	DBG("%s:%d: map.vas_id    = %llu\n", __func__, __LINE__, map.vas_id);
+-
+ 	if (map.vas_id) {
+ 		result = lv1_select_virtual_address_space(0);
+-		BUG_ON(result);
+-		result = lv1_destruct_virtual_address_space(map.vas_id);
+-		BUG_ON(result);
++		result += lv1_destruct_virtual_address_space(map.vas_id);
 +
-+	hp = tty->driver_data;
-+	if (!hp) {
-+		rc = -EIO;
-+		goto out;
-+	}
++		if (result) {
++			lv1_panic(0);
++		}
 +
- 	spin_lock_irqsave(&hp->port.lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->port.count++ > 0) {
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
- 		hvc_kick();
--		return 0;
-+		goto out;
- 	} /* else count == 0 */
- 	spin_unlock_irqrestore(&hp->port.lock, flags);
+ 		map.vas_id = 0;
+ 	}
+ }
+@@ -316,19 +317,20 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+ 	int result;
  
-@@ -371,6 +381,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	/* Force wakeup of the polling thread */
- 	hvc_kick();
+ 	if (!r->destroy) {
+-		pr_info("%s:%d: Not destroying high region: %llxh %llxh\n",
+-			__func__, __LINE__, r->base, r->size);
+ 		return;
+ 	}
  
-+out:
-+	mutex_unlock(&hvc_open_mutex);
- 	return rc;
+-	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
+-
+ 	if (r->base) {
+ 		result = lv1_release_memory(r->base);
+-		BUG_ON(result);
++
++		if (result) {
++			lv1_panic(0);
++		}
++
+ 		r->size = r->base = r->offset = 0;
+ 		map.total = map.rm.size;
+ 	}
++
+ 	ps3_mm_set_repository_highmem(NULL);
  }
  
 -- 
