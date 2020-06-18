@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BAD6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD3E9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:46:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF440217A0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:45:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 740A3217A0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 04:46:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="A13x2wvz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF440217A0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z1qVjGZk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 740A3217A0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nTrN3Z0VzDr5J
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 14:45:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nTtQ29WszDr7l
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 14:46:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,32 +29,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=A13x2wvz; dkim-atps=neutral
+ header.s=default header.b=Z1qVjGZk; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nPXL0kcVzDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:30:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nPXf3gTYzDr0X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:31:14 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 05B0720CC7;
- Thu, 18 Jun 2020 01:30:53 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6D5CA22257;
+ Thu, 18 Jun 2020 01:31:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592443854;
- bh=/QpeyPTgpv4TJQv1GenvxiHv2ovCnuOrJTrNBcBINyc=;
+ s=default; t=1592443872;
+ bh=V3xSI5/zZpF0MVwHKDI/qCulDykZwcknnUze45wcd+8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=A13x2wvzJL8xEE+zy6ibwF+haLLJeOCmnjpMCNZ75ukIFLHW1nC62JfjmEaixugWV
- UpSso+NEMwyi6dxlDQuY+az7b9vu8YgNk/YuNpvdB5JpjxDFvFdGwGOW0gAqcxsrv2
- Fe+z/Oprdcm15ng556tCWY/8gJpNZEeY+AABu6r4=
+ b=Z1qVjGZkYCfcOGkB1VhzIwAO6AuMSJuFUiFCIUxVlh6u3iOE8RJ0h5jDkkdsMZyyP
+ Eqw87AyFMcD505rzal/FWVUuKMuHJUmmQrYNZu0oZuThyFrqplzxbNWqjga5Ds8DAV
+ MgRaN68Idb+DSrTX4noFj4Q1aZaJ7RUB+7R99b60=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 38/60] powerpc/pseries/ras: Fix FWNMI_VALID off by
- one
-Date: Wed, 17 Jun 2020 21:29:42 -0400
-Message-Id: <20200618013004.610532-38-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 52/60] ASoC: fsl_asrc_dma: Fix dma_chan leak when
+ config DMA channel failed
+Date: Wed, 17 Jun 2020 21:29:56 -0400
+Message-Id: <20200618013004.610532-52-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200618013004.610532-1-sashal@kernel.org>
 References: <20200618013004.610532-1-sashal@kernel.org>
@@ -73,50 +73,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Sasha Levin <sashal@kernel.org>, Xin Tan <tanxin.ctf@gmail.com>,
+ Xiyu Yang <xiyuyang19@fudan.edu.cn>, alsa-devel@alsa-project.org,
+ Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+From: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 
-[ Upstream commit deb70f7a35a22dffa55b2c3aac71bc6fb0f486ce ]
+[ Upstream commit 36124fb19f1ae68a500cd76a76d40c6e81bee346 ]
 
-This was discovered developing qemu fwnmi sreset support. This
-off-by-one bug means the last 16 bytes of the rtas area can not
-be used for a 16 byte save area.
+fsl_asrc_dma_hw_params() invokes dma_request_channel() or
+fsl_asrc_get_dma_channel(), which returns a reference of the specified
+dma_chan object to "pair->dma_chan[dir]" with increased refcnt.
 
-It's not a serious bug, and QEMU implementation has to retain a
-workaround for old kernels, but it's good to tighten it.
+The reference counting issue happens in one exception handling path of
+fsl_asrc_dma_hw_params(). When config DMA channel failed for Back-End,
+the function forgets to decrease the refcnt increased by
+dma_request_channel() or fsl_asrc_get_dma_channel(), causing a refcnt
+leak.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Link: https://lore.kernel.org/r/20200508043408.886394-7-npiggin@gmail.com
+Fix this issue by calling dma_release_channel() when config DMA channel
+failed.
+
+Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
+Link: https://lore.kernel.org/r/1590415966-52416-1-git-send-email-xiyuyang19@fudan.edu.cn
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/ras.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ sound/soc/fsl/fsl_asrc_dma.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 9795e52bab3d..9e817c1b7808 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -265,10 +265,11 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
- /*
-  * Some versions of FWNMI place the buffer inside the 4kB page starting at
-  * 0x7000. Other versions place it inside the rtas buffer. We check both.
-+ * Minimum size of the buffer is 16 bytes.
-  */
- #define VALID_FWNMI_BUFFER(A) \
--	((((A) >= 0x7000) && ((A) < 0x7ff0)) || \
--	(((A) >= rtas.base) && ((A) < (rtas.base + rtas.size - 16))))
-+	((((A) >= 0x7000) && ((A) <= 0x8000 - 16)) || \
-+	(((A) >= rtas.base) && ((A) <= (rtas.base + rtas.size - 16))))
+diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+index ffc000bc1f15..56a873ba08e4 100644
+--- a/sound/soc/fsl/fsl_asrc_dma.c
++++ b/sound/soc/fsl/fsl_asrc_dma.c
+@@ -243,6 +243,7 @@ static int fsl_asrc_dma_hw_params(struct snd_pcm_substream *substream,
+ 	ret = dmaengine_slave_config(pair->dma_chan[dir], &config_be);
+ 	if (ret) {
+ 		dev_err(dev, "failed to config DMA channel for Back-End\n");
++		dma_release_channel(pair->dma_chan[dir]);
+ 		return ret;
+ 	}
  
- /*
-  * Get the error information for errors coming through the
 -- 
 2.25.1
 
