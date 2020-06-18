@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B89EAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:11:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 583B1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:13:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C39320853
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:11:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 09DD520853
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:13:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VdSm98HM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C39320853
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="B0mgQUdX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09DD520853
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nQQq0GfVzDqCg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 12:11:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nQTc4D65zDqDf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 12:13:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,32 +29,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=VdSm98HM; dkim-atps=neutral
+ header.s=default header.b=B0mgQUdX; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nP8G4jDpzDqxG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:13:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nP8t4GLVzDqx2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:14:06 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 19BC321924;
- Thu, 18 Jun 2020 01:13:32 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D493E20EDD;
+ Thu, 18 Jun 2020 01:14:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592442812;
- bh=nQLIXHFy6ake7k+yX9m+vOFXRc9dhYoKUYv4HmF4pFI=;
+ s=default; t=1592442844;
+ bh=h0D9f8SfqSG5dRuYkwYsO4LqVWOjWOhzRu88NoAcVDM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=VdSm98HMvwqR4b8/karK2y4etu5+W/9Y+UpEraamly7CCPpozEWy4fChMAo7i/vZc
- 2gYq+Hjvsbsv9eirlGC7+mW0TsKM6lnXaZZZcMp2tQtkMmknFsxReoJHGrHYq2No9q
- IUITXw7LgX7Z+VctuAHMLbeXZLOBlOhIKjL/cvRc=
+ b=B0mgQUdXH1YhS7ALLNxoMWYoc7vSmwHM7Vrm926wdv4TlqNd4J1orz9cHsLIHrJ00
+ u/e5voSyP4rjYWsYrs+y1Y7S+Jj+K98nDBpaHz0rQ03MZQ8JHxNIEypybjkiZ20HMA
+ Y0Nr5VXHiuKmmUkdGqpKf40FY0n2YuaEU6OqKxl8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.7 251/388] powerpc/kasan: Fix error detection on
- memory allocation
-Date: Wed, 17 Jun 2020 21:05:48 -0400
-Message-Id: <20200618010805.600873-251-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.7 277/388] powerpc/32s: Don't warn when mapping RO
+ data ROX.
+Date: Wed, 17 Jun 2020 21:06:14 -0400
+Message-Id: <20200618010805.600873-277-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 References: <20200618010805.600873-1-sashal@kernel.org>
@@ -79,45 +80,54 @@ Sender: "Linuxppc-dev"
 
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-[ Upstream commit d132443a73d7a131775df46f33000f67ed92de1e ]
+[ Upstream commit 4b19f96a81bceaf0bcf44d79c0855c61158065ec ]
 
-In case (k_start & PAGE_MASK) doesn't equal (kstart), 'va' will never be
-NULL allthough 'block' is NULL
+Mapping RO data as ROX is not an issue since that data
+cannot be modified to introduce an exploit.
 
-Check the return of memblock_alloc() directly instead of
-the resulting address in the loop.
+PPC64 accepts to have RO data mapped ROX, as a trade off
+between kernel size and strictness of protection.
 
-Fixes: 509cd3f2b473 ("powerpc/32: Simplify KASAN init")
+On PPC32, kernel size is even more critical as amount of
+memory is usually small.
+
+Depending on the number of available IBATs, the last IBATs
+might overflow the end of text. Only warn if it crosses
+the end of RO data.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/7cb8ca82042bfc45a5cfe726c921cd7e7eeb12a3.1589866984.git.christophe.leroy@csgroup.eu
+Link: https://lore.kernel.org/r/6499f8eeb2a36330e5c9fc1cee9a79374875bd54.1589866984.git.christophe.leroy@csgroup.eu
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/kasan/kasan_init_32.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/book3s32/mmu.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-index cbcad369fcb2..8b15fe09b967 100644
---- a/arch/powerpc/mm/kasan/kasan_init_32.c
-+++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -76,15 +76,14 @@ static int __init kasan_init_region(void *start, size_t size)
- 		return ret;
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index 39ba53ca5bb5..a9b2cbc74797 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -187,6 +187,7 @@ void mmu_mark_initmem_nx(void)
+ 	int i;
+ 	unsigned long base = (unsigned long)_stext - PAGE_OFFSET;
+ 	unsigned long top = (unsigned long)_etext - PAGE_OFFSET;
++	unsigned long border = (unsigned long)__init_begin - PAGE_OFFSET;
+ 	unsigned long size;
  
- 	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+	if (!block)
-+		return -ENOMEM;
- 
- 	for (k_cur = k_start & PAGE_MASK; k_cur < k_end; k_cur += PAGE_SIZE) {
- 		pmd_t *pmd = pmd_ptr_k(k_cur);
- 		void *va = block + k_cur - k_start;
- 		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
- 
--		if (!va)
--			return -ENOMEM;
--
- 		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
- 	}
- 	flush_tlb_kernel_range(k_start, k_end);
+ 	if (IS_ENABLED(CONFIG_PPC_BOOK3S_601))
+@@ -201,9 +202,10 @@ void mmu_mark_initmem_nx(void)
+ 		size = block_size(base, top);
+ 		size = max(size, 128UL << 10);
+ 		if ((top - base) > size) {
+-			if (strict_kernel_rwx_enabled())
+-				pr_warn("Kernel _etext not properly aligned\n");
+ 			size <<= 1;
++			if (strict_kernel_rwx_enabled() && base + size > border)
++				pr_warn("Some RW data is getting mapped X. "
++					"Adjust CONFIG_DATA_SHIFT to avoid that.\n");
+ 		}
+ 		setibat(i++, PAGE_OFFSET + base, base, size, PAGE_KERNEL_TEXT);
+ 		base += size;
 -- 
 2.25.1
 
