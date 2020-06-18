@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE897C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFDB1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:00:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71F7221924
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:56:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9F9FA21D94
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:00:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kZoz+a/M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71F7221924
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="b6RH96Ys"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F9FA21D94
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nQ5s4l3szDq9d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 11:56:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nQBF6brDzDqBW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 12:00:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,32 +29,31 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=kZoz+a/M; dkim-atps=neutral
+ header.s=default header.b=b6RH96Ys; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nP7Y0DRFzDqxD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:12:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nP7f6NlszDqnD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:13:02 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id F023A221EA;
- Thu, 18 Jun 2020 01:12:51 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2CCF52193E;
+ Thu, 18 Jun 2020 01:13:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592442772;
- bh=nFULjoX+bq3d0NtMlsmQb39XEkWGVQynuH0ivMJBYA4=;
+ s=default; t=1592442780;
+ bh=uPVJfn4eW6yGGsUiXpVMaywucoc7azMIcy2PSIJ8+B0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=kZoz+a/MgMTvanFH2KUlZaW4tHU8aLErALnOaGcS+KTlKHBSLb6IwD/XYSJfkltwp
- LPrG+9/2oFvmkORUbZKIYnZmmuyIFh1ElfirKLp2wKl5ifTcZ3QfGDg4Ykwb+f0Mxb
- SMp5O1KLPzHPafW7RUO9DUVRUk/w1Ok8AUMhsfXw=
+ b=b6RH96YsjMrrsG6+i7crH//kF9VcNBMdE6UFbEVX18A0GqX0HclsDQs1LN3fnATOD
+ Bj9xsBgIJ9CZogBSfLTE52OdcPSR1k9a/bYQaD5rtAxeFUYvkjuts770FzZXQk6PhD
+ 4LeY4WO796DDbYAh9W293wQ7Zipo4t+vBWQCo7fI=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.7 220/388] powerpc/pseries/ras: Fix FWNMI_VALID off
- by one
-Date: Wed, 17 Jun 2020 21:05:17 -0400
-Message-Id: <20200618010805.600873-220-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.7 226/388] powerpc/ps3: Fix kexec shutdown hang
+Date: Wed, 17 Jun 2020 21:05:23 -0400
+Message-Id: <20200618010805.600873-226-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 References: <20200618010805.600873-1-sashal@kernel.org>
@@ -72,50 +72,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+From: Geoff Levand <geoff@infradead.org>
 
-[ Upstream commit deb70f7a35a22dffa55b2c3aac71bc6fb0f486ce ]
+[ Upstream commit 126554465d93b10662742128918a5fc338cda4aa ]
 
-This was discovered developing qemu fwnmi sreset support. This
-off-by-one bug means the last 16 bytes of the rtas area can not
-be used for a 16 byte save area.
+The ps3_mm_region_destroy() and ps3_mm_vas_destroy() routines
+are called very late in the shutdown via kexec's mmu_cleanup_all
+routine.  By the time mmu_cleanup_all runs it is too late to use
+udbg_printf, and calling it will cause PS3 systems to hang.
 
-It's not a serious bug, and QEMU implementation has to retain a
-workaround for old kernels, but it's good to tighten it.
+Remove all debugging statements from ps3_mm_region_destroy() and
+ps3_mm_vas_destroy() and replace any error reporting with calls
+to lv1_panic.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+With this change builds with 'DEBUG' defined will not cause kexec
+reboots to hang, and builds with 'DEBUG' defined or not will end
+in lv1_panic if an error is encountered.
+
+Signed-off-by: Geoff Levand <geoff@infradead.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Link: https://lore.kernel.org/r/20200508043408.886394-7-npiggin@gmail.com
+Link: https://lore.kernel.org/r/7325c4af2b4c989c19d6a26b90b1fec9c0615ddf.1589049250.git.geoff@infradead.org
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/ras.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/ps3/mm.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 1d1da639b8b7..16ba5c542e55 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -395,10 +395,11 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
- /*
-  * Some versions of FWNMI place the buffer inside the 4kB page starting at
-  * 0x7000. Other versions place it inside the rtas buffer. We check both.
-+ * Minimum size of the buffer is 16 bytes.
-  */
- #define VALID_FWNMI_BUFFER(A) \
--	((((A) >= 0x7000) && ((A) < 0x7ff0)) || \
--	(((A) >= rtas.base) && ((A) < (rtas.base + rtas.size - 16))))
-+	((((A) >= 0x7000) && ((A) <= 0x8000 - 16)) || \
-+	(((A) >= rtas.base) && ((A) <= (rtas.base + rtas.size - 16))))
- 
- static inline struct rtas_error_log *fwnmi_get_errlog(void)
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 423be34f0f5f..f42fe4e86ce5 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -200,13 +200,14 @@ void ps3_mm_vas_destroy(void)
  {
+ 	int result;
+ 
+-	DBG("%s:%d: map.vas_id    = %llu\n", __func__, __LINE__, map.vas_id);
+-
+ 	if (map.vas_id) {
+ 		result = lv1_select_virtual_address_space(0);
+-		BUG_ON(result);
+-		result = lv1_destruct_virtual_address_space(map.vas_id);
+-		BUG_ON(result);
++		result += lv1_destruct_virtual_address_space(map.vas_id);
++
++		if (result) {
++			lv1_panic(0);
++		}
++
+ 		map.vas_id = 0;
+ 	}
+ }
+@@ -304,19 +305,20 @@ static void ps3_mm_region_destroy(struct mem_region *r)
+ 	int result;
+ 
+ 	if (!r->destroy) {
+-		pr_info("%s:%d: Not destroying high region: %llxh %llxh\n",
+-			__func__, __LINE__, r->base, r->size);
+ 		return;
+ 	}
+ 
+-	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
+-
+ 	if (r->base) {
+ 		result = lv1_release_memory(r->base);
+-		BUG_ON(result);
++
++		if (result) {
++			lv1_panic(0);
++		}
++
+ 		r->size = r->base = r->offset = 0;
+ 		map.total = map.rm.size;
+ 	}
++
+ 	ps3_mm_set_repository_highmem(NULL);
+ }
+ 
 -- 
 2.25.1
 
