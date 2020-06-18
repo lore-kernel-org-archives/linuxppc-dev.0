@@ -2,65 +2,62 @@ Return-Path: <SRS0=k+Co=77=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C85C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:40:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0427C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:44:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 671DA20FC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:40:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 711B922228
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:44:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eUAPoeeq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 671DA20FC3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="xzsVrD7a"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 711B922228
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nPll5mWxzDqHq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 11:40:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nPqx5sXdzDqx2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 11:44:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=eUAPoeeq; dkim-atps=neutral
+ header.s=default header.b=xzsVrD7a; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nP5j32yhzDqsR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:11:21 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nP7227PrzDqsR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:12:30 +1000 (AEST)
+Received: from X1 (nat-ab2241.sltdut.senawave.net [162.218.216.4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AD4A3221E7;
- Thu, 18 Jun 2020 01:11:17 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 43B76214DB;
+ Thu, 18 Jun 2020 01:12:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592442678;
- bh=0wMSeq300+HLTPZeJnOyyYrhuUw76Ec0Zg0wYdFtlMg=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=eUAPoeeq1Gadk7NfuJZhG7ZT2MhW4UKzp/0bdOfZ/mAG2cJ5Swx+GLZ7jAvtv2TKM
- +/IDd+50rPdZGesWdjoPn1F0Ep+Cr3HZlQpGi5qY+P0cWA/bXk7TVI1fWdS3GZXayB
- NfnfMsgG5NvF2EYGJpKqedmPza3rac1G1+rqsdq4=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.7 146/388] tty: hvc: Fix data abort due to race in
- hvc_open
-Date: Wed, 17 Jun 2020 21:04:03 -0400
-Message-Id: <20200618010805.600873-146-sashal@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+ s=default; t=1592442747;
+ bh=mGN9DdKaAmVEzpdoVTQ/AB/ixfkCHEhhjiWmQ+Z00rI=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=xzsVrD7akKySIWhvQD55PtUN2F05SgqEIQ0FBQXyrmbiBXLTK2KyYj2xCXvEORWGJ
+ zHQBhVJ/v3Ymfwxra4LefSoKABPvCGyUpIX2mfrGWICi+aprnskbSySUBLb4WoAVep
+ rvWsIseXqFcwnil5YImRepnntj/Wze4KPlhO8R3c=
+Date: Wed, 17 Jun 2020 18:12:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH] mm: Move p?d_alloc_track to separate header file
+Message-Id: <20200617181226.ab213ea1531b5dd6eca1b0b6@linux-foundation.org>
+In-Reply-To: <20200609120533.25867-1-joro@8bytes.org>
+References: <20200609120533.25867-1-joro@8bytes.org>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,86 +69,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Raghavendra Rao Ananta <rananta@codeaurora.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ jroedel@suse.de, linux-mm@kvack.org, peterz@infradead.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Steven Rostedt <rostedt@goodmis.org>, Mike Rapoport <rppt@linux.ibm.com>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@kernel.org>, manvanth@linux.vnet.ibm.com, hch@lst.de,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Raghavendra Rao Ananta <rananta@codeaurora.org>
+On Tue,  9 Jun 2020 14:05:33 +0200 Joerg Roedel <joro@8bytes.org> wrote:
 
-[ Upstream commit e2bd1dcbe1aa34ff5570b3427c530e4332ecf0fe ]
+> From: Joerg Roedel <jroedel@suse.de>
+> 
+> The functions are only used in two source files, so there is no need
+> for them to be in the global <linux/mm.h> header. Move them to the new
+> <linux/pgalloc-track.h> header and include it only where needed.
+> 
+> ...
+>
+> new file mode 100644
+> index 000000000000..1dcc865029a2
+> --- /dev/null
+> +++ b/include/linux/pgalloc-track.h
+> @@ -0,0 +1,51 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _LINUX_PGALLLC_TRACK_H
+> +#define _LINUX_PGALLLC_TRACK_H
 
-Potentially, hvc_open() can be called in parallel when two tasks calls
-open() on /dev/hvcX. In such a scenario, if the hp->ops->notifier_add()
-callback in the function fails, where it sets the tty->driver_data to
-NULL, the parallel hvc_open() can see this NULL and cause a memory abort.
-Hence, serialize hvc_open and check if tty->private_data is NULL before
-proceeding ahead.
+hm, no #includes.  I guess this is OK, given the limited use.
 
-The issue can be easily reproduced by launching two tasks simultaneously
-that does nothing but open() and close() on /dev/hvcX.
-For example:
-$ ./simple_open_close /dev/hvc0 & ./simple_open_close /dev/hvc0 &
+But it does make one wonder whether ioremap.c should be moved from lib/
+to mm/ and this file should be moved from include/linux/ to mm/.
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@codeaurora.org>
-Link: https://lore.kernel.org/r/20200428032601.22127-1-rananta@codeaurora.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index cdcc64ea2554..f8e43a6faea9 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -75,6 +75,8 @@ static LIST_HEAD(hvc_structs);
-  */
- static DEFINE_MUTEX(hvc_structs_mutex);
- 
-+/* Mutex to serialize hvc_open */
-+static DEFINE_MUTEX(hvc_open_mutex);
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-  * upon order of exposure via hvc_probe(), when we can not match it to
-@@ -346,16 +348,24 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
-  */
- static int hvc_open(struct tty_struct *tty, struct file * filp)
- {
--	struct hvc_struct *hp = tty->driver_data;
-+	struct hvc_struct *hp;
- 	unsigned long flags;
- 	int rc = 0;
- 
-+	mutex_lock(&hvc_open_mutex);
-+
-+	hp = tty->driver_data;
-+	if (!hp) {
-+		rc = -EIO;
-+		goto out;
-+	}
-+
- 	spin_lock_irqsave(&hp->port.lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->port.count++ > 0) {
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
- 		hvc_kick();
--		return 0;
-+		goto out;
- 	} /* else count == 0 */
- 	spin_unlock_irqrestore(&hp->port.lock, flags);
- 
-@@ -383,6 +393,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	/* Force wakeup of the polling thread */
- 	hvc_kick();
- 
-+out:
-+	mutex_unlock(&hvc_open_mutex);
- 	return rc;
- }
- 
--- 
-2.25.1
-
+Oh well.
