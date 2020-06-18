@@ -2,62 +2,65 @@ Return-Path: <SRS0=k+Co=77=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0427C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E09BCC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:47:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 711B922228
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:44:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5C62D20897
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 01:47:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="xzsVrD7a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 711B922228
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WdymjgHj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C62D20897
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nPqx5sXdzDqx2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 11:44:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nPvW1Zd3zDqCw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 11:47:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=xzsVrD7a; dkim-atps=neutral
+ header.s=default header.b=WdymjgHj; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nP7227PrzDqsR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:12:30 +1000 (AEST)
-Received: from X1 (nat-ab2241.sltdut.senawave.net [162.218.216.4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nP783PCvzDqxW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:12:36 +1000 (AEST)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 43B76214DB;
- Thu, 18 Jun 2020 01:12:27 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B5A0E20CC7;
+ Thu, 18 Jun 2020 01:12:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592442747;
- bh=mGN9DdKaAmVEzpdoVTQ/AB/ixfkCHEhhjiWmQ+Z00rI=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=xzsVrD7akKySIWhvQD55PtUN2F05SgqEIQ0FBQXyrmbiBXLTK2KyYj2xCXvEORWGJ
- zHQBhVJ/v3Ymfwxra4LefSoKABPvCGyUpIX2mfrGWICi+aprnskbSySUBLb4WoAVep
- rvWsIseXqFcwnil5YImRepnntj/Wze4KPlhO8R3c=
-Date: Wed, 17 Jun 2020 18:12:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: Re: [PATCH] mm: Move p?d_alloc_track to separate header file
-Message-Id: <20200617181226.ab213ea1531b5dd6eca1b0b6@linux-foundation.org>
-In-Reply-To: <20200609120533.25867-1-joro@8bytes.org>
-References: <20200609120533.25867-1-joro@8bytes.org>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ s=default; t=1592442754;
+ bh=VWsSQWHskaE+QTZPemih1zEOsE8sJLM6iMhwkPhjIng=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=WdymjgHjJ2lat4QEpeg3niRy9jVpM5bS1vDH+nwnLvSqOvWbf6Z6DI6TQCd59MslK
+ ZeLBdiVchr/BiC/uxukc6DRF8R0G992EQIpCuvIN6Pe5/0Rq+psrzb0GnQn1KAqh51
+ Jiq1IQSeSAzhvP/WFYu/enjFvV2vXzRA6pcOCZto=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.7 205/388] powerpc/64: Don't initialise
+ init_task->thread.regs
+Date: Wed, 17 Jun 2020 21:05:02 -0400
+Message-Id: <20200618010805.600873-205-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
+References: <20200618010805.600873-1-sashal@kernel.org>
+MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,40 +72,186 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- jroedel@suse.de, linux-mm@kvack.org, peterz@infradead.org,
- Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>, Mike Rapoport <rppt@linux.ibm.com>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Andy Lutomirski <luto@kernel.org>, manvanth@linux.vnet.ibm.com, hch@lst.de,
- linux-kernel@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue,  9 Jun 2020 14:05:33 +0200 Joerg Roedel <joro@8bytes.org> wrote:
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-> From: Joerg Roedel <jroedel@suse.de>
-> 
-> The functions are only used in two source files, so there is no need
-> for them to be in the global <linux/mm.h> header. Move them to the new
-> <linux/pgalloc-track.h> header and include it only where needed.
-> 
-> ...
->
-> new file mode 100644
-> index 000000000000..1dcc865029a2
-> --- /dev/null
-> +++ b/include/linux/pgalloc-track.h
-> @@ -0,0 +1,51 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _LINUX_PGALLLC_TRACK_H
-> +#define _LINUX_PGALLLC_TRACK_H
+[ Upstream commit 7ffa8b7dc11752827329e4e84a574ea6aaf24716 ]
 
-hm, no #includes.  I guess this is OK, given the limited use.
+Aneesh increased the size of struct pt_regs by 16 bytes and started
+seeing this WARN_ON:
 
-But it does make one wonder whether ioremap.c should be moved from lib/
-to mm/ and this file should be moved from include/linux/ to mm/.
+  smp: Bringing up secondary CPUs ...
+  ------------[ cut here ]------------
+  WARNING: CPU: 0 PID: 0 at arch/powerpc/kernel/process.c:455 giveup_all+0xb4/0x110
+  Modules linked in:
+  CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.7.0-rc2-gcc-8.2.0-1.g8f6a41f-default+ #318
+  NIP:  c00000000001a2b4 LR: c00000000001a29c CTR: c0000000031d0000
+  REGS: c0000000026d3980 TRAP: 0700   Not tainted  (5.7.0-rc2-gcc-8.2.0-1.g8f6a41f-default+)
+  MSR:  800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 48048224  XER: 00000000
+  CFAR: c000000000019cc8 IRQMASK: 1
+  GPR00: c00000000001a264 c0000000026d3c20 c0000000026d7200 800000000280b033
+  GPR04: 0000000000000001 0000000000000000 0000000000000077 30206d7372203164
+  GPR08: 0000000000002000 0000000002002000 800000000280b033 3230303030303030
+  GPR12: 0000000000008800 c0000000031d0000 0000000000800050 0000000002000066
+  GPR16: 000000000309a1a0 000000000309a4b0 000000000309a2d8 000000000309a890
+  GPR20: 00000000030d0098 c00000000264da40 00000000fd620000 c0000000ff798080
+  GPR24: c00000000264edf0 c0000001007469f0 00000000fd620000 c0000000020e5e90
+  GPR28: c00000000264edf0 c00000000264d200 000000001db60000 c00000000264d200
+  NIP [c00000000001a2b4] giveup_all+0xb4/0x110
+  LR [c00000000001a29c] giveup_all+0x9c/0x110
+  Call Trace:
+  [c0000000026d3c20] [c00000000001a264] giveup_all+0x64/0x110 (unreliable)
+  [c0000000026d3c90] [c00000000001ae34] __switch_to+0x104/0x480
+  [c0000000026d3cf0] [c000000000e0b8a0] __schedule+0x320/0x970
+  [c0000000026d3dd0] [c000000000e0c518] schedule_idle+0x38/0x70
+  [c0000000026d3df0] [c00000000019c7c8] do_idle+0x248/0x3f0
+  [c0000000026d3e70] [c00000000019cbb8] cpu_startup_entry+0x38/0x40
+  [c0000000026d3ea0] [c000000000011bb0] rest_init+0xe0/0xf8
+  [c0000000026d3ed0] [c000000002004820] start_kernel+0x990/0x9e0
+  [c0000000026d3f90] [c00000000000c49c] start_here_common+0x1c/0x400
 
-Oh well.
+Which was unexpected. The warning is checking the thread.regs->msr
+value of the task we are switching from:
+
+  usermsr = tsk->thread.regs->msr;
+  ...
+  WARN_ON((usermsr & MSR_VSX) && !((usermsr & MSR_FP) && (usermsr & MSR_VEC)));
+
+ie. if MSR_VSX is set then both of MSR_FP and MSR_VEC are also set.
+
+Dumping tsk->thread.regs->msr we see that it's: 0x1db60000
+
+Which is not a normal looking MSR, in fact the only valid bit is
+MSR_VSX, all the other bits are reserved in the current definition of
+the MSR.
+
+We can see from the oops that it was swapper/0 that we were switching
+from when we hit the warning, ie. init_task. So its thread.regs points
+to the base (high addresses) in init_stack.
+
+Dumping the content of init_task->thread.regs, with the members of
+pt_regs annotated (the 16 bytes larger version), we see:
+
+  0000000000000000 c000000002780080    gpr[0]     gpr[1]
+  0000000000000000 c000000002666008    gpr[2]     gpr[3]
+  c0000000026d3ed0 0000000000000078    gpr[4]     gpr[5]
+  c000000000011b68 c000000002780080    gpr[6]     gpr[7]
+  0000000000000000 0000000000000000    gpr[8]     gpr[9]
+  c0000000026d3f90 0000800000002200    gpr[10]    gpr[11]
+  c000000002004820 c0000000026d7200    gpr[12]    gpr[13]
+  000000001db60000 c0000000010aabe8    gpr[14]    gpr[15]
+  c0000000010aabe8 c0000000010aabe8    gpr[16]    gpr[17]
+  c00000000294d598 0000000000000000    gpr[18]    gpr[19]
+  0000000000000000 0000000000001ff8    gpr[20]    gpr[21]
+  0000000000000000 c00000000206d608    gpr[22]    gpr[23]
+  c00000000278e0cc 0000000000000000    gpr[24]    gpr[25]
+  000000002fff0000 c000000000000000    gpr[26]    gpr[27]
+  0000000002000000 0000000000000028    gpr[28]    gpr[29]
+  000000001db60000 0000000004750000    gpr[30]    gpr[31]
+  0000000002000000 000000001db60000    nip        msr
+  0000000000000000 0000000000000000    orig_r3    ctr
+  c00000000000c49c 0000000000000000    link       xer
+  0000000000000000 0000000000000000    ccr        softe
+  0000000000000000 0000000000000000    trap       dar
+  0000000000000000 0000000000000000    dsisr      result
+  0000000000000000 0000000000000000    ppr        kuap
+  0000000000000000 0000000000000000    pad[2]     pad[3]
+
+This looks suspiciously like stack frames, not a pt_regs. If we look
+closely we can see return addresses from the stack trace above,
+c000000002004820 (start_kernel) and c00000000000c49c (start_here_common).
+
+init_task->thread.regs is setup at build time in processor.h:
+
+  #define INIT_THREAD  { \
+  	.ksp = INIT_SP, \
+  	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
+
+The early boot code where we setup the initial stack is:
+
+  LOAD_REG_ADDR(r3,init_thread_union)
+
+  /* set up a stack pointer */
+  LOAD_REG_IMMEDIATE(r1,THREAD_SIZE)
+  add	r1,r3,r1
+  li	r0,0
+  stdu	r0,-STACK_FRAME_OVERHEAD(r1)
+
+Which creates a stack frame of size 112 bytes (STACK_FRAME_OVERHEAD).
+Which is far too small to contain a pt_regs.
+
+So the result is init_task->thread.regs is pointing at some stack
+frames on the init stack, not at a pt_regs.
+
+We have gotten away with this for so long because with pt_regs at its
+current size the MSR happens to point into the first frame, at a
+location that is not written to by the early asm. With the 16 byte
+expansion the MSR falls into the second frame, which is used by the
+compiler, and collides with a saved register that tends to be
+non-zero.
+
+As far as I can see this has been wrong since the original merge of
+64-bit ppc support, back in 2002.
+
+Conceptually swapper should have no regs, it never entered from
+userspace, and in fact that's what we do on 32-bit. It's also
+presumably what the "bogus" comment is referring to.
+
+So I think the right fix is to just not-initialise regs at all. I'm
+slightly worried this will break some code that isn't prepared for a
+NULL regs, but we'll have to see.
+
+Remove the comment in head_64.S which refers to us setting up the
+regs (even though we never did), and is otherwise not really accurate
+any more.
+
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20200428123130.73078-1-mpe@ellerman.id.au
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/include/asm/processor.h | 1 -
+ arch/powerpc/kernel/head_64.S        | 9 +--------
+ 2 files changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index eedcbfb9a6ff..c220cb9eccad 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -301,7 +301,6 @@ struct thread_struct {
+ #else
+ #define INIT_THREAD  { \
+ 	.ksp = INIT_SP, \
+-	.regs = (struct pt_regs *)INIT_SP - 1, /* XXX bogus, I think */ \
+ 	.addr_limit = KERNEL_DS, \
+ 	.fpexc_mode = 0, \
+ 	.fscr = FSCR_TAR | FSCR_EBB \
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index ddfbd02140d9..0e05a9a47a4b 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -947,15 +947,8 @@ start_here_multiplatform:
+ 	std	r0,0(r4)
+ #endif
+ 
+-	/* The following gets the stack set up with the regs */
+-	/* pointing to the real addr of the kernel stack.  This is   */
+-	/* all done to support the C function call below which sets  */
+-	/* up the htab.  This is done because we have relocated the  */
+-	/* kernel but are still running in real mode. */
+-
+-	LOAD_REG_ADDR(r3,init_thread_union)
+-
+ 	/* set up a stack pointer */
++	LOAD_REG_ADDR(r3,init_thread_union)
+ 	LOAD_REG_IMMEDIATE(r1,THREAD_SIZE)
+ 	add	r1,r3,r1
+ 	li	r0,0
+-- 
+2.25.1
+
