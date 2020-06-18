@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFDB1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0136C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:04:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F9FA21D94
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:00:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 36366221F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 02:04:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="b6RH96Ys"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F9FA21D94
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="GItDV1A1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36366221F8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nQBF6brDzDqBW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 12:00:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nQGV1kDjzDqyB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 12:04:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,31 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=b6RH96Ys; dkim-atps=neutral
+ header.s=default header.b=GItDV1A1; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nP7f6NlszDqnD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:13:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nP8F0XgZzDqnD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:13:33 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2CCF52193E;
- Thu, 18 Jun 2020 01:13:00 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6A80121974;
+ Thu, 18 Jun 2020 01:13:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592442780;
- bh=uPVJfn4eW6yGGsUiXpVMaywucoc7azMIcy2PSIJ8+B0=;
+ s=default; t=1592442810;
+ bh=3FCVTIUBK2FrT/pFejJuUW8MW0xWwlLn2woVgszM86s=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=b6RH96YsjMrrsG6+i7crH//kF9VcNBMdE6UFbEVX18A0GqX0HclsDQs1LN3fnATOD
- Bj9xsBgIJ9CZogBSfLTE52OdcPSR1k9a/bYQaD5rtAxeFUYvkjuts770FzZXQk6PhD
- 4LeY4WO796DDbYAh9W293wQ7Zipo4t+vBWQCo7fI=
+ b=GItDV1A18buH7DxTDQVPKPpFe26FGjQlqE5zh6cl0jeDMGzv2WQjZviOclyJzuDwS
+ ZwIva4l75sxWWNo/+h9+IN+vMPn76871NDY9moTNu6RVFm2tMZNow3l/GrZflhrcaH
+ TP7Feb1gOIXjxbafTXIA04xSdm/DVf+UcaQWiadM=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.7 226/388] powerpc/ps3: Fix kexec shutdown hang
-Date: Wed, 17 Jun 2020 21:05:23 -0400
-Message-Id: <20200618010805.600873-226-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.7 249/388] powerpc/powernv: add NULL check after
+ kzalloc
+Date: Wed, 17 Jun 2020 21:05:46 -0400
+Message-Id: <20200618010805.600873-249-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 References: <20200618010805.600873-1-sashal@kernel.org>
@@ -72,87 +72,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+Cc: Chen Zhou <chenzhou10@huawei.com>, linuxppc-dev@lists.ozlabs.org,
  Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Geoff Levand <geoff@infradead.org>
+From: Chen Zhou <chenzhou10@huawei.com>
 
-[ Upstream commit 126554465d93b10662742128918a5fc338cda4aa ]
+[ Upstream commit ceffa63acce7165c442395b7d64a11ab8b5c5dca ]
 
-The ps3_mm_region_destroy() and ps3_mm_vas_destroy() routines
-are called very late in the shutdown via kexec's mmu_cleanup_all
-routine.  By the time mmu_cleanup_all runs it is too late to use
-udbg_printf, and calling it will cause PS3 systems to hang.
+Fixes coccicheck warning:
 
-Remove all debugging statements from ps3_mm_region_destroy() and
-ps3_mm_vas_destroy() and replace any error reporting with calls
-to lv1_panic.
+./arch/powerpc/platforms/powernv/opal.c:813:1-5:
+	alloc with no test, possible model on line 814
 
-With this change builds with 'DEBUG' defined will not cause kexec
-reboots to hang, and builds with 'DEBUG' defined or not will end
-in lv1_panic if an error is encountered.
+Add NULL check after kzalloc.
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
+Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/7325c4af2b4c989c19d6a26b90b1fec9c0615ddf.1589049250.git.geoff@infradead.org
+Link: https://lore.kernel.org/r/20200509020838.121660-1-chenzhou10@huawei.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/ps3/mm.c | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 423be34f0f5f..f42fe4e86ce5 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -200,13 +200,14 @@ void ps3_mm_vas_destroy(void)
- {
- 	int result;
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 2b3dfd0b6cdd..d95954ad4c0a 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -811,6 +811,10 @@ static int opal_add_one_export(struct kobject *parent, const char *export_name,
+ 		goto out;
  
--	DBG("%s:%d: map.vas_id    = %llu\n", __func__, __LINE__, map.vas_id);
--
- 	if (map.vas_id) {
- 		result = lv1_select_virtual_address_space(0);
--		BUG_ON(result);
--		result = lv1_destruct_virtual_address_space(map.vas_id);
--		BUG_ON(result);
-+		result += lv1_destruct_virtual_address_space(map.vas_id);
-+
-+		if (result) {
-+			lv1_panic(0);
-+		}
-+
- 		map.vas_id = 0;
- 	}
- }
-@@ -304,19 +305,20 @@ static void ps3_mm_region_destroy(struct mem_region *r)
- 	int result;
- 
- 	if (!r->destroy) {
--		pr_info("%s:%d: Not destroying high region: %llxh %llxh\n",
--			__func__, __LINE__, r->base, r->size);
- 		return;
- 	}
- 
--	DBG("%s:%d: r->base = %llxh\n", __func__, __LINE__, r->base);
--
- 	if (r->base) {
- 		result = lv1_release_memory(r->base);
--		BUG_ON(result);
-+
-+		if (result) {
-+			lv1_panic(0);
-+		}
-+
- 		r->size = r->base = r->offset = 0;
- 		map.total = map.rm.size;
- 	}
-+
- 	ps3_mm_set_repository_highmem(NULL);
- }
- 
+ 	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
++	if (!attr) {
++		rc = -ENOMEM;
++		goto out;
++	}
+ 	name = kstrdup(export_name, GFP_KERNEL);
+ 	if (!name) {
+ 		rc = -ENOMEM;
 -- 
 2.25.1
 
