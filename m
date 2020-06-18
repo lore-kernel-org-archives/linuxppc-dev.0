@@ -2,88 +2,90 @@ Return-Path: <SRS0=k+Co=77=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01641C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 20:40:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60956C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 20:53:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44C8920732
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 20:40:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44C8920732
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0F2DB207E8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 20:53:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F2DB207E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nv2k6Wc6zDr8g
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 06:40:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nvL10ymnzDrNX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 06:53:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tlfalcon@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49ntzm3mbDzDr8D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 06:37:56 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nvHt1vdHzDr8r
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 06:51:54 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05IKWJjo038864; Thu, 18 Jun 2020 16:37:46 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31r6d0q8j5-1
+ 05IKYEJv036046; Thu, 18 Jun 2020 16:51:51 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31rcbax30k-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 18 Jun 2020 16:37:46 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05IKVlEV016429;
- Thu, 18 Jun 2020 20:37:44 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma03ams.nl.ibm.com with ESMTP id 31quax9npy-1
+ Thu, 18 Jun 2020 16:51:51 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05IKp6kj001087;
+ Thu, 18 Jun 2020 20:51:50 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma03dal.us.ibm.com with ESMTP id 31q6c649u8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 18 Jun 2020 20:37:44 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05IKbedF43712598
+ Thu, 18 Jun 2020 20:51:50 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05IKpn3W40894828
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 18 Jun 2020 20:37:40 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 612814C04E;
- Thu, 18 Jun 2020 20:37:40 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 413A44C040;
- Thu, 18 Jun 2020 20:37:37 +0000 (GMT)
-Received: from oc0525413822.ibm.com (unknown [9.211.71.42])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu, 18 Jun 2020 20:37:37 +0000 (GMT)
-Date: Thu, 18 Jun 2020 13:37:34 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/4] Migrate non-migrated pages of a SVM.
-Message-ID: <20200618203734.GA6772@oc0525413822.ibm.com>
-References: <1592471945-24786-1-git-send-email-linuxram@us.ibm.com>
+ Thu, 18 Jun 2020 20:51:49 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 938BCAC05E;
+ Thu, 18 Jun 2020 20:51:49 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 38D69AC05B;
+ Thu, 18 Jun 2020 20:51:49 +0000 (GMT)
+Received: from oc7186267434.ibm.com (unknown [9.160.31.222])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 18 Jun 2020 20:51:49 +0000 (GMT)
+Subject: Re: [PATCH net] ibmveth: Fix max MTU limit
+To: Jakub Kicinski <kuba@kernel.org>
+References: <1592495026-27202-1-git-send-email-tlfalcon@linux.ibm.com>
+ <20200618085722.110f3702@kicinski-fedora-PC1C0HJN>
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
+Message-ID: <ef46e726-5be4-de64-a34c-8a98823a920a@linux.ibm.com>
+Date: Thu, 18 Jun 2020 15:51:48 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1592471945-24786-1-git-send-email-linuxram@us.ibm.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <20200618085722.110f3702@kicinski-fedora-PC1C0HJN>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-18_15:2020-06-18,
  2020-06-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- adultscore=0 mlxscore=0 mlxlogscore=999 suspectscore=0
- cotscore=-2147483648 spamscore=0 lowpriorityscore=0 phishscore=0
- bulkscore=0 priorityscore=1501 impostorscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006180152
+ suspectscore=0
+ lowpriorityscore=0 spamscore=0 impostorscore=0 mlxscore=0
+ cotscore=-2147483648 mlxlogscore=999 bulkscore=0 priorityscore=1501
+ malwarescore=0 phishscore=0 adultscore=0 clxscore=1011 classifier=spam
+ adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006180157
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,81 +97,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: ldufour@linux.ibm.com, cclaudio@linux.ibm.com, bharata@linux.ibm.com,
- sathnaga@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
- sukadev@linux.vnet.ibm.com, bauerman@linux.ibm.com,
- david@gibson.dropbear.id.au
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I should have elaborated on the problem and the need for these patches.
 
-Explaining it here. Will add it to the series in next version.
+On 6/18/20 10:57 AM, Jakub Kicinski wrote:
+> On Thu, 18 Jun 2020 10:43:46 -0500 Thomas Falcon wrote:
+>> The max MTU limit defined for ibmveth is not accounting for
+>> virtual ethernet buffer overhead, which is twenty-two additional
+>> bytes set aside for the ethernet header and eight additional bytes
+>> of an opaque handle reserved for use by the hypervisor. Update the
+>> max MTU to reflect this overhead.
+>>
+>> Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
+> How about
+>
+> Fixes: d894be57ca92 ("ethernet: use net core MTU range checking in more drivers")
+> Fixes: 110447f8269a ("ethernet: fix min/max MTU typos")
+>
+> ?
 
--------------------------------------------------------------
+Thanks, do you need me to send a v2 with those tags?
 
-The time taken to switch a VM to Secure-VM, increases by the size of
-the VM.  A 100GB VM takes about 7minutes. This is unacceptable.  This
-linear increase is caused by a suboptimal behavior by the Ultravisor and
-the Hypervisor.  The Ultravisor unnecessarily migrates all the GFN of
-the VM from normal-memory to secure-memory. It has to just migrate the
-necessary and sufficient GFNs.
+Tom
 
-However when the optimization is incorporated in the Ultravisor, the
-Hypervisor starts misbehaving. The Hypervisor has a inbuilt assumption
-that the Ultravisor will explicitly request to migrate, each and every
-GFN of the VM. If only necessary and sufficient GFNs are requested for
-migration, the Hypervisor continues to manage the rest of the GFNs are
-normal GFNs. This leads of memory corruption, manifested consistently
-when the SVM reboots.
-
-The same is true, when a memory slot is hotplugged into a SVM. The
-Hypervisor expects the ultravisor to request migration of all GFNs to
-secure-GFN.  But at the same time the hypervisor is unable to handle any
-H_SVM_PAGE_IN requests from the Ultravisor, done in the context of
-UV_REGISTER_MEM_SLOT ucall.  This problem manifests as random errors in
-the SVM, when a memory-slot is hotplugged.
-
-This patch series automatically migrates the non-migrated pages of a SVM,
-and thus solves the problem.
-
-------------------------------------------------------------------
-
-
-
-On Thu, Jun 18, 2020 at 02:19:01AM -0700, Ram Pai wrote:
-> This patch series migrates the non-migrated pages of a SVM.
-> This is required when the UV calls H_SVM_INIT_DONE, and
-> when a memory-slot is hotplugged to a Secure VM.
-> 
-> Testing: Passed rigorous SVM reboot test using different
-> 	sized SVMs.
-> 
-> Changelog:
-> 	. fixed a bug observed by Bharata. Pages that
-> 	where paged-in and later paged-out must also be
-> 	skipped from migration during H_SVM_INIT_DONE.
-> 
-> Laurent Dufour (1):
->   KVM: PPC: Book3S HV: migrate hot plugged memory
-> 
-> Ram Pai (3):
->   KVM: PPC: Book3S HV: Fix function definition in book3s_hv_uvmem.c
->   KVM: PPC: Book3S HV: track the state GFNs associated with secure VMs
->   KVM: PPC: Book3S HV: migrate remaining normal-GFNs to secure-GFNs in
->     H_SVM_INIT_DONE
-> 
->  Documentation/powerpc/ultravisor.rst        |   2 +
->  arch/powerpc/include/asm/kvm_book3s_uvmem.h |   8 +-
->  arch/powerpc/kvm/book3s_64_mmu_radix.c      |   2 +-
->  arch/powerpc/kvm/book3s_hv.c                |  12 +-
->  arch/powerpc/kvm/book3s_hv_uvmem.c          | 449 ++++++++++++++++++++++------
->  5 files changed, 368 insertions(+), 105 deletions(-)
-> 
-> -- 
-> 1.8.3.1
-
--- 
-Ram Pai
