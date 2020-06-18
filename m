@@ -2,66 +2,63 @@ Return-Path: <SRS0=k+Co=77=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B607AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 03:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC6CAC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 03:08:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6606220FC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 03:05:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 44F0920FC3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 03:08:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FfDBc0Ea"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6606220FC3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="c0vH8Aue"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44F0920FC3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49nRdx3VqKzDr4Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 13:05:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=FfDBc0Ea; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49nRhy4vcCzDqKN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Jun 2020 13:08:34 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49nPGR5TZlzDqtV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:18:55 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C397B206F1;
- Thu, 18 Jun 2020 01:18:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592443133;
- bh=0wMSeq300+HLTPZeJnOyyYrhuUw76Ec0Zg0wYdFtlMg=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=FfDBc0Eav4RS8hJKM/qwe6DetxA0Rwukwuicw3TUfIidSNyWnQdvXPzpujEEa2j4d
- pWQXgDCeiY8N4n9ChWQ7M08P84KIXo5IeQrxgiS4Zvr0lSneOi23Peae5IbSkZFFCs
- fUFBFpJ7V326klQHxQX+Uvk26xbb+SoZBUYbPeXc=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 105/266] tty: hvc: Fix data abort due to race in
- hvc_open
-Date: Wed, 17 Jun 2020 21:13:50 -0400
-Message-Id: <20200618011631.604574-105-sashal@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
-References: <20200618011631.604574-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49nPH53zg2zDqwL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2020 11:19:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=c0vH8Aue; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 49nPH35hR4z9sVj;
+ Thu, 18 Jun 2020 11:19:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1592443169;
+ bh=K1ERJwulQQ71ZmizNv3o80BKfdJjcI6S5OFHSql3lK4=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=c0vH8AueyiwakeVIA+q9EvgLvoFGAklJYJa6D8cd23Kvh1KPcxjxkXxi7lQUf+JDF
+ gSuGYQIGdx41HAsr4qUMp49BgSUjPXqRs92UdJLRQaqEjgvG3+T7W5cZSeZC2lCD7l
+ H1NFppLprzKSB+8k99ZQJ//fKpJW/N/wQ1EwVnaeL8NjC0rdWsjFLr3SXJb0Lcf99l
+ QBKgZavxYAoSIDkGD4IjwsymPUCXEhYbEOruaQ8Kh0yWpvaIENF+MBPygS1Hes9+GJ
+ l5qLwH3HQTrXkmD+QSVBeo2S/OmevG2Jn0qTSXPCnIzjMLXgjyUM8v60iIpdP1qfQ5
+ 9ZDiPGKWSLB4g==
+Date: Thu, 18 Jun 2020 11:19:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH] mm: Move p?d_alloc_track to separate header file
+Message-ID: <20200618111925.28100ec9@canb.auug.org.au>
+In-Reply-To: <20200609120533.25867-1-joro@8bytes.org>
+References: <20200609120533.25867-1-joro@8bytes.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="Sig_/YCi/Nnb9cueQmER4WWU5i5W";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,86 +70,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Raghavendra Rao Ananta <rananta@codeaurora.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: linux-arch@vger.kernel.org, jroedel@suse.de, linux-mm@kvack.org,
+ peterz@infradead.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linux-next@vger.kernel.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ manvanth@linux.vnet.ibm.com, hch@lst.de, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Raghavendra Rao Ananta <rananta@codeaurora.org>
+--Sig_/YCi/Nnb9cueQmER4WWU5i5W
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-[ Upstream commit e2bd1dcbe1aa34ff5570b3427c530e4332ecf0fe ]
+Hi Joerg,
 
-Potentially, hvc_open() can be called in parallel when two tasks calls
-open() on /dev/hvcX. In such a scenario, if the hp->ops->notifier_add()
-callback in the function fails, where it sets the tty->driver_data to
-NULL, the parallel hvc_open() can see this NULL and cause a memory abort.
-Hence, serialize hvc_open and check if tty->private_data is NULL before
-proceeding ahead.
+Sorry for the late reply.
 
-The issue can be easily reproduced by launching two tasks simultaneously
-that does nothing but open() and close() on /dev/hvcX.
-For example:
-$ ./simple_open_close /dev/hvc0 & ./simple_open_close /dev/hvc0 &
+On Tue,  9 Jun 2020 14:05:33 +0200 Joerg Roedel <joro@8bytes.org> wrote:
+>
+> diff --git a/include/linux/pgalloc-track.h b/include/linux/pgalloc-track.h
+> new file mode 100644
+> index 000000000000..1dcc865029a2
+> --- /dev/null
+> +++ b/include/linux/pgalloc-track.h
+> @@ -0,0 +1,51 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _LINUX_PGALLLC_TRACK_H
+> +#define _LINUX_PGALLLC_TRACK_H
+> +
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@codeaurora.org>
-Link: https://lore.kernel.org/r/20200428032601.22127-1-rananta@codeaurora.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+Maybe this could have a comment that it should always be included after
+mm.h or we could add enough to make it standalone (even just an include
+of mm.h would probably be enough).
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index cdcc64ea2554..f8e43a6faea9 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -75,6 +75,8 @@ static LIST_HEAD(hvc_structs);
-  */
- static DEFINE_MUTEX(hvc_structs_mutex);
- 
-+/* Mutex to serialize hvc_open */
-+static DEFINE_MUTEX(hvc_open_mutex);
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-  * upon order of exposure via hvc_probe(), when we can not match it to
-@@ -346,16 +348,24 @@ static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
-  */
- static int hvc_open(struct tty_struct *tty, struct file * filp)
- {
--	struct hvc_struct *hp = tty->driver_data;
-+	struct hvc_struct *hp;
- 	unsigned long flags;
- 	int rc = 0;
- 
-+	mutex_lock(&hvc_open_mutex);
-+
-+	hp = tty->driver_data;
-+	if (!hp) {
-+		rc = -EIO;
-+		goto out;
-+	}
-+
- 	spin_lock_irqsave(&hp->port.lock, flags);
- 	/* Check and then increment for fast path open. */
- 	if (hp->port.count++ > 0) {
- 		spin_unlock_irqrestore(&hp->port.lock, flags);
- 		hvc_kick();
--		return 0;
-+		goto out;
- 	} /* else count == 0 */
- 	spin_unlock_irqrestore(&hp->port.lock, flags);
- 
-@@ -383,6 +393,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	/* Force wakeup of the polling thread */
- 	hvc_kick();
- 
-+out:
-+	mutex_unlock(&hvc_open_mutex);
- 	return rc;
- }
- 
--- 
-2.25.1
+--=20
+Cheers,
+Stephen Rothwell
 
+--Sig_/YCi/Nnb9cueQmER4WWU5i5W
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl7qwR0ACgkQAVBC80lX
+0GysAwf/ZNngUfjr8j+WzPw9diANohv/lSl2wn69fUe4dvCuORBkF0ItPZodhAX1
+8MaSeeYqtRt3Vh0xFgsA/rW4DxOxSQN87G1QBgSCA2BFkNs/sxDhMTs0CJmZR52y
+LtRaXmfro+7Z9Th1DBKbJA5Waw0Cw90U5muGvb/FFmjvKKGOX52g7lb8RWyeoNe0
+FcngH+KvpNBenHro9/87VSadAb5Ch7IoTx1x0eFF0oDtEBe8tOs/ZpLfTUKnql04
+FqVy/p1HMv0vNZyc4hFukB1IcPeCSK/YXKHleZ0nIWQ/Qeo6lwlEzboK3ixEBt5B
+4YrmmUYfdVq6Mk2Bhnp4uBIO8aYmMw==
+=bxHw
+-----END PGP SIGNATURE-----
+
+--Sig_/YCi/Nnb9cueQmER4WWU5i5W--
