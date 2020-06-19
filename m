@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06F84C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:09:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE633C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:13:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B960820771
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:09:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B960820771
+	by mail.kernel.org (Postfix) with ESMTPS id 1551F20DD4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:13:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1551F20DD4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49pQJH00dHzDqFY
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2020 03:09:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49pQPp0hpNzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2020 03:13:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49pMbR0cDmzDrQQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2020 01:06:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49pMbY0g37zDqww
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2020 01:07:05 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49pMbH42GRz9v09m;
- Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49pMbP6PQgz9v09v;
+ Fri, 19 Jun 2020 17:06:57 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ePyZpffX__Ia; Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ with ESMTP id VrREeVhTjvlf; Fri, 19 Jun 2020 17:06:57 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49pMbH368wz9v09j;
- Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49pMbP5cRmz9v09s;
+ Fri, 19 Jun 2020 17:06:57 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 80F4E8B879;
- Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DAD338B87B;
+ Fri, 19 Jun 2020 17:06:59 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Qazh7sgDx-BC; Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
+ with ESMTP id j7mciZV-qZtK; Fri, 19 Jun 2020 17:06:59 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C4088B868;
- Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 69DCD8B87D;
+ Fri, 19 Jun 2020 17:06:59 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 28A7C65AF4; Fri, 19 Jun 2020 15:06:53 +0000 (UTC)
-Message-Id: <85e3ee58f3231223d7cd4954d94282bab7c44945.1592578278.git.christophe.leroy@csgroup.eu>
+ id 5685B65B16; Fri, 19 Jun 2020 15:06:59 +0000 (UTC)
+Message-Id: <ee7a475b12be04568e2433738a15c0c7dde01c45.1592578278.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1592578278.git.christophe.leroy@csgroup.eu>
 References: <cover.1592578278.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 2/8] powerpc/ptdump: Refactor update of pg_state
+Subject: [PATCH v1 8/8] powerpc/32s: Use dedicated segment for modules with
+ STRICT_KERNEL_RWX
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 19 Jun 2020 15:06:53 +0000 (UTC)
+Date: Fri, 19 Jun 2020 15:06:59 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,80 +76,92 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In note_page(), the pg_state is updated the same way in two places.
+When STRICT_KERNEL_RWX is set, we want to set NX bit on vmalloc
+segments. But modules require exec.
 
-Add note_page_update_state() to do it.
-
-Also include the display of boundary markers there as it is missing
-"no level" leg, leading to a mismatch when the first two markers
-are at the same address and the first displayed area uses that
-address.
+Use a dedicated segment for modules. There is not much space
+above kernel, and we don't waste vmalloc space to do alignment.
+Therefore, we take the segment before PAGE_OFFSET for modules.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/ptdump/ptdump.c | 34 +++++++++++++++++++--------------
- 1 file changed, 20 insertions(+), 14 deletions(-)
+ arch/powerpc/Kconfig                         |  1 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 15 +++++----------
+ arch/powerpc/mm/ptdump/ptdump.c              |  8 ++++++++
+ 3 files changed, 14 insertions(+), 10 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9fa23eb320ff..2ba6ac9da46f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1198,6 +1198,7 @@ config TASK_SIZE_BOOL
+ config TASK_SIZE
+ 	hex "Size of user task space" if TASK_SIZE_BOOL
+ 	default "0x80000000" if PPC_8xx
++	default "0xb0000000" if PPC_BOOK3S_32 && STRICT_KERNEL_RWX
+ 	default "0xc0000000"
+ endmenu
+ 
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 224912432821..36443cda8dcf 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -184,17 +184,7 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+  */
+ #define VMALLOC_OFFSET (0x1000000) /* 16M */
+ 
+-/*
+- * With CONFIG_STRICT_KERNEL_RWX, kernel segments are set NX. But when modules
+- * are used, NX cannot be set on VMALLOC space. So vmalloc VM space and linear
+- * memory shall not share segments.
+- */
+-#if defined(CONFIG_STRICT_KERNEL_RWX) && defined(CONFIG_MODULES)
+-#define VMALLOC_START ((ALIGN((long)high_memory, 256L << 20) + VMALLOC_OFFSET) & \
+-		       ~(VMALLOC_OFFSET - 1))
+-#else
+ #define VMALLOC_START ((((long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1)))
+-#endif
+ 
+ #ifdef CONFIG_KASAN_VMALLOC
+ #define VMALLOC_END	ALIGN_DOWN(ioremap_bot, PAGE_SIZE << KASAN_SHADOW_SCALE_SHIFT)
+@@ -202,6 +192,11 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+ #define VMALLOC_END	ioremap_bot
+ #endif
+ 
++#ifdef CONFIG_STRICT_KERNEL_RWX
++#define MODULES_END	ALIGN_DOWN(PAGE_OFFSET, SZ_256M)
++#define MODULES_VADDR	(MODULES_END - SZ_256M)
++#endif
++
+ #ifndef __ASSEMBLY__
+ #include <linux/sched.h>
+ #include <linux/threads.h>
 diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-index d5e42b958e86..b71cc628facd 100644
+index e995f2e9e9f7..51aab1b7be31 100644
 --- a/arch/powerpc/mm/ptdump/ptdump.c
 +++ b/arch/powerpc/mm/ptdump/ptdump.c
-@@ -195,6 +195,24 @@ static void note_prot_wx(struct pg_state *st, unsigned long addr)
- 	st->wx_pages += (addr - st->start_address) / PAGE_SIZE;
- }
+@@ -74,6 +74,10 @@ struct addr_marker {
  
-+static void note_page_update_state(struct pg_state *st, unsigned long addr,
-+				   unsigned int level, u64 val, unsigned long page_size)
-+{
-+	u64 flag = val & pg_level[level].mask;
-+	u64 pa = val & PTE_RPN_MASK;
-+
-+	st->level = level;
-+	st->current_flags = flag;
-+	st->start_address = addr;
-+	st->start_pa = pa;
-+	st->page_size = page_size;
-+
-+	while (addr >= st->marker[1].start_address) {
-+		st->marker++;
-+		pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-+	}
-+}
-+
- static void note_page(struct pg_state *st, unsigned long addr,
- 	       unsigned int level, u64 val, unsigned long page_size)
- {
-@@ -203,12 +221,8 @@ static void note_page(struct pg_state *st, unsigned long addr,
+ static struct addr_marker address_markers[] = {
+ 	{ 0,	"Start of kernel VM" },
++#ifdef MODULES_VADDR
++	{ 0,	"modules start" },
++	{ 0,	"modules end" },
++#endif
+ 	{ 0,	"vmalloc() Area" },
+ 	{ 0,	"vmalloc() End" },
+ #ifdef CONFIG_PPC64
+@@ -352,6 +356,10 @@ static void populate_markers(void)
+ 	int i = 0;
  
- 	/* At first no level is set */
- 	if (!st->level) {
--		st->level = level;
--		st->current_flags = flag;
--		st->start_address = addr;
--		st->start_pa = pa;
--		st->page_size = page_size;
- 		pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-+		note_page_update_state(st, addr, level, val, page_size);
- 	/*
- 	 * Dump the section of virtual memory when:
- 	 *   - the PTE flags from one entry to the next differs.
-@@ -240,15 +254,7 @@ static void note_page(struct pg_state *st, unsigned long addr,
- 		 * Address indicates we have passed the end of the
- 		 * current section of virtual memory
- 		 */
--		while (addr >= st->marker[1].start_address) {
--			st->marker++;
--			pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
--		}
--		st->start_address = addr;
--		st->start_pa = pa;
--		st->page_size = page_size;
--		st->current_flags = flag;
--		st->level = level;
-+		note_page_update_state(st, addr, level, val, page_size);
- 	}
- 	st->last_pa = pa;
- }
+ 	address_markers[i++].start_address = TASK_SIZE;
++#ifdef MODULES_VADDR
++	address_markers[i++].start_address = MODULES_VADDR;
++	address_markers[i++].start_address = MODULES_END;
++#endif
+ 	address_markers[i++].start_address = VMALLOC_START;
+ 	address_markers[i++].start_address = VMALLOC_END;
+ #ifdef CONFIG_PPC64
 -- 
 2.25.0
 
