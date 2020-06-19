@@ -2,55 +2,92 @@ Return-Path: <SRS0=VXZ8=AA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5923BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B2DBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:31:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC8AF20885
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:21:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC8AF20885
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id DCD22214F1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:31:28 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=cogentembedded-com.20150623.gappssmtp.com header.i=@cogentembedded-com.20150623.gappssmtp.com header.b="qkbi8YvZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCD22214F1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=cogentembedded.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49pBbd2chxzDrNt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 18:21:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 49pBq25bZvzDrMb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 18:31:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=cogentembedded.com (client-ip=2a00:1450:4864:20::143;
+ helo=mail-lf1-x143.google.com;
+ envelope-from=sergei.shtylyov@cogentembedded.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=cogentembedded.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=cogentembedded-com.20150623.gappssmtp.com
+ header.i=@cogentembedded-com.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=qkbi8YvZ; dkim-atps=neutral
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
+ [IPv6:2a00:1450:4864:20::143])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49pBYb5xNMzDrJt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 18:19:45 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B62A9200FB1;
- Fri, 19 Jun 2020 10:05:50 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E779200FA6;
- Fri, 19 Jun 2020 10:05:46 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E2F67402B1;
- Fri, 19 Jun 2020 16:05:40 +0800 (SGT)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH v2] ASoC: fsl_spdif: Add pm runtime function
-Date: Fri, 19 Jun 2020 15:54:33 +0800
-Message-Id: <579c0d71e976f34f23f40daa9f1aa06c4baca2f1.1592552389.git.shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49pBmN6ZDfzDrMb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 18:29:04 +1000 (AEST)
+Received: by mail-lf1-x143.google.com with SMTP id d27so5062781lfq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 01:29:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=cogentembedded-com.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=irVvm75B8uOjhet4ds9NewlHhGnanjSr3qTRTZzIUE4=;
+ b=qkbi8YvZIpYdgXOhuLz+oLhk6FU5nre6FOh8jwCxVM9654uCe38mG3xi4sHqGzzDyG
+ SEH1hJrw2TFIChHUxX1ZXnbwARwg6RC5j0BV0+jMRPStvzbKMhHOWFkkmEsrWjqdX5F+
+ D1IOfQlW2zLQg/nVx9gJMOxi4uOERKvqBd1S1RhEt6EhjY5th0/tAvBfP2KAJAM96y7o
+ h72udRwv1GPKxwptl875dVONvJoltvXpQNW88Rr7UCqkXi2dwlS43kJ7lnlN+shZedPc
+ UEpFi+EUsizwMgSG5KrzWkYQzjXdopu2qfdbxfjTUi6dvlVTSJe8cWAu3gdUIqCShHxT
+ T2Bg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=irVvm75B8uOjhet4ds9NewlHhGnanjSr3qTRTZzIUE4=;
+ b=sjg+yBwvVyVl3QBgP7QaQahxYnzt/U1i+UqFwcs0LYMMyrdGcTq2IYYjG7uYZdXzOt
+ XX6yEwEbL2kwed5bABhLXYtO5mrkk7lmizVhq3LpuembXK+XiMeDLMeBOVynDjjv18Zn
+ 0ckRlt9lnv3VAqfFJhJP7aaOGUWtchfctv7gHIiaY6QiyIdyE0DLf841NwpLQ51dBRIf
+ ewGoAuj3o8vDADKgYYbtx4/W2BzKolC9jQ+z3Wiy1P1uxcqgelwzoMIrNoA5cjEwA9fv
+ yhRMGqqBLXFQ5a+qJUSP5cGsGJPJaQsA3xWF/0DxNeLKD4Zo47B+iRFN0FvSEFsCWAzH
+ Ajbg==
+X-Gm-Message-State: AOAM532FUnqyludOxH4YefjmPKdc2aZ4AwhOUpb7o1GVym59ucGrPYoW
+ 5C2K9xsJWGonTUSCAG57T7IDVg==
+X-Google-Smtp-Source: ABdhPJxnSAk4hCfsyIu7N052ONa1UuRXTstPiF0JmLx3L/kM6WdrlnqV1xaj4A+uNl5wLop8yEYwoQ==
+X-Received: by 2002:ac2:5c49:: with SMTP id s9mr1327184lfp.90.1592555339610;
+ Fri, 19 Jun 2020 01:28:59 -0700 (PDT)
+Received: from ?IPv6:2a00:1fa0:8c9:4beb:2ce8:f19d:33e5:571e?
+ ([2a00:1fa0:8c9:4beb:2ce8:f19d:33e5:571e])
+ by smtp.gmail.com with ESMTPSA id a16sm1058721ljb.107.2020.06.19.01.28.58
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 19 Jun 2020 01:28:58 -0700 (PDT)
+Subject: Re: [PATCH 3/6] exec: cleanup the count() function
+To: Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
+References: <20200618144627.114057-1-hch@lst.de>
+ <20200618144627.114057-4-hch@lst.de>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <04e7876b-a8f3-3f6e-939c-bb0764ece1ac@cogentembedded.com>
+Date: Fri, 19 Jun 2020 11:28:44 +0300
+User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
+MIME-Version: 1.0
+In-Reply-To: <20200618144627.114057-4-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,248 +99,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Brian Gerst <brgerst@gmail.com>, x86@kernel.org, linux-mips@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add pm runtime support and move clock handling there.
-Close the clocks at suspend to reduce the power consumption.
+Hello!
 
-fsl_spdif_suspend is replaced by pm_runtime_force_suspend.
-fsl_spdif_resume is replaced by pm_runtime_force_resume.
+On 18.06.2020 17:46, Christoph Hellwig wrote:
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
-changes in v2
-- remove goto in startup()
-- remove goto disable_spba_clk
-- Add Acked-by: Nicolin Chen
+> Remove the max argument as it is hard wired to MAX_ARG_STRINGS, and
 
- sound/soc/fsl/fsl_spdif.c | 117 ++++++++++++++++++++++----------------
- 1 file changed, 67 insertions(+), 50 deletions(-)
+    Technically, argument is what's actually passed to a function, you're 
+removing a function parameter.
 
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 5bc0e4729341..5b2689ae63d4 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -16,6 +16,7 @@
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
- #include <linux/regmap.h>
-+#include <linux/pm_runtime.h>
- 
- #include <sound/asoundef.h>
- #include <sound/dmaengine_pcm.h>
-@@ -495,29 +496,14 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
- 	struct platform_device *pdev = spdif_priv->pdev;
- 	struct regmap *regmap = spdif_priv->regmap;
- 	u32 scr, mask;
--	int i;
- 	int ret;
- 
- 	/* Reset module and interrupts only for first initialization */
- 	if (!snd_soc_dai_active(cpu_dai)) {
--		ret = clk_prepare_enable(spdif_priv->coreclk);
--		if (ret) {
--			dev_err(&pdev->dev, "failed to enable core clock\n");
--			return ret;
--		}
--
--		if (!IS_ERR(spdif_priv->spbaclk)) {
--			ret = clk_prepare_enable(spdif_priv->spbaclk);
--			if (ret) {
--				dev_err(&pdev->dev, "failed to enable spba clock\n");
--				goto err_spbaclk;
--			}
--		}
--
- 		ret = spdif_softreset(spdif_priv);
- 		if (ret) {
- 			dev_err(&pdev->dev, "failed to soft reset\n");
--			goto err;
-+			return ret;
- 		}
- 
- 		/* Disable all the interrupts */
-@@ -531,18 +517,10 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
- 		mask = SCR_TXFIFO_AUTOSYNC_MASK | SCR_TXFIFO_CTRL_MASK |
- 			SCR_TXSEL_MASK | SCR_USRC_SEL_MASK |
- 			SCR_TXFIFO_FSEL_MASK;
--		for (i = 0; i < SPDIF_TXRATE_MAX; i++) {
--			ret = clk_prepare_enable(spdif_priv->txclk[i]);
--			if (ret)
--				goto disable_txclk;
--		}
- 	} else {
- 		scr = SCR_RXFIFO_FSEL_IF8 | SCR_RXFIFO_AUTOSYNC;
- 		mask = SCR_RXFIFO_FSEL_MASK | SCR_RXFIFO_AUTOSYNC_MASK|
- 			SCR_RXFIFO_CTL_MASK | SCR_RXFIFO_OFF_MASK;
--		ret = clk_prepare_enable(spdif_priv->rxclk);
--		if (ret)
--			goto err;
- 	}
- 	regmap_update_bits(regmap, REG_SPDIF_SCR, mask, scr);
- 
-@@ -550,17 +528,6 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
- 	regmap_update_bits(regmap, REG_SPDIF_SCR, SCR_LOW_POWER, 0);
- 
- 	return 0;
--
--disable_txclk:
--	for (i--; i >= 0; i--)
--		clk_disable_unprepare(spdif_priv->txclk[i]);
--err:
--	if (!IS_ERR(spdif_priv->spbaclk))
--		clk_disable_unprepare(spdif_priv->spbaclk);
--err_spbaclk:
--	clk_disable_unprepare(spdif_priv->coreclk);
--
--	return ret;
- }
- 
- static void fsl_spdif_shutdown(struct snd_pcm_substream *substream,
-@@ -569,20 +536,17 @@ static void fsl_spdif_shutdown(struct snd_pcm_substream *substream,
- 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
- 	struct fsl_spdif_priv *spdif_priv = snd_soc_dai_get_drvdata(asoc_rtd_to_cpu(rtd, 0));
- 	struct regmap *regmap = spdif_priv->regmap;
--	u32 scr, mask, i;
-+	u32 scr, mask;
- 
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
- 		scr = 0;
- 		mask = SCR_TXFIFO_AUTOSYNC_MASK | SCR_TXFIFO_CTRL_MASK |
- 			SCR_TXSEL_MASK | SCR_USRC_SEL_MASK |
- 			SCR_TXFIFO_FSEL_MASK;
--		for (i = 0; i < SPDIF_TXRATE_MAX; i++)
--			clk_disable_unprepare(spdif_priv->txclk[i]);
- 	} else {
- 		scr = SCR_RXFIFO_OFF | SCR_RXFIFO_CTL_ZERO;
- 		mask = SCR_RXFIFO_FSEL_MASK | SCR_RXFIFO_AUTOSYNC_MASK|
- 			SCR_RXFIFO_CTL_MASK | SCR_RXFIFO_OFF_MASK;
--		clk_disable_unprepare(spdif_priv->rxclk);
- 	}
- 	regmap_update_bits(regmap, REG_SPDIF_SCR, mask, scr);
- 
-@@ -591,9 +555,6 @@ static void fsl_spdif_shutdown(struct snd_pcm_substream *substream,
- 		spdif_intr_status_clear(spdif_priv);
- 		regmap_update_bits(regmap, REG_SPDIF_SCR,
- 				SCR_LOW_POWER, SCR_LOW_POWER);
--		if (!IS_ERR(spdif_priv->spbaclk))
--			clk_disable_unprepare(spdif_priv->spbaclk);
--		clk_disable_unprepare(spdif_priv->coreclk);
- 	}
- }
- 
-@@ -1350,6 +1311,8 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 
- 	/* Register with ASoC */
- 	dev_set_drvdata(&pdev->dev, spdif_priv);
-+	pm_runtime_enable(&pdev->dev);
-+	regcache_cache_only(spdif_priv->regmap, true);
- 
- 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_spdif_component,
- 					      &spdif_priv->cpu_dai_drv, 1);
-@@ -1365,36 +1328,90 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--#ifdef CONFIG_PM_SLEEP
--static int fsl_spdif_suspend(struct device *dev)
-+#ifdef CONFIG_PM
-+static int fsl_spdif_runtime_suspend(struct device *dev)
- {
- 	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
-+	int i;
- 
- 	regmap_read(spdif_priv->regmap, REG_SPDIF_SRPC,
- 			&spdif_priv->regcache_srpc);
--
- 	regcache_cache_only(spdif_priv->regmap, true);
--	regcache_mark_dirty(spdif_priv->regmap);
-+
-+	clk_disable_unprepare(spdif_priv->rxclk);
-+
-+	for (i = 0; i < SPDIF_TXRATE_MAX; i++)
-+		clk_disable_unprepare(spdif_priv->txclk[i]);
-+
-+	if (!IS_ERR(spdif_priv->spbaclk))
-+		clk_disable_unprepare(spdif_priv->spbaclk);
-+	clk_disable_unprepare(spdif_priv->coreclk);
- 
- 	return 0;
- }
- 
--static int fsl_spdif_resume(struct device *dev)
-+static int fsl_spdif_runtime_resume(struct device *dev)
- {
- 	struct fsl_spdif_priv *spdif_priv = dev_get_drvdata(dev);
-+	int ret;
-+	int i;
-+
-+	ret = clk_prepare_enable(spdif_priv->coreclk);
-+	if (ret) {
-+		dev_err(dev, "failed to enable core clock\n");
-+		return ret;
-+	}
-+
-+	if (!IS_ERR(spdif_priv->spbaclk)) {
-+		ret = clk_prepare_enable(spdif_priv->spbaclk);
-+		if (ret) {
-+			dev_err(dev, "failed to enable spba clock\n");
-+			goto disable_core_clk;
-+		}
-+	}
-+
-+	for (i = 0; i < SPDIF_TXRATE_MAX; i++) {
-+		ret = clk_prepare_enable(spdif_priv->txclk[i]);
-+		if (ret)
-+			goto disable_tx_clk;
-+	}
-+
-+	ret = clk_prepare_enable(spdif_priv->rxclk);
-+	if (ret)
-+		goto disable_tx_clk;
- 
- 	regcache_cache_only(spdif_priv->regmap, false);
-+	regcache_mark_dirty(spdif_priv->regmap);
- 
- 	regmap_update_bits(spdif_priv->regmap, REG_SPDIF_SRPC,
- 			SRPC_CLKSRC_SEL_MASK | SRPC_GAINSEL_MASK,
- 			spdif_priv->regcache_srpc);
- 
--	return regcache_sync(spdif_priv->regmap);
-+	ret = regcache_sync(spdif_priv->regmap);
-+	if (ret)
-+		goto disable_rx_clk;
-+
-+	return 0;
-+
-+disable_rx_clk:
-+	clk_disable_unprepare(spdif_priv->rxclk);
-+disable_tx_clk:
-+	for (i--; i >= 0; i--)
-+		clk_disable_unprepare(spdif_priv->txclk[i]);
-+	if (!IS_ERR(spdif_priv->spbaclk))
-+		clk_disable_unprepare(spdif_priv->spbaclk);
-+disable_core_clk:
-+	clk_disable_unprepare(spdif_priv->coreclk);
-+
-+	return ret;
- }
--#endif /* CONFIG_PM_SLEEP */
-+#endif /* CONFIG_PM */
- 
- static const struct dev_pm_ops fsl_spdif_pm = {
--	SET_SYSTEM_SLEEP_PM_OPS(fsl_spdif_suspend, fsl_spdif_resume)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
-+	SET_RUNTIME_PM_OPS(fsl_spdif_runtime_suspend, fsl_spdif_runtime_resume,
-+			   NULL)
- };
- 
- static const struct of_device_id fsl_spdif_dt_ids[] = {
--- 
-2.21.0
+> give the function a slightly less generic name.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+[...]
 
+MBR, Sergei
