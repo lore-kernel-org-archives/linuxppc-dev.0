@@ -2,79 +2,61 @@ Return-Path: <SRS0=VXZ8=AA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1526EC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 07:17:45 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3802EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:02:39 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8A892078D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 07:17:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A1ECA206D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 08:02:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MThCG9Jw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8A892078D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pTRiWZFg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1ECA206D7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49p99y1g6mzDrP1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:17:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49pB9m2K43zDrQP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 18:02:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::841;
- helo=mail-qt1-x841.google.com; envelope-from=shengjiu.wang@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=MThCG9Jw; dkim-atps=neutral
-Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com
- [IPv6:2607:f8b0:4864:20::841])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=pTRiWZFg; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49p98C1PZ7zDqbq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 17:16:10 +1000 (AEST)
-Received: by mail-qt1-x841.google.com with SMTP id k22so6485056qtm.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 00:16:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=xcLqzNszUsRDe3jzmL6Kvi+SK8buR0iM6L0pJ0UQJfo=;
- b=MThCG9Jwd1aI1wlSrnihvC6cp3eKrh1rOv53tY8fvT3TtKvhO4+k+EFdPX6DnBxykT
- HIAUcdBak30KNoee1xQlVGjQw+hElyt19YBKvIplGecD/KWhj8ClCPXrtKXwLneEzPkG
- FX2YRtIycp9pDMfyTHJgBM5aXLXlxwmFiJy+p+G9rjP4s16pUfA8Ed7dtd9yN2DsSr65
- ajQr2uZOX1cSLXZrD31ZkfHZImQMfY35RGJ5SEJylICknu5fwuDtAcUp6VtIPDTgMuIT
- SdzZcm84vhjqCYCVAgG9traNzYrCUBJBeoTdbYa44zPvck6LQiRZDIa5uulw8dHVCqPb
- HDrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=xcLqzNszUsRDe3jzmL6Kvi+SK8buR0iM6L0pJ0UQJfo=;
- b=WaX9pdjP8Ff3Fiw/cECVlJHqPH9/KJ201fE5WCB/wrZfGHOqK3fTiLBbNvJF3+1KHP
- O1ReXBc6rfA5YP3IV5u+YlzUGUZS5rBqazcyTTv5tFtq99FkLiDvC3TRqL6pRFwgA3FI
- jmJdYeaXzA/QySgF9ng8np3Hxii+myCo5ilHJll+/7YmB3wvoSEPp4Tb4DmDx1EzG2O+
- Ryd3csPyX0lQRb9ZQJID7Kex3xhW00ijbS+ACdRmSR2gGdERjiHcdMcUI0U94ZmRG4xY
- MkAcsksNLT1QaNPnmWuwz9NBSWglHdxpexHKpn486jaGuzaM1eWlYWKS63+HlgwiTcGo
- M83g==
-X-Gm-Message-State: AOAM532HyW/rTyj7SyMASetLA5q8mgQ6xZUSOl7MZqQ7+goAlhuo4MvR
- fGJFd/4u3TrdXVuPt8dsdC9/iZu+Rk1/G4FVKR0=
-X-Google-Smtp-Source: ABdhPJwbTdL1Xjyp+rNzK2cppzw1kNNdm5CIImL/5YBuAp+LbbOkOHM6SMPUmT6BhKjPwcHCp3aPi+cLdaaqcQP4Te0=
-X-Received: by 2002:ac8:7417:: with SMTP id p23mr2043092qtq.204.1592550967172; 
- Fri, 19 Jun 2020 00:16:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49pB7V46QVzDrKn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2020 18:00:38 +1000 (AEST)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id CB31C206D7;
+ Fri, 19 Jun 2020 08:00:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1592553635;
+ bh=FgWt8SPb4Du2ZpFmVRFLGteouMfOd6TM8Ed9GBB4zyE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=pTRiWZFgHuUY5Yp2fSRTZj85Dv3B+lsaSSJWAlJ4zTGoQuHRmpM51+AOGsz2sbFYQ
+ 9NEycOpbm2Dht8X/iy1/cRyPfIf+7u0KmbqSE+vdt/H3jEhOfTxg1dHz1KXdxYgOV1
+ qcBMWA8/Jq8HoLgya6SVzVaAcum1iuD5HeYNlGz0=
+Date: Fri, 19 Jun 2020 09:00:30 +0100
+From: Will Deacon <will@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] mm/debug_vm_pgtable: Fix build failure with powerpc 8xx
+Message-ID: <20200619080029.GA6500@willie-the-truck>
+References: <6ca8c972e6c920dc4ae0d4affbed9703afa4d010.1592490570.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-References: <1592481334-3680-1-git-send-email-shengjiu.wang@nxp.com>
- <20200619054942.GA25856@Asurada-Nvidia>
-In-Reply-To: <20200619054942.GA25856@Asurada-Nvidia>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 19 Jun 2020 15:15:56 +0800
-Message-ID: <CAA+D8APdNAzLyJyf+-FGSyAJtG5_8BVZCJ1+8ALZe_ePySY+rQ@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_spdif: Add pm runtime function
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6ca8c972e6c920dc4ae0d4affbed9703afa4d010.1592490570.git.christophe.leroy@csgroup.eu>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,57 +68,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, Mark Brown <broonie@kernel.org>,
+Cc: Anshuman Khandual <anshuman.khandual@arm.com>,
+ "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 19, 2020 at 1:51 PM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
->
-> On Thu, Jun 18, 2020 at 07:55:34PM +0800, Shengjiu Wang wrote:
-> > Add pm runtime support and move clock handling there.
-> > Close the clocks at suspend to reduce the power consumption.
-> >
-> > fsl_spdif_suspend is replaced by pm_runtime_force_suspend.
-> > fsl_spdif_resume is replaced by pm_runtime_force_resume.
-> >
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
->
-> LGTM, yet some nits, please add my ack after fixing:
->
-> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
->
-> > @@ -495,25 +496,10 @@ static int fsl_spdif_startup(struct snd_pcm_substream *substream,
->
-> >
-> > -disable_txclk:
-> > -     for (i--; i >= 0; i--)
-> > -             clk_disable_unprepare(spdif_priv->txclk[i]);
-> >  err:
-> > -     if (!IS_ERR(spdif_priv->spbaclk))
-> > -             clk_disable_unprepare(spdif_priv->spbaclk);
-> > -err_spbaclk:
-> > -     clk_disable_unprepare(spdif_priv->coreclk);
-> > -
-> >       return ret;
->
-> Only "return ret;" remains now. We could clean the goto away.
->
-> > -static int fsl_spdif_resume(struct device *dev)
-> > +static int fsl_spdif_runtime_resume(struct device *dev)
->
-> > +disable_rx_clk:
-> > +     clk_disable_unprepare(spdif_priv->rxclk);
-> > +disable_tx_clk:
-> > +disable_spba_clk:
->
-> Why have two duplicated ones? Could probably drop the 2nd one.
+On Thu, Jun 18, 2020 at 02:31:29PM +0000, Christophe Leroy wrote:
+> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+> index e45623016aea..61ab16fb2e36 100644
+> --- a/mm/debug_vm_pgtable.c
+> +++ b/mm/debug_vm_pgtable.c
+> @@ -246,13 +246,13 @@ static void __init pgd_populate_tests(struct mm_struct *mm, pgd_t *pgdp,
+>  static void __init pte_clear_tests(struct mm_struct *mm, pte_t *ptep,
+>  				   unsigned long vaddr)
+>  {
+> -	pte_t pte = READ_ONCE(*ptep);
+> +	pte_t pte = ptep_get(ptep);
+>  
+>  	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+>  	set_pte_at(mm, vaddr, ptep, pte);
+>  	barrier();
+>  	pte_clear(mm, vaddr, ptep);
+> -	pte = READ_ONCE(*ptep);
+> +	pte = ptep_get(ptep);
+>  	WARN_ON(!pte_none(pte));
+>  }
 
-seems can drop one, will send an update.
+Acked-by: Will Deacon <will@kernel.org>
 
-best regards
-wang shengjiu
+I wonder if there's a way to do this with coccinelle in one big go (but the
+resulting diff would obviously need manual inspection)?
+
+Will
