@@ -2,23 +2,23 @@ Return-Path: <SRS0=VXZ8=AA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 446FBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25CFFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:05:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F322120707
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:01:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F322120707
+	by mail.kernel.org (Postfix) with ESMTPS id CE97C20734
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jun 2020 17:05:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE97C20734
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49pQ7r4sYdzDrS1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2020 03:01:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49pQCk6lJwzDrDy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jun 2020 03:05:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,37 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49pMbR0YN1zDrQN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2020 01:06:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49pMbR0dh5zDrQR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2020 01:06:58 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 49pMbF4KHNz9v09k;
- Fri, 19 Jun 2020 17:06:49 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 49pMbK6BKzz9v09p;
+ Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id MKUyKzZbmliB; Fri, 19 Jun 2020 17:06:49 +0200 (CEST)
+ with ESMTP id qPXkSaXizYlF; Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 49pMbF3KBSz9v09j;
- Fri, 19 Jun 2020 17:06:49 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49pMbK5Lb9z9v09j;
+ Fri, 19 Jun 2020 17:06:53 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 803898B879;
- Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C72038B879;
+ Fri, 19 Jun 2020 17:06:55 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id txvLaR4ia8Ej; Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ with ESMTP id PzOvOBPHVrpg; Fri, 19 Jun 2020 17:06:55 +0200 (CEST)
 Received: from pc16570vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4E4088B868;
- Fri, 19 Jun 2020 17:06:51 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 5EBCF8B868;
+ Fri, 19 Jun 2020 17:06:55 +0200 (CEST)
 Received: by pc16570vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 11F0B65AF4; Fri, 19 Jun 2020 15:06:50 +0000 (UTC)
-Message-Id: <cover.1592578278.git.christophe.leroy@csgroup.eu>
+ id 3733065AF4; Fri, 19 Jun 2020 15:06:55 +0000 (UTC)
+Message-Id: <fb7bc12e8fcef77386ed0960e20e7474e4cd3173.1592578278.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1592578278.git.christophe.leroy@csgroup.eu>
+References: <cover.1592578278.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 0/8] powerpc/32s: Allocate modules outside of vmalloc space
- for STRICT_KERNEL_RWX
+Subject: [PATCH v1 4/8] powerpc/lib: Prepare code-patching for modules
+ allocated outside vmalloc space
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 19 Jun 2020 15:06:50 +0000 (UTC)
+Date: Fri, 19 Jun 2020 15:06:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,35 +76,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On book3s32 (hash), exec protection is set per 256Mb segments with NX bit.
-Instead of clearing NX bit on vmalloc space when CONFIG_MODULES is selected,
-allocate modules in a dedicated segment (0xb0000000-0xbfffffff by default).
-This allows to keep exec protection on vmalloc space while allowing exec
-on modules.
+Use is_vmalloc_or_module_addr() instead of is_vmalloc_addr()
 
-Christophe Leroy (8):
-  powerpc/ptdump: Refactor update of st->last_pa
-  powerpc/ptdump: Refactor update of pg_state
-  powerpc: Set user/kernel boundary at TASK_SIZE instead of PAGE_OFFSET
-  powerpc/lib: Prepare code-patching for modules allocated outside
-    vmalloc space
-  powerpc: Use MODULES_VADDR if defined
-  powerpc/32s: Only leave NX unset on segments used for modules
-  powerpc/32s: Kernel space starts at TASK_SIZE
-  powerpc/32s: Use dedicated segment for modules with STRICT_KERNEL_RWX
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/lib/code-patching.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/Kconfig                         |  1 +
- arch/powerpc/include/asm/book3s/32/pgtable.h | 15 ++----
- arch/powerpc/include/asm/page.h              |  2 +-
- arch/powerpc/kernel/head_32.S                | 12 ++---
- arch/powerpc/kernel/module.c                 | 11 ++++
- arch/powerpc/lib/code-patching.c             |  2 +-
- arch/powerpc/mm/book3s32/hash_low.S          |  2 +-
- arch/powerpc/mm/book3s32/mmu.c               | 17 +++++--
- arch/powerpc/mm/kasan/kasan_init_32.c        |  6 +++
- arch/powerpc/mm/ptdump/ptdump.c              | 53 ++++++++++++--------
- 10 files changed, 78 insertions(+), 43 deletions(-)
-
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 0a051dfeb177..8c3934ea6220 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -93,7 +93,7 @@ static int map_patch_area(void *addr, unsigned long text_poke_addr)
+ 	unsigned long pfn;
+ 	int err;
+ 
+-	if (is_vmalloc_addr(addr))
++	if (is_vmalloc_or_module_addr(addr))
+ 		pfn = vmalloc_to_pfn(addr);
+ 	else
+ 		pfn = __pa_symbol(addr) >> PAGE_SHIFT;
 -- 
 2.25.0
 
