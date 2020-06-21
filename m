@@ -2,56 +2,60 @@ Return-Path: <SRS0=vJY5=AC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42439C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 00:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B124C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 02:55:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6148206B7
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 00:30:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6148206B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id E9F8121556
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 02:55:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9F8121556
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49qD373b6GzDqvh
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 10:30:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49qHGk1YVfzDqgn
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Jun 2020 12:55:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49qD1W1CqTzDqfK
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2020 10:29:02 +1000 (AEST)
-Received: from localhost (unknown [IPv6:2601:601:9f00:477::3d5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 00BC9120ED49C;
- Sat, 20 Jun 2020 17:28:54 -0700 (PDT)
-Date: Sat, 20 Jun 2020 17:28:53 -0700 (PDT)
-Message-Id: <20200620.172853.1111095592646261177.davem@davemloft.net>
-To: drt@linux.ibm.com
-Subject: Re: [PATCH net] ibmvnic: continue to init in CRQ reset returns
- H_CLOSED
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20200618192413.853441-1-drt@linux.ibm.com>
-References: <20200618192413.853441-1-drt@linux.ibm.com>
-X-Mailer: Mew version 6.8 on Emacs 26.3
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49qHDh6mvJzDqYj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2020 12:53:51 +1000 (AEST)
+IronPort-SDR: tkYmx+QVLzM+FD6uYLeFg5DYyHxMTX5VqMIB0KkQD0PmAEPMasOBhEiZNoSM38PYPBEIlm8Yal
+ amN6F8hmzfPw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9658"; a="140960412"
+X-IronPort-AV: E=Sophos;i="5.75,261,1589266800"; d="scan'208";a="140960412"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Jun 2020 19:53:48 -0700
+IronPort-SDR: GH/TMMBQYnaxF5iQTrZfyg0eo3ThqOTLlLTDItJEFhY5Tmdh/h2A1QCrgIReYyKTvnxCgb2Zow
+ /G482uNxnm4w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,261,1589266800"; d="scan'208";a="310570202"
+Received: from lkp-server02.sh.intel.com (HELO 3aa54c81372e) ([10.239.97.151])
+ by fmsmga002.fm.intel.com with ESMTP; 20 Jun 2020 19:53:46 -0700
+Received: from kbuild by 3aa54c81372e with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jmq78-0001xS-B7; Sun, 21 Jun 2020 02:53:46 +0000
+Date: Sun, 21 Jun 2020 10:52:53 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 4885fd794229380fe6d6f5913d9f13670593a627
+Message-ID: <5eeecb85.IC69FCyryTtAPIBd%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Sat, 20 Jun 2020 17:28:55 -0700 (PDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,19 +67,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, tlfalcon@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Dany Madden <drt@linux.ibm.com>
-Date: Thu, 18 Jun 2020 15:24:13 -0400
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 4885fd794229380fe6d6f5913d9f13670593a627  Automatic merge of 'master', 'next' and 'fixes' (2020-06-20 22:28)
 
-> Continue the reset path when partner adapter is not ready or H_CLOSED is
-> returned from reset crq. This patch allows the CRQ init to proceed to
-> establish a valid CRQ for traffic to flow after reset.
-> 
-> Signed-off-by: Dany Madden <drt@linux.ibm.com>
+elapsed time: 859m
 
-Applied, thanks.
+configs tested: 152
+configs skipped: 12
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+mips                             allyesconfig
+arm                      footbridge_defconfig
+sh                   sh7770_generic_defconfig
+arm                         mv78xx0_defconfig
+arm                          ixp4xx_defconfig
+arm                         s3c6400_defconfig
+m68k                       bvme6000_defconfig
+mips                           ip27_defconfig
+powerpc                 mpc8272_ads_defconfig
+arm                           spitz_defconfig
+m68k                        stmark2_defconfig
+sh                          r7780mp_defconfig
+s390                             allyesconfig
+powerpc                     mpc5200_defconfig
+mips                         rt305x_defconfig
+riscv                    nommu_virt_defconfig
+arm                         s5pv210_defconfig
+arm                        mini2440_defconfig
+sh                                  defconfig
+arm                       mainstone_defconfig
+m68k                       m5475evb_defconfig
+powerpc                          g5_defconfig
+mips                      pistachio_defconfig
+arm                        trizeps4_defconfig
+arc                      axs103_smp_defconfig
+mips                         db1xxx_defconfig
+riscv                            alldefconfig
+m68k                            mac_defconfig
+ia64                      gensparse_defconfig
+s390                             allmodconfig
+microblaze                        allnoconfig
+arm                          gemini_defconfig
+m68k                        m5407c3_defconfig
+arm                        oxnas_v6_defconfig
+m68k                        mvme16x_defconfig
+mips                        qi_lb60_defconfig
+x86_64                              defconfig
+arc                              alldefconfig
+s390                              allnoconfig
+arc                        nsimosci_defconfig
+mips                     cu1000-neo_defconfig
+sh                   secureedge5410_defconfig
+arm                           u8500_defconfig
+sh                        edosk7705_defconfig
+arm                        spear3xx_defconfig
+sh                               j2_defconfig
+arm                           h5000_defconfig
+h8300                            allmodconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+arc                        nsim_700_defconfig
+arm                   milbeaut_m10v_defconfig
+arm                         orion5x_defconfig
+sh                          rsk7201_defconfig
+powerpc                  mpc866_ads_defconfig
+arc                    vdk_hs38_smp_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+xtensa                              defconfig
+arc                                 defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200619
+i386                 randconfig-a006-20200619
+i386                 randconfig-a001-20200619
+i386                 randconfig-a004-20200619
+i386                 randconfig-a005-20200619
+i386                 randconfig-a003-20200619
+x86_64               randconfig-a012-20200621
+x86_64               randconfig-a011-20200621
+x86_64               randconfig-a013-20200621
+x86_64               randconfig-a014-20200621
+x86_64               randconfig-a015-20200621
+x86_64               randconfig-a016-20200621
+i386                 randconfig-a013-20200620
+i386                 randconfig-a016-20200620
+i386                 randconfig-a012-20200620
+i386                 randconfig-a014-20200620
+i386                 randconfig-a015-20200620
+i386                 randconfig-a011-20200620
+x86_64               randconfig-a004-20200620
+x86_64               randconfig-a002-20200620
+x86_64               randconfig-a003-20200620
+x86_64               randconfig-a005-20200620
+x86_64               randconfig-a001-20200620
+x86_64               randconfig-a006-20200620
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                                allnoconfig
+um                                  defconfig
+um                               allmodconfig
+um                               allyesconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
