@@ -2,92 +2,94 @@ Return-Path: <SRS0=kptR=AD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DF28C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2020 19:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20E3AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2020 19:05:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A519520706
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2020 19:03:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LeipoEn2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A519520706
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C350720732
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jun 2020 19:04:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C350720732
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49rJhX1StHzDqXb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 05:03:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49rJkd4RsYzDqNL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 05:04:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::743;
- helo=mail-qk1-x743.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=LeipoEn2; dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49rJc70JXFzDqWL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 04:59:17 +1000 (AEST)
-Received: by mail-qk1-x743.google.com with SMTP id r22so15045123qke.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2020 11:59:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=UJAR19ZQh+sTT93leBEvrqV+pEQ6XvP1o7bASqIMgsM=;
- b=LeipoEn2ydGrr/qIxHUn9PtwhmBuuEvdGb9+GYbxyVIT0TCx4iNlAIYen6lBAjEpsV
- XgsdUbI6I96q3adC/dSCrGSdumZLcUv27RR+4dfVU4YjqeB6XFiAJsyx7z1zQJegi4U1
- 6NEfS+X4TyWRiHnBZgZqZBvc/1QPZonPSE97sr7Z/Vspp3HIgfGvnRVQQgZbfrVPjLKo
- 6BUbXn+uwo57TPTyIVrA07ow3zOQnvrnShakxgtMIFwL7/CDvNDv+j2MaQv/+4HnuyKP
- e8BRqAs7RQSBsGZLdztJSx1b3h0rlPXnKreaZEBf8oDjlVBDwvZd6vKdCNj9F9lEu8GA
- 6B8Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=UJAR19ZQh+sTT93leBEvrqV+pEQ6XvP1o7bASqIMgsM=;
- b=VTus02+5MLXr5aP4Li4iv18J5WZY/1uWvOuBfOgPVjasaC2n9ZTIJMUdGhmTAfJgXc
- I54tGvPGy6jhbae+2J/JvmQavQ8QpoaTTgweFGiIp6OFgr49KZEeMn3pBs16ZwLxeZTn
- aCNrnn3nEvSur8UgeUL0Da44eaczDW8/znmK+QgXNM6RjKz7MaFVSxYRayZS65d3mc6I
- KijyeC6UGFyeLDphSUe8iyGD9ieXdx52X4IfeYpsOspldVJLP5h/CSENPWxiuaYbGiIP
- O54jwIFeFiX7kojrarww4UOSTz9Yiga3T4DdfCzwHBrWbum4qc1XeptP8xcEVhtRUhAC
- /UgA==
-X-Gm-Message-State: AOAM533utvY4nZfGEIqZ5QPwTp62A9bVmU0biZ0TmCnTOpkU7eay5htT
- jKEmjnVKLpVmSXVwhcCCcGU=
-X-Google-Smtp-Source: ABdhPJw3Fdoo4dZs+fR7uUjNE0nJB4yGTuFtPQwUEK3HCzivIlWeQ+GT7/xLbn050PlHT1NTXA1qUA==
-X-Received: by 2002:a05:620a:958:: with SMTP id
- w24mr3380351qkw.20.1592852353496; 
- Mon, 22 Jun 2020 11:59:13 -0700 (PDT)
-Received: from LeoBras (177-131-65-187.dynamic.desktop.com.br.
- [177.131.65.187])
- by smtp.gmail.com with ESMTPSA id c80sm6260720qke.26.2020.06.22.11.59.06
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 22 Jun 2020 11:59:12 -0700 (PDT)
-Message-ID: <c15189a5c77752ea62022608dab28601965afaaa.camel@gmail.com>
-Subject: Re: [PATCH 1/4] powerpc/pseries/iommu: Update call to
- ibm,query-pe-dma-windows
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 22 Jun 2020 15:58:44 -0300
-In-Reply-To: <cfbcacde-ca7f-5fc7-2fcf-267f698f3d49@ozlabs.ru>
-References: <20200619050619.266888-1-leobras.c@gmail.com>
- <20200619050619.266888-2-leobras.c@gmail.com>
- <cfbcacde-ca7f-5fc7-2fcf-267f698f3d49@ozlabs.ru>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49rJcD2RQnzDqWL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 04:59:23 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05MIWJjY168539
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2020 14:59:21 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31tyuxcs77-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2020 14:59:20 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05MIndcs013692
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2020 18:59:20 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma03dal.us.ibm.com with ESMTP id 31sa38x75n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2020 18:59:19 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05MIxG4531392178
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 22 Jun 2020 18:59:16 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7A135BE051;
+ Mon, 22 Jun 2020 18:59:18 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C85B4BE04F;
+ Mon, 22 Jun 2020 18:59:17 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.160.126.221])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 22 Jun 2020 18:59:17 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/pseries: new lparcfg key/value pair:
+ partition_affinity_score
+To: Nathan Lynch <nathanl@linux.ibm.com>,
+ Scott Cheloha <cheloha@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20200619153419.3676392-1-cheloha@linux.ibm.com>
+ <10febdd6-4672-24ca-03e9-553468c8852c@linux.ibm.com>
+ <87d05ufugs.fsf@linux.ibm.com>
+From: Tyrel Datwyler <tyreld@linux.ibm.com>
+Message-ID: <4329ec13-22c7-75c6-548d-323d19775a54@linux.ibm.com>
+Date: Mon, 22 Jun 2020 11:59:16 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <87d05ufugs.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-22_10:2020-06-22,
+ 2020-06-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0
+ lowpriorityscore=0 suspectscore=0 adultscore=0 impostorscore=0 bulkscore=0
+ cotscore=-2147483648 malwarescore=0 clxscore=1015 spamscore=0 mlxscore=0
+ mlxlogscore=999 priorityscore=1501 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006220122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,185 +101,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Alexey, thank you for the feedback!
-
-On Mon, 2020-06-22 at 20:02 +1000, Alexey Kardashevskiy wrote:
+On 6/19/20 5:32 PM, Nathan Lynch wrote:
+> Hi Tyrel,
 > 
-> On 19/06/2020 15:06, Leonardo Bras wrote:
-> > From LoPAR level 2.8, "ibm,ddw-extensions" index 3 can make the number of
-> > outputs from "ibm,query-pe-dma-windows" go from 5 to 6.
-> > 
-> > This change of output size is meant to expand the address size of
-> > largest_available_block PE TCE from 32-bit to 64-bit, which ends up
-> > shifting page_size and migration_capable.
-> > 
-> > This ends up requiring the update of
-> > ddw_query_response->largest_available_block from u32 to u64, and manually
-> > assigning the values from the buffer into this struct, according to
-> > output size.
-> > 
-> > Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
-> > ---
-> >  arch/powerpc/platforms/pseries/iommu.c | 57 +++++++++++++++++++++-----
-> >  1 file changed, 46 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> > index 6d47b4a3ce39..e5a617738c8b 100644
-> > --- a/arch/powerpc/platforms/pseries/iommu.c
-> > +++ b/arch/powerpc/platforms/pseries/iommu.c
-> > @@ -334,7 +334,7 @@ struct direct_window {
-> >  /* Dynamic DMA Window support */
-> >  struct ddw_query_response {
-> >  	u32 windows_available;
-> > -	u32 largest_available_block;
-> > +	u64 largest_available_block;
-> >  	u32 page_size;
-> >  	u32 migration_capable;
-> >  };
-> > @@ -869,14 +869,32 @@ static int find_existing_ddw_windows(void)
-> >  }
-> >  machine_arch_initcall(pseries, find_existing_ddw_windows);
-> >  
-> > +/*
-> > + * From LoPAR level 2.8, "ibm,ddw-extensions" index 3 can rule how many output
-> > + * parameters ibm,query-pe-dma-windows will have, ranging from 5 to 6.
-> > + */
-> > +
-> > +static int query_ddw_out_sz(struct device_node *par_dn)
+> Tyrel Datwyler <tyreld@linux.ibm.com> writes:
+>> On 6/19/20 8:34 AM, Scott Cheloha wrote:
+>>> The H_GetPerformanceCounterInfo PHYP hypercall has a subcall,
+>>> Affinity_Domain_Info_By_Partition, which returns, among other things,
+>>> a "partition affinity score" for a given LPAR.  This score, a value on
+>>> [0-100], represents the processor-memory affinity for the LPAR in
+>>> question.  A score of 0 indicates the worst possible affinity while a
+>>> score of 100 indicates perfect affinity.  The score can be used to
+>>> reason about performance.
+>>>
+>>> This patch adds the score for the local LPAR to the lparcfg procfile
+>>> under a new 'partition_affinity_score' key.
+>>
+>> I expect that you will probably get a NACK from Michael on this. The overall
+>> desire is to move away from these dated /proc interfaces. While its true that I
+>> did add a new value recently it was strictly to facilitate and correct the
+>> calculation of a derived value that was already dependent on a couple other
+>> existing values in lparcfg.
+>>
+>> With that said I would expect that you would likely be advised to expose this as
+>> a sysfs attribute. The question is where? We probably should put some thought in
+>> to this as I would like to port each lparcfg value over to sysfs so that we can
+>> move to deprecating lparcfg. Putting everything under something like
+>> /sys/kernel/lparcfg/* maybe. Michael may have a better suggestion.
 > 
-> Can easily be folded into query_ddw().
-
-Sure, but it will get inlined by the compiler, and I think it reads
-better this way. 
-
-I mean, I understand you have a reason to think it's better to fold it
-in query_ddw(), and I would like to better understand that to improve
-my code in the future.
-
-> > +{
-> > +	int ret;
-> > +	u32 ddw_ext[3];
-> > +
-> > +	ret = of_property_read_u32_array(par_dn, "ibm,ddw-extensions",
-> > +					 &ddw_ext[0], 3);
-> > +	if (ret || ddw_ext[0] < 2 || ddw_ext[2] != 1)
+> I think this score fits pretty naturally in lparcfg: it's a simple
+> metric that is specific to the pseries/papr platform, like everything
+> else in there.
 > 
-> Oh that PAPR thing again :-/
+> A few dozen key=value pairs contained in a single file is simple and
+> efficient, unlike sysfs with its rather inconsistently applied
+> one-value-per-file convention. Surely it's OK if lparcfg gains a line
+> every few years?
 > 
-> ===
-> The “ibm,ddw-extensions” property value is a list of integers the first
-> integer indicates the number of extensions implemented and subsequent
-> integers, one per extension, provide a value associated with that
-> extension.
-> ===
-> 
-> So ddw_ext[0] is length.
-> Listindex==2 is for "reset" says PAPR and
-> Listindex==3 is for this new 64bit "largest_available_block".
-> 
-> So I'd expect ddw_ext[2] to have the "reset" token and ddw_ext[3] to
-> have "1" for this new feature but indexes are smaller. I am confused.
-> Either way these "2" and "3" needs to be defined in macros, "0" probably
-> too.
 
-Remember these indexes are not C-like 0-starting indexes, where the
-size would be Listindex==1.
-Basically, in C-like array it's :
-a[0] == size, 
-a[1] == reset_token, 
-a[2] == new 64bit "largest_available_block"
+So, two things:
 
-> Please post 'lsprop "ibm,ddw-extensions"' here. Thanks,
+1.) I wanted to give fore warning that Michael is generally reluctant to add new
+things to lparcfg and I wanted to prepare you for that possibility.
 
-Sure:
-[root@host pci@800000029004005]# lsprop "ibm,ddw-extensions"
-ibm,dd
-w-extensions
-                 00000002 00000056 00000000
+2.) As a simple metric who is consuming said metric? I've not seen any patches
+to powerpc-utils in prep so should I be expecting this to be exposed via
+lparstat, or are we expecting new tooling to also start parsing lparcfg? If we
+are planning for users to consume it via existing powerpc-utils tooling than its
+probably easier to make the argument that it fits into lparcfg. If we are
+creating new tooling, or expecting users to extract that value on their own I
+think the sysfs route is going to be favored.
 
+-Tyrel
 
 > 
-> > +		return 5;
-> > +	return 6;
-> > +}
-> > +
-> >  static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
-> > -			struct ddw_query_response *query)
-> > +		     struct ddw_query_response *query,
-> > +		     struct device_node *par_dn)
-> >  {
-> >  	struct device_node *dn;
-> >  	struct pci_dn *pdn;
-> > -	u32 cfg_addr;
-> > +	u32 cfg_addr, query_out[5];
-> >  	u64 buid;
-> > -	int ret;
-> > +	int ret, out_sz;
-> >  
-> >  	/*
-> >  	 * Get the config address and phb buid of the PE window.
-> > @@ -888,12 +906,29 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
-> >  	pdn = PCI_DN(dn);
-> >  	buid = pdn->phb->buid;
-> >  	cfg_addr = ((pdn->busno << 16) | (pdn->devfn << 8));
-> > +	out_sz = query_ddw_out_sz(par_dn);
-> > +
-> > +	ret = rtas_call(ddw_avail[0], 3, out_sz, query_out,
-> > +			cfg_addr, BUID_HI(buid), BUID_LO(buid));
-> > +	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x returned %d\n",
-> > +		 ddw_avail[0], cfg_addr, BUID_HI(buid), BUID_LO(buid), ret);
-> > +
-> > +	switch (out_sz) {
-> > +	case 5:
-> > +		query->windows_available = query_out[0];
-> > +		query->largest_available_block = query_out[1];
-> > +		query->page_size = query_out[2];
-> > +		query->migration_capable = query_out[3];
-> > +		break;
-> > +	case 6:
-> > +		query->windows_available = query_out[0];
-> > +		query->largest_available_block = ((u64)query_out[1] << 32) |
-> > +						 query_out[2];
-> > +		query->page_size = query_out[3];
-> > +		query->migration_capable = query_out[4];
-> > +		break;
-> > +	}
-> >  
-> > -	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
-> > -		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
-> > -	dev_info(&dev->dev, "ibm,query-pe-dma-windows(%x) %x %x %x"
-> > -		" returned %d\n", ddw_avail[0], cfg_addr, BUID_HI(buid),
-> > -		BUID_LO(buid), ret);
-> >  	return ret;
-> >  }
-> >  
-> > @@ -1040,7 +1075,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
-> >  	 * of page sizes: supported and supported for migrate-dma.
-> >  	 */
-> >  	dn = pci_device_to_OF_node(dev);
-> > -	ret = query_ddw(dev, ddw_avail, &query);
-> > +	ret = query_ddw(dev, ddw_avail, &query, pdn);
-> >  	if (ret != 0)
-> >  		goto out_failed;
-> >  
-> > @@ -1068,7 +1103,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
-> >  	/* check largest block * page size > max memory hotplug addr */
-> >  	max_addr = ddw_memory_hotplug_max();
-> >  	if (query.largest_available_block < (max_addr >> page_shift)) {
-> > -		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %u "
-> > +		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %llu "
-> >  			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
-> >  			  1ULL << page_shift);
-> >  		goto out_failed;
-> > 
+>>> The H_GetPerformanceCounterInfo hypercall is already used elsewhere in
+>>> the kernel, in powerpc/perf/hv-gpci.c.  Refactoring that code and this
+>>> code into a more general API might be worthwhile if additional modules
+>>> require the hypercall in the future.
+>>
+>> If you are duplicating code its likely you should already be doing this. See the
+>> rest of my comments about below.
+>>
+>>>
+>>> Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
+>>> ---
+>>>  arch/powerpc/platforms/pseries/lparcfg.c | 53 ++++++++++++++++++++++++
+>>>  1 file changed, 53 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+>>> index b8d28ab88178..b75151eee0f0 100644
+>>> --- a/arch/powerpc/platforms/pseries/lparcfg.c
+>>> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
+>>> @@ -136,6 +136,57 @@ static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
+>>>  	return rc;
+>>>  }
+>>>  
+>>> +/*
+>>> + * Based on H_GetPerformanceCounterInfo v1.10.
+>>> + */
+>>> +static void show_gpci_data(struct seq_file *m)
+>>> +{
+>>> +	struct perf_counter_info_params {
+>>> +		__be32 counter_request;
+>>> +		__be32 starting_index;
+>>> +		__be16 secondary_index;
+>>> +		__be16 returned_values;
+>>> +		__be32 detail_rc;
+>>> +		__be16 counter_value_element_size;
+>>> +		u8     counter_info_version_in;
+>>> +		u8     counter_info_version_out;
+>>> +		u8     reserved[0xC];
+>>> +	} __packed;
+>>
+>> This looks to duplicate the hv_get_perf_counter_info_params struct from
+>> arch/powerpc/perf/hv-gpci.h. Maybe this include file needs to move to
+>> arch/powerpc/asm/inlcude so you don't have to redefine this struct.
+>>
+>>> +	struct hv_gpci_request_buffer {
+>>> +		struct perf_counter_info_params params;
+>>> +		u8 output[4096 - sizeof(struct perf_counter_info_params)];
+>>> +	} __packed;
+>>
+>> This struct is code duplication of the one defined in
+>> arch/powerpc/perf/hv-gpci.c and could be moved into hv-gpci.h along with
+>> HGPCI_MAX_DATA_BYTES so that you can use those versions here.
+> 
+> I tend to agree with these comments.
+> 
+> 
+>>> +	struct hv_gpci_request_buffer *buf;
+>>> +	long ret;
+>>> +	unsigned int affinity_score;
+>>> +
+>>> +	buf = kmalloc(sizeof(*buf), GFP_KERNEL);
+>>> +	if (buf == NULL)
+>>> +		return;
+>>> +
+>>> +	/*
+>>> +	 * Show the local LPAR's affinity score.
+>>> +	 *
+>>> +	 * 0xB1 selects the Affinity_Domain_Info_By_Partition subcall.
+>>> +	 * The score is at byte 0xB in the output buffer.
+>>> +	 */
+>>> +	memset(&buf->params, 0, sizeof(buf->params));
+>>> +	buf->params.counter_request = cpu_to_be32(0xB1);
+>>> +	buf->params.starting_index = cpu_to_be32(-1);	/* local LPAR */
+>>> +	buf->params.counter_info_version_in = 0x5;	/* v5+ for score */
+>>> +	ret = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO, virt_to_phys(buf),
+>>> +				 sizeof(*buf));
+>>> +	if (ret != H_SUCCESS) {
+>>> +		pr_debug("hcall failed: H_GET_PERF_COUNTER_INFO: %ld, %x\n",
+>>> +			 ret, be32_to_cpu(buf->params.detail_rc));
+>>> +		goto out;
+>>> +	}
+>>> +	affinity_score = buf->output[0xB];
+>>> +	seq_printf(m, "partition_affinity_score=%u\n", affinity_score);
+>>> +out:
+>>> +	kfree(buf);
+>>> +}
+>>> +
+>>
+>> IIUC we should already be able to get this value from userspace using perf tool,
+>> right? If thats the case can't we also programatically retrieve it via the
+>> perf_event interface in userspace as well?
+> 
+> No... I had the same thought when I first looked at this, but perf is
+> for sampling counters, and the partition affinity score is not a
+> counter.
 
-Best regards,
-Leonardo
+But, its obtained through the same H_GET_PERF_COUNTER_INFO interface as the rest
+of the performance counters. Shouldn't it be obtainable via 'perf stat -e
+hv-gpci/*' and therefore also via perf_event? I really am not that familiar with
+perf so correct me on whatever I'm missing here.
 
+-Tyrel
