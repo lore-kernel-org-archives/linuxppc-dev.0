@@ -2,86 +2,120 @@ Return-Path: <SRS0=X5Ay=AE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5544C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 09:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC15CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 09:44:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2983520724
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 09:27:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 479F420679
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 09:44:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="MbtT92jR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2983520724
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZLG5dtpw";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZLG5dtpw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 479F420679
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49rgsv34TFzDqTk
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 19:27:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49rhFk5jQzzDqNN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 19:44:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::341;
- helo=mail-wm1-x341.google.com; envelope-from=qperret@google.com;
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=pbonzini@redhat.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=MbtT92jR; dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=ZLG5dtpw; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZLG5dtpw; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [207.211.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49rgqw4Pn4zDqQP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 19:25:45 +1000 (AEST)
-Received: by mail-wm1-x341.google.com with SMTP id u26so1803701wmn.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 02:25:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=q25Robvc8p0VCT45Ku6+CqjX7ikyGj3nKC2Rkm2Sa7U=;
- b=MbtT92jRqhblgP01XYQ289lWx/8/mAZpF2odAygIsMJx7tzVhKf77HPio8ytt2Nlrj
- mz5Hd4SfeetgCbA7EMe00zMQnfEt1VnV895LdA33HSMDUUOhUIvqmY8Baws3UdibTvA6
- Htnjr127Ypdcinq7hAOrpTvgfRiWXrgmo+DATS8V0nsXZRbjyjq0R3I2H/NzzFQ3Qp+g
- tkJgvtIm44r4BqDzPXQwuKHCHw7uGgia3CYyzKlkG6g0jbtx3gIplFyjg/or6P3+F7ng
- yY2DOK4V1zSG0QoAcANXRGjw3nZSAqiNLi/B+R2QuoBPixfWCoBJRUVb3fF0h0BhgInm
- Sn+Q==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49rhCY4MPgzDqMG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 19:42:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1592905366;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=QoBwKmjOvInG9MfmBsLrqKkfpaZqKCYNSmoYTUfOHHE=;
+ b=ZLG5dtpwtkla4mBaG6iRidFYELlZHLyhe/p1NVi5lAT0wiv+Gmd3Gpq3DSWqkokcxObDjK
+ 5HC4fGF9K6YFQ6AejRE/azWMsUlHdAAbQOYiKKHITil85dPqBWig1MM7ugM2vpSXnRSoQ6
+ 7HCVBGjwdnIm/SaxpmCf1i40hMbeb1Y=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1592905366;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=QoBwKmjOvInG9MfmBsLrqKkfpaZqKCYNSmoYTUfOHHE=;
+ b=ZLG5dtpwtkla4mBaG6iRidFYELlZHLyhe/p1NVi5lAT0wiv+Gmd3Gpq3DSWqkokcxObDjK
+ 5HC4fGF9K6YFQ6AejRE/azWMsUlHdAAbQOYiKKHITil85dPqBWig1MM7ugM2vpSXnRSoQ6
+ 7HCVBGjwdnIm/SaxpmCf1i40hMbeb1Y=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-245-JT9VLAufN5u2I7HTHYVhNQ-1; Tue, 23 Jun 2020 05:42:42 -0400
+X-MC-Unique: JT9VLAufN5u2I7HTHYVhNQ-1
+Received: by mail-wr1-f72.google.com with SMTP id g14so7829790wrp.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 02:42:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=q25Robvc8p0VCT45Ku6+CqjX7ikyGj3nKC2Rkm2Sa7U=;
- b=WlVzJ3pxue90GR7d7naaVjhvEODALAv3J87Pq32WVuhNSxihRruM5tCAXj3Wc2CPNv
- eKiAbSPeO6s0noGVNZR5sALIL+RWpgmCbiECsAKC8AO7Uy4ZxpHf19IrqV5IPyqjiyJ9
- f1b8sIq746sOMdIOMqbM7I58xupghu/qJE3oT5bZnVi5ukkC0qwenUr3E4gMO7wdGwxD
- FvqsQfAq5nSsCy1BI71X3KAJYauSwgqll9QpnpStulNHx1Cc4tEfLQ/dRytSZztql0M9
- UrNhnMLfbU7RQY+avQSLWtZKoB1DkIEEhf/4n1DnjAXsN273YB9A50FP9VHlCg1DmVIX
- 5kxA==
-X-Gm-Message-State: AOAM530LAKErh3HybpUMjk/udcCx3k8LCBEWeaKv228g5Nx3yiTGBqfa
- d5d4xxAhPQ6ysnp1bCEFL84GSg==
-X-Google-Smtp-Source: ABdhPJyl/Wvp1EmPvPKbYZpgmTNv8myFw0amWQE5G3nU/EjHi1cPOLHWOuSUY3bGl4PIoPk41iA8jw==
-X-Received: by 2002:a1c:9896:: with SMTP id a144mr22578733wme.75.1592904340254; 
- Tue, 23 Jun 2020 02:25:40 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
- by smtp.gmail.com with ESMTPSA id u20sm2789618wmc.44.2020.06.23.02.25.39
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 23 Jun 2020 02:25:39 -0700 (PDT)
-Date: Tue, 23 Jun 2020 10:25:36 +0100
-From: Quentin Perret <qperret@google.com>
-To: kernel test robot <rong.a.chen@intel.com>
-Subject: Re: [cpufreq] d83f959b5e:
- kmsg.cpufreq:cpufreq_online:Failed_to_initialize_policy_for_cpu:#(-#)
-Message-ID: <20200623092536.GA52234@google.com>
-References: <20200615165554.228063-3-qperret@google.com>
- <20200622005457.GI5535@shao2-debian>
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=QoBwKmjOvInG9MfmBsLrqKkfpaZqKCYNSmoYTUfOHHE=;
+ b=tVBuRnRMi1D9tyFtg6WShrRsNcnbjvNsvSJEMk/buKbNOiEjB8fyL+uagbDwMFEpS8
+ DcsI1FdWHtlfJzc2lFNgE5QoKoEhVguZ3cZRRQCxo2CRXS0bpr28kMobzcvdkVYfCxbu
+ oTdt0c3A9ajgucAo4NUVv1LNJk8PKdKnDjAs90vGwa0OYuOY88d1aL1k12IG+unokOTe
+ r0ZdrPIKaPrzxiMOi8+TxAL1soWVHqi25Trbm/rQ1gB3elCF2oT9XgQfqY8CdrF0hVa/
+ 2p9SU221HPMcK3Xm4zUz6N4WMJmf+TN703KukGZS8glRfgjiF7tkkLL/0wh/GHqYezrG
+ M0VQ==
+X-Gm-Message-State: AOAM531d8UjvA+dctd9k9BUiyEuxmi9ULj4axVBq7A/JAP+s0Yz6rbMj
+ a62PlP7Q/Ev9SRiPINX7bfwS6t0eOQEQg7n3KExGuQbuX5mE0b+tUjCJFPcxYCvRi1rjPl7uQfm
+ NzGf8zRD7sWkBVeMrMVpc4b5Lvw==
+X-Received: by 2002:adf:e908:: with SMTP id f8mr1064528wrm.3.1592905361579;
+ Tue, 23 Jun 2020 02:42:41 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJwYpabjIXBcOB9eaiLhNkEzAaSPqokuBtil8iucj5gBxqX45bVu6WVMKG+2KSXPDnKUswgA9A==
+X-Received: by 2002:adf:e908:: with SMTP id f8mr1064490wrm.3.1592905361326;
+ Tue, 23 Jun 2020 02:42:41 -0700 (PDT)
+Received: from ?IPv6:2001:b07:6468:f312:fd64:dd90:5ad5:d2e1?
+ ([2001:b07:6468:f312:fd64:dd90:5ad5:d2e1])
+ by smtp.gmail.com with ESMTPSA id 26sm1149131wmj.25.2020.06.23.02.42.39
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 23 Jun 2020 02:42:40 -0700 (PDT)
+Subject: Re: [PATCH v4 0/7] clean up redundant 'kvm_run' parameters
+To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>,
+ tsbogend@alpha.franken.de, paulus@ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, borntraeger@de.ibm.com, frankja@linux.ibm.com,
+ david@redhat.com, cohuck@redhat.com, heiko.carstens@de.ibm.com,
+ gor@linux.ibm.com, sean.j.christopherson@intel.com, vkuznets@redhat.com,
+ wanpengli@tencent.com, jmattson@google.com, joro@8bytes.org,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
+ hpa@zytor.com, maz@kernel.org, james.morse@arm.com,
+ julien.thierry.kdev@gmail.com, suzuki.poulose@arm.com,
+ christoffer.dall@arm.com, peterx@redhat.com, thuth@redhat.com,
+ chenhuacai@gmail.com
+References: <20200427043514.16144-1-tianjia.zhang@linux.alibaba.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <fe463233-d094-fca5-b4e9-c1d97124fd69@redhat.com>
+Date: Tue, 23 Jun 2020 11:42:37 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200622005457.GI5535@shao2-debian>
+In-Reply-To: <20200427043514.16144-1-tianjia.zhang@linux.alibaba.com>
+Content-Language: en-US
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,66 +127,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, kernel-team@android.com, vincent.guittot@linaro.org,
- arnd@arndb.de, rafael@kernel.org, peterz@infradead.org,
- viresh.kumar@linaro.org, adharmap@codeaurora.org, linux-pm@vger.kernel.org,
- rjw@rjwysocki.net, linux-kernel@vger.kernel.org, lkp@lists.01.org,
- mingo@redhat.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- tkjos@google.com
+Cc: linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 27/04/20 06:35, Tianjia Zhang wrote:
+> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
+> structure. For historical reasons, many kvm-related function parameters
+> retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time. This
+> patch does a unified cleanup of these remaining redundant parameters.
+> 
+> This series of patches has completely cleaned the architecture of
+> arm64, mips, ppc, and s390 (no such redundant code on x86). Due to
+> the large number of modified codes, a separate patch is made for each
+> platform. On the ppc platform, there is also a redundant structure
+> pointer of 'kvm_run' in 'vcpu_arch', which has also been cleaned
+> separately.
 
-Thanks for the report.
+Tianjia, can you please refresh the patches so that each architecture
+maintainer can pick them up?  Thanks very much for this work!
 
-On Monday 22 Jun 2020 at 08:54:57 (+0800), kernel test robot wrote:
-> Greeting,
-> 
-> FYI, we noticed the following commit (built with gcc-9):
-> 
-> commit: d83f959b5e7a6378a4afbff23de2a2d064d95749 ("[PATCH 2/2] cpufreq: Specify default governor on command line")
-> url: https://github.com/0day-ci/linux/commits/Quentin-Perret/cpufreq-Specify-the-default-governor-on-command-line/20200616-005920
-> base: https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git linux-next
-> 
-> in testcase: kernel-selftests
-> with following parameters:
-> 
-> 	group: kselftests-x86
-> 	ucode: 0xdc
-> 
-> test-description: The kernel contains a set of "self tests" under the tools/testing/selftests/ directory. These are intended to be small unit tests to exercise individual code paths in the kernel.
-> test-url: https://www.kernel.org/doc/Documentation/kselftest.txt
-> 
-> 
-> on test machine: 8 threads Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz with 16G memory
-> 
-> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
-> 
-> 
-> 
-> 
-> If you fix the issue, kindly add following tag
-> Reported-by: kernel test robot <rong.a.chen@intel.com>
-> 
-> 
-> 
-> [    8.715369] intel_pstate: Intel P-state driver initializing
-> [    8.721146] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 0 (-61)
-> [    8.728900] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 1 (-61)
-> [    8.736615] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 2 (-61)
-> [    8.744400] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 3 (-61)
-> [    8.752222] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 4 (-61)
-> [    8.760010] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 5 (-61)
-> [    8.768077] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 6 (-61)
-> [    8.775891] cpufreq: cpufreq_online: Failed to initialize policy for cpu: 7 (-61)
+Paolo
 
-That, I think, is because of the issue I reported here:
+> 
+> ---
+> v4 change:
+>   mips: fixes two errors in entry.c.
+> 
+> v3 change:
+>   Keep the existing `vcpu->run` in the function body unchanged.
+> 
+> v2 change:
+>   s390 retains the original variable name and minimizes modification.
+> 
+> Tianjia Zhang (7):
+>   KVM: s390: clean up redundant 'kvm_run' parameters
+>   KVM: arm64: clean up redundant 'kvm_run' parameters
+>   KVM: PPC: Remove redundant kvm_run from vcpu_arch
+>   KVM: PPC: clean up redundant 'kvm_run' parameters
+>   KVM: PPC: clean up redundant kvm_run parameters in assembly
+>   KVM: MIPS: clean up redundant 'kvm_run' parameters
+>   KVM: MIPS: clean up redundant kvm_run parameters in assembly
+> 
+>  arch/arm64/include/asm/kvm_coproc.h      |  12 +--
+>  arch/arm64/include/asm/kvm_host.h        |  11 +--
+>  arch/arm64/include/asm/kvm_mmu.h         |   2 +-
+>  arch/arm64/kvm/handle_exit.c             |  36 +++----
+>  arch/arm64/kvm/sys_regs.c                |  13 ++-
+>  arch/mips/include/asm/kvm_host.h         |  32 +------
+>  arch/mips/kvm/emulate.c                  |  59 ++++--------
+>  arch/mips/kvm/entry.c                    |  21 ++---
+>  arch/mips/kvm/mips.c                     |  14 +--
+>  arch/mips/kvm/trap_emul.c                | 114 ++++++++++-------------
+>  arch/mips/kvm/vz.c                       |  26 ++----
+>  arch/powerpc/include/asm/kvm_book3s.h    |  16 ++--
+>  arch/powerpc/include/asm/kvm_host.h      |   1 -
+>  arch/powerpc/include/asm/kvm_ppc.h       |  27 +++---
+>  arch/powerpc/kvm/book3s.c                |   4 +-
+>  arch/powerpc/kvm/book3s.h                |   2 +-
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c      |  12 +--
+>  arch/powerpc/kvm/book3s_64_mmu_radix.c   |   4 +-
+>  arch/powerpc/kvm/book3s_emulate.c        |  10 +-
+>  arch/powerpc/kvm/book3s_hv.c             |  64 ++++++-------
+>  arch/powerpc/kvm/book3s_hv_nested.c      |  12 +--
+>  arch/powerpc/kvm/book3s_interrupts.S     |  17 ++--
+>  arch/powerpc/kvm/book3s_paired_singles.c |  72 +++++++-------
+>  arch/powerpc/kvm/book3s_pr.c             |  33 ++++---
+>  arch/powerpc/kvm/booke.c                 |  39 ++++----
+>  arch/powerpc/kvm/booke.h                 |   8 +-
+>  arch/powerpc/kvm/booke_emulate.c         |   2 +-
+>  arch/powerpc/kvm/booke_interrupts.S      |   9 +-
+>  arch/powerpc/kvm/bookehv_interrupts.S    |  10 +-
+>  arch/powerpc/kvm/e500_emulate.c          |  15 ++-
+>  arch/powerpc/kvm/emulate.c               |  10 +-
+>  arch/powerpc/kvm/emulate_loadstore.c     |  32 +++----
+>  arch/powerpc/kvm/powerpc.c               |  72 +++++++-------
+>  arch/powerpc/kvm/trace_hv.h              |   6 +-
+>  arch/s390/kvm/kvm-s390.c                 |  23 +++--
+>  virt/kvm/arm/arm.c                       |   6 +-
+>  virt/kvm/arm/mmio.c                      |  11 ++-
+>  virt/kvm/arm/mmu.c                       |   5 +-
+>  38 files changed, 392 insertions(+), 470 deletions(-)
+> 
 
-    https://lore.kernel.org/lkml/20200615174141.GA235811@google.com/
-
-The v2 (to be posted shortly) will address this.
-
-Thanks,
-Quentin
