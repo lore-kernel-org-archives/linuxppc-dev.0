@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 307BDC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 07:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C1BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 07:07:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6409206B7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 07:06:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6409206B7
+	by mail.kernel.org (Postfix) with ESMTPS id A061D206B7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 07:07:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A061D206B7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49rckf41zLzDqS4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:06:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49rcml6xY1zDqS5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:07:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,31 +29,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49rchj0kQ4zDqF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 17:04:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49rchj02YQzDqDx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2020 17:04:19 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7531200079;
- Tue, 23 Jun 2020 09:04:17 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EC9CB200BF3;
+ Tue, 23 Jun 2020 09:04:16 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 278F220007B;
- Tue, 23 Jun 2020 09:04:13 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CC3F200079;
+ Tue, 23 Jun 2020 09:04:12 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 90D31402B3;
- Tue, 23 Jun 2020 15:04:07 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 7C58C4029C;
+ Tue, 23 Jun 2020 15:04:06 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
  festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
  perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ASoC: bindings: fsl-asoc-card: Add compatible string for
- wm8524
-Date: Tue, 23 Jun 2020 14:52:47 +0800
-Message-Id: <1592895167-30483-2-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 1/2] ASoC: fsl-asoc-card: Add WM8524 support
+Date: Tue, 23 Jun 2020 14:52:46 +0800
+Message-Id: <1592895167-30483-1-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1592895167-30483-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1592895167-30483-1-git-send-email-shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,27 +67,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to support wm8524 codec with fsl-asoc-card machine
-driver, add compatible string "fsl,imx-audio-wm8524".
+WM8524 only supports playback mode, and only works at
+slave mode.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- Documentation/devicetree/bindings/sound/fsl-asoc-card.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ sound/soc/fsl/fsl-asoc-card.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
-index ca9a3a43adfd..133d7e14a4d0 100644
---- a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
-@@ -36,6 +36,8 @@ The compatible list for this generic sound card currently:
- 
-  "fsl,imx-audio-mqs"
- 
-+ "fsl,imx-audio-wm8524"
-+
- Required properties:
- 
-   - compatible		: Contains one of entries in the compatible list.
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index d0543a53764e..57ea1b072326 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -611,6 +611,15 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		priv->dai_link[2].dpcm_capture = 0;
+ 		priv->card.dapm_routes = audio_map_tx;
+ 		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
++	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8524")) {
++		codec_dai_name = "wm8524-hifi";
++		priv->card.set_bias_level = NULL;
++		priv->dai_fmt |= SND_SOC_DAIFMT_CBS_CFS;
++		priv->dai_link[1].dpcm_capture = 0;
++		priv->dai_link[2].dpcm_capture = 0;
++		priv->cpu_priv.slot_width = 32;
++		priv->card.dapm_routes = audio_map_tx;
++		priv->card.num_dapm_routes = ARRAY_SIZE(audio_map_tx);
+ 	} else {
+ 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
+ 		ret = -EINVAL;
+@@ -760,6 +769,7 @@ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
+ 	{ .compatible = "fsl,imx-audio-wm8962", },
+ 	{ .compatible = "fsl,imx-audio-wm8960", },
+ 	{ .compatible = "fsl,imx-audio-mqs", },
++	{ .compatible = "fsl,imx-audio-wm8524", },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_asoc_card_dt_ids);
 -- 
 2.21.0
 
