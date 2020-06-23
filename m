@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 508F9C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 225E1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:45:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02422206D4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:42:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C56232064B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 17:45:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="jVmFj0vR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02422206D4
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EHLQdCw1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C56232064B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49rtrz2FZLzDqXv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 03:42:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49rtwW13F0zDqSC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 03:45:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +29,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=jVmFj0vR; dkim-atps=neutral
+ header.s=default header.b=EHLQdCw1; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49rtjp6vr2zDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2020 03:36:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49rtkK6YtwzDqRn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2020 03:36:41 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B3B15207FB;
- Tue, 23 Jun 2020 17:36:07 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 91FB0207D0;
+ Tue, 23 Jun 2020 17:36:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1592933768;
- bh=Ko1ZhXCx4mPUi3PFsF4m7owQC8fH7OXNJhwIkoqVYA0=;
+ s=default; t=1592933799;
+ bh=Y+UfLkZNVxHu05Ixfv4l8PA8ebf5ntCkxmCcSgp/xK0=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=jVmFj0vRcb/NrfU/aXJZpmJKR35X8fGB5R5zkuQyutbm3CgH18xt2rxJakBgcJFjh
- umSuzHO6mUdJfNT5nGseZoL8qtABuysdQaQT56p+0BZMr7rAVvCVEfqwSEBbKAan5D
- IXJxJnMo/esDSHBN5cRlHOumpFs9WLakUAKuodzA=
+ b=EHLQdCw153Hv+lCHnRvVydLW/D/a3dBiERi+tVreFHI9CNzZyzJjd/jO2ewsU/TIR
+ QwXsmqOShZJoA8uE32p+McEPFUm/3v7jmgkT8m1sl9RFxVVSWVXBW37KztxMynRXjd
+ tLOjQVBX9V1KrVQjiH8anQKBU/fWagwRebTSJkgs=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 07/24] ibmvnic: Harden device login requests
-Date: Tue, 23 Jun 2020 13:35:42 -0400
-Message-Id: <20200623173559.1355728-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 07/15] ibmvnic: Harden device login requests
+Date: Tue, 23 Jun 2020 13:36:22 -0400
+Message-Id: <20200623173630.1355971-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200623173559.1355728-1-sashal@kernel.org>
-References: <20200623173559.1355728-1-sashal@kernel.org>
+In-Reply-To: <20200623173630.1355971-1-sashal@kernel.org>
+References: <20200623173630.1355971-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -99,10 +100,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 17 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 5a42ddeecfe50..4f503b9a674c4 100644
+index 645298628b6f7..5e9e45befc875 100644
 --- a/drivers/net/ethernet/ibm/ibmvnic.c
 +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -779,12 +779,13 @@ static int ibmvnic_login(struct net_device *netdev)
+@@ -792,12 +792,13 @@ static int ibmvnic_login(struct net_device *netdev)
  	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
  	unsigned long timeout = msecs_to_jiffies(30000);
  	int retry_count = 0;
@@ -117,7 +118,7 @@ index 5a42ddeecfe50..4f503b9a674c4 100644
  			netdev_warn(netdev, "Login attempts exceeded\n");
  			return -1;
  		}
-@@ -799,11 +800,23 @@ static int ibmvnic_login(struct net_device *netdev)
+@@ -812,11 +813,23 @@ static int ibmvnic_login(struct net_device *netdev)
  
  		if (!wait_for_completion_timeout(&adapter->init_done,
  						 timeout)) {
