@@ -2,64 +2,64 @@ Return-Path: <SRS0=X5Ay=AE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0202DC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 19:44:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8652DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 20:11:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B3AA20E65
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 19:44:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DD05620E65
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jun 2020 20:11:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="epRGMsi9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B3AA20E65
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WSIkYB19"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD05620E65
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49rxYF22bQzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 05:44:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ry8T20m8zDqSj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 06:11:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
  envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=merlin.20170209 header.b=epRGMsi9; 
+ header.a=rsa-sha256 header.s=casper.20170209 header.b=WSIkYB19; 
  dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49rxW73prnzDqX6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2020 05:42:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49ry5J55kczDqXB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2020 06:08:20 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=uE1WLCQUPvJEJsvbQwFweWHVAK/38fkHD46qsvvbHvk=; b=epRGMsi9Ah9RMq2mhFHBzYVDr6
- kIfFn6bgGQ6vpQbi5pz8dFZ0uLIT8WssXCX48AfYwh2T7Phe8R3a18rTBByRw0dJgC0XVraaLpIWh
- V5/d+ulw0Y1BYvpMFhA2AVT9b9gFrC3snb3UTYfIy8yjsqzPg8L/izYJxKa1tjtN++2adcmRjZVXV
- mUygc39bMIrv1jqz4r+yhta4Y/xWM863QrUkMjVIxQeWPcrgx/1MBUFUj99jiFuNDLpdY3+HQ4F2Z
- f2mFQWt9ldQ+pHiGOxsFce6QXqmUfZ6ERMeRiMVCMNhbkt7DzU08pT9WJ6NEuRutw5OpdY5ymGP/r
- EiH8eWfA==;
+ bh=IAo6LZgftQ+WfJhPV9ZsiUspETli4pnTXogO2KOnqZw=; b=WSIkYB191UtTcRJW24x6NoATDT
+ B1Pi94FgzTqQDr/rc+wtAw9pa6UWZp4fn7FYq7hdxNdlCMDTW6Ein61oTWBH64bwRHAQcJBmKD1/8
+ gZatC1EWYDVnQgTbBjACdaW6b3Xz5cyUiXquBDMC6IB6A5JRARMMD+4xQLKbVuVbFju2vPmjujzwF
+ Vzv7UGyJ02a6M7SWgurAq0oDJum+G5oj235k0ai4FLqtwb2uNmCLl26gARqoiOOPweLucCKnlZPy8
+ KRtwBq/tXGA4G1yN+YBjfR2DlDHdtEcBEzVw1TJrcqFd8yAIOl2Qe71DUGKqeXJo/LPe8Xxc1rBWZ
+ U8EMfpkQ==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=worktop.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jnonZ-0002xv-Oo; Tue, 23 Jun 2020 19:41:38 +0000
+ by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jnpD7-0001p5-BH; Tue, 23 Jun 2020 20:08:01 +0000
 Received: by worktop.programming.kicks-ass.net (Postfix, from userid 1000)
- id 90E10983A87; Tue, 23 Jun 2020 21:41:32 +0200 (CEST)
-Date: Tue, 23 Jun 2020 21:41:32 +0200
+ id 5CA2B983A87; Tue, 23 Jun 2020 22:08:00 +0200 (CEST)
+Date: Tue, 23 Jun 2020 22:08:00 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Marco Elver <elver@google.com>
 Subject: Re: [PATCH v4 7/8] lockdep: Change hardirq{s_enabled,_context} to
  per-cpu variables
-Message-ID: <20200623194132.GC2483@worktop.programming.kicks-ass.net>
+Message-ID: <20200623200800.GD2483@worktop.programming.kicks-ass.net>
 References: <20200623083645.277342609@infradead.org>
  <20200623083721.512673481@infradead.org>
  <20200623150031.GA2986783@debian-buster-darwi.lab.linutronix.de>
@@ -99,19 +99,6 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Tue, Jun 23, 2020 at 09:13:35PM +0200, Marco Elver wrote:
-> I see the below report when I boot with your branch + KCSAN and
-> PROVE_LOCKING. config attached. Trying to make sense of what's
-> happening.
-
-Ah, I was still playing with tip/master + PROVE_LOCKING + KCSAN and
-slowly removing parts of that annotation patch to see what would come
-unstuck.
-
-I think I just hit a genuine but unavoidable lockdep report on
-report_lock.
-
-> ------ >8 ------
-> 
 > [   10.182354] ------------[ cut here ]------------
 > [   10.183058] WARNING: CPU: 7 PID: 136 at kernel/locking/lockdep.c:398 lockdep_hardirqs_on_prepare+0x1c6/0x270
 > [   10.184347] Modules linked in:
@@ -137,9 +124,20 @@ report_lock.
 > [   10.203686]  _raw_spin_unlock_irqrestore+0x40/0x70  		<----- take report_lock
 > [   10.204406]  prepare_report+0x11f/0x150
 > [   10.204986]  kcsan_report+0xca/0x6c0 			<----- generating a KCSAN report
-> [   10.212669]  kcsan_found_watchpoint+0xe5/0x110
 
-That appears to be warning about a lockdep_recursion underflow, weird.
-I'll go stare at it.
+Oh, duh.. that's because lockdep_off() ;-)
 
+diff --git a/kernel/locking/lockdep.c b/kernel/locking/lockdep.c
+index ab7571c1a1f5..c9ea05edce25 100644
+--- a/kernel/locking/lockdep.c
++++ b/kernel/locking/lockdep.c
+@@ -395,7 +395,7 @@ void lockdep_init_task(struct task_struct *task)
+ 
+ static __always_inline void lockdep_recursion_finish(void)
+ {
+-	if (WARN_ON_ONCE(--current->lockdep_recursion))
++	if (WARN_ON_ONCE((--current->lockdep_recursion) & LOCKDEP_RECURSION_MASK))
+ 		current->lockdep_recursion = 0;
+ }
+ 
 
