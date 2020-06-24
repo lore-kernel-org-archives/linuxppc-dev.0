@@ -2,77 +2,88 @@ Return-Path: <SRS0=QJlM=AF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E803AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 17:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F18BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 21:10:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 309992078E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 17:56:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ACDB720768
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Jun 2020 21:10:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ta0+ik8I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 309992078E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="tc++vE8O"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ACDB720768
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49sW703kyCzDqkk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 03:56:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49sbQJ4PqMzDqgx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 07:10:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=flex--brendanhiggins.bounces.google.com
+ (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com;
+ envelope-from=3yr7zxg4kaksmcpyolystrrtydrzzrwp.nzx@flex--brendanhiggins.bounces.google.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
+ dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=casper.20170209 header.b=ta0+ik8I; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
+ header.s=20161025 header.b=tc++vE8O; dkim-atps=neutral
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49sW4j6LbwzDqBM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 03:54:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=ITI+6nMfT1OTxjvFBXS8SqWS++zlFeNEzUYzivsKdN8=; b=ta0+ik8IcGl2bYYyUFC54uqCk6
- +qqjbp4JGa3fmCsMN/1XR64QetGWyQS7cOPLkZ8Sd7seu27n2ZU99DG+4ZKeiqVLFi2Rd7wtO2UQL
- GW1uJnydKQdPJ+UYCtnZqxOq3N+MMH4ujD7+ifq6lXpdKwBallQxHrfd/GFtCJ50BRlw/CGboN9pc
- McgLZcB/OlZcMCQsulJ8euQOvryCEFjsKTzMp3VAhwXyIV2SrxsERi8YF8lKPZ3whCYUpdG9ydSSy
- 8mm8SW6N3uO4HWb9t4VOVM4mMwpHKHwfG2gwyqBetkNwHqtzniEsgU9+gFIcvhEFRolCmsw5lTQoG
- QoEIkerQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jo9aM-0002ji-Rj; Wed, 24 Jun 2020 17:53:23 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 6C7B1307966;
- Wed, 24 Jun 2020 19:53:20 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 5D2E321AD36DB; Wed, 24 Jun 2020 19:53:20 +0200 (CEST)
-Date: Wed, 24 Jun 2020 19:53:20 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Will Deacon <will@kernel.org>
-Subject: Re: [PATCH v4 6/8] arm: Break cyclic percpu include
-Message-ID: <20200624175320.GN4781@hirez.programming.kicks-ass.net>
-References: <20200623083645.277342609@infradead.org>
- <20200623083721.454517573@infradead.org>
- <20200623090257.GA3743@willie-the-truck>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200623090257.GA3743@willie-the-truck>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49sb8X3lmPzDqWb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 06:58:12 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id l9so2799196ybm.20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2020 13:58:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+ :cc; bh=J3ivtuBCWWA6WF3YNE0hm8BpVh0hgAMk0icQw8PVzV4=;
+ b=tc++vE8OqiFWBPWLgjgz+8iB4vui6irGevOP603lUg1UNDik9D3RHD3BRtfvQnnEf0
+ jrKRLdHrhmzWJKnehTSRLbse6SnSXGQd35K2w5Zw9Z+uwoCNqlj6mkrJWH36qGOISkU2
+ 3NifzTZEtRhL18lQl5iPbyga7DEY6bWA2ca3xSr4TZGtif0WyKPDe33h2W95GCGjYoTD
+ LoLgCnF8B+dCod++2Ii9nCw49QtFtdis8Pk9VuDF5L/wQjwjqBE0rPgSwa+KcPbSzpms
+ Ap+f4GQjV/9IxN/DKcUM1pSafBVlQkPDdfl802IjkfV7kftNlqpzgQEn6l454cRI3B5c
+ XxTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+ :references:subject:from:to:cc;
+ bh=J3ivtuBCWWA6WF3YNE0hm8BpVh0hgAMk0icQw8PVzV4=;
+ b=rfIc7QniR6rWoqJFnxEUi40iz8q71uyBKP+sOAX0THh+K7vbQ1hpjXVMyFPIa/2rdA
+ cq8Vz47WXhsOJx6cdqAEd82bPnAYwHR+LQ1dKOc6/EadIVvgmuN7fGlnVwx4gI0CykVe
+ HjLC5sQNK10TVo0HmdI5+yGV5Gq0enxrnZuLWhvXNvWcwl/T4veaRMjRua48J5O9IwSK
+ El3PrwPyMlet5cydX8VCX9Kn345hjM5b2PicfyP3T7R7jZL2rYjTFE+0WzHslng7wGd3
+ Pl3rxsar9WnhAtJKO2kCdH3vplNuNqyTmG9tbTzWvBI8sK3mwWhsEPyUiOOOLy7uStUK
+ M4pw==
+X-Gm-Message-State: AOAM531Cd/8c8B/jknEDDSZ3hi+rXrH1jzK8g8hDTU89AanSRZWJTIoQ
+ +S93kMFSdf6C9r8NvlotVsiATFfRdFLNx1Ct7f5SxQ==
+X-Google-Smtp-Source: ABdhPJxdBp1vku0LQMvgNodo050SkO7FsfUngwFhnwGxx7442lwKRrC6xg8fX13lreYNm4d8BSbKm5F9o+C9V7i1TJs25w==
+X-Received: by 2002:a25:ba09:: with SMTP id t9mr49146881ybg.128.1593032290524; 
+ Wed, 24 Jun 2020 13:58:10 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:55:40 -0700
+In-Reply-To: <20200624205550.215599-1-brendanhiggins@google.com>
+Message-Id: <20200624205550.215599-2-brendanhiggins@google.com>
+Mime-Version: 1.0
+References: <20200624205550.215599-1-brendanhiggins@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH v4 01/11] vmlinux.lds.h: add linker section for KUnit test
+ suites
+From: Brendan Higgins <brendanhiggins@google.com>
+To: jdike@addtoit.com, richard@nod.at, anton.ivanov@cambridgegreys.com, 
+ arnd@arndb.de, keescook@chromium.org, skhan@linuxfoundation.org, 
+ alan.maguire@oracle.com, yzaikin@google.com, davidgow@google.com, 
+ akpm@linux-foundation.org, rppt@linux.ibm.com, frowand.list@gmail.com, 
+ catalin.marinas@arm.com, will@kernel.org, monstr@monstr.eu, 
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org, 
+ chris@zankel.net, jcmvbkbc@gmail.com
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Thu, 25 Jun 2020 07:08:14 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,76 +95,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, bigeasy@linutronix.de, x86@kernel.org,
- heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- davem@davemloft.net, a.darwish@linutronix.de, sparclinux@vger.kernel.org,
- linux@armlinux.org.uk, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-doc@vger.kernel.org, sboyd@kernel.org, gregkh@linuxfoundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-um@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Brendan Higgins <brendanhiggins@google.com>,
+ mcgrof@kernel.org, linux-kselftest@vger.kernel.org, logang@deltatee.com,
+ linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 23, 2020 at 10:02:57AM +0100, Will Deacon wrote:
-> On Tue, Jun 23, 2020 at 10:36:51AM +0200, Peter Zijlstra wrote:
-> > In order to use <asm/percpu.h> in irqflags.h, we need to make sure
-> > asm/percpu.h does not itself depend on irqflags.h.
-> > 
-> > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> > ---
-> >  arch/arm/include/asm/percpu.h |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > --- a/arch/arm/include/asm/percpu.h
-> > +++ b/arch/arm/include/asm/percpu.h
-> > @@ -10,6 +10,8 @@
-> >   * in the TPIDRPRW. TPIDRPRW only exists on V6K and V7
-> >   */
-> >  #if defined(CONFIG_SMP) && !defined(CONFIG_CPU_V6)
-> > +register unsigned long current_stack_pointer asm ("sp");
-> 
-> If you define this unconditionally, then we can probably get rid of the
-> copy in asm/thread_info.h, rather than duplicate the same #define.
+Add a linker section where KUnit can put references to its test suites.
+This patch is the first step in transitioning to dispatching all KUnit
+tests from a centralized executor rather than having each as its own
+separate late_initcall.
 
-The below delta seems to build arm-allnoconfig, arm-defconfig and
-arm-allmodconfig.
+Co-developed-by: Iurii Zaikin <yzaikin@google.com>
+Signed-off-by: Iurii Zaikin <yzaikin@google.com>
+Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
+---
+ include/asm-generic/vmlinux.lds.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Although please don't ask me how asm/thread_info.h includes asm/percpu.h
-
-Does that work for you?
-
-diff --git a/arch/arm/include/asm/percpu.h b/arch/arm/include/asm/percpu.h
-index e86e47486b6b1..e2fcb3cfd3de5 100644
---- a/arch/arm/include/asm/percpu.h
-+++ b/arch/arm/include/asm/percpu.h
-@@ -5,13 +5,13 @@
- #ifndef _ASM_ARM_PERCPU_H_
- #define _ASM_ARM_PERCPU_H_
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index db600ef218d7d..4f9b036fc9616 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -881,6 +881,13 @@
+ 		KEEP(*(.con_initcall.init))				\
+ 		__con_initcall_end = .;
  
-+register unsigned long current_stack_pointer asm ("sp");
++/* Alignment must be consistent with (kunit_suite *) in include/kunit/test.h */
++#define KUNIT_TEST_SUITES						\
++		. = ALIGN(8);						\
++		__kunit_suites_start = .;				\
++		KEEP(*(.kunit_test_suites))				\
++		__kunit_suites_end = .;
 +
- /*
-  * Same as asm-generic/percpu.h, except that we store the per cpu offset
-  * in the TPIDRPRW. TPIDRPRW only exists on V6K and V7
-  */
- #if defined(CONFIG_SMP) && !defined(CONFIG_CPU_V6)
--register unsigned long current_stack_pointer asm ("sp");
--
- static inline void set_my_cpu_offset(unsigned long off)
- {
- 	/* Set TPIDRPRW */
-diff --git a/arch/arm/include/asm/thread_info.h b/arch/arm/include/asm/thread_info.h
-index 3609a6980c342..536b6b979f634 100644
---- a/arch/arm/include/asm/thread_info.h
-+++ b/arch/arm/include/asm/thread_info.h
-@@ -75,11 +75,6 @@ struct thread_info {
- 	.addr_limit	= KERNEL_DS,					\
- }
+ #ifdef CONFIG_BLK_DEV_INITRD
+ #define INIT_RAM_FS							\
+ 	. = ALIGN(4);							\
+@@ -1056,6 +1063,7 @@
+ 		INIT_CALLS						\
+ 		CON_INITCALL						\
+ 		INIT_RAM_FS						\
++		KUNIT_TEST_SUITES					\
+ 	}
  
--/*
-- * how to get the current stack pointer in C
-- */
--register unsigned long current_stack_pointer asm ("sp");
--
- /*
-  * how to get the thread information struct from C
-  */
+ #define BSS_SECTION(sbss_align, bss_align, stop_align)			\
+-- 
+2.27.0.212.ge8ba1cc988-goog
+
