@@ -2,24 +2,24 @@ Return-Path: <SRS0=tFHQ=AG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7921AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:38:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C77C5C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:41:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3348620672
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:38:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3348620672
+	by mail.kernel.org (Postfix) with ESMTPS id 80BA320672
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:41:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80BA320672
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49t1Ll0z92zDqsN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:38:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49t1PV2wHvzDqZG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:41:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
  helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
@@ -30,15 +30,15 @@ Received: from theia.8bytes.org (8bytes.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hN3yGDzDqlB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:08:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hP2wHrzDqrC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:08:53 +1000 (AEST)
 Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 0044846A; Thu, 25 Jun 2020 15:08:38 +0200 (CEST)
+ id 93AF64DE; Thu, 25 Jun 2020 15:08:39 +0200 (CEST)
 From: Joerg Roedel <joro@8bytes.org>
 To: iommu@lists.linux-foundation.org
-Subject: [PATCH 06/13] iommu/tegra: Use dev_iommu_priv_get/set()
-Date: Thu, 25 Jun 2020 15:08:29 +0200
-Message-Id: <20200625130836.1916-7-joro@8bytes.org>
+Subject: [PATCH 09/13] x86: Remove dev->archdata.iommu pointer
+Date: Thu, 25 Jun 2020 15:08:32 +0200
+Message-Id: <20200625130836.1916-10-joro@8bytes.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200625130836.1916-1-joro@8bytes.org>
 References: <20200625130836.1916-1-joro@8bytes.org>
@@ -75,81 +75,28 @@ Sender: "Linuxppc-dev"
 
 From: Joerg Roedel <jroedel@suse.de>
 
-Remove the use of dev->archdata.iommu and use the private per-device
-pointer provided by IOMMU core code instead.
+There are no users left, all drivers have been converted to use the
+per-device private pointer offered by IOMMU core.
 
 Signed-off-by: Joerg Roedel <jroedel@suse.de>
 ---
- drivers/iommu/tegra-gart.c | 8 ++++----
- drivers/iommu/tegra-smmu.c | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/device.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/iommu/tegra-gart.c b/drivers/iommu/tegra-gart.c
-index 5fbdff6ff41a..fac720273889 100644
---- a/drivers/iommu/tegra-gart.c
-+++ b/drivers/iommu/tegra-gart.c
-@@ -113,8 +113,8 @@ static int gart_iommu_attach_dev(struct iommu_domain *domain,
+diff --git a/arch/x86/include/asm/device.h b/arch/x86/include/asm/device.h
+index 49bd6cf3eec9..7c0a52ca2f4d 100644
+--- a/arch/x86/include/asm/device.h
++++ b/arch/x86/include/asm/device.h
+@@ -3,9 +3,6 @@
+ #define _ASM_X86_DEVICE_H
  
- 	if (gart->active_domain && gart->active_domain != domain) {
- 		ret = -EBUSY;
--	} else if (dev->archdata.iommu != domain) {
--		dev->archdata.iommu = domain;
-+	} else if (dev_iommu_priv_get(dev) != domain) {
-+		dev_iommu_priv_set(dev, domain);
- 		gart->active_domain = domain;
- 		gart->active_devices++;
- 	}
-@@ -131,8 +131,8 @@ static void gart_iommu_detach_dev(struct iommu_domain *domain,
+ struct dev_archdata {
+-#ifdef CONFIG_IOMMU_API
+-	void *iommu; /* hook for IOMMU specific extension */
+-#endif
+ };
  
- 	spin_lock(&gart->dom_lock);
- 
--	if (dev->archdata.iommu == domain) {
--		dev->archdata.iommu = NULL;
-+	if (dev_iommu_priv_get(dev) == domain) {
-+		dev_iommu_priv_set(dev, NULL);
- 
- 		if (--gart->active_devices == 0)
- 			gart->active_domain = NULL;
-diff --git a/drivers/iommu/tegra-smmu.c b/drivers/iommu/tegra-smmu.c
-index 7426b7666e2b..124c8848ab7e 100644
---- a/drivers/iommu/tegra-smmu.c
-+++ b/drivers/iommu/tegra-smmu.c
-@@ -465,7 +465,7 @@ static void tegra_smmu_as_unprepare(struct tegra_smmu *smmu,
- static int tegra_smmu_attach_dev(struct iommu_domain *domain,
- 				 struct device *dev)
- {
--	struct tegra_smmu *smmu = dev->archdata.iommu;
-+	struct tegra_smmu *smmu = dev_iommu_priv_get(dev);
- 	struct tegra_smmu_as *as = to_smmu_as(domain);
- 	struct device_node *np = dev->of_node;
- 	struct of_phandle_args args;
-@@ -780,7 +780,7 @@ static struct iommu_device *tegra_smmu_probe_device(struct device *dev)
- 			 * supported by the Linux kernel, so abort after the
- 			 * first match.
- 			 */
--			dev->archdata.iommu = smmu;
-+			dev_iommu_priv_set(dev, smmu);
- 
- 			break;
- 		}
-@@ -797,7 +797,7 @@ static struct iommu_device *tegra_smmu_probe_device(struct device *dev)
- 
- static void tegra_smmu_release_device(struct device *dev)
- {
--	dev->archdata.iommu = NULL;
-+	dev_iommu_priv_set(dev, NULL);
- }
- 
- static const struct tegra_smmu_group_soc *
-@@ -856,7 +856,7 @@ static struct iommu_group *tegra_smmu_group_get(struct tegra_smmu *smmu,
- static struct iommu_group *tegra_smmu_device_group(struct device *dev)
- {
- 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
--	struct tegra_smmu *smmu = dev->archdata.iommu;
-+	struct tegra_smmu *smmu = dev_iommu_priv_get(dev);
- 	struct iommu_group *group;
- 
- 	group = tegra_smmu_group_get(smmu, fwspec->ids[0]);
+ struct pdev_archdata {
 -- 
 2.27.0
 
