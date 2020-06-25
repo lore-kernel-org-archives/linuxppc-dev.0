@@ -2,24 +2,24 @@ Return-Path: <SRS0=tFHQ=AG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7BA5C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0947C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:23:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6219D2076E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:21:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6219D2076E
+	by mail.kernel.org (Postfix) with ESMTPS id 79FFA2076E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:23:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79FFA2076E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49t0z15BgXzDqfL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:21:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49t11l3wrvzDqQc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:23:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
  helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
@@ -30,15 +30,15 @@ Received: from theia.8bytes.org (8bytes.org
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hH6KJbzDqcY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hH6rxbzDqdk
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:08:47 +1000 (AEST)
 Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 1D4FB391; Thu, 25 Jun 2020 15:08:38 +0200 (CEST)
+ id 821AE412; Thu, 25 Jun 2020 15:08:38 +0200 (CEST)
 From: Joerg Roedel <joro@8bytes.org>
 To: iommu@lists.linux-foundation.org
-Subject: [PATCH 01/13] iommu/exynos: Use dev_iommu_priv_get/set()
-Date: Thu, 25 Jun 2020 15:08:24 +0200
-Message-Id: <20200625130836.1916-2-joro@8bytes.org>
+Subject: [PATCH 04/13] iommu/omap: Use dev_iommu_priv_get/set()
+Date: Thu, 25 Jun 2020 15:08:27 +0200
+Message-Id: <20200625130836.1916-5-joro@8bytes.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200625130836.1916-1-joro@8bytes.org>
 References: <20200625130836.1916-1-joro@8bytes.org>
@@ -80,124 +80,100 @@ pointer provided by IOMMU core code instead.
 
 Signed-off-by: Joerg Roedel <jroedel@suse.de>
 ---
- drivers/iommu/exynos-iommu.c                  | 20 +++++++++----------
- .../media/platform/s5p-mfc/s5p_mfc_iommu.h    |  4 +++-
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/iommu/omap-iommu.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 60c8a56e4a3f..6a9b67302369 100644
---- a/drivers/iommu/exynos-iommu.c
-+++ b/drivers/iommu/exynos-iommu.c
-@@ -173,7 +173,7 @@ static u32 lv2ent_offset(sysmmu_iova_t iova)
- #define REG_V5_FAULT_AR_VA	0x070
- #define REG_V5_FAULT_AW_VA	0x080
- 
--#define has_sysmmu(dev)		(dev->archdata.iommu != NULL)
-+#define has_sysmmu(dev)		(dev_iommu_priv_get(dev) != NULL)
- 
- static struct device *dma_dev;
- static struct kmem_cache *lv2table_kmem_cache;
-@@ -226,7 +226,7 @@ static const struct sysmmu_fault_info sysmmu_v5_faults[] = {
- };
- 
- /*
-- * This structure is attached to dev.archdata.iommu of the master device
-+ * This structure is attached to dev->iommu->priv of the master device
-  * on device add, contains a list of SYSMMU controllers defined by device tree,
-  * which are bound to given master device. It is usually referenced by 'owner'
-  * pointer.
-@@ -670,7 +670,7 @@ static int __maybe_unused exynos_sysmmu_suspend(struct device *dev)
- 	struct device *master = data->master;
- 
- 	if (master) {
--		struct exynos_iommu_owner *owner = master->archdata.iommu;
-+		struct exynos_iommu_owner *owner = dev_iommu_priv_get(master);
- 
- 		mutex_lock(&owner->rpm_lock);
- 		if (data->domain) {
-@@ -688,7 +688,7 @@ static int __maybe_unused exynos_sysmmu_resume(struct device *dev)
- 	struct device *master = data->master;
- 
- 	if (master) {
--		struct exynos_iommu_owner *owner = master->archdata.iommu;
-+		struct exynos_iommu_owner *owner = dev_iommu_priv_get(master);
- 
- 		mutex_lock(&owner->rpm_lock);
- 		if (data->domain) {
-@@ -837,8 +837,8 @@ static void exynos_iommu_domain_free(struct iommu_domain *iommu_domain)
- static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
- 				    struct device *dev)
+diff --git a/drivers/iommu/omap-iommu.c b/drivers/iommu/omap-iommu.c
+index c8282cc212cb..e84ead6fb234 100644
+--- a/drivers/iommu/omap-iommu.c
++++ b/drivers/iommu/omap-iommu.c
+@@ -71,7 +71,7 @@ static struct omap_iommu_domain *to_omap_domain(struct iommu_domain *dom)
+  **/
+ void omap_iommu_save_ctx(struct device *dev)
  {
--	struct exynos_iommu_owner *owner = dev->archdata.iommu;
- 	struct exynos_iommu_domain *domain = to_exynos_domain(iommu_domain);
-+	struct exynos_iommu_owner *owner = dev_iommu_priv_get(dev);
- 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
- 	struct sysmmu_drvdata *data, *next;
- 	unsigned long flags;
-@@ -875,8 +875,8 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
- static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	struct omap_iommu *obj;
+ 	u32 *p;
+ 	int i;
+@@ -101,7 +101,7 @@ EXPORT_SYMBOL_GPL(omap_iommu_save_ctx);
+  **/
+ void omap_iommu_restore_ctx(struct device *dev)
+ {
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	struct omap_iommu *obj;
+ 	u32 *p;
+ 	int i;
+@@ -1398,7 +1398,7 @@ static size_t omap_iommu_unmap(struct iommu_domain *domain, unsigned long da,
+ 
+ static int omap_iommu_count(struct device *dev)
+ {
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	int count = 0;
+ 
+ 	while (arch_data->iommu_dev) {
+@@ -1459,8 +1459,8 @@ static void omap_iommu_detach_fini(struct omap_iommu_domain *odomain)
+ static int
+ omap_iommu_attach_dev(struct iommu_domain *domain, struct device *dev)
+ {
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	struct omap_iommu_domain *omap_domain = to_omap_domain(domain);
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
+ 	struct omap_iommu_device *iommu;
+ 	struct omap_iommu *oiommu;
+ 	int ret = 0;
+@@ -1524,7 +1524,7 @@ omap_iommu_attach_dev(struct iommu_domain *domain, struct device *dev)
+ static void _omap_iommu_detach_dev(struct omap_iommu_domain *omap_domain,
  				   struct device *dev)
  {
--	struct exynos_iommu_owner *owner = dev->archdata.iommu;
- 	struct exynos_iommu_domain *domain = to_exynos_domain(iommu_domain);
-+	struct exynos_iommu_owner *owner = dev_iommu_priv_get(dev);
- 	struct sysmmu_drvdata *data;
- 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
- 	unsigned long flags;
-@@ -1237,7 +1237,7 @@ static phys_addr_t exynos_iommu_iova_to_phys(struct iommu_domain *iommu_domain,
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	struct omap_iommu_device *iommu = omap_domain->iommus;
+ 	struct omap_iommu *oiommu;
+ 	int i;
+@@ -1650,7 +1650,7 @@ static struct iommu_device *omap_iommu_probe_device(struct device *dev)
+ 	int num_iommus, i;
  
- static struct iommu_device *exynos_iommu_probe_device(struct device *dev)
- {
--	struct exynos_iommu_owner *owner = dev->archdata.iommu;
-+	struct exynos_iommu_owner *owner = dev_iommu_priv_get(dev);
- 	struct sysmmu_drvdata *data;
- 
- 	if (!has_sysmmu(dev))
-@@ -1263,7 +1263,7 @@ static struct iommu_device *exynos_iommu_probe_device(struct device *dev)
- 
- static void exynos_iommu_release_device(struct device *dev)
- {
--	struct exynos_iommu_owner *owner = dev->archdata.iommu;
-+	struct exynos_iommu_owner *owner = dev_iommu_priv_get(dev);
- 	struct sysmmu_drvdata *data;
- 
- 	if (!has_sysmmu(dev))
-@@ -1287,8 +1287,8 @@ static void exynos_iommu_release_device(struct device *dev)
- static int exynos_iommu_of_xlate(struct device *dev,
- 				 struct of_phandle_args *spec)
- {
--	struct exynos_iommu_owner *owner = dev->archdata.iommu;
- 	struct platform_device *sysmmu = of_find_device_by_node(spec->np);
-+	struct exynos_iommu_owner *owner = dev_iommu_priv_get(dev);
- 	struct sysmmu_drvdata *data, *entry;
- 
- 	if (!sysmmu)
-@@ -1305,7 +1305,7 @@ static int exynos_iommu_of_xlate(struct device *dev,
- 
- 		INIT_LIST_HEAD(&owner->controllers);
- 		mutex_init(&owner->rpm_lock);
--		dev->archdata.iommu = owner;
-+		dev_iommu_priv_set(dev, owner);
+ 	/*
+-	 * Allocate the archdata iommu structure for DT-based devices.
++	 * Allocate the per-device iommu structure for DT-based devices.
+ 	 *
+ 	 * TODO: Simplify this when removing non-DT support completely from the
+ 	 * IOMMU users.
+@@ -1698,7 +1698,7 @@ static struct iommu_device *omap_iommu_probe_device(struct device *dev)
+ 		of_node_put(np);
  	}
  
- 	list_for_each_entry(entry, &owner->controllers, owner_node)
-diff --git a/drivers/media/platform/s5p-mfc/s5p_mfc_iommu.h b/drivers/media/platform/s5p-mfc/s5p_mfc_iommu.h
-index 152a713fff78..1a32266b7ddc 100644
---- a/drivers/media/platform/s5p-mfc/s5p_mfc_iommu.h
-+++ b/drivers/media/platform/s5p-mfc/s5p_mfc_iommu.h
-@@ -9,9 +9,11 @@
+-	dev->archdata.iommu = arch_data;
++	dev_iommu_priv_set(dev, arch_data);
  
- #if defined(CONFIG_EXYNOS_IOMMU)
+ 	/*
+ 	 * use the first IOMMU alone for the sysfs device linking.
+@@ -1712,19 +1712,19 @@ static struct iommu_device *omap_iommu_probe_device(struct device *dev)
  
-+#include <linux/iommu.h>
-+
- static inline bool exynos_is_iommu_available(struct device *dev)
+ static void omap_iommu_release_device(struct device *dev)
  {
--	return dev->archdata.iommu != NULL;
-+	return dev_iommu_priv_get(dev) != NULL;
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 
+ 	if (!dev->of_node || !arch_data)
+ 		return;
+ 
+-	dev->archdata.iommu = NULL;
++	dev_iommu_priv_set(dev, NULL);
+ 	kfree(arch_data);
+ 
  }
  
- #else
+ static struct iommu_group *omap_iommu_device_group(struct device *dev)
+ {
+-	struct omap_iommu_arch_data *arch_data = dev->archdata.iommu;
++	struct omap_iommu_arch_data *arch_data = dev_iommu_priv_get(dev);
+ 	struct iommu_group *group = ERR_PTR(-EINVAL);
+ 
+ 	if (!arch_data)
 -- 
 2.27.0
 
