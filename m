@@ -2,46 +2,63 @@ Return-Path: <SRS0=tFHQ=AG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6062C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:48:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1403C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:51:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7483C2082F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:48:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7483C2082F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7E497206A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:51:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ctZnhPPD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E497206A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49t1Yx5TnTzDqw6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:48:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49t1db6yzhzDqwV
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:51:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
- helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=8bytes.org
-Received: from theia.8bytes.org (8bytes.org
- [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=ctZnhPPD; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hR04PSzDqlB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:08:54 +1000 (AEST)
-Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 2BC4960C; Thu, 25 Jun 2020 15:08:40 +0200 (CEST)
-From: Joerg Roedel <joro@8bytes.org>
-To: iommu@lists.linux-foundation.org
-Subject: [PATCH 12/13] arm64: Remove dev->archdata.iommu pointer
-Date: Thu, 25 Jun 2020 15:08:35 +0200
-Message-Id: <20200625130836.1916-13-joro@8bytes.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200625130836.1916-1-joro@8bytes.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49t0sB6N0PzDqsW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:16:30 +1000 (AEST)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 21D15206A1;
+ Thu, 25 Jun 2020 13:16:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1593090988;
+ bh=hzVTufSqgXwAPMu2gHwPhbk4gm9XBC4oqWn21X0IZ0k=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ctZnhPPDJHtzPcQnLaPl/EtZl6MpuCnn1PYgaWi3dOTtapIiF6TbhyNK1ocOWuY1G
+ hXRLxa5J0cFLuuN1BlV+LPIHLN5IW274OeHHf7AR/iw9vE+CrPA+RAseI2FBiKMkWv
+ Uu/sF2Y4eHA0lhKE885aHzMjotSnwkEezGLcmiZU=
+Date: Thu, 25 Jun 2020 14:16:20 +0100
+From: Will Deacon <will@kernel.org>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 12/13] arm64: Remove dev->archdata.iommu pointer
+Message-ID: <20200625131620.GA8161@willie-the-truck>
 References: <20200625130836.1916-1-joro@8bytes.org>
+ <20200625130836.1916-13-joro@8bytes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200625130836.1916-13-joro@8bytes.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,8 +74,7 @@ Cc: linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
  David Airlie <airlied@linux.ie>,
  Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
  Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>,
- Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>, x86@kernel.org,
  Russell King <linux@armlinux.org.uk>,
  Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Joerg Roedel <jroedel@suse.de>, intel-gfx@lists.freedesktop.org,
@@ -67,36 +83,38 @@ Cc: linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
  Matthias Brugger <matthias.bgg@gmail.com>,
  linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Daniel Vetter <daniel@ffwll.ch>, David Woodhouse <dwmw2@infradead.org>,
- Lu Baolu <baolu.lu@linux.intel.com>
+ iommu@lists.linux-foundation.org, Daniel Vetter <daniel@ffwll.ch>,
+ David Woodhouse <dwmw2@infradead.org>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Joerg Roedel <jroedel@suse.de>
+On Thu, Jun 25, 2020 at 03:08:35PM +0200, Joerg Roedel wrote:
+> From: Joerg Roedel <jroedel@suse.de>
+> 
+> There are no users left, all drivers have been converted to use the
+> per-device private pointer offered by IOMMU core.
+> 
+> Signed-off-by: Joerg Roedel <jroedel@suse.de>
+> ---
+>  arch/arm64/include/asm/device.h | 3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/device.h b/arch/arm64/include/asm/device.h
+> index 12b778d55342..996498751318 100644
+> --- a/arch/arm64/include/asm/device.h
+> +++ b/arch/arm64/include/asm/device.h
+> @@ -6,9 +6,6 @@
+>  #define __ASM_DEVICE_H
+>  
+>  struct dev_archdata {
+> -#ifdef CONFIG_IOMMU_API
+> -	void *iommu;			/* private IOMMU data */
+> -#endif
+>  };
 
-There are no users left, all drivers have been converted to use the
-per-device private pointer offered by IOMMU core.
+Acked-by: Will Deacon <will@kernel.org>
 
-Signed-off-by: Joerg Roedel <jroedel@suse.de>
----
- arch/arm64/include/asm/device.h | 3 ---
- 1 file changed, 3 deletions(-)
+Thanks, Joerg.
 
-diff --git a/arch/arm64/include/asm/device.h b/arch/arm64/include/asm/device.h
-index 12b778d55342..996498751318 100644
---- a/arch/arm64/include/asm/device.h
-+++ b/arch/arm64/include/asm/device.h
-@@ -6,9 +6,6 @@
- #define __ASM_DEVICE_H
- 
- struct dev_archdata {
--#ifdef CONFIG_IOMMU_API
--	void *iommu;			/* private IOMMU data */
--#endif
- };
- 
- struct pdev_archdata {
--- 
-2.27.0
-
+Will
