@@ -2,86 +2,46 @@ Return-Path: <SRS0=tFHQ=AG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8EFCC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 11:56:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E200DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:13:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4470E206C0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 11:56:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="n3FRfqC1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4470E206C0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5805D20702
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 13:13:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5805D20702
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49sz4G1PmNzDqjd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 21:55:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49t0nv2QMRzDqS6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jun 2020 23:13:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::343;
- helo=mail-wm1-x343.google.com; envelope-from=qperret@google.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
+ helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=n3FRfqC1; dkim-atps=neutral
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
- [IPv6:2a00:1450:4864:20::343])
+ dmarc=pass (p=none dis=none) header.from=8bytes.org
+Received: from theia.8bytes.org (8bytes.org
+ [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49sz1N4wM2zDqcJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 21:53:26 +1000 (AEST)
-Received: by mail-wm1-x343.google.com with SMTP id t194so5614067wmt.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 04:53:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=L4pFCzHJgLhT16AIpG64Yl9/rDj1/+gYvG4jvCw9F50=;
- b=n3FRfqC1licA7sUvOVNsmYWGO4K/7vUEPRhyqo4fBRqJTuRXkEEQHh7uwPCnN+FcSf
- ENydElYHJy9PUQYU9sfu1loBq5H0SIftbO5Sht4ahrm0xfMnJWRT8ci/38Brp/clygPK
- L+kiUfWAo1teGmyfYs8LGk4Be7IorgzrIWkIJkU3+o97MGk2rpkBjG0TTaRxtyGh3tTs
- EeCP+GkZCM3t1EJHFzQFkTYrnf8HsuUcHNDQc4lZ7iWF+4scXEzFr1ns/1MxaOcUwWTj
- JPmiymJ2xlffeNK125ctWiPcqf8r9RQ46JpCxIewZ2tZTAghyq1qmdPz+xuCXqYbiZRg
- gZRA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=L4pFCzHJgLhT16AIpG64Yl9/rDj1/+gYvG4jvCw9F50=;
- b=L064KKwGk3zTDnZwsp/vc0dzr8yFwdvpm0krjO+EQ7f7/5zVGAjN8wWElW1A3UICdP
- vIA59AXxUMHQrvXHXx+ky4aVze+Ba/TPlSedYt3jkpI/Sz9qXEaXipW7bL6Zcc+1LAvE
- qbQc1rm89P6ZAPKQt3ZcNccaoZZYLCMzb/OlqlTWWNakBJAvWm+0MkgqQuT8MJnFLT55
- gqWr6YQwNQ6PM67Y64BlANhBcQpF2KohwZj7uFlRqb9mUnK78kSh5gN59E3ez5B5Ed5h
- vry9lTyR5w+qR6BctEGlRpGLG/IscckY77Cwx1FMDvOQh/gCaelBAZ5sfO+V+4wj83ha
- QWYg==
-X-Gm-Message-State: AOAM531Fk56TaMVkDOsaDkKgzBimZqYipQLIKKVkNt8qBkd6JCN30vqw
- B7UpiK2m4j34cb5y9KE38K0A+w==
-X-Google-Smtp-Source: ABdhPJzB3iG4QLOlxIPODy0q2tWS2+hoPSsNM/MppS52ewBi9bFqIsOWO5K4QEbJ3JGH6DNum7H2Og==
-X-Received: by 2002:a1c:2d54:: with SMTP id t81mr3196690wmt.154.1593086002391; 
- Thu, 25 Jun 2020 04:53:22 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
- by smtp.gmail.com with ESMTPSA id 104sm32104033wrl.25.2020.06.25.04.53.21
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 25 Jun 2020 04:53:21 -0700 (PDT)
-Date: Thu, 25 Jun 2020 12:53:18 +0100
-From: Quentin Perret <qperret@google.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 2/2] cpufreq: Specify default governor on command line
-Message-ID: <20200625115318.GA219598@google.com>
-References: <20200623142138.209513-1-qperret@google.com>
- <20200623142138.209513-3-qperret@google.com>
- <20200625113602.z2xrwebd2gngbww3@vireshk-i7>
- <CAJZ5v0g=+2OFKVk2ZnmK-33knUwqcaOOQ+q9ZWnmeoBD9KOX9g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g=+2OFKVk2ZnmK-33knUwqcaOOQ+q9ZWnmeoBD9KOX9g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49t0hF53HyzDqdk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2020 23:08:45 +1000 (AEST)
+Received: by theia.8bytes.org (Postfix, from userid 1000)
+ id 5B68B3FA; Thu, 25 Jun 2020 15:08:38 +0200 (CEST)
+From: Joerg Roedel <joro@8bytes.org>
+To: iommu@lists.linux-foundation.org
+Subject: [PATCH 03/13] iommu/msm: Use dev_iommu_priv_get/set()
+Date: Thu, 25 Jun 2020 15:08:26 +0200
+Message-Id: <20200625130836.1916-4-joro@8bytes.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200625130836.1916-1-joro@8bytes.org>
+References: <20200625130836.1916-1-joro@8bytes.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,41 +53,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>,
- "Cc: Android Kernel" <kernel-team@android.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
- Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, adharmap@codeaurora.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Todd Kjos <tkjos@google.com>
+Cc: linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+ David Airlie <airlied@linux.ie>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>,
+ Joerg Roedel <joro@8bytes.org>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Joerg Roedel <jroedel@suse.de>, intel-gfx@lists.freedesktop.org,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Daniel Vetter <daniel@ffwll.ch>, David Woodhouse <dwmw2@infradead.org>,
+ Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thursday 25 Jun 2020 at 13:44:34 (+0200), Rafael J. Wysocki wrote:
-> On Thu, Jun 25, 2020 at 1:36 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > This change is not right IMO. This part handles the set-policy case,
-> > where there are no governors. Right now this code, for some reasons
-> > unknown to me, forcefully uses the default governor set to indicate
-> > the policy, which is not a great idea in my opinion TBH. This doesn't
-> > and shouldn't care about governor modules and should only be looking
-> > at strings instead of governor pointer.
-> 
-> Sounds right.
-> 
-> > Rafael, I even think we should remove this code completely and just
-> > rely on what the driver has sent to us. Using the selected governor
-> > for set policy drivers is very confusing and also we shouldn't be
-> > forced to compiling any governor for the set-policy case.
-> 
-> Well, AFAICS the idea was to use the default governor as a kind of
-> default policy proxy, but I agree that strings should be sufficient
-> for that.
+From: Joerg Roedel <jroedel@suse.de>
 
-I agree with all the above. I'd much rather not rely on the default
-governor name to populate the default policy, too, so +1 from me.
+Remove the use of dev->archdata.iommu and use the private per-device
+pointer provided by IOMMU core code instead.
 
-Thanks,
-Quentin
+Signed-off-by: Joerg Roedel <jroedel@suse.de>
+---
+ drivers/iommu/msm_iommu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/iommu/msm_iommu.c b/drivers/iommu/msm_iommu.c
+index 3d8a63555c25..f773cc85f311 100644
+--- a/drivers/iommu/msm_iommu.c
++++ b/drivers/iommu/msm_iommu.c
+@@ -593,14 +593,14 @@ static void insert_iommu_master(struct device *dev,
+ 				struct msm_iommu_dev **iommu,
+ 				struct of_phandle_args *spec)
+ {
+-	struct msm_iommu_ctx_dev *master = dev->archdata.iommu;
++	struct msm_iommu_ctx_dev *master = dev_iommu_priv_get(dev);
+ 	int sid;
+ 
+ 	if (list_empty(&(*iommu)->ctx_list)) {
+ 		master = kzalloc(sizeof(*master), GFP_ATOMIC);
+ 		master->of_node = dev->of_node;
+ 		list_add(&master->list, &(*iommu)->ctx_list);
+-		dev->archdata.iommu = master;
++		dev_iommu_priv_set(dev, master);
+ 	}
+ 
+ 	for (sid = 0; sid < master->num_mids; sid++)
+-- 
+2.27.0
+
