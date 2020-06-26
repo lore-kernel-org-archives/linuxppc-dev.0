@@ -7,72 +7,73 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5391C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:24:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47C35C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:26:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5280B206C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:24:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E325520B1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:26:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="FaG6BPJO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5280B206C3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="ZVmC9pMZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E325520B1F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tqdZ2r0pzDqLX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:24:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tqgn6lS3zDqF7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:26:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=flex--brendanhiggins.bounces.google.com
- (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com;
- envelope-from=3emt2xg4kalesiveureyzxxzejxffxcv.tfd@flex--brendanhiggins.bounces.google.com;
+ (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com;
+ envelope-from=3gmt2xg4kalkaqdmczmghffhmrfnnfkd.bnl@flex--brendanhiggins.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=FaG6BPJO; dkim-atps=neutral
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
- [IPv6:2607:f8b0:4864:20::b49])
+ header.s=20161025 header.b=ZVmC9pMZ; dkim-atps=neutral
+Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com
+ [IPv6:2607:f8b0:4864:20::54a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tqJq5f98zDr0m
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:09:41 +1000 (AEST)
-Received: by mail-yb1-xb49.google.com with SMTP id 186so10971568yby.19
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:09:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tqK02YzLzDr1V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:09:49 +1000 (AEST)
+Received: by mail-pg1-x54a.google.com with SMTP id j9so3936688pgm.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:09:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=date:in-reply-to:message-id:mime-version:references:subject:from:to
- :cc; bh=0yqonjfzX9QxirGgFehpVVIaduO9UwtK5AmrI3GZ6yQ=;
- b=FaG6BPJOXqjkyKLdRnfSYXHm4L0jMa167g8811Lc7KLLlCTrzx/EQhd2p1zEmN8PgZ
- eB/39SbjyqN9BS8uPjwCNk7B5FsKAFwGTf1tuQeTrrcWg0NmPDwVVJs2OdysNF250ny5
- VYaIvUovIyhI0P7CGnSMLOC4oR5g5U3C2mMCTEaBeRjRz4nSG9vfnZlX1rK6IaoepxUC
- OETugj/DQlGSwMOcs9b8H9dJLwc6Tt/4GycvP67g10bX3dUOb3wTDg7Yur+2thuv7XMd
- 8zfhI3HS7mzzji3B8LIE8DyWvvEPyzQNBqzsZvR7kNzhDpKtRNvWLOtXRNexo7z4c1j/
- ay6g==
+ :cc; bh=/YfJhHqk1scz1aBXF0mupkQea8lbBQgP2jeC+IACUDE=;
+ b=ZVmC9pMZrVunA2Fe2R9SmfDjSh6jHe61Xaa87YaHusNTBjJf/LeLbaReVAu2j9TGqG
+ DxFNyk3GpI7sLmWMCSdQD7bvz9rONUgJGdF7uQgwV9+yZ/fSaQQKgZ4gmTg7ATax4Vk1
+ oV5uEEY5wckV5kA6VI1hcndIeFh/iBm6by2153y7uZEUrlPNuhJOGVBqtgu612iYSDS5
+ kqjVhZYud4bB1XAnEHsKMzN8i0QHS6lt4v2+aUunA9LQhB4hkvgOKdZy4uYW9e9c4Pee
+ JZVonLmRJ7SKlMenwZofGiFcAJe3AeZZuDV2tMMxx47AoxweQmK1o1oVFzbg31I8w3zR
+ nK+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:in-reply-to:message-id:mime-version
  :references:subject:from:to:cc;
- bh=0yqonjfzX9QxirGgFehpVVIaduO9UwtK5AmrI3GZ6yQ=;
- b=GPp63hhuKgfoZLwIiggCi4S/DPSckxAbtC5V0+In1lh6cKcb8L0uktDya8NpIm8JVV
- pesFkb/nPy11pey7NC1n5Yg+eYdUTWphXiCJe2Fvc+7TOI1dYJWQFSn1FHRRgGjwc3QM
- pOsJbM2DVO5EDLVqUiZ1/VzyDHJs+i7bzJ8XiAtCvJABWIUJECoTolQEWQKh57yA94f0
- Lm5ESWN21ZUIKlrb6WFjkDYc1miuy6vaRnL3cOq8MvQILpmOSoJS6W2rtRXGJ57+hK4B
- UIbKyCyxM4Vp0aGm6fGO0dx4Mmp8rfylURi7YVWWMXxczNeaRnXSNhrPoOVknlWY40Dt
- FoXw==
-X-Gm-Message-State: AOAM53161Mf8T/ScZEuXd55KbSbIMt1CneQKB0SLKC8hzcVqdOVRf28K
- bIg+bQjUn9uK+LMIAWxTMstolZDbIR9rq7ibAG3MJQ==
-X-Google-Smtp-Source: ABdhPJxVflv3SCvp9JwoHo/UGnaxlb8CfXLJfB6dEMmcpSpa5wRtOC4xX2AOsngFm6ZmdW4ISlhdBDuYipqi7x98m3Pohg==
-X-Received: by 2002:a25:e8b:: with SMTP id 133mr8080620ybo.13.1593205778812;
- Fri, 26 Jun 2020 14:09:38 -0700 (PDT)
-Date: Fri, 26 Jun 2020 14:09:13 -0700
+ bh=/YfJhHqk1scz1aBXF0mupkQea8lbBQgP2jeC+IACUDE=;
+ b=OloDdoZOI38ecQennvAbJvh5pQPx47bPHTCoZlY+aZdm016DmgrRkxQt4iwQO1KOzg
+ P4w8B2l7rVMOM2r+bGnHiDWWO8o49UbKG+ckfUCFEVkZXHRcPAKIt9KrK8oER3SiCNfn
+ b/B6vVVcYWljiI/ysKf78FGcJ085++PCa9vRX+nn4zi1fdjnT2+kxgHF5Jv0rA0IW9qx
+ KfzsUyrWc/rnAD9fuSuP7j++xcZEWmx5r3Cz02Dh9LDJ9vsMcFyISw+iS3I79SB/piQ5
+ 4+JIqIBMyJRyCf7DENeAHOKdUwnugwZhw42Tg7MFF/5SyUDChtnu1Xdn7UkJkVAnJO1G
+ DThg==
+X-Gm-Message-State: AOAM533VbNmcmNtojIWhUG1D3sF3GVwFn+bDYAD6YR0bp/A8UmHPLThJ
+ s7KCfqVQzxBuJ80LWk+xoQyANIuZOSvH6xZn2yxbHw==
+X-Google-Smtp-Source: ABdhPJyHSEr0Zmc7EVSRsW7eDiy4Wfh57qQNf0udG5ob/OtFkSC+pCfiBpVQAOifQwHuQ/h0kM0ynYxDTAXmSlHhH6715Q==
+X-Received: by 2002:a65:6707:: with SMTP id u7mr567899pgf.233.1593205786593;
+ Fri, 26 Jun 2020 14:09:46 -0700 (PDT)
+Date: Fri, 26 Jun 2020 14:09:17 -0700
 In-Reply-To: <20200626210917.358969-1-brendanhiggins@google.com>
-Message-Id: <20200626210917.358969-9-brendanhiggins@google.com>
+Message-Id: <20200626210917.358969-13-brendanhiggins@google.com>
 Mime-Version: 1.0
 References: <20200626210917.358969-1-brendanhiggins@google.com>
 X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
-Subject: [PATCH v5 08/12] init: main: add KUnit to kernel init
+Subject: [PATCH v5 12/12] Documentation: kunit: add a brief blurb about
+ kunit_test_suite
 From: Brendan Higgins <brendanhiggins@google.com>
 To: jdike@addtoit.com, richard@nod.at, anton.ivanov@cambridgegreys.com, 
  arnd@arndb.de, keescook@chromium.org, skhan@linuxfoundation.org, 
@@ -103,81 +104,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove KUnit from init calls entirely, instead call directly from
-kernel_init().
+Add a brief blurb saying how and when the kunit_test_suite() macro
+works to the usage documentation.
 
-Co-developed-by: Alan Maguire <alan.maguire@oracle.com>
-Signed-off-by: Alan Maguire <alan.maguire@oracle.com>
 Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
-Reviewed-by: Stephen Boyd <sboyd@kernel.org>
 ---
- include/kunit/test.h | 9 +++++++++
- init/main.c          | 4 ++++
- lib/kunit/executor.c | 4 +---
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ Documentation/dev-tools/kunit/usage.rst | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/include/kunit/test.h b/include/kunit/test.h
-index f3e86c3953a2b..795039d9f1917 100644
---- a/include/kunit/test.h
-+++ b/include/kunit/test.h
-@@ -228,6 +228,15 @@ int __kunit_test_suites_init(struct kunit_suite * const * const suites);
+diff --git a/Documentation/dev-tools/kunit/usage.rst b/Documentation/dev-tools/kunit/usage.rst
+index 3c3fe8b5feccf..961d3ea3ca19a 100644
+--- a/Documentation/dev-tools/kunit/usage.rst
++++ b/Documentation/dev-tools/kunit/usage.rst
+@@ -211,6 +211,11 @@ KUnit test framework.
+ .. note::
+    A test case will only be run if it is associated with a test suite.
  
- void __kunit_test_suites_exit(struct kunit_suite **suites);
- 
-+#if IS_BUILTIN(CONFIG_KUNIT)
-+int kunit_run_all_tests(void);
-+#else
-+static inline int kunit_run_all_tests(void)
-+{
-+	return 0;
-+}
-+#endif /* IS_BUILTIN(CONFIG_KUNIT) */
++``kunit_test_suite(...)`` is a macro which tells the linker to put the specified
++test suite in a special linker section so that it can be run by KUnit either
++after late_init, or when the test module is loaded (depending on whether the
++test was built in or not).
 +
- /**
-  * kunit_test_suites() - used to register one or more &struct kunit_suite
-  *			 with KUnit.
-diff --git a/init/main.c b/init/main.c
-index 0ead83e86b5aa..d3101d8874dea 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -106,6 +106,8 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/initcall.h>
+ For more information on these types of things see the :doc:`api/test`.
  
-+#include <kunit/test.h>
-+
- static int kernel_init(void *);
- 
- extern void init_IRQ(void);
-@@ -1504,6 +1506,8 @@ static noinline void __init kernel_init_freeable(void)
- 
- 	do_basic_setup();
- 
-+	kunit_run_all_tests();
-+
- 	console_on_rootfs();
- 
- 	/*
-diff --git a/lib/kunit/executor.c b/lib/kunit/executor.c
-index 7015e7328dce7..4aab7f70a88c3 100644
---- a/lib/kunit/executor.c
-+++ b/lib/kunit/executor.c
-@@ -11,7 +11,7 @@ extern struct kunit_suite * const * const __kunit_suites_end[];
- 
- #if IS_BUILTIN(CONFIG_KUNIT)
- 
--static int kunit_run_all_tests(void)
-+int kunit_run_all_tests(void)
- {
- 	struct kunit_suite * const * const *suites;
- 
-@@ -23,6 +23,4 @@ static int kunit_run_all_tests(void)
- 	return 0;
- }
- 
--late_initcall(kunit_run_all_tests);
--
- #endif /* IS_BUILTIN(CONFIG_KUNIT) */
+ Isolating Behavior
 -- 
 2.27.0.212.ge8ba1cc988-goog
 
