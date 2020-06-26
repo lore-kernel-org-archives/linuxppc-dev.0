@@ -2,94 +2,94 @@ Return-Path: <SRS0=Zm8d=AH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5E6DC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90BFDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 15:29:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F29B2080C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:20:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F29B2080C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 04EC1207E8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 15:29:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j1AhPU9q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04EC1207E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tcts6TKszDqC0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 23:20:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tgm33MnDzDqw2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 01:29:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::741;
+ helo=mail-qk1-x741.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=j1AhPU9q; dkim-atps=neutral
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tcgc36MrzDqsG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 23:10:20 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05QD4YBT114975; Fri, 26 Jun 2020 09:10:14 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31vbn8asj0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 09:10:13 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05QD57Wv117423;
- Fri, 26 Jun 2020 09:10:12 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31vbn8asfa-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 09:10:12 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05QD2J6R030323;
- Fri, 26 Jun 2020 13:10:08 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 31uusjjypd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 13:10:08 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05QDA5h05702058
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Jun 2020 13:10:05 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B7807A4067;
- Fri, 26 Jun 2020 13:10:05 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 905A0A405C;
- Fri, 26 Jun 2020 13:10:04 +0000 (GMT)
-Received: from bharata.ibmuc.com (unknown [9.199.37.181])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Jun 2020 13:10:04 +0000 (GMT)
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 1/3] powerpc/mm: Enable radix GTSE only if supported.
-Date: Fri, 26 Jun 2020 18:39:58 +0530
-Message-Id: <20200626131000.5207-2-bharata@linux.ibm.com>
-X-Mailer: git-send-email 2.21.3
-In-Reply-To: <20200626131000.5207-1-bharata@linux.ibm.com>
-References: <20200626131000.5207-1-bharata@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tgdQ4VjzzDqrj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 01:23:37 +1000 (AEST)
+Received: by mail-qk1-x741.google.com with SMTP id j80so9115173qke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 08:23:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :organization:user-agent:mime-version:content-transfer-encoding;
+ bh=AcfGMzYp7QqfA2+kE0gyDBm3KnBHvfAWT9HgF7mZJ8Y=;
+ b=j1AhPU9qp6hE6bSHig7NwWJXhfyzdEkDs3C7God/Eh4gBV6HCsFAOUEJDrlfxb3XG2
+ w3jie5LDsUHP5ks9naDcnHuDFpIiZ+Y0zAUT0iEGl5xrdwD6Aez4kNtfRPYMB+SkuWuL
+ D4mCU2q7wcTS6tDaouTps7GUhbjlgIH31NV+Sfnvcbvzd380gdV9KMDFDNsSTLyApAl3
+ MIEjT7fA+gG9dKIBf4GLSHvcLtZWVDR7rF/93pBUQqvNDsaRkG7lLAr8rnqz/UqkLSD1
+ ALJqPF8k6omIKdzsQ89y4oLUjmhUi+AiuF89DOKEuBb6JAj1UOQE/6GWYyO1Z/dhi7cu
+ JbyA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:organization:user-agent:mime-version
+ :content-transfer-encoding;
+ bh=AcfGMzYp7QqfA2+kE0gyDBm3KnBHvfAWT9HgF7mZJ8Y=;
+ b=Z7xqBKGp8mSI9CgKblSEh31GRH1l/Jq+TcOy+Ez+ro5sG89f+An0cucB5EwRDfYZIo
+ mrljXNcbNIwwVVIixLil1/jEN2gaEMfKHFjYofhtsIQIgBUDy4S8v+YuAEATvhInrqpA
+ wxbULq0FYQB7zR05WwS9b8Bfg3DLfKAlu/tLxF7XsLAbaRfxjUyqWL7u1uiAsUSSubPY
+ OpFgzYF1rSIBIyTeV52AaEbeXaPmh5XFHy2h3zJI9k/pLToHHBGwmWm+tPX3R1JnVAuC
+ C+RsY5B5KA2n4TUxy1lDHpyHExGkHzqFYJuQCb8ZagizydLpox2wtpCrlRbbNjlwxd6Y
+ L2Bg==
+X-Gm-Message-State: AOAM530tDJbCDYS1CyXTWEfjI3jc8yFl5p5yXh03KOjRphJ20zXMwg+N
+ 9RhfZQZFznNJ1gOvCW7tVfc=
+X-Google-Smtp-Source: ABdhPJyYqRHXlQ9Y8424iFw4ajWlqOYStgwldP/zJe3QQZ1Kbeq+GnV0kcw5Wo5sotNmovMyH3yqDg==
+X-Received: by 2002:a37:c50:: with SMTP id 77mr933027qkm.445.1593185013732;
+ Fri, 26 Jun 2020 08:23:33 -0700 (PDT)
+Received: from LeoBras (200-236-242-115.dynamic.desktop.com.br.
+ [200.236.242.115])
+ by smtp.gmail.com with ESMTPSA id q47sm9765744qta.16.2020.06.26.08.23.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 26 Jun 2020 08:23:33 -0700 (PDT)
+Message-ID: <14da928d1cae8779a93228455c4873c127eeffa6.camel@gmail.com>
+Subject: Re: [PATCH v2 5/6] powerpc/pseries/iommu: Make use of DDW even if
+ it does not map the partition
+From: Leonardo Bras <leobras.c@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alexey
+ Kardashevskiy
+ <aik@ozlabs.ru>, Thiago Jung Bauermann <bauerman@linux.ibm.com>, Ram Pai
+ <linuxram@us.ibm.com>
+Date: Fri, 26 Jun 2020 12:23:28 -0300
+In-Reply-To: <20200624062411.367796-6-leobras.c@gmail.com>
+References: <20200624062411.367796-1-leobras.c@gmail.com>
+ <20200624062411.367796-6-leobras.c@gmail.com>
+Organization: IBM
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-26_06:2020-06-26,
- 2020-06-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 spamscore=0
- adultscore=0 impostorscore=0 mlxscore=0 phishscore=0 priorityscore=1501
- cotscore=-2147483648 suspectscore=1 bulkscore=0 clxscore=1015
- lowpriorityscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006260091
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,108 +101,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, Bharata B Rao <bharata@linux.ibm.com>,
- npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make GTSE an MMU feature and enable it by default for radix.
-However for guest, conditionally enable it if hypervisor supports
-it via OV5 vector. Let prom_init ask for radix GTSE only if the
-support exists.
+On Wed, 2020-06-24 at 03:24 -0300, Leonardo Bras wrote:
+> As of today, if a DDW is created and can't map the whole partition, it's
+> removed and the default DMA window "ibm,dma-window" is used instead.
+> 
+> Usually this DDW is bigger than the default DMA window, so it would be
+> better to make use of it instead.
+> 
+> Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
+> ---
 
-Having GTSE as an MMU feature will make it easy to enable radix
-without GTSE. Currently radix assumes GTSE is enabled by default.
+I tested this change with a 256GB DDW which did not map the whole
+partition, with a MT27700 Family [ConnectX-4 Virtual Function].
 
-Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
----
- arch/powerpc/include/asm/mmu.h    |  4 ++++
- arch/powerpc/kernel/dt_cpu_ftrs.c |  1 +
- arch/powerpc/kernel/prom_init.c   | 13 ++++++++-----
- arch/powerpc/mm/init_64.c         |  5 ++++-
- 4 files changed, 17 insertions(+), 6 deletions(-)
+I noticed the performance improvement is about the same as using DDW
+with IOMMU bypass.
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index f4ac25d4df05..884d51995934 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -28,6 +28,9 @@
-  * Individual features below.
-  */
- 
-+/* Guest Translation Shootdown Enable */
-+#define MMU_FTR_GTSE			ASM_CONST(0x00001000)
-+
- /*
-  * Support for 68 bit VA space. We added that from ISA 2.05
-  */
-@@ -173,6 +176,7 @@ enum {
- #endif
- #ifdef CONFIG_PPC_RADIX_MMU
- 		MMU_FTR_TYPE_RADIX |
-+		MMU_FTR_GTSE |
- #ifdef CONFIG_PPC_KUAP
- 		MMU_FTR_RADIX_KUAP |
- #endif /* CONFIG_PPC_KUAP */
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index a0edeb391e3e..ac650c233cd9 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -336,6 +336,7 @@ static int __init feat_enable_mmu_radix(struct dt_cpu_feature *f)
- #ifdef CONFIG_PPC_RADIX_MMU
- 	cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
- 	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
-+	cur_cpu_spec->mmu_features |= MMU_FTR_GTSE;
- 	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
- 
- 	return 1;
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 90c604d00b7d..cbc605cfdec0 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1336,12 +1336,15 @@ static void __init prom_check_platform_support(void)
- 		}
- 	}
- 
--	if (supported.radix_mmu && supported.radix_gtse &&
--	    IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
--		/* Radix preferred - but we require GTSE for now */
--		prom_debug("Asking for radix with GTSE\n");
-+	if (supported.radix_mmu && IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
-+		/* Radix preferred - Check if GTSE is also supported */
-+		prom_debug("Asking for radix\n");
- 		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_RADIX);
--		ibm_architecture_vec.vec5.radix_ext = OV5_FEAT(OV5_RADIX_GTSE);
-+		if (supported.radix_gtse)
-+			ibm_architecture_vec.vec5.radix_ext =
-+					OV5_FEAT(OV5_RADIX_GTSE);
-+		else
-+			prom_debug("Radix GTSE isn't supported\n");
- 	} else if (supported.hash_mmu) {
- 		/* Default to hash mmu (if we can) */
- 		prom_debug("Asking for hash\n");
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index bc73abf0bc25..152aa0200cef 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -407,12 +407,15 @@ static void __init early_check_vec5(void)
- 		if (!(vec5[OV5_INDX(OV5_RADIX_GTSE)] &
- 						OV5_FEAT(OV5_RADIX_GTSE))) {
- 			pr_warn("WARNING: Hypervisor doesn't support RADIX with GTSE\n");
--		}
-+			cur_cpu_spec->mmu_features &= ~MMU_FTR_GTSE;
-+		} else
-+			cur_cpu_spec->mmu_features |= MMU_FTR_GTSE;
- 		/* Do radix anyway - the hypervisor said we had to */
- 		cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
- 	} else if (mmu_supported == OV5_FEAT(OV5_MMU_HASH)) {
- 		/* Hypervisor only supports hash - disable radix */
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
-+		cur_cpu_spec->mmu_features &= ~MMU_FTR_GTSE;
- 	}
- }
- 
--- 
-2.21.3
+64 thread write throughput: +203.0%
+64 thread read throughput: +17.5%
+1 thread write throughput: +20.5%
+1 thread read throughput: +3.43%
+Averag
+e write latency: -23.0%
+Average read latency:  -2.26%
+
 
