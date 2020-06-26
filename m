@@ -2,84 +2,65 @@ Return-Path: <SRS0=Zm8d=AH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EF4AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 10:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39855C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 11:48:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8DDF20768
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 10:34:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8DDF20768
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A8C852080C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 11:48:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="BiSmIrJG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8C852080C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alien8.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tYCY63K8zDr4Y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 20:34:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tZrh1mvQzDqvr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:48:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457;
+ helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256
+ header.s=dkim header.b=BiSmIrJG; dkim-atps=neutral
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tY5F6r8CzDqwW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 20:28:49 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05QA3Fhb048388; Fri, 26 Jun 2020 06:28:45 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31vbmuywbb-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 06:28:45 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05QALUsV029676;
- Fri, 26 Jun 2020 10:28:33 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 31uusjjts6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 10:28:33 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05QASUaL34603092
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Jun 2020 10:28:30 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 67DA3A405F;
- Fri, 26 Jun 2020 10:28:30 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7E548A405B;
- Fri, 26 Jun 2020 10:28:28 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.199.40.11])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Jun 2020 10:28:28 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 0/2] Add cpu hotplug support for powerpc/perf/hv-24x7
-Date: Fri, 26 Jun 2020 15:58:22 +0530
-Message-Id: <20200626102824.270923-1-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tZpd6GdvzDqsZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 21:46:16 +1000 (AEST)
+Received: from zn.tnic (p200300ec2f0d140021dd7ed6b715c4c4.dip0.t-ipconnect.de
+ [IPv6:2003:ec:2f0d:1400:21dd:7ed6:b715:c4c4])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 23A021EC0328;
+ Fri, 26 Jun 2020 13:46:09 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+ t=1593171969;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+ bh=yucFdKjCgoeX7C5mwPW8/rg/saxXn/xSVvZ7fS34kZo=;
+ b=BiSmIrJGCJ0faVBTZtyCh7yIB1Uqh9DHPhI2oITaZpZkMxJelcG9IUXj87k4aPSN9CDwfQ
+ NWSmB1HxwZn/+psfecdpLWBxf30ds9kL9HUXdAG1jYW/DrYmbBsZMtJGqwHemik4kwPaUw
+ f1ErWNzJemfGf7t3q9dl/erT/q4WHto=
+Date: Fri, 26 Jun 2020 13:46:03 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 09/13] x86: Remove dev->archdata.iommu pointer
+Message-ID: <20200626114603.GC27151@zn.tnic>
+References: <20200625130836.1916-1-joro@8bytes.org>
+ <20200625130836.1916-10-joro@8bytes.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-26_05:2020-06-26,
- 2020-06-26 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 malwarescore=0
- bulkscore=0 impostorscore=0 suspectscore=0 adultscore=0 spamscore=0
- phishscore=0 clxscore=1015 cotscore=-2147483648 mlxlogscore=999
- lowpriorityscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006260073
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20200625130836.1916-10-joro@8bytes.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,44 +72,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
- kjain@linux.ibm.com, suka@us.ibm.com, anju@linux.vnet.ibm.com
+Cc: linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+ David Airlie <airlied@linux.ie>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Joerg Roedel <jroedel@suse.de>, intel-gfx@lists.freedesktop.org,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Daniel Vetter <daniel@ffwll.ch>,
+ David Woodhouse <dwmw2@infradead.org>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset add cpu hotplug support for hv_24x7 driver by adding
-online/offline cpu hotplug function. It also add sysfs file
-"cpumask" to expose current online cpu that can be used for
-hv_24x7 event count.
+On Thu, Jun 25, 2020 at 03:08:32PM +0200, Joerg Roedel wrote:
+> From: Joerg Roedel <jroedel@suse.de>
+> 
+> There are no users left, all drivers have been converted to use the
+> per-device private pointer offered by IOMMU core.
+> 
+> Signed-off-by: Joerg Roedel <jroedel@suse.de>
+> ---
+>  arch/x86/include/asm/device.h | 3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/device.h b/arch/x86/include/asm/device.h
+> index 49bd6cf3eec9..7c0a52ca2f4d 100644
+> --- a/arch/x86/include/asm/device.h
+> +++ b/arch/x86/include/asm/device.h
+> @@ -3,9 +3,6 @@
+>  #define _ASM_X86_DEVICE_H
+>  
+>  struct dev_archdata {
+> -#ifdef CONFIG_IOMMU_API
+> -	void *iommu; /* hook for IOMMU specific extension */
+> -#endif
+>  };
+>  
+>  struct pdev_archdata {
+> -- 
 
-Changelog:
-v2 -> v3
-- Corrected some of the typo mistakes and update commit message
-  as suggested by Gautham R Shenoy.
-- Added Reviewed-by tag for the first patch in the patchset.
-
-v1 -> v2
-- Changed function to pick active cpu incase of offline
-  from "cpumask_any_but" to "cpumask_last", as
-  cpumask_any_but function pick very next online cpu and incase where
-  we are sequentially off-lining multiple cpus, "pmu_migrate_context"
-  can add extra latency.
-  - Suggested by: Gautham R Shenoy.
-
-- Change documentation for cpumask and rather then hardcode the
-  initialization for cpumask_attr_group, add loop to get very first
-  NULL as suggested by Gautham R Shenoy.
-
-Kajol Jain (2):
-  powerpc/perf/hv-24x7: Add cpu hotplug support
-  powerpc/hv-24x7: Add sysfs files inside hv-24x7 device to show cpumask
-
- .../sysfs-bus-event_source-devices-hv_24x7    |  7 ++
- arch/powerpc/perf/hv-24x7.c                   | 79 ++++++++++++++++++-
- include/linux/cpuhotplug.h                    |  1 +
- 3 files changed, 86 insertions(+), 1 deletion(-)
+Acked-by: Borislav Petkov <bp@suse.de>
 
 -- 
-2.18.2
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
