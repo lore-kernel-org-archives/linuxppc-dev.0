@@ -4,76 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4341AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:32:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99755C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:34:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D9CF520B1F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:32:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 43F1720B1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:34:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="EvV5AKqL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9CF520B1F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="EgEb6z0Z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43F1720B1F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tqq764qTzDqnM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:32:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tqsS2hlfzDr6P
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:34:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=flex--brendanhiggins.bounces.google.com
- (client-ip=2607:f8b0:4864:20::249; helo=mail-oi1-x249.google.com;
- envelope-from=3fmt2xg4kaluwmziyvicdbbdinbjjbgz.xjh@flex--brendanhiggins.bounces.google.com;
+ (client-ip=2607:f8b0:4864:20::349; helo=mail-ot1-x349.google.com;
+ envelope-from=3ewt2xg4kalarhudtqdxywwydiweewbu.sec@flex--brendanhiggins.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=EvV5AKqL; dkim-atps=neutral
-Received: from mail-oi1-x249.google.com (mail-oi1-x249.google.com
- [IPv6:2607:f8b0:4864:20::249])
+ header.s=20161025 header.b=EgEb6z0Z; dkim-atps=neutral
+Received: from mail-ot1-x349.google.com (mail-ot1-x349.google.com
+ [IPv6:2607:f8b0:4864:20::349])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tqRs0Pf8zDqkS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:15:52 +1000 (AEST)
-Received: by mail-oi1-x249.google.com with SMTP id r9so7011818oia.22
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:15:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tqSR1vgkzDr1m
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:16:22 +1000 (AEST)
+Received: by mail-ot1-x349.google.com with SMTP id z16so6760356otj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:16:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=date:in-reply-to:message-id:mime-version:references:subject:from:to
- :cc; bh=2m42nyan1QaRICISfHXn3ke8By3LNXcToZfpb47eLnc=;
- b=EvV5AKqL3cJFlET9VlHMspDvH6mNrw9mdUE19R+kJN+pESV53C6mXgdfC4clw0ELfW
- tr1lXfgcFIiRv4MoSwDDJw9jES4cPLxshoo4C7q31woRW8JkH4PJyxgKB3GXH0/ppNWd
- VYX0IClBCrnQPoVcJ7+R41T9X+pxOD5zTcbXFZUkeJP1HULYEbP1KoSYcn4K2bAedO1v
- PFbWA1LgvH8S3ANmNmQpeNJVoIh0t7N4GhwGwZJhqxQZ2el0LxOrgFNYE/ayUYd81Dy1
- cmA2NsAPucNm9mEnjHr2mMd8N/IQtdaZZ8ZxjgdncUA3OeneJDLj9pAe/uiXPqgh5ocE
- Z5Sw==
+ :cc; bh=AHw7eTt3kNRhCTPRdI7a3/Q4VbxrDRI268NPSKYtYtA=;
+ b=EgEb6z0ZZGVmu1fNcQ3dOql9kA1tbb0fvnnrRM/sxJzQ6d2cSOEViji1kFxtWUlEku
+ J8YGUxfoiHhAJQ2taPu3Wy/1AExkmZBFZArcvQhqLUogYjHdIViutvUcmVNCwLR7qpaL
+ 440e3/PSITV8Zo8y851oL53K5e+D4FsydtfU603JBiOI8WyCbqbVrQJkJZHtHq9UyhMA
+ +tBp8bkqrFw9IrZ0XvvjNKUqCIuy/4XLzhoauWNKYzqk+qm41bVJ85I8/Eppl272LT7U
+ AgZiQq11IqCgAh7wgDuJns8zEkWlYO9+Nljw7uFY2H2eAwYFcyK45Uz2FpF1xlJKRSMT
+ bFVQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:in-reply-to:message-id:mime-version
  :references:subject:from:to:cc;
- bh=2m42nyan1QaRICISfHXn3ke8By3LNXcToZfpb47eLnc=;
- b=N0qfcLrWlZM8qrGTgrU42nKvzjp4Cyj0W44mWcfpuYjdhRzZ7shZ91O4e6TAZBIh7o
- wnDC2kseTfldbNh2r+RZbl16HygsoIWTBjxbCXkK/mCqUkXzGBDZBO9KZp/PTMR0L2Tj
- tud1THFormKlKgjdfc6kP0RJMqbAIrR/uZz7Flr2k25HlrD4i3SWdNxaMe2AsaQchrdc
- nV/HS4loUiBmi1p4GjX2aamoFD+2uEmx/pq7UnAtJBPTq4EBZnKOCTZyhkumYCn0ZHqJ
- OgL8PXQPAf7JUOhZKHI41lcz7JxYsPSnRQIlCdXlImwFE5NugEI27BHjfGK5b2rAwxnK
- Qa1A==
-X-Gm-Message-State: AOAM530cdEbaZkrbXhQLtNJAPDxv8X90bXKZcEKXwv47jaK/cs3xfhRu
- XZL4qlYnutbmWd9rgwn51maQIqCO/Q8W6SpkWD0Q2w==
-X-Google-Smtp-Source: ABdhPJy0+rXtJcmUjQAOQ1aAvDwonrj9UP+Ys357A/5trD7jFzZV4nkOkOzYhaN1/GJa0Ye3QtES5GjMO0EI2sSfq7X/1A==
-X-Received: by 2002:a17:90b:3746:: with SMTP id
- ne6mr5608123pjb.166.1593205782452; 
- Fri, 26 Jun 2020 14:09:42 -0700 (PDT)
-Date: Fri, 26 Jun 2020 14:09:15 -0700
+ bh=AHw7eTt3kNRhCTPRdI7a3/Q4VbxrDRI268NPSKYtYtA=;
+ b=ArNMHevZKCx8bw9vQDgNwM6lIN207nL6C595WdnuQJIT4FrQ25gXf5SpWVklMJDpZZ
+ u1n7JF2KOTb69Y7gYYx164LvLO/W3o73NVGVUy2cuU1KWSrdSkN1qfCdstqvxACQWUmD
+ dI3m0l3wQzW9PjAipf6l9AKTSY19R3IzbArA2SE3wfIu98Ml5FIsdr7E7ec6XSFtGZrl
+ K6yXX4e+aQ8P0F0GlpISIOEZlYq8WYnbOA+uGtIhHyIe/ykOqNYmgOVMb5aHUqz37tND
+ kKwipikemaqxwWYGFs+fmfnPleJoZBhkmP7H5xTPgwFv6FhSUzVixk+UDtZJEEXPLqi+
+ PgAg==
+X-Gm-Message-State: AOAM532KDfmQDIE9ly4KlAmf7eOac/guR2APl+dv8MeCzGFUx/Z6Lg4W
+ r2D0Kv9LHRiabiFclzm24zIsUqqWgPx3APBJKTKTTA==
+X-Google-Smtp-Source: ABdhPJwjMrEWqDrzKZP5TfgXV9stF5mzNr1imyposRlLmCjYoYCvSwErT4gLYh9BIALp7Y64vNpq9tzyEbAkEePgqcUXsw==
+X-Received: by 2002:a17:90a:f694:: with SMTP id
+ cl20mr5647605pjb.141.1593205777010; 
+ Fri, 26 Jun 2020 14:09:37 -0700 (PDT)
+Date: Fri, 26 Jun 2020 14:09:12 -0700
 In-Reply-To: <20200626210917.358969-1-brendanhiggins@google.com>
-Message-Id: <20200626210917.358969-11-brendanhiggins@google.com>
+Message-Id: <20200626210917.358969-8-brendanhiggins@google.com>
 Mime-Version: 1.0
 References: <20200626210917.358969-1-brendanhiggins@google.com>
 X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
-Subject: [PATCH v5 10/12] kunit: Add 'kunit_shutdown' option
+Subject: [PATCH v5 07/12] kunit: test: create a single centralized executor
+ for all tests
 From: Brendan Higgins <brendanhiggins@google.com>
 To: jdike@addtoit.com, richard@nod.at, anton.ivanov@cambridgegreys.com, 
  arnd@arndb.de, keescook@chromium.org, skhan@linuxfoundation.org, 
@@ -104,93 +105,180 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: David Gow <davidgow@google.com>
+From: Alan Maguire <alan.maguire@oracle.com>
 
-Add a new kernel command-line option, 'kunit_shutdown', which allows the
-user to specify that the kernel poweroff, halt, or reboot after
-completing all KUnit tests; this is very handy for running KUnit tests
-on UML or a VM so that the UML/VM process exits cleanly immediately
-after running all tests without needing a special initramfs.
+Add a centralized executor to dispatch tests rather than relying on
+late_initcall to schedule each test suite separately. Centralized
+execution is for built-in tests only; modules will execute tests when
+loaded.
 
-Signed-off-by: David Gow <davidgow@google.com>
+Signed-off-by: Alan Maguire <alan.maguire@oracle.com>
+Co-developed-by: Iurii Zaikin <yzaikin@google.com>
+Signed-off-by: Iurii Zaikin <yzaikin@google.com>
+Co-developed-by: Brendan Higgins <brendanhiggins@google.com>
 Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
 Reviewed-by: Stephen Boyd <sboyd@kernel.org>
 ---
- lib/kunit/executor.c                | 20 ++++++++++++++++++++
- tools/testing/kunit/kunit_kernel.py |  2 +-
- tools/testing/kunit/kunit_parser.py |  2 +-
- 3 files changed, 22 insertions(+), 2 deletions(-)
+ include/kunit/test.h | 67 +++++++++++++++++++++++++++++---------------
+ lib/kunit/Makefile   |  3 +-
+ lib/kunit/executor.c | 28 ++++++++++++++++++
+ lib/kunit/test.c     |  2 +-
+ 4 files changed, 76 insertions(+), 24 deletions(-)
+ create mode 100644 lib/kunit/executor.c
 
+diff --git a/include/kunit/test.h b/include/kunit/test.h
+index 47e61e1d53370..f3e86c3953a2b 100644
+--- a/include/kunit/test.h
++++ b/include/kunit/test.h
+@@ -224,7 +224,7 @@ size_t kunit_suite_num_test_cases(struct kunit_suite *suite);
+ unsigned int kunit_test_case_num(struct kunit_suite *suite,
+ 				 struct kunit_case *test_case);
+ 
+-int __kunit_test_suites_init(struct kunit_suite **suites);
++int __kunit_test_suites_init(struct kunit_suite * const * const suites);
+ 
+ void __kunit_test_suites_exit(struct kunit_suite **suites);
+ 
+@@ -237,34 +237,57 @@ void __kunit_test_suites_exit(struct kunit_suite **suites);
+  * Registers @suites_list with the test framework. See &struct kunit_suite for
+  * more information.
+  *
+- * When builtin, KUnit tests are all run as late_initcalls; this means
+- * that they cannot test anything where tests must run at a different init
+- * phase. One significant restriction resulting from this is that KUnit
+- * cannot reliably test anything that is initialize in the late_init phase;
+- * another is that KUnit is useless to test things that need to be run in
+- * an earlier init phase.
+- *
+- * An alternative is to build the tests as a module.  Because modules
+- * do not support multiple late_initcall()s, we need to initialize an
+- * array of suites for a module.
+- *
+- * TODO(brendanhiggins@google.com): Don't run all KUnit tests as
+- * late_initcalls.  I have some future work planned to dispatch all KUnit
+- * tests from the same place, and at the very least to do so after
+- * everything else is definitely initialized.
++ * If a test suite is built-in, module_init() gets translated into
++ * an initcall which we don't want as the idea is that for builtins
++ * the executor will manage execution.  So ensure we do not define
++ * module_{init|exit} functions for the builtin case when registering
++ * suites via kunit_test_suites() below.
+  */
+-#define kunit_test_suites(suites_list...)				\
+-	static struct kunit_suite *suites[] = {suites_list, NULL};	\
+-	static int kunit_test_suites_init(void)				\
++#ifdef MODULE
++#define kunit_test_suites_for_module(__suites)				\
++	static int __init kunit_test_suites_init(void)			\
+ 	{								\
+-		return __kunit_test_suites_init(suites);		\
++		return __kunit_test_suites_init(__suites);		\
+ 	}								\
+-	late_initcall(kunit_test_suites_init);				\
++	module_init(kunit_test_suites_init);				\
++									\
+ 	static void __exit kunit_test_suites_exit(void)			\
+ 	{								\
+-		return __kunit_test_suites_exit(suites);		\
++		return __kunit_test_suites_exit(__suites);		\
+ 	}								\
+ 	module_exit(kunit_test_suites_exit)
++#else
++#define kunit_test_suites_for_module(__suites)
++#endif /* MODULE */
++
++#define __kunit_test_suites(unique_array, unique_suites, ...)		       \
++	static struct kunit_suite *unique_array[] = { __VA_ARGS__, NULL };     \
++	kunit_test_suites_for_module(unique_array);			       \
++	static struct kunit_suite **unique_suites			       \
++	__used __section(.kunit_test_suites) = unique_array
++
++/**
++ * kunit_test_suites() - used to register one or more &struct kunit_suite
++ *			 with KUnit.
++ *
++ * @suites: a statically allocated list of &struct kunit_suite.
++ *
++ * Registers @suites with the test framework. See &struct kunit_suite for
++ * more information.
++ *
++ * When builtin,  KUnit tests are all run via executor; this is done
++ * by placing the array of struct kunit_suite * in the .kunit_test_suites
++ * ELF section.
++ *
++ * An alternative is to build the tests as a module.  Because modules do not
++ * support multiple initcall()s, we need to initialize an array of suites for a
++ * module.
++ *
++ */
++#define kunit_test_suites(...)						\
++	__kunit_test_suites(__UNIQUE_ID(array),				\
++			    __UNIQUE_ID(suites),			\
++			    __VA_ARGS__)
+ 
+ #define kunit_test_suite(suite)	kunit_test_suites(&suite)
+ 
+diff --git a/lib/kunit/Makefile b/lib/kunit/Makefile
+index 724b94311ca36..c49f4ffb6273a 100644
+--- a/lib/kunit/Makefile
++++ b/lib/kunit/Makefile
+@@ -3,7 +3,8 @@ obj-$(CONFIG_KUNIT) +=			kunit.o
+ kunit-objs +=				test.o \
+ 					string-stream.o \
+ 					assert.o \
+-					try-catch.o
++					try-catch.o \
++					executor.o
+ 
+ ifeq ($(CONFIG_KUNIT_DEBUGFS),y)
+ kunit-objs +=				debugfs.o
 diff --git a/lib/kunit/executor.c b/lib/kunit/executor.c
-index a95742a4ece73..38061d456afb2 100644
---- a/lib/kunit/executor.c
+new file mode 100644
+index 0000000000000..7015e7328dce7
+--- /dev/null
 +++ b/lib/kunit/executor.c
-@@ -1,5 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
- 
-+#include <linux/reboot.h>
- #include <kunit/test.h>
- 
- /*
-@@ -11,6 +12,23 @@ extern struct kunit_suite * const * const __kunit_suites_end[];
- 
- #if IS_BUILTIN(CONFIG_KUNIT)
- 
-+static char *kunit_shutdown;
-+core_param(kunit_shutdown, kunit_shutdown, charp, 0644);
+@@ -0,0 +1,28 @@
++// SPDX-License-Identifier: GPL-2.0
 +
-+static void kunit_handle_shutdown(void)
++#include <kunit/test.h>
++
++/*
++ * These symbols point to the .kunit_test_suites section and are defined in
++ * include/asm-generic/vmlinux.lds.h, and consequently must be extern.
++ */
++extern struct kunit_suite * const * const __kunit_suites_start[];
++extern struct kunit_suite * const * const __kunit_suites_end[];
++
++#if IS_BUILTIN(CONFIG_KUNIT)
++
++static int kunit_run_all_tests(void)
 +{
-+	if (!kunit_shutdown)
-+		return;
++	struct kunit_suite * const * const *suites;
 +
-+	if (!strcmp(kunit_shutdown, "poweroff"))
-+		kernel_power_off();
-+	else if (!strcmp(kunit_shutdown, "halt"))
-+		kernel_halt();
-+	else if (!strcmp(kunit_shutdown, "reboot"))
-+		kernel_restart(NULL);
++	for (suites = __kunit_suites_start;
++	     suites < __kunit_suites_end;
++	     suites++)
++			__kunit_test_suites_init(*suites);
 +
++	return 0;
 +}
 +
- static void kunit_print_tap_header(void)
- {
- 	struct kunit_suite * const * const *suites, * const *subsuite;
-@@ -37,6 +55,8 @@ int kunit_run_all_tests(void)
- 	     suites++)
- 			__kunit_test_suites_init(*suites);
- 
-+	kunit_handle_shutdown();
++late_initcall(kunit_run_all_tests);
 +
- 	return 0;
++#endif /* IS_BUILTIN(CONFIG_KUNIT) */
+diff --git a/lib/kunit/test.c b/lib/kunit/test.c
+index ccb2ffad8dcfa..918dff400a9d7 100644
+--- a/lib/kunit/test.c
++++ b/lib/kunit/test.c
+@@ -380,7 +380,7 @@ static void kunit_init_suite(struct kunit_suite *suite)
+ 	kunit_debugfs_create_suite(suite);
  }
  
-diff --git a/tools/testing/kunit/kunit_kernel.py b/tools/testing/kunit/kunit_kernel.py
-index 63dbda2d029f6..d6a575f92317c 100644
---- a/tools/testing/kunit/kunit_kernel.py
-+++ b/tools/testing/kunit/kunit_kernel.py
-@@ -172,7 +172,7 @@ class LinuxSourceTree(object):
- 		return self.validate_config(build_dir)
+-int __kunit_test_suites_init(struct kunit_suite **suites)
++int __kunit_test_suites_init(struct kunit_suite * const * const suites)
+ {
+ 	unsigned int i;
  
- 	def run_kernel(self, args=[], build_dir='', timeout=None):
--		args.extend(['mem=1G'])
-+		args.extend(['mem=1G', 'kunit_shutdown=halt'])
- 		outfile = 'test.log'
- 		self._ops.linux_bin(args, timeout, build_dir, outfile)
- 		subprocess.call(['stty', 'sane'])
-diff --git a/tools/testing/kunit/kunit_parser.py b/tools/testing/kunit/kunit_parser.py
-index 6d6d94a0ee7db..a8998a5effaad 100644
---- a/tools/testing/kunit/kunit_parser.py
-+++ b/tools/testing/kunit/kunit_parser.py
-@@ -49,7 +49,7 @@ class TestStatus(Enum):
- 
- kunit_start_re = re.compile(r'TAP version [0-9]+$')
- kunit_end_re = re.compile('(List of all partitions:|'
--			  'Kernel panic - not syncing: VFS:)')
-+			  'Kernel panic - not syncing: VFS:|reboot: System halted)')
- 
- def isolate_kunit_output(kernel_output):
- 	started = False
 -- 
 2.27.0.212.ge8ba1cc988-goog
 
