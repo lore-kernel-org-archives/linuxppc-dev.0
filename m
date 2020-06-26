@@ -7,73 +7,73 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ACBDC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C52BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:38:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EAF1D2088E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:36:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4BC282088E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 21:38:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="ZTCAFApe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAF1D2088E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="hXaHccps"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BC282088E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tqvp2FStzDr5s
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:36:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tqxl2w3yzDqnM
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:38:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=flex--brendanhiggins.bounces.google.com
- (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com;
- envelope-from=3dmt2xg4kak0oeraqnauvttvaftbbtyr.pbz@flex--brendanhiggins.bounces.google.com;
+ (client-ip=2607:f8b0:4864:20::249; helo=mail-oi1-x249.google.com;
+ envelope-from=3ggt2xg4kalcyobkaxkefddfkpdlldib.zlj@flex--brendanhiggins.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=ZTCAFApe; dkim-atps=neutral
-Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
- [IPv6:2607:f8b0:4864:20::b49])
+ header.s=20161025 header.b=hXaHccps; dkim-atps=neutral
+Received: from mail-oi1-x249.google.com (mail-oi1-x249.google.com
+ [IPv6:2607:f8b0:4864:20::249])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tqTS4tjMzDqKD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:17:16 +1000 (AEST)
-Received: by mail-yb1-xb49.google.com with SMTP id c17so11121452ybf.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:17:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tqVH4TZbzDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 07:17:59 +1000 (AEST)
+Received: by mail-oi1-x249.google.com with SMTP id a17so7015830oid.19
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 14:17:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
  h=date:in-reply-to:message-id:mime-version:references:subject:from:to
- :cc; bh=Nq9F0z4123tt4UqM776+npgcQr2vACSfzkMX0VOkyz8=;
- b=ZTCAFApecEGx44TdgImNQ12qAsrhIjFlqnA7X8OIrt50WQJMdqROa5BvnuDYaE3Lok
- k0Yftw/cS9ECxUbfwTAX99Lpd9yz7y6jnHtBB0aDOCqWldoDru/97LnHSGKESDDgKxlk
- 9xdLNvFvVxCLM1TZWYvCMNyDrmmPXKtFf4vogUSxmfH675+a1vyIMc1FOubVKERDE7qT
- 9kdv/gVdn6BKAnCWx2ayZphzK6Ug5Ymkk1L+8/qvIJjqaoLD5p3qcuo0W8wff6J2k6XD
- T0qgDLjqpzi8pMoH30nARMyW0khccHFiU17SgAB+7PpX1UNDWCXFmmJy2a9NaPgHv9Wv
- 1cDw==
+ :cc; bh=ZQcLA3WWQzWhDh7XNic/G9qqCkpVYvgILX+rlRl11MM=;
+ b=hXaHccpsp6kZobMdGnxlDV/X7Kry+BeRbEJjo6PSv+TzhSxzNCAbiEQxcpvIu0jQ8L
+ aIB48XrQDZ+QiNiXbv0Tr0hmWU0EQYlwTua6pAg7QhnNvNSxDK0ocJXkRunQ2sD015bM
+ oWId+r5Af1n9pl4fkKr5IibcQmAmR4apAJ4uZIU8WR1sYqDviwkes3rwyCeWthb9zehf
+ XV/5kHzyY6hTubQkZzHttS+P5N1PNpPDj/TZK4Qtvt0SowvIJbhPF2AgJuVdUA0ZlY6e
+ 4wzcP9dl+iDa2j5rL0VHxTcew55IqQf2LoFk8FR/CBkw5YHjzH7caV82jF3Q9TVQuEgb
+ +SDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:in-reply-to:message-id:mime-version
  :references:subject:from:to:cc;
- bh=Nq9F0z4123tt4UqM776+npgcQr2vACSfzkMX0VOkyz8=;
- b=b2wvty6OWh5HYJpA+L0j463n73aa8aRGvp0isqdETHfjkHn2XaPBykRSiECiOWucmo
- 5VLrqNIK7OpXJIk23BwMHo09Gh+UGGxqzRs3l8PaiJnJZ+urVXtH4sRVJi6m0H5/poYt
- JSQM0tOcQWZUdv/zUXXZ/79LCaomsBTV+aAu+iX1iwaERlnelCYjPGlMmFh8yqqM/cdl
- 2FoWUsNy55ozEvJ+A2g56zTPaNuH3Gx91glNaHKP6q8n3luG6fKn57wcnKOMNR+hN2qJ
- kEsXbl/6PEHDhl/GmvC42O6dZ2d2+QgazeOCBzI5SdIpgp3iAm7C/0hSkqOojqgWuuLx
- e2BA==
-X-Gm-Message-State: AOAM533KyHpdtXbwf7c51/AC2jF+RkOKR5CP8SZDPGeE5i/ttK9GAnrd
- 5cuZ0wQBjONhJXiEtM1d+NF5rvpz6xYaTmCsPERO0Q==
-X-Google-Smtp-Source: ABdhPJyKnnV47wg6p1lAvgLAC5x+iqxuxiQuXvbI9BMlMWyGeJgFmODnuKaIGhblbFF3wtpirvJDFFjiadtzPLSBo+FHIA==
-X-Received: by 2002:a25:dfd6:: with SMTP id w205mr7760830ybg.216.1593205774990; 
- Fri, 26 Jun 2020 14:09:34 -0700 (PDT)
-Date: Fri, 26 Jun 2020 14:09:11 -0700
+ bh=ZQcLA3WWQzWhDh7XNic/G9qqCkpVYvgILX+rlRl11MM=;
+ b=KzoLOr8sJFd3/LQjU8pLkjtPbVKOLJQ8ZqApR7iC/kF+Wl/aUUtdwB/Kiah4SRUK0n
+ OGxDlId9qjp5+xZCcfSHnqmsdM9jTmRe1orEj1wKOiUIyUnlVSKVKA6W6MrVVyYWhHIF
+ M9qUSQTIpoIMLY9aumWB9WoRdc++v/ZaAFlqXebvxko6KMHKc0kkFA2SQgIJZt7LgTL3
+ 627Up2lUCdYWo74jOid2Gjulet+IFjNE7PGUSg1b8oKHZWiS5hMApWUzi8//822b7XWp
+ iJE7lQ1liarfDVq9J3tXpaIFGteSTvxHCxJHN7L0I9vKdF9kZHgtz0KxDM7OrmR1XmWq
+ yxqg==
+X-Gm-Message-State: AOAM53058xH3I+0wIkfVJpXsWfwf3wNraD3+M8CZY/cGSjbBAORWaXHS
+ 8Ub/seq2wvNvqG6yFHx6gR8eI2EEHMlXYRpvqKOzXQ==
+X-Google-Smtp-Source: ABdhPJzEx7RjdPZqzXf9CzhVsQsR591I98jh+msGVdJdnK9Tt6s9k9B5//bn8b4L1M37+n0TvUsc2u0v5Nr7S59GV+16hQ==
+X-Received: by 2002:a25:c5c3:: with SMTP id v186mr7751497ybe.233.1593205784533; 
+ Fri, 26 Jun 2020 14:09:44 -0700 (PDT)
+Date: Fri, 26 Jun 2020 14:09:16 -0700
 In-Reply-To: <20200626210917.358969-1-brendanhiggins@google.com>
-Message-Id: <20200626210917.358969-7-brendanhiggins@google.com>
+Message-Id: <20200626210917.358969-12-brendanhiggins@google.com>
 Mime-Version: 1.0
 References: <20200626210917.358969-1-brendanhiggins@google.com>
 X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
-Subject: [PATCH v5 06/12] arch: xtensa: add linker section for KUnit test
- suites
+Subject: [PATCH v5 11/12] Documentation: Add kunit_shutdown to
+ kernel-parameters.txt
 From: Brendan Higgins <brendanhiggins@google.com>
 To: jdike@addtoit.com, richard@nod.at, anton.ivanov@cambridgegreys.com, 
  arnd@arndb.de, keescook@chromium.org, skhan@linuxfoundation.org, 
@@ -104,31 +104,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a linker section to xtensa where KUnit can put references to its
-test suites. This patch is an early step in transitioning to dispatching
-all KUnit tests from a centralized executor rather than having each as
-its own separate late_initcall.
+Add kunit_shutdown, an option to specify that the kernel shutsdown after
+running KUnit tests, to the kernel-parameters.txt documentation.
 
 Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
 ---
- arch/xtensa/kernel/vmlinux.lds.S | 4 ++++
- 1 file changed, 4 insertions(+)
+ Documentation/admin-guide/kernel-parameters.txt | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index d23a6e38f0625..9aec4ef67d0b0 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -216,6 +216,10 @@ SECTIONS
-     INIT_RAM_FS
-   }
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index fb95fad81c79a..e7d5eb7249e7f 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2183,6 +2183,14 @@
+ 			0: force disabled
+ 			1: force enabled
  
-+  .kunit_test_suites : {
-+  	KUNIT_TEST_SUITES
-+  }
++	kunit_shutdown=[KERNEL UNIT TESTING FRAMEWORK] Shutdown kernel after
++			running built-in tests. Tests configured as modules will
++			not be run.
++			Default:	(flag not present) don't shutdown
++			poweroff:	poweroff the kernel after running tests
++			halt:		halt the kernel after running tests
++			reboot:		reboot the kernel after running tests
 +
-   PERCPU_SECTION(XCHAL_ICACHE_LINESIZE)
+ 	kvm.ignore_msrs=[KVM] Ignore guest accesses to unhandled MSRs.
+ 			Default is 0 (don't ignore, but inject #GP)
  
-   /* We need this dummy segment here */
 -- 
 2.27.0.212.ge8ba1cc988-goog
 
