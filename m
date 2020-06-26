@@ -7,75 +7,74 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CABDDC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5E6DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:20:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 586812080C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:17:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 586812080C
+	by mail.kernel.org (Postfix) with ESMTPS id 7F29B2080C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 13:20:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F29B2080C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49tcqm50wKzDqss
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 23:17:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49tcts6TKszDqC0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jun 2020 23:20:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49tcgb6690zDqsD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 23:10:19 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05QD1n4r189327; Fri, 26 Jun 2020 09:10:14 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49tcgc36MrzDqsG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2020 23:10:20 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05QD4YBT114975; Fri, 26 Jun 2020 09:10:14 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31vtt4apjv-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 09:10:14 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05QD26iw190843;
- Fri, 26 Jun 2020 09:10:13 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31vtt4aphw-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31vbn8asj0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Fri, 26 Jun 2020 09:10:13 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05QD0iAb003733;
- Fri, 26 Jun 2020 13:10:11 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03ams.nl.ibm.com with ESMTP id 31uus533d6-1
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05QD57Wv117423;
+ Fri, 26 Jun 2020 09:10:12 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31vbn8asfa-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 26 Jun 2020 13:10:11 +0000
+ Fri, 26 Jun 2020 09:10:12 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05QD2J6R030323;
+ Fri, 26 Jun 2020 13:10:08 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 31uusjjypd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 26 Jun 2020 13:10:08 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05QDA8Hf4915422
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05QDA5h05702058
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 26 Jun 2020 13:10:09 GMT
+ Fri, 26 Jun 2020 13:10:05 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C1F07A405B;
- Fri, 26 Jun 2020 13:10:08 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B7807A4067;
+ Fri, 26 Jun 2020 13:10:05 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9247BA4065;
- Fri, 26 Jun 2020 13:10:07 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 905A0A405C;
+ Fri, 26 Jun 2020 13:10:04 +0000 (GMT)
 Received: from bharata.ibmuc.com (unknown [9.199.37.181])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 26 Jun 2020 13:10:07 +0000 (GMT)
+ Fri, 26 Jun 2020 13:10:04 +0000 (GMT)
 From: Bharata B Rao <bharata@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/3] powerpc/mm/book3s64/radix: Off-load TLB invalidations
- to host when !GTSE
-Date: Fri, 26 Jun 2020 18:40:00 +0530
-Message-Id: <20200626131000.5207-4-bharata@linux.ibm.com>
+Subject: [PATCH v2 1/3] powerpc/mm: Enable radix GTSE only if supported.
+Date: Fri, 26 Jun 2020 18:39:58 +0530
+Message-Id: <20200626131000.5207-2-bharata@linux.ibm.com>
 X-Mailer: git-send-email 2.21.3
 In-Reply-To: <20200626131000.5207-1-bharata@linux.ibm.com>
 References: <20200626131000.5207-1-bharata@linux.ibm.com>
@@ -86,11 +85,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-26_06:2020-06-26,
  2020-06-26 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 bulkscore=0
- adultscore=0 phishscore=0 suspectscore=1 mlxscore=0 mlxlogscore=999
- lowpriorityscore=0 impostorscore=0 spamscore=0 cotscore=-2147483648
- clxscore=1015 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006260088
+ malwarescore=0 spamscore=0
+ adultscore=0 impostorscore=0 mlxscore=0 phishscore=0 priorityscore=1501
+ cotscore=-2147483648 suspectscore=1 bulkscore=0 clxscore=1015
+ lowpriorityscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006260091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,314 +107,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+Make GTSE an MMU feature and enable it by default for radix.
+However for guest, conditionally enable it if hypervisor supports
+it via OV5 vector. Let prom_init ask for radix GTSE only if the
+support exists.
 
-When platform doesn't support GTSE, let TLB invalidation requests
-for radix guests be off-loaded to the host using H_RPT_INVALIDATE
-hcall.
+Having GTSE as an MMU feature will make it easy to enable radix
+without GTSE. Currently radix assumes GTSE is enabled by default.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
-	[hcall wrapper, error path handling and renames]
 ---
- .../include/asm/book3s/64/tlbflush-radix.h    | 15 ++++
- arch/powerpc/include/asm/hvcall.h             | 34 +++++++-
- arch/powerpc/include/asm/plpar_wrappers.h     | 50 +++++++++++
- arch/powerpc/mm/book3s64/radix_tlb.c          | 82 +++++++++++++++++--
- 4 files changed, 173 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/mmu.h    |  4 ++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c |  1 +
+ arch/powerpc/kernel/prom_init.c   | 13 ++++++++-----
+ arch/powerpc/mm/init_64.c         |  5 ++++-
+ 4 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index ca8db193ae38..e7cf50358411 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -2,10 +2,25 @@
- #ifndef _ASM_POWERPC_TLBFLUSH_RADIX_H
- #define _ASM_POWERPC_TLBFLUSH_RADIX_H
- 
-+#include <asm/hvcall.h>
-+
- struct vm_area_struct;
- struct mm_struct;
- struct mmu_gather;
- 
-+static inline u64 psize_to_h_rpti(unsigned long psize)
-+{
-+	if (psize == MMU_PAGE_4K)
-+		return H_RPTI_PAGE_4K;
-+	if (psize == MMU_PAGE_64K)
-+		return H_RPTI_PAGE_64K;
-+	if (psize == MMU_PAGE_2M)
-+		return H_RPTI_PAGE_2M;
-+	if (psize == MMU_PAGE_1G)
-+		return H_RPTI_PAGE_1G;
-+	return H_RPTI_PAGE_ALL;
-+}
-+
- static inline int mmu_get_ap(int psize)
- {
- 	return mmu_psize_defs[psize].ap;
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index e90c073e437e..43486e773bd6 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -305,7 +305,8 @@
- #define H_SCM_UNBIND_ALL        0x3FC
- #define H_SCM_HEALTH            0x400
- #define H_SCM_PERFORMANCE_STATS 0x418
--#define MAX_HCALL_OPCODE	H_SCM_PERFORMANCE_STATS
-+#define H_RPT_INVALIDATE	0x448
-+#define MAX_HCALL_OPCODE	H_RPT_INVALIDATE
- 
- /* Scope args for H_SCM_UNBIND_ALL */
- #define H_UNBIND_SCOPE_ALL (0x1)
-@@ -389,6 +390,37 @@
- #define PROC_TABLE_RADIX	0x04
- #define PROC_TABLE_GTSE		0x01
- 
-+/*
-+ * Defines for
-+ * H_RPT_INVALIDATE - Invalidate RPT translation lookaside information.
-+ */
-+
-+/* Type of translation to invalidate (type) */
-+#define H_RPTI_TYPE_NESTED	0x0001	/* Invalidate nested guest partition-scope */
-+#define H_RPTI_TYPE_TLB		0x0002	/* Invalidate TLB */
-+#define H_RPTI_TYPE_PWC		0x0004	/* Invalidate Page Walk Cache */
-+/* Invalidate Process Table Entries if H_RPTI_TYPE_NESTED is clear */
-+#define H_RPTI_TYPE_PRT		0x0008
-+/* Invalidate Partition Table Entries if H_RPTI_TYPE_NESTED is set */
-+#define H_RPTI_TYPE_PAT		0x0008
-+#define H_RPTI_TYPE_ALL		(H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC | \
-+				 H_RPTI_TYPE_PRT)
-+#define H_RPTI_TYPE_NESTED_ALL	(H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC | \
-+				 H_RPTI_TYPE_PAT)
-+
-+/* Invalidation targets (target) */
-+#define H_RPTI_TARGET_CMMU		0x01 /* All virtual processors in the partition */
-+#define H_RPTI_TARGET_CMMU_LOCAL	0x02 /* Current virtual processor */
-+/* All nest/accelerator agents in use by the partition */
-+#define H_RPTI_TARGET_NMMU		0x04
-+
-+/* Page size mask (page sizes) */
-+#define H_RPTI_PAGE_4K	0x01
-+#define H_RPTI_PAGE_64K	0x02
-+#define H_RPTI_PAGE_2M	0x04
-+#define H_RPTI_PAGE_1G	0x08
-+#define H_RPTI_PAGE_ALL (-1UL)
-+
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
- 
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index 4497c8afb573..a184923abd07 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -334,6 +334,49 @@ static inline long plpar_get_cpu_characteristics(struct h_cpu_char_result *p)
- 	return rc;
- }
- 
-+/*
-+ * Wrapper to H_RPT_INVALIDATE hcall that handles return values appropriately
-+ *
-+ * - Returns H_SUCCESS on success
-+ * - For H_BUSY return value, we retry the hcall.
-+ * - For any other hcall failures, attempt a full flush once before
-+ *   resorting to BUG().
-+ *
-+ * Note: This hcall is expected to fail only very rarely. The correct
-+ * error recovery of killing the process/guest will be eventually
-+ * needed.
-+ */
-+static inline long pseries_rpt_invalidate(u32 pid, u64 target, u64 type,
-+					  u64 page_sizes, u64 start, u64 end)
-+{
-+	long rc;
-+	unsigned long all;
-+
-+	while (true) {
-+		rc = plpar_hcall_norets(H_RPT_INVALIDATE, pid, target, type,
-+					page_sizes, start, end);
-+		if (rc == H_BUSY) {
-+			cpu_relax();
-+			continue;
-+		} else if (rc == H_SUCCESS)
-+			return rc;
-+
-+		/* Flush request failed, try with a full flush once */
-+		all = (type & H_RPTI_TYPE_NESTED) ? H_RPTI_TYPE_NESTED_ALL :
-+		      H_RPTI_TYPE_ALL;
-+retry:
-+		rc = plpar_hcall_norets(H_RPT_INVALIDATE, pid, target,
-+					all, page_sizes, 0, -1UL);
-+		if (rc == H_BUSY) {
-+			cpu_relax();
-+			goto retry;
-+		} else if (rc == H_SUCCESS)
-+			return rc;
-+
-+		BUG();
-+	}
-+}
-+
- #else /* !CONFIG_PPC_PSERIES */
- 
- static inline long plpar_set_ciabr(unsigned long ciabr)
-@@ -346,6 +389,13 @@ static inline long plpar_pte_read_4(unsigned long flags, unsigned long ptex,
- {
- 	return 0;
- }
-+
-+static inline long pseries_rpt_invalidate(u32 pid, u64 target, u64 type,
-+					  u64 page_sizes, u64 start, u64 end)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_PPC_PSERIES */
- 
- #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
-diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
-index b5cc9b23cf02..180d8ddcf6e3 100644
---- a/arch/powerpc/mm/book3s64/radix_tlb.c
-+++ b/arch/powerpc/mm/book3s64/radix_tlb.c
-@@ -16,6 +16,7 @@
- #include <asm/tlbflush.h>
- #include <asm/trace.h>
- #include <asm/cputhreads.h>
-+#include <asm/plpar_wrappers.h>
- 
- #define RIC_FLUSH_TLB 0
- #define RIC_FLUSH_PWC 1
-@@ -694,7 +695,14 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 			goto local;
- 		}
- 
--		if (cputlb_use_tlbie()) {
-+		if (!mmu_has_feature(MMU_FTR_GTSE)) {
-+			unsigned long tgt = H_RPTI_TARGET_CMMU;
-+
-+			if (atomic_read(&mm->context.copros) > 0)
-+				tgt |= H_RPTI_TARGET_NMMU;
-+			pseries_rpt_invalidate(pid, tgt, H_RPTI_TYPE_TLB,
-+					       H_RPTI_PAGE_ALL, 0, -1UL);
-+		} else if (cputlb_use_tlbie()) {
- 			if (mm_needs_flush_escalation(mm))
- 				_tlbie_pid(pid, RIC_FLUSH_ALL);
- 			else
-@@ -727,7 +735,16 @@ static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
- 				goto local;
- 			}
- 		}
--		if (cputlb_use_tlbie())
-+		if (!mmu_has_feature(MMU_FTR_GTSE)) {
-+			unsigned long tgt = H_RPTI_TARGET_CMMU;
-+			unsigned long type = H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC |
-+					     H_RPTI_TYPE_PRT;
-+
-+			if (atomic_read(&mm->context.copros) > 0)
-+				tgt |= H_RPTI_TARGET_NMMU;
-+			pseries_rpt_invalidate(pid, tgt, type,
-+					       H_RPTI_PAGE_ALL, 0, -1UL);
-+		} else if (cputlb_use_tlbie())
- 			_tlbie_pid(pid, RIC_FLUSH_ALL);
- 		else
- 			_tlbiel_pid_multicast(mm, pid, RIC_FLUSH_ALL);
-@@ -760,7 +777,19 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 			exit_flush_lazy_tlbs(mm);
- 			goto local;
- 		}
--		if (cputlb_use_tlbie())
-+		if (!mmu_has_feature(MMU_FTR_GTSE)) {
-+			unsigned long tgt, page_sizes, size;
-+
-+			tgt = H_RPTI_TARGET_CMMU;
-+			page_sizes = psize_to_h_rpti(psize);
-+			size = 1UL << mmu_psize_to_shift(psize);
-+
-+			if (atomic_read(&mm->context.copros) > 0)
-+				tgt |= H_RPTI_TARGET_NMMU;
-+			pseries_rpt_invalidate(pid, tgt, H_RPTI_TYPE_TLB,
-+					       page_sizes, vmaddr,
-+					       vmaddr + size);
-+		} else if (cputlb_use_tlbie())
- 			_tlbie_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
- 		else
- 			_tlbiel_va_multicast(mm, vmaddr, pid, psize, RIC_FLUSH_TLB);
-@@ -810,7 +839,14 @@ static inline void _tlbiel_kernel_broadcast(void)
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index f4ac25d4df05..884d51995934 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -28,6 +28,9 @@
+  * Individual features below.
   */
- void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
- {
--	if (cputlb_use_tlbie())
-+	if (!mmu_has_feature(MMU_FTR_GTSE)) {
-+		unsigned long tgt = H_RPTI_TARGET_CMMU | H_RPTI_TARGET_NMMU;
-+		unsigned long type = H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC |
-+				     H_RPTI_TYPE_PRT;
-+
-+		pseries_rpt_invalidate(0, tgt, type, H_RPTI_PAGE_ALL,
-+				       start, end);
-+	} else if (cputlb_use_tlbie())
- 		_tlbie_pid(0, RIC_FLUSH_ALL);
- 	else
- 		_tlbiel_kernel_broadcast();
-@@ -864,7 +900,17 @@ static inline void __radix__flush_tlb_range(struct mm_struct *mm,
- 				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
  
--	if (full) {
-+	if (!mmu_has_feature(MMU_FTR_GTSE) && !local) {
-+		unsigned long tgt = H_RPTI_TARGET_CMMU;
-+		unsigned long page_sizes = psize_to_h_rpti(mmu_virtual_psize);
++/* Guest Translation Shootdown Enable */
++#define MMU_FTR_GTSE			ASM_CONST(0x00001000)
 +
-+		if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
-+			page_sizes |= psize_to_h_rpti(MMU_PAGE_2M);
-+		if (atomic_read(&mm->context.copros) > 0)
-+			tgt |= H_RPTI_TARGET_NMMU;
-+		pseries_rpt_invalidate(pid, tgt, H_RPTI_TYPE_TLB, page_sizes,
-+				       start, end);
-+	} else if (full) {
- 		if (local) {
- 			_tlbiel_pid(pid, RIC_FLUSH_TLB);
- 		} else {
-@@ -1046,7 +1092,17 @@ static __always_inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
+ /*
+  * Support for 68 bit VA space. We added that from ISA 2.05
+  */
+@@ -173,6 +176,7 @@ enum {
+ #endif
+ #ifdef CONFIG_PPC_RADIX_MMU
+ 		MMU_FTR_TYPE_RADIX |
++		MMU_FTR_GTSE |
+ #ifdef CONFIG_PPC_KUAP
+ 		MMU_FTR_RADIX_KUAP |
+ #endif /* CONFIG_PPC_KUAP */
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index a0edeb391e3e..ac650c233cd9 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -336,6 +336,7 @@ static int __init feat_enable_mmu_radix(struct dt_cpu_feature *f)
+ #ifdef CONFIG_PPC_RADIX_MMU
+ 	cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
+ 	cur_cpu_spec->mmu_features |= MMU_FTRS_HASH_BASE;
++	cur_cpu_spec->mmu_features |= MMU_FTR_GTSE;
+ 	cur_cpu_spec->cpu_user_features |= PPC_FEATURE_HAS_MMU;
  
--	if (full) {
-+	if (!mmu_has_feature(MMU_FTR_GTSE) && !local) {
-+		unsigned long tgt = H_RPTI_TARGET_CMMU;
-+		unsigned long type = H_RPTI_TYPE_TLB;
-+		unsigned long page_sizes = psize_to_h_rpti(psize);
-+
-+		if (also_pwc)
-+			type |= H_RPTI_TYPE_PWC;
-+		if (atomic_read(&mm->context.copros) > 0)
-+			tgt |= H_RPTI_TARGET_NMMU;
-+		pseries_rpt_invalidate(pid, tgt, type, page_sizes, start, end);
-+	} else if (full) {
- 		if (local) {
- 			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
- 		} else {
-@@ -1111,7 +1167,19 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 			exit_flush_lazy_tlbs(mm);
- 			goto local;
+ 	return 1;
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 90c604d00b7d..cbc605cfdec0 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1336,12 +1336,15 @@ static void __init prom_check_platform_support(void)
  		}
--		if (cputlb_use_tlbie())
-+		if (!mmu_has_feature(MMU_FTR_GTSE)) {
-+			unsigned long tgt, type, page_sizes;
-+
-+			tgt = H_RPTI_TARGET_CMMU;
-+			type = H_RPTI_TYPE_TLB | H_RPTI_TYPE_PWC |
-+			       H_RPTI_TYPE_PRT;
-+			page_sizes = psize_to_h_rpti(mmu_virtual_psize);
-+
-+			if (atomic_read(&mm->context.copros) > 0)
-+				tgt |= H_RPTI_TARGET_NMMU;
-+			pseries_rpt_invalidate(pid, tgt, type, page_sizes,
-+					       addr, end);
-+		} else if (cputlb_use_tlbie())
- 			_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 		else
- 			_tlbiel_va_range_multicast(mm,
+ 	}
+ 
+-	if (supported.radix_mmu && supported.radix_gtse &&
+-	    IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
+-		/* Radix preferred - but we require GTSE for now */
+-		prom_debug("Asking for radix with GTSE\n");
++	if (supported.radix_mmu && IS_ENABLED(CONFIG_PPC_RADIX_MMU)) {
++		/* Radix preferred - Check if GTSE is also supported */
++		prom_debug("Asking for radix\n");
+ 		ibm_architecture_vec.vec5.mmu = OV5_FEAT(OV5_MMU_RADIX);
+-		ibm_architecture_vec.vec5.radix_ext = OV5_FEAT(OV5_RADIX_GTSE);
++		if (supported.radix_gtse)
++			ibm_architecture_vec.vec5.radix_ext =
++					OV5_FEAT(OV5_RADIX_GTSE);
++		else
++			prom_debug("Radix GTSE isn't supported\n");
+ 	} else if (supported.hash_mmu) {
+ 		/* Default to hash mmu (if we can) */
+ 		prom_debug("Asking for hash\n");
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index bc73abf0bc25..152aa0200cef 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -407,12 +407,15 @@ static void __init early_check_vec5(void)
+ 		if (!(vec5[OV5_INDX(OV5_RADIX_GTSE)] &
+ 						OV5_FEAT(OV5_RADIX_GTSE))) {
+ 			pr_warn("WARNING: Hypervisor doesn't support RADIX with GTSE\n");
+-		}
++			cur_cpu_spec->mmu_features &= ~MMU_FTR_GTSE;
++		} else
++			cur_cpu_spec->mmu_features |= MMU_FTR_GTSE;
+ 		/* Do radix anyway - the hypervisor said we had to */
+ 		cur_cpu_spec->mmu_features |= MMU_FTR_TYPE_RADIX;
+ 	} else if (mmu_supported == OV5_FEAT(OV5_MMU_HASH)) {
+ 		/* Hypervisor only supports hash - disable radix */
+ 		cur_cpu_spec->mmu_features &= ~MMU_FTR_TYPE_RADIX;
++		cur_cpu_spec->mmu_features &= ~MMU_FTR_GTSE;
+ 	}
+ }
+ 
 -- 
 2.21.3
 
