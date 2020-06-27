@@ -2,69 +2,67 @@ Return-Path: <SRS0=scNv=AI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFA55C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:40:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A420C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 08:19:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 70C5520663
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:40:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XI6CndVI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70C5520663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 10A462080C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 08:19:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10A462080C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49v5JD6xtyzDqcN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 17:40:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+3c141e6ecba9ad0677a1+6152+infradead.org+hch@casper.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49v69f38vPzDqcD
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 18:19:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=casper.20170209 header.b=XI6CndVI; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49v51l3y3WzDqSJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 17:27:39 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=6JtQFSFZNuHNYVW/hbRiOl0cmjzNgKOe7nvuIEAqZOM=; b=XI6CndVIJXMc32UDFraE+/6BDg
- kgds46nEXHDzwZqAki7Xb/CkKeJmq+gVJ2JvzJ+lQCBP0sos5RAoQ3vxfhbkC+HV9yZJWF5cYmSlt
- yJzPIZc1/FtkoJpBFgLIg6cR0UZEiIYy/d3lp4NDmonFbNY45srXYi70rr1817pjw+ECoDyEWFE4i
- RWKBBRkhhsWXJwaX4Gee6Ibaxv79W68lBh2leHgVD/F2uOHmizhBuO1H84Aq4FfnyBZUyjmrpaLul
- AfaqHFl5sBzlXCSXZ33BEukRpaDWm9lpNdx9d5FLRiYJSgKkNbGtmyNGWh24+udriGn3MVst9oeaO
- S4UZ/j6g==;
-Received: from [2001:4bb8:184:76e3:595:ba65:ae56:65a6] (helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jp5FG-0006XG-3J; Sat, 27 Jun 2020 07:27:27 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 4/5] exec: split prepare_arg_pages
-Date: Sat, 27 Jun 2020 09:27:03 +0200
-Message-Id: <20200627072704.2447163-5-hch@lst.de>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200627072704.2447163-1-hch@lst.de>
-References: <20200627072704.2447163-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49v67m6T9rzDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 18:17:52 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49v67c3vRsz9tyVp;
+ Sat, 27 Jun 2020 10:17:48 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id LVJHe2PffxRU; Sat, 27 Jun 2020 10:17:48 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49v67c2nSlz9tyVn;
+ Sat, 27 Jun 2020 10:17:48 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ACB498B772;
+ Sat, 27 Jun 2020 10:17:49 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id i_8AMg20BFyg; Sat, 27 Jun 2020 10:17:49 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C3F508B75B;
+ Sat, 27 Jun 2020 10:17:47 +0200 (CEST)
+Subject: Re: [PATCH V3 0/4] mm/debug_vm_pgtable: Add some more tests
+To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org
+References: <1592192277-8421-1-git-send-email-anshuman.khandual@arm.com>
+ <70ddc7dd-b688-b73e-642a-6363178c8cdd@arm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <0ed75013-6ac4-3902-391a-1f7152510c6d@csgroup.eu>
+Date: Sat, 27 Jun 2020 10:17:27 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
 MIME-Version: 1.0
+In-Reply-To: <70ddc7dd-b688-b73e-642a-6363178c8cdd@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,72 +74,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-parisc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Brian Gerst <brgerst@gmail.com>, x86@kernel.org, linux-mips@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-doc@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Jonathan Corbet <corbet@lwn.net>, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, ziy@nvidia.com,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
+ Vasily Gorbik <gor@linux.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, gerald.schaefer@de.ibm.com,
+ christophe.leroy@c-s.fr, Vineet Gupta <vgupta@synopsys.com>,
+ linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move counting the arguments and enviroment variables out of
-prepare_arg_pages and rename the rest of the function to check_arg_limit.
-This prepares for a version of do_execvat that takes kernel pointers.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- fs/exec.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/fs/exec.c b/fs/exec.c
-index a5d91f8b1341d5..34781db6bf6889 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -435,20 +435,10 @@ static int count_strings(const char __user *const __user *argv)
- 	return i;
- }
- 
--static int prepare_arg_pages(struct linux_binprm *bprm,
--		const char __user *const __user *argv,
--		const char __user *const __user *envp)
-+static int check_arg_limit(struct linux_binprm *bprm)
- {
- 	unsigned long limit, ptr_size;
- 
--	bprm->argc = count_strings(argv);
--	if (bprm->argc < 0)
--		return bprm->argc;
--
--	bprm->envc = count_strings(envp);
--	if (bprm->envc < 0)
--		return bprm->envc;
--
- 	/*
- 	 * Limit to 1/4 of the max stack size or 3/4 of _STK_LIM
- 	 * (whichever is smaller) for the argv+env strings.
-@@ -1886,7 +1876,19 @@ int do_execveat(int fd, struct filename *filename,
- 	if (retval)
- 		goto out_unmark;
- 
--	retval = prepare_arg_pages(bprm, argv, envp);
-+	bprm->argc = count_strings(argv);
-+	if (bprm->argc < 0) {
-+		retval = bprm->argc;
-+		goto out;
-+	}
-+
-+	bprm->envc = count_strings(envp);
-+	if (bprm->envc < 0) {
-+		retval = bprm->envc;
-+		goto out;
-+	}
-+
-+	retval = check_arg_limit(bprm);
- 	if (retval < 0)
- 		goto out;
- 
--- 
-2.26.2
+Le 24/06/2020 à 05:13, Anshuman Khandual a écrit :
+> 
+> 
+> On 06/15/2020 09:07 AM, Anshuman Khandual wrote:
+>> This series adds some more arch page table helper validation tests which
+>> are related to core and advanced memory functions. This also creates a
+>> documentation, enlisting expected semantics for all page table helpers as
+>> suggested by Mike Rapoport previously (https://lkml.org/lkml/2020/1/30/40).
+>>
+>> There are many TRANSPARENT_HUGEPAGE and ARCH_HAS_TRANSPARENT_HUGEPAGE_PUD
+>> ifdefs scattered across the test. But consolidating all the fallback stubs
+>> is not very straight forward because ARCH_HAS_TRANSPARENT_HUGEPAGE_PUD is
+>> not explicitly dependent on ARCH_HAS_TRANSPARENT_HUGEPAGE.
+>>
+>> Tested on arm64, x86 platforms but only build tested on all other enabled
+>> platforms through ARCH_HAS_DEBUG_VM_PGTABLE i.e powerpc, arc, s390. The
+>> following failure on arm64 still exists which was mentioned previously. It
+>> will be fixed with the upcoming THP migration on arm64 enablement series.
+>>
+>> WARNING .... mm/debug_vm_pgtable.c:860 debug_vm_pgtable+0x940/0xa54
+>> WARN_ON(!pmd_present(pmd_mkinvalid(pmd_mkhuge(pmd))))
+>>
+>> This series is based on v5.8-rc1.
+>>
+>> Changes in V3:
+>>
+>> - Replaced HAVE_ARCH_SOFT_DIRTY with MEM_SOFT_DIRTY
+>> - Added HAVE_ARCH_HUGE_VMAP checks in pxx_huge_tests() per Gerald
+>> - Updated documentation for pmd_thp_tests() per Zi Yan
+>> - Replaced READ_ONCE() with huge_ptep_get() per Gerald
+>> - Added pte_mkhuge() and masking with PMD_MASK per Gerald
+>> - Replaced pte_same() with holding pfn check in pxx_swap_tests()
+>> - Added documentation for all (#ifdef #else #endif) per Gerald
+>> - Updated pmd_protnone_tests() per Gerald
+>> - Updated HugeTLB PTE creation in hugetlb_advanced_tests() per Gerald
+>> - Replaced [pmd|pud]_mknotpresent() with [pmd|pud]_mkinvalid()
+>> - Added has_transparent_hugepage() check for PMD and PUD tests
+>> - Added a patch which debug prints all individual tests being executed
+>> - Updated documentation for renamed [pmd|pud]_mkinvalid() helpers
+> 
+> Hello Gerald/Christophe/Vineet,
+> 
+> It would be really great if you could give this series a quick test
+> on s390/ppc/arc platforms respectively. Thank you.
+> 
 
+Running ok on powerpc 8xx after fixing build failures.
+
+Christophe
