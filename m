@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A885C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:35:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51368C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:36:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA8AF20857
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:35:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A6D1A20706
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:36:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Bn9qUHm8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA8AF20857
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Hmv49r3C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6D1A20706
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49v5BP2Y5WzDqfY
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 17:35:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49v5DN0h3LzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 17:36:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=casper.20170209 header.b=Bn9qUHm8; 
+ header.a=rsa-sha256 header.s=casper.20170209 header.b=Hmv49r3C; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49v51d3qkPzDqVj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 17:27:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49v51f6Wg0zDqb1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 17:27:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=R3jVFYS/2IFPi5AjMtMLrTJqX+oMKfiLgBtiR94GLYw=; b=Bn9qUHm8sqZ6dyAsMNQeF1SAQK
- qOz9odcsurHGAun+rlEGFX2naZtghMIA4iNCvdFucZaRqG67gU/BFGYWdiPHinPyemWT8K/dzUAC7
- BVUbz/HKtOV9kKV/EgSZKqY2fG0hCnWFXUMTpwq7lDPtzTsQiuS6/bg/Bz8z2nftTY5L3gSJAoAXB
- Pn6BkPkmQEIAxTwtxkFd96A/2BLD9LG+ifLQGyGRS0vLmAK3CbtSvaZMgTeyuPHWg8dZGx1nW1cWK
- Rr6EilWm74qOfkU1wwZa8elvp1Pu8z7WO97rTp0rUob9lw/SesjmfOOTo/qO94XivoWoxm2YE1gP5
- DmesbwuA==;
+ bh=e+EEFqv4wjvmMJMr72kiOJnRNTJBptkSbMiAtyzJmZo=; b=Hmv49r3CEmsDSDP480cNnzfK7w
+ M3s1BcGA2mZQSaWszed4Or9AOiEvLo8iLCVA3H3ujoq11ZE2F99oFhzdrm//HZOUjmgSMMBeGtDL1
+ 7s4Kzo7/uoC3XaP+SzZEOcJKGplMLmqVKpk4aca1P7/gqFa+WORKj4gGb/NPXrZq+xS9QnikFae3r
+ mQO19SpH9RxLFYE9PXwB3oebJuuv96VGrSxqqxREQDu/tieO9Xbo2JhxReFnbbjdoAK9oKyYnaalL
+ SS6ASKKcYEsdBf+vdTxbvasr8eRWFmEeqzzVzuSsv/Eset4BUpWV5lzPXVIwRvWHCPpQ1vnzNIiTq
+ dcPumu1w==;
 Received: from [2001:4bb8:184:76e3:595:ba65:ae56:65a6] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jp5F2-0006WL-Mh; Sat, 27 Jun 2020 07:27:15 +0000
+ id 1jp5FD-0006X9-8n; Sat, 27 Jun 2020 07:27:24 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 1/5] exec: cleanup the execve wrappers
-Date: Sat, 27 Jun 2020 09:27:00 +0200
-Message-Id: <20200627072704.2447163-2-hch@lst.de>
+Subject: [PATCH 3/5] exec: cleanup the count() function
+Date: Sat, 27 Jun 2020 09:27:02 +0200
+Message-Id: <20200627072704.2447163-4-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200627072704.2447163-1-hch@lst.de>
 References: <20200627072704.2447163-1-hch@lst.de>
@@ -86,243 +86,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove a whole bunch of wrappers that eventually all call
-__do_execve_file, and consolidate the execvce helpers to:
-
-  (1) __do_execveat, which is the lowest level helper implementing the
-      actual functionality
-  (2) do_execvat, which is used by all callers that want native
-      pointers
-  (3) do_compat_execve, which is used by all compat syscalls
+Remove the max argument as it is hard wired to MAX_ARG_STRINGS, and
+give the function a slightly less generic name.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/exec.c               | 98 +++++++++++------------------------------
- include/linux/binfmts.h | 12 ++---
- init/main.c             |  7 +--
- kernel/umh.c            | 16 +++----
- 4 files changed, 41 insertions(+), 92 deletions(-)
+ fs/exec.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/fs/exec.c b/fs/exec.c
-index e6e8a9a7032784..354fdaa536ae7d 100644
+index 4e5db0e35797a5..a5d91f8b1341d5 100644
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1815,10 +1815,7 @@ static int exec_binprm(struct linux_binprm *bprm)
- 	return 0;
+@@ -407,9 +407,9 @@ get_user_arg_ptr(const char __user *const __user *argv, int nr)
  }
  
--/*
-- * sys_execve() executes a new program.
-- */
--static int __do_execve_file(int fd, struct filename *filename,
-+static int __do_execveat(int fd, struct filename *filename,
- 			    struct user_arg_ptr argv,
- 			    struct user_arg_ptr envp,
- 			    int flags, struct file *file)
-@@ -1972,74 +1969,16 @@ static int __do_execve_file(int fd, struct filename *filename,
- 	return retval;
- }
- 
--static int do_execveat_common(int fd, struct filename *filename,
--			      struct user_arg_ptr argv,
--			      struct user_arg_ptr envp,
--			      int flags)
--{
--	return __do_execve_file(fd, filename, argv, envp, flags, NULL);
--}
--
--int do_execve_file(struct file *file, void *__argv, void *__envp)
--{
--	struct user_arg_ptr argv = { .ptr.native = __argv };
--	struct user_arg_ptr envp = { .ptr.native = __envp };
--
--	return __do_execve_file(AT_FDCWD, NULL, argv, envp, 0, file);
--}
--
--int do_execve(struct filename *filename,
--	const char __user *const __user *__argv,
--	const char __user *const __user *__envp)
--{
--	struct user_arg_ptr argv = { .ptr.native = __argv };
--	struct user_arg_ptr envp = { .ptr.native = __envp };
--	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
--}
--
- int do_execveat(int fd, struct filename *filename,
- 		const char __user *const __user *__argv,
- 		const char __user *const __user *__envp,
--		int flags)
-+		int flags, struct file *file)
+ /*
+- * count() counts the number of strings in array ARGV.
++ * count_strings() counts the number of strings in array ARGV.
+  */
+-static int count(const char __user *const __user *argv, int max)
++static int count_strings(const char __user *const __user *argv)
  {
- 	struct user_arg_ptr argv = { .ptr.native = __argv };
- 	struct user_arg_ptr envp = { .ptr.native = __envp };
+ 	int i = 0;
  
--	return do_execveat_common(fd, filename, argv, envp, flags);
--}
--
--#ifdef CONFIG_COMPAT
--static int compat_do_execve(struct filename *filename,
--	const compat_uptr_t __user *__argv,
--	const compat_uptr_t __user *__envp)
--{
--	struct user_arg_ptr argv = {
--		.is_compat = true,
--		.ptr.compat = __argv,
--	};
--	struct user_arg_ptr envp = {
--		.is_compat = true,
--		.ptr.compat = __envp,
--	};
--	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
--}
--
--static int compat_do_execveat(int fd, struct filename *filename,
--			      const compat_uptr_t __user *__argv,
--			      const compat_uptr_t __user *__envp,
--			      int flags)
--{
--	struct user_arg_ptr argv = {
--		.is_compat = true,
--		.ptr.compat = __argv,
--	};
--	struct user_arg_ptr envp = {
--		.is_compat = true,
--		.ptr.compat = __envp,
--	};
--	return do_execveat_common(fd, filename, argv, envp, flags);
-+	return __do_execveat(fd, filename, argv, envp, flags, file);
- }
--#endif
+@@ -423,7 +423,7 @@ static int count(const char __user *const __user *argv, int max)
+ 			if (IS_ERR(p))
+ 				return -EFAULT;
  
- void set_binfmt(struct linux_binfmt *new)
+-			if (i >= max)
++			if (i >= MAX_ARG_STRINGS)
+ 				return -E2BIG;
+ 			++i;
+ 
+@@ -441,11 +441,11 @@ static int prepare_arg_pages(struct linux_binprm *bprm,
  {
-@@ -2070,7 +2009,7 @@ SYSCALL_DEFINE3(execve,
- 		const char __user *const __user *, argv,
- 		const char __user *const __user *, envp)
- {
--	return do_execve(getname(filename), argv, envp);
-+	return do_execveat(AT_FDCWD, getname(filename), argv, envp, 0, NULL);
- }
+ 	unsigned long limit, ptr_size;
  
- SYSCALL_DEFINE5(execveat,
-@@ -2080,18 +2019,34 @@ SYSCALL_DEFINE5(execveat,
- 		int, flags)
- {
- 	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
-+	struct filename *name = getname_flags(filename, lookup_flags, NULL);
+-	bprm->argc = count(argv, MAX_ARG_STRINGS);
++	bprm->argc = count_strings(argv);
+ 	if (bprm->argc < 0)
+ 		return bprm->argc;
  
--	return do_execveat(fd,
--			   getname_flags(filename, lookup_flags, NULL),
--			   argv, envp, flags);
-+	return do_execveat(fd, name, argv, envp, flags, NULL);
- }
+-	bprm->envc = count(envp, MAX_ARG_STRINGS);
++	bprm->envc = count_strings(envp);
+ 	if (bprm->envc < 0)
+ 		return bprm->envc;
  
- #ifdef CONFIG_COMPAT
-+static int do_compat_execve(int fd, struct filename *filename,
-+		const compat_uptr_t __user *__argv,
-+		const compat_uptr_t __user *__envp,
-+		int flags)
-+{
-+	struct user_arg_ptr argv = {
-+		.is_compat = true,
-+		.ptr.compat = __argv,
-+	};
-+	struct user_arg_ptr envp = {
-+		.is_compat = true,
-+		.ptr.compat = __envp,
-+	};
-+
-+	return __do_execveat(fd, filename, argv, envp, flags, NULL);
-+}
-+
- COMPAT_SYSCALL_DEFINE3(execve, const char __user *, filename,
- 	const compat_uptr_t __user *, argv,
- 	const compat_uptr_t __user *, envp)
- {
--	return compat_do_execve(getname(filename), argv, envp);
-+	return do_compat_execve(AT_FDCWD, getname(filename), argv, envp, 0);
- }
- 
- COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
-@@ -2101,9 +2056,8 @@ COMPAT_SYSCALL_DEFINE5(execveat, int, fd,
- 		       int,  flags)
- {
- 	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
-+	struct filename *name = getname_flags(filename, lookup_flags, NULL);
- 
--	return compat_do_execveat(fd,
--				  getname_flags(filename, lookup_flags, NULL),
--				  argv, envp, flags);
-+	return do_compat_execve(fd, name, argv, envp, flags);
- }
- #endif
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 4a20b7517dd036..bed702e4b1fbd9 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -134,13 +134,9 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
- extern void set_binfmt(struct linux_binfmt *new);
- extern ssize_t read_code(struct file *, unsigned long, loff_t, size_t);
- 
--extern int do_execve(struct filename *,
--		     const char __user * const __user *,
--		     const char __user * const __user *);
--extern int do_execveat(int, struct filename *,
--		       const char __user * const __user *,
--		       const char __user * const __user *,
--		       int);
--int do_execve_file(struct file *file, void *__argv, void *__envp);
-+int do_execveat(int fd, struct filename *filename,
-+		const char __user *const __user *__argv,
-+		const char __user *const __user *__envp,
-+		int flags, struct file *file);
- 
- #endif /* _LINUX_BINFMTS_H */
-diff --git a/init/main.c b/init/main.c
-index 0ead83e86b5aa2..838950ea7bca22 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -1329,9 +1329,10 @@ static int run_init_process(const char *init_filename)
- 	pr_debug("  with environment:\n");
- 	for (p = envp_init; *p; p++)
- 		pr_debug("    %s\n", *p);
--	return do_execve(getname_kernel(init_filename),
--		(const char __user *const __user *)argv_init,
--		(const char __user *const __user *)envp_init);
-+	return do_execveat(AT_FDCWD, getname_kernel(init_filename),
-+			(const char __user *const __user *)argv_init,
-+			(const char __user *const __user *)envp_init,
-+			0, NULL);
- }
- 
- static int try_to_run_init_process(const char *init_filename)
-diff --git a/kernel/umh.c b/kernel/umh.c
-index 79f139a7ca03c6..7aa9a5817582ca 100644
---- a/kernel/umh.c
-+++ b/kernel/umh.c
-@@ -103,15 +103,13 @@ static int call_usermodehelper_exec_async(void *data)
- 	commit_creds(new);
- 
- 	sub_info->pid = task_pid_nr(current);
--	if (sub_info->file) {
--		retval = do_execve_file(sub_info->file,
--					sub_info->argv, sub_info->envp);
--		if (!retval)
--			current->flags |= PF_UMH;
--	} else
--		retval = do_execve(getname_kernel(sub_info->path),
--				   (const char __user *const __user *)sub_info->argv,
--				   (const char __user *const __user *)sub_info->envp);
-+	retval = do_execveat(AT_FDCWD,
-+			sub_info->path ? getname_kernel(sub_info->path) : NULL,
-+			(const char __user *const __user *)sub_info->argv,
-+			(const char __user *const __user *)sub_info->envp,
-+			0, sub_info->file);
-+	if (sub_info->file && !retval)
-+		current->flags |= PF_UMH;
- out:
- 	sub_info->retval = retval;
- 	/*
 -- 
 2.26.2
 
