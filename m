@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51368C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:36:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46FD6C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:38:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6D1A20706
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:36:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EA2AE20706
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 07:38:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Hmv49r3C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6D1A20706
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TlPnTimq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA2AE20706
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49v5DN0h3LzDr5N
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 17:36:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49v5GL1Km2zDqBr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 17:38:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=casper.20170209 header.b=Hmv49r3C; 
+ header.a=rsa-sha256 header.s=casper.20170209 header.b=TlPnTimq; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49v51f6Wg0zDqb1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 17:27:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49v51k19SfzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 17:27:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=e+EEFqv4wjvmMJMr72kiOJnRNTJBptkSbMiAtyzJmZo=; b=Hmv49r3CEmsDSDP480cNnzfK7w
- M3s1BcGA2mZQSaWszed4Or9AOiEvLo8iLCVA3H3ujoq11ZE2F99oFhzdrm//HZOUjmgSMMBeGtDL1
- 7s4Kzo7/uoC3XaP+SzZEOcJKGplMLmqVKpk4aca1P7/gqFa+WORKj4gGb/NPXrZq+xS9QnikFae3r
- mQO19SpH9RxLFYE9PXwB3oebJuuv96VGrSxqqxREQDu/tieO9Xbo2JhxReFnbbjdoAK9oKyYnaalL
- SS6ASKKcYEsdBf+vdTxbvasr8eRWFmEeqzzVzuSsv/Eset4BUpWV5lzPXVIwRvWHCPpQ1vnzNIiTq
- dcPumu1w==;
+ bh=mURemflipje9eYopYQ4h3uusWn3YXYVAu+uuVrAN7pQ=; b=TlPnTimqsO2m30LvldYZKWVizZ
+ hpNyMesz2KmBGpNgKstCa9x+hZjeq/G/LSRMkegjvZ22YoGmrkgnX+pZNWw5KGTu0v468zw9T4sZI
+ Xu/MpJ2eSYmAE+ipVFlRyXHmj7yINmDtCVRDeT4inn/UpLST2JkhmV8QUh9BXIQDcWZI6goY8hoTK
+ 4LzatZU6wTyWdTn1fSGkRe6TQ02ZarzjB0rP81o5Zm/pl6DVfHmLMMgslXwjVzsTycl+tfWpI1waO
+ hEgw54/dYKj+ZkSuM7HhgjVT0BbFo583J9Wu65cTYBtF8e6ZyiugH7Oj2JWPx8rHz3ol1injsjGRn
+ /VsHUW/A==;
 Received: from [2001:4bb8:184:76e3:595:ba65:ae56:65a6] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jp5FD-0006X9-8n; Sat, 27 Jun 2020 07:27:24 +0000
+ id 1jp5FI-0006XS-Jx; Sat, 27 Jun 2020 07:27:30 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 3/5] exec: cleanup the count() function
-Date: Sat, 27 Jun 2020 09:27:02 +0200
-Message-Id: <20200627072704.2447163-4-hch@lst.de>
+Subject: [PATCH 5/5] exec: add a kernel_execveat helper
+Date: Sat, 27 Jun 2020 09:27:04 +0200
+Message-Id: <20200627072704.2447163-6-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200627072704.2447163-1-hch@lst.de>
 References: <20200627072704.2447163-1-hch@lst.de>
@@ -86,53 +86,243 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove the max argument as it is hard wired to MAX_ARG_STRINGS, and
-give the function a slightly less generic name.
+Add a kernel_execveat helper to execute a binary with kernel space argv
+and envp pointers.  Switch executing init and user mode helpers to this
+new helper instead of relying on the implicit set_fs(KERNEL_DS) for early
+init code and kernel threads, and move the getname call into the
+do_execve helper.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/exec.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ fs/exec.c               | 109 ++++++++++++++++++++++++++++++++--------
+ include/linux/binfmts.h |   6 +--
+ init/main.c             |   6 +--
+ kernel/umh.c            |   8 ++-
+ 4 files changed, 95 insertions(+), 34 deletions(-)
 
 diff --git a/fs/exec.c b/fs/exec.c
-index 4e5db0e35797a5..a5d91f8b1341d5 100644
+index 34781db6bf6889..7923b8334ae600 100644
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -407,9 +407,9 @@ get_user_arg_ptr(const char __user *const __user *argv, int nr)
+@@ -435,6 +435,21 @@ static int count_strings(const char __user *const __user *argv)
+ 	return i;
  }
  
- /*
-- * count() counts the number of strings in array ARGV.
-+ * count_strings() counts the number of strings in array ARGV.
-  */
--static int count(const char __user *const __user *argv, int max)
-+static int count_strings(const char __user *const __user *argv)
- {
- 	int i = 0;
- 
-@@ -423,7 +423,7 @@ static int count(const char __user *const __user *argv, int max)
- 			if (IS_ERR(p))
- 				return -EFAULT;
- 
--			if (i >= max)
-+			if (i >= MAX_ARG_STRINGS)
- 				return -E2BIG;
- 			++i;
- 
-@@ -441,11 +441,11 @@ static int prepare_arg_pages(struct linux_binprm *bprm,
++static int count_kernel_strings(const char *const *argv)
++{
++	int i;
++
++	if (!argv)
++		return 0;
++
++	for (i = 0; argv[i]; i++) {
++		if (i >= MAX_ARG_STRINGS)
++			return -E2BIG;
++	}
++
++	return i;
++}
++
+ static int check_arg_limit(struct linux_binprm *bprm)
  {
  	unsigned long limit, ptr_size;
+@@ -611,6 +626,19 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
+ }
+ EXPORT_SYMBOL(copy_string_kernel);
  
--	bprm->argc = count(argv, MAX_ARG_STRINGS);
-+	bprm->argc = count_strings(argv);
- 	if (bprm->argc < 0)
- 		return bprm->argc;
++static int copy_strings_kernel(int argc, const char *const *argv,
++		struct linux_binprm *bprm)
++{
++	int ret;
++
++	while (argc-- > 0) {
++		ret = copy_string_kernel(argv[argc], bprm);
++		if (ret)
++			break;
++	}
++	return ret;
++}
++
+ #ifdef CONFIG_MMU
  
--	bprm->envc = count(envp, MAX_ARG_STRINGS);
-+	bprm->envc = count_strings(envp);
- 	if (bprm->envc < 0)
- 		return bprm->envc;
+ /*
+@@ -1793,9 +1821,11 @@ static int exec_binprm(struct linux_binprm *bprm)
+ 	return 0;
+ }
  
+-int do_execveat(int fd, struct filename *filename,
++static int __do_execveat(int fd, struct filename *filename,
+ 		const char __user *const __user *argv,
+ 		const char __user *const __user *envp,
++		const char *const *kernel_argv,
++		const char *const *kernel_envp,
+ 		int flags, struct file *file)
+ {
+ 	char *pathbuf = NULL;
+@@ -1876,16 +1906,30 @@ int do_execveat(int fd, struct filename *filename,
+ 	if (retval)
+ 		goto out_unmark;
+ 
+-	bprm->argc = count_strings(argv);
+-	if (bprm->argc < 0) {
+-		retval = bprm->argc;
+-		goto out;
+-	}
++	if (unlikely(kernel_argv)) {
++		bprm->argc = count_kernel_strings(kernel_argv);
++		if (bprm->argc < 0) {
++			retval = bprm->argc;
++			goto out;
++		}
+ 
+-	bprm->envc = count_strings(envp);
+-	if (bprm->envc < 0) {
+-		retval = bprm->envc;
+-		goto out;
++		bprm->envc = count_kernel_strings(kernel_envp);
++		if (bprm->envc < 0) {
++			retval = bprm->envc;
++			goto out;
++		}
++	} else {
++		bprm->argc = count_strings(argv);
++		if (bprm->argc < 0) {
++			retval = bprm->argc;
++			goto out;
++		}
++
++		bprm->envc = count_strings(envp);
++		if (bprm->envc < 0) {
++			retval = bprm->envc;
++			goto out;
++		}
+ 	}
+ 
+ 	retval = check_arg_limit(bprm);
+@@ -1902,13 +1946,22 @@ int do_execveat(int fd, struct filename *filename,
+ 		goto out;
+ 
+ 	bprm->exec = bprm->p;
+-	retval = copy_strings(bprm->envc, envp, bprm);
+-	if (retval < 0)
+-		goto out;
+ 
+-	retval = copy_strings(bprm->argc, argv, bprm);
+-	if (retval < 0)
+-		goto out;
++	if (unlikely(kernel_argv)) {
++		retval = copy_strings_kernel(bprm->envc, kernel_envp, bprm);
++		if (retval < 0)
++			goto out;
++		retval = copy_strings_kernel(bprm->argc, kernel_argv, bprm);
++		if (retval < 0)
++			goto out;
++	} else {
++		retval = copy_strings(bprm->envc, envp, bprm);
++		if (retval < 0)
++			goto out;
++		retval = copy_strings(bprm->argc, argv, bprm);
++		if (retval < 0)
++			goto out;
++	}
+ 
+ 	retval = exec_binprm(bprm);
+ 	if (retval < 0)
+@@ -1959,6 +2012,23 @@ int do_execveat(int fd, struct filename *filename,
+ 	return retval;
+ }
+ 
++static int do_execveat(int fd, const char *filename,
++		       const char __user *const __user *argv,
++		       const char __user *const __user *envp, int flags)
++{
++	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
++	struct filename *name = getname_flags(filename, lookup_flags, NULL);
++
++	return __do_execveat(fd, name, argv, envp, NULL, NULL, flags, NULL);
++}
++
++int kernel_execveat(int fd, const char *filename, const char *const *argv,
++		const char *const *envp, int flags, struct file *file)
++{
++	return __do_execveat(fd, getname_kernel(filename), NULL, NULL, argv,
++			     envp, flags, file);
++}
++
+ void set_binfmt(struct linux_binfmt *new)
+ {
+ 	struct mm_struct *mm = current->mm;
+@@ -1988,7 +2058,7 @@ SYSCALL_DEFINE3(execve,
+ 		const char __user *const __user *, argv,
+ 		const char __user *const __user *, envp)
+ {
+-	return do_execveat(AT_FDCWD, getname(filename), argv, envp, 0, NULL);
++	return do_execveat(AT_FDCWD, filename, argv, envp, 0);
+ }
+ 
+ SYSCALL_DEFINE5(execveat,
+@@ -1997,8 +2067,5 @@ SYSCALL_DEFINE5(execveat,
+ 		const char __user *const __user *, envp,
+ 		int, flags)
+ {
+-	int lookup_flags = (flags & AT_EMPTY_PATH) ? LOOKUP_EMPTY : 0;
+-	struct filename *name = getname_flags(filename, lookup_flags, NULL);
+-
+-	return do_execveat(fd, name, argv, envp, flags, NULL);
++	return do_execveat(fd, filename, argv, envp, flags);
+ }
+diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
+index bed702e4b1fbd9..1e61c980c16354 100644
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -134,9 +134,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
+ extern void set_binfmt(struct linux_binfmt *new);
+ extern ssize_t read_code(struct file *, unsigned long, loff_t, size_t);
+ 
+-int do_execveat(int fd, struct filename *filename,
+-		const char __user *const __user *__argv,
+-		const char __user *const __user *__envp,
+-		int flags, struct file *file);
++int kernel_execveat(int fd, const char *filename, const char *const *argv,
++		const char *const *envp, int flags, struct file *file);
+ 
+ #endif /* _LINUX_BINFMTS_H */
+diff --git a/init/main.c b/init/main.c
+index 838950ea7bca22..33de235dc2aa00 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1329,10 +1329,8 @@ static int run_init_process(const char *init_filename)
+ 	pr_debug("  with environment:\n");
+ 	for (p = envp_init; *p; p++)
+ 		pr_debug("    %s\n", *p);
+-	return do_execveat(AT_FDCWD, getname_kernel(init_filename),
+-			(const char __user *const __user *)argv_init,
+-			(const char __user *const __user *)envp_init,
+-			0, NULL);
++	return kernel_execveat(AT_FDCWD, init_filename, argv_init, envp_init, 0,
++			       NULL);
+ }
+ 
+ static int try_to_run_init_process(const char *init_filename)
+diff --git a/kernel/umh.c b/kernel/umh.c
+index 7aa9a5817582ca..1284823dbad338 100644
+--- a/kernel/umh.c
++++ b/kernel/umh.c
+@@ -103,11 +103,9 @@ static int call_usermodehelper_exec_async(void *data)
+ 	commit_creds(new);
+ 
+ 	sub_info->pid = task_pid_nr(current);
+-	retval = do_execveat(AT_FDCWD,
+-			sub_info->path ? getname_kernel(sub_info->path) : NULL,
+-			(const char __user *const __user *)sub_info->argv,
+-			(const char __user *const __user *)sub_info->envp,
+-			0, sub_info->file);
++	retval = kernel_execveat(AT_FDCWD, sub_info->path,
++			(const char *const *)sub_info->argv,
++			(const char *const *)sub_info->envp, 0, sub_info->file);
+ 	if (sub_info->file && !retval)
+ 		current->flags |= PF_UMH;
+ out:
 -- 
 2.26.2
 
