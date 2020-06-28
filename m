@@ -2,42 +2,61 @@ Return-Path: <SRS0=llFo=AJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D921C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:47:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7921C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 07:02:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA83620773
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:47:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA83620773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1D87720702
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 07:02:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qm3qqF3d"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D87720702
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49vdQQ6f4tzDqVn
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 14:47:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
- helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 49vd4P25vKzDr0p
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2020 14:31:48 +1000 (AEST)
-Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 4625629708; Sun, 28 Jun 2020 00:31:44 -0400 (EDT)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <0253194363af4426f9788796811a6a29fb87c713.1593318192.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1593318192.git.fthain@telegraphics.com.au>
-References: <cover.1593318192.git.fthain@telegraphics.com.au>
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 4/9] macintosh/via-macii: Remove read_done state
-Date: Sun, 28 Jun 2020 14:23:12 +1000
+	by lists.ozlabs.org (Postfix) with ESMTP id 49vhQ10ZBWzDr5L
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 17:02:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Qm3qqF3d; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49vhMW6fffzDqNv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2020 17:00:07 +1000 (AEST)
+Received: from kernel.org (unknown [87.71.40.38])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id D042720702;
+ Sun, 28 Jun 2020 06:59:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1593327604;
+ bh=hu/tW2f/lIs0zzXJSvCrgwdLd0PRG2JIRHvUCcaAjqM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Qm3qqF3d78J/gFOwv6YVJb71itb3mymeRhGcaLrkXQY5dETAmGwNnfv+uXEMscIi2
+ mPZsATFBdJNygr2fnTWo/ejLleXfIjFaiD5KXp/1ygh8w33HlLwG0oN/C/qRCb8sbq
+ bU6JOX1KtJfeNxxfnsJIYZnBX1A1gh84k+HeVxCY=
+Date: Sun, 28 Jun 2020 09:59:51 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH 9/8] mm: Account PMD tables like PTE tables
+Message-ID: <20200628065951.GB576120@kernel.org>
+References: <20200627143453.31835-1-rppt@kernel.org>
+ <20200627184642.GF25039@casper.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200627184642.GF25039@casper.infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,148 +68,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>,
- Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, Joshua Thompson <funaho@jurai.org>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>, linux-csky@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-hexagon@vger.kernel.org, Joerg Roedel <joro@8bytes.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-s390@vger.kernel.org,
+ linux-um@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
+ linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
+ Andy Lutomirski <luto@kernel.org>, Stafford Horne <shorne@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The driver state machine may enter the 'read_done' state when leaving the
-'idle' or 'reading' state. This transition is pointless, as is the extra
-interrupt it requires. The interrupt is produced by the transceiver
-(even when it has no data to send) because an extra EVEN/ODD toggle
-was signalled by the driver. Drop the extra state to simplify the code.
+On Sat, Jun 27, 2020 at 07:46:42PM +0100, Matthew Wilcox wrote:
+> We account the PTE level of the page tables to the process in order to
+> make smarter OOM decisions and help diagnose why memory is fragmented.
+> For these same reasons, we should account pages allocated for PMDs.
+> With larger process address spaces and ASLR, the number of PMDs in use
+> is higher than it used to be so the inaccuracy is starting to matter.
+> 
+> Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
 
-Fixes: 1da177e4c3f41 ("Linux-2.6.12-rc2") # v5.0+
-Tested-by: Stan Johnson <userm57@yahoo.com>
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
----
- drivers/macintosh/via-macii.c | 70 ++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 42 deletions(-)
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
 
-diff --git a/drivers/macintosh/via-macii.c b/drivers/macintosh/via-macii.c
-index 6a5cd7de05baf..d29c87943ca46 100644
---- a/drivers/macintosh/via-macii.c
-+++ b/drivers/macintosh/via-macii.c
-@@ -110,7 +110,6 @@ static enum macii_state {
- 	idle,
- 	sending,
- 	reading,
--	read_done,
- } macii_state;
- 
- static struct adb_request *current_req; /* first request struct in the queue */
-@@ -411,8 +410,8 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 			reply_len = 1;
- 		} else {
- 			/* bus timeout */
--			macii_state = read_done;
- 			reply_len = 0;
-+			break;
- 		}
- 
- 		/* set ADB state = even for first data byte */
-@@ -471,20 +470,6 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 				current_req = req->next;
- 				if (req->done)
- 					(*req->done)(req);
--
--				if (!current_req)
--					macii_queue_poll();
--
--				if (current_req && macii_state == idle)
--					macii_start();
--
--				if (macii_state == idle) {
--					/* reset to shift in */
--					via[ACR] &= ~SR_OUT;
--					x = via[SR];
--					/* set ADB state idle - might get SRQ */
--					via[B] = (via[B] & ~ST_MASK) | ST_IDLE;
--				}
- 				break;
- 			}
- 		} else {
-@@ -511,12 +496,28 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 			} else if (status == ST_ODD && reply_len == 2) {
- 				srq_asserted = true;
- 			} else {
--				macii_state = read_done;
-+				macii_state = idle;
-+
-+				if (bus_timeout)
-+					reply_len = 0;
-+
-+				if (reading_reply) {
-+					struct adb_request *req = current_req;
-+
-+					req->reply_len = reply_len;
-+
-+					req->complete = 1;
-+					current_req = req->next;
-+					if (req->done)
-+						(*req->done)(req);
-+				} else if (reply_len && autopoll_devs) {
-+					adb_input(reply_buf, reply_len, 0);
-+				}
-+				break;
- 			}
- 		}
- 
--		if (macii_state == reading &&
--		    reply_len < ARRAY_SIZE(reply_buf)) {
-+		if (reply_len < ARRAY_SIZE(reply_buf)) {
- 			reply_ptr++;
- 			*reply_ptr = x;
- 			reply_len++;
-@@ -526,37 +527,22 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 		via[B] ^= ST_MASK;
- 		break;
- 
--	case read_done:
--		x = via[SR];
--
--		if (bus_timeout)
--			reply_len = 0;
--
--		if (reading_reply) {
--			reading_reply = 0;
--			req = current_req;
--			req->reply_len = reply_len;
--			req->complete = 1;
--			current_req = req->next;
--			if (req->done)
--				(*req->done)(req);
--		} else if (reply_len && autopoll_devs)
--			adb_input(reply_buf, reply_len, 0);
--
--		macii_state = idle;
-+	default:
-+		break;
-+	}
- 
-+	if (macii_state == idle) {
- 		if (!current_req)
- 			macii_queue_poll();
- 
- 		if (current_req)
- 			macii_start();
- 
--		if (macii_state == idle)
-+		if (macii_state == idle) {
-+			via[ACR] &= ~SR_OUT;
-+			x = via[SR];
- 			via[B] = (via[B] & ~ST_MASK) | ST_IDLE;
--		break;
--
--	default:
--		break;
-+		}
- 	}
- 
- 	local_irq_restore(flags);
+> ---
+>  include/linux/mm.h | 24 ++++++++++++++++++++----
+>  1 file changed, 20 insertions(+), 4 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index dc7b87310c10..b283e25fcffa 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2271,7 +2271,7 @@ static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
+>  	return ptlock_ptr(pmd_to_page(pmd));
+>  }
+>  
+> -static inline bool pgtable_pmd_page_ctor(struct page *page)
+> +static inline bool pmd_ptlock_init(struct page *page)
+>  {
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  	page->pmd_huge_pte = NULL;
+> @@ -2279,7 +2279,7 @@ static inline bool pgtable_pmd_page_ctor(struct page *page)
+>  	return ptlock_init(page);
+>  }
+>  
+> -static inline void pgtable_pmd_page_dtor(struct page *page)
+> +static inline void pmd_ptlock_free(struct page *page)
+>  {
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  	VM_BUG_ON_PAGE(page->pmd_huge_pte, page);
+> @@ -2296,8 +2296,8 @@ static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
+>  	return &mm->page_table_lock;
+>  }
+>  
+> -static inline bool pgtable_pmd_page_ctor(struct page *page) { return true; }
+> -static inline void pgtable_pmd_page_dtor(struct page *page) {}
+> +static inline bool pmd_ptlock_init(struct page *page) { return true; }
+> +static inline void pmd_ptlock_free(struct page *page) {}
+>  
+>  #define pmd_huge_pte(mm, pmd) ((mm)->pmd_huge_pte)
+>  
+> @@ -2310,6 +2310,22 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
+>  	return ptl;
+>  }
+>  
+> +static inline bool pgtable_pmd_page_ctor(struct page *page)
+> +{
+> +	if (!pmd_ptlock_init(page))
+> +		return false;
+> +	__SetPageTable(page);
+> +	inc_zone_page_state(page, NR_PAGETABLE);
+> +	return true;
+> +}
+> +
+> +static inline void pgtable_pmd_page_dtor(struct page *page)
+> +{
+> +	pmd_ptlock_free(page);
+> +	__ClearPageTable(page);
+> +	dec_zone_page_state(page, NR_PAGETABLE);
+> +}
+> +
+>  /*
+>   * No scalability reason to split PUD locks yet, but follow the same pattern
+>   * as the PMD locks to make it easier if we decide to.  The VM should not be
+> -- 
+> 2.27.0
+> 
+
 -- 
-2.26.2
-
+Sincerely yours,
+Mike.
