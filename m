@@ -1,86 +1,61 @@
-Return-Path: <SRS0=scNv=AI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=llFo=AJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 260AFC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 21:25:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8417C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 01:46:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94B382076E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jun 2020 21:25:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KrOHe2Al"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94B382076E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5F83220768
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 01:46:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F83220768
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49vRcr23f3zDrCF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 07:25:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49vYPD0kKmzDrCW
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 11:46:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=shorne@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=KrOHe2Al; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49vRZV1FZpzDr9C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2020 07:23:43 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id e9so6555724pgo.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2020 14:23:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=mizxgkzS/h5RAiTRnXHHAMYgNZSKy87tz0psMUuXu0c=;
- b=KrOHe2AlaGQ7tV28Vl9qyOQ0elfd8r//wq4xzvB5xDb5jWlg6mXfsKxabi0zi9yPbE
- a3CGp38U8cqw2mebqkt6TnvwzPA6E6KEcgpIj8HCQ1rHyHT3QVxyrownujSHvkYTCVSa
- Gy95rzA2weVyQoDCaBGwSARvG5wXI2h42LYwK1iUZUWKUYeZG14+sFo/aPCYLw2NwZJj
- nBqydL7WFvWCAVkBuzJ2gva+wATslrp9imqMIKL3E0H/YMoAyiaNhBbjIsjfeCv51DOd
- WRdGRRQ8YZYlJSkPBIPY8Mf5k8q0bkdsr138mWgQL9YfzyKrJwEngJSJT/C0ZJyP38ue
- p6eA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=mizxgkzS/h5RAiTRnXHHAMYgNZSKy87tz0psMUuXu0c=;
- b=mEmCWv8bxZSqV792kRRaB3HlfZhl4k48izUxFH2+2CUsk86Dl88fWRWtz9Fq6ZZu4H
- 0S/wfHxYPQEy2v6YpQfOghwSFwMyG4vfyt1Jw6ff0MBEMrdJUEA643WtnZIfH2ZCXEx7
- f8HXRonOOTIOu3yFItvb9HCa5caJDT0C/dRbwc3/3jR0QV9aFt+zOLN+hkk7RBx2dC3d
- dYRVSrInPff8mYwD/xVsbboI4Y3VJMUI+VtIpsXKtO+o3eeaYs55DcDQvju1BOkm0p7G
- mH9mP/I4XB7udfDWLoxj4KLpLr5xC9qe5P15mQsNF4Nqq4u5Kob46QCfsJa1lEsRf3wE
- tLsg==
-X-Gm-Message-State: AOAM532cnCp9TUpa2nQ39pnjQOsynCH9VO0qCrCC5fhY4VLKqmTVI94e
- SaCPvXW+9s+qTNv7Jx4WkPA=
-X-Google-Smtp-Source: ABdhPJyLzAtm2TextcgHnw6pDE2t7RidtLOm1t9FNzgTafND17DEExqOaKhxKo2F07v49LSV9JtDbQ==
-X-Received: by 2002:a62:e305:: with SMTP id g5mr8523544pfh.115.1593293018476; 
- Sat, 27 Jun 2020 14:23:38 -0700 (PDT)
-Received: from localhost (g2.222-224-226.ppp.wakwak.ne.jp. [222.224.226.2])
- by smtp.gmail.com with ESMTPSA id mw5sm15217406pjb.27.2020.06.27.14.23.37
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 27 Jun 2020 14:23:37 -0700 (PDT)
-Date: Sun, 28 Jun 2020 06:23:35 +0900
-From: Stafford Horne <shorne@gmail.com>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH 2/8] opeinrisc: switch to generic version of pte allocation
-Message-ID: <20200627212335.GJ1401039@lianli.shorne-pla.net>
-References: <20200627143453.31835-1-rppt@kernel.org>
- <20200627143453.31835-3-rppt@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49vYM90l8bzDqvx
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2020 11:44:20 +1000 (AEST)
+IronPort-SDR: aka8UcIt3xF9AYDmfW15Zkszk27GZFLcYB508GQcPMX3dZz5/+ie70C2UOyhmv+ZYVRfxTs966
+ M/HLKJeGj7OA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9665"; a="125912731"
+X-IronPort-AV: E=Sophos;i="5.75,289,1589266800"; d="scan'208";a="125912731"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Jun 2020 18:44:17 -0700
+IronPort-SDR: fI/iT5GeACJVuzKZoyvFKY2fOkzTgsm05HTyMmq51bfxgMh8NTNwn/Il2uY71pG25Jt9Wt8PwD
+ lvxX2A3VtwbQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,289,1589266800"; d="scan'208";a="320331753"
+Received: from lkp-server01.sh.intel.com (HELO 538b5e3c8319) ([10.239.97.150])
+ by FMSMGA003.fm.intel.com with ESMTP; 27 Jun 2020 18:44:16 -0700
+Received: from kbuild by 538b5e3c8319 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jpMMh-00033A-IV; Sun, 28 Jun 2020 01:44:15 +0000
+Date: Sun, 28 Jun 2020 09:43:53 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS f66ebd048174992db612ec8157c83f6c6601e8b0
+Message-ID: <5ef7f5d9.mFx9CEf6x+pMTNe5%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200627143453.31835-3-rppt@kernel.org>
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,38 +67,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>, linux-csky@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-hexagon@vger.kernel.org, Joerg Roedel <joro@8bytes.org>,
- Mike Rapoport <rppt@linux.ibm.com>, Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, linux-s390@vger.kernel.org,
- linux-um@lists.infradead.org, Steven Rostedt <rostedt@goodmis.org>,
- linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org,
- Andy Lutomirski <luto@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jun 27, 2020 at 05:34:47PM +0300, Mike Rapoport wrote:
-> From: Mike Rapoport <rppt@linux.ibm.com>
-> 
-> Replace pte_alloc_one(), pte_free() and pte_free_kernel() with the generic
-> implementation. The only actual functional change is the addition of
-> __GFP_ACCOUT for the allocation of the user page tables.
-> 
-> The pte_alloc_one_kernel() is kept back because its implementation on
-> openrisc is different than the generic one.
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: f66ebd048174992db612ec8157c83f6c6601e8b0  Automatic merge of 'master', 'next' and 'fixes' (2020-06-27 21:56)
 
-Thank's for this.
+elapsed time: 822m
 
-Acked-by: Stafford Horne <shorne@gmail.com>
+configs tested: 139
+configs skipped: 6
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arc                     haps_hs_smp_defconfig
+powerpc                          g5_defconfig
+mips                        jmr3927_defconfig
+sh                           se7751_defconfig
+arm                       imx_v6_v7_defconfig
+arm                            xcep_defconfig
+arm                      pxa255-idp_defconfig
+arm                          tango4_defconfig
+arm                         cm_x300_defconfig
+sh                         microdev_defconfig
+m68k                             allmodconfig
+powerpc                       ppc64_defconfig
+h8300                            allyesconfig
+arc                                 defconfig
+m68k                          atari_defconfig
+arm                        mini2440_defconfig
+arm                          pxa168_defconfig
+m68k                             alldefconfig
+nios2                         10m50_defconfig
+mips                     decstation_defconfig
+arm                       versatile_defconfig
+mips                          ath25_defconfig
+mips                        nlm_xlp_defconfig
+sparc                            allyesconfig
+arm                       netwinder_defconfig
+mips                    maltaup_xpa_defconfig
+powerpc                    gamecube_defconfig
+ia64                                defconfig
+h8300                       h8s-sim_defconfig
+sh                          landisk_defconfig
+sh                          kfr2r09_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                         apsh4a3a_defconfig
+openrisc                    or1ksim_defconfig
+i386                             alldefconfig
+sh                           se7724_defconfig
+mips                     loongson1b_defconfig
+parisc                            allnoconfig
+arm                            lart_defconfig
+mips                      loongson3_defconfig
+mips                           jazz_defconfig
+x86_64                           alldefconfig
+arm                         s3c2410_defconfig
+powerpc                     mpc512x_defconfig
+openrisc                 simple_smp_defconfig
+sh                           cayman_defconfig
+arm                         bcm2835_defconfig
+sh                  sh7785lcr_32bit_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a002-20200624
+i386                 randconfig-a006-20200624
+i386                 randconfig-a003-20200624
+i386                 randconfig-a001-20200624
+i386                 randconfig-a005-20200624
+i386                 randconfig-a004-20200624
+x86_64               randconfig-a004-20200624
+x86_64               randconfig-a002-20200624
+x86_64               randconfig-a003-20200624
+x86_64               randconfig-a005-20200624
+x86_64               randconfig-a001-20200624
+x86_64               randconfig-a006-20200624
+i386                 randconfig-a013-20200624
+i386                 randconfig-a016-20200624
+i386                 randconfig-a012-20200624
+i386                 randconfig-a011-20200624
+i386                 randconfig-a015-20200624
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+um                               allmodconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
