@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ACA1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:39:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BC06C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:41:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E753820771
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:39:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E753820771
+	by mail.kernel.org (Postfix) with ESMTPS id E901E20771
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 04:41:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E901E20771
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49vdFl1Bs3zDqwD
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 14:39:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49vdHc0KgfzDr84
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jun 2020 14:41:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -27,16 +27,16 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 49vd4N4PbyzDr0p
+ by lists.ozlabs.org (Postfix) with ESMTP id 49vd4N5KhSzDr0y
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2020 14:31:48 +1000 (AEST)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id B339B2970D; Sun, 28 Jun 2020 00:31:44 -0400 (EDT)
+ id 126552970E; Sun, 28 Jun 2020 00:31:44 -0400 (EDT)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <779551219a11b19e574dfcd87e4ef60af08c4fc3.1593318192.git.fthain@telegraphics.com.au>
+Message-Id: <ca5be30ba745c08c2b7a1f0618f99c61b303e983.1593318192.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1593318192.git.fthain@telegraphics.com.au>
 References: <cover.1593318192.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 6/9] macintosh/via-macii: Use bool type for reading_reply
+Subject: [PATCH 7/9] macintosh/via-macii: Use unsigned type for autopoll_devs
  variable
 Date: Sun, 28 Jun 2020 14:23:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,58 +61,31 @@ Sender: "Linuxppc-dev"
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/via-macii.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/macintosh/via-macii.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/macintosh/via-macii.c b/drivers/macintosh/via-macii.c
-index 8d5ef77b4a435..e143ddb81de34 100644
+index e143ddb81de34..447273967e1e8 100644
 --- a/drivers/macintosh/via-macii.c
 +++ b/drivers/macintosh/via-macii.c
-@@ -116,7 +116,7 @@ static struct adb_request *current_req; /* first request struct in the queue */
- static struct adb_request *last_req;     /* last request struct in the queue */
- static unsigned char reply_buf[16];        /* storage for autopolled replies */
- static unsigned char *reply_ptr;     /* next byte in reply_buf or req->reply */
--static int reading_reply;        /* store reply in reply_buf else req->reply */
-+static bool reading_reply;       /* store reply in reply_buf else req->reply */
- static int data_index;      /* index of the next byte to send from req->data */
- static int reply_len; /* number of bytes received in reply_buf or req->reply */
- static int status;          /* VIA's ADB status bits captured upon interrupt */
-@@ -394,7 +394,7 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 		WARN_ON((status & ST_MASK) != ST_IDLE);
+@@ -125,7 +125,7 @@ static bool srq_asserted;    /* have to poll for the device that asserted it */
+ static u8 last_cmd;              /* the most recent command byte transmitted */
+ static u8 last_talk_cmd;    /* the most recent Talk command byte transmitted */
+ static u8 last_poll_cmd; /* the most recent Talk R0 command byte transmitted */
+-static int autopoll_devs;      /* bits set are device addresses to be polled */
++static unsigned int autopoll_devs;  /* bits set are device addresses to poll */
  
- 		reply_ptr = reply_buf;
--		reading_reply = 0;
-+		reading_reply = false;
+ /* Check for MacII style ADB */
+ static int macii_probe(void)
+@@ -291,7 +291,7 @@ static int macii_autopoll(int devs)
+ 	local_irq_save(flags);
  
- 		bus_timeout = false;
- 		srq_asserted = false;
-@@ -442,7 +442,7 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 			 */
- 			macii_state = reading;
+ 	/* bit 1 == device 1, and so on. */
+-	autopoll_devs = devs & 0xFFFE;
++	autopoll_devs = (unsigned int)devs & 0xFFFE;
  
--			reading_reply = 0;
-+			reading_reply = false;
- 			reply_ptr = reply_buf;
- 			*reply_ptr = last_talk_cmd;
- 			reply_len = 1;
-@@ -456,7 +456,7 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 			if (req->reply_expected) {
- 				macii_state = reading;
- 
--				reading_reply = 1;
-+				reading_reply = true;
- 				reply_ptr = req->reply;
- 				*reply_ptr = req->data[1];
- 				reply_len = 1;
-@@ -466,7 +466,7 @@ static irqreturn_t macii_interrupt(int irq, void *arg)
- 			} else if ((req->data[1] & OP_MASK) == TALK) {
- 				macii_state = reading;
- 
--				reading_reply = 0;
-+				reading_reply = false;
- 				reply_ptr = reply_buf;
- 				*reply_ptr = req->data[1];
- 				reply_len = 1;
+ 	if (!current_req) {
+ 		macii_queue_poll();
 -- 
 2.26.2
 
