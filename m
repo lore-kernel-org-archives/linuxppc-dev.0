@@ -2,85 +2,94 @@ Return-Path: <SRS0=PIrw=AK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6452C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 13:29:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D210C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 14:04:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1556223D98
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 13:29:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QBzWW384"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1556223D98
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 87C8123D5A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 14:04:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87C8123D5A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wSyT4MwhzDqRt
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 23:29:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wTkv0RNyzDqWv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 00:04:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::743;
- helo=mail-qk1-x743.google.com; envelope-from=htejun@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=QBzWW384; dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wSvD2QdPzDqQr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 23:26:45 +1000 (AEST)
-Received: by mail-qk1-x743.google.com with SMTP id b4so15151071qkn.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 06:26:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to;
- bh=Fv6NdtXx3UPrY1o8G//J65B2AQrLdpFXjYCPaB28XJ4=;
- b=QBzWW384u9OvX1+fUOwtaycCV0CJ52SJrLmeisPsJZT2MkXib64D2XgXjqcZCQ1gHl
- VVu6OQvl/n/P/cFGz+Y239ImO9US3hFSEeQQSI5WIhYOPb1nHd81Jq7x2ACxzYcZqO3f
- rLJ28xCiUZOXEYFrnGDxxGpJOfRtblGiZqRXRShP77fsVblavOYIR7oY6VRiui1qJcA+
- OZtZ5c+W9enbTMpXOzJxOU0ZujiE4c1Z4fh/bM2ZhQLI9HKB26PM8zSfNddnnqsR4UB1
- Zl71fUJVG3JgmZqfzmK8dCNaJmRQwy1Gd+9Zgogqc+w0moLNTMSkoa4ZjhTPzhat8xqh
- bruw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
- :references:mime-version:content-disposition:in-reply-to;
- bh=Fv6NdtXx3UPrY1o8G//J65B2AQrLdpFXjYCPaB28XJ4=;
- b=IucT1zkCU2Xw1xJ2M5pvVZGXoTPaXPUlGPdFnHP4d3liwLjVzPWm+j2zarcJKNVxmY
- SbXzZ0AGZJWrUFrF0mskwGBjbs+KzoZuyl9Xp9sDI5r/SVoJmKrCSj9r6Fy/qi2sS/1+
- AGWjqplQyFv1gBUlEVR3mZemGG09Q5jguYT2GLCtyb5WO7EIO6T+UD7ZgEBWkzcc0lbD
- sHo2HxWGKD1Gm5I79FHPy6swPgwtqzCVL1zIaqokhZ9G+F4u1C5GE2IqVcavJbDrTdhj
- aggylo+sRkl3KpNbvIiRdjBSG8xs85wiWlULQ5TiW/Dy3QrQloikr11ekoRA1Ii2vcRB
- 6Wnw==
-X-Gm-Message-State: AOAM533i7G1cx830VUHdyGRrC1g6V3nBsu73/6k01V9iH0u3+SgM5dUz
- t6ggU9JrvaxE9VsHROC2zSM=
-X-Google-Smtp-Source: ABdhPJyJSE7L2+zg2wyGl3Bgq/O+Nn9UDXROVlpMVeIyC6cjvIPEgQ+STEsV8Ezdk9o2oieugBEbSQ==
-X-Received: by 2002:a37:47d1:: with SMTP id
- u200mr15401369qka.142.1593437200182; 
- Mon, 29 Jun 2020 06:26:40 -0700 (PDT)
-Received: from localhost ([2620:10d:c091:480::1:26be])
- by smtp.gmail.com with ESMTPSA id o15sm16871725qko.67.2020.06.29.06.26.39
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 29 Jun 2020 06:26:39 -0700 (PDT)
-Date: Mon, 29 Jun 2020 09:26:38 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc/cacheinfo: Use cpumap_print to print cpumap
-Message-ID: <20200629132638.GF13061@mtj.duckdns.org>
-References: <20200629103703.4538-1-srikar@linux.vnet.ibm.com>
- <20200629103703.4538-2-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wTb9100GzDqGQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 23:57:56 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05TDVGDl165375; Mon, 29 Jun 2020 09:57:46 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ycgcu72b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 09:57:45 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05TDVGL4165476;
+ Mon, 29 Jun 2020 09:57:45 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ycgcu71v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 09:57:45 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05TDtsjg016382;
+ Mon, 29 Jun 2020 13:57:44 GMT
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29]) by ppma02dal.us.ibm.com with ESMTP id 31wwr8knax-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 13:57:44 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05TDvipA52363580
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 29 Jun 2020 13:57:44 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1D64AAE05F;
+ Mon, 29 Jun 2020 13:57:44 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ED948AE05C;
+ Mon, 29 Jun 2020 13:57:40 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.77.197.62])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 29 Jun 2020 13:57:40 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ linux-nvdimm@lists.01.org, dan.j.williams@intel.com
+Subject: [PATCH v6 1/8] powerpc/pmem: Restrict papr_scm to P8 and above.
+Date: Mon, 29 Jun 2020 19:27:15 +0530
+Message-Id: <20200629135722.73558-2-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200629135722.73558-1-aneesh.kumar@linux.ibm.com>
+References: <20200629135722.73558-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200629103703.4538-2-srikar@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
+ definitions=2020-06-29_11:2020-06-29,
+ 2020-06-29 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ suspectscore=0 cotscore=-2147483648 mlxscore=0 bulkscore=0 mlxlogscore=999
+ adultscore=0 malwarescore=0 priorityscore=1501 impostorscore=0
+ phishscore=0 spamscore=0 clxscore=1011 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006290091
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,47 +101,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Jan Kara <jack@suse.cz>, Jeff Moyer <jmoyer@redhat.com>, msuchanek@suse.de,
+ oohall@gmail.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 29, 2020 at 04:07:01PM +0530, Srikar Dronamraju wrote:
-> Tejun Heo had modified shared_cpu_map_show to use scnprintf instead of
-> cpumap_print during support for *pb[l] format.
-> Refer commit 0c118b7bd09a ("powerpc: use %*pb[l] to print bitmaps including
-> cpumasks and nodemasks")
-> 
-> cpumap_print_to_pagebuf is a standard function to print cpumap.  With
-> commit 9cf79d115f0d ("bitmap: remove explicit newline handling using
-> scnprintf format string"), there is no need to print explicit newline and
-> trailing null character. cpumap_print_to_pagebuf internally uses
-> scnprintf. Hence replace scnprintf with cpumap_print_to_pagebuf.
-> 
-> Note: shared_cpu_map_show in drivers/base/cacheinfo.c already uses
-> cpumap_print_to_pagebuf.
-> 
-> Before this patch
-> # cat /sys/devices/system/cpu0/cache/index1/shared_cpu_map
-> 00ff
-> 
-> #
-> 		(Notice the extra blank line).
-> 
-> After this patch
-> # cat /sys/devices/system/cpu0/cache/index1/shared_cpu_map
-> 00ff
-> #
-> 
-> Cc: Nathan Lynch <nathanl@linux.ibm.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+The PAPR based virtualized persistent memory devices are only supported on
+POWER9 and above. In the followup patch, the kernel will switch the persistent
+memory cache flush functions to use a new `dcbf` variant instruction. The new
+instructions even though added in ISA 3.1 works even on P8 and P9 because these
+are implemented as a variant of existing `dcbf` and `hwsync` and on P8 and
+P9 behaves as such.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Considering these devices are only supported on P8 and above,  update the driver
+to prevent a P7-compat guest from using persistent memory devices.
 
-Thanks.
+We don't update of_pmem driver with the same condition, because, on bare-metal,
+the firmware enables pmem support only on P9 and above. There the kernel depends
+on OPAL firmware to restrict exposing persistent memory related device tree
+entries on older hardware. of_pmem.ko is written without any arch dependency and
+we don't want to add ppc64 specific cpu feature check in of_pmem driver.
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/pmem.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
+index f860a897a9e0..2347e1038f58 100644
+--- a/arch/powerpc/platforms/pseries/pmem.c
++++ b/arch/powerpc/platforms/pseries/pmem.c
+@@ -147,6 +147,12 @@ const struct of_device_id drc_pmem_match[] = {
+ 
+ static int pseries_pmem_init(void)
+ {
++	/*
++	 * Only supported on POWER8 and above.
++	 */
++	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
++		return 0;
++
+ 	pmem_node = of_find_node_by_type(NULL, "ibm,persistent-memory");
+ 	if (!pmem_node)
+ 		return 0;
 -- 
-tejun
+2.26.2
+
