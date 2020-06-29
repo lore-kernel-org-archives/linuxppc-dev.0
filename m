@@ -2,113 +2,69 @@ Return-Path: <SRS0=PIrw=AK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BCB1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 06:25:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2425BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 06:53:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D71323132
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 06:25:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D71323132
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8B32B206E9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 06:53:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B32B206E9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wHXq3y9KzDqcY
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 16:25:15 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wHVr527pzDqSv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 16:23:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wJ9f5tl9zDqXD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 16:53:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 49wHVr35gbz8tTx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 16:23:32 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 49wHVr2Xgtz9sQx; Mon, 29 Jun 2020 16:23:32 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49wHVq6CpPz9sRk
- for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2020 16:23:31 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05T62F0i179145; Mon, 29 Jun 2020 02:23:18 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31xkqjaqjf-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Jun 2020 02:23:17 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05T62PWK179837;
- Mon, 29 Jun 2020 02:23:17 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 31xkqjaqht-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Jun 2020 02:23:17 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05T6L5Tu011514;
- Mon, 29 Jun 2020 06:23:15 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma04fra.de.ibm.com with ESMTP id 31wwr80whk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Jun 2020 06:23:15 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05T6NCjx2621908
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 29 Jun 2020 06:23:12 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 46019A4053;
- Mon, 29 Jun 2020 06:23:12 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 14DC8A405B;
- Mon, 29 Jun 2020 06:23:09 +0000 (GMT)
-Received: from [9.102.0.109] (unknown [9.102.0.109])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 29 Jun 2020 06:23:08 +0000 (GMT)
-Subject: Re: [PATCH 02/11] powerpc/kexec_file: mark PPC64 specific code
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <159319825403.16351.7253978047621755765.stgit@hbathini.in.ibm.com>
- <159319829236.16351.3935863082429593906.stgit@hbathini.in.ibm.com>
- <68d59c00-da02-b362-7bd9-a9631eca0fdd@csgroup.eu>
-From: Hari Bathini <hbathini@linux.ibm.com>
-Message-ID: <29542b4a-eb44-5330-60e8-c0b0d294d72f@linux.ibm.com>
-Date: Mon, 29 Jun 2020 11:53:08 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wJ7q66PCzDqJq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 16:52:05 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49wJ7Z2bG8z9tvr7;
+ Mon, 29 Jun 2020 08:51:54 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Ql3tDOZ5HUJp; Mon, 29 Jun 2020 08:51:54 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49wJ7Z1fPrz9tvr5;
+ Mon, 29 Jun 2020 08:51:54 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C2088B784;
+ Mon, 29 Jun 2020 08:52:00 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id lj7dlNmcEfXw; Mon, 29 Jun 2020 08:52:00 +0200 (CEST)
+Received: from [172.25.230.105] (po15451.idsi0.si.c-s.fr [172.25.230.105])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B57FB8B75B;
+ Mon, 29 Jun 2020 08:51:59 +0200 (CEST)
+Subject: Re: [PATCH v2] powerpc/uaccess: Use flexible addressing with
+ __put_user()/__get_user()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com, segher@kernel.crashing.org
+References: <c2addbd9d76212242d3d8554a2f7ff849fb08b85.1587040754.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <7b916759-1683-b4df-0d4b-b04b3fcd9a02@csgroup.eu>
+Date: Mon, 29 Jun 2020 08:52:00 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
 MIME-Version: 1.0
-In-Reply-To: <68d59c00-da02-b362-7bd9-a9631eca0fdd@csgroup.eu>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <c2addbd9d76212242d3d8554a2f7ff849fb08b85.1587040754.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
- definitions=2020-06-29_04:2020-06-26,
- 2020-06-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 bulkscore=0
- mlxscore=0 adultscore=0 clxscore=1011 phishscore=0 priorityscore=1501
- malwarescore=0 lowpriorityscore=0 suspectscore=0 cotscore=-2147483648
- spamscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006290039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,67 +76,233 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Pingfan Liu <piliu@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
- Petr Tesarik <ptesarik@suse.cz>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Sourabh Jain <sourabhjain@linux.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Eric Biederman <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe
+Hi Michael,
 
-Thanks for the review...
+I see this patch is marked as "defered" in patchwork, but I can't see 
+any related discussion. Is it normal ?
 
-On 27/06/20 12:12 pm, Christophe Leroy wrote:
+Christophe
+
+Le 16/04/2020 à 14:39, Christophe Leroy a écrit :
+> At the time being, __put_user()/__get_user() and friends only use
+> D-form addressing, with 0 offset. Ex:
 > 
+> 	lwz	reg1, 0(reg2)
 > 
-> Le 26/06/2020 à 21:04, Hari Bathini a écrit :
->> Some of the kexec_file_load code isn't PPC64 specific. Move PPC64
->> specific code from kexec/file_load.c to kexec/file_load_64.c. Also,
->> rename purgatory/trampoline.S to purgatory/trampoline_64.S in the
->> same spirit.
+> Give the compiler the opportunity to use other adressing modes
+> whenever possible, to get more optimised code.
 > 
-> At the time being, CONFIG_KEXEC_FILE depends on PPC64.
-
-Right.
-
-> Are you planning to make it work on PPC32 as well ?
-
-No.
-
-> Otherwise I don't understand the purpose of this patch.
-
-But I want to make sure the changes I am adding in this series do not
-get in the way of adding PPC32 changes whenever they are submitted as there
-is common code currently and some more of it in the changes I am adding
-in this series...
-
-> Also, what is being done in this patch seems to go far beyond what you describe above.> It is propably worth splitting in several patches with proper explanation.
-
-Hmmm.. I don't see any other reason beyond what I mentioned above.
-Will try to split the patch but the changelog would still be the same, afaics.
-
-> Christophe
+> Hereunder is a small exemple:
 > 
->>
->> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
->> ---
->>   arch/powerpc/include/asm/kexec.h       |   11 +++
->>   arch/powerpc/kexec/Makefile            |    2 -
->>   arch/powerpc/kexec/elf_64.c            |    7 +-
->>   arch/powerpc/kexec/file_load.c         |   37 ++--------
->>   arch/powerpc/kexec/file_load_64.c      |  108 ++++++++++++++++++++++++++++++
->>   arch/powerpc/purgatory/Makefile        |    4 +
->>   arch/powerpc/purgatory/trampoline.S    |  117 --------------------------------
->>   arch/powerpc/purgatory/trampoline_64.S |  117 ++++++++++++++++++++++++++++++++
->>   8 files changed, 248 insertions(+), 155 deletions(-)
->>   create mode 100644 arch/powerpc/kexec/file_load_64.c
->>   delete mode 100644 arch/powerpc/purgatory/trampoline.S
->>   create mode 100644 arch/powerpc/purgatory/trampoline_64.S
-
-Thanks
-Hari
+> struct test {
+> 	u32 item1;
+> 	u16 item2;
+> 	u8 item3;
+> 	u64 item4;
+> };
+> 
+> int set_test_user(struct test __user *from, struct test __user *to)
+> {
+> 	int err;
+> 	u32 item1;
+> 	u16 item2;
+> 	u8 item3;
+> 	u64 item4;
+> 
+> 	err = __get_user(item1, &from->item1);
+> 	err |= __get_user(item2, &from->item2);
+> 	err |= __get_user(item3, &from->item3);
+> 	err |= __get_user(item4, &from->item4);
+> 
+> 	err |= __put_user(item1, &to->item1);
+> 	err |= __put_user(item2, &to->item2);
+> 	err |= __put_user(item3, &to->item3);
+> 	err |= __put_user(item4, &to->item4);
+> 
+> 	return err;
+> }
+> 
+> Before the patch:
+> 
+> 00000df0 <set_test_user>:
+>   df0:	94 21 ff f0 	stwu    r1,-16(r1)
+>   df4:	39 40 00 00 	li      r10,0
+>   df8:	93 c1 00 08 	stw     r30,8(r1)
+>   dfc:	93 e1 00 0c 	stw     r31,12(r1)
+>   e00:	7d 49 53 78 	mr      r9,r10
+>   e04:	80 a3 00 00 	lwz     r5,0(r3)
+>   e08:	38 e3 00 04 	addi    r7,r3,4
+>   e0c:	7d 46 53 78 	mr      r6,r10
+>   e10:	a0 e7 00 00 	lhz     r7,0(r7)
+>   e14:	7d 29 33 78 	or      r9,r9,r6
+>   e18:	39 03 00 06 	addi    r8,r3,6
+>   e1c:	7d 46 53 78 	mr      r6,r10
+>   e20:	89 08 00 00 	lbz     r8,0(r8)
+>   e24:	7d 29 33 78 	or      r9,r9,r6
+>   e28:	38 63 00 08 	addi    r3,r3,8
+>   e2c:	7d 46 53 78 	mr      r6,r10
+>   e30:	83 c3 00 00 	lwz     r30,0(r3)
+>   e34:	83 e3 00 04 	lwz     r31,4(r3)
+>   e38:	7d 29 33 78 	or      r9,r9,r6
+>   e3c:	7d 43 53 78 	mr      r3,r10
+>   e40:	90 a4 00 00 	stw     r5,0(r4)
+>   e44:	7d 29 1b 78 	or      r9,r9,r3
+>   e48:	38 c4 00 04 	addi    r6,r4,4
+>   e4c:	7d 43 53 78 	mr      r3,r10
+>   e50:	b0 e6 00 00 	sth     r7,0(r6)
+>   e54:	7d 29 1b 78 	or      r9,r9,r3
+>   e58:	38 e4 00 06 	addi    r7,r4,6
+>   e5c:	7d 43 53 78 	mr      r3,r10
+>   e60:	99 07 00 00 	stb     r8,0(r7)
+>   e64:	7d 23 1b 78 	or      r3,r9,r3
+>   e68:	38 84 00 08 	addi    r4,r4,8
+>   e6c:	93 c4 00 00 	stw     r30,0(r4)
+>   e70:	93 e4 00 04 	stw     r31,4(r4)
+>   e74:	7c 63 53 78 	or      r3,r3,r10
+>   e78:	83 c1 00 08 	lwz     r30,8(r1)
+>   e7c:	83 e1 00 0c 	lwz     r31,12(r1)
+>   e80:	38 21 00 10 	addi    r1,r1,16
+>   e84:	4e 80 00 20 	blr
+> 
+> After the patch:
+> 
+> 00000dbc <set_test_user>:
+>   dbc:	39 40 00 00 	li      r10,0
+>   dc0:	7d 49 53 78 	mr      r9,r10
+>   dc4:	80 03 00 00 	lwz     r0,0(r3)
+>   dc8:	7d 48 53 78 	mr      r8,r10
+>   dcc:	a1 63 00 04 	lhz     r11,4(r3)
+>   dd0:	7d 29 43 78 	or      r9,r9,r8
+>   dd4:	7d 48 53 78 	mr      r8,r10
+>   dd8:	88 a3 00 06 	lbz     r5,6(r3)
+>   ddc:	7d 29 43 78 	or      r9,r9,r8
+>   de0:	7d 48 53 78 	mr      r8,r10
+>   de4:	80 c3 00 08 	lwz     r6,8(r3)
+>   de8:	80 e3 00 0c 	lwz     r7,12(r3)
+>   dec:	7d 29 43 78 	or      r9,r9,r8
+>   df0:	7d 43 53 78 	mr      r3,r10
+>   df4:	90 04 00 00 	stw     r0,0(r4)
+>   df8:	7d 29 1b 78 	or      r9,r9,r3
+>   dfc:	7d 43 53 78 	mr      r3,r10
+>   e00:	b1 64 00 04 	sth     r11,4(r4)
+>   e04:	7d 29 1b 78 	or      r9,r9,r3
+>   e08:	7d 43 53 78 	mr      r3,r10
+>   e0c:	98 a4 00 06 	stb     r5,6(r4)
+>   e10:	7d 23 1b 78 	or      r3,r9,r3
+>   e14:	90 c4 00 08 	stw     r6,8(r4)
+>   e18:	90 e4 00 0c 	stw     r7,12(r4)
+>   e1c:	7c 63 53 78 	or      r3,r3,r10
+>   e20:	4e 80 00 20 	blr
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+> ---
+> v2:
+> - Added <> modifier in __put_user_asm() and __get_user_asm()
+> - Removed %U2 in __put_user_asm2() and __get_user_asm2()
+> - Reworded the commit log
+> ---
+>   arch/powerpc/include/asm/uaccess.h | 28 ++++++++++++++--------------
+>   1 file changed, 14 insertions(+), 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> index 7c811442b607..9365b59495a2 100644
+> --- a/arch/powerpc/include/asm/uaccess.h
+> +++ b/arch/powerpc/include/asm/uaccess.h
+> @@ -114,7 +114,7 @@ extern long __put_user_bad(void);
+>    */
+>   #define __put_user_asm(x, addr, err, op)			\
+>   	__asm__ __volatile__(					\
+> -		"1:	" op " %1,0(%2)	# put_user\n"		\
+> +		"1:	" op "%U2%X2 %1,%2	# put_user\n"	\
+>   		"2:\n"						\
+>   		".section .fixup,\"ax\"\n"			\
+>   		"3:	li %0,%3\n"				\
+> @@ -122,7 +122,7 @@ extern long __put_user_bad(void);
+>   		".previous\n"					\
+>   		EX_TABLE(1b, 3b)				\
+>   		: "=r" (err)					\
+> -		: "r" (x), "b" (addr), "i" (-EFAULT), "0" (err))
+> +		: "r" (x), "m<>" (*addr), "i" (-EFAULT), "0" (err))
+>   
+>   #ifdef __powerpc64__
+>   #define __put_user_asm2(x, ptr, retval)				\
+> @@ -130,8 +130,8 @@ extern long __put_user_bad(void);
+>   #else /* __powerpc64__ */
+>   #define __put_user_asm2(x, addr, err)				\
+>   	__asm__ __volatile__(					\
+> -		"1:	stw %1,0(%2)\n"				\
+> -		"2:	stw %1+1,4(%2)\n"			\
+> +		"1:	stw%X2 %1,%2\n"			\
+> +		"2:	stw%X2 %L1,%L2\n"			\
+>   		"3:\n"						\
+>   		".section .fixup,\"ax\"\n"			\
+>   		"4:	li %0,%3\n"				\
+> @@ -140,7 +140,7 @@ extern long __put_user_bad(void);
+>   		EX_TABLE(1b, 4b)				\
+>   		EX_TABLE(2b, 4b)				\
+>   		: "=r" (err)					\
+> -		: "r" (x), "b" (addr), "i" (-EFAULT), "0" (err))
+> +		: "r" (x), "m" (*addr), "i" (-EFAULT), "0" (err))
+>   #endif /* __powerpc64__ */
+>   
+>   #define __put_user_size_allowed(x, ptr, size, retval)		\
+> @@ -260,7 +260,7 @@ extern long __get_user_bad(void);
+>   
+>   #define __get_user_asm(x, addr, err, op)		\
+>   	__asm__ __volatile__(				\
+> -		"1:	"op" %1,0(%2)	# get_user\n"	\
+> +		"1:	"op"%U2%X2 %1, %2	# get_user\n"	\
+>   		"2:\n"					\
+>   		".section .fixup,\"ax\"\n"		\
+>   		"3:	li %0,%3\n"			\
+> @@ -269,7 +269,7 @@ extern long __get_user_bad(void);
+>   		".previous\n"				\
+>   		EX_TABLE(1b, 3b)			\
+>   		: "=r" (err), "=r" (x)			\
+> -		: "b" (addr), "i" (-EFAULT), "0" (err))
+> +		: "m<>" (*addr), "i" (-EFAULT), "0" (err))
+>   
+>   #ifdef __powerpc64__
+>   #define __get_user_asm2(x, addr, err)			\
+> @@ -277,8 +277,8 @@ extern long __get_user_bad(void);
+>   #else /* __powerpc64__ */
+>   #define __get_user_asm2(x, addr, err)			\
+>   	__asm__ __volatile__(				\
+> -		"1:	lwz %1,0(%2)\n"			\
+> -		"2:	lwz %1+1,4(%2)\n"		\
+> +		"1:	lwz%X2 %1, %2\n"			\
+> +		"2:	lwz%X2 %L1, %L2\n"		\
+>   		"3:\n"					\
+>   		".section .fixup,\"ax\"\n"		\
+>   		"4:	li %0,%3\n"			\
+> @@ -289,7 +289,7 @@ extern long __get_user_bad(void);
+>   		EX_TABLE(1b, 4b)			\
+>   		EX_TABLE(2b, 4b)			\
+>   		: "=r" (err), "=&r" (x)			\
+> -		: "b" (addr), "i" (-EFAULT), "0" (err))
+> +		: "m" (*addr), "i" (-EFAULT), "0" (err))
+>   #endif /* __powerpc64__ */
+>   
+>   #define __get_user_size_allowed(x, ptr, size, retval)		\
+> @@ -299,10 +299,10 @@ do {								\
+>   	if (size > sizeof(x))					\
+>   		(x) = __get_user_bad();				\
+>   	switch (size) {						\
+> -	case 1: __get_user_asm(x, ptr, retval, "lbz"); break;	\
+> -	case 2: __get_user_asm(x, ptr, retval, "lhz"); break;	\
+> -	case 4: __get_user_asm(x, ptr, retval, "lwz"); break;	\
+> -	case 8: __get_user_asm2(x, ptr, retval);  break;	\
+> +	case 1: __get_user_asm(x, (u8 __user *)ptr, retval, "lbz"); break;	\
+> +	case 2: __get_user_asm(x, (u16 __user *)ptr, retval, "lhz"); break;	\
+> +	case 4: __get_user_asm(x, (u32 __user *)ptr, retval, "lwz"); break;	\
+> +	case 8: __get_user_asm2(x, (u64 __user *)ptr, retval);  break;	\
+>   	default: (x) = __get_user_bad();			\
+>   	}							\
+>   } while (0)
+> 
