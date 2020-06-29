@@ -2,86 +2,89 @@ Return-Path: <SRS0=PIrw=AK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FC57C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 10:44:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D283C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 10:46:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 096AE23770
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 10:44:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 096AE23770
+	by mail.kernel.org (Postfix) with ESMTPS id DABD123787
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 10:46:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DABD123787
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wPHq1hVXzDqXq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wPL85w0XzDqMC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:46:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wP7w4HGhzDqC0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 20:37:32 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05TAZG2l129744; Mon, 29 Jun 2020 06:37:24 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31ycj8v08k-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wPGD6qwKzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 20:43:00 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05TAVJRd083016; Mon, 29 Jun 2020 06:42:57 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ycgcmuc2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Jun 2020 06:37:24 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05TAWjFq014089;
- Mon, 29 Jun 2020 10:37:22 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma06ams.nl.ibm.com with ESMTP id 31wwch21ne-1
+ Mon, 29 Jun 2020 06:42:57 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05TAe0D8024386;
+ Mon, 29 Jun 2020 10:42:56 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma04dal.us.ibm.com with ESMTP id 31wwr8j4ua-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 29 Jun 2020 10:37:22 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05TAbKMK8978512
+ Mon, 29 Jun 2020 10:42:56 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05TAgrhB13828398
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 29 Jun 2020 10:37:20 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DC5C611C050;
- Mon, 29 Jun 2020 10:37:19 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B4E0011C066;
- Mon, 29 Jun 2020 10:37:18 +0000 (GMT)
-Received: from srikart450.in.ibm.com (unknown [9.199.48.47])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 29 Jun 2020 10:37:18 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/3] powerpc/cacheinfo: Use cpumap_print to print cpumap
-Date: Mon, 29 Jun 2020 16:07:01 +0530
-Message-Id: <20200629103703.4538-2-srikar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200629103703.4538-1-srikar@linux.vnet.ibm.com>
-References: <20200629103703.4538-1-srikar@linux.vnet.ibm.com>
+ Mon, 29 Jun 2020 10:42:53 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0921B6A04F;
+ Mon, 29 Jun 2020 10:42:55 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7DC9E6A058;
+ Mon, 29 Jun 2020 10:42:54 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.80.55])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 29 Jun 2020 10:42:54 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 046E32E4AC7; Mon, 29 Jun 2020 16:12:48 +0530 (IST)
+Date: Mon, 29 Jun 2020 16:12:48 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Joel Stanley <joel@jms.id.au>
+Subject: Re: [PATCH] powerpc: Warn about use of smt_snooze_delay
+Message-ID: <20200629104248.GD20062@in.ibm.com>
+References: <20200625100349.2408899-1-joel@jms.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200625100349.2408899-1-joel@jms.id.au>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216, 18.0.687
  definitions=2020-06-29_08:2020-06-29,
  2020-06-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- impostorscore=0 mlxlogscore=924 lowpriorityscore=0 spamscore=0
- priorityscore=1501 phishscore=0 suspectscore=0 adultscore=0
- cotscore=-2147483648 bulkscore=0 clxscore=1011 mlxscore=0 classifier=spam
- adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006290075
+ lowpriorityscore=0
+ suspectscore=0 cotscore=-2147483648 mlxscore=0 bulkscore=0 mlxlogscore=999
+ adultscore=0 malwarescore=0 priorityscore=1501 impostorscore=0
+ phishscore=0 spamscore=0 clxscore=1011 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006290071
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,73 +96,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tejun Heo <tj@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tejun Heo had modified shared_cpu_map_show to use scnprintf instead of
-cpumap_print during support for *pb[l] format.
-Refer commit 0c118b7bd09a ("powerpc: use %*pb[l] to print bitmaps including
-cpumasks and nodemasks")
+On Thu, Jun 25, 2020 at 07:33:49PM +0930, Joel Stanley wrote:
+> It's not done anything for a long time. Save the percpu variable, and
+> emit a warning to remind users to not expect it to do anything.
+> 
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-cpumap_print_to_pagebuf is a standard function to print cpumap.  With
-commit 9cf79d115f0d ("bitmap: remove explicit newline handling using
-scnprintf format string"), there is no need to print explicit newline and
-trailing null character. cpumap_print_to_pagebuf internally uses
-scnprintf. Hence replace scnprintf with cpumap_print_to_pagebuf.
+The only known user of "smt_snooze_delay" is the "ppc64_cpu" which
+uses the presence of this file to assume that the system is SMT
+capable.
 
-Note: shared_cpu_map_show in drivers/base/cacheinfo.c already uses
-cpumap_print_to_pagebuf.
+Since we have "/sys/devices/system/cpu/smt/" these days, perhaps the
+userspace utility can use that and we can get rid of the file
+altogether ?
 
-Before this patch
-# cat /sys/devices/system/cpu0/cache/index1/shared_cpu_map
-00ff
-
-#
-		(Notice the extra blank line).
-
-After this patch
-# cat /sys/devices/system/cpu0/cache/index1/shared_cpu_map
-00ff
-#
-
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/cacheinfo.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index 470336277c67..0d3c45e2fccd 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -652,7 +652,7 @@ static ssize_t shared_cpu_map_show(struct kobject *k, struct kobj_attribute *att
- 	struct cache_index_dir *index;
- 	struct cache *cache;
- 	const struct cpumask *mask;
--	int ret, cpu;
-+	int cpu;
- 
- 	index = kobj_to_cache_index_dir(k);
- 	cache = index->cache;
-@@ -664,11 +664,7 @@ static ssize_t shared_cpu_map_show(struct kobject *k, struct kobj_attribute *att
- 		mask  = &cache->shared_cpu_map;
- 	}
- 
--	ret = scnprintf(buf, PAGE_SIZE - 1, "%*pb\n",
--			cpumask_pr_args(mask));
--	buf[ret++] = '\n';
--	buf[ret] = '\0';
--	return ret;
-+	return cpumap_print_to_pagebuf(false, buf, mask);
- }
- 
- static struct kobj_attribute cache_shared_cpu_map_attr =
--- 
-2.17.1
-
+FWIW,
+Acked-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/sysfs.c | 41 +++++++++++++------------------------
+>  1 file changed, 14 insertions(+), 27 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index 571b3259697e..530ae92bc46d 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -32,29 +32,25 @@
+>  
+>  static DEFINE_PER_CPU(struct cpu, cpu_devices);
+>  
+> -/*
+> - * SMT snooze delay stuff, 64-bit only for now
+> - */
+> -
+>  #ifdef CONFIG_PPC64
+>  
+> -/* Time in microseconds we delay before sleeping in the idle loop */
+> -static DEFINE_PER_CPU(long, smt_snooze_delay) = { 100 };
+> +/*
+> + * Snooze delay has not been hooked up since 3fa8cad82b94 ("powerpc/pseries/cpuidle:
+> + * smt-snooze-delay cleanup.") and has been broken even longer. As was foretold in
+> + * 2014:
+> + *
+> + *  "ppc64_util currently utilises it. Once we fix ppc64_util, propose to clean
+> + *  up the kernel code."
+> + *
+> + * At some point in the future this code should be removed.
+> + */
+>  
+>  static ssize_t store_smt_snooze_delay(struct device *dev,
+>  				      struct device_attribute *attr,
+>  				      const char *buf,
+>  				      size_t count)
+>  {
+> -	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> -	ssize_t ret;
+> -	long snooze;
+> -
+> -	ret = sscanf(buf, "%ld", &snooze);
+> -	if (ret != 1)
+> -		return -EINVAL;
+> -
+> -	per_cpu(smt_snooze_delay, cpu->dev.id) = snooze;
+> +	WARN_ON_ONCE("smt_snooze_delay sysfs file has no effect\n");
+>  	return count;
+>  }
+>  
+> @@ -62,9 +58,9 @@ static ssize_t show_smt_snooze_delay(struct device *dev,
+>  				     struct device_attribute *attr,
+>  				     char *buf)
+>  {
+> -	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> +	WARN_ON_ONCE("smt_snooze_delay sysfs file has no effect\n");
+>  
+> -	return sprintf(buf, "%ld\n", per_cpu(smt_snooze_delay, cpu->dev.id));
+> +	return sprintf(buf, "100\n");
+>  }
+>  
+>  static DEVICE_ATTR(smt_snooze_delay, 0644, show_smt_snooze_delay,
+> @@ -72,16 +68,7 @@ static DEVICE_ATTR(smt_snooze_delay, 0644, show_smt_snooze_delay,
+>  
+>  static int __init setup_smt_snooze_delay(char *str)
+>  {
+> -	unsigned int cpu;
+> -	long snooze;
+> -
+> -	if (!cpu_has_feature(CPU_FTR_SMT))
+> -		return 1;
+> -
+> -	snooze = simple_strtol(str, NULL, 10);
+> -	for_each_possible_cpu(cpu)
+> -		per_cpu(smt_snooze_delay, cpu) = snooze;
+> -
+> +	WARN_ON_ONCE("smt-snooze-delay command line option has no effect\n");
+>  	return 1;
+>  }
+>  __setup("smt-snooze-delay=", setup_smt_snooze_delay);
+> -- 
+> 2.27.0
+> 
