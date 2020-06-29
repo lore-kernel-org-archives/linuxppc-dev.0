@@ -2,87 +2,96 @@ Return-Path: <SRS0=PIrw=AK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1B25C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 21:07:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EF43C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 21:15:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B463206A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 21:07:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YJBNPwOj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B463206A1
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3CF74206A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 21:15:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CF74206A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wg6Y36PMzDqQX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 07:07:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wgHk54rTzDqBh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 07:15:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=YJBNPwOj; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wdqB55VGzDqMk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 06:08:54 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id g67so7908392pgc.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 13:08:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=Dk9Y/T99sdQ3PfvJ9tzS88PlXk+29r6HaUnDmfo2AIs=;
- b=YJBNPwOj22wBFdvzais+fblphrAroRFtJc3OzQ8RRLvsojoV0C3WM/buNqASfskOyT
- zIA4r/pM0/v3TRqNNZxBpcOJGSD29gOelOc2e9T2RgAxFq53QEMhIdN7zA/nBhWS+qmm
- Y8jRoreByc494Td0CMc5wZbjcCS87hohVxhtz7jj6Ix58a1hsPo6sl3iYvyX9dbReAa9
- GDz4K05C9Dmut4rRqMPkKNiBr6X2XbdHSOnGE6PyNHPDAZA/Ck3K6jAQVo/GgatdQdQ4
- L5D2QyfKR42ohh4zzhShlTZSmIgwd7VHZLY0uwIU2hNP0T3rbqObAKV+bA5s46B8iGbO
- OuzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=Dk9Y/T99sdQ3PfvJ9tzS88PlXk+29r6HaUnDmfo2AIs=;
- b=rCbegwE/lJ7iSpFI0LMN7g0uxOv0TVKymbMQOb97HewkU+84jzqEVQ3jHChstkZiVM
- 9O1SxVmnlRck4JLYhYljfh1A4oE9aZ9qX/Xg0bU5cJhUjjC/pqAczCKe/6QcbkRK5/Jb
- fPXK31ZKraoTdMUk2DyvcTNhVkgvVWZilkghsz+SqlbSZQNz4MwZiszCBF/3Dm0zk1Di
- jLdR4vgMDWdnU0Vkko/yC8ZsYXAl/1rSs6eLwgTI+eSerxHaVFhvuktVzGzUYMigM+R4
- 2ionKO+RhKOnYOU56IDgpckmcVlmTuM5Cj5MmQ4fyVCD9ksAsD4+PIWf/FUV27Bk+9Kn
- cvXg==
-X-Gm-Message-State: AOAM530qs0Qs2BuUwdYF55ftQGYjRLRdppBJ7lFB/bpdVvoIz1lu5XRL
- ACwkvvRk7FujMBJdp/i6QAM=
-X-Google-Smtp-Source: ABdhPJw9k+cyjMxkvZCZ4AoSCBXsw6VLdn1xIUlzJKIwRHnIfMovFVz5gBkCQyh6fguu6A9iRlF4Gg==
-X-Received: by 2002:aa7:9906:: with SMTP id z6mr16229603pff.60.1593461326205; 
- Mon, 29 Jun 2020 13:08:46 -0700 (PDT)
-Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
- by smtp.gmail.com with ESMTPSA id 137sm534234pgg.72.2020.06.29.13.08.45
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 29 Jun 2020 13:08:46 -0700 (PDT)
-Date: Mon, 29 Jun 2020 13:08:13 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_asrc: Add an option to select internal ratio
- mode
-Message-ID: <20200629200813.GB27967@Asurada-Nvidia>
-References: <1593439115-19282-1-git-send-email-shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wfFH113NzDqRg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 06:28:02 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05TKKu9r101973; Mon, 29 Jun 2020 16:27:53 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ydmkm3y7-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 16:27:53 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 05TKKw8F102114;
+ Mon, 29 Jun 2020 16:27:53 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ydmkm3xs-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 16:27:53 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05TKJx5p005716;
+ Mon, 29 Jun 2020 20:27:52 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma04dal.us.ibm.com with ESMTP id 31wwr8qe5h-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 29 Jun 2020 20:27:52 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05TKRptM52363676
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 29 Jun 2020 20:27:51 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6464B28058;
+ Mon, 29 Jun 2020 20:27:51 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B70B32805C;
+ Mon, 29 Jun 2020 20:27:47 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.34.39])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 29 Jun 2020 20:27:47 +0000 (GMT)
+X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: kernel test robot <lkp@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, linux-nvdimm@lists.01.org, dan.j.williams@intel.com
+Subject: Re: [PATCH v6 4/8] libnvdimm/nvdimm/flush: Allow architecture to
+ override the flush barrier
+In-Reply-To: <202006300210.ADlNY4uw%lkp@intel.com>
+References: <20200629135722.73558-5-aneesh.kumar@linux.ibm.com>
+ <202006300210.ADlNY4uw%lkp@intel.com>
+Date: Tue, 30 Jun 2020 01:57:44 +0530
+Message-ID: <87o8p1hb27.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1593439115-19282-1-git-send-email-shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-06-29_21:2020-06-29,
+ 2020-06-29 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ cotscore=-2147483648
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
+ mlxlogscore=999 clxscore=1011 bulkscore=0 phishscore=0 impostorscore=0
+ priorityscore=1501 spamscore=0 mlxscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006290124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,88 +103,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: Jan Kara <jack@suse.cz>, Jeff Moyer <jmoyer@redhat.com>, msuchanek@suse.de,
+ kbuild-all@lists.01.org, oohall@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 29, 2020 at 09:58:35PM +0800, Shengjiu Wang wrote:
-> The ASRC not only supports ideal ratio mode, but also supports
-> internal ratio mode.
-> 
-> For internal rato mode, the rate of clock source should be divided
-> with no remainder by sample rate, otherwise there is sound
-> distortion.
-> 
-> Add function fsl_asrc_select_clk() to find proper clock source for
-> internal ratio mode, if the clock source is available then internal
-> ratio mode will be selected.
-> 
-> With change, the ideal ratio mode is not the only option for user.
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
+kernel test robot <lkp@intel.com> writes:
 
-> +static int fsl_asrc_select_clk(struct fsl_asrc_priv *asrc_priv,
-> +			       struct fsl_asrc_pair *pair,
-> +			       int in_rate,
-> +			       int out_rate)
-> +{
-> +	struct fsl_asrc_pair_priv *pair_priv = pair->private;
-> +	struct asrc_config *config = pair_priv->config;
-> +	int rate[2], select_clk[2]; /* Array size 2 means IN and OUT */
-> +	int clk_rate, clk_index;
-> +	int i = 0, j = 0;
-> +	bool clk_sel[2];
-> +
-> +	rate[0] = in_rate;
-> +	rate[1] = out_rate;
-> +
-> +	/* Select proper clock source for internal ratio mode */
-> +	for (j = 0; j < 2; j++) {
-> +		for (i = 0; i < ASRC_CLK_MAP_LEN; i++) {
-> +			clk_index = asrc_priv->clk_map[j][i];
-> +			clk_rate = clk_get_rate(asrc_priv->asrck_clk[clk_index]);
+> Hi "Aneesh,
+>
+> I love your patch! Yet something to improve:
+>
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on linux-nvdimm/libnvdimm-for-next v5.8-rc3 next-20200629]
+> [cannot apply to scottwood/next]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use  as documented in
+> https://git-scm.com/docs/git-format-patch]
+>
+> url:    https://github.com/0day-ci/linux/commits/Aneesh-Kumar-K-V/Support-new-pmem-flush-and-sync-instructions-for-POWER/20200629-223649
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: arc-allyesconfig (attached as .config)
+> compiler: arc-elf-gcc (GCC) 9.3.0
+> reproduce (this is a W=1 build):
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=arc 
+>
+> If you fix the issue, kindly add following tag as appropriate
+> Reported-by: kernel test robot <lkp@intel.com>
+>
+> All errors (new ones prefixed by >>):
+>
+>    drivers/nvdimm/region_devs.c: In function 'generic_nvdimm_flush':
+>>> drivers/nvdimm/region_devs.c:1215:2: error: implicit declaration of function 'arch_pmem_flush_barrier' [-Werror=implicit-function-declaration]
+>     1215 |  arch_pmem_flush_barrier();
+>          |  ^~~~~~~~~~~~~~~~~~~~~~~
+>    cc1: some warnings being treated as errors
 
-+			/* Only match a perfect clock source with no remainder */
+Ok let's move the back to include/linux/libnvdimm.h. Not all arch
+include asm-generic/cacheflush.h
 
-> +			if (clk_rate != 0 && (clk_rate / rate[j]) <= 1024 &&
-> +			    (clk_rate % rate[j]) == 0)
-> +				break;
-> +		}
-> +
-> +		if (i == ASRC_CLK_MAP_LEN) {
-> +			select_clk[j] = OUTCLK_ASRCK1_CLK;
-> +			clk_sel[j] = false;
-> +		} else {
-> +			select_clk[j] = i;
-> +			clk_sel[j] = true;
-> +		}
-> +	}
-> +
-> +	/* Switch to ideal ratio mode if there is no proper clock source */
-> +	if (!clk_sel[IN] || !clk_sel[OUT])
-> +		select_clk[IN] = INCLK_NONE;
-
-Could get rid of clk_set:
-
-	for (j) {
-		for (i) {
-			if (match)
-				break;
-		}
-
-		clk[j] = i;
-	}
-
-	if (clk[IN] == ASRC_CLK_MAP_LEN || clk[OUT] == ASRC_CLK_MAP_LEN)
-
-And it only overrides clk[IN] setting but leaving clk[OUT] to
-to the searching result. This means that clk[OUT] may be using
-a clock source other than OUTCLK_ASRCK1_CLK if sel[IN] happens
-to be false while sel[OUT] happens to be true. Not sure if it
-is intended...but I feel it would probably be safer to use the
-previous settings: INCLK_NONE + OUTCLK_ASRCK1_CLK?
+-aneesh
