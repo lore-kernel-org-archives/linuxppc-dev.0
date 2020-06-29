@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7877C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 936EEC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:14:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F22E20675
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:11:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2791C20760
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jun 2020 20:14:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="issiWcVc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F22E20675
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nX6H72rw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2791C20760
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wdt010KszDqNK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 06:11:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wdxV4mrgzDqNS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 06:14:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.a=rsa-sha256 header.s=casper.20170209 header.b=issiWcVc; 
+ header.a=rsa-sha256 header.s=casper.20170209 header.b=nX6H72rw; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wdB64frvzDqYY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 05:40:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wdB61FtjzDqYP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 05:40:12 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=KYQPEhMrWwbjunajTA0tfrHgAEeVrpu9W222AN41VOw=; b=issiWcVcE17rTXmc/emvZD3eU6
- jUfqFX9yWi33QJVwNQeR+afNEP+LekYRpvYkthsYMa1a8Yu7FI3nAO0YArSteyHbLZmgZWUyasS0v
- LBHBv2oANz+Tpo/dhdp2qOFdN28GZvbxKtroCwuKozpo6kyW2ncugiXtpeEBJncpnUHLQ545MRMKX
- 3RQc6lcNRw7+0xkawJY+p0gEJZR/SKfS+LPhz5fU0kYnZAGAHX5xscHtJTWOVUpvh3kO/7+0AGkEl
- +wQg6H27UfZ39ULPAmNtial/bGcKcS15zOGxvFnUKMEY3l3Kd23P9THR9KMB3a4ELRWQvnj+fSolb
- MhJ0MnxQ==;
+ bh=U8tCb4h17a0rL+ZZdq18PAV+yDbvWsH96GC5gLr1vuc=; b=nX6H72rwNYY0Uodz17aYP0bvqk
+ 9gSPPIErWrLN9tgBHhvIIJkOaKgVsJo4ToReNXQeJGEcFnMtOneeM9lvCktfvClRYHDtNElRZj2F6
+ 8v+5TR40P7wF9sVI6FNZgxu5kOa2TO9rd1Tk/CVbrQpxDd6MTudpLktSUdh658nMTs0t6pbT8L0DU
+ oLPd3ny9KNPaRYcpjp5BKqZJvHEO/AQA8V3gJ3oEvuI02EACAolGm1l5wddF6nve0W3P8jOwehhxt
+ HUK/Vlvd1nnX1ZKXj4mHlQgYSZ/JMOLFPBM2+5fH9Dc8Y+nLWvs6b4VA5Ugvca4/Jx5cC4ko7Xilx
+ 7KEB9k7g==;
 Received: from [2001:4bb8:184:76e3:fcca:c8dc:a4bf:12fa] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jpzdE-0004FI-Vs; Mon, 29 Jun 2020 19:39:57 +0000
+ id 1jpzd9-0004Eg-CR; Mon, 29 Jun 2020 19:39:52 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 04/20] null_blk: stop using ->queuedata for bio mode
-Date: Mon, 29 Jun 2020 21:39:31 +0200
-Message-Id: <20200629193947.2705954-5-hch@lst.de>
+Subject: [PATCH 01/20] nfblock: stop using ->queuedata
+Date: Mon, 29 Jun 2020 21:39:28 +0200
+Message-Id: <20200629193947.2705954-2-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200629193947.2705954-1-hch@lst.de>
 References: <20200629193947.2705954-1-hch@lst.de>
@@ -90,22 +90,30 @@ field.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/null_blk_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/m68k/emu/nfblock.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/block/null_blk_main.c b/drivers/block/null_blk_main.c
-index 82259242b9b5c9..93ce0a00b2ae01 100644
---- a/drivers/block/null_blk_main.c
-+++ b/drivers/block/null_blk_main.c
-@@ -1392,7 +1392,7 @@ static blk_qc_t null_queue_bio(struct request_queue *q, struct bio *bio)
- {
- 	sector_t sector = bio->bi_iter.bi_sector;
- 	sector_t nr_sectors = bio_sectors(bio);
--	struct nullb *nullb = q->queuedata;
-+	struct nullb *nullb = bio->bi_disk->private_data;
- 	struct nullb_queue *nq = nullb_to_queue(nullb);
- 	struct nullb_cmd *cmd;
+diff --git a/arch/m68k/emu/nfblock.c b/arch/m68k/emu/nfblock.c
+index c3a630440512e9..87e8b1700acd28 100644
+--- a/arch/m68k/emu/nfblock.c
++++ b/arch/m68k/emu/nfblock.c
+@@ -61,7 +61,7 @@ struct nfhd_device {
  
+ static blk_qc_t nfhd_make_request(struct request_queue *queue, struct bio *bio)
+ {
+-	struct nfhd_device *dev = queue->queuedata;
++	struct nfhd_device *dev = bio->bi_disk->private_data;
+ 	struct bio_vec bvec;
+ 	struct bvec_iter iter;
+ 	int dir, len, shift;
+@@ -122,7 +122,6 @@ static int __init nfhd_init_one(int id, u32 blocks, u32 bsize)
+ 	if (dev->queue == NULL)
+ 		goto free_dev;
+ 
+-	dev->queue->queuedata = dev;
+ 	blk_queue_logical_block_size(dev->queue, bsize);
+ 
+ 	dev->disk = alloc_disk(16);
 -- 
 2.26.2
 
