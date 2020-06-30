@@ -2,86 +2,89 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B105FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E596C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:55:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 54F28206BE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:36:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GXVYAQau"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54F28206BE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 97D342063A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:55:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97D342063A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wtQb2xX8zDqkV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 15:36:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wtqv0qMkzDqjY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 15:55:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
- helo=mail-pg1-x544.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=GXVYAQau; dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wtNk25hMzDqM9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 15:35:18 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id d4so9406887pgk.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2020 22:35:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=s00P0DjaGSC7vdiXdVQwK+g6WJ0VNDWILQPhUuEX0K4=;
- b=GXVYAQau0kxqZWFt//4uddyCAlpqvNlXjO+K74nVM0iUlZr7FuGDsSTvDbOCYtISE8
- +yV7mTNtOmeKqrpuVpTvV4SKFPF8MkWUoyWIJ1oMqAPxpyv/8zHdyMDq24/w7ti3/KDn
- upoEKvmXXxSFPbiQWEcpGxJoq1RZJtxVLsqWSW3cJA2zWP1SOQjheciySIH7kQaYJgUb
- HQEdluIniVpZG36Zp4lmjRqcfUIxnDlTpp4e5wlpyTyVigCzP5qKlJHQvroAVW03l6iw
- u6G4MAUpkctI/VTUi+suuncsB8bg7YAqwQtdQuiYC1EYjutl/iJe+TQWe46AyxJVIX4r
- xwtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=s00P0DjaGSC7vdiXdVQwK+g6WJ0VNDWILQPhUuEX0K4=;
- b=MjBWLb635cc6wltS0Nq5BCwuPF4JjwAm55DcypFqVe2FFFyI3RMqUY4BpAFI5J4cjO
- YGe6kcM4WWf6rR8soI9HyfZta8dLKHDspDyqp6+MQEckGXdVFOkMiWpUqKj7uLDcwGL4
- e2qg/1nd8fqwZT1F91N3IYa16mIm8r/Cr3J4wWL627kViZ/HJBEQwxcQlLN/kXsIp3/j
- 6B8KEolDBpT2WicaYfk35HmyFHHEGe/lyR83i6k9ISqsgvViYAWEuIWUIN+UlS7V9Ha+
- di1m0LEpm5I9flYi9FzUEphRkh+i19q7ZtWHRnHQVQrPw7LL2RY61hR//45nV+kwyAmu
- kOdA==
-X-Gm-Message-State: AOAM531hL1OsuCYA7sdS3pnG9bB2IqP3+ZZ6Wm7iZ0ODTulhruM8leuT
- zDm3j2Ztu7TpgiEW7YR6giWm+4Ve
-X-Google-Smtp-Source: ABdhPJzHwwNeTokySopi+E1W3pQs42+38f8CKWP93EMiZw3DeA3Fdk/LyfS5+OPvl5Fa/XvAz29zdA==
-X-Received: by 2002:a63:aa42:: with SMTP id x2mr13017666pgo.361.1593495314689; 
- Mon, 29 Jun 2020 22:35:14 -0700 (PDT)
-Received: from localhost (61-68-186-125.tpgi.com.au. [61.68.186.125])
- by smtp.gmail.com with ESMTPSA id c12sm1292038pfn.162.2020.06.29.22.35.13
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 29 Jun 2020 22:35:13 -0700 (PDT)
-Date: Tue, 30 Jun 2020 15:35:08 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/pseries: Add KVM guest doorbell restrictions
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20200627150428.2525192-1-npiggin@gmail.com>
- <20200627150428.2525192-4-npiggin@gmail.com>
- <20200630022713.GA618342@thinks.paulus.ozlabs.org>
-In-Reply-To: <20200630022713.GA618342@thinks.paulus.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wtnl69YqzDqbD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 15:53:31 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05U5VjrV167974; Tue, 30 Jun 2020 01:53:27 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31ydk9r7ck-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 30 Jun 2020 01:53:26 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05U5aejN016690;
+ Tue, 30 Jun 2020 05:53:24 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06fra.de.ibm.com with ESMTP id 31wwcgsh33-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 30 Jun 2020 05:53:24 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 05U5rLLS46334060
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 30 Jun 2020 05:53:21 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 41575AE04D;
+ Tue, 30 Jun 2020 05:53:21 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 14726AE045;
+ Tue, 30 Jun 2020 05:53:18 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.199.47.9])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 30 Jun 2020 05:53:17 +0000 (GMT)
+From: Balamuruhan S <bala24@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 1/4] powerpc/sstep: support new VSX vector paired storage
+ access instructions
+Date: Tue, 30 Jun 2020 11:23:04 +0530
+Message-Id: <20200630055307.1154135-2-bala24@linux.ibm.com>
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200630055307.1154135-1-bala24@linux.ibm.com>
+References: <20200630055307.1154135-1-bala24@linux.ibm.com>
 MIME-Version: 1.0
-Message-Id: <1593495049.cacw882re0.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-06-29_21:2020-06-29,
+ 2020-06-29 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 mlxscore=0
+ suspectscore=1 adultscore=0 mlxlogscore=999 lowpriorityscore=0
+ clxscore=1015 bulkscore=0 malwarescore=0 cotscore=-2147483648
+ impostorscore=0 spamscore=0 priorityscore=1501 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2006300037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,44 +96,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, Anton Blanchard <anton@linux.ibm.com>,
- =?iso-8859-1?q?C=E9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: ravi.bangoria@linux.ibm.com, Balamuruhan S <bala24@linux.ibm.com>,
+ paulus@samba.org, sandipan@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Paul Mackerras's message of June 30, 2020 12:27 pm:
-> On Sun, Jun 28, 2020 at 01:04:28AM +1000, Nicholas Piggin wrote:
->> KVM guests have certain restrictions and performance quirks when
->> using doorbells. This patch tests for KVM environment in doorbell
->> setup, and optimises IPI performance:
->>=20
->>  - PowerVM guests may now use doorbells even if they are secure.
->>=20
->>  - KVM guests no longer use doorbells if XIVE is available.
->=20
-> It seems, from the fact that you completely remove
-> kvm_para_available(), that you perhaps haven't tried building with
-> CONFIG_KVM_GUEST=3Dy.
+VSX Vector Paired instructions loads/stores an octword (32 bytes)
+from/to storage into two sequential VSRs. Add `analyse_instr()` support
+to these new instructions,
+        * Load VSX Vector Paired (lxvp)
+        * Load VSX Vector Paired Indexed (lxvpx)
+        * Prefixed Load VSX Vector Paired (plxvp)
+        * Store VSX Vector Paired (stxvp)
+        * Store VSX Vector Paired Indexed (stxvpx)
+        * Prefixed Store VSX Vector Paired (pstxvp)
 
-It's still there and builds:
+Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
+---
+ arch/powerpc/lib/sstep.c | 44 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
-static inline int kvm_para_available(void)
-{
-        return IS_ENABLED(CONFIG_KVM_GUEST) && is_kvm_guest();
-}
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 5abe98216dc2..c92890e71ca7 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -31,6 +31,10 @@ extern char system_call_common[];
+ #define XER_OV32	0x00080000U
+ #define XER_CA32	0x00040000U
+ 
++#ifdef CONFIG_VSX
++#define VSX_REGISTER_XTP(rd)   ((((rd) & 1) << 5) | ((rd) & 0xfe))
++#endif
++
+ #ifdef CONFIG_PPC_FPU
+ /*
+  * Functions in ldstfp.S
+@@ -2382,6 +2386,13 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			op->vsx_flags = VSX_SPLAT;
+ 			break;
+ 
++		case 333:       /* lxvpx */
++			op->reg = VSX_REGISTER_XTP(rd);
++			op->type = MKOP(LOAD_VSX, 0, 32);
++			op->element_size = 32;
++			op->vsx_flags = VSX_CHECK_VEC;
++			break;
++
+ 		case 364:	/* lxvwsx */
+ 			op->reg = rd | ((word & 1) << 5);
+ 			op->type = MKOP(LOAD_VSX, 0, 4);
+@@ -2410,6 +2421,12 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 				VSX_CHECK_VEC;
+ 			break;
+ 		}
++		case 461:       /* stxvpx */
++			op->reg = VSX_REGISTER_XTP(rd);
++			op->type = MKOP(STORE_VSX, 0, 32);
++			op->element_size = 32;
++			op->vsx_flags = VSX_CHECK_VEC;
++			break;
+ 		case 524:	/* lxsspx */
+ 			op->reg = rd | ((word & 1) << 5);
+ 			op->type = MKOP(LOAD_VSX, 0, 4);
+@@ -2651,6 +2668,21 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ #endif
+ 
+ #ifdef CONFIG_VSX
++	case 6:
++		op->ea = dqform_ea(word, regs);
++		op->reg = VSX_REGISTER_XTP(rd);
++		op->element_size = 32;
++		op->vsx_flags = VSX_CHECK_VEC;
++		switch (word & 0xf) {
++		case 0:         /* lxvp */
++			op->type = MKOP(LOAD_VSX, 0, 32);
++			break;
++		case 1:         /* stxvp */
++			op->type = MKOP(STORE_VSX, 0, 32);
++			break;
++		}
++		break;
++
+ 	case 61:	/* stfdp, lxv, stxsd, stxssp, stxv */
+ 		switch (word & 7) {
+ 		case 0:		/* stfdp with LSB of DS field = 0 */
+@@ -2779,12 +2811,24 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 			case 57:	/* pld */
+ 				op->type = MKOP(LOAD, PREFIXED, 8);
+ 				break;
++			case 58:        /* plxvp */
++				op->reg = VSX_REGISTER_XTP(rd);
++				op->type = MKOP(LOAD_VSX, PREFIXED, 32);
++				op->element_size = 32;
++				op->vsx_flags = VSX_CHECK_VEC;
++				break;
+ 			case 60:        /* stq */
+ 				op->type = MKOP(STORE, PREFIXED, 16);
+ 				break;
+ 			case 61:	/* pstd */
+ 				op->type = MKOP(STORE, PREFIXED, 8);
+ 				break;
++			case 62:        /* pstxvp */
++				op->reg = VSX_REGISTER_XTP(rd);
++				op->type = MKOP(STORE_VSX, PREFIXED, 32);
++				op->element_size = 32;
++				op->vsx_flags = VSX_CHECK_VEC;
++				break;
+ 			}
+ 			break;
+ 		case 1: /* Type 01 Eight-Byte Register-to-Register */
 
-but...
+base-commit: 64677779e8962c20b580b471790fe42367750599
+-- 
+2.24.1
 
-> Somewhat confusingly, that option is not used or
-> needed when building for a PAPR guest (i.e. the "pseries" platform)
-> but is used on non-IBM platforms using the "epapr" hypervisor
-> interface.
-
-... is_kvm_guest() returns false on !PSERIES now. Not intended
-to break EPAPR. I'm not sure of a good way to share this between
-EPAPR and PSERIES, I might just make a copy of it but I'll see.
-
-Thanks,
-Nick
