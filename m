@@ -2,48 +2,83 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91AA9C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 10:02:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5762FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 11:52:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F232C20675
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 10:02:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F232C20675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=8bytes.org
+	by mail.kernel.org (Postfix) with ESMTPS id BF69720774
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 11:52:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sv5METmc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF69720774
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49x0K30cq6zDqJK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 20:02:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49x2mH4XNQzDqlm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 21:52:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=8bytes.org (client-ip=2a01:238:4383:600:38bc:a715:4b6d:a889;
- helo=theia.8bytes.org; envelope-from=joro@8bytes.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32d;
+ helo=mail-wm1-x32d.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=8bytes.org
-Received: from theia.8bytes.org (8bytes.org
- [IPv6:2a01:238:4383:600:38bc:a715:4b6d:a889])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=sv5METmc; dkim-atps=neutral
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com
+ [IPv6:2a00:1450:4864:20::32d])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49x0Gj25L3zDqc2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 20:00:29 +1000 (AEST)
-Received: by theia.8bytes.org (Postfix, from userid 1000)
- id 7BBA42A7; Tue, 30 Jun 2020 12:00:15 +0200 (CEST)
-Date: Tue, 30 Jun 2020 12:00:14 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 00/13] iommu: Remove usage of dev->archdata.iommu
-Message-ID: <20200630100013.GJ28824@8bytes.org>
-References: <20200625130836.1916-1-joro@8bytes.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49x2k60gFXzDqTm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 21:50:51 +1000 (AEST)
+Received: by mail-wm1-x32d.google.com with SMTP id j18so18519677wmi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 04:50:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=P2kaWfnNvd2hN2fmZl/iANXKvq3Zrz+qKXWCTOlr4ZQ=;
+ b=sv5METmcUNlVPL/aF13yHN3RqTEDxyG7/q2ECvPsTEirhsBYrD8bvvnpPRSjeGjFB8
+ JmWn5L5WpSXZW+e8A7oIxPlEngvk5HSJt3GaoLlrHHDCjxuSGGtqy12ELnDPgvHF+Xoo
+ GCPbEn37jqhnTSCSVN6rQ8PA5enmiryKt9xjLw0Rw1QcTaKlknuZjGdd+QEOdbckgKJm
+ CfEFyNn3f/SbCi7AF2mgOMvzBO72r2mQRoXHHDw6JncweKSnEZZkXAuWH/8VQbJPagj1
+ QC5DEACTyIuIPgj11L5cdGLCKpNW/Wo1GHFtY7pQTL/v88z3c9ArhH1JBaWJY+fdDHHK
+ GCAA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=P2kaWfnNvd2hN2fmZl/iANXKvq3Zrz+qKXWCTOlr4ZQ=;
+ b=uWalKQ2ROmvxYZ6EAgqCeQouleS4DupSgwnwVLZQYBYlhnmqcXx8kvvlq5cZeVXJtD
+ m0OW1hOwsRw8VVAInbrYmwJvtkQ+GytB6ORvy55uQzWFOcOGRGAMoTRma4HZweeovAC8
+ OhXyC57ULn1Cl/PrLdah23aI5lsn02H/B730sd8peYkGYO1HCNUDkL8g3yuaJYwt6v4G
+ GJ9g+wmCiwGJP8F/FoGXdngMfutJzHUqUeQWfZS9ynCTFuQT5MNoeiO+1n0mDue2znvP
+ 9AhjQM+7sRr0FuabdW9PjE3dXW6OAmkEL8JAfaXGsstxdP0UwkPKm/gA41l6Ah5uBxja
+ Xj6Q==
+X-Gm-Message-State: AOAM5324gxch0ZiKg1sRJgjYHJtmtmtn0akpmpUFsyPWK6SnOCBGzEtc
+ z3WRWZ7/fiwmBjAg9TFpfUGUS+2r
+X-Google-Smtp-Source: ABdhPJy4nPCZZHjQR/ImHJv5iiYOplIlPtzwEscgSm2rMCey7bQHLnriQSfQbHJg8/bFfHmIs+IqoA==
+X-Received: by 2002:a05:600c:294a:: with SMTP id
+ n10mr20315557wmd.38.1593517848074; 
+ Tue, 30 Jun 2020 04:50:48 -0700 (PDT)
+Received: from bobo.ibm.com (61-68-186-125.tpgi.com.au. [61.68.186.125])
+ by smtp.gmail.com with ESMTPSA id c25sm3133673wml.46.2020.06.30.04.50.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 30 Jun 2020 04:50:47 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/3] powerpc/pseries: IPI doorbell improvements
+Date: Tue, 30 Jun 2020 21:50:30 +1000
+Message-Id: <20200630115034.137050-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200625130836.1916-1-joro@8bytes.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,39 +90,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
- David Airlie <airlied@linux.ie>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Will Deacon <will@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Joerg Roedel <jroedel@suse.de>, intel-gfx@lists.freedesktop.org,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Daniel Vetter <daniel@ffwll.ch>, David Woodhouse <dwmw2@infradead.org>,
- Lu Baolu <baolu.lu@linux.intel.com>
+Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Anton Blanchard <anton@linux.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 25, 2020 at 03:08:23PM +0200, Joerg Roedel wrote:
-> Joerg Roedel (13):
->   iommu/exynos: Use dev_iommu_priv_get/set()
->   iommu/vt-d: Use dev_iommu_priv_get/set()
->   iommu/msm: Use dev_iommu_priv_get/set()
->   iommu/omap: Use dev_iommu_priv_get/set()
->   iommu/rockchip: Use dev_iommu_priv_get/set()
->   iommu/tegra: Use dev_iommu_priv_get/set()
->   iommu/pamu: Use dev_iommu_priv_get/set()
->   iommu/mediatek: Do no use dev->archdata.iommu
->   x86: Remove dev->archdata.iommu pointer
->   ia64: Remove dev->archdata.iommu pointer
->   arm: Remove dev->archdata.iommu pointer
->   arm64: Remove dev->archdata.iommu pointer
->   powerpc/dma: Remove dev->archdata.iommu_domain
+Since v1:
+- Fixed SMP compile error.
+- Fixed EPAPR / KVM_GUEST breakage.
+- Expanded patch 3 changelog a bit.
 
-Applied.
+Thanks,
+Nick
+
+Nicholas Piggin (3):
+  powerpc: inline doorbell sending functions
+  powerpc/pseries: Use doorbells even if XIVE is available
+  powerpc/pseries: Add KVM guest doorbell restrictions
+
+ arch/powerpc/include/asm/dbell.h     | 63 ++++++++++++++++++++++++++--
+ arch/powerpc/include/asm/firmware.h  |  6 +++
+ arch/powerpc/include/asm/kvm_para.h  | 26 ++----------
+ arch/powerpc/kernel/Makefile         |  5 +--
+ arch/powerpc/kernel/dbell.c          | 55 ------------------------
+ arch/powerpc/kernel/firmware.c       | 19 +++++++++
+ arch/powerpc/platforms/pseries/smp.c | 62 +++++++++++++++++++--------
+ 7 files changed, 134 insertions(+), 102 deletions(-)
+
+-- 
+2.23.0
+
