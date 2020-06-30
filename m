@@ -2,79 +2,72 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E880C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:30:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D73CCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:59:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E7B920672
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:30:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ok0vl9Ax"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E7B920672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 255B820675
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:59:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 255B820675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49x6GZ0PGtzDqpq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 00:30:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49x6vr3QNNzDqmb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 00:59:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::241;
- helo=mail-lj1-x241.google.com; envelope-from=festevam@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ok0vl9Ax; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49x5rV0LZkzDqpJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 00:11:34 +1000 (AEST)
-Received: by mail-lj1-x241.google.com with SMTP id h22so15592864lji.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 07:11:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=KaJ8A/mtp7tiazUWqWYM9IFm5G1Nvqs2cqWvKn5WT8o=;
- b=ok0vl9AxjEtaqLYePLsNsU1F7UuQ/mCyacTbBucXkiBM5MoPdlgeD8vCjscO6H/YoO
- g1Y3tdvyyEKK9q2yfyRX9/W8woqV+6qqe1GPTYjJkO9URBKyG+2vC45bHjhFP+Sighy2
- dcI8F8s5Vfo8GRj3oMeByIZH7a/604pe6LCm/s6p1IQsq5+qrX/E6xr9jj/E9WES9Zng
- GiWCiezZOrh0uh1CoZcuMKEdEiqSdgeXf23b5DujkEjlrgSSWrX93szxwsGoC+pad/wM
- 3rIglYZoPvhcbPpRVHCSSeoloCgm6pd895s39sP/y8I08clro7W8b/Nj6lHf1jboCDy2
- 6uag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=KaJ8A/mtp7tiazUWqWYM9IFm5G1Nvqs2cqWvKn5WT8o=;
- b=KNAW18By0S+5914zqlES5/stsYPaTnkGdomZSy5RXKoikGXIBX/BMd1xPK0xyZSNKq
- JGgBkAI69RxJ5RDwJ5lEyLaYZPrgH58dZ5eVGvHifDccDG45OYEd/SCDeMQa0vfkyUdp
- qdc64nFFtbJ4zY4cpROPZzwBpTbmZ9+2ULawe5Fh4eqX1h79cqBdrqkRI6mROMhtWZRN
- McMSdfQ3uAhd96CZij45IH1CoDhyeAhp2Y3F0IT+qZiOd6cOztrrlH5dCOgIHhMTJZHy
- T4Mqr2u8rNFE8SqQuseQHOtruDH1sBr9BHsfzf2YsHweN5+q6MFXLoOjlgat32baxjmu
- SSLA==
-X-Gm-Message-State: AOAM531FBNeLoIZV693qY+XEfDRHlYHcTyXhpB3iLLAA5P1w+ncZ//1B
- HSUOQE/IFS7Z0R0KdzQ6wNyBO31iTpZhxXU703c=
-X-Google-Smtp-Source: ABdhPJz5MIpXGlHgP1fvLS1Lh6z16GezmdUmGLLPMdcG9JOfzkS5KaVN414xdFAZLh68lRYnPXjkaFaK/PAFHUS7YMU=
-X-Received: by 2002:a2e:880e:: with SMTP id x14mr978719ljh.218.1593526288891; 
- Tue, 30 Jun 2020 07:11:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49x6pp6KSkzDqk5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 00:55:11 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49x6pZ5Tr4z9twdq;
+ Tue, 30 Jun 2020 16:55:02 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id DW2g8NlcVvk7; Tue, 30 Jun 2020 16:55:02 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49x6pZ0L9vz9tvrw;
+ Tue, 30 Jun 2020 16:55:02 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 269198B7E4;
+ Tue, 30 Jun 2020 16:55:04 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id yCXNo6XMiDNf; Tue, 30 Jun 2020 16:55:04 +0200 (CEST)
+Received: from [10.25.210.22] (po15451.idsi0.si.c-s.fr [10.25.210.22])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D96818B7DE;
+ Tue, 30 Jun 2020 16:55:03 +0200 (CEST)
+Subject: Re: [PATCH v2] powerpc/uaccess: Use flexible addressing with
+ __put_user()/__get_user()
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, npiggin@gmail.com,
+ segher@kernel.crashing.org
+References: <c2addbd9d76212242d3d8554a2f7ff849fb08b85.1587040754.git.christophe.leroy@c-s.fr>
+ <7b916759-1683-b4df-0d4b-b04b3fcd9a02@csgroup.eu>
+ <878sg6862r.fsf@mpe.ellerman.id.au> <875zb98i5a.fsf@mpe.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <311c3471-cad7-72d5-a5e6-04cf892c5e41@csgroup.eu>
+Date: Tue, 30 Jun 2020 16:55:05 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
 MIME-Version: 1.0
-References: <1593525367-23221-1-git-send-email-shengjiu.wang@nxp.com>
-In-Reply-To: <1593525367-23221-1-git-send-email-shengjiu.wang@nxp.com>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Tue, 30 Jun 2020 11:11:17 -0300
-Message-ID: <CAOMZO5CZ2NhbFJJj8OAeJonA--ZfbfUWqhWCYRqeJE_v8QdKFQ@mail.gmail.com>
-Subject: Re: [PATCH v3] ASoC: fsl_asrc: Add an option to select internal ratio
- mode
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <875zb98i5a.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,30 +79,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-ALSA <alsa-devel@alsa-project.org>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 30, 2020 at 11:07 AM Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
->
-> The ASRC not only supports ideal ratio mode, but also supports
-> internal ratio mode.
->
-> For internal rato mode, the rate of clock source should be divided
-> with no remainder by sample rate, otherwise there is sound
-> distortion.
->
-> Add function fsl_asrc_select_clk() to find proper clock source for
-> internal ratio mode, if the clock source is available then internal
-> ratio mode will be selected.
->
-> With change, the ideal ratio mode is not the only option for user.
->
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Reviewed-by: Fabio Estevam <festevam@gmail.com>
+
+Le 30/06/2020 à 03:19, Michael Ellerman a écrit :
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>>> Hi Michael,
+>>>
+>>> I see this patch is marked as "defered" in patchwork, but I can't see
+>>> any related discussion. Is it normal ?
+>>
+>> Because it uses the "m<>" constraint which didn't work on GCC 4.6.
+>>
+>> https://github.com/linuxppc/issues/issues/297
+>>
+>> So we should be able to pick it up for v5.9 hopefully.
+> 
+> It seems to break the build with the kernel.org 4.9.4 compiler and
+> corenet64_smp_defconfig:
+
+Looks like 4.9.4 doesn't accept "m<>" constraint either.
+Changing it to "m" make it build.
+
+Christophe
+
+> 
+> + make -s CC=powerpc64-linux-gnu-gcc -j 160
+> In file included from /linux/include/linux/uaccess.h:11:0,
+>                   from /linux/include/linux/sched/task.h:11,
+>                   from /linux/include/linux/sched/signal.h:9,
+>                   from /linux/include/linux/rcuwait.h:6,
+>                   from /linux/include/linux/percpu-rwsem.h:7,
+>                   from /linux/include/linux/fs.h:33,
+>                   from /linux/include/linux/huge_mm.h:8,
+>                   from /linux/include/linux/mm.h:675,
+>                   from /linux/arch/powerpc/kernel/signal_32.c:17:
+> /linux/arch/powerpc/kernel/signal_32.c: In function 'save_user_regs.isra.14.constprop':
+> /linux/arch/powerpc/include/asm/uaccess.h:161:2: error: 'asm' operand has impossible constraints
+>    __asm__ __volatile__(     \
+>    ^
+> /linux/arch/powerpc/include/asm/uaccess.h:197:12: note: in expansion of macro '__put_user_asm'
+>      case 4: __put_user_asm(x, ptr, retval, "stw"); break; \
+>              ^
+> /linux/arch/powerpc/include/asm/uaccess.h:206:2: note: in expansion of macro '__put_user_size_allowed'
+>    __put_user_size_allowed(x, ptr, size, retval);  \
+>    ^
+> /linux/arch/powerpc/include/asm/uaccess.h:220:2: note: in expansion of macro '__put_user_size'
+>    __put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err); \
+>    ^
+> /linux/arch/powerpc/include/asm/uaccess.h:96:2: note: in expansion of macro '__put_user_nocheck'
+>    __put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+>    ^
+> /linux/arch/powerpc/kernel/signal_32.c:120:7: note: in expansion of macro '__put_user'
+>     if (__put_user((unsigned int)gregs[i], &frame->mc_gregs[i]))
+>         ^
+> /linux/scripts/Makefile.build:280: recipe for target 'arch/powerpc/kernel/signal_32.o' failed
+> make[3]: *** [arch/powerpc/kernel/signal_32.o] Error 1
+> make[3]: *** Waiting for unfinished jobs....
+> In file included from /linux/include/linux/uaccess.h:11:0,
+>                   from /linux/include/linux/sched/task.h:11,
+>                   from /linux/include/linux/sched/signal.h:9,
+>                   from /linux/include/linux/rcuwait.h:6,
+>                   from /linux/include/linux/percpu-rwsem.h:7,
+>                   from /linux/include/linux/fs.h:33,
+>                   from /linux/include/linux/huge_mm.h:8,
+>                   from /linux/include/linux/mm.h:675,
+>                   from /linux/arch/powerpc/kernel/signal_64.c:12:
+> /linux/arch/powerpc/kernel/signal_64.c: In function '__se_sys_swapcontext':
+> /linux/arch/powerpc/include/asm/uaccess.h:319:2: error: 'asm' operand has impossible constraints
+>    __asm__ __volatile__(    \
+>    ^
+> /linux/arch/powerpc/include/asm/uaccess.h:359:10: note: in expansion of macro '__get_user_asm'
+>    case 1: __get_user_asm(x, (u8 __user *)ptr, retval, "lbz"); break; \
+>            ^
+> /linux/arch/powerpc/include/asm/uaccess.h:370:2: note: in expansion of macro '__get_user_size_allowed'
+>    __get_user_size_allowed(x, ptr, size, retval);  \
+>    ^
+> /linux/arch/powerpc/include/asm/uaccess.h:393:3: note: in expansion of macro '__get_user_size'
+>     __get_user_size(__gu_val, __gu_addr, __gu_size, __gu_err); \
+>     ^
+> /linux/arch/powerpc/include/asm/uaccess.h:94:2: note: in expansion of macro '__get_user_nocheck'
+>    __get_user_nocheck((x), (ptr), sizeof(*(ptr)), true)
+>    ^
+> /linux/arch/powerpc/kernel/signal_64.c:672:9: note: in expansion of macro '__get_user'
+>        || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
+>           ^
+> /linux/scripts/Makefile.build:280: recipe for target 'arch/powerpc/kernel/signal_64.o' failed
+> make[3]: *** [arch/powerpc/kernel/signal_64.o] Error 1
+> /linux/scripts/Makefile.build:497: recipe for target 'arch/powerpc/kernel' failed
+> make[2]: *** [arch/powerpc/kernel] Error 2
+> /linux/Makefile:1756: recipe for target 'arch/powerpc' failed
+> make[1]: *** [arch/powerpc] Error 2
+> Makefile:185: recipe for target '__sub-make' failed
+> make: *** [__sub-make] Error 2
+> 
+> 
+> cheers
+> 
