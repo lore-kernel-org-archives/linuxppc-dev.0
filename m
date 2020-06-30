@@ -2,72 +2,76 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09CDAC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:57:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52824C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:58:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B22E420674
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:57:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B22E420674
+	by mail.kernel.org (Postfix) with ESMTPS id 0A39220674
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 05:58:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A39220674
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49wtsw06kMzDqZ2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 15:57:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49wtvs211tzDqX0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 15:58:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49wtnl67ZMzDqb5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 15:53:31 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 05U5UlLM046256; Tue, 30 Jun 2020 01:53:22 -0400
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31ycg3av9r-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49wtnq0msdzDqZm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 15:53:34 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 05U5bcQQ048986; Tue, 30 Jun 2020 01:53:30 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 31y3xd44gy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Jun 2020 01:53:22 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05U5cJTh018344;
- Tue, 30 Jun 2020 05:53:20 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma06fra.de.ibm.com with ESMTP id 31wwcgsh31-1
+ Tue, 30 Jun 2020 01:53:30 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 05U5jlXJ009293;
+ Tue, 30 Jun 2020 05:53:28 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma03ams.nl.ibm.com with ESMTP id 31wwr8ba44-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 30 Jun 2020 05:53:20 +0000
+ Tue, 30 Jun 2020 05:53:28 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 05U5rHJh56688750
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 05U5rPmm53019074
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 30 Jun 2020 05:53:17 GMT
+ Tue, 30 Jun 2020 05:53:25 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8CD1EAE04D;
- Tue, 30 Jun 2020 05:53:17 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0DC7AAE051;
+ Tue, 30 Jun 2020 05:53:25 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AB9ECAE045;
- Tue, 30 Jun 2020 05:53:14 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 11C75AE04D;
+ Tue, 30 Jun 2020 05:53:22 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.199.47.9])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 30 Jun 2020 05:53:14 +0000 (GMT)
+ Tue, 30 Jun 2020 05:53:21 +0000 (GMT)
 From: Balamuruhan S <bala24@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 0/4] VSX 32-byte vector paired load/store instructions
-Date: Tue, 30 Jun 2020 11:23:03 +0530
-Message-Id: <20200630055307.1154135-1-bala24@linux.ibm.com>
+Subject: [PATCH 2/4] powerpc/sstep: support emulation for vsx vector paired
+ storage access instructions
+Date: Tue, 30 Jun 2020 11:23:05 +0530
+Message-Id: <20200630055307.1154135-3-bala24@linux.ibm.com>
 X-Mailer: git-send-email 2.24.1
+In-Reply-To: <20200630055307.1154135-1-bala24@linux.ibm.com>
+References: <20200630055307.1154135-1-bala24@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -75,12 +79,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-06-29_21:2020-06-29,
  2020-06-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- mlxlogscore=765 priorityscore=1501 suspectscore=1 clxscore=1015
- adultscore=0 malwarescore=0 cotscore=-2147483648 spamscore=0
- impostorscore=0 lowpriorityscore=0 phishscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006300037
+ mlxscore=0 suspectscore=1
+ cotscore=-2147483648 clxscore=1015 impostorscore=0 lowpriorityscore=0
+ phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501 malwarescore=0
+ spamscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2006300042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,33 +102,168 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-VSX vector paired instructions operates with octword (32-byte) operand
-for loads and stores between storage and a pair of two sequential Vector-Scalar
-Registers (VSRs). There are 4 word instructions and 2 prefixed instructions
-that provides this 32-byte storage access operations - lxvp, lxvpx, stxvp,
-stxvpx, plxvpx, pstxvpx.
+add emulate_step() changes to support vsx vector paired storage
+access instructions that provides octword operands loads/stores
+between storage and set of 64 Vector Scalar Registers (VSRs).
 
-Emulation infrastructure doesn't have support for these instructions, to
-operate with 32-byte storage access and to operate with 2 VSX registers.
-This patch series enables the instruction emulation support and adds test
-cases for them respectively.
+Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
+---
+ arch/powerpc/include/asm/sstep.h |  2 +-
+ arch/powerpc/lib/sstep.c         | 58 +++++++++++++++++++++++++++-----
+ 2 files changed, 50 insertions(+), 10 deletions(-)
 
-Balamuruhan S (4):
-  powerpc/sstep: support new VSX vector paired storage access
-    instructions
-  powerpc/sstep: support emulation for vsx vector paired storage access
-    instructions
-  powerpc ppc-opcode: add opcodes for vsx vector paired instructions
-  powerpc sstep: add testcases for vsx load/store instructions
-
- arch/powerpc/include/asm/ppc-opcode.h |  11 ++
- arch/powerpc/include/asm/sstep.h      |   2 +-
- arch/powerpc/lib/sstep.c              | 102 +++++++++-
- arch/powerpc/lib/test_emulate_step.c  | 273 ++++++++++++++++++++++++++
- 4 files changed, 378 insertions(+), 10 deletions(-)
-
-
-base-commit: 64677779e8962c20b580b471790fe42367750599
+diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+index 3b01c69a44aa..a6c0b299bcc9 100644
+--- a/arch/powerpc/include/asm/sstep.h
++++ b/arch/powerpc/include/asm/sstep.h
+@@ -126,7 +126,7 @@ union vsx_reg {
+ 	unsigned long d[2];
+ 	float	fp[4];
+ 	double	dp[2];
+-	__vector128 v;
++	__vector128 v[2];
+ };
+ 
+ /*
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index c92890e71ca7..74c730cae7d8 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -279,6 +279,19 @@ static nokprobe_inline void do_byte_reverse(void *ptr, int nb)
+ 		up[1] = tmp;
+ 		break;
+ 	}
++	case 32: {
++		unsigned long *up = (unsigned long *)ptr;
++		unsigned long tmp;
++
++		tmp = byterev_8(up[0]);
++		up[0] = byterev_8(up[3]);
++		up[3] = tmp;
++		tmp = byterev_8(up[2]);
++		up[2] = byterev_8(up[1]);
++		up[1] = tmp;
++		break;
++	}
++
+ #endif
+ 	default:
+ 		WARN_ON_ONCE(1);
+@@ -709,6 +722,8 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 	reg->d[0] = reg->d[1] = 0;
+ 
+ 	switch (op->element_size) {
++	case 32:
++		/* [p]lxvp[x] or [p]stxvp[x] */
+ 	case 16:
+ 		/* whole vector; lxv[x] or lxvl[l] */
+ 		if (size == 0)
+@@ -717,7 +732,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+ 		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
+ 			rev = !rev;
+ 		if (rev)
+-			do_byte_reverse(reg, 16);
++			do_byte_reverse(reg, size);
+ 		break;
+ 	case 8:
+ 		/* scalar loads, lxvd2x, lxvdsx */
+@@ -793,6 +808,22 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+ 	size = GETSIZE(op->type);
+ 
+ 	switch (op->element_size) {
++	case 32:
++		/* [p]lxvp[x] or [p]stxvp[x] */
++		if (size == 0)
++			break;
++		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
++			rev = !rev;
++		if (rev) {
++			/* reverse 32 bytes */
++			buf.d[0] = byterev_8(reg->d[3]);
++			buf.d[1] = byterev_8(reg->d[2]);
++			buf.d[2] = byterev_8(reg->d[1]);
++			buf.d[3] = byterev_8(reg->d[0]);
++			reg = &buf;
++		}
++		memcpy(mem, reg, size);
++		break;
+ 	case 16:
+ 		/* stxv, stxvx, stxvl, stxvll */
+ 		if (size == 0)
+@@ -861,28 +892,33 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+ 				       bool cross_endian)
+ {
+ 	int reg = op->reg;
+-	u8 mem[16];
++	int i, nr_vsx_regs;
++	u8 mem[32];
+ 	union vsx_reg buf;
+ 	int size = GETSIZE(op->type);
+ 
+ 	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size, regs))
+ 		return -EFAULT;
+ 
++	nr_vsx_regs = size / sizeof(__vector128);
+ 	emulate_vsx_load(op, &buf, mem, cross_endian);
+ 	preempt_disable();
+ 	if (reg < 32) {
+ 		/* FP regs + extensions */
+ 		if (regs->msr & MSR_FP) {
+-			load_vsrn(reg, &buf);
++			for (i = 0; i < nr_vsx_regs; i++)
++				load_vsrn(reg + i, &buf.v[i]);
+ 		} else {
+ 			current->thread.fp_state.fpr[reg][0] = buf.d[0];
+ 			current->thread.fp_state.fpr[reg][1] = buf.d[1];
+ 		}
+ 	} else {
+ 		if (regs->msr & MSR_VEC)
+-			load_vsrn(reg, &buf);
++			for (i = 0; i < nr_vsx_regs; i++)
++				load_vsrn(reg + i, &buf.v[i]);
++
+ 		else
+-			current->thread.vr_state.vr[reg - 32] = buf.v;
++			current->thread.vr_state.vr[reg - 32] = buf.v[0];
+ 	}
+ 	preempt_enable();
+ 	return 0;
+@@ -893,27 +929,31 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+ 					bool cross_endian)
+ {
+ 	int reg = op->reg;
+-	u8 mem[16];
++	int i, nr_vsx_regs;
++	u8 mem[32];
+ 	union vsx_reg buf;
+ 	int size = GETSIZE(op->type);
+ 
+ 	if (!address_ok(regs, ea, size))
+ 		return -EFAULT;
+ 
++	nr_vsx_regs = size / sizeof(__vector128);
+ 	preempt_disable();
+ 	if (reg < 32) {
+ 		/* FP regs + extensions */
+ 		if (regs->msr & MSR_FP) {
+-			store_vsrn(reg, &buf);
++			for (i = 0; i < nr_vsx_regs; i++)
++				store_vsrn(reg + i, &buf.v[i]);
+ 		} else {
+ 			buf.d[0] = current->thread.fp_state.fpr[reg][0];
+ 			buf.d[1] = current->thread.fp_state.fpr[reg][1];
+ 		}
+ 	} else {
+ 		if (regs->msr & MSR_VEC)
+-			store_vsrn(reg, &buf);
++			for (i = 0; i < nr_vsx_regs; i++)
++				store_vsrn(reg + i, &buf.v[i]);
+ 		else
+-			buf.v = current->thread.vr_state.vr[reg - 32];
++			buf.v[0] = current->thread.vr_state.vr[reg - 32];
+ 	}
+ 	preempt_enable();
+ 	emulate_vsx_store(op, &buf, mem, cross_endian);
 -- 
 2.24.1
 
