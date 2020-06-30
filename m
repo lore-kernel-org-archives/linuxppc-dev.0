@@ -2,106 +2,58 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF49CC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 20:48:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E63CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 21:20:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BCBF20663
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 20:48:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="XAnxaTq3";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="XAnxaTq3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BCBF20663
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id D2F5220663
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 21:20:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2F5220663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xGf91SslzDrJq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 06:48:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=peterx@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xHM14xz0zDqng
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:20:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=XAnxaTq3; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=XAnxaTq3; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-2.mimecast.com
- [207.211.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xGbN23rGzDr69
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 06:45:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1593549949;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=ynnJMHDkmLB1gpQYI5LlP8bTNHn29Vusf9IRRJFn7yI=;
- b=XAnxaTq3AEqE7wbXoQS1Db6VqijL4CDmhdI4Lp/2UA6/2Hh9CfFC9bySAhTWUOwOVd/98j
- OD+X4WrfDHOXVKHegkPXGW9YFZcphpd+fyIGRlBZs9jHREgJrlIBHfIuVDWn/hMZMP9+sT
- fpb/UzLe278OWi9FAYzJuwWBK98SlXw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1593549949;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=ynnJMHDkmLB1gpQYI5LlP8bTNHn29Vusf9IRRJFn7yI=;
- b=XAnxaTq3AEqE7wbXoQS1Db6VqijL4CDmhdI4Lp/2UA6/2Hh9CfFC9bySAhTWUOwOVd/98j
- OD+X4WrfDHOXVKHegkPXGW9YFZcphpd+fyIGRlBZs9jHREgJrlIBHfIuVDWn/hMZMP9+sT
- fpb/UzLe278OWi9FAYzJuwWBK98SlXw=
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
- [209.85.160.199]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-297-IYXgREuXPoKm20lZAsll2Q-1; Tue, 30 Jun 2020 16:45:47 -0400
-X-MC-Unique: IYXgREuXPoKm20lZAsll2Q-1
-Received: by mail-qt1-f199.google.com with SMTP id m25so10740322qtk.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 13:45:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=ynnJMHDkmLB1gpQYI5LlP8bTNHn29Vusf9IRRJFn7yI=;
- b=JUzXc5aRPuVtUABOsacCZL/zOFIVA4FdyVBbQ34Mat4M3z36Bm4EB40Zdf2PaqjGYx
- ZNasIgtcF9AoxQhpsKA42/ZJ8fnT/etxGyjpghGBRsh7Z5+Qoxxhcy3KouE+GJGc3Bw3
- mN3dn5kmUD2kodtgjSeg96UuFvj6/Ca0i4fpl5+kYZPPCkS6TTh7VxgZOX6K+wymcZXu
- pnr1FyNcl2zlSSWgCdSl0PdbgcwSsSmKf9iBYFX1f+OtDJVghGbgMcaHMNovsTOgXN3G
- PcOWQsmmJsMi8eq3ggfyztcioyCSouuMgf+PDYkpNlJxJf/0ANbkJFTOzrwNP5KOdXiS
- lYVQ==
-X-Gm-Message-State: AOAM531v1hy351a8CRBSJEjqTqUhiYXo7hn3P0tnCh42s9PT2oB7czfS
- E0c5sTvim+fWQXfED8eSzcCcIUkOMa+iYj62/9UDwwomOwZrTwHQGgL1tvnVwFQTo4A1DAALRNu
- xEVkS7QGonu8n4NngCD4EG/D55A==
-X-Received: by 2002:a37:6382:: with SMTP id x124mr19156403qkb.13.1593549946779; 
- Tue, 30 Jun 2020 13:45:46 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxYJzOveTh/zHsoqWyRhvWa6nes5qts8kYD9+VOymtjnIw0C/lNBXFLIHdqm4iSlLEtMxrrcQ==
-X-Received: by 2002:a37:6382:: with SMTP id x124mr19156332qkb.13.1593549945576; 
- Tue, 30 Jun 2020 13:45:45 -0700 (PDT)
-Received: from xz-x1.redhat.com ([2607:9880:19c0:32::2])
- by smtp.gmail.com with ESMTPSA id y40sm4291853qtc.29.2020.06.30.13.45.44
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 30 Jun 2020 13:45:44 -0700 (PDT)
-From: Peter Xu <peterx@redhat.com>
-To: linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 16/26] mm/powerpc: Use general page fault accounting
-Date: Tue, 30 Jun 2020 16:45:43 -0400
-Message-Id: <20200630204543.39245-1-peterx@redhat.com>
-X-Mailer: git-send-email 2.26.2
-MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=peterx@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49xHK81XMZzDqRv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 07:18:35 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 05ULIIPG003747;
+ Tue, 30 Jun 2020 16:18:18 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 05ULIHW0003746;
+ Tue, 30 Jun 2020 16:18:17 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Tue, 30 Jun 2020 16:18:17 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/uaccess: Use flexible addressing with
+ __put_user()/__get_user()
+Message-ID: <20200630211817.GZ3598@gate.crashing.org>
+References: <c2addbd9d76212242d3d8554a2f7ff849fb08b85.1587040754.git.christophe.leroy@c-s.fr>
+ <7b916759-1683-b4df-0d4b-b04b3fcd9a02@csgroup.eu>
+ <878sg6862r.fsf@mpe.ellerman.id.au> <875zb98i5a.fsf@mpe.ellerman.id.au>
+ <311c3471-cad7-72d5-a5e6-04cf892c5e41@csgroup.eu>
+ <20200630163324.GW3598@gate.crashing.org>
+ <f8819fa4-94e3-4bf9-4b60-c57d2804e529@csgroup.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f8819fa4-94e3-4bf9-4b60-c57d2804e529@csgroup.eu>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,57 +65,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Will Deacon <will@kernel.org>,
- John Hubbard <jhubbard@nvidia.com>, linuxppc-dev@lists.ozlabs.org,
- peterx@redhat.com, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the general page fault accounting by passing regs into handle_mm_fault().
+Hi again,
 
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Peter Xu <peterx@redhat.com>
----
- arch/powerpc/mm/fault.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Thanks for your work so far!
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 25dee001d8e1..00259e9b452d 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -607,7 +607,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * make sure we exit gracefully rather than endlessly redo
- 	 * the fault.
- 	 */
--	fault = handle_mm_fault(vma, address, flags, NULL);
-+	fault = handle_mm_fault(vma, address, flags, regs);
- 
- 	major |= fault & VM_FAULT_MAJOR;
- 
-@@ -633,14 +633,9 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	/*
- 	 * Major/minor page fault accounting.
- 	 */
--	if (major) {
--		current->maj_flt++;
--		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1, regs, address);
-+	if (major)
- 		cmo_account_page_fault();
--	} else {
--		current->min_flt++;
--		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1, regs, address);
--	}
-+
- 	return 0;
- }
- NOKPROBE_SYMBOL(__do_page_fault);
--- 
-2.26.2
+On Tue, Jun 30, 2020 at 06:53:39PM +0000, Christophe Leroy wrote:
+> On 06/30/2020 04:33 PM, Segher Boessenkool wrote:
+> >>>+ make -s CC=powerpc64-linux-gnu-gcc -j 160
+> >>>In file included from /linux/include/linux/uaccess.h:11:0,
+> >>>                  from /linux/include/linux/sched/task.h:11,
+> >>>                  from /linux/include/linux/sched/signal.h:9,
+> >>>                  from /linux/include/linux/rcuwait.h:6,
+> >>>                  from /linux/include/linux/percpu-rwsem.h:7,
+> >>>                  from /linux/include/linux/fs.h:33,
+> >>>                  from /linux/include/linux/huge_mm.h:8,
+> >>>                  from /linux/include/linux/mm.h:675,
+> >>>                  from /linux/arch/powerpc/kernel/signal_32.c:17:
+> >>>/linux/arch/powerpc/kernel/signal_32.c: In function
+> >>>'save_user_regs.isra.14.constprop':
+> >>>/linux/arch/powerpc/include/asm/uaccess.h:161:2: error: 'asm' operand has
+> >>>impossible constraints
+> >>>   __asm__ __volatile__(     \
+> >>>   ^
+> >>>/linux/arch/powerpc/include/asm/uaccess.h:197:12: note: in expansion of
+> >>>macro '__put_user_asm'
+> >>>     case 4: __put_user_asm(x, ptr, retval, "stw"); break; \
+> >>>             ^
+> >>>/linux/arch/powerpc/include/asm/uaccess.h:206:2: note: in expansion of
+> >>>macro '__put_user_size_allowed'
+> >>>   __put_user_size_allowed(x, ptr, size, retval);  \
+> >>>   ^
+> >>>/linux/arch/powerpc/include/asm/uaccess.h:220:2: note: in expansion of
+> >>>macro '__put_user_size'
+> >>>   __put_user_size(__pu_val, __pu_addr, __pu_size, __pu_err); \
+> >>>   ^
+> >>>/linux/arch/powerpc/include/asm/uaccess.h:96:2: note: in expansion of
+> >>>macro '__put_user_nocheck'
+> >>>   __put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+> >>>   ^
+> >>>/linux/arch/powerpc/kernel/signal_32.c:120:7: note: in expansion of macro
+> >>>'__put_user'
+> >>>    if (__put_user((unsigned int)gregs[i], &frame->mc_gregs[i]))
+> >>>        ^
+> >
+> >Can we see what that was after the macro jungle?  Like, the actual
+> >preprocessed code?
+> 
+> Sorry for previous misunderstanding
+> 
+> Here is the code:
+> 
+> #define __put_user_asm(x, addr, err, op)			\
+> 	__asm__ __volatile__(					\
+> 		"1:	" op "%U2%X2 %1,%2	# put_user\n"	\
+> 		"2:\n"						\
+> 		".section .fixup,\"ax\"\n"			\
+> 		"3:	li %0,%3\n"				\
+> 		"	b 2b\n"					\
+> 		".previous\n"					\
+> 		EX_TABLE(1b, 3b)				\
+> 		: "=r" (err)					\
+> 		: "r" (x), "m<>" (*addr), "i" (-EFAULT), "0" (err))
 
+Yeah I don't see it.  I'll have to look at compiler debug dumps, but I
+don't have any working 4.9 around, and I cannot reproduce this with
+either older or newer compilers.
+
+It is complainig that constrain_operands just does not work *at all* on
+this "m<>" constraint apparently, which doesn't make much sense.
+
+I'll try later when I have more time, sorry :-/
+
+
+Segher
