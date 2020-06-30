@@ -2,86 +2,55 @@ Return-Path: <SRS0=gM2d=AL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AE30C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:22:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA08C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:26:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3B3D20672
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:22:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TTWz3kQi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3B3D20672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 652E720672
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jun 2020 14:26:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 652E720672
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49x64n3yt5zDqFm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 00:22:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::343;
- helo=mail-wm1-x343.google.com; envelope-from=lee.jones@linaro.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49x69w2QnzzDqq0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 00:26:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=TTWz3kQi; dkim-atps=neutral
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
- [IPv6:2a00:1450:4864:20::343])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49x5Yr4SrNzDqTq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 23:58:56 +1000 (AEST)
-Received: by mail-wm1-x343.google.com with SMTP id o8so18921977wmh.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2020 06:58:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=wkBklcgolThuSqx2B9FGDRJ2fQUF+10AbLJBzITnPbk=;
- b=TTWz3kQiTzBuca298CfBMS58ag+bVWHWFEQdNDu9C1/PN/lY6EyJ+tgg5gFUVnhl5Y
- jlXcfraF1hxROmd3FRyUNLm3DWxMTagFU4Jzmxrjk03uYoJMBVmM50Fk17nCcENFff7l
- VpuFlVFptef5rsjSkbqRJOg16a9ZddGY/Btdr7e/BdQ435+Gu0zF9saFRJFU/VsYtbjH
- aKf4HahUOxW6bcYHyRwiuaWGgH2XQvgiqQzDVvnQVmDgZG7nM4/L3LYwLg8waw2y+3xB
- 1TlptulEwTSHjHG+aEC0qopP/o3e/sb+oK7NvFdiJXhd6uEI6ECNffztfSwHOK5IumFc
- orCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=wkBklcgolThuSqx2B9FGDRJ2fQUF+10AbLJBzITnPbk=;
- b=ZqeiopbLYiyLT1sQ86H2DLJJH0ZzKtSR6m0Dt3qCrYX3boDqXPMISfG8nUDaf2gnC2
- pun5jv1/G3XLizEsO+0kxytTTdzpw11tkCGDD7ONzMIBmf2uJlZFWP6o6OgYpboEJy55
- l/+lro8ePAzihQ2VryHKh3a/f1QwH3Y9F5uKgMMw8HSp6Gv03dZko3Lx2QLJSbRIekCd
- F5LgFH2Fl7RtMjaPkj8mi7+R4VJ5M0xOK7LFJTqaoYqSR4N9BmWvhRxLRd4RWdHY1ZTR
- EBIuma+UB3OBGWquptHGPBaUgBaXI61yZZOPPVPjjJOgS7n9rnFRWPjH6EiD4kspzXgE
- alFw==
-X-Gm-Message-State: AOAM533pJ66RccPUxXswJPt0cfwnB0K4Gr73e1d0py4sw59zOU1b17mG
- CuvUqlg7xgHyyr+qmxihS4g8tAMklqM=
-X-Google-Smtp-Source: ABdhPJxrpKuIXyZ4jZXgdzGC5pflyyO+oF9AqHsNWY4gxzEb6UyNUUElbKvxkAnL54GMA/mXFAjShQ==
-X-Received: by 2002:a1c:1b90:: with SMTP id b138mr21475735wmb.21.1593525103867; 
- Tue, 30 Jun 2020 06:51:43 -0700 (PDT)
-Received: from localhost.localdomain ([2.27.35.144])
- by smtp.gmail.com with ESMTPSA id t4sm3876746wmf.4.2020.06.30.06.51.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 30 Jun 2020 06:51:43 -0700 (PDT)
-From: Lee Jones <lee.jones@linaro.org>
-To: arnd@arndb.de,
-	gregkh@linuxfoundation.org
-Subject: [PATCH 28/30] misc: ocxl: config: Provide correct formatting to
- function headers
-Date: Tue, 30 Jun 2020 14:51:08 +0100
-Message-Id: <20200630135110.2236389-29-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200630135110.2236389-1-lee.jones@linaro.org>
-References: <20200630135110.2236389-1-lee.jones@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49x5mL0BCCzDqdg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 00:08:01 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E65DA1A0480;
+ Tue, 30 Jun 2020 16:07:56 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 26BAD1A046C;
+ Tue, 30 Jun 2020 16:07:52 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 45150402D0;
+ Tue, 30 Jun 2020 22:07:46 +0800 (SGT)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com
+Subject: [PATCH v3] ASoC: fsl_asrc: Add an option to select internal ratio mode
+Date: Tue, 30 Jun 2020 21:56:07 +0800
+Message-Id: <1593525367-23221-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,72 +62,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Lee Jones <lee.jones@linaro.org>,
- linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A nice attempt was made to provide kerneldoc headers for
-read_template_version() and read_afu_lpc_memory_info() however,
-the provided formatting does not match what is expected by
-kerneldoc.
+The ASRC not only supports ideal ratio mode, but also supports
+internal ratio mode.
 
-Fixes the following W=1 warnings:
+For internal rato mode, the rate of clock source should be divided
+with no remainder by sample rate, otherwise there is sound
+distortion.
 
- drivers/misc/ocxl/config.c:286: warning: Function parameter or member 'dev' not described in 'read_template_version'
- drivers/misc/ocxl/config.c:286: warning: Function parameter or member 'fn' not described in 'read_template_version'
- drivers/misc/ocxl/config.c:286: warning: Function parameter or member 'len' not described in 'read_template_version'
- drivers/misc/ocxl/config.c:286: warning: Function parameter or member 'version' not described in 'read_template_version'
- drivers/misc/ocxl/config.c:489: warning: Function parameter or member 'dev' not described in 'read_afu_lpc_memory_info'
- drivers/misc/ocxl/config.c:489: warning: Function parameter or member 'fn' not described in 'read_afu_lpc_memory_info'
- drivers/misc/ocxl/config.c:489: warning: Function parameter or member 'afu' not described in 'read_afu_lpc_memory_info'
+Add function fsl_asrc_select_clk() to find proper clock source for
+internal ratio mode, if the clock source is available then internal
+ratio mode will be selected.
 
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
+With change, the ideal ratio mode is not the only option for user.
+
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- drivers/misc/ocxl/config.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+changes in v3
+- convert fsl_asrc_select_clk to void type
 
-diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index c8e19bfb5ef90..e3b99a39d207e 100644
---- a/drivers/misc/ocxl/config.c
-+++ b/drivers/misc/ocxl/config.c
-@@ -273,11 +273,11 @@ static int read_afu_info(struct pci_dev *dev, struct ocxl_fn_config *fn,
+changes in v2
+- update according to Nicolin's comments
+
+ sound/soc/fsl/fsl_asrc.c | 46 ++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 95f6a9617b0b..462ce9f9ab48 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -582,11 +582,51 @@ static int fsl_asrc_dai_startup(struct snd_pcm_substream *substream,
+ 			SNDRV_PCM_HW_PARAM_RATE, &fsl_asrc_rate_constraints);
  }
  
- /**
-- * Read the template version from the AFU
-- * dev: the device for the AFU
-- * fn: the AFU offsets
-- * len: outputs the template length
-- * version: outputs the major<<8,minor version
-+ * read_template_version - Read the template version from the AFU
-+ * @dev: the device for the AFU
-+ * @fn: the AFU offsets
-+ * @len: outputs the template length
-+ * @version: outputs the major<<8,minor version
-  *
-  * Returns 0 on success, negative on failure
-  */
-@@ -476,10 +476,10 @@ static int validate_afu(struct pci_dev *dev, struct ocxl_afu_config *afu)
- }
++/* Select proper clock source for internal ratio mode */
++static void fsl_asrc_select_clk(struct fsl_asrc_priv *asrc_priv,
++				struct fsl_asrc_pair *pair,
++				int in_rate,
++				int out_rate)
++{
++	struct fsl_asrc_pair_priv *pair_priv = pair->private;
++	struct asrc_config *config = pair_priv->config;
++	int rate[2], select_clk[2]; /* Array size 2 means IN and OUT */
++	int clk_rate, clk_index;
++	int i = 0, j = 0;
++
++	rate[IN] = in_rate;
++	rate[OUT] = out_rate;
++
++	/* Select proper clock source for internal ratio mode */
++	for (j = 0; j < 2; j++) {
++		for (i = 0; i < ASRC_CLK_MAP_LEN; i++) {
++			clk_index = asrc_priv->clk_map[j][i];
++			clk_rate = clk_get_rate(asrc_priv->asrck_clk[clk_index]);
++			/* Only match a perfect clock source with no remainder */
++			if (clk_rate != 0 && (clk_rate / rate[j]) <= 1024 &&
++			    (clk_rate % rate[j]) == 0)
++				break;
++		}
++
++		select_clk[j] = i;
++	}
++
++	/* Switch to ideal ratio mode if there is no proper clock source */
++	if (select_clk[IN] == ASRC_CLK_MAP_LEN || select_clk[OUT] == ASRC_CLK_MAP_LEN) {
++		select_clk[IN] = INCLK_NONE;
++		select_clk[OUT] = OUTCLK_ASRCK1_CLK;
++	}
++
++	config->inclk = select_clk[IN];
++	config->outclk = select_clk[OUT];
++}
++
+ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
+ 				  struct snd_pcm_hw_params *params,
+ 				  struct snd_soc_dai *dai)
+ {
+ 	struct fsl_asrc *asrc = snd_soc_dai_get_drvdata(dai);
++	struct fsl_asrc_priv *asrc_priv = asrc->private;
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+ 	struct fsl_asrc_pair *pair = runtime->private_data;
+ 	struct fsl_asrc_pair_priv *pair_priv = pair->private;
+@@ -605,8 +645,6 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
  
- /**
-- * Populate AFU metadata regarding LPC memory
-- * dev: the device for the AFU
-- * fn: the AFU offsets
-- * afu: the AFU struct to populate the LPC metadata into
-+ * read_afu_lpc_memory_info - Populate AFU metadata regarding LPC memory
-+ * @dev: the device for the AFU
-+ * @fn: the AFU offsets
-+ * @afu: the AFU struct to populate the LPC metadata into
-  *
-  * Returns 0 on success, negative on failure
-  */
+ 	config.pair = pair->index;
+ 	config.channel_num = channels;
+-	config.inclk = INCLK_NONE;
+-	config.outclk = OUTCLK_ASRCK1_CLK;
+ 
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+ 		config.input_format   = params_format(params);
+@@ -620,6 +658,10 @@ static int fsl_asrc_dai_hw_params(struct snd_pcm_substream *substream,
+ 		config.output_sample_rate = rate;
+ 	}
+ 
++	fsl_asrc_select_clk(asrc_priv, pair,
++			    config.input_sample_rate,
++			    config.output_sample_rate);
++
+ 	ret = fsl_asrc_config_pair(pair, false);
+ 	if (ret) {
+ 		dev_err(dai->dev, "fail to config asrc pair\n");
 -- 
-2.25.1
+2.21.0
 
