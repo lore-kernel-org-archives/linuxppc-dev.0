@@ -2,26 +2,26 @@ Return-Path: <SRS0=cW2d=AM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98117C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:14:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 702EEC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:16:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 450622077D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:14:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 26F2020722
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:16:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="oe8ekqXD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 450622077D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cG9uWeax"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26F2020722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xbC44457zDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:14:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xbFN3vXgzDqwW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:16:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=oe8ekqXD; 
+ header.s=casper.20170209 header.b=cG9uWeax; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtZ0JRQzDqpp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtY5VynzDqpk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=8L8p6UbF45RVD9lwh+Y9njbbxbDNtEWDlp4D4BAc300=; b=oe8ekqXDaiQpf+S7EOEpw5yRKU
- CoccpvH0RXaTxQWoCPtjEwyvtVtWSraeKQsDTT3/dXCE6CPFU3popYOUuF2cLKx7kd/ICsdyf6ErY
- CvOZoeMylTxnk/A1oWX1ruW7W02Ziuz7TawHOD6ezCqHTu81ofml6Aba7D0Xv9UWmFQ2uewycGqpS
- ZLtKo5o5LYMXf3OQjPh5c+jmMs0Anl5tX624os3tcwTZeva0jjKMOIyQOb26XS/mH7o2PKcB5UJmf
- mubemCzwosWrfRg8pHGXhlP4j58/n/uKxB5JSMN+P8IKpFm0lJ/fwwlkwAmPRJIy+qqjxFTjAP2oj
- kK65tiEQ==;
+ bh=nyRpegl2g2GPLIzpDQmlwzdY5HJ2Dd3E7fu8tgbKXsw=; b=cG9uWeaxaNO/1MVPIWmhvQXLAG
+ iSkoMG+mDqCp5Fas05hxeEwDFJzbgUVjvM+qHyRdAModBVUY6niFiW0rnnavhFRNyz1pykeOhxkhZ
+ NZVGVYHrmpq04hvVgiUtI5yX1wM+7igRvEMydnCoRQeuacqPuZqBQw3s5pqynfJWw1cXYywN0/bxi
+ 7SwIJoZIPt4nm/r/GiOvJKRN2dJAAkG6ZSJj5j6m8j6Tra0NHETrtGEustOMES2x9BE2MEDdvPFxf
+ /+IEWPO5yHD5avrdkfbZhwAa30i/liOzJ70LhshoWEaD5sgYOPmU7O855Wq//djMSdTtULqhfhiaU
+ 2SXkVv7Q==;
 Received: from [2001:4bb8:184:76e3:ea38:596b:3e9e:422a] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jqYaz-00088I-Jt; Wed, 01 Jul 2020 08:59:58 +0000
+ id 1jqYav-00087h-DT; Wed, 01 Jul 2020 08:59:53 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 06/20] rsxx: stop using ->queuedata
-Date: Wed,  1 Jul 2020 10:59:33 +0200
-Message-Id: <20200701085947.3354405-7-hch@lst.de>
+Subject: [PATCH 03/20] drbd: stop using ->queuedata
+Date: Wed,  1 Jul 2020 10:59:30 +0200
+Message-Id: <20200701085947.3354405-4-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200701085947.3354405-1-hch@lst.de>
 References: <20200701085947.3354405-1-hch@lst.de>
@@ -90,39 +90,35 @@ field.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/rsxx/dev.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/block/drbd/drbd_main.c | 1 -
+ drivers/block/drbd/drbd_req.c  | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/block/rsxx/dev.c b/drivers/block/rsxx/dev.c
-index 3ba07ab30c84f5..6a4d8d26e32cbd 100644
---- a/drivers/block/rsxx/dev.c
-+++ b/drivers/block/rsxx/dev.c
-@@ -119,7 +119,7 @@ static void bio_dma_done_cb(struct rsxx_cardinfo *card,
+diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
+index 45fbd526c453bc..26f4e0aa7393b4 100644
+--- a/drivers/block/drbd/drbd_main.c
++++ b/drivers/block/drbd/drbd_main.c
+@@ -2805,7 +2805,6 @@ enum drbd_ret_code drbd_create_device(struct drbd_config_context *adm_ctx, unsig
+ 	if (!q)
+ 		goto out_no_q;
+ 	device->rq_queue = q;
+-	q->queuedata   = device;
  
- static blk_qc_t rsxx_make_request(struct request_queue *q, struct bio *bio)
+ 	disk = alloc_disk(1);
+ 	if (!disk)
+diff --git a/drivers/block/drbd/drbd_req.c b/drivers/block/drbd/drbd_req.c
+index c80a2f1c3c2a73..3f09b2ab977822 100644
+--- a/drivers/block/drbd/drbd_req.c
++++ b/drivers/block/drbd/drbd_req.c
+@@ -1595,7 +1595,7 @@ void do_submit(struct work_struct *ws)
+ 
+ blk_qc_t drbd_make_request(struct request_queue *q, struct bio *bio)
  {
--	struct rsxx_cardinfo *card = q->queuedata;
-+	struct rsxx_cardinfo *card = bio->bi_disk->private_data;
- 	struct rsxx_bio_meta *bio_meta;
- 	blk_status_t st = BLK_STS_IOERR;
+-	struct drbd_device *device = (struct drbd_device *) q->queuedata;
++	struct drbd_device *device = bio->bi_disk->private_data;
+ 	unsigned long start_jif;
  
-@@ -267,8 +267,6 @@ int rsxx_setup_dev(struct rsxx_cardinfo *card)
- 		card->queue->limits.discard_alignment   = RSXX_HW_BLK_SIZE;
- 	}
- 
--	card->queue->queuedata = card;
--
- 	snprintf(card->gendisk->disk_name, sizeof(card->gendisk->disk_name),
- 		 "rsxx%d", card->disk_id);
- 	card->gendisk->major = card->major;
-@@ -289,7 +287,6 @@ void rsxx_destroy_dev(struct rsxx_cardinfo *card)
- 	card->gendisk = NULL;
- 
- 	blk_cleanup_queue(card->queue);
--	card->queue->queuedata = NULL;
- 	unregister_blkdev(card->major, DRIVER_NAME);
- }
- 
+ 	blk_queue_split(q, &bio);
 -- 
 2.26.2
 
