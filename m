@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 681C3C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:03:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FBA9C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:05:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D057D206C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:03:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B67FF206B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:05:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hAcTP892"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D057D206C3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="cUbn7Pxl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B67FF206B6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xZyH5sF3zDqrT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:03:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xb0W097szDqvN
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:05:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=hAcTP892; 
+ header.s=casper.20170209 header.b=cUbn7Pxl; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtc2rkgzDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtb5NjpzDqqW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:05 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=t6BqkN6Yxn/8o7GWQerTXSXZiT8M8tft7EnhoW3IIiE=; b=hAcTP892NCCovzX2RpSmkixMog
- HbSnGhzmiEi7CnPF5n2sxdgakapG2OHqqw5H6XKqc+ghl6qYzfNMLDnMaO1cBG69NDChGRSYU+UOH
- hQeiL/X6/qDLMAZoZHKVKkAKNRq83YhtRRPLSYV7C+e3TxLyt4WbCjNMs1CVf+mzmrs6yA0IRGK/a
- 68kq/4RTXTzlT/aia1gZYh618fXe7Lfwpp2DSJuejMw4sErcKJz3WQY2UbphgLA0imC8+URm/7LX4
- 1GYzzIg3zotDYqxd8qFVl4y4yd3DRKsYQunww+RsVy9GpkXOhrWRpW52iSzbH5TZxIHTdqsBscTPV
- u324UHxA==;
+ bh=x/Lapiju/RCIeWIuz3o8sd6pkgFSKFSdWu2H7EUGYIE=; b=cUbn7Pxl3iVIktS63nJOjTDhdj
+ CfyO1exZuxlh1JTjnZcHfOk9yHVqjEWcViE8zZCbBBD3GXQYi/MTmpBuPjUDMw2Wa4XSvPxrryj3s
+ +6nt9I1whJaM+9EbgTix65yH/OCDuOmII1bxFx0Ld/UtuF3OaOm1ahW7UrzPmD0YIS6pu26Vo9qw+
+ sQt0dJJFtA9hIqHf4548XR65FQ6n+eFn7Og7Ox2Pi9nK2nV7JLpXxh+QjwclNNOIZAwkU8zAUi1qk
+ KhPBZghQeL9IpqMWdpQXiMIordOsXNOIW5luE/k8g8DuBcRRZebGPUK43sxdftZJI1Woo/J9tAeLJ
+ R/Y4MCfQ==;
 Received: from [2001:4bb8:184:76e3:ea38:596b:3e9e:422a] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jqYb2-00089D-BO; Wed, 01 Jul 2020 09:00:00 +0000
+ id 1jqYay-000882-6q; Wed, 01 Jul 2020 08:59:56 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 08/20] zram: stop using ->queuedata
-Date: Wed,  1 Jul 2020 10:59:35 +0200
-Message-Id: <20200701085947.3354405-9-hch@lst.de>
+Subject: [PATCH 05/20] ps3vram: stop using ->queuedata
+Date: Wed,  1 Jul 2020 10:59:32 +0200
+Message-Id: <20200701085947.3354405-6-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200701085947.3354405-1-hch@lst.de>
 References: <20200701085947.3354405-1-hch@lst.de>
@@ -90,30 +90,30 @@ field.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/zram/zram_drv.c | 3 +--
+ drivers/block/ps3vram.c | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
-index 6e2ad90b17a376..0564e3f384089e 100644
---- a/drivers/block/zram/zram_drv.c
-+++ b/drivers/block/zram/zram_drv.c
-@@ -1586,7 +1586,7 @@ static void __zram_make_request(struct zram *zram, struct bio *bio)
-  */
- static blk_qc_t zram_make_request(struct request_queue *queue, struct bio *bio)
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index 821d4d8b1d763e..5a1d1d137c7248 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -587,7 +587,7 @@ static struct bio *ps3vram_do_bio(struct ps3_system_bus_device *dev,
+ 
+ static blk_qc_t ps3vram_make_request(struct request_queue *q, struct bio *bio)
  {
--	struct zram *zram = queue->queuedata;
-+	struct zram *zram = bio->bi_disk->private_data;
+-	struct ps3_system_bus_device *dev = q->queuedata;
++	struct ps3_system_bus_device *dev = bio->bi_disk->private_data;
+ 	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
+ 	int busy;
  
- 	if (!valid_io_request(zram, bio->bi_iter.bi_sector,
- 					bio->bi_iter.bi_size)) {
-@@ -1912,7 +1912,6 @@ static int zram_add(void)
- 	zram->disk->first_minor = device_id;
- 	zram->disk->fops = &zram_devops;
- 	zram->disk->queue = queue;
--	zram->disk->queue->queuedata = zram;
- 	zram->disk->private_data = zram;
- 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
+@@ -745,7 +745,6 @@ static int ps3vram_probe(struct ps3_system_bus_device *dev)
+ 	}
  
+ 	priv->queue = queue;
+-	queue->queuedata = dev;
+ 	blk_queue_max_segments(queue, BLK_MAX_SEGMENTS);
+ 	blk_queue_max_segment_size(queue, BLK_MAX_SEGMENT_SIZE);
+ 	blk_queue_max_hw_sectors(queue, BLK_SAFE_MAX_SECTORS);
 -- 
 2.26.2
 
