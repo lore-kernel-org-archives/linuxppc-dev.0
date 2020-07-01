@@ -2,96 +2,94 @@ Return-Path: <SRS0=cW2d=AM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF7D2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81A15C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:51:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79A3720722
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:48:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79A3720722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 361982074D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:51:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aoeciW3X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 361982074D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xYJC53TWzDqvH
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 17:48:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xYMv5vjHzDqpR
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 17:51:55 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xY6l6C2RzDqFt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 17:40:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=aoeciW3X; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 49xY6k4czDz9CmT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 17:40:30 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 49xY6k2Mj4z9sTY; Wed,  1 Jul 2020 17:40:30 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
+ helo=us-smtp-delivery-1.mimecast.com; envelope-from=dyoung@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=aoeciW3X; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
+ [207.211.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xXsP0Pf3zDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 17:28:56 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06173YU2145041; Wed, 1 Jul 2020 03:28:48 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31ycjarj9c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 03:28:48 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0617Saw8022459;
- Wed, 1 Jul 2020 03:28:39 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 31ycjarhah-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 03:28:39 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0617Fv11027185;
- Wed, 1 Jul 2020 07:23:51 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma04dal.us.ibm.com with ESMTP id 31wwr95phs-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 07:23:51 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0617NoM253215568
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 1 Jul 2020 07:23:50 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6DE4513605E;
- Wed,  1 Jul 2020 07:23:50 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 10743136063;
- Wed,  1 Jul 2020 07:23:47 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.79.220.179])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  1 Jul 2020 07:23:46 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- linux-nvdimm@lists.01.org, dan.j.williams@intel.com
-Subject: [PATCH v7 6/7] powerpc/pmem: Avoid the barrier in flush routines
-Date: Wed,  1 Jul 2020 12:52:34 +0530
-Message-Id: <20200701072235.223558-7-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200701072235.223558-1-aneesh.kumar@linux.ibm.com>
-References: <20200701072235.223558-1-aneesh.kumar@linux.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 49xY6j3nsLz9sTV
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Jul 2020 17:40:29 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1593589226;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=izZP1MGTnUa71zOMjrTosKXYO8Y0RHaKMcIyCK6vJao=;
+ b=aoeciW3XXeqzgmmMaBn2EoXw8cdNsQc0IanygYTAmQOIhESaG3m21Mu02X9S+6IeAXy46o
+ S0osVo/2HmAZEJ+uHh0u6B02chLh0Kojsbbng42ODQOl3mUnKYb5+9R1rEMyLFscovv28G
+ 2Ce7iJk53NgQROzdb01Yxx/Lzg6zndI=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-381-MtDWQ3oVPeK49MAHXPiNSA-1; Wed, 01 Jul 2020 03:40:23 -0400
+X-MC-Unique: MtDWQ3oVPeK49MAHXPiNSA-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 5F29A2CCC;
+ Wed,  1 Jul 2020 07:40:21 +0000 (UTC)
+Received: from dhcp-128-65.nay.redhat.com (ovpn-12-207.pek2.redhat.com
+ [10.72.12.207])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id E639060FC2;
+ Wed,  1 Jul 2020 07:40:15 +0000 (UTC)
+Date: Wed, 1 Jul 2020 15:40:12 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCH 04/11] ppc64/kexec_file: avoid stomping memory used by
+ special regions
+Message-ID: <20200701074012.GA4496@dhcp-128-65.nay.redhat.com>
+References: <159319825403.16351.7253978047621755765.stgit@hbathini.in.ibm.com>
+ <159319831192.16351.17443438699302756548.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-01_03:2020-07-01,
- 2020-07-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- impostorscore=0 mlxlogscore=930 lowpriorityscore=0 spamscore=0
- priorityscore=1501 phishscore=0 suspectscore=0 adultscore=0
- cotscore=-2147483648 bulkscore=0 clxscore=1015 mlxscore=0 classifier=spam
- adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2007010050
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <159319831192.16351.17443438699302756548.stgit@hbathini.in.ibm.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,44 +101,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, Jeff Moyer <jmoyer@redhat.com>, msuchanek@suse.de,
- oohall@gmail.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Pingfan Liu <piliu@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Petr Tesarik <ptesarik@suse.cz>,
+ lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Eric Biederman <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-nvdimm expect the flush routines to just mark the cache clean. The barrier
-that mark the store globally visible is done in nvdimm_flush().
+Hi Hari,
+On 06/27/20 at 12:35am, Hari Bathini wrote:
+> crashkernel region could have an overlap with special memory regions
+> like  opal, rtas, tce-table & such. These regions are referred to as
+> exclude memory ranges. Setup this ranges during image probe in order
+> to avoid them while finding the buffer for different kdump segments.
+> Implement kexec_locate_mem_hole_ppc64() that locates a memory hole
+> accounting for these ranges. Also, override arch_kexec_add_buffer()
+> to locate a memory hole & later call __kexec_add_buffer() function
+> with kbuf->mem set to skip the generic locate memory hole lookup.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/crashdump-ppc64.h |   10 +
+>  arch/powerpc/include/asm/kexec.h           |    7 -
+>  arch/powerpc/kexec/elf_64.c                |    7 +
+>  arch/powerpc/kexec/file_load_64.c          |  292 ++++++++++++++++++++++++++++
+>  4 files changed, 312 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/crashdump-ppc64.h
+> 
+[snip]
+>  /**
+> + * get_exclude_memory_ranges - Get exclude memory ranges. This list includes
+> + *                             regions like opal/rtas, tce-table, initrd,
+> + *                             kernel, htab which should be avoided while
+> + *                             setting up kexec load segments.
+> + * @mem_ranges:                Range list to add the memory ranges to.
+> + *
+> + * Returns 0 on success, negative errno on error.
+> + */
+> +static int get_exclude_memory_ranges(struct crash_mem **mem_ranges)
+> +{
+> +	int ret;
+> +
+> +	ret = add_tce_mem_ranges(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_initrd_mem_range(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_htab_mem_range(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_kernel_mem_range(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_rtas_mem_range(mem_ranges, false);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_opal_mem_range(mem_ranges, false);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_reserved_ranges(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	/* exclude memory ranges should be sorted for easy lookup */
+> +	sort_memory_ranges(*mem_ranges);
+> +out:
+> +	if (ret)
+> +		pr_err("Failed to setup exclude memory ranges\n");
+> +	return ret;
+> +}
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/lib/pmem.c | 6 ------
- 1 file changed, 6 deletions(-)
+I'm confused about the "overlap with crashkernel memory", does that mean
+those normal kernel used memory could be put in crashkernel reserved
+memory range?  If so why can't just skip those areas while crashkernel
+doing the reservation?
 
-diff --git a/arch/powerpc/lib/pmem.c b/arch/powerpc/lib/pmem.c
-index 5a61aaeb6930..21210fa676e5 100644
---- a/arch/powerpc/lib/pmem.c
-+++ b/arch/powerpc/lib/pmem.c
-@@ -19,9 +19,6 @@ static inline void __clean_pmem_range(unsigned long start, unsigned long stop)
- 
- 	for (i = 0; i < size >> shift; i++, addr += bytes)
- 		asm volatile(PPC_DCBSTPS(%0, %1): :"i"(0), "r"(addr): "memory");
--
--
--	asm volatile(PPC_PHWSYNC ::: "memory");
- }
- 
- static inline void __flush_pmem_range(unsigned long start, unsigned long stop)
-@@ -34,9 +31,6 @@ static inline void __flush_pmem_range(unsigned long start, unsigned long stop)
- 
- 	for (i = 0; i < size >> shift; i++, addr += bytes)
- 		asm volatile(PPC_DCBFPS(%0, %1): :"i"(0), "r"(addr): "memory");
--
--
--	asm volatile(PPC_PHWSYNC ::: "memory");
- }
- 
- static inline void clean_pmem_range(unsigned long start, unsigned long stop)
--- 
-2.26.2
+Thanks
+Dave
 
