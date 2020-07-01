@@ -2,89 +2,114 @@ Return-Path: <SRS0=cW2d=AM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96A6DC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 18:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C86D0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 18:33:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45476207F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 18:28:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ZwrGxUsJ";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="dbu174cJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45476207F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4C72D207F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 18:33:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C72D207F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xqVB3dQQzDqbD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 04:28:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.81;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=msnitzer@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xqcZ4L2czDqV5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 04:33:50 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xqZD0B4gzDqcS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 04:31:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=ZwrGxUsJ; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=dbu174cJ; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [207.211.31.81])
+ dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 49xqZC4RfFz8tYj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 04:31:47 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 49xqZC3v90z9sTY; Thu,  2 Jul 2020 04:31:47 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xqS20ljhzDqwm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 04:26:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1593627977;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=gM4o34lY2Q2Fu9DNpo9nmnqeENsycpsv4CwD0QpSKRo=;
- b=ZwrGxUsJXRw2TeInzKH2KaJeb9JWfx1KCCpvaat4ntHZPxEMPcJvHYoCuuE/LqHFxJiATm
- CMR5wsva05+WpEwBxa2VZABOZwF7xw5v+hOJiZDfIOao/Plpqymv/XDTfhwNJQpla9oVwX
- oJV7CI8PfLVPGrg3qAbF5in+Zc6AIVg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1593627978;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=gM4o34lY2Q2Fu9DNpo9nmnqeENsycpsv4CwD0QpSKRo=;
- b=dbu174cJhKEx2dtUzkFRaS0PVVs75PHM5sdDyGwbWiHhIXTmVlc6PhjLIg5DgqKGgfjgfS
- ZfuLVCKw82obJVkHO1/PAXEd/Sr4lW+z2cF6vjNRvVbbMqWYYzzkL+h0brWAQW+oyqwh04
- huwJyNriiIVu+T5fsBL00HXBRE/hoNw=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-467-ve54S7gINvapvHMQrfW7sQ-1; Wed, 01 Jul 2020 14:26:14 -0400
-X-MC-Unique: ve54S7gINvapvHMQrfW7sQ-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 7EE0A80183C;
- Wed,  1 Jul 2020 18:26:11 +0000 (UTC)
-Received: from localhost (unknown [10.18.25.174])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 244BF5C1D3;
- Wed,  1 Jul 2020 18:26:08 +0000 (UTC)
-Date: Wed, 1 Jul 2020 13:24:48 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 10/20] dm: stop using ->queuedata
-Message-ID: <20200701172448.GA27528@redhat.com>
-References: <20200701085947.3354405-1-hch@lst.de>
- <20200701085947.3354405-11-hch@lst.de>
+ by ozlabs.org (Postfix) with ESMTPS id 49xqZB6Yxgz9sPF
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2020 04:31:46 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 061I2fRO187193; Wed, 1 Jul 2020 14:31:42 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 320s4qwymw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 01 Jul 2020 14:31:42 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 061IPXpF112121;
+ Wed, 1 Jul 2020 14:31:41 -0400
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 320s4qwyk0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 01 Jul 2020 14:31:41 -0400
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 061IGAR5032175;
+ Wed, 1 Jul 2020 18:31:39 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma02fra.de.ibm.com with ESMTP id 31wwr7tevc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 01 Jul 2020 18:31:39 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 061IVZnl12976606
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 1 Jul 2020 18:31:35 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8EFBF4203F;
+ Wed,  1 Jul 2020 18:31:35 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 95FD342045;
+ Wed,  1 Jul 2020 18:31:32 +0000 (GMT)
+Received: from [9.102.31.46] (unknown [9.102.31.46])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  1 Jul 2020 18:31:32 +0000 (GMT)
+Subject: Re: [PATCH 01/11] kexec_file: allow archs to handle special regions
+ while locating memory hole
+To: Dave Young <dyoung@redhat.com>
+References: <159319825403.16351.7253978047621755765.stgit@hbathini.in.ibm.com>
+ <159319828304.16351.6990340111766605842.stgit@hbathini.in.ibm.com>
+ <20200629133933.0787f562@ezekiel.suse.cz>
+ <7981ae61-26c6-000c-9ee4-382dab3eecab@linux.ibm.com>
+ <20200701074659.GA3878@dhcp-128-65.nay.redhat.com>
+From: Hari Bathini <hbathini@linux.ibm.com>
+Message-ID: <0e145e84-a6cf-4da3-1a1a-331a7e1ac1fa@linux.ibm.com>
+Date: Thu, 2 Jul 2020 00:01:31 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200701085947.3354405-11-hch@lst.de>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+In-Reply-To: <20200701074659.GA3878@dhcp-128-65.nay.redhat.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-01_09:2020-07-01,
+ 2020-07-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0
+ cotscore=-2147483648 malwarescore=0 lowpriorityscore=0 priorityscore=1501
+ mlxscore=0 suspectscore=0 adultscore=0 spamscore=0 bulkscore=0
+ clxscore=1015 impostorscore=0 mlxlogscore=999 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2007010124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,23 +121,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-xtensa@linux-xtensa.org,
- linux-s390@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-nvdimm@lists.01.org, dm-devel@redhat.com, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
- linux-bcache@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- drbd-dev@lists.linbit.com
+Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Pingfan Liu <piliu@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
+ Kexec-ml <kexec@lists.infradead.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
+ Eric Biederman <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 01 2020 at  4:59am -0400,
-Christoph Hellwig <hch@lst.de> wrote:
 
-> Instead of setting up the queuedata as well just use one private data
-> field.
+
+On 01/07/20 1:16 pm, Dave Young wrote:
+> On 06/29/20 at 05:26pm, Hari Bathini wrote:
+>> Hi Petr,
+>>
+>> On 29/06/20 5:09 pm, Petr Tesarik wrote:
+>>> Hi Hari,
+>>>
+>>> is there any good reason to add two more functions with a very similar
+>>> name to an existing function? AFAICS all you need is a way to call a
+>>> PPC64-specific function from within kexec_add_buffer (PATCH 4/11), so
+>>> you could add something like this:
+>>>
+>>> int __weak arch_kexec_locate_mem_hole(struct kexec_buf *kbuf)
+>>> {
+>>> 	return 0;
+>>> }
+>>>
+>>> Call this function from kexec_add_buffer where appropriate and then
+>>> override it for PPC64 (it roughly corresponds to your
+>>> kexec_locate_mem_hole_ppc64() from PATCH 4/11).
+>>>
+>>> FWIW it would make it easier for me to follow the resulting code.
+>>
+>> Right, Petr.
+>>
+>> I was trying out a few things before I ended up with what I sent here.
+>> Bu yeah.. I did realize arch_kexec_locate_mem_hole() would have been better
+>> after sending out v1. Will take care of that in v2.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Another way is use arch private function to locate mem hole, then set
+> kbuf->mem, and then call kexec_add_buf, it will skip the common locate
+> hole function.
 
-Acked-by: Mike Snitzer <snitzer@redhat.com>
+Dave, I did think about it. But there are a couple of places this can get
+tricky. One is ima_add_kexec_buffer() and the other is kexec_elf_load().
+These call sites could be updated to set kbuf->mem before kexec_add_buffer().
+But the current approach seemed like the better option for it creates a
+single point of control in setting up segment buffers and also, makes adding
+any new segments simpler, arch-specific segments or otherwise.
 
+Thanks
+Hari
