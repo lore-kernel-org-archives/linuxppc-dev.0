@@ -2,70 +2,69 @@ Return-Path: <SRS0=cW2d=AM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 474C3C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 08:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 681C3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:03:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0646120747
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 08:43:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0646120747
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D057D206C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:03:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hAcTP892"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D057D206C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xZWp74vgzDqsm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 18:43:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.218.67; helo=mail-ej1-f67.google.com;
- envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xZyH5sF3zDqrT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:03:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+501e1de201b53739768b+6156+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ej1-f67.google.com (mail-ej1-f67.google.com
- [209.85.218.67])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=hAcTP892; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xZTr4FgWzDqWQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 18:42:05 +1000 (AEST)
-Received: by mail-ej1-f67.google.com with SMTP id rk21so23669019ejb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2020 01:42:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to;
- bh=T9r9uXsGnf7xodRslPWJHaDGCw+J+NI5LCDeJSYGRKk=;
- b=nwLR0Nh1f69uXZLDOiPdsO7kPbQd/YIEQ02FEpWtD58bC0dkcze6lprxdJkgXoUHWp
- PrC34N2UgcX6eFXrQhQBhGBf/G6Vj5ZU92z9/9SBydQRqZKrlgtplfo3zGDOIm2K6vHT
- GsPCCaEIkcjEXMyYteuhPJ9EsdQlgSQgfFKSVvL2sela0E5eJw5b+nS6sVTw3DS4Kqau
- s2AQ98jwAEpr6gZvIkqqRWIXjainm+swQIryPuqmu9rJJaSyoyz6FYEPCClBMXNBRsvJ
- 0Px6HQiu76fM4pF2FT1iitP/21OHx/j8Uqab7TCF0cMIvBa2DVUkLgIJQipk/8K3ofjI
- o0HQ==
-X-Gm-Message-State: AOAM530diUi0blsVZ4Ht3d3+JbbLwdz/N3rpOGdfQqvg7Le9wG4HEcYL
- HyKKs3YRdibqHlmE7kXdpwg=
-X-Google-Smtp-Source: ABdhPJyMVlYQgrE7cLMl4gjP0T0O//dKmjL8Y5w1eARBxVyjaPD/C6BUoqOwtCjSXGmrBV01flxkow==
-X-Received: by 2002:a17:906:abd6:: with SMTP id
- kq22mr22915729ejb.458.1593592922127; 
- Wed, 01 Jul 2020 01:42:02 -0700 (PDT)
-Received: from localhost (ip-37-188-168-3.eurotel.cz. [37.188.168.3])
- by smtp.gmail.com with ESMTPSA id b4sm5387790edx.96.2020.07.01.01.42.00
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 01 Jul 2020 01:42:01 -0700 (PDT)
-Date: Wed, 1 Jul 2020 10:42:00 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 3/3] mm/page_alloc: Keep memoryless cpuless node 0
- offline
-Message-ID: <20200701084200.GN2369@dhcp22.suse.cz>
-References: <20200624092846.9194-1-srikar@linux.vnet.ibm.com>
- <20200624092846.9194-4-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtc2rkgzDqrC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:08 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=t6BqkN6Yxn/8o7GWQerTXSXZiT8M8tft7EnhoW3IIiE=; b=hAcTP892NCCovzX2RpSmkixMog
+ HbSnGhzmiEi7CnPF5n2sxdgakapG2OHqqw5H6XKqc+ghl6qYzfNMLDnMaO1cBG69NDChGRSYU+UOH
+ hQeiL/X6/qDLMAZoZHKVKkAKNRq83YhtRRPLSYV7C+e3TxLyt4WbCjNMs1CVf+mzmrs6yA0IRGK/a
+ 68kq/4RTXTzlT/aia1gZYh618fXe7Lfwpp2DSJuejMw4sErcKJz3WQY2UbphgLA0imC8+URm/7LX4
+ 1GYzzIg3zotDYqxd8qFVl4y4yd3DRKsYQunww+RsVy9GpkXOhrWRpW52iSzbH5TZxIHTdqsBscTPV
+ u324UHxA==;
+Received: from [2001:4bb8:184:76e3:ea38:596b:3e9e:422a] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jqYb2-00089D-BO; Wed, 01 Jul 2020 09:00:00 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>
+Subject: [PATCH 08/20] zram: stop using ->queuedata
+Date: Wed,  1 Jul 2020 10:59:35 +0200
+Message-Id: <20200701085947.3354405-9-hch@lst.de>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200701085947.3354405-1-hch@lst.de>
+References: <20200701085947.3354405-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200624092846.9194-4-srikar@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,159 +76,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill@shutemov.name>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
+Cc: linux-bcache@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-nvdimm@lists.01.org, linux-s390@vger.kernel.org, dm-devel@redhat.com,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, drbd-dev@lists.linbit.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Instead of setting up the queuedata as well just use one private data
+field.
 
-On Wed 24-06-20 14:58:46, Srikar Dronamraju wrote:
-> Currently Linux kernel with CONFIG_NUMA on a system with multiple
-> possible nodes, marks node 0 as online at boot.  However in practice,
-> there are systems which have node 0 as memoryless and cpuless.
-> 
-> This can cause numa_balancing to be enabled on systems with only one node
-> with memory and CPUs. The existence of this dummy node which is cpuless and
-> memoryless node can confuse users/scripts looking at output of lscpu /
-> numactl.
-> 
-> By marking, N_ONLINE as NODE_MASK_NONE, lets stop assuming that Node 0 is
-> always online.
-> 
-> v5.8-rc2
->  available: 2 nodes (0,2)
->  node 0 cpus:
->  node 0 size: 0 MB
->  node 0 free: 0 MB
->  node 2 cpus: 0 1 2 3 4 5 6 7
->  node 2 size: 32625 MB
->  node 2 free: 31490 MB
->  node distances:
->  node   0   2
->    0:  10  20
->    2:  20  10
-> 
-> proc and sys files
-> ------------------
->  /sys/devices/system/node/online:            0,2
->  /proc/sys/kernel/numa_balancing:            1
->  /sys/devices/system/node/has_cpu:           2
->  /sys/devices/system/node/has_memory:        2
->  /sys/devices/system/node/has_normal_memory: 2
->  /sys/devices/system/node/possible:          0-31
-> 
-> v5.8-rc2 + patch
-> ------------------
->  available: 1 nodes (2)
->  node 2 cpus: 0 1 2 3 4 5 6 7
->  node 2 size: 32625 MB
->  node 2 free: 31487 MB
->  node distances:
->  node   2
->    2:  10
-> 
-> proc and sys files
-> ------------------
-> /sys/devices/system/node/online:            2
-> /proc/sys/kernel/numa_balancing:            0
-> /sys/devices/system/node/has_cpu:           2
-> /sys/devices/system/node/has_memory:        2
-> /sys/devices/system/node/has_normal_memory: 2
-> /sys/devices/system/node/possible:          0-31
-> 
-> Note: On Powerpc, cpu_to_node of possible but not present cpus would
-> previously return 0. Hence this commit depends on commit ("powerpc/numa: Set
-> numa_node for all possible cpus") and commit ("powerpc/numa: Prefer node id
-> queried from vphn"). Without the 2 commits, Powerpc system might crash.
-> 
-> 1. User space applications like Numactl, lscpu, that parse the sysfs tend to
-> believe there is an extra online node. This tends to confuse users and
-> applications. Other user space applications start believing that system was
-> not able to use all the resources (i.e missing resources) or the system was
-> not setup correctly.
-> 
-> 2. Also existence of dummy node also leads to inconsistent information. The
-> number of online nodes is inconsistent with the information in the
-> device-tree and resource-dump
-> 
-> 3. When the dummy node is present, single node non-Numa systems end up showing
-> up as NUMA systems and numa_balancing gets enabled. This will mean we take
-> the hit from the unnecessary numa hinting faults.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/block/zram/zram_drv.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-I have to say that I dislike the node online/offline state and directly
-exporting that to the userspace. Users should only care whether the node
-has memory/cpus. Numa nodes can be online without any memory. Just
-offline all the present memory blocks but do not physically hot remove
-them and you are in the same situation. If users are confused by an
-output of tools like numactl -H then those could be updated and hide
-nodes without any memory&cpus.
-
-The autonuma problem sounds interesting but again this patch doesn't
-really solve the underlying problem because I strongly suspect that the
-problem is still there when a numa node gets all its memory offline as
-mentioned above.
-
-While I completely agree that making node 0 special is wrong, I have
-still hard time to review this very simply looking patch because all the
-numa initialization is so spread around that this might just blow up
-at unexpected places. IIRC we have discussed testing in the previous
-version and David has provided a way to emulate these configurations
-on x86. Did you manage to use those instruction for additional testing
-on other than ppc architectures?
-
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-mm@kvack.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
-> Cc: Christopher Lameter <cl@linux.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-> Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-> Cc: David Hildenbrand <david@redhat.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> ---
-> Changelog v4:->v5:
-> - rebased to v5.8-rc2
-> link v4: http://lore.kernel.org/lkml/20200512132937.19295-1-srikar@linux.vnet.ibm.com/t/#u
-> 
-> Changelog v1:->v2:
-> - Rebased to v5.7-rc3
-> Link v2: https://lore.kernel.org/linuxppc-dev/20200428093836.27190-1-srikar@linux.vnet.ibm.com/t/#u
-> 
->  mm/page_alloc.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 48eb0f1410d4..5187664558e1 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -117,8 +117,10 @@ EXPORT_SYMBOL(latent_entropy);
->   */
->  nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
->  	[N_POSSIBLE] = NODE_MASK_ALL,
-> +#ifdef CONFIG_NUMA
-> +	[N_ONLINE] = NODE_MASK_NONE,
-> +#else
->  	[N_ONLINE] = { { [0] = 1UL } },
-> -#ifndef CONFIG_NUMA
->  	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
->  #ifdef CONFIG_HIGHMEM
->  	[N_HIGH_MEMORY] = { { [0] = 1UL } },
-> -- 
-> 2.18.1
-> 
-
+diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+index 6e2ad90b17a376..0564e3f384089e 100644
+--- a/drivers/block/zram/zram_drv.c
++++ b/drivers/block/zram/zram_drv.c
+@@ -1586,7 +1586,7 @@ static void __zram_make_request(struct zram *zram, struct bio *bio)
+  */
+ static blk_qc_t zram_make_request(struct request_queue *queue, struct bio *bio)
+ {
+-	struct zram *zram = queue->queuedata;
++	struct zram *zram = bio->bi_disk->private_data;
+ 
+ 	if (!valid_io_request(zram, bio->bi_iter.bi_sector,
+ 					bio->bi_iter.bi_size)) {
+@@ -1912,7 +1912,6 @@ static int zram_add(void)
+ 	zram->disk->first_minor = device_id;
+ 	zram->disk->fops = &zram_devops;
+ 	zram->disk->queue = queue;
+-	zram->disk->queue->queuedata = zram;
+ 	zram->disk->private_data = zram;
+ 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
+ 
 -- 
-Michal Hocko
-SUSE Labs
+2.26.2
+
