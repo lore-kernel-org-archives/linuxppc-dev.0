@@ -2,96 +2,54 @@ Return-Path: <SRS0=cW2d=AM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31603C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:41:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06555C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:43:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD21320722
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:41:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD21320722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 61D6D20722
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 07:43:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61D6D20722
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xY7N0V3XzDqkk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 17:41:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xYBJ2qRmzDqtd
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 17:43:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
+ envelope-from=lizefan@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xXmW1fCyzDqjZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 17:24:42 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06173Y6M137736; Wed, 1 Jul 2020 03:24:35 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 320ka9mt58-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 03:24:35 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06173fLL138508;
- Wed, 1 Jul 2020 03:24:34 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0a-001b2d01.pphosted.com with ESMTP id 320ka9msnx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 03:24:34 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0617G1sD027225;
- Wed, 1 Jul 2020 07:23:47 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma04dal.us.ibm.com with ESMTP id 31wwr95ph7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 01 Jul 2020 07:23:47 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0617NigY6029714
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 1 Jul 2020 07:23:44 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6DB9513605E;
- Wed,  1 Jul 2020 07:23:46 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 29F40136053;
- Wed,  1 Jul 2020 07:23:43 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.79.220.179])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed,  1 Jul 2020 07:23:42 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- linux-nvdimm@lists.01.org, dan.j.williams@intel.com
-Subject: [PATCH v7 5/7] powerpc/pmem: Update ppc64 to use the new barrier
- instruction.
-Date: Wed,  1 Jul 2020 12:52:33 +0530
-Message-Id: <20200701072235.223558-6-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200701072235.223558-1-aneesh.kumar@linux.ibm.com>
-References: <20200701072235.223558-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xXp538hVzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 17:26:04 +1000 (AEST)
+Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id B0C0A65D660C38B54DB0;
+ Wed,  1 Jul 2020 15:10:40 +0800 (CST)
+Received: from [10.174.178.86] (10.174.178.86) by smtp.huawei.com
+ (10.3.19.213) with Microsoft SMTP Server (TLS) id 14.3.487.0; Wed, 1 Jul 2020
+ 15:10:36 +0800
+Subject: Re: [PATCH v2 4/4] mm/vmalloc: Hugepage vmalloc mappings
+To: Nicholas Piggin <npiggin@gmail.com>, <linux-mm@kvack.org>
+References: <20200413125303.423864-1-npiggin@gmail.com>
+ <20200413125303.423864-5-npiggin@gmail.com>
+From: Zefan Li <lizefan@huawei.com>
+Message-ID: <d148f86c-b27b-63fb-31d2-35b8f52ec540@huawei.com>
+Date: Wed, 1 Jul 2020 15:10:35 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-01_03:2020-07-01,
- 2020-07-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 phishscore=0
- adultscore=0 cotscore=-2147483648 lowpriorityscore=0 spamscore=0
- impostorscore=0 suspectscore=0 bulkscore=0 clxscore=1015 mlxscore=0
- malwarescore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2007010050
+In-Reply-To: <20200413125303.423864-5-npiggin@gmail.com>
+Content-Type: text/plain; charset="gbk"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.174.178.86]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,52 +61,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, Jeff Moyer <jmoyer@redhat.com>, msuchanek@suse.de,
- oohall@gmail.com, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pmem on POWER10 can now use phwsync instead of hwsync to ensure
-all previous writes are architecturally visible for the platform
-buffer flush.
+>  static void *__vmalloc_node(unsigned long size, unsigned long align,
+> -			    gfp_t gfp_mask, pgprot_t prot,
+> -			    int node, const void *caller);
+> +			gfp_t gfp_mask, pgprot_t prot, unsigned long vm_flags,
+> +			int node, const void *caller);
+>  static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
+> -				 pgprot_t prot, int node)
+> +				 pgprot_t prot, unsigned int page_shift,
+> +				 int node)
+>  {
+>  	struct page **pages;
+> +	unsigned long addr = (unsigned long)area->addr;
+> +	unsigned long size = get_vm_area_size(area);
+> +	unsigned int page_order = page_shift - PAGE_SHIFT;
+>  	unsigned int nr_pages, array_size, i;
+>  	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
+>  	const gfp_t alloc_mask = gfp_mask | __GFP_NOWARN;
+>  	const gfp_t highmem_mask = (gfp_mask & (GFP_DMA | GFP_DMA32)) ?
+> -					0 :
+> -					__GFP_HIGHMEM;
+> +					0 : __GFP_HIGHMEM;
+>  
+> -	nr_pages = get_vm_area_size(area) >> PAGE_SHIFT;
+> +	nr_pages = size >> page_shift;
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/barrier.h | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+while try out this patchset, we encountered a BUG_ON in account_kernel_stack()
+in kernel/fork.c.
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index 123adcefd40f..35c1b8f3aa68 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -7,6 +7,10 @@
- 
- #include <asm/asm-const.h>
- 
-+#ifndef __ASSEMBLY__
-+#include <asm/ppc-opcode.h>
-+#endif
-+
- /*
-  * Memory barrier.
-  * The sync instruction guarantees that all memory accesses initiated
-@@ -97,6 +101,15 @@ do {									\
- #define barrier_nospec()
- #endif /* CONFIG_PPC_BARRIER_NOSPEC */
- 
-+/*
-+ * pmem_wmb() ensures that all stores for which the modification
-+ * are written to persistent storage by preceding dcbfps/dcbstps
-+ * instructions have updated persistent storage before any data
-+ * access or data transfer caused by subsequent instructions is
-+ * initiated.
-+ */
-+#define pmem_wmb() __asm__ __volatile__(PPC_PHWSYNC ::: "memory")
-+
- #include <asm-generic/barrier.h>
- 
- #endif /* _ASM_POWERPC_BARRIER_H */
--- 
-2.26.2
+BUG_ON(vm->nr_pages != THREAD_SIZE / PAGE_SIZE);
+
+which obviously should be updated accordingly.
+
+>  	array_size = (nr_pages * sizeof(struct page *));
+>  
+>  	/* Please note that the recursion is strictly bounded. */
+>  	if (array_size > PAGE_SIZE) {
+>  		pages = __vmalloc_node(array_size, 1, nested_gfp|highmem_mask,
+> -				PAGE_KERNEL, node, area->caller);
+> +				PAGE_KERNEL, 0, node, area->caller);
+>  	} else {
+>  		pages = kmalloc_node(array_size, nested_gfp, node);
+>  	}
 
