@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EDE6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 22:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 558E2C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 22:27:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD79520748
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 22:25:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 06E61207E8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 22:27:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="04e4khGI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD79520748
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ybfuOJs9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06E61207E8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xwll15PHzDqlh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:25:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xwp01XKSzDqlX
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:27:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +28,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=04e4khGI; dkim-atps=neutral
+ header.s=default header.b=ybfuOJs9; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xwhd10YMzDqkZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 08:22:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xwj12VqczDql9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 08:23:01 +1000 (AEST)
 Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5D78220780;
- Wed,  1 Jul 2020 22:22:37 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B3347207E8;
+ Wed,  1 Jul 2020 22:22:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1593642157;
- bh=mxx7Gg/ZIeVDV4tXevq1kBD2WMrxAhSo/UjofIGOOwU=;
+ s=default; t=1593642178;
+ bh=qR6b0seueX1BWelGymIepBrH7Jm0QvYZYSibZfidNYw=;
  h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=04e4khGICYM7F2fV318l7QGiET8eig6XK+gokuFooZFgBJouu8gJBd14/TIBQ+mpv
- UblTZxZI4UIzLu5D+bDdMao2CAFWavi/aJo7FRezwwFJsbLKP9Ot1rvINT9cGhR1eh
- xjrE1pqQI/7VEA7Ht2y6mPk1Zc4zXv7HCyhsAZf4=
-Date: Wed, 01 Jul 2020 23:22:35 +0100
+ b=ybfuOJs9Vmbfe4ObII/sYSTuo+YClxTRqYIrdBxAyiM0aJd4f3dszsnJI5I2cS56c
+ Io6TIbicvRPVE0epumlQ9rhyFeaw+fmO7gcxFUwM8n8nrDNpcxmYhwms3XbZeiEbPF
+ OSZG1Xp5CZASNqiARSsBmmzvNZ6MkkU0192ooJp0=
+Date: Wed, 01 Jul 2020 23:22:56 +0100
 From: Mark Brown <broonie@kernel.org>
 To: perex@perex.cz, alsa-devel@alsa-project.org, tiwai@suse.com,
- Xiubo.Lee@gmail.com, timur@kernel.org, lgirdwood@gmail.com, festevam@gmail.com,
+ Xiubo.Lee@gmail.com, timur@kernel.org, festevam@gmail.com,
  nicoleotsuka@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <1593525367-23221-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1593525367-23221-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v3] ASoC: fsl_asrc: Add an option to select internal ratio
- mode
-Message-Id: <159364215575.10630.16163829958912302210.b4-ty@kernel.org>
+In-Reply-To: <1593412953-10897-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1593412953-10897-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Refine regcache usage with pm runtime
+Message-Id: <159364215573.10630.10167601683932305726.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,15 +71,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 Jun 2020 21:56:07 +0800, Shengjiu Wang wrote:
-> The ASRC not only supports ideal ratio mode, but also supports
-> internal ratio mode.
-> 
-> For internal rato mode, the rate of clock source should be divided
-> with no remainder by sample rate, otherwise there is sound
-> distortion.
-> 
-> [...]
+On Mon, 29 Jun 2020 14:42:33 +0800, Shengjiu Wang wrote:
+> When there is dedicated power domain bound with device, after probing
+> the power will be disabled, then registers are not accessible in
+> fsl_sai_dai_probe(), so regcache only need to be enabled in end of
+> probe() and regcache_mark_dirty should be moved to pm runtime resume
+> callback function.
 
 Applied to
 
@@ -88,8 +84,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl_asrc: Add an option to select internal ratio mode
-      commit: d0250cf4f2abfbea64ed247230f08f5ae23979f0
+[1/1] ASoC: fsl_sai: Refine regcache usage with pm runtime
+      commit: d8d702e19e997cf3f172487e0659d0e68aa5ede5
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
