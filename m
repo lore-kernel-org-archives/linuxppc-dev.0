@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA49C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A07C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:12:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C09720722
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 827442077D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:12:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="IIiLjJ1F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C09720722
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="CalUSBbj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 827442077D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xb4t3T8fzDqSL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:09:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xb8k1m9mzDqVk
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:12:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=IIiLjJ1F; 
+ header.s=casper.20170209 header.b=CalUSBbj; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtZ15rTzDqpv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtb0XqpzDqq7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:06 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=KYQPEhMrWwbjunajTA0tfrHgAEeVrpu9W222AN41VOw=; b=IIiLjJ1FkkaM5l8VC6G9OIV52H
- gZvhuVSspN+bujILyy30Kswzd5P/J3rezISucSTUWkpsnylLzhpob+Zex9IgzOczLFN1PzC5IiS4R
- yjosIAlxK5d8ZNi4GxzbdQCkD5WDKCkzcv3yvT+uRRO1s4iJBDkp7DAYBPLj900+F1B8hh0WZ5LUF
- OcxrgA/zS4jrWHGfD8SKktWoxQSg5a0Gj5XBTsH14yheSKEkLwPQFwA+xuFf7bc5RLojTjfSgxD2Y
- 3pS1pgNp51Pm9kYIf/VxqyUK8gEJFw3XDX1FAs10ZXyiJKr/t9fsmoG3XEb/C8cw0S+zfWX4FC6St
- dYaiFJ9A==;
+ bh=h+zTEp6W7EJyyCCOp/IKx6w4eJjLDZBSmAu+cD30b/M=; b=CalUSBbjHhqEFYSwjrf91po0Aj
+ 2mtO3oUaBojx0m2g/BAyWJsMP3tiGWKJQ4vdeXV0J6l5yzw1NPped+yx7kKzY6UfiQmVeJG/2MoTJ
+ CYmg79UM86ns6N5mu5W6MnFamxsohRNH0sjaU4F6tJ4fblYSvvNMmfCDS4T+HS7eNQZl2q7hNqIQ5
+ kkM2CycE35Ez7Sj+87Mt3qKansh5lZtDVRHPVjrfWPp+4YHr5Zu0gljaa/iu5Zw+3mTQck2BXZSux
+ Cr38RtHFy7pPcMkr2BrcGymI1OyaSqMtHmRY1010j+qOHwmiZKbAqO8Z2kyswVFO5T7VkCePn5yyV
+ UOFpvqJg==;
 Received: from [2001:4bb8:184:76e3:ea38:596b:3e9e:422a] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jqYaw-00087s-KG; Wed, 01 Jul 2020 08:59:55 +0000
+ id 1jqYb1-00088r-0A; Wed, 01 Jul 2020 08:59:59 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 04/20] null_blk: stop using ->queuedata for bio mode
-Date: Wed,  1 Jul 2020 10:59:31 +0200
-Message-Id: <20200701085947.3354405-5-hch@lst.de>
+Subject: [PATCH 07/20] umem: stop using ->queuedata
+Date: Wed,  1 Jul 2020 10:59:34 +0200
+Message-Id: <20200701085947.3354405-8-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200701085947.3354405-1-hch@lst.de>
 References: <20200701085947.3354405-1-hch@lst.de>
@@ -90,21 +90,30 @@ field.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/null_blk_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/block/umem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/null_blk_main.c b/drivers/block/null_blk_main.c
-index 82259242b9b5c9..93ce0a00b2ae01 100644
---- a/drivers/block/null_blk_main.c
-+++ b/drivers/block/null_blk_main.c
-@@ -1392,7 +1392,7 @@ static blk_qc_t null_queue_bio(struct request_queue *q, struct bio *bio)
+diff --git a/drivers/block/umem.c b/drivers/block/umem.c
+index 1e2aa5ae27963c..5498f1cf36b3fe 100644
+--- a/drivers/block/umem.c
++++ b/drivers/block/umem.c
+@@ -521,7 +521,8 @@ static int mm_check_plugged(struct cardinfo *card)
+ 
+ static blk_qc_t mm_make_request(struct request_queue *q, struct bio *bio)
  {
- 	sector_t sector = bio->bi_iter.bi_sector;
- 	sector_t nr_sectors = bio_sectors(bio);
--	struct nullb *nullb = q->queuedata;
-+	struct nullb *nullb = bio->bi_disk->private_data;
- 	struct nullb_queue *nq = nullb_to_queue(nullb);
- 	struct nullb_cmd *cmd;
+-	struct cardinfo *card = q->queuedata;
++	struct cardinfo *card = bio->bi_disk->private_data;
++
+ 	pr_debug("mm_make_request %llu %u\n",
+ 		 (unsigned long long)bio->bi_iter.bi_sector,
+ 		 bio->bi_iter.bi_size);
+@@ -888,7 +889,6 @@ static int mm_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	card->queue = blk_alloc_queue(mm_make_request, NUMA_NO_NODE);
+ 	if (!card->queue)
+ 		goto failed_alloc;
+-	card->queue->queuedata = card;
+ 
+ 	tasklet_init(&card->tasklet, process_page, (unsigned long)card);
  
 -- 
 2.26.2
