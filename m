@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5AC2C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9858C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:29:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C17F20722
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:27:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 609AC20722
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 09:29:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="KTbKBFdI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C17F20722
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Z/F5JgSB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 609AC20722
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49xbTs4nFpzDqZl
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:27:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49xbXT5HTYzDqxL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jul 2020 19:29:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=KTbKBFdI; 
+ header.s=casper.20170209 header.b=Z/F5JgSB; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtj08HhzDqpk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49xZtn2TGdzDqsH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2020 19:00:17 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=N4V7c3aeDLuwhXVBAMVeI93XDU7dFLU/PzjjNBBA1go=; b=KTbKBFdIcNq7kcCYKLM8QT5rvT
- +BTkHkyQXt5A+fSSZkebxiNfAonPP5ePXVQUMMfxf2F7LG5La2VTPgqnueUPN5wD41j0tq2tSTnLG
- CnKo5+wyDIIBjuHKF5QovT9L95/sxG+C/xoA0AdoHdiigLjTXCAbH8EMqQ0vQ6JEpeKfr9jbHMR/h
- Vfo7Nw/N6PlBvbAXfnAU9KGWVRVSG5zRNxncxOSmyTyPNmmc+0D+LbE1uQGICJ1ISGr39OgP8dzV5
- /Y+pLFxgALv6ZbHRImHf0e+iUhlCNBZYvL8OGqJC+01BhnA2k43UqnSF95GoYRGtCYLt+QNb4JfYL
- QrjhBVtg==;
+ bh=tMUnz3Lcybn8dQofQ1ryTzIcUAQ8+R8Yiszv/2NG4rI=; b=Z/F5JgSBdsAyHAjWTFzaMp6g/q
+ oUzASIPvrJSJhS8H/JfA1QH8G6IT7wmV5wLn36QX/aHDo/hsxYVlgCl6qoTtD6nZ6IvOBUe/JnXQt
+ goBpJk9KmMg/PLs2u8o5kRTqrjTKbPsqjWXOy6JnNqrkKOfwRlEIIUz20TquRejre+i/DVwTPiltW
+ jHYesHi+fT0Dd0T/0ANjA7isBclM9yDdn8EbcZjL2aV1xUSGZFyB4MPPtssG0ekb0Vesqf9t2hN5D
+ 7E5atGWNGy/7VUYWuHLULEFzZmWMZQO1JDyBMSdbTihaE6Swz+QOzO9Y+CnVIeWgK7UHJ4QLdU4Me
+ +zEre2Dw==;
 Received: from [2001:4bb8:184:76e3:ea38:596b:3e9e:422a] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jqYb7-0008Ct-0I; Wed, 01 Jul 2020 09:00:05 +0000
+ id 1jqYbA-0008Ea-Rh; Wed, 01 Jul 2020 09:00:09 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 11/20] fs: remove a weird comment in submit_bh_wbc
-Date: Wed,  1 Jul 2020 10:59:38 +0200
-Message-Id: <20200701085947.3354405-12-hch@lst.de>
+Subject: [PATCH 13/20] block: tidy up a warning in bio_check_ro
+Date: Wed,  1 Jul 2020 10:59:40 +0200
+Message-Id: <20200701085947.3354405-14-hch@lst.de>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200701085947.3354405-1-hch@lst.de>
 References: <20200701085947.3354405-1-hch@lst.de>
@@ -85,31 +85,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All bios can get remapped if submitted to partitions.  No need to
-comment on that.
+The "generic_make_request: " prefix has no value, and will soon become
+stale.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/buffer.c | 5 -----
- 1 file changed, 5 deletions(-)
+ block/blk-core.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 64fe82ec65ff1f..2725ebbcfdc246 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -3040,12 +3040,7 @@ static int submit_bh_wbc(int op, int op_flags, struct buffer_head *bh,
- 	if (test_set_buffer_req(bh) && (op == REQ_OP_WRITE))
- 		clear_buffer_write_io_error(bh);
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 76cfd5709f66cd..95dca74534ff73 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -869,8 +869,7 @@ static inline bool bio_check_ro(struct bio *bio, struct hd_struct *part)
+ 			return false;
  
--	/*
--	 * from here on down, it's all bio -- do the initial mapping,
--	 * submit_bio -> generic_make_request may further map this bio around
--	 */
- 	bio = bio_alloc(GFP_NOIO, 1);
--
- 	bio->bi_iter.bi_sector = bh->b_blocknr * (bh->b_size >> 9);
- 	bio_set_dev(bio, bh->b_bdev);
- 	bio->bi_write_hint = write_hint;
+ 		WARN_ONCE(1,
+-		       "generic_make_request: Trying to write "
+-			"to read-only block-device %s (partno %d)\n",
++		       "Trying to write to read-only block-device %s (partno %d)\n",
+ 			bio_devname(bio, b), part->partno);
+ 		/* Older lvm-tools actually trigger this */
+ 		return false;
 -- 
 2.26.2
 
