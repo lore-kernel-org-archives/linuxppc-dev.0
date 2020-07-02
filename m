@@ -2,65 +2,50 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C5C5C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADDD9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:02:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ADC412075D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:51:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="rND6qhP5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADC412075D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 677F6207CD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:02:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 677F6207CD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yFJ25nSgzDqwf
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 20:50:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yFYR3hl4zDqdD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 21:02:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=rND6qhP5; dkim-atps=neutral
+ dmarc=none (p=none dis=none) header.from=arm.com
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yFFd4zB3zDqx1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 20:48:53 +1000 (AEST)
-Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 874412075D;
- Thu,  2 Jul 2020 10:48:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1593686931;
- bh=g1cKP96vnhwpBadUWi+K/NTNmduKoAdrQtOe2iZfYXg=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=rND6qhP59jK5UT3eXdMAPYj3XlxaRqljjqiK6gfVkN56KQRkwXJI42Wa2o9R7S9C4
- VFijU4tvdYZpSIS8Qv0WJJv8LFLP7+yGyqLBBAyv8zPZtGwUf/Wc5UzxBctdMWfWvP
- z8yinVoQFqZAzTvxE9QCVMXFJXdbBY07btq8tQFU=
-Date: Thu, 2 Jul 2020 11:48:46 +0100
-From: Will Deacon <will@kernel.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 5/8] powerpc/64s: implement queued spinlocks and rwlocks
-Message-ID: <20200702104845.GB16418@willie-the-truck>
-References: <20200702074839.1057733-1-npiggin@gmail.com>
- <20200702074839.1057733-6-npiggin@gmail.com>
- <20200702080219.GB16113@willie-the-truck>
- <1593685459.r2tfxtfdp6.astroid@bobo.none>
- <20200702103506.GA16418@willie-the-truck>
- <1593686722.w9psaqk7yp.astroid@bobo.none>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yFW00yQQzDqvd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 21:00:27 +1000 (AEST)
+Received: from gaia (unknown [95.146.230.158])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2465020656;
+ Thu,  2 Jul 2020 11:00:23 +0000 (UTC)
+Date: Thu, 2 Jul 2020 12:00:20 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Subject: Re: [PATCH v6 1/2] crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS'
+ to vmcoreinfo
+Message-ID: <20200702110003.GC22241@gaia>
+References: <1589395957-24628-1-git-send-email-bhsharma@redhat.com>
+ <1589395957-24628-2-git-send-email-bhsharma@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1593686722.w9psaqk7yp.astroid@bobo.none>
+In-Reply-To: <1589395957-24628-2-git-send-email-bhsharma@redhat.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,64 +58,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Waiman Long <longman@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ Will Deacon <will@kernel.org>, x86@kernel.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ James Morse <james.morse@arm.com>, Boris Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, bhupesh.linux@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Dave Anderson <anderson@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 02, 2020 at 08:47:05PM +1000, Nicholas Piggin wrote:
-> Excerpts from Will Deacon's message of July 2, 2020 8:35 pm:
-> > On Thu, Jul 02, 2020 at 08:25:43PM +1000, Nicholas Piggin wrote:
-> >> Excerpts from Will Deacon's message of July 2, 2020 6:02 pm:
-> >> > On Thu, Jul 02, 2020 at 05:48:36PM +1000, Nicholas Piggin wrote:
-> >> >> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/asm/qspinlock.h
-> >> >> new file mode 100644
-> >> >> index 000000000000..f84da77b6bb7
-> >> >> --- /dev/null
-> >> >> +++ b/arch/powerpc/include/asm/qspinlock.h
-> >> >> @@ -0,0 +1,20 @@
-> >> >> +/* SPDX-License-Identifier: GPL-2.0 */
-> >> >> +#ifndef _ASM_POWERPC_QSPINLOCK_H
-> >> >> +#define _ASM_POWERPC_QSPINLOCK_H
-> >> >> +
-> >> >> +#include <asm-generic/qspinlock_types.h>
-> >> >> +
-> >> >> +#define _Q_PENDING_LOOPS	(1 << 9) /* not tuned */
-> >> >> +
-> >> >> +#define smp_mb__after_spinlock()   smp_mb()
-> >> >> +
-> >> >> +static __always_inline int queued_spin_is_locked(struct qspinlock *lock)
-> >> >> +{
-> >> >> +	smp_mb();
-> >> >> +	return atomic_read(&lock->val);
-> >> >> +}
-> >> > 
-> >> > Why do you need the smp_mb() here?
-> >> 
-> >> A long and sad tale that ends here 51d7d5205d338
-> >> 
-> >> Should probably at least refer to that commit from here, since this one 
-> >> is not going to git blame back there. I'll add something.
-> > 
-> > Is this still an issue, though?
-> > 
-> > See 38b850a73034 (where we added a similar barrier on arm64) and then
-> > c6f5d02b6a0f (where we removed it).
-> > 
-> 
-> Oh nice, I didn't know that went away. Thanks for the heads up.
-> 
-> I'm going to say I'm too scared to remove it while changing the
-> spinlock algorithm, but I'll open an issue and we should look at 
-> removing it.
+On Thu, May 14, 2020 at 12:22:36AM +0530, Bhupesh Sharma wrote:
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 9f1557b98468..18175687133a 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -413,6 +413,7 @@ static int __init crash_save_vmcoreinfo_init(void)
+>  	VMCOREINFO_LENGTH(mem_section, NR_SECTION_ROOTS);
+>  	VMCOREINFO_STRUCT_SIZE(mem_section);
+>  	VMCOREINFO_OFFSET(mem_section, section_mem_map);
+> +	VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
+>  #endif
+>  	VMCOREINFO_STRUCT_SIZE(page);
+>  	VMCOREINFO_STRUCT_SIZE(pglist_data);
 
-Makes sense to me -- it certainly needs a deeper look! In the meantime,
-please put some of this in a comment next to the barrier.
+I can queue this patch via the arm64 tree (together with the second one)
+but I'd like an ack from the kernel/crash_core.c maintainers. They don't
+seem to have been cc'ed either (only the kexec list).
 
-Cheers,
+Thanks.
 
-Will
+-- 
+Catalin
