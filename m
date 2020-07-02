@@ -2,65 +2,86 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00086C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 01:38:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D74FAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 02:57:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A2D8C207F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 01:38:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2CE8420781
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 02:57:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZjSj7zFA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2D8C207F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="l8Hhhj8s"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CE8420781
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49y12323L5zDqpy
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:38:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49y2n96kn7zDqsl
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 12:57:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::1042;
+ helo=mail-pj1-x1042.google.com; envelope-from=dja@axtens.net;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=ZjSj7zFA; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
+ header.s=google header.b=l8Hhhj8s; dkim-atps=neutral
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49y0m35Z8dzDqlg
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 11:25:55 +1000 (AEST)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C6268206BE;
- Thu,  2 Jul 2020 01:25:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1593653153;
- bh=mVT1nm+k/l19rJIVXm8NMTgjChCxlRFDhy6XAsQx29g=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=ZjSj7zFAtjSXzS/bofwywL9xBccP+LztiaSsA4AOx5Fm3UPnwZP9Dw7tj0RCN/A6J
- wacgJutl8FQPe152KAVpgBHyNj8Lw28b67PIUEqk4qDrlrO/7YiLhrv1WiJ2gpkZAQ
- +h1vkrem64cMImiPOfJ48VyFinPxKqWYq6tg6NWI=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 23/40] powerpc/kvm/book3s64: Fix kernel crash with
- nested kvm & DEBUG_VIRTUAL
-Date: Wed,  1 Jul 2020 21:23:44 -0400
-Message-Id: <20200702012402.2701121-23-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49y2kW6Z55zDqsR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 12:54:43 +1000 (AEST)
+Received: by mail-pj1-x1042.google.com with SMTP id gc9so5295640pjb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jul 2020 19:54:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=jEAbvp0NcKYXLPlKcCam8GQvvafUBgcVOJIj099LJII=;
+ b=l8Hhhj8syHtUNp+VamGkuO605PBoNs6uw34vpgDBxugaKXT2I1bsRT706gUgLeQb93
+ UcvGY5rWgmysWYXpcfJjpd+Qx7bW15hiJuKELfz6TgFbM3YM7SvlWHzFwk/bZKsj/mWj
+ SWSx61IQHNmJ2LbwV6MWAFY0GnBISyORFGlkc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=jEAbvp0NcKYXLPlKcCam8GQvvafUBgcVOJIj099LJII=;
+ b=JZAKcc5ppSbvXPaudX11IEuRay0fqhVG7+D0eq4Uy7FuBv45aw5/zLevqCI0ZxcaGt
+ sA0xmXbh6t/ADc9Rp8dJYMDOsZM3rX9ssiv17OEvS/EtucjusvQifV/CagP7DlzXC+bq
+ 0Sze2lTMYz02v/SQkhZGPcRTrKbDPiROmnEJnqe73Dr/tFrK2s976SrjhpswYle0wLpX
+ SoAdsl5UHuCjaTtk7STLDdVVCsCNwJ0oznYWvgAi1s0jlYgFMTrQD7J7wIhnqxWtjuUH
+ torPih6VehZopHzZFP+RxSdUzCmGrhdfkWB9Kgs80hERBACYiAwtS58g4ZbP8hPYL8jr
+ kK4A==
+X-Gm-Message-State: AOAM533+DyI+FvXQZhQfgIG3qkuKug/uzq7YvD3CwV4FZA0j+qgK580p
+ G1nbvX3kE31s3qpYB7T1gB7dHw==
+X-Google-Smtp-Source: ABdhPJzHgVpfPFDfS8EwmQPaJdUfflOkSYb9QRnPNc4+/66KDIKNgnGl0dQ7GbTywsipCv35/i6xsA==
+X-Received: by 2002:a17:90a:bb84:: with SMTP id
+ v4mr20987849pjr.162.1593658480672; 
+ Wed, 01 Jul 2020 19:54:40 -0700 (PDT)
+Received: from localhost
+ (2001-44b8-1113-6700-3c80-6152-10ca-83bc.static.ipv6.internode.on.net.
+ [2001:44b8:1113:6700:3c80:6152:10ca:83bc])
+ by smtp.gmail.com with ESMTPSA id 140sm7127309pfz.154.2020.07.01.19.54.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 01 Jul 2020 19:54:40 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
+ christophe.leroy@c-s.fr, aneesh.kumar@linux.ibm.com, bsingharora@gmail.com
+Subject: [PATCH v8 1/4] kasan: define and use MAX_PTRS_PER_* for early shadow
+ tables
+Date: Thu,  2 Jul 2020 12:54:29 +1000
+Message-Id: <20200702025432.16912-2-dja@axtens.net>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200702012402.2701121-1-sashal@kernel.org>
-References: <20200702012402.2701121-1-sashal@kernel.org>
+In-Reply-To: <20200702025432.16912-1-dja@axtens.net>
+References: <20200702025432.16912-1-dja@axtens.net>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,75 +94,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+powerpc has a variable number of PTRS_PER_*, set at runtime based
+on the MMU that the kernel is booted under.
 
-[ Upstream commit c1ed1754f271f6b7acb1bfdc8cfb62220fbed423 ]
+This means the PTRS_PER_* are no longer constants, and therefore
+breaks the build.
 
-With CONFIG_DEBUG_VIRTUAL=y, __pa() checks for addr value and if it's
-less than PAGE_OFFSET it leads to a BUG().
+Define default MAX_PTRS_PER_*s in the same style as MAX_PTRS_PER_P4D.
+As KASAN is the only user at the moment, just define them in the kasan
+header, and have them default to PTRS_PER_* unless overridden in arch
+code.
 
-  #define __pa(x)
-  ({
-  	VIRTUAL_BUG_ON((unsigned long)(x) < PAGE_OFFSET);
-  	(unsigned long)(x) & 0x0fffffffffffffffUL;
-  })
-
-  kernel BUG at arch/powerpc/kvm/book3s_64_mmu_radix.c:43!
-  cpu 0x70: Vector: 700 (Program Check) at [c0000018a2187360]
-      pc: c000000000161b30: __kvmhv_copy_tofrom_guest_radix+0x130/0x1f0
-      lr: c000000000161d5c: kvmhv_copy_from_guest_radix+0x3c/0x80
-  ...
-  kvmhv_copy_from_guest_radix+0x3c/0x80
-  kvmhv_load_from_eaddr+0x48/0xc0
-  kvmppc_ld+0x98/0x1e0
-  kvmppc_load_last_inst+0x50/0x90
-  kvmppc_hv_emulate_mmio+0x288/0x2b0
-  kvmppc_book3s_radix_page_fault+0xd8/0x2b0
-  kvmppc_book3s_hv_page_fault+0x37c/0x1050
-  kvmppc_vcpu_run_hv+0xbb8/0x1080
-  kvmppc_vcpu_run+0x34/0x50
-  kvm_arch_vcpu_ioctl_run+0x2fc/0x410
-  kvm_vcpu_ioctl+0x2b4/0x8f0
-  ksys_ioctl+0xf4/0x150
-  sys_ioctl+0x28/0x80
-  system_call_exception+0x104/0x1d0
-  system_call_common+0xe8/0x214
-
-kvmhv_copy_tofrom_guest_radix() uses a NULL value for to/from to
-indicate direction of copy.
-
-Avoid calling __pa() if the value is NULL to avoid the BUG().
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-[mpe: Massage change log a bit to mention CONFIG_DEBUG_VIRTUAL]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20200611120159.680284-1-aneesh.kumar@linux.ibm.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Suggested-by: Balbir Singh <bsingharora@gmail.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/kasan.h | 18 +++++++++++++++---
+ mm/kasan/init.c       |  6 +++---
+ 2 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 43b56f8f6bebd..da8375437d161 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -38,7 +38,8 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
- 	/* Can't access quadrants 1 or 2 in non-HV mode, call the HV to do it */
- 	if (kvmhv_on_pseries())
- 		return plpar_hcall_norets(H_COPY_TOFROM_GUEST, lpid, pid, eaddr,
--					  __pa(to), __pa(from), n);
-+					  (to != NULL) ? __pa(to): 0,
-+					  (from != NULL) ? __pa(from): 0, n);
+diff --git a/include/linux/kasan.h b/include/linux/kasan.h
+index 82522e996c76..b6f94952333b 100644
+--- a/include/linux/kasan.h
++++ b/include/linux/kasan.h
+@@ -14,10 +14,22 @@ struct task_struct;
+ #include <linux/pgtable.h>
+ #include <asm/kasan.h>
  
- 	quadrant = 1;
- 	if (!pid)
++#ifndef MAX_PTRS_PER_PTE
++#define MAX_PTRS_PER_PTE PTRS_PER_PTE
++#endif
++
++#ifndef MAX_PTRS_PER_PMD
++#define MAX_PTRS_PER_PMD PTRS_PER_PMD
++#endif
++
++#ifndef MAX_PTRS_PER_PUD
++#define MAX_PTRS_PER_PUD PTRS_PER_PUD
++#endif
++
+ extern unsigned char kasan_early_shadow_page[PAGE_SIZE];
+-extern pte_t kasan_early_shadow_pte[PTRS_PER_PTE];
+-extern pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD];
+-extern pud_t kasan_early_shadow_pud[PTRS_PER_PUD];
++extern pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE];
++extern pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD];
++extern pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD];
+ extern p4d_t kasan_early_shadow_p4d[MAX_PTRS_PER_P4D];
+ 
+ int kasan_populate_early_shadow(const void *shadow_start,
+diff --git a/mm/kasan/init.c b/mm/kasan/init.c
+index fe6be0be1f76..42bca3d27db8 100644
+--- a/mm/kasan/init.c
++++ b/mm/kasan/init.c
+@@ -46,7 +46,7 @@ static inline bool kasan_p4d_table(pgd_t pgd)
+ }
+ #endif
+ #if CONFIG_PGTABLE_LEVELS > 3
+-pud_t kasan_early_shadow_pud[PTRS_PER_PUD] __page_aligned_bss;
++pud_t kasan_early_shadow_pud[MAX_PTRS_PER_PUD] __page_aligned_bss;
+ static inline bool kasan_pud_table(p4d_t p4d)
+ {
+ 	return p4d_page(p4d) == virt_to_page(lm_alias(kasan_early_shadow_pud));
+@@ -58,7 +58,7 @@ static inline bool kasan_pud_table(p4d_t p4d)
+ }
+ #endif
+ #if CONFIG_PGTABLE_LEVELS > 2
+-pmd_t kasan_early_shadow_pmd[PTRS_PER_PMD] __page_aligned_bss;
++pmd_t kasan_early_shadow_pmd[MAX_PTRS_PER_PMD] __page_aligned_bss;
+ static inline bool kasan_pmd_table(pud_t pud)
+ {
+ 	return pud_page(pud) == virt_to_page(lm_alias(kasan_early_shadow_pmd));
+@@ -69,7 +69,7 @@ static inline bool kasan_pmd_table(pud_t pud)
+ 	return false;
+ }
+ #endif
+-pte_t kasan_early_shadow_pte[PTRS_PER_PTE] __page_aligned_bss;
++pte_t kasan_early_shadow_pte[MAX_PTRS_PER_PTE] __page_aligned_bss;
+ 
+ static inline bool kasan_pte_table(pmd_t pmd)
+ {
 -- 
 2.25.1
 
