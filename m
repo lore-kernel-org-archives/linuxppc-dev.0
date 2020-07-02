@@ -2,24 +2,24 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25266C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F995C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:29:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D402420760
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:27:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D402420760
+	by mail.kernel.org (Postfix) with ESMTPS id 0C99620760
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:29:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C99620760
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yQ61065vzDqx9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 03:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yQ7w1sCJzDqyP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 03:29:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
  envelope-from=pierre-louis.bossart@linux.intel.com; receiver=<UNKNOWN>)
@@ -28,30 +28,29 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yQ1Y5yxVzDqSd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 03:24:01 +1000 (AEST)
-IronPort-SDR: HQfbOFbnSv8BsIqmsZaN1IeoR1v0a8SVFvasLVeu8DU9uSHsI7APvmSKN3PVYqQsDp9ykClD1Z
- wydjRoRqcfUw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9670"; a="126590468"
-X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="126590468"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yQ1Z6HKXzDqSd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 03:24:02 +1000 (AEST)
+IronPort-SDR: 3zbS5js3bVy2jzyZ1XK7lzH27iTTq2E84NjdNg+810Fp3FLy465OWKJAi383eLLyDE6GyhHYUI
+ HB0gvz2sZelQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9670"; a="126590472"
+X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="126590472"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2020 10:22:45 -0700
-IronPort-SDR: UUNR5coPI111eAku83iHfdW4mTPO7RwdIt6eEIAR4P3mWO5KNZlCLKlFpUtyVpbM/TV3ZYFSkv
- aICZh4f9wwHQ==
-X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="356521239"
+ 02 Jul 2020 10:22:48 -0700
+IronPort-SDR: mAjwL2tKlw+8j+DkGoWVLnlP8CIn6QoiOCfJJKopCnLuikTcm3HZo/+RhJsu9GbTHbE/l9bvp0
+ GBUyMbj0BL5A==
+X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="356521253"
 Received: from nzbastur-mobl1.amr.corp.intel.com (HELO
  pbossart-mobl3.amr.corp.intel.com) ([10.255.231.182])
  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2020 10:22:44 -0700
+ 02 Jul 2020 10:22:47 -0700
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 To: alsa-devel@alsa-project.org
-Subject: [PATCH 1/6] ASoC: fsl: fsl_ssi_dbg: remove spurious kernel-doc
- comment start
-Date: Thu,  2 Jul 2020 12:22:22 -0500
-Message-Id: <20200702172227.164474-2-pierre-louis.bossart@linux.intel.com>
+Subject: [PATCH 3/6] ASoC: fsl: fsl-asoc-card: fix kernel-doc
+Date: Thu,  2 Jul 2020 12:22:24 -0500
+Message-Id: <20200702172227.164474-4-pierre-louis.bossart@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200702172227.164474-1-pierre-louis.bossart@linux.intel.com>
 References: <20200702172227.164474-1-pierre-louis.bossart@linux.intel.com>
@@ -80,35 +79,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix W=1 warnings. There is no kernel-doc here.
+Fix W=1 warnings. Kernel-doc syntax was not properly used.
 
 Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 ---
- sound/soc/fsl/fsl_ssi_dbg.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi_dbg.c b/sound/soc/fsl/fsl_ssi_dbg.c
-index 2a20ee23dc52..2c46c55f0a88 100644
---- a/sound/soc/fsl/fsl_ssi_dbg.c
-+++ b/sound/soc/fsl/fsl_ssi_dbg.c
-@@ -78,7 +78,7 @@ void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
- 		dbg->stats.tfe0++;
- }
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 57ea1b072326..91220b96e043 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -33,8 +33,7 @@
+ #define DAI_FMT_BASE (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF)
+ 
+ /**
+- * CODEC private data
+- *
++ * struct codec_priv - CODEC private data
+  * @mclk_freq: Clock rate of MCLK
+  * @mclk_id: MCLK (or main clock) id for set_sysclk()
+  * @fll_id: FLL (or secordary clock) id for set_sysclk()
+@@ -48,11 +47,10 @@ struct codec_priv {
+ };
+ 
+ /**
+- * CPU private data
+- *
+- * @sysclk_freq[2]: SYSCLK rates for set_sysclk()
+- * @sysclk_dir[2]: SYSCLK directions for set_sysclk()
+- * @sysclk_id[2]: SYSCLK ids for set_sysclk()
++ * struct cpu_priv - CPU private data
++ * @sysclk_freq: SYSCLK rates for set_sysclk()
++ * @sysclk_dir: SYSCLK directions for set_sysclk()
++ * @sysclk_id: SYSCLK ids for set_sysclk()
+  * @slot_width: Slot width of each frame
+  *
+  * Note: [1] for tx and [0] for rx
+@@ -65,9 +63,8 @@ struct cpu_priv {
+ };
+ 
+ /**
+- * Freescale Generic ASOC card private data
+- *
+- * @dai_link[3]: DAI link structure including normal one and DPCM link
++ * struct fsl_asoc_card_priv - struct Freescale Generic ASOC card private data
++ * @dai_link: DAI link structure including normal one and DPCM link
+  * @pdev: platform device pointer
+  * @codec_priv: CODEC private data
+  * @cpu_priv: CPU private data
+@@ -94,8 +91,8 @@ struct fsl_asoc_card_priv {
+ 	char name[32];
+ };
  
 -/**
+- * This dapm route map exsits for DPCM link only.
 +/*
-  * Show the statistics of a flag only if its interrupt is enabled
++ * This dapm route map exits for DPCM link only.
+  * The other routes shall go through Device Tree.
   *
-  * Compilers will optimize it to a no-op if the interrupt is disabled
-@@ -90,7 +90,7 @@ void fsl_ssi_dbg_isr(struct fsl_ssi_dbg *dbg, u32 sisr)
- 	} while (0)
- 
- 
--/**
-+/*
-  * Display the statistics for the current SSI device
-  *
-  * To avoid confusion, only show those counts that are enabled
+  * Note: keep all ASRC routes in the second half
 -- 
 2.25.1
 
