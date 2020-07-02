@@ -2,62 +2,75 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 477FEC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:11:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DFE0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:31:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF02720720
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:11:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EFFFB206A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 08:31:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="08DeUNWG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF02720720
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Gw3bFkBi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFFFB206A1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49y9lc4ftczDqGB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:11:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=will@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yBBj2YcwzDqjQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:31:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=08DeUNWG; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=Gw3bFkBi; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49y9Yb0dkczDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 18:02:27 +1000 (AEST)
-Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id F18C020720;
- Thu,  2 Jul 2020 08:02:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1593676944;
- bh=8rcrbIk2A6kCysFEM6jYq6R6K1UXwo4wFzHsZg1puXA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=08DeUNWGGsuPrcxCNzBfMiY3ALjcfjnUbfwjaEZxYaxefQTYVhC7+ZLyErvI6uh1z
- fQhJ6n7gAliwj7VZe0m2iFcb12ju26foqKPBMq9d2e0DE/vqSFVQHuywrO35vR/OdH
- vjlzzG4nDoPxgwwZjoU+kG0grawkG6LZMZ31zG4w=
-Date: Thu, 2 Jul 2020 09:02:19 +0100
-From: Will Deacon <will@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yB7z6R8ZzDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 18:28:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=1j2DrlcbUugnfL/BNKwgbBGwdXe1p5YiDNDgH1lziiA=; b=Gw3bFkBiw7lSr8XB4zKQSY2gM3
+ tJk/ji3zgpfflj/zaSGFhyr7KMwLj+Oe+0Sm+KHfgrWViOHfPxx7b/QpCRZnd7QyWyLqPOjt5u4M+
+ VT2c7Tj/WbWZ13AD1/9R0UzoNtp4d+F1m8batuj5Xl7qdQTZYJNIcpd7a6z0ADN51FPDOud+x2inb
+ vaWHcRWO38JcCO7v+Lm2XkFcXbg2GQMLv/ahw7WmAbTz34o8N8P/o1BFnXY9TMJge7Bqawg2gEdUW
+ veyOYqGH2bZGaUNyWTxK59SurZc9DII4ezuMOTRrJmJ1ycOYDis9O0xqtG1x7WpxmweqV5UnoKy94
+ H7QDMhfg==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jquaH-0000Gw-TV; Thu, 02 Jul 2020 08:28:42 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1CDA230015A;
+ Thu,  2 Jul 2020 10:28:40 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 0AA3620CC68A2; Thu,  2 Jul 2020 10:28:40 +0200 (CEST)
+Date: Thu, 2 Jul 2020 10:28:40 +0200
+From: Peter Zijlstra <peterz@infradead.org>
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 5/8] powerpc/64s: implement queued spinlocks and rwlocks
-Message-ID: <20200702080219.GB16113@willie-the-truck>
+Subject: Re: [PATCH 2/8] powerpc/pseries: use smp_rmb() in H_CONFER spin yield
+Message-ID: <20200702082840.GC4781@hirez.programming.kicks-ass.net>
 References: <20200702074839.1057733-1-npiggin@gmail.com>
- <20200702074839.1057733-6-npiggin@gmail.com>
+ <20200702074839.1057733-3-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200702074839.1057733-6-npiggin@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200702074839.1057733-3-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,38 +82,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, virtualization@lists.linux-foundation.org,
  Ingo Molnar <mingo@redhat.com>, Waiman Long <longman@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 02, 2020 at 05:48:36PM +1000, Nicholas Piggin wrote:
-> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/asm/qspinlock.h
-> new file mode 100644
-> index 000000000000..f84da77b6bb7
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/qspinlock.h
-> @@ -0,0 +1,20 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _ASM_POWERPC_QSPINLOCK_H
-> +#define _ASM_POWERPC_QSPINLOCK_H
-> +
-> +#include <asm-generic/qspinlock_types.h>
-> +
-> +#define _Q_PENDING_LOOPS	(1 << 9) /* not tuned */
-> +
-> +#define smp_mb__after_spinlock()   smp_mb()
-> +
-> +static __always_inline int queued_spin_is_locked(struct qspinlock *lock)
-> +{
-> +	smp_mb();
-> +	return atomic_read(&lock->val);
-> +}
+On Thu, Jul 02, 2020 at 05:48:33PM +1000, Nicholas Piggin wrote:
+> There is no need for rmb(), this allows faster lwsync here.
 
-Why do you need the smp_mb() here?
+Since you determined this; I'm thinking you actually understand the
+ordering here. How about recording this understanding in a comment?
 
-Will
+Also, should the lock->slock load not use READ_ONCE() ?
+
