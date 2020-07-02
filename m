@@ -2,24 +2,24 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F995C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:29:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5968AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:31:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C99620760
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:29:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C99620760
+	by mail.kernel.org (Postfix) with ESMTPS id B1F0F20760
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 17:31:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1F0F20760
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yQ7w1sCJzDqyP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 03:29:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yQBJ6qP7zDqCF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 03:31:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
  envelope-from=pierre-louis.bossart@linux.intel.com; receiver=<UNKNOWN>)
@@ -28,29 +28,29 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yQ1Z6HKXzDqSd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 03:24:02 +1000 (AEST)
-IronPort-SDR: 3zbS5js3bVy2jzyZ1XK7lzH27iTTq2E84NjdNg+810Fp3FLy465OWKJAi383eLLyDE6GyhHYUI
- HB0gvz2sZelQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9670"; a="126590472"
-X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="126590472"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yQ1f3LzFzDqxq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 03:24:06 +1000 (AEST)
+IronPort-SDR: lTKj2IhvXwOCf+3D4v/dBEzVTdfxSwHulvsxklxBlddUr9QRmmbMBNgDmgaS6gFa3t4yWIreaf
+ QH7G5SsxqVhA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9670"; a="126590477"
+X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="126590477"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2020 10:22:48 -0700
-IronPort-SDR: mAjwL2tKlw+8j+DkGoWVLnlP8CIn6QoiOCfJJKopCnLuikTcm3HZo/+RhJsu9GbTHbE/l9bvp0
- GBUyMbj0BL5A==
-X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="356521253"
+ 02 Jul 2020 10:22:51 -0700
+IronPort-SDR: 8V5QjC/cvmL6jPyiq6KUG7JjQGBBGeaq5u2Q5ONxesSQQtZAmxSRHxTKBwXNmgCPjFgAfadFIT
+ e2W3Q4Y/1rEQ==
+X-IronPort-AV: E=Sophos;i="5.75,304,1589266800"; d="scan'208";a="356521260"
 Received: from nzbastur-mobl1.amr.corp.intel.com (HELO
  pbossart-mobl3.amr.corp.intel.com) ([10.255.231.182])
  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Jul 2020 10:22:47 -0700
+ 02 Jul 2020 10:22:50 -0700
 From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 To: alsa-devel@alsa-project.org
-Subject: [PATCH 3/6] ASoC: fsl: fsl-asoc-card: fix kernel-doc
-Date: Thu,  2 Jul 2020 12:22:24 -0500
-Message-Id: <20200702172227.164474-4-pierre-louis.bossart@linux.intel.com>
+Subject: [PATCH 5/6] ASoC: fsl: fsl_asrc: fix kernel-doc
+Date: Thu,  2 Jul 2020 12:22:26 -0500
+Message-Id: <20200702172227.164474-6-pierre-louis.bossart@linux.intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200702172227.164474-1-pierre-louis.bossart@linux.intel.com>
 References: <20200702172227.164474-1-pierre-louis.bossart@linux.intel.com>
@@ -79,66 +79,177 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix W=1 warnings. Kernel-doc syntax was not properly used.
+Fix W=1 warnings. fix kernel doc and describe arguments.
 
 Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 ---
- sound/soc/fsl/fsl-asoc-card.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ sound/soc/fsl/fsl_asrc.c | 57 +++++++++++++++++++++++++++-------------
+ 1 file changed, 39 insertions(+), 18 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 57ea1b072326..91220b96e043 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -33,8 +33,7 @@
- #define DAI_FMT_BASE (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF)
- 
- /**
-- * CODEC private data
-- *
-+ * struct codec_priv - CODEC private data
-  * @mclk_freq: Clock rate of MCLK
-  * @mclk_id: MCLK (or main clock) id for set_sysclk()
-  * @fll_id: FLL (or secordary clock) id for set_sysclk()
-@@ -48,11 +47,10 @@ struct codec_priv {
- };
- 
- /**
-- * CPU private data
-- *
-- * @sysclk_freq[2]: SYSCLK rates for set_sysclk()
-- * @sysclk_dir[2]: SYSCLK directions for set_sysclk()
-- * @sysclk_id[2]: SYSCLK ids for set_sysclk()
-+ * struct cpu_priv - CPU private data
-+ * @sysclk_freq: SYSCLK rates for set_sysclk()
-+ * @sysclk_dir: SYSCLK directions for set_sysclk()
-+ * @sysclk_id: SYSCLK ids for set_sysclk()
-  * @slot_width: Slot width of each frame
-  *
-  * Note: [1] for tx and [0] for rx
-@@ -65,9 +63,8 @@ struct cpu_priv {
- };
- 
- /**
-- * Freescale Generic ASOC card private data
-- *
-- * @dai_link[3]: DAI link structure including normal one and DPCM link
-+ * struct fsl_asoc_card_priv - struct Freescale Generic ASOC card private data
-+ * @dai_link: DAI link structure including normal one and DPCM link
-  * @pdev: platform device pointer
-  * @codec_priv: CODEC private data
-  * @cpu_priv: CPU private data
-@@ -94,8 +91,8 @@ struct fsl_asoc_card_priv {
- 	char name[32];
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index 462ce9f9ab48..02c81d2e34ad 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -37,7 +37,7 @@ static struct snd_pcm_hw_constraint_list fsl_asrc_rate_constraints = {
+ 	.list = supported_asrc_rate,
  };
  
 -/**
-- * This dapm route map exsits for DPCM link only.
 +/*
-+ * This dapm route map exits for DPCM link only.
-  * The other routes shall go through Device Tree.
+  * The following tables map the relationship between asrc_inclk/asrc_outclk in
+  * fsl_asrc.h and the registers of ASRCSR
+  */
+@@ -68,7 +68,7 @@ static unsigned char output_clk_map_imx53[ASRC_CLK_MAP_LEN] = {
+ 	0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7,
+ };
+ 
+-/**
++/*
+  * i.MX8QM/i.MX8QXP uses the same map for input and output.
+  * clk_map_imx8qm[0] is for i.MX8QM asrc0
+  * clk_map_imx8qm[1] is for i.MX8QM asrc1
+@@ -102,16 +102,17 @@ static unsigned char clk_map_imx8qxp[2][ASRC_CLK_MAP_LEN] = {
+ };
+ 
+ /**
+- * Select the pre-processing and post-processing options
++ * fsl_asrc_sel_proc - Select the pre-processing and post-processing options
++ * @inrate: input sample rate
++ * @outrate: output sample rate
++ * @pre_proc: return value for pre-processing option
++ * @post_proc: return value for post-processing option
++ *
+  * Make sure to exclude following unsupported cases before
+  * calling this function:
+  * 1) inrate > 8.125 * outrate
+  * 2) inrate > 16.125 * outrate
   *
-  * Note: keep all ASRC routes in the second half
+- * inrate: input sample rate
+- * outrate: output sample rate
+- * pre_proc: return value for pre-processing option
+- * post_proc: return value for post-processing option
+  */
+ static void fsl_asrc_sel_proc(int inrate, int outrate,
+ 			     int *pre_proc, int *post_proc)
+@@ -148,7 +149,9 @@ static void fsl_asrc_sel_proc(int inrate, int outrate,
+ }
+ 
+ /**
+- * Request ASRC pair
++ * fsl_asrc_request_pair - Request ASRC pair
++ * @channels: number of channels
++ * @pair: pointer to pair
+  *
+  * It assigns pair by the order of A->C->B because allocation of pair B,
+  * within range [ANCA, ANCA+ANCB-1], depends on the channels of pair A
+@@ -193,7 +196,8 @@ static int fsl_asrc_request_pair(int channels, struct fsl_asrc_pair *pair)
+ }
+ 
+ /**
+- * Release ASRC pair
++ * fsl_asrc_release_pair - Release ASRC pair
++ * @pair: pair to release
+  *
+  * It clears the resource from asrc and releases the occupied channels.
+  */
+@@ -217,7 +221,10 @@ static void fsl_asrc_release_pair(struct fsl_asrc_pair *pair)
+ }
+ 
+ /**
+- * Configure input and output thresholds
++ * fsl_asrc_set_watermarks- configure input and output thresholds
++ * @pair: pointer to pair
++ * @in: input threshold
++ * @out: output threshold
+  */
+ static void fsl_asrc_set_watermarks(struct fsl_asrc_pair *pair, u32 in, u32 out)
+ {
+@@ -234,7 +241,9 @@ static void fsl_asrc_set_watermarks(struct fsl_asrc_pair *pair, u32 in, u32 out)
+ }
+ 
+ /**
+- * Calculate the total divisor between asrck clock rate and sample rate
++ * fsl_asrc_cal_asrck_divisor - Calculate the total divisor between asrck clock rate and sample rate
++ * @pair: pointer to pair
++ * @div: divider
+  *
+  * It follows the formula clk_rate = samplerate * (2 ^ prescaler) * divider
+  */
+@@ -250,7 +259,10 @@ static u32 fsl_asrc_cal_asrck_divisor(struct fsl_asrc_pair *pair, u32 div)
+ }
+ 
+ /**
+- * Calculate and set the ratio for Ideal Ratio mode only
++ * fsl_asrc_set_ideal_ratio - Calculate and set the ratio for Ideal Ratio mode only
++ * @pair: pointer to pair
++ * @inrate: input rate
++ * @outrate: output rate
+  *
+  * The ratio is a 32-bit fixed point value with 26 fractional bits.
+  */
+@@ -293,7 +305,9 @@ static int fsl_asrc_set_ideal_ratio(struct fsl_asrc_pair *pair,
+ }
+ 
+ /**
+- * Configure the assigned ASRC pair
++ * fsl_asrc_config_pair - Configure the assigned ASRC pair
++ * @pair: pointer to pair
++ * @use_ideal_rate: boolean configuration
+  *
+  * It configures those ASRC registers according to a configuration instance
+  * of struct asrc_config which includes in/output sample rate, width, channel
+@@ -508,7 +522,8 @@ static int fsl_asrc_config_pair(struct fsl_asrc_pair *pair, bool use_ideal_rate)
+ }
+ 
+ /**
+- * Start the assigned ASRC pair
++ * fsl_asrc_start_pair - Start the assigned ASRC pair
++ * @pair: pointer to pair
+  *
+  * It enables the assigned pair and makes it stopped at the stall level.
+  */
+@@ -539,7 +554,8 @@ static void fsl_asrc_start_pair(struct fsl_asrc_pair *pair)
+ }
+ 
+ /**
+- * Stop the assigned ASRC pair
++ * fsl_asrc_stop_pair - Stop the assigned ASRC pair
++ * @pair: pointer to pair
+  */
+ static void fsl_asrc_stop_pair(struct fsl_asrc_pair *pair)
+ {
+@@ -552,7 +568,9 @@ static void fsl_asrc_stop_pair(struct fsl_asrc_pair *pair)
+ }
+ 
+ /**
+- * Get DMA channel according to the pair and direction.
++ * fsl_asrc_get_dma_channel- Get DMA channel according to the pair and direction.
++ * @pair: pointer to pair
++ * @dir: DMA direction
+  */
+ static struct dma_chan *fsl_asrc_get_dma_channel(struct fsl_asrc_pair *pair,
+ 						 bool dir)
+@@ -896,7 +914,8 @@ static const struct regmap_config fsl_asrc_regmap_config = {
+ };
+ 
+ /**
+- * Initialize ASRC registers with a default configurations
++ * fsl_asrc_init - Initialize ASRC registers with a default configuration
++ * @asrc: ASRC context
+  */
+ static int fsl_asrc_init(struct fsl_asrc *asrc)
+ {
+@@ -930,7 +949,9 @@ static int fsl_asrc_init(struct fsl_asrc *asrc)
+ }
+ 
+ /**
+- * Interrupt handler for ASRC
++ * fsl_asrc_isr- Interrupt handler for ASRC
++ * @irq: irq number
++ * @dev_id: ASRC context
+  */
+ static irqreturn_t fsl_asrc_isr(int irq, void *dev_id)
+ {
 -- 
 2.25.1
 
