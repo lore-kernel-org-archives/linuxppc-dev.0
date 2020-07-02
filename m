@@ -8,81 +8,81 @@ X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16C96C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E99EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:58:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAB5F208FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:55:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E4172207CD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 18:57:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="skU5G1aD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAB5F208FE
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A3G4MtAN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4172207CD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yS3P032jzDqRM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 04:55:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yS5y12h6zDqQs
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 04:57:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
- helo=mail-pj1-x1043.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=skU5G1aD; dkim-atps=neutral
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
- [IPv6:2607:f8b0:4864:20::1043])
+ header.s=20161025 header.b=A3G4MtAN; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yRyr6y1FzDq97
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 04:51:48 +1000 (AEST)
-Received: by mail-pj1-x1043.google.com with SMTP id l6so9724816pjq.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2020 11:51:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yS3m5MsgzDq7h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 04:56:04 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id w19so971341ply.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2020 11:56:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:to:cc:subject:message-id:references:mime-version
  :content-disposition:in-reply-to:user-agent;
- bh=SzSS54e5bq1IFnXIIvO4DspIsZygQN1CJ03qjOV/T6I=;
- b=skU5G1aDBzVI2snI8XGozUM7qQgxSd7izAiIeccwo4I7Feqpn4pyqzAVSPUer3Hh9K
- ffAmWdo8GyUfJFsyP7cmkrrW7M1e2X+hUKPGrnAkFg8CAwC3gT9CSfTzHwSq1GKySJ0O
- vFMwTAdHDlGmu9ueRb4d+g+TqMhxaReiZkJXYFYUvAL8Wdi0Yo/sBMtddDC+7T/rWfA2
- v6wFmnA0WemapDZdoTwgnXs7cjFEKDjTyh8NYs6ojyToUh8XP0qfpYb4CGnspQG4EMLC
- qQje0LZHREcJ+w1lmTu1ZmCByBBdJDSai4Ig8RmibzE7Yi9BlTY+AZAZR5uijxh5Kaj8
- 0fmw==
+ bh=qBFSIEqb3Ng7/lC0JUelHpDcsFXn4/YiY3KJn+e0D5Y=;
+ b=A3G4MtANzT6glf9L54RU8hc1oacj7n2KB3QD7g0+kHEo/8S28CgBxelB4vKRcvhnc3
+ RSnK4atX1dx5Qih53uU7m0JQvP9hx1zMxNvFzp7+kEavqGXpPcfBUUXibPw5AEBVkSUW
+ CpQ82qvhwyIsH9H84QtLcbpcR5C0Xe9EKZhqpVrvMckIzbA8EvZNHDCRzqpqWXVmOo6u
+ 2b25n3RkYBpMCZnTiTlNwEQDAhnVecoxMzHzgobV4ZxLWKRAqqPFu5bcBygECag2dI2x
+ IT9Nf76Z1P0cPoKdTmSIC3Y+fSJeUwVLG1Z0Jj2dgYvKb9bZ3p8Wq1jYn9xzLe1y6b1T
+ D9hg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to:user-agent;
- bh=SzSS54e5bq1IFnXIIvO4DspIsZygQN1CJ03qjOV/T6I=;
- b=hS0mm9Yp/3PjFBrh13tyzKzPcC5bxgWcVzOMxF6stAwdXCullz/ev7AiQLMg1Q3XL/
- 09gxdvoH7Wv+nuTv/+87phy/Qenlm38VmIgXHwLe2EAifKMAnobZxSsre7W33y1NLjKO
- 1aeYr5gNhfBMB0qIRFLP9ZO/nqiv1ZeJjj0EK+vKxgZSk4ZLuyEkmdtEK6OICiqkDw/2
- 4XhRePm713R0Umvb+bnly73AGTBNXXxixh1OgASobYArEJpOWw6U4GqR/+2amJTSb9vJ
- gad8//v0nyr4M3uH7TCljpv7nl1B/DjtrCXxrE8B2r5PmGRpNT88xbRQCkdyKmPVn7Z3
- Uxhg==
-X-Gm-Message-State: AOAM532V8ebftNPzeIqr0j7WZ4ci8aa7MGYAwjrBmUCkuXrwx7MCgWnh
- 8J6OEBmtjdbtBzw5JB7xn7Y=
-X-Google-Smtp-Source: ABdhPJwafFGUWpt7uEzkYfqLdRUfoFvIEPIx2vTSqVn++JfBTlcWmD7vrAtYfcS3N6QfDZ/QQ/XpWg==
-X-Received: by 2002:a17:90a:dc09:: with SMTP id
- i9mr34272574pjv.122.1593715905957; 
- Thu, 02 Jul 2020 11:51:45 -0700 (PDT)
+ bh=qBFSIEqb3Ng7/lC0JUelHpDcsFXn4/YiY3KJn+e0D5Y=;
+ b=liocY/GWOyIU+Ra75Mb3ZFLp0UxNwu5L+3c2JhNiSerRm4kHKr5LYp9vIiKO3iRueE
+ 7ceYD8aaHJgURwtkhFaU6nWEAfAVXIiPN5dU3K7pxKVF42k9R5dRm8JDyRcjR1Ebpr6M
+ 42UZ8pxE9bf51ElwtEKlB+cSehVv0o6iMJnnr969PeIGtYlsGvsfqi/Cdvri12c45+IY
+ +q4A9ASjWwuDB81GF9m/wTzqcgpRpfh+6riHfkVgo/l3sfyjJKDM6b+Ub/fWozeDNf96
+ 7eFKlWmkkAg30NAMeroizWR2DIWDQJsq5y6ut7cyBwMc2DQRnSmkKPomUvPPo2qEyYRn
+ ynYg==
+X-Gm-Message-State: AOAM533TrmSV7knqUvzC1ucaC4Ad3z+Tr+KqMhSTSmnc3KvVJ/GPi6+g
+ S6idxj1K6MLcGjnONzgS3ZBrsce2ubE0Mw==
+X-Google-Smtp-Source: ABdhPJzmLnrOT4bL83BOEWHbMjWQcuvAWjX4ZOEdS5WteN03EusTe1EhtKuJZhn9XxejD3G2LQnkxw==
+X-Received: by 2002:a17:90a:2465:: with SMTP id
+ h92mr3998120pje.26.1593716161116; 
+ Thu, 02 Jul 2020 11:56:01 -0700 (PDT)
 Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
- by smtp.gmail.com with ESMTPSA id s10sm8949429pjl.41.2020.07.02.11.51.45
+ by smtp.gmail.com with ESMTPSA id m92sm8863055pje.13.2020.07.02.11.56.00
  (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 02 Jul 2020 11:51:45 -0700 (PDT)
-Date: Thu, 2 Jul 2020 11:51:41 -0700
+ Thu, 02 Jul 2020 11:56:00 -0700 (PDT)
+Date: Thu, 2 Jul 2020 11:55:56 -0700
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Subject: Re: [PATCH 5/6] ASoC: fsl: fsl_asrc: fix kernel-doc
-Message-ID: <20200702185141.GF23935@Asurada-Nvidia>
+Subject: Re: [PATCH 6/6] ASoC: fsl: fsl_esai: fix kernel-doc
+Message-ID: <20200702185556.GG23935@Asurada-Nvidia>
 References: <20200702172227.164474-1-pierre-louis.bossart@linux.intel.com>
- <20200702172227.164474-6-pierre-louis.bossart@linux.intel.com>
+ <20200702172227.164474-7-pierre-louis.bossart@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200702172227.164474-6-pierre-louis.bossart@linux.intel.com>
+In-Reply-To: <20200702172227.164474-7-pierre-louis.bossart@linux.intel.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,9 +105,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 02, 2020 at 12:22:26PM -0500, Pierre-Louis Bossart wrote:
-> Fix W=1 warnings. fix kernel doc and describe arguments.
+On Thu, Jul 02, 2020 at 12:22:27PM -0500, Pierre-Louis Bossart wrote:
+> Fix W=1 warnings. Fix kernel-doc syntax and add missing parameters.
 > 
 > Signed-off-by: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
 
+> + * fsl_esai_set_dai_sysclk - This function mainly configures the clock frequency of MCLK (HCKT/HCKR)
+
+Can drop "This function mainly"
+
+>  /**
+> - * This function configures the related dividers according to the bclk rate
+> + * fsl_esai_set_bclk - This function configures the related dividers according to the bclk rate
+
+Here too -- dropping "This function"
+
+Otherwise,
 Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+
+Thanks!
