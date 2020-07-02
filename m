@@ -2,87 +2,64 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03EBEC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91F0FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:37:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC17020747
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:27:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 423CE2073E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 10:37:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fwrGZyQ5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC17020747
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zx19RhhC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 423CE2073E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yDnP6c0XzDqx0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 20:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yF0g0dfzzDqwh
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 20:37:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
- helo=mail-pl1-x641.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=fwrGZyQ5; dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=zx19RhhC; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yDl51DJCzDqsH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 20:25:53 +1000 (AEST)
-Received: by mail-pl1-x641.google.com with SMTP id s14so11142240plq.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2020 03:25:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=2dEmOOaTKGF4Qlb49VhQf6A9PlFA3b36H9rV7z7cwEs=;
- b=fwrGZyQ5ZsT9XNpr3/IOWdRZ6ocaZNwfSU2kbuorYXlEEdLE5/x5p3TVpSz28QRp1G
- Rq97XWBtS9UIquZ9RJU/9RJJsvs3vSblV7P3bcy3AJKNZxupjf8CAIH6Vx5/rgUgktkk
- duzXAxjb/9SdEDlWvBSKLc74Js/6Hemi2omyXcEecBxTRXPd6QyrD+31gJzLltU6iW8n
- JF08jA85kpDrr4bA2nZyBfxoqXA5dQqxwaS7+++ll1ExbDrK2qXYBnMpcyDzOvT90egd
- caLSXaJhoRisXKEQ9uGYLW2o3jDa/MNsoH7QZe8RRqAZWZ+dpbslBRZd5PEW6CLytugN
- 5Hfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=2dEmOOaTKGF4Qlb49VhQf6A9PlFA3b36H9rV7z7cwEs=;
- b=bqznCbtArAIwYuAWGgZ8KlriWqS0wI5NfeRIuKvNRKf812k1nbvz5N61P0Q+dCr9DV
- bii0u28/ccTYXlT9lEjN2MF3lrKbZvyDN6tQoB5VUrVd+8uh4fDi3hkSMCglE4wo+Aw2
- BD+SQOq+ndL4lmldYrS9UEgKZsxYMBECToRIYOI+BHmrZVZKka+5JgVYoX/G/JemHlfQ
- WaW1S5qOAO2fjF4/MpYvHQbKq/derToyrfqHyvoFIKR0KMzQ51W0CcAXt+UVH01ejymW
- I7wlCbbpIsf6h0U2vHxC8dF2woGNgFHh0tCkUz/BScM3ixyer7P2r38LKYcXZUpwAREd
- whjw==
-X-Gm-Message-State: AOAM533wkV26sGuL+sCsxEImOeq9Qo64lyu2H1ZZ5dCCvaM5QqB9dyb0
- bCXbBCIqa+9XGXofuFrE8Q4=
-X-Google-Smtp-Source: ABdhPJx/3IphE9S504xPgr16qEBAcS0ylg8qERwwjyz6fVgDCXDiKIqknM6KTZc4U4Q2EmZZ4gfQeA==
-X-Received: by 2002:a17:90a:17ab:: with SMTP id
- q40mr29264299pja.152.1593685549611; 
- Thu, 02 Jul 2020 03:25:49 -0700 (PDT)
-Received: from localhost (61-68-186-125.tpgi.com.au. [61.68.186.125])
- by smtp.gmail.com with ESMTPSA id g18sm8571288pfk.40.2020.07.02.03.25.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 02 Jul 2020 03:25:48 -0700 (PDT)
-Date: Thu, 02 Jul 2020 20:25:43 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yDxs75jxzDqcx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 20:35:13 +1000 (AEST)
+Received: from willie-the-truck (236.31.169.217.in-addr.arpa [217.169.31.236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id AFF482073E;
+ Thu,  2 Jul 2020 10:35:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1593686111;
+ bh=e2d7EoUGfBMQ8iAjxxfS9uLE6JsRVlpFYnf0i0i/9QQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=zx19RhhCYndjeyr3Ntyuk/b/dG1YRNEW2u11qyAF1MnPiVC3uoqkfkflQnUQ20Q/V
+ BRTJ4Go1k5kA4mHEeVWUTjblN4KXUh4EbOTxrozGkgaGXWwXaH767ODZtDY1/VBx5m
+ Bh2iVabMtfwri5eKLtL7CGst/N2IPX3sUadygBbk=
+Date: Thu, 2 Jul 2020 11:35:06 +0100
+From: Will Deacon <will@kernel.org>
+To: Nicholas Piggin <npiggin@gmail.com>
 Subject: Re: [PATCH 5/8] powerpc/64s: implement queued spinlocks and rwlocks
-To: Will Deacon <will@kernel.org>
+Message-ID: <20200702103506.GA16418@willie-the-truck>
 References: <20200702074839.1057733-1-npiggin@gmail.com>
  <20200702074839.1057733-6-npiggin@gmail.com>
  <20200702080219.GB16113@willie-the-truck>
-In-Reply-To: <20200702080219.GB16113@willie-the-truck>
+ <1593685459.r2tfxtfdp6.astroid@bobo.none>
 MIME-Version: 1.0
-Message-Id: <1593685459.r2tfxtfdp6.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1593685459.r2tfxtfdp6.astroid@bobo.none>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,38 +80,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Will Deacon's message of July 2, 2020 6:02 pm:
-> On Thu, Jul 02, 2020 at 05:48:36PM +1000, Nicholas Piggin wrote:
->> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include=
-/asm/qspinlock.h
->> new file mode 100644
->> index 000000000000..f84da77b6bb7
->> --- /dev/null
->> +++ b/arch/powerpc/include/asm/qspinlock.h
->> @@ -0,0 +1,20 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +#ifndef _ASM_POWERPC_QSPINLOCK_H
->> +#define _ASM_POWERPC_QSPINLOCK_H
->> +
->> +#include <asm-generic/qspinlock_types.h>
->> +
->> +#define _Q_PENDING_LOOPS	(1 << 9) /* not tuned */
->> +
->> +#define smp_mb__after_spinlock()   smp_mb()
->> +
->> +static __always_inline int queued_spin_is_locked(struct qspinlock *lock=
-)
->> +{
->> +	smp_mb();
->> +	return atomic_read(&lock->val);
->> +}
->=20
-> Why do you need the smp_mb() here?
+On Thu, Jul 02, 2020 at 08:25:43PM +1000, Nicholas Piggin wrote:
+> Excerpts from Will Deacon's message of July 2, 2020 6:02 pm:
+> > On Thu, Jul 02, 2020 at 05:48:36PM +1000, Nicholas Piggin wrote:
+> >> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/asm/qspinlock.h
+> >> new file mode 100644
+> >> index 000000000000..f84da77b6bb7
+> >> --- /dev/null
+> >> +++ b/arch/powerpc/include/asm/qspinlock.h
+> >> @@ -0,0 +1,20 @@
+> >> +/* SPDX-License-Identifier: GPL-2.0 */
+> >> +#ifndef _ASM_POWERPC_QSPINLOCK_H
+> >> +#define _ASM_POWERPC_QSPINLOCK_H
+> >> +
+> >> +#include <asm-generic/qspinlock_types.h>
+> >> +
+> >> +#define _Q_PENDING_LOOPS	(1 << 9) /* not tuned */
+> >> +
+> >> +#define smp_mb__after_spinlock()   smp_mb()
+> >> +
+> >> +static __always_inline int queued_spin_is_locked(struct qspinlock *lock)
+> >> +{
+> >> +	smp_mb();
+> >> +	return atomic_read(&lock->val);
+> >> +}
+> > 
+> > Why do you need the smp_mb() here?
+> 
+> A long and sad tale that ends here 51d7d5205d338
+> 
+> Should probably at least refer to that commit from here, since this one 
+> is not going to git blame back there. I'll add something.
 
-A long and sad tale that ends here 51d7d5205d338
+Is this still an issue, though?
 
-Should probably at least refer to that commit from here, since this one=20
-is not going to git blame back there. I'll add something.
+See 38b850a73034 (where we added a similar barrier on arm64) and then
+c6f5d02b6a0f (where we removed it).
 
-Thanks,
-Nick
+Will
