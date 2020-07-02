@@ -2,104 +2,49 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 375BBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 14:45:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A70BAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 15:19:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9CDA2067D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 14:45:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9CDA2067D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5B58620771
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 15:19:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B58620771
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yLVS0h5mzDqCc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 00:45:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yMFc2slZzDqr6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 01:19:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yLJD1nBnzDqBb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 00:36:28 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 062EaABb170333; Thu, 2 Jul 2020 10:36:18 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 320wfgh49q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Jul 2020 10:36:18 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 062EaHFU170740;
- Thu, 2 Jul 2020 10:36:17 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 320wfgh3p8-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Jul 2020 10:36:16 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 062EQKOT006404;
- Thu, 2 Jul 2020 14:32:33 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma04ams.nl.ibm.com with ESMTP id 31wwr8e88m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 02 Jul 2020 14:32:33 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 062EWU0K45613128
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 2 Jul 2020 14:32:30 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C88AE4C044;
- Thu,  2 Jul 2020 14:32:30 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 523C24C050;
- Thu,  2 Jul 2020 14:32:28 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu,  2 Jul 2020 14:32:28 +0000 (GMT)
-Date: Thu, 2 Jul 2020 20:02:27 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH v5 3/3] mm/page_alloc: Keep memoryless cpuless node 0
- offline
-Message-ID: <20200702143227.GE17918@linux.vnet.ibm.com>
-References: <20200624092846.9194-4-srikar@linux.vnet.ibm.com>
- <20200701084200.GN2369@dhcp22.suse.cz>
- <20200701100442.GB17918@linux.vnet.ibm.com>
- <184102af-ecf2-c834-db46-173ab2e66f51@redhat.com>
- <20200701110145.GC17918@linux.vnet.ibm.com>
- <0468f965-8762-76a3-93de-3987cf859927@redhat.com>
- <12945273-d788-710d-e8d7-974966529c7d@redhat.com>
- <20200701122110.GT2369@dhcp22.suse.cz>
- <20200702064408.GD17918@linux.vnet.ibm.com>
- <20200702084123.GC18446@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yM8k38hbzDqSg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 01:15:00 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 9DA8768B05; Thu,  2 Jul 2020 17:14:53 +0200 (CEST)
+Date: Thu, 2 Jul 2020 17:14:53 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Qian Cai <cai@lca.pw>
+Subject: Re: [PATCH 18/20] block: refator submit_bio_noacct
+Message-ID: <20200702151453.GA1799@lst.de>
+References: <20200629193947.2705954-1-hch@lst.de>
+ <20200629193947.2705954-19-hch@lst.de> <20200702141001.GA3834@lca.pw>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200702084123.GC18446@dhcp22.suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-02_09:2020-07-02,
- 2020-07-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015
- suspectscore=0 impostorscore=0 mlxlogscore=999 cotscore=-2147483648
- adultscore=0 lowpriorityscore=0 malwarescore=0 bulkscore=0 spamscore=0
- mlxscore=0 priorityscore=1501 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2007020100
+In-Reply-To: <20200702141001.GA3834@lca.pw>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,96 +56,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill@shutemov.name>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-xtensa@linux-xtensa.org,
+ linux-nvdimm@lists.01.org, linux-s390@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, dm-devel@redhat.com,
+ Alexander Potapenko <glider@google.com>, kasan-dev@googlegroups.com,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, linux-bcache@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ Dmitry Vyukov <dvyukov@google.com>, drbd-dev@lists.linbit.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Michal Hocko <mhocko@kernel.org> [2020-07-02 10:41:23]:
-
-> On Thu 02-07-20 12:14:08, Srikar Dronamraju wrote:
-> > * Michal Hocko <mhocko@kernel.org> [2020-07-01 14:21:10]:
+On Thu, Jul 02, 2020 at 10:10:10AM -0400, Qian Cai wrote:
+> On Mon, Jun 29, 2020 at 09:39:45PM +0200, Christoph Hellwig wrote:
+> > Split out a __submit_bio_noacct helper for the actual de-recursion
+> > algorithm, and simplify the loop by using a continue when we can't
+> > enter the queue for a bio.
 > > 
-> > > > >>>>> The autonuma problem sounds interesting but again this patch doesn't
-> > > > >>>>> really solve the underlying problem because I strongly suspect that the
-> > > > >>>>> problem is still there when a numa node gets all its memory offline as
-> > > > >>>>> mentioned above.
-> > > 
-> > > I would really appreciate a feedback to these two as well.
-> > 
-> > 1. Its not just numactl that's to be fixed but all tools/utilities that
-> > depend on /sys/devices/system/node/online. Are we saying to not rely/believe
-> > in the output given by the kernel but do further verification?  
+> > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> No, what we are saying is that even an online node might have zero
-> number of online pages/cpus. So the online status is not really
-> something that matters. If people are confused by that output then user
-> space tools can make their confusion go away. I really do not understand
-> why the kernel should do any logic there.
+> Reverting this commit and its dependencies,
+> 
+> 5a6c35f9af41 block: remove direct_make_request
+> ff93ea0ce763 block: shortcut __submit_bio_noacct for blk-mq drivers
+> 
+> fixed the stack-out-of-bounds during boot,
+> 
+> https://lore.kernel.org/linux-block/000000000000bcdeaa05a97280e4@google.com/
 
-The user facing teams are saying they are getting queries from the users who
-are unable to understand from the tools/sysfs files why a node is online and
-but has no attached resources. Its the amount of time that is being spent on
-these issues that triggered the patch. Initially even I was skeptical that
-this was a non-issue.
+Yikes.  bio_alloc_bioset pokes into bio_list[1] in a totally
+undocumented way.  But even with that the problem should only show
+up with "block: shortcut __submit_bio_noacct for blk-mq drivers".
 
-> 
-> > Also how would the user space differentiate between the case where the
-> > Kernel missed marking a node as offline to the case where the memory was
-> > offlined on a cpuless node but node wasn't offline?.
-> 
-> What I am arguing is that those two shouldn't be any different. Really!
-> 
-> > 2. Regarding the autonuma, the case of offline memory is user/admin driven,
-> > so if there is a performance hit, its something that's driven by his
-> > user/admin actions. Also how often do we see users offline complete memory
-> > of cpuless node on a 2 node system?
-> 
-> How often do we see crippled HW configurations like that? Really if
-> autonuma should be made more clever for one case it should recognize the
-> other as well.
-> 
+Can you try this patch?
 
-Lets take a 16 socket PowerVM system and assume that 32 lpars are created
-on that socket, i.e 2 lpars for each socket. (PowerVM has the final say on
-how the lpars are created.) In such a case, we can expect 30 out of the 32
-lpars to face this problem, with the only 2 lpars that actually run on
-socket 0 having the correct configuration.
-
-> > > 
-> > > This begs a question whether ppc can do the same thing?
-> > 
-> > Certainly ppc can be made to adapt to this situation but that would be a
-> > workaround. Do we have a reason why we think node 0 is unique and special?
-> 
-> It is not. As replied in other email in this thread. I would hope for
-> having less hacks in the numa initialization. Cleaning up the mess is
-> would be a lot of work and testing on all NUMA capable architectures.
-> This is a heritage from the past I am afraid. All that I am arguing here
-> is that your touch to the generic code with a very simple looking patch
-> might have side effects which are pretty much impossible to review.
-> Moreover it seems that nothing but ppc really needs this treatment.
-> So fixing it in ppc specific code sounds much more safe.
-> 
-> Normally I would really push for a generic solution but after getting
-> burned several times in this area I do not dare anymore. The problem is
-> not in the code complexity but in how spread it is in places where you
-> do not expect side effects.
-> 
-
-I do understand and respect your viewpoint.
-
-> -- 
-> Michal Hocko
-> SUSE Labs
-
--- 
-Thanks and Regards
-Srikar Dronamraju
+diff --git a/block/blk-core.c b/block/blk-core.c
+index bf882b8d84450c..9f1bf8658b611a 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1155,11 +1155,10 @@ static blk_qc_t __submit_bio_noacct(struct bio *bio)
+ static blk_qc_t __submit_bio_noacct_mq(struct bio *bio)
+ {
+ 	struct gendisk *disk = bio->bi_disk;
+-	struct bio_list bio_list;
++	struct bio_list bio_list[2] = { };
+ 	blk_qc_t ret = BLK_QC_T_NONE;
+ 
+-	bio_list_init(&bio_list);
+-	current->bio_list = &bio_list;
++	current->bio_list = bio_list;
+ 
+ 	do {
+ 		WARN_ON_ONCE(bio->bi_disk != disk);
+@@ -1174,7 +1173,7 @@ static blk_qc_t __submit_bio_noacct_mq(struct bio *bio)
+ 		}
+ 
+ 		ret = blk_mq_submit_bio(bio);
+-	} while ((bio = bio_list_pop(&bio_list)));
++	} while ((bio = bio_list_pop(&bio_list[0])));
+ 
+ 	current->bio_list = NULL;
+ 	return ret;
