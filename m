@@ -2,98 +2,65 @@ Return-Path: <SRS0=FKTu=AN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2701EC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E471C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:54:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9235C20780
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:50:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="R9FJPS1K"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9235C20780
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 077BF2070C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 11:54:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 077BF2070C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49yGcD3n4FzDqxD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 21:50:04 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49yGZ75yy7zDqwF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 21:48:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49yGj16LJrzDqR7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jul 2020 21:54:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=R9FJPS1K; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 49yGZ74MgNz8td7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 21:48:15 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 49yGZ73j41z9sR4; Thu,  2 Jul 2020 21:48:15 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=dyoung@redhat.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=R9FJPS1K; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [205.139.110.61])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49yGZ64wRdz9sPF
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2020 21:48:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1593690490;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=XjmPmaD/IooVKYdxRZ/9YWrdivHE5lwEHMPYLDdNJ+Y=;
- b=R9FJPS1KufovJZcypeVB5a9nV4gGoikjdfjmju/Nnb2gsMWcfXCuhYVwASDrLHQctbok9i
- 5EMU1zciEzTzJjn6taZca4932ThzokZRNhtoTI0SL2im/8bqvEYl8ZbG12Uqj1FIJJLqg/
- /oLW4+HCmc61TNPx6+PKSMsT7jQVdgs=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-220-H_w9jTJWOV6KaVp1n8h7fg-1; Thu, 02 Jul 2020 07:48:08 -0400
-X-MC-Unique: H_w9jTJWOV6KaVp1n8h7fg-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id EC89E107ACF2;
- Thu,  2 Jul 2020 11:48:06 +0000 (UTC)
-Received: from dhcp-128-65.nay.redhat.com (ovpn-13-96.pek2.redhat.com
- [10.72.13.96])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id E5D0419D7F;
- Thu,  2 Jul 2020 11:48:01 +0000 (UTC)
-Date: Thu, 2 Jul 2020 19:47:58 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCH 01/11] kexec_file: allow archs to handle special regions
- while locating memory hole
-Message-ID: <20200702114758.GA21026@dhcp-128-65.nay.redhat.com>
-References: <159319825403.16351.7253978047621755765.stgit@hbathini.in.ibm.com>
- <159319828304.16351.6990340111766605842.stgit@hbathini.in.ibm.com>
- <20200629133933.0787f562@ezekiel.suse.cz>
- <7981ae61-26c6-000c-9ee4-382dab3eecab@linux.ibm.com>
- <20200701074659.GA3878@dhcp-128-65.nay.redhat.com>
- <0e145e84-a6cf-4da3-1a1a-331a7e1ac1fa@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0e145e84-a6cf-4da3-1a1a-331a7e1ac1fa@linux.ibm.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49yGfg24FDzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2020 21:52:09 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 49yGfV37kkz9v2nC;
+ Thu,  2 Jul 2020 13:52:02 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id zkvvrRY4PzDW; Thu,  2 Jul 2020 13:52:02 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 49yGfV1tnhz9v2n9;
+ Thu,  2 Jul 2020 13:52:02 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 027798B99A;
+ Thu,  2 Jul 2020 13:52:04 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id cHRMLA13eJHM; Thu,  2 Jul 2020 13:52:03 +0200 (CEST)
+Received: from po16052vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [10.25.210.22])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CE5108B98D;
+ Thu,  2 Jul 2020 13:52:03 +0200 (CEST)
+Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id C739D652C1; Thu,  2 Jul 2020 11:52:03 +0000 (UTC)
+Message-Id: <63048fcea8a1c02f75429ba3152f80f7853f87fc.1593690707.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <3667deb0911affbf999b99f87c31c77d5e870cd2.1593690707.git.christophe.leroy@csgroup.eu>
+References: <3667deb0911affbf999b99f87c31c77d5e870cd2.1593690707.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH 2/2] powerpc/kasan: Fix shadow pages allocation failure
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ erhard_f@mailbox.org
+Date: Thu,  2 Jul 2020 11:52:03 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,61 +72,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Pingfan Liu <piliu@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
- Kexec-ml <kexec@lists.infradead.org>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
- lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Sourabh Jain <sourabhjain@linux.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Eric Biederman <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 07/02/20 at 12:01am, Hari Bathini wrote:
-> 
-> 
-> On 01/07/20 1:16 pm, Dave Young wrote:
-> > On 06/29/20 at 05:26pm, Hari Bathini wrote:
-> >> Hi Petr,
-> >>
-> >> On 29/06/20 5:09 pm, Petr Tesarik wrote:
-> >>> Hi Hari,
-> >>>
-> >>> is there any good reason to add two more functions with a very similar
-> >>> name to an existing function? AFAICS all you need is a way to call a
-> >>> PPC64-specific function from within kexec_add_buffer (PATCH 4/11), so
-> >>> you could add something like this:
-> >>>
-> >>> int __weak arch_kexec_locate_mem_hole(struct kexec_buf *kbuf)
-> >>> {
-> >>> 	return 0;
-> >>> }
-> >>>
-> >>> Call this function from kexec_add_buffer where appropriate and then
-> >>> override it for PPC64 (it roughly corresponds to your
-> >>> kexec_locate_mem_hole_ppc64() from PATCH 4/11).
-> >>>
-> >>> FWIW it would make it easier for me to follow the resulting code.
-> >>
-> >> Right, Petr.
-> >>
-> >> I was trying out a few things before I ended up with what I sent here.
-> >> Bu yeah.. I did realize arch_kexec_locate_mem_hole() would have been better
-> >> after sending out v1. Will take care of that in v2.
-> > 
-> > Another way is use arch private function to locate mem hole, then set
-> > kbuf->mem, and then call kexec_add_buf, it will skip the common locate
-> > hole function.
-> 
-> Dave, I did think about it. But there are a couple of places this can get
-> tricky. One is ima_add_kexec_buffer() and the other is kexec_elf_load().
-> These call sites could be updated to set kbuf->mem before kexec_add_buffer().
-> But the current approach seemed like the better option for it creates a
-> single point of control in setting up segment buffers and also, makes adding
-> any new segments simpler, arch-specific segments or otherwise.
-> 
+Doing kasan pages allocation in MMU_init is too early, kernel doesn't
+have access yet to the entire memory space and memblock_alloc() fails
+when the kernel is a bit big.
 
-Ok, thanks for the explanation.
+Do it from kasan_init() instead.
+
+Reported-by: Erhard F. <erhard_f@mailbox.org>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=208181
+Fixes: 2edb16efc899 ("powerpc/32: Add KASAN support")
+Fixes: d2a91cef9bbd ("powerpc/kasan: Fix shadow pages allocation failure")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/mm/kasan/kasan_init_32.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
+index 4813c6d50889..019b0c0bbbf3 100644
+--- a/arch/powerpc/mm/kasan/kasan_init_32.c
++++ b/arch/powerpc/mm/kasan/kasan_init_32.c
+@@ -120,11 +120,24 @@ static void __init kasan_unmap_early_shadow_vmalloc(void)
+ void __init kasan_mmu_init(void)
+ {
+ 	int ret;
++
++	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE) ||
++	    IS_ENABLED(CONFIG_KASAN_VMALLOC)) {
++		ret = kasan_init_shadow_page_tables(KASAN_SHADOW_START, KASAN_SHADOW_END);
++
++		if (ret)
++			panic("kasan: kasan_init_shadow_page_tables() failed");
++	}
++}
++
++void __init kasan_init(void)
++{
+ 	struct memblock_region *reg;
+ 
+ 	for_each_memblock(memory, reg) {
+ 		phys_addr_t base = reg->base;
+ 		phys_addr_t top = min(base + reg->size, total_lowmem);
++		int ret;
+ 
+ 		if (base >= top)
+ 			continue;
+@@ -134,18 +147,6 @@ void __init kasan_mmu_init(void)
+ 			panic("kasan: kasan_init_region() failed");
+ 	}
+ 
+-	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE) ||
+-	    IS_ENABLED(CONFIG_KASAN_VMALLOC)) {
+-		ret = kasan_init_shadow_page_tables(KASAN_SHADOW_START, KASAN_SHADOW_END);
+-
+-		if (ret)
+-			panic("kasan: kasan_init_shadow_page_tables() failed");
+-	}
+-
+-}
+-
+-void __init kasan_init(void)
+-{
+ 	kasan_remap_early_shadow_ro();
+ 
+ 	clear_page(kasan_early_shadow_page);
+-- 
+2.25.0
 
