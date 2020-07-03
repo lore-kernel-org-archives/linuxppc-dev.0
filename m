@@ -2,96 +2,53 @@ Return-Path: <SRS0=ZYlp=AO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C225C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 06:36:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0BBBC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 06:38:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FD4D20772
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 06:36:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m1MRi+xr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FD4D20772
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C243020772
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 06:38:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C243020772
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49ylc069RQzDqgf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 16:36:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::843;
- helo=mail-qt1-x843.google.com; envelope-from=leobras.c@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49ylf827kmzDqjJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 16:38:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=m1MRi+xr; dkim-atps=neutral
-Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
- [IPv6:2607:f8b0:4864:20::843])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49ylPG4jcpzDqDX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 16:27:14 +1000 (AEST)
-Received: by mail-qt1-x843.google.com with SMTP id x62so23168299qtd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jul 2020 23:27:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=bt5K9XtO4LmaNxjZqwWNBKUIx68FUKBArV0VTR0P1tY=;
- b=m1MRi+xr0n+zOnLQxXEmEVq+ZcH6RpRlw8z74GuOZAGBPWvWm9fm1xfXrGo/M/Iyjx
- 5/3tlXePjZODGcMmpSG0qjYLz5YpBQEul5CWIRPjBVI+y63ZEIVkPHvFt4vUQ9sAw7se
- izukHid+jBmwTICNAksbWgdQ1C4qJMQ3YgFXveggrGwIyeaujoFb10R4i+YxzW7cW3R3
- GavY6hZgyllhtZBIT1tAV3AJA3lfh4yrDuX030m+EXIQemQV1Y+9kUmzpBAVrNO1+vrS
- PydCHu8K89X6mHVSfYkKIrPNKWPhO4VJbI2xLDYRnYRM1VL2hRTd5H7VrTWrOaeVLhiy
- GpVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=bt5K9XtO4LmaNxjZqwWNBKUIx68FUKBArV0VTR0P1tY=;
- b=OE/uT5cyRSk0efliZvVS6+ODaXBMxgJbLxUDSCU8eQ5SuYa04kdYLMzexhDHr6mRhC
- HwomaD9bKUblJBubLLEtEw+uHo7dYy+rZEyn/7CBj8FgXX63KfKWeh4337euBBWbJl0N
- enRDgE/0GVXVyRtT9GUAvrx34iFElO8Erv+nA0DPOE/7NWxn2qAB5Tc4LaCK9xWZ+DYI
- AoIGi/JFnUAYtJtGuy9Xm55C2b/lwcy8WSU4flLQWzEmw0aABsU7SHkJYBw90bJITUy3
- TrQ0nZGK46jucmqXV1q9ZTEfmpTDNb3k4kRwZBxSY3dmA1UrFEYveN42fTSBkYZyjUT6
- Z4ng==
-X-Gm-Message-State: AOAM531FfKyWz8myt+mb+RKtuSwD0CVZdTFW1opOsC5YvYYK8l8X9a3z
- 8QkX2nROAXhfyc4r2cAifbY=
-X-Google-Smtp-Source: ABdhPJxUxn9Zk+mz//5V0e1yuEBIBvzhAuaXiY+i3MFSy1R30ijJEoE7d1WlyIqDbtoEyw+xiRnU1w==
-X-Received: by 2002:ac8:408c:: with SMTP id p12mr34184171qtl.332.1593757632167; 
- Thu, 02 Jul 2020 23:27:12 -0700 (PDT)
-Received: from LeoBras (200-236-245-17.dynamic.desktop.com.br.
- [200.236.245.17])
- by smtp.gmail.com with ESMTPSA id h197sm10113548qke.51.2020.07.02.23.27.09
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 02 Jul 2020 23:27:11 -0700 (PDT)
-Message-ID: <e9edda01a21f7144cf4781132df070feea04f767.camel@gmail.com>
-Subject: Re: [PATCH v2 5/6] powerpc/pseries/iommu: Make use of DDW even if
- it does not map the partition
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
- <mpe@ellerman.id.au>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thiago Jung Bauermann
- <bauerman@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>
-Date: Fri, 03 Jul 2020 03:27:05 -0300
-In-Reply-To: <2c5dc8d2-f379-5a5f-844a-f4eea233f265@ozlabs.ru>
-References: <20200624062411.367796-1-leobras.c@gmail.com>
- <20200624062411.367796-6-leobras.c@gmail.com>
- <18df09c0-ef83-a0d8-1143-1cb4d50bf6b7@ozlabs.ru>
- <0e8bcc38614ec80c7816c07dd4dc70854c2b901d.camel@gmail.com>
- <0c3de45dfb612745aa2ee4126b3935303d8e8704.camel@gmail.com>
- <2c5dc8d2-f379-5a5f-844a-f4eea233f265@ozlabs.ru>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 49ylWT36v7zDqwT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2020 16:32:35 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ADD9431B;
+ Thu,  2 Jul 2020 23:32:32 -0700 (PDT)
+Received: from [10.163.85.168] (unknown [10.163.85.168])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B20083F73C;
+ Thu,  2 Jul 2020 23:32:27 -0700 (PDT)
+Subject: Re: [PATCH V3 (RESEND) 2/3] mm/sparsemem: Enable vmem_altmap support
+ in vmemmap_alloc_block_buf()
+To: Catalin Marinas <catalin.marinas@arm.com>
+References: <1592442930-9380-1-git-send-email-anshuman.khandual@arm.com>
+ <1592442930-9380-3-git-send-email-anshuman.khandual@arm.com>
+ <20200702140752.GF22241@gaia>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <ef468b16-ca28-7d5d-c5fc-eb2e31de5e03@arm.com>
+Date: Fri, 3 Jul 2020 12:02:11 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
+In-Reply-To: <20200702140752.GF22241@gaia>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -104,43 +61,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2020-07-02 at 10:31 +1000, Alexey Kardashevskiy wrote:
-> 
-> On 02/07/2020 09:48, Leonardo Bras wrote:
-> > On Wed, 2020-07-01 at 16:57 -0300, Leonardo Bras wrote:
-> > > > It is not necessarily "direct" anymore as the name suggests, you may
-> > > > want to change that. DMA64_PROPNAME, may be. Thanks,
-> > > > 
-> > > 
-> > > Yeah, you are right.
-> > > I will change this for next version, also changing the string name to
-> > > reflect this.
-> > > 
-> > > -#define DIRECT64_PROPNAME "linux,direct64-ddr-window-info"
-> > > +#define DMA64_PROPNAME "linux,dma64-ddr-window-info"
-> > > 
-> > > Is that ok?
-> > > 
-> > > Thank you for helping!
-> > 
-> > In fact, there is a lot of places in this file where it's called direct
-> > window. Should I replace everything?
-> > Should it be in a separated patch?
-> 
-> If it looks simple and you write a nice commit log explaining all that
-> and why you are not reusing the existing ibm,dma-window property (to
-> provide a clue what "reset" will reset to? is there any other reason?)
-> for that - sure, do it :)
-> 
 
-v3 available here:
-http://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=187348&state=%2A&archive=both
 
-Best regards,
-Leonardo
+On 07/02/2020 07:37 PM, Catalin Marinas wrote:
+> On Thu, Jun 18, 2020 at 06:45:29AM +0530, Anshuman Khandual wrote:
+>> There are many instances where vmemap allocation is often switched between
+>> regular memory and device memory just based on whether altmap is available
+>> or not. vmemmap_alloc_block_buf() is used in various platforms to allocate
+>> vmemmap mappings. Lets also enable it to handle altmap based device memory
+>> allocation along with existing regular memory allocations. This will help
+>> in avoiding the altmap based allocation switch in many places.
+>>
+>> While here also implement a regular memory allocation fallback mechanism
+>> when the first preferred device memory allocation fails. This will ensure
+>> preserving the existing semantics on powerpc platform. To summarize there
+>> are three different methods to call vmemmap_alloc_block_buf().
+>>
+>> (., NULL,   false) /* Allocate from system RAM */
+>> (., altmap, false) /* Allocate from altmap without any fallback */
+>> (., altmap, true)  /* Allocate from altmap with fallback (system RAM) */
+> [...]
+>> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+>> index bc73abf0bc25..01e25b56eccb 100644
+>> --- a/arch/powerpc/mm/init_64.c
+>> +++ b/arch/powerpc/mm/init_64.c
+>> @@ -225,12 +225,12 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+>>  		 * fall back to system memory if the altmap allocation fail.
+>>  		 */
+>>  		if (altmap && !altmap_cross_boundary(altmap, start, page_size)) {
+>> -			p = altmap_alloc_block_buf(page_size, altmap);
+>> -			if (!p)
+>> -				pr_debug("altmap block allocation failed, falling back to system memory");
+>> +			p = vmemmap_alloc_block_buf(page_size, node,
+>> +						    altmap, true);
+>> +		} else {
+>> +			p = vmemmap_alloc_block_buf(page_size, node,
+>> +						    NULL, false);
+>>  		}
+>> -		if (!p)
+>> -			p = vmemmap_alloc_block_buf(page_size, node);
+>>  		if (!p)
+>>  			return -ENOMEM;
+> 
+> Is the fallback argument actually necessary. It may be cleaner to just
+> leave the code as is with the choice between altmap and NULL. If an arch
+> needs a fallback (only powerpc), they have the fallback in place
+> already. I don't see the powerpc code any better after this change.
+> 
+> I'm fine with the altmap argument though.
 
+Okay. Will drop 'fallback' from vmemmap_alloc_block_buf() and update the
+callers. There will also be a single change in the subsequent patch i.e
+vmemmap_alloc_block_buf(PMD_SIZE, node, altmap).
