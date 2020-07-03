@@ -2,85 +2,60 @@ Return-Path: <SRS0=ZYlp=AO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4876FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 16:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2696EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 17:12:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01732217BA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 16:11:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01732217BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9089420760
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jul 2020 17:12:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="rgwVAHhj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9089420760
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 49z0Lt1LknzDrB0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jul 2020 02:11:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 49z1jf4BY3zDr7l
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jul 2020 03:12:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=rgwVAHhj; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49z0Hl2Ys7zDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2020 02:08:19 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 063G53N1062422; Fri, 3 Jul 2020 12:08:15 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3224f162f3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 Jul 2020 12:08:15 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 063Fsr7e028220;
- Fri, 3 Jul 2020 15:59:19 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04fra.de.ibm.com with ESMTP id 31wwr83gt6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 03 Jul 2020 15:59:19 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 063FxGSv55771310
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 3 Jul 2020 15:59:16 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65FD04203F;
- Fri,  3 Jul 2020 15:59:16 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 05CEA42042;
- Fri,  3 Jul 2020 15:59:16 +0000 (GMT)
-Received: from pomme.tlslab.ibm.com (unknown [9.145.68.59])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  3 Jul 2020 15:59:15 +0000 (GMT)
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org
-Subject: [PATCH 0/2] Rework secure memslot dropping
-Date: Fri,  3 Jul 2020 17:59:12 +0200
-Message-Id: <20200703155914.40262-1-ldufour@linux.ibm.com>
-X-Mailer: git-send-email 2.27.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-03_13:2020-07-02,
- 2020-07-03 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- clxscore=1015 mlxlogscore=409 suspectscore=0 phishscore=0 adultscore=0
- impostorscore=0 priorityscore=1501 mlxscore=0 malwarescore=0 spamscore=0
- cotscore=-2147483648 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2007030110
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49z1gF4VXZzDrBn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2020 03:10:17 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9ADB8208E4;
+ Fri,  3 Jul 2020 17:03:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1593795826;
+ bh=KsrS7I9qqR/6iPnIWnW3dOayryKjYOf6ZmkkltC24D8=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=rgwVAHhjCRXbq+7n0OzhHWK+4uc5zj7+YlVT55AjXs2sdV7yoqqdUdLOHIxOxsehm
+ 006Tf70B4NGnZO7dqN92/JLF8oLFDJM/SdiUAGBS6afpjiCbFuV9lyfRfPN51+GgXm
+ vsfNMGBQNL7bCi+4rxkHwAgIwDVJ96roSiej3V3o=
+Date: Fri, 03 Jul 2020 18:03:43 +0100
+From: Mark Brown <broonie@kernel.org>
+To: tiwai@suse.com, festevam@gmail.com, lgirdwood@gmail.com,
+ nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com, timur@kernel.org, perex@perex.cz,
+ alsa-devel@alsa-project.org, Shengjiu Wang <shengjiu.wang@nxp.com>
+In-Reply-To: <1593506876-14599-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1593506876-14599-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v2] ASoC: fsl_asrc: Add an option to select internal ratio
+ mode
+Message-Id: <159379581381.55795.16716505708033817338.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,43 +67,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sukadev@linux.ibm.com, sathnaga@linux.vnet.ibm.com, bauerman@linux.ibm.com,
- bharata@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When doing memory hotplug on a secure VM, the secure pages are not well
-cleaned from the secure device when dropping the memslot.  This silent
-error, is then preventing the SVM to reboot properly after the following
-sequence of commands are run in the Qemu monitor:
+On Tue, 30 Jun 2020 16:47:56 +0800, Shengjiu Wang wrote:
+> The ASRC not only supports ideal ratio mode, but also supports
+> internal ratio mode.
+> 
+> For internal rato mode, the rate of clock source should be divided
+> with no remainder by sample rate, otherwise there is sound
+> distortion.
+> 
+> [...]
 
-device_add pc-dimm,id=dimm1,memdev=mem1
-device_del dimm1
-device_add pc-dimm,id=dimm1,memdev=mem1
+Applied to
 
-At reboot time, when the kernel is booting again and switching to the
-secure mode, the page_in is failing for the pages in the memslot because
-the cleanup was not done properly, because the memslot is flagged as
-invalid during the hot unplug and thus the page fault mechanism is not
-triggered.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-To prevent that during the memslot dropping, instead of belonging on the
-page fault mechanism to trigger the page out of the secured pages, it seems
-simpler to directly call the function doing the page out. This way the
-state of the memslot is not interfering on the page out process.
+Thanks!
 
-This series applies on top of the Ram's one titled:
-"PATCH v3 0/4] Migrate non-migrated pages of a SVM."
-https://lore.kernel.org/linuxppc-dev/1592606622-29884-1-git-send-email-linuxram@us.ibm.com/#r
+[1/1] ASoC: fsl_asrc: Add an option to select internal ratio mode
+      commit: d0250cf4f2abfbea64ed247230f08f5ae23979f0
 
-Laurent Dufour (2):
-  KVM: PPC: Book3S HV: move kvmppc_svm_page_out up
-  KVM: PPC: Book3S HV: rework secure mem slot dropping
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
- arch/powerpc/kvm/book3s_hv_uvmem.c | 220 +++++++++++++++++------------
- 1 file changed, 127 insertions(+), 93 deletions(-)
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
--- 
-2.27.0
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
