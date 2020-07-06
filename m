@@ -2,77 +2,78 @@ Return-Path: <SRS0=jlj5=AR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_2
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95A0CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 10:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6083DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 10:33:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B742B20739
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 10:24:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 08A3A2073E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 10:33:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="c3hGBkH5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B742B20739
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mediatek.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Un1Dczxg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08A3A2073E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B0hW60gb4zDqKX
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 20:24:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B0hkM1J9DzDqMm
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 20:33:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mediatek.com (client-ip=210.61.82.184;
- helo=mailgw02.mediatek.com; envelope-from=chinwen.chang@mediatek.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::444;
+ helo=mail-wr1-x444.google.com; envelope-from=refactormyself@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=mediatek.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=mediatek.com header.i=@mediatek.com header.a=rsa-sha256
- header.s=dk header.b=c3hGBkH5; dkim-atps=neutral
-X-Greylist: delayed 309 seconds by postgrey-1.36 at bilbo;
- Mon, 06 Jul 2020 19:30:21 AEST
-Received: from mailgw02.mediatek.com (mailgw02.mediatek.com [210.61.82.184])
- by lists.ozlabs.org (Postfix) with ESMTP id 4B0gK91DmdzDqV7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 19:30:20 +1000 (AEST)
-X-UUID: c9905f7431944e508dbbb009edc3e747-20200706
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com;
- s=dk; 
- h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID;
- bh=nNaLPXZtrGfnJf6M3QSucpG3gM0B0VN8+vf4nIaK9dk=; 
- b=c3hGBkH5SMkPA/6ub3cyadr6E7kdrz6QAVcJJkqIDVSb3isux9uCVzHA9QHZybA7PKSsY45CKqxd4QRb+XHSs2+qfur5JRzhDmFzsD0Z1G+Q0glahqnRRDjUD5kIB8MJfWEG6GWH/4UUinSHeTksBiC6gzYIau8lI3NW8Kvnxr0=;
-X-UUID: c9905f7431944e508dbbb009edc3e747-20200706
-Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by
- mailgw02.mediatek.com (envelope-from <chinwen.chang@mediatek.com>)
- (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
- with ESMTP id 935689036; Mon, 06 Jul 2020 17:25:02 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs02n1.mediatek.inc (172.21.101.77) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Mon, 6 Jul 2020 17:24:57 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by mtkcas07.mediatek.inc
- (172.21.101.84) with Microsoft SMTP Server (TLS) id 15.0.1497.2;
- Mon, 6 Jul 2020 17:24:58 +0800
-Received: from [172.21.77.33] (172.21.77.33) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 6 Jul 2020 17:24:58 +0800
-Message-ID: <1594027500.30360.32.camel@mtkswgap22>
-Subject: Re: [PATCH v12 00/31] Speculative page faults
-From: Chinwen Chang <chinwen.chang@mediatek.com>
-To: Haiyan Song <haiyanx.song@intel.com>
-Date: Mon, 6 Jul 2020 17:25:00 +0800
-In-Reply-To: <20190620081945.hwj6ruqddefnxg6z@haiyan.sh.intel.com>
-References: <20190416134522.17540-1-ldufour@linux.ibm.com>
- <20190606065129.d5s3534p23twksgp@haiyan.sh.intel.com>
- <3d3cefa2-0ebb-e86d-b060-7ba67c48a59f@linux.ibm.com>
- <1c412ebe-c213-ee67-d261-c70ddcd34b79@linux.ibm.com>
- <20190620081945.hwj6ruqddefnxg6z@haiyan.sh.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.2.3-0ubuntu6 
-MIME-Version: 1.0
-X-MTK: N
-Content-Transfer-Encoding: base64
-X-Mailman-Approved-At: Mon, 06 Jul 2020 20:22:23 +1000
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Un1Dczxg; dkim-atps=neutral
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
+ [IPv6:2a00:1450:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B0hhF09gZzDqM3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 20:31:56 +1000 (AEST)
+Received: by mail-wr1-x444.google.com with SMTP id a6so40239242wrm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2020 03:31:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=725GRWR92GVu/uY+skCayJkzfF6wpN8gi25u6sbBLsE=;
+ b=Un1DczxgaDXNy/iNKYqrzFqkEwbciUm9hIX6DAgKniHCGQpPx0i0K3bnrDlhDtMKpo
+ q0wOCMtfekkjl30VXCGPsS+hG9TelNr4M22raZFCY1YiPTUCHKlv5LWhVJIM+61RAQ6C
+ bDrbnuRbETSBP1g8ensB++LtXywT+9Xs/XqeqsRGcj7TONjuhlccD2V+j91UWsYqsQR0
+ t8AEyBoLZqyZXcPNvyTwCbOJUrosIV2Lrrli2/uwd0o/Lszt5TsMCB32M+9pBeN/LFCg
+ BB7qSYGi11M+hdSekGJ/YUGiTqShZAvFXAqHx7/fyWecZI12olWLwYnfCowTeNzfodkx
+ 70Bg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=725GRWR92GVu/uY+skCayJkzfF6wpN8gi25u6sbBLsE=;
+ b=SUzWOPfBUNZ+9KgGLApYY7ivn4jz1N65K0AhTmKNLjymTK9s0IGvNwxiZXTvx/hO1Q
+ 3pLF/mLEr6L62abeJRFKpG7B9UNZFUlMc0FXohbFhmlvWo2aj9jDlb6Z5D+BsYIiPeA0
+ AJt6SdeyDPVn/vo1JzyNxAL8bKjz1J9Us+hCn2Ap0quhegoYYBfHycJG7DMADANsL2a8
+ 4jsxRfIP13gONQi2A3lehH5QhBrvIGAXIQKY5IlU78WCZH36jVvsOkKgiLnR0XzM5EOE
+ wac2r2D6jQCDcHTdxfDoxGt64vtxmYZG7FrscZg5AcLd/qRWYgmXHTu+8G9DwPBMIL61
+ /FMg==
+X-Gm-Message-State: AOAM531bh4zvjT1v2YuSlhz6Lt1NF0PcwpJXM/KpEhXUb1llBKxlwQ0k
+ b8ScHokksE3SbeCd3/+Xm8c=
+X-Google-Smtp-Source: ABdhPJwildPDtdFFvGu+6UipH246vuUUOhwlfa1qFX6Wd0FaSEnPrsMkjz6fL41zF5RaRLD9WT6dQg==
+X-Received: by 2002:adf:ee4d:: with SMTP id w13mr19054078wro.245.1594031509940; 
+ Mon, 06 Jul 2020 03:31:49 -0700 (PDT)
+Received: from net.saheed (51B7C2DF.dsl.pool.telekom.hu. [81.183.194.223])
+ by smtp.gmail.com with ESMTPSA id 22sm24216859wmb.11.2020.07.06.03.31.47
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 06 Jul 2020 03:31:49 -0700 (PDT)
+From: Saheed Olayemi Bolarinwa <refactormyself@gmail.com>
+To: helgaas@kernel.org
+Subject: [PATCH 0/11 RFC] PCI: Remove "*val = 0" from pcie_capability_read_*()
+Date: Mon,  6 Jul 2020 11:31:10 +0200
+Message-Id: <20200706093121.9731-1-refactormyself@gmail.com>
+X-Mailer: git-send-email 2.18.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,70 +85,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jack@suse.cz, sergey.senozhatsky.work@gmail.com, peterz@infradead.org,
- Will Deacon <will.deacon@arm.com>, mhocko@kernel.org, linux-mm@kvack.org,
- paulus@samba.org, Punit Agrawal <punitagrawal@gmail.com>, hpa@zytor.com,
- Michel Lespinasse <walken@google.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, Andrea
- Arcangeli <aarcange@redhat.com>, ak@linux.intel.com,
- Minchan Kim <minchan@kernel.org>, aneesh.kumar@linux.ibm.com, x86@kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>,
- David Rientjes <rientjes@google.com>, paulmck@linux.vnet.ibm.com,
- npiggin@gmail.com, sj38.park@gmail.com, Jerome
- Glisse <jglisse@redhat.com>, dave@stgolabs.net, kemi.wang@intel.com,
- kirill@shutemov.name, Thomas
- Gleixner <tglx@linutronix.de>, Laurent Dufour <ldufour@linux.ibm.com>,
- zhong jiang <zhongjiang@huawei.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, Mike Rapoport <rppt@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, miles.chen@mediatek.com,
- vinayak menon <vinayakm.list@gmail.com>, akpm@linux-foundation.org,
- Tim Chen <tim.c.chen@linux.intel.com>, haren@linux.vnet.ibm.com
+Cc: , Mike Marciniszyn <mike.marciniszyn@intel.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	"Greg Kroah-Hartman linux-rdma @ vger . kernel . org" <gregkh@linuxfoundation.org>,
+	Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>,
+	Sam Bobroff <sbobroff@linux.ibm.com>,
+	Bolarinwa Olayemi Saheed <refactormyself@gmail.com>,
+	Dennis Dalessandro <dennis.dalessandro@intel.com>,
+	skhan@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+	linux-kernel@vger.kernel.org, wunner.de@lists.ozlabs.org,
+	linux-acpi@vger.kernel.org, Doug Ledford <dledford@redhat.com>,
+	linux-pci@vger.kernel.org, bjorn@helgaas.com,
+	Oliver O'Halloran <oohall@gmail.com>,
+	linux-kernel-mentees@lists.linuxfoundation.org,
+	linux-rdma@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gVGh1LCAyMDE5LTA2LTIwIGF0IDE2OjE5ICswODAwLCBIYWl5YW4gU29uZyB3cm90ZToNCj4g
-SGkgTGF1cmVudCwNCj4gDQo+IEkgZG93bmxvYWRlZCB5b3VyIHNjcmlwdCBhbmQgcnVuIGl0IG9u
-IEludGVsIDJzIHNreWxha2UgcGxhdGZvcm0gd2l0aCBzcGYtdjEyIHBhdGNoDQo+IHNlcmlhbHMu
-DQo+IA0KPiBIZXJlIGF0dGFjaGVkIHRoZSBvdXRwdXQgcmVzdWx0cyBvZiB0aGlzIHNjcmlwdC4N
-Cj4gDQo+IFRoZSBmb2xsb3dpbmcgY29tcGFyaXNvbiByZXN1bHQgaXMgc3RhdGlzdGljcyBmcm9t
-IHRoZSBzY3JpcHQgb3V0cHV0cy4NCj4gDQo+IGEpLiBFbmFibGUgVEhQDQo+ICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgU1BGXzAgICAgICAgICAgY2hhbmdlICAg
-ICAgIFNQRl8xDQo+IHdpbGwtaXQtc2NhbGUucGFnZV9mYXVsdDIucGVyX3RocmVhZF9vcHMgICAg
-MjY2NDE5MC44ICAgICAgLTExLjclICAgICAgIDIzNTM2MzcuNiAgICAgIA0KPiB3aWxsLWl0LXNj
-YWxlLnBhZ2VfZmF1bHQzLnBlcl90aHJlYWRfb3BzICAgIDQ0ODAwMjcuMiAgICAgIC0xNC43JSAg
-ICAgICAzODE5MzMxLjkgICAgIA0KPiANCj4gDQo+IGIpLiBEaXNhYmxlIFRIUA0KPiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFNQRl8wICAgICAgICAgICBjaGFu
-Z2UgICAgICBTUEZfMQ0KPiB3aWxsLWl0LXNjYWxlLnBhZ2VfZmF1bHQyLnBlcl90aHJlYWRfb3Bz
-ICAgIDI2NTMyNjAuNyAgICAgICAtMTAlICAgICAgICAyMzg1MTY1LjgNCj4gd2lsbC1pdC1zY2Fs
-ZS5wYWdlX2ZhdWx0My5wZXJfdGhyZWFkX29wcyAgICA0NDM2MzMwLjEgICAgICAgLTEyLjQlICAg
-ICAgMzg4NjczNC4yIA0KPiANCj4gDQo+IFRoYW5rcywNCj4gSGFpeWFuIFNvbmcNCj4gDQo+IA0K
-PiBPbiBGcmksIEp1biAxNCwgMjAxOSBhdCAxMDo0NDo0N0FNICswMjAwLCBMYXVyZW50IER1Zm91
-ciB3cm90ZToNCj4gPiBMZSAxNC8wNi8yMDE5IMOgIDEwOjM3LCBMYXVyZW50IER1Zm91ciBhIMOp
-Y3JpdCA6DQo+ID4gPiBQbGVhc2UgZmluZCBhdHRhY2hlZCB0aGUgc2NyaXB0IEkgcnVuIHRvIGdl
-dCB0aGVzZSBudW1iZXJzLg0KPiA+ID4gVGhpcyB3b3VsZCBiZSBuaWNlIGlmIHlvdSBjb3VsZCBn
-aXZlIGl0IGEgdHJ5IG9uIHlvdXIgdmljdGltIG5vZGUgYW5kIHNoYXJlIHRoZSByZXN1bHQuDQo+
-ID4gDQo+ID4gU291bmRzIHRoYXQgdGhlIEludGVsIG1haWwgZml0ZXJpbmcgc3lzdGVtIGRvZXNu
-J3QgbGlrZSB0aGUgYXR0YWNoZWQgc2hlbGwgc2NyaXB0Lg0KPiA+IFBsZWFzZSBmaW5kIGl0IHRo
-ZXJlOiBodHRwczovL2dpc3QuZ2l0aHViLmNvbS9sZHU0L2E1Y2MxYTkzZjI5MzEwOGVhMzg3ZDQz
-ZDVkNWU3ZjQ0DQo+ID4gDQo+ID4gVGhhbmtzLA0KPiA+IExhdXJlbnQuDQo+ID4gDQoNCkhpIExh
-dXJlbnQsDQoNCldlIG1lcmdlZCBTUEYgdjExIGFuZCBzb21lIHBhdGNoZXMgZnJvbSB2MTIgaW50
-byBvdXIgcGxhdGZvcm1zLiBBZnRlcg0Kc2V2ZXJhbCBleHBlcmltZW50cywgd2Ugb2JzZXJ2ZWQg
-U1BGIGhhcyBvYnZpb3VzIGltcHJvdmVtZW50cyBvbiB0aGUNCmxhdW5jaCB0aW1lIG9mIGFwcGxp
-Y2F0aW9ucywgZXNwZWNpYWxseSBmb3IgdGhvc2UgaGlnaC1UTFAgb25lcywNCg0KIyBsYXVuY2gg
-dGltZSBvZiBhcHBsaWNhdGlvbnMocyk6DQoNCnBhY2thZ2UgICAgICAgICAgIHZlcnNpb24gICAg
-ICB3LyBTUEYgICAgICB3L28gU1BGICAgICAgaW1wcm92ZSglKQ0KLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tICAgICAgICAg
-ICAgICAgICAgICAgICAgICANCkJhaWR1IG1hcHMgICAgICAgIDEwLjEzLjMgICAgICAwLjg4NyAg
-ICAgICAwLjk4ICAgICAgICAgOS40OQ0KVGFvYmFvICAgICAgICAgICAgOC40LjAuMzUgICAgIDEu
-MjI3ICAgICAgIDEuMjkzICAgICAgICA1LjEwDQpNZWl0dWFuICAgICAgICAgICA5LjEyLjQwMSAg
-ICAgMS4xMDcgICAgICAgMS41NDMgICAgICAgIDI4LjI2DQpXZUNoYXQgICAgICAgICAgICA3LjAu
-MyAgICAgICAgMi4zNTMgICAgICAgMi42OCAgICAgICAgIDEyLjIwDQpIb25vciBvZiBLaW5ncyAg
-ICAxLjQzLjEuNiAgICAgNi42MyAgICAgICAgNi43MTMgICAgICAgIDEuMjQNCg0KDQpCeSB0aGUg
-d2F5LCB3ZSBoYXZlIHZlcmlmaWVkIG91ciBwbGF0Zm9ybXMgd2l0aCB0aG9zZSBwYXRjaGVzIGFu
-ZA0KYWNoaWV2ZWQgdGhlIGdvYWwgb2YgbWFzcyBwcm9kdWN0aW9uLg0KDQpUaGFua3MuDQpDaGlu
-d2VuIENoYW5nDQo=
+From: Bolarinwa Olayemi Saheed <refactormyself@gmail.com>
+
+*** BLURB HERE ***
+
+Bolarinwa Olayemi Saheed (9):
+  IB/hfi1: Confirm that pcie_capability_read_dword() is successful
+  misc: rtsx: Confirm that pcie_capability_read_word() is successful
+  PCI/AER: Use error return value from pcie_capability_read_*()
+  PCI/ASPM: Use error return value from pcie_capability_read_*()
+  PCI: pciehp: Fix wrong failure check on pcie_capability_read_*()
+  PCI: pciehp: Prevent wrong failure check on pcie_capability_read_*()
+  PCI: pciehp: Make "Power On" the default in pciehp_get_power_status()
+  PCI/ACPI: Prevent wrong failure check on pcie_capability_read_*()
+  PCI: Prevent wrong failure check on pcie_capability_read_*()
+  PCI: Remove "*val = 0" fom pcie_capability_read_*()
+
+ 
+ drivers/infiniband/hw/hfi1/aspm.c | 7 ++++---
+ drivers/misc/cardreader/rts5227.c | 5 +++--
+ drivers/misc/cardreader/rts5249.c | 5 +++--
+ drivers/misc/cardreader/rts5260.c | 5 +++--
+ drivers/misc/cardreader/rts5261.c | 5 +++--
+ drivers/pci/pcie/aer.c  |  5 +++--
+ drivers/pci/pcie/aspm.c | 33 +++++++++++++++++----------------
+ drivers/pci/hotplug/pciehp_hpc.c | 47 ++++++++++++++++----------------
+ drivers/pci/pci-acpi.c           | 10 ++++---
+ drivers/pci/probe.c              | 29 ++++++++++++--------
+ drivers/pci/access.c | 14 --------------
+ 11 files changed, 82 insertions(+), 83 deletions(-)
+
+-- 
+2.18.2
+
 
