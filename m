@@ -2,103 +2,107 @@ Return-Path: <SRS0=jlj5=AR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D99C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 06:02:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F48DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 06:04:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 83F1F2074F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 06:02:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83F1F2074F
+	by mail.kernel.org (Postfix) with ESMTPS id 4999620760
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 06:04:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4999620760
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B0Zj234qxzDqZS
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 16:02:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B0ZlC5pLWzDqhl
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 16:04:07 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B0Y6R6svTzDqMy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 14:50:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B0Y6Z1nDLzDqVJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 14:50:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4B0Y6Q1jQGz9D05
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 14:50:38 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4B0Y6Y0Swqz9D05
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 14:50:44 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4B0Y6P4dYmz9sSd; Mon,  6 Jul 2020 14:50:37 +1000 (AEST)
+ id 4B0Y6X2h19z9sSn; Mon,  6 Jul 2020 14:50:44 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=huntbag@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B0Y6P0m5Vz9sPF;
- Mon,  6 Jul 2020 14:50:36 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06643puX143928; Mon, 6 Jul 2020 00:50:35 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 4B0Y6W3wqTz9sSd;
+ Mon,  6 Jul 2020 14:50:43 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 0664ksa6127077; Mon, 6 Jul 2020 00:50:41 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 322paknbgf-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 322kx8pvhh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 06 Jul 2020 00:50:35 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0664oYHc105610;
- Mon, 6 Jul 2020 00:50:34 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 322paknbft-1
+ Mon, 06 Jul 2020 00:50:41 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0664nOmR132508;
+ Mon, 6 Jul 2020 00:50:41 -0400
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.71])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 322kx8pvh4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 06 Jul 2020 00:50:34 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0664nrj2018940;
- Mon, 6 Jul 2020 04:50:32 GMT
+ Mon, 06 Jul 2020 00:50:40 -0400
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+ by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0664oKG9010293;
+ Mon, 6 Jul 2020 04:50:39 GMT
 Received: from b06cxnps4074.portsmouth.uk.ibm.com
  (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma03ams.nl.ibm.com with ESMTP id 322hd7svf2-1
+ by ppma02fra.de.ibm.com with ESMTP id 322hd81vqb-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 06 Jul 2020 04:50:32 +0000
+ Mon, 06 Jul 2020 04:50:38 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
  by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0664oT7758851572
+ 0664oahX55705628
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 6 Jul 2020 04:50:29 GMT
+ Mon, 6 Jul 2020 04:50:36 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A1B17A405F;
- Mon,  6 Jul 2020 04:50:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 116EDA405C;
+ Mon,  6 Jul 2020 04:50:36 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1EDCCA4054;
- Mon,  6 Jul 2020 04:50:28 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 847AAA405F;
+ Mon,  6 Jul 2020 04:50:34 +0000 (GMT)
 Received: from bostonp9.aus.stglabs.ibm.com (unknown [9.3.23.179])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  6 Jul 2020 04:50:27 +0000 (GMT)
+ Mon,  6 Jul 2020 04:50:34 +0000 (GMT)
 From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [RFC v2 1/2] powerpc/powernv : Add support for pre-entry and
- post-exit of stop state using OPAL V4 OS services
-Date: Sun,  5 Jul 2020 23:50:00 -0500
-Message-Id: <20200706045001.77039-1-huntbag@linux.vnet.ibm.com>
+Subject: [RFC v2 2/2] powerpc/powernv : Introduce capability for
+ firmware-enabled-stop
+Date: Sun,  5 Jul 2020 23:50:01 -0500
+Message-Id: <20200706045001.77039-2-huntbag@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200706045001.77039-1-huntbag@linux.vnet.ibm.com>
+References: <20200706045001.77039-1-huntbag@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-06_02:2020-07-02,
  2020-07-06 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0
- cotscore=-2147483648 lowpriorityscore=0 phishscore=0 priorityscore=1501
- suspectscore=0 mlxlogscore=979 adultscore=0 clxscore=1011 malwarescore=0
- mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2004280000 definitions=main-2007060032
+ malwarescore=0
+ impostorscore=0 adultscore=0 mlxscore=0 bulkscore=0 mlxlogscore=999
+ clxscore=1015 spamscore=0 cotscore=-2147483648 priorityscore=1501
+ lowpriorityscore=0 phishscore=0 suspectscore=0 classifier=spam adjust=0
+ reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2007060032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,129 +121,161 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch provides kernel framework fro opal support of save restore
-of sprs in idle stop loop. Opal support for stop states is needed to
-selectively enable stop states or to introduce a quirk quickly in case
-a buggy stop state is present.
+This patch introduces the capability for firmware to handle the stop
+states instead. A bit is set based on the discovery of the feature
+and correspondingly also the responsibility to handle the stop states.
 
-We make a opal call from kernel if firmware-stop-support for stop
-states is present and enabled. All the quirks for pre-entry of stop
-state is handled inside opal. A call from opal is made into kernel
-where we execute stop afer saving of NVGPRs.
-After waking up from 0x100 vector in kernel, we enter back into opal.
-All the quirks in post exit path, if any, are then handled in opal,
-from where we return successfully back to kernel.
+If Kernel does not know about stop version, it can fallback to opal for
+idle stop support if firmware-stop-supported property is present.
+
+Earlier part of this patch was posted in this series :
+https://lkml.org/lkml/2020/3/4/589
 
 Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 ---
-v1->v2 : Rebased the patch on Nick's Opal V4 OS patchset
+v1->v2 : Combined patch 2 and 3 from previous iteration and rebased it.
 
- arch/powerpc/include/asm/opal-api.h        |  4 +++-
- arch/powerpc/include/asm/opal.h            |  1 +
- arch/powerpc/platforms/powernv/idle.c      | 12 ++++++++++++
- arch/powerpc/platforms/powernv/opal-call.c |  1 +
- arch/powerpc/platforms/powernv/opal.c      | 15 +++++++++++++++
- 5 files changed, 32 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/processor.h  | 18 ++++++++++++++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c     | 13 +++++++++++++
+ arch/powerpc/platforms/powernv/idle.c | 20 ++++++++++++++++----
+ drivers/cpuidle/cpuidle-powernv.c     |  3 ++-
+ 4 files changed, 49 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 97c5e5423827..437b6937685d 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -219,7 +219,8 @@
- #define OPAL_REPORT_TRAP			183
- #define OPAL_FIND_VM_AREA			184
- #define OPAL_REGISTER_OS_OPS			185
--#define OPAL_LAST				185
-+#define OPAL_CPU_IDLE				186
-+#define OPAL_LAST				186
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bfa336fbcfeb..b8de7146387c 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -428,6 +428,24 @@ extern void power4_idle_nap(void);
+ extern unsigned long cpuidle_disable;
+ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
  
- #define QUIESCE_HOLD			1 /* Spin all calls at entry */
- #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-@@ -1207,6 +1208,7 @@ struct opal_os_ops {
- 	__be64  os_printf; /* void printf(int32_t level, const char *str) */
- 	__be64  os_vm_map; /* int64_t os_vm_map(uint64_t ea, uint64_t pa, uint64_t flags) */
- 	__be64  os_vm_unmap; /* void os_vm_unmap(uint64_t ea) */
-+	__be64  os_idle_stop; /* void os_idle_stop(uint64_t srr1_addr, uint64_t psscr) */
- };
++#define STOP_ENABLE		0x00000001
++#define FIRMWARE_STOP_ENABLE	0x00000010
++
++#define STOP_VERSION_P9       0x1
++
++/*
++ * Classify the dependencies of the stop states
++ * @idle_stop: function handler to handle the quirk stop version
++ * @cpuidle_prop: Signify support for stop states through kernel and/or firmware
++ * @stop_version: Classify quirk versions for stop states
++ */
++typedef struct {
++	unsigned long (*idle_stop)(unsigned long psscr, bool mmu_on);
++	uint8_t cpuidle_prop;
++	uint8_t stop_version;
++} stop_deps_t;
++extern stop_deps_t stop_dep;
++
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
  
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 09985b7718b3..1774c056acb8 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -407,6 +407,7 @@ void opal_sensor_groups_init(void);
+ extern void power7_idle_type(unsigned long type);
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 36bc0d5c4f3a..737686fae3c7 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -291,6 +291,15 @@ static int __init feat_enable_idle_stop(struct dt_cpu_feature *f)
+ 	lpcr |=  LPCR_PECE1;
+ 	lpcr |=  LPCR_PECE2;
+ 	mtspr(SPRN_LPCR, lpcr);
++	stop_dep.cpuidle_prop |= STOP_ENABLE;
++	stop_dep.stop_version = STOP_VERSION_P9;
++
++	return 1;
++}
++
++static int __init feat_enable_firmware_stop(struct dt_cpu_feature *f)
++{
++	stop_dep.cpuidle_prop |= FIRMWARE_STOP_ENABLE;
  
- int64_t opal_find_vm_area(uint64_t addr, struct opal_vm_area *opal_vm_area);
- int64_t opal_register_os_ops(struct opal_os_ops *ops, uint64_t size);
-+int64_t opal_cpu_idle(uint64_t srr1_addr, uint64_t psscr);
+ 	return 1;
+ }
+@@ -589,6 +598,7 @@ static struct dt_cpu_feature_match __initdata
+ 	{"idle-nap", feat_enable_idle_nap, 0},
+ 	{"alignment-interrupt-dsisr", feat_enable_align_dsisr, 0},
+ 	{"idle-stop", feat_enable_idle_stop, 0},
++	{"firmware-stop-supported", feat_enable_firmware_stop, 0},
+ 	{"machine-check-power8", feat_enable_mce_power8, 0},
+ 	{"performance-monitor-power8", feat_enable_pmu_power8, 0},
+ 	{"data-stream-control-register", feat_enable_dscr, CPU_FTR_DSCR},
+@@ -656,6 +666,9 @@ static void __init cpufeatures_setup_start(u32 isa)
+ 	}
+ }
  
- #endif /* __ASSEMBLY__ */
- 
++stop_deps_t stop_dep = {NULL, 0x0, 0x0};
++EXPORT_SYMBOL(stop_dep);
++
+ static bool __init cpufeatures_process_feature(struct dt_cpu_feature *f)
+ {
+ 	const struct dt_cpu_feature_match *m;
 diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 78599bca66c2..3afd4293f729 100644
+index 3afd4293f729..3602950f6c08 100644
 --- a/arch/powerpc/platforms/powernv/idle.c
 +++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -805,6 +805,18 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	return srr1;
- }
+@@ -824,7 +824,7 @@ static unsigned long power9_offline_stop(unsigned long psscr)
  
-+static unsigned long power9_firmware_idle_stop(unsigned long psscr, bool mmu_on)
-+{
-+	unsigned long srr1;
-+	int rc;
-+
-+	rc = opal_cpu_idle(cpu_to_be64(&srr1), (uint64_t) psscr);
-+
-+	if (mmu_on)
-+		mtmsr(MSR_KERNEL);
-+	return srr1;
-+}
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static unsigned long power9_offline_stop(unsigned long psscr)
- {
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index 11f419e76059..79076ca2de03 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -351,3 +351,4 @@ OPAL_CALL(opal_sym_to_addr,			OPAL_SYM_TO_ADDR);
- OPAL_CALL(opal_report_trap,			OPAL_REPORT_TRAP);
- OPAL_CALL(opal_find_vm_area,			OPAL_FIND_VM_AREA);
- OPAL_CALL(opal_register_os_ops,			OPAL_REGISTER_OS_OPS);
-+OPAL_CALL(opal_cpu_idle,			OPAL_CPU_IDLE);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 93b9afaf33b3..1fbf7065f918 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1150,6 +1150,20 @@ static void os_vm_unmap(uint64_t ea)
- 	local_flush_tlb_mm(mm);
- }
+ #ifndef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	__ppc64_runlatch_off();
+-	srr1 = power9_idle_stop(psscr, true);
++	srr1 = stop_dep.idle_stop(psscr, true);
+ 	__ppc64_runlatch_on();
+ #else
+ 	/*
+@@ -840,7 +840,7 @@ static unsigned long power9_offline_stop(unsigned long psscr)
+ 	local_paca->kvm_hstate.hwthread_state = KVM_HWTHREAD_IN_IDLE;
  
-+int64_t os_idle_stop(uint64_t srr1_addr, uint64_t psscr)
-+{
-+	/*
-+	 * For lite state which does not lose even GPRS we call
-+	 * idle_stop_noloss while for all other states we call
-+	 * idle_stop_mayloss. Saving and restoration of other additional
-+	 * SPRs if required is handled in OPAL. All the quirks are also
-+	 * handled in OPAL.
-+	 */
-+	if (!(psscr & (PSSCR_EC|PSSCR_ESL)))
-+		return isa300_idle_stop_noloss(psscr);
-+	return isa300_idle_stop_mayloss(psscr);
-+}
+ 	__ppc64_runlatch_off();
+-	srr1 = power9_idle_stop(psscr, false);
++	srr1 = stop_dep.idle_stop(psscr, true);
+ 	__ppc64_runlatch_on();
+ 
+ 	local_paca->kvm_hstate.hwthread_state = KVM_HWTHREAD_IN_KERNEL;
+@@ -868,7 +868,7 @@ void power9_idle_type(unsigned long stop_psscr_val,
+ 	psscr = (psscr & ~stop_psscr_mask) | stop_psscr_val;
+ 
+ 	__ppc64_runlatch_off();
+-	srr1 = power9_idle_stop(psscr, true);
++	srr1 = stop_dep.idle_stop(psscr, true);
+ 	__ppc64_runlatch_on();
+ 
+ 	fini_irq_for_idle_irqsoff();
+@@ -1365,8 +1365,20 @@ static int __init pnv_init_idle_states(void)
+ 	nr_pnv_idle_states = 0;
+ 	supported_cpuidle_states = 0;
+ 
+-	if (cpuidle_disable != IDLE_NO_OVERRIDE)
++	if (cpuidle_disable != IDLE_NO_OVERRIDE ||
++	    !(stop_dep.cpuidle_prop & STOP_ENABLE))
+ 		goto out;
 +
- static int __init opal_init_mm(void)
++	/* Check for supported version in kernel or fallback to opal*/
++	if (stop_dep.stop_version & STOP_VERSION_P9) {
++		stop_dep.idle_stop = power9_idle_stop;
++	} else if (stop_dep.cpuidle_prop & FIRMWARE_STOP_ENABLE) {
++		stop_dep.idle_stop = power9_firmware_idle_stop;
++	} else {
++		stop_dep.idle_stop = NULL;
++		goto out;
++	}
++
+ 	rc = pnv_parse_cpuidle_dt();
+ 	if (rc)
+ 		return rc;
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 1b299e801f74..7430a8edf5c9 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -371,7 +371,8 @@ static int powernv_add_idle_states(void)
+  */
+ static int powernv_idle_probe(void)
  {
- 	struct mm_struct *mm;
-@@ -1231,6 +1245,7 @@ static int __init opal_init_early(void)
- 		opal_os_ops.os_printf = cpu_to_be64(&os_printf);
- 		opal_os_ops.os_vm_map = cpu_to_be64(&os_vm_map);
- 		opal_os_ops.os_vm_unmap = cpu_to_be64(&os_vm_unmap);
-+		opal_os_ops.os_idle_stop = cpu_to_be64(&os_idle_stop);
- 		if (opal_register_os_ops(&opal_os_ops, sizeof(opal_os_ops))) {
- 			pr_warn("OPAL register OS ops failed, firmware will run in v3 mode.\n");
- 		} else {
+-	if (cpuidle_disable != IDLE_NO_OVERRIDE)
++	if (cpuidle_disable != IDLE_NO_OVERRIDE ||
++	    !(stop_dep.cpuidle_prop & STOP_ENABLE))
+ 		return -ENODEV;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_OPAL)) {
 -- 
 2.17.1
 
