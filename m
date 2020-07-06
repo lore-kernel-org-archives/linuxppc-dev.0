@@ -2,63 +2,63 @@ Return-Path: <SRS0=jlj5=AR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C643DC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 07:19:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87C00C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 07:20:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73A692070C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 07:19:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F18532073E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 07:20:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="nAhhc5fk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73A692070C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="QEJG+g9L"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F18532073E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B0cPn3PP6zDqlf
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 17:19:09 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B0cRk3bgCzDqlm
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jul 2020 17:20:50 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B0cN81fhhzDqZ3
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 17:17:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B0cNm3ckHzDqkT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2020 17:18:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=nAhhc5fk; 
+ header.a=rsa-sha256 header.s=201909 header.b=QEJG+g9L; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B0cN70XsGz9sRK;
- Mon,  6 Jul 2020 17:17:43 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4B0cNm0dZpz9sRK;
+ Mon,  6 Jul 2020 17:18:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594019863;
- bh=GzrsOKTJ4ago7zgMalL/i0IifdB2mqzPexELpUAegGY=;
+ s=201909; t=1594019896;
+ bh=eiAbPU0mNPUx23t/0dWGH/vovUwBclv8sl+0XraFO70=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=nAhhc5fkHKHvvTd/Hs/uJTjOA5kaAUXqLD15YdS6BA/igLlV73h/ApLWUlRxNMqF2
- kG5g3E0nEVTBaoBfUGSc6ZfIV79rqVOhCawZRhGMAS92j0mxoN0BuOPiBAATw1txE7
- NMGMXfOcCoj/d7rR1gddU9PuK6gUzF9L5DK6GjGjP3xSoXreZfo0ATqSsYWnntl+yK
- cKgE41PAzICZ3HUJnBGxIWJtkJYDj60Cslo9LQ+G1EW42MOGbQI93PizeiFLC73d/z
- hX9tMkJWSkiXYe5Hx1HH9MOtj19V4ESM2zi0qhJcmGSb0r0UbLPadFfzuNuzXyVZ6h
- BePDJl3MgkdyA==
+ b=QEJG+g9Ltp0Ex9k882ct+bDXog3lBkKEQTVH17eGCOn3VSLG47pRq57TyOD99ZsQ9
+ p/ycC4RGxyKW3WYEX0SoyhlB1nzNCN2/plboL4KRWcYkYb+8QekB26IZEFCbcQn/Vd
+ P42iug19+brZ+81OmKj014j66sQAfWQfxzXwZMA1diqCRNGlpcSgQMfEe7oPyWz0tc
+ JpZj6sd7SyWIoA8lJ7LqsPJcRH8MQTbnu7KooxtpNvDZwG7w8HHiNnEH0vNccGxHua
+ ilmZDIjypIvFWBTrnkNf+/ZZlUoa5tGWGyeYmB39xjnAoJlJ4xQh+3CZ/SecgIaA8b
+ XsW05xffLRexg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 08/26] powerpc/book3s64/pkeys: Convert execute key
- support to static key
-In-Reply-To: <20200619135850.47155-9-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v5 15/26] powerpc/book3s64/pkeys: Use execute_pkey_disable
+ static key
+In-Reply-To: <20200619135850.47155-16-aneesh.kumar@linux.ibm.com>
 References: <20200619135850.47155-1-aneesh.kumar@linux.ibm.com>
- <20200619135850.47155-9-aneesh.kumar@linux.ibm.com>
-Date: Mon, 06 Jul 2020 17:19:58 +1000
-Message-ID: <87o8ot5cv5.fsf@mpe.ellerman.id.au>
+ <20200619135850.47155-16-aneesh.kumar@linux.ibm.com>
+Date: Mon, 06 Jul 2020 17:20:31 +1000
+Message-ID: <87mu4d5cu8.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,76 +79,81 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> Convert the bool to a static key like pkey_disabled.
-
-I'm not convinced this is worth the added complexity of a static key.
-
-It's not used in any performance critical paths, except for context
-switch, but that's already guarded by:
-
-	if (old_thread->iamr != new_thread->iamr)
-
-Which should always be false on machines which don't have the execute
-key enabled.
-
-cheers
-
+> Use execute_pkey_disabled static key to check for execute key support instead
+> of pkey_disabled.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pkeys.h | 10 +---------
+>  arch/powerpc/mm/book3s64/pkeys.c |  5 ++++-
+>  2 files changed, 5 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> index 47c81d41ea9a..09fbaa409ac4 100644
+> --- a/arch/powerpc/include/asm/pkeys.h
+> +++ b/arch/powerpc/include/asm/pkeys.h
+> @@ -126,15 +126,7 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
+>   * Try to dedicate one of the protection keys to be used as an
+>   * execute-only protection key.
+>   */
+> -extern int __execute_only_pkey(struct mm_struct *mm);
+> -static inline int execute_only_pkey(struct mm_struct *mm)
+> -{
+> -	if (static_branch_likely(&pkey_disabled))
+> -		return -1;
+> -
+> -	return __execute_only_pkey(mm);
+> -}
+> -
+> +extern int execute_only_pkey(struct mm_struct *mm);
+>  extern int __arch_override_mprotect_pkey(struct vm_area_struct *vma,
+>  					 int prot, int pkey);
+>  static inline int arch_override_mprotect_pkey(struct vm_area_struct *vma,
 > diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-> index 9e68a08799ee..7d400d5a4076 100644
+> index bbba9c601e14..fed4f159011b 100644
 > --- a/arch/powerpc/mm/book3s64/pkeys.c
 > +++ b/arch/powerpc/mm/book3s64/pkeys.c
-> @@ -13,13 +13,13 @@
->  #include <linux/of_device.h>
+> @@ -345,8 +345,11 @@ void thread_pkey_regs_init(struct thread_struct *thread)
+>  	write_uamor(default_uamor);
+>  }
 >  
->  DEFINE_STATIC_KEY_TRUE(pkey_disabled);
-> +DEFINE_STATIC_KEY_FALSE(execute_pkey_disabled);
->  int  pkeys_total;		/* Total pkeys as per device tree */
->  u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
->  /*
->   *  Keys marked in the reservation list cannot be allocated by  userspace
->   */
->  u32  reserved_allocation_mask;
-> -static bool pkey_execute_disable_supported;
->  static u64 default_amr;
->  static u64 default_iamr;
->  /* Allow all keys to be modified by default */
-> @@ -116,9 +116,7 @@ static int pkey_initialize(void)
->  	 * execute_disable support. Instead we use a PVR check.
->  	 */
->  	if (pvr_version_is(PVR_POWER7) || pvr_version_is(PVR_POWER7p))
-> -		pkey_execute_disable_supported = false;
-> -	else
-> -		pkey_execute_disable_supported = true;
-> +		static_branch_enable(&execute_pkey_disabled);
->  
->  #ifdef CONFIG_PPC_4K_PAGES
->  	/*
-> @@ -214,7 +212,7 @@ static inline void write_amr(u64 value)
->  
->  static inline u64 read_iamr(void)
+> -int __execute_only_pkey(struct mm_struct *mm)
+> +int execute_only_pkey(struct mm_struct *mm)
 >  {
-> -	if (!likely(pkey_execute_disable_supported))
-> +	if (static_branch_unlikely(&execute_pkey_disabled))
->  		return 0x0UL;
->  
->  	return mfspr(SPRN_IAMR);
-> @@ -222,7 +220,7 @@ static inline u64 read_iamr(void)
->  
->  static inline void write_iamr(u64 value)
->  {
-> -	if (!likely(pkey_execute_disable_supported))
-> +	if (static_branch_unlikely(&execute_pkey_disabled))
->  		return;
->  
->  	mtspr(SPRN_IAMR, value);
-> @@ -282,7 +280,7 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
->  		return -EINVAL;
->  
->  	if (init_val & PKEY_DISABLE_EXECUTE) {
-> -		if (!pkey_execute_disable_supported)
-> +		if (static_branch_unlikely(&execute_pkey_disabled))
->  			return -EINVAL;
->  		new_iamr_bits |= IAMR_EX_BIT;
->  	}
-> -- 
-> 2.26.2
+> +	if (static_branch_likely(&execute_pkey_disabled))
+> +		return -1;
+> +
+>  	return mm->context.execute_only_pkey;
+>  }
+
+That adds the overhead of a function call, but then uses a static_key to
+avoid an easy to predict branch, which seems like a bad tradeoff. And
+it's not a performance critical path AFAICS.
+
+Anyway this seems unnecessary:
+
+pkey_early_init_devtree()
+{
+	...
+	if (unlikely(max_pkey <= execute_only_key)) {
+		/*
+		 * Insufficient number of keys to support
+		 * execute only key. Mark it unavailable.
+		 */
+		execute_only_key = -1;
+
+void pkey_mm_init(struct mm_struct *mm)
+{
+	...
+	mm->context.execute_only_pkey = execute_only_key;
+}
+
+
+ie. Can't it just be:
+
+static inline int execute_only_pkey(struct mm_struct *mm)
+{
+	return mm->context.execute_only_pkey;
+}
+
+cheers
