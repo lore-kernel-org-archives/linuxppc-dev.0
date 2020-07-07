@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DB11C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32F93C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:22:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E87AD20663
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:20:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9E9E820675
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:22:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SW63xAOO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E87AD20663
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OQFeo3ag"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E9E820675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1W2L2RrNzDqtr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:20:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1W594xKYzDr0k
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:22:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,34 +29,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=SW63xAOO; 
+ header.s=casper.20170209 header.b=OQFeo3ag; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1Vk70QkDzDqy1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:06:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1Vk91l4dzDqxg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:06:25 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=S0rI9BPk98gmUpIetVbAsCn3BOBRdoilS5Tyn5oPSmg=; b=SW63xAOOPIV0Xh3xxUIeNap+kY
- ALmry2FpzQZ0jI9iUzAqI49urTy1wKD5asS4EwWqeqG/T2KFett/U/PmACPaIL0o3PbyJ9LdTxfZL
- 3ggersKwwbImUnid0cCR44+oihlm2SC/JZCb39fV3Az/D1jNUdg6njOXs5B9dOzl263Kf/dkDl+SL
- 00sA5VWB7lVyXuGMKBncOCmi7D9xp0Urg0guoUHMF8TQueFkBtlUowlvVJTgAS4fyXOwmCQ3/7wnS
- UWJtpe+DbKkhmoXJarNKMFVmb+5PztEyxOUv4S5VzZFDFSJ+Fe05iG+SvVl16eLygiI5uFUMlA7vE
- NJaSwpkQ==;
+ bh=3MXCz5n944OUWtN7L6ZR0Zd5nlp06oEeDxmjjhzssic=; b=OQFeo3ag5lXCLGC6k9UcAyRTb4
+ /Q9gq9VkvMyptGfnXC6dr+8JSy8ey2aDpG9sKw8/XAfOgDmpnd6qTid+/ugED4x5OOPzHMdLzx+SK
+ dqY30Bng10xRd6zB9Ud/723dGs8bV5RivA8Fqf6mlcxMGYAjkRnyqb64LTymY4WWmIGfQMb+g7tbf
+ 1Nvgd079VjOwEFQV9e9K4S8zCL3GPFRNIHxgKWhGYWtertC9Gu+JXvm0x/W13WIxEa7QGjlIZtpUw
+ 0odQYtrKVQCg05Qb7aTrpj2UazL5KowW91DuGBTfDEzWTK/rP22BxDGWjOxY24jtI7iq0EB8DidkR
+ aHXEivPA==;
 Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
  (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jsrxj-0004JY-Qd; Tue, 07 Jul 2020 18:05:00 +0000
+ id 1jsryR-0004JY-57; Tue, 07 Jul 2020 18:05:43 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/20] Documentation: printk-basics: eliminate duplicated word
-Date: Tue,  7 Jul 2020 11:03:57 -0700
-Message-Id: <20200707180414.10467-4-rdunlap@infradead.org>
+Subject: [PATCH 07/20] Documentation: gpu/drm-uapi: eliminate duplicated word
+Date: Tue,  7 Jul 2020 11:04:01 -0700
+Message-Id: <20200707180414.10467-8-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
 References: <20200707180414.10467-1-rdunlap@infradead.org>
@@ -110,23 +110,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the doubled word "the".
+Drop the doubled word "when".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
 ---
- Documentation/core-api/printk-basics.rst |    2 +-
+ Documentation/gpu/drm-uapi.rst |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200701.orig/Documentation/core-api/printk-basics.rst
-+++ linux-next-20200701/Documentation/core-api/printk-basics.rst
-@@ -69,7 +69,7 @@ You can check the current *console_logle
- The result shows the *current*, *default*, *minimum* and *boot-time-default* log
- levels.
+--- linux-next-20200701.orig/Documentation/gpu/drm-uapi.rst
++++ linux-next-20200701/Documentation/gpu/drm-uapi.rst
+@@ -195,7 +195,7 @@ ENOSPC:
+ EPERM/EACCES:
+         Returned for an operation that is valid, but needs more privileges.
+         E.g. root-only or much more common, DRM master-only operations return
+-        this when when called by unpriviledged clients. There's no clear
++        this when called by unpriviledged clients. There's no clear
+         difference between EACCES and EPERM.
  
--To change the current console_loglevel simply write the the desired level to
-+To change the current console_loglevel simply write the desired level to
- ``/proc/sys/kernel/printk``. For example, to print all messages to the console::
- 
-   # echo 8 > /proc/sys/kernel/printk
+ ENODEV:
