@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35189C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A219CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:24:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F11D2065F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:21:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4F0782065F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:24:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y0gY2Sy9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F11D2065F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KWAySNzy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F0782065F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1JPB21XdzDqNN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 20:21:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1JSs2ZPczDqlR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 20:24:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::443;
- helo=mail-wr1-x443.google.com; envelope-from=lee.jones@linaro.org;
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::442;
+ helo=mail-wr1-x442.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=Y0gY2Sy9; dkim-atps=neutral
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
- [IPv6:2a00:1450:4864:20::443])
+ header.s=google header.b=KWAySNzy; dkim-atps=neutral
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
+ [IPv6:2a00:1450:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1JJW6wVnzDq9B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 20:16:58 +1000 (AEST)
-Received: by mail-wr1-x443.google.com with SMTP id z13so44550765wrw.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2020 03:16:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1JJW6tKfzDq8F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 20:16:57 +1000 (AEST)
+Received: by mail-wr1-x442.google.com with SMTP id z13so44550625wrw.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2020 03:16:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=8ZEmbLq4aOW35ukJy4E78RGy/Qq2YYTCi7Pk4jUv8mI=;
- b=Y0gY2Sy9AnIXxGPBMPafdM/OU+9ALGKd8+XAf10BdrSVdmVXMQ3Drjdux2AMMLpIff
- I9bHd7e1F6GPWDyeNwpRf5NJl51RBzzacMIqXloYMMCBSl8luOL9X9Vlh2wVEddLyVzH
- X/EglPfk6GL5tncqxuYjwHRyb9k89v9BbmrAsS/STklgO/FkJI/85N9CuLpAYoYifrY8
- m9rysfNJHAiL9ccDW9o8UiDwstNbizR9NdPn2J2Sl1EeTmUz+hEEOxWPUxRA1Ze5DYoF
- uvYdXCkL+aLfmYJDTbvIyEzfu1DeN08knBxZdKrkCHIPtTnNlqsFQH5mepXeDajhBjxs
- UYvw==
+ bh=KDb2cHewYsZWIM9X5BweTMn+o+Wme2rV/mNBj7f6Kc0=;
+ b=KWAySNzyfzgA6L35OqDEdMfxyRW6P5mNQ/VoKFi3SPOGxlROBgL/6G+0MYrllTvY+U
+ CwdWcR0JaSnDwr0jP1J9a/WGbXKdNpkAw4F9cqrIhLwhxLXc/QuvLC/+rCJ95WSCocwi
+ 5u8Ofosz9530ws8xxT5Le5pgKaBsFBSqXZ4KnG9+ar+gJv8obmLu8DxsTKzFLZhfNu6X
+ xSbgp8e/buyq7tf5WVYb6aqlEwHk3L1kA1BS0Ar0tAd3bhnm1DgmIL/fQUYbIL0Kz56v
+ HRbSh3uo5DzQiBe0Cs6+GdH1OK9V/sDl1+PEBHLNW8xOmIZjYUq36JRRw1Zo5Z5+Q1ld
+ P1Ng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=8ZEmbLq4aOW35ukJy4E78RGy/Qq2YYTCi7Pk4jUv8mI=;
- b=PrTWRdWofwfY57eBe8dfVaO0kQd/zxxPadEROdWBUbAnz82YjUTbIuYHJQRjamkbxo
- nTEsjgKRx3W3ZMlspL/zc7dooA7YPkCAx+jn3peX1Q2IXid/oipUCDnGF3+cZs6AJ7tg
- AjB6Qp+r/EoC02EsUipnf+iD/yJ1aNx4sIe1HBz2RmHRZ0erJI9MccPdxw5V/TigYIID
- gp7JTosnlkdXEzMuC0y4aNiBYYtebo95ZWArEVyG8LXB0hpdXpFs3IW20DJDzJYBQrPL
- IeNCR2ve6CvU39HFQu7vEh352BUWcD1S9ZIFYD9TzYc+CUvtvQ7oZG3UDdfmHC1PV7tT
- R3CQ==
-X-Gm-Message-State: AOAM533oTMGZfBO89gyTGtPqk/OMrgC1ETJ9Is5efQi96v2LK+NN6o23
- EJyovMBkG2eoMMd5OootiSyJ4w==
-X-Google-Smtp-Source: ABdhPJxbWYN/EZ506zCfhQGem0UtKR9JftLPkvuSL9odppwn/+9aRct/FXJzmr1kyNsbYQyI9tSEhw==
-X-Received: by 2002:adf:edc8:: with SMTP id v8mr52127368wro.125.1594117014212; 
- Tue, 07 Jul 2020 03:16:54 -0700 (PDT)
+ bh=KDb2cHewYsZWIM9X5BweTMn+o+Wme2rV/mNBj7f6Kc0=;
+ b=g9FC6CSPJmkNN9oLEKe1OvzFtC3eSMC/Vg9/a1jr1MlRpkQaFozg5Gb9sYx6zeUOCD
+ 2WCXYYnuc1QG6ekH8Vxy63TQXvrVKXZNKUV3Zi3cjOaWFTQ4SrfAAsivUvlvj0H81sCh
+ EgNXiknCRKMhdhlb8ZclWO2HQleRcsKe+ynks5FBh+h5FidUvtwXPmN7OC0Y5y2aL1k6
+ 7ebul+pKsz/A7dXlMr/uHeIN17AVSqK55Nv1v+TTjZa3DpGRIDqFSrbJQBC6FWG3g1Ha
+ hyjgcDcLArGBlmqrAdiD5GbUdnVdCegsxrND1cWadPdCAmI/4oirCRxePcp5uxngAwaU
+ aS2A==
+X-Gm-Message-State: AOAM531vA/r1VMPJ6EfYa6UsPuyBerd0L4c69noswHEfV1Y28ILm9zjn
+ c18VAl5wwG37ETzGzOqEM7idxA==
+X-Google-Smtp-Source: ABdhPJyuLSFDg+DgyQWYS0Sp/uZ2Uz32rktUaElyVytRNJtrr6b4EIZCqaiZhAvG7a8BZrItq4OaWA==
+X-Received: by 2002:a5d:69c5:: with SMTP id s5mr53007426wrw.197.1594117011646; 
+ Tue, 07 Jul 2020 03:16:51 -0700 (PDT)
 Received: from localhost.localdomain ([2.27.35.206])
- by smtp.gmail.com with ESMTPSA id z8sm469409wmg.39.2020.07.07.03.16.52
+ by smtp.gmail.com with ESMTPSA id z8sm469409wmg.39.2020.07.07.03.16.50
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 07 Jul 2020 03:16:53 -0700 (PDT)
+ Tue, 07 Jul 2020 03:16:51 -0700 (PDT)
 From: Lee Jones <lee.jones@linaro.org>
 To: broonie@kernel.org, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com
-Subject: [PATCH 05/28] ASoC: fsl: fsl_ssi: Demote obvious misuse of kerneldoc
- to standard comment blocks
-Date: Tue,  7 Jul 2020 11:16:19 +0100
-Message-Id: <20200707101642.1747944-6-lee.jones@linaro.org>
+Subject: [PATCH 03/28] ASoC: fsl: fsl-asoc-card: Use correct format when
+ providing struct documentation
+Date: Tue,  7 Jul 2020 11:16:17 +0100
+Message-Id: <20200707101642.1747944-4-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200707101642.1747944-1-lee.jones@linaro.org>
 References: <20200707101642.1747944-1-lee.jones@linaro.org>
@@ -101,40 +101,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No attempt has been made to document any of the demoted functions here.
+Struct kerneldoc headers need to be prefixed with 'struct $NAME', else
+the checker gets confused.
 
 Fixes the following W=1 kernel build warning(s):
 
- sound/soc/fsl/fsl_ssi.c:380: warning: Function parameter or member 'irq' not described in 'fsl_ssi_isr'
- sound/soc/fsl/fsl_ssi.c:380: warning: Function parameter or member 'dev_id' not described in 'fsl_ssi_isr'
- sound/soc/fsl/fsl_ssi.c:406: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_config_enable'
- sound/soc/fsl/fsl_ssi.c:406: warning: Function parameter or member 'tx' not described in 'fsl_ssi_config_enable'
- sound/soc/fsl/fsl_ssi.c:506: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_config_disable'
- sound/soc/fsl/fsl_ssi.c:506: warning: Function parameter or member 'tx' not described in 'fsl_ssi_config_disable'
- sound/soc/fsl/fsl_ssi.c:583: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_setup_regvals'
- sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'substream' not described in 'fsl_ssi_set_bclk'
- sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_bclk'
- sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'hw_params' not described in 'fsl_ssi_set_bclk'
- sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'substream' not described in 'fsl_ssi_hw_params'
- sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'hw_params' not described in 'fsl_ssi_hw_params'
- sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'dai' not described in 'fsl_ssi_hw_params'
- sound/soc/fsl/fsl_ssi.c:1003: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_dai_fmt'
- sound/soc/fsl/fsl_ssi.c:1003: warning: Function parameter or member 'fmt' not described in 'fsl_ssi_set_dai_fmt'
- sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_dai_tdm_slot'
- sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'tx_mask' not described in 'fsl_ssi_set_dai_tdm_slot'
- sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'rx_mask' not described in 'fsl_ssi_set_dai_tdm_slot'
- sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'slots' not described in 'fsl_ssi_set_dai_tdm_slot'
- sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'slot_width' not described in 'fsl_ssi_set_dai_tdm_slot'
- sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'substream' not described in 'fsl_ssi_trigger'
- sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'cmd' not described in 'fsl_ssi_trigger'
- sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'dai' not described in 'fsl_ssi_trigger'
- sound/soc/fsl/fsl_ssi.c:1245: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_hw_init'
- sound/soc/fsl/fsl_ssi.c:1274: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_hw_clean'
- sound/soc/fsl/fsl_ssi.c:1292: warning: Function parameter or member 's' not described in 'make_lowercase'
+ sound/soc/fsl/fsl-asoc-card.c:43: warning: cannot understand function prototype: 'struct codec_priv '
+ sound/soc/fsl/fsl-asoc-card.c:60: warning: cannot understand function prototype: 'struct cpu_priv '
+ sound/soc/fsl/fsl-asoc-card.c:83: warning: cannot understand function prototype: 'struct fsl_asoc_card_priv '
+ sound/soc/fsl/fsl-asoc-card.c:104: warning: cannot understand function prototype: 'const struct snd_soc_dapm_route audio_map[] = '
 
-Also use correct formatting when documenting structs:
+Also the size of the struct does not belong in the description:
 
- sound/soc/fsl/fsl_ssi.c:258: warning: cannot understand function prototype: 'struct fsl_ssi '
+ sound/soc/fsl/fsl-asoc-card.c:65: warning: Function parameter or member 'sysclk_freq' not described in 'cpu_priv'
+ sound/soc/fsl/fsl-asoc-card.c:65: warning: Function parameter or member 'sysclk_dir' not described in 'cpu_priv'
+ sound/soc/fsl/fsl-asoc-card.c:65: warning: Function parameter or member 'sysclk_id' not described in 'cpu_priv'
+ sound/soc/fsl/fsl-asoc-card.c:95: warning: Function parameter or member 'dai_link' not described in 'fsl_asoc_card_priv'
 
 Cc: Timur Tabi <timur@kernel.org>
 Cc: Nicolin Chen <nicoleotsuka@gmail.com>
@@ -143,139 +125,59 @@ Cc: Fabio Estevam <festevam@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- sound/soc/fsl/fsl_ssi.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 1a2fa7f181423..5717d664cde1e 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -203,7 +203,7 @@ struct fsl_ssi_soc_data {
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 57ea1b072326b..3b1fd8c9316d8 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -33,7 +33,7 @@
+ #define DAI_FMT_BASE (SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF)
+ 
+ /**
+- * CODEC private data
++ * struct codec_priv - CODEC private data
+  *
+  * @mclk_freq: Clock rate of MCLK
+  * @mclk_id: MCLK (or main clock) id for set_sysclk()
+@@ -48,11 +48,11 @@ struct codec_priv {
  };
  
  /**
-- * fsl_ssi: per-SSI private data
-+ * struct fsl_ssi - per-SSI private data
+- * CPU private data
++ * struct cpu_priv - CPU private data
   *
-  * @regs: Pointer to the regmap registers
-  * @irq: IRQ of this SSI
-@@ -373,7 +373,7 @@ static bool fsl_ssi_is_i2s_cbm_cfs(struct fsl_ssi *ssi)
- 		SND_SOC_DAIFMT_CBM_CFS;
- }
- 
--/**
-+/*
-  * Interrupt handler to gather states
-  */
- static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
-@@ -394,7 +394,7 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--/**
-+/*
-  * Set SCR, SIER, STCR and SRCR registers with cached values in regvals
+- * @sysclk_freq[2]: SYSCLK rates for set_sysclk()
+- * @sysclk_dir[2]: SYSCLK directions for set_sysclk()
+- * @sysclk_id[2]: SYSCLK ids for set_sysclk()
++ * @sysclk_freq: SYSCLK rates for set_sysclk()
++ * @sysclk_dir: SYSCLK directions for set_sysclk()
++ * @sysclk_id: SYSCLK ids for set_sysclk()
+  * @slot_width: Slot width of each frame
   *
-  * Notes:
-@@ -474,7 +474,7 @@ static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
- 	ssi->streams |= BIT(dir);
- }
+  * Note: [1] for tx and [0] for rx
+@@ -65,9 +65,9 @@ struct cpu_priv {
+ };
  
--/**
-+/*
-  * Exclude bits that are used by the opposite stream
+ /**
+- * Freescale Generic ASOC card private data
++ * struct fsl_asoc_card_priv - Freescale Generic ASOC card private data
   *
-  * When both streams are active, disabling some bits for the current stream
-@@ -494,7 +494,7 @@ static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
- #define ssi_excl_shared_bits(vals, avals, aactive) \
- 	((vals) & _ssi_xor_shared_bits(vals, avals, aactive))
- 
--/**
-+/*
-  * Unset SCR, SIER, STCR and SRCR registers with cached values in regvals
-  *
-  * Notes:
-@@ -576,7 +576,7 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
- 	}
- }
- 
--/**
-+/*
-  * Cache critical bits of SIER, SRCR, STCR and SCR to later set them safely
-  */
- static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
-@@ -660,7 +660,7 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
- 	clk_disable_unprepare(ssi->clk);
- }
- 
--/**
-+/*
-  * Configure Digital Audio Interface bit clock
-  *
-  * Note: This function can be only called when using SSI as DAI master
-@@ -781,7 +781,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
--/**
-+/*
-  * Configure SSI based on PCM hardware parameters
-  *
-  * Notes:
-@@ -996,7 +996,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi *ssi, unsigned int fmt)
- 	return 0;
- }
- 
--/**
-+/*
-  * Configure Digital Audio Interface (DAI) Format
-  */
- static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
-@@ -1010,7 +1010,7 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
- 	return _fsl_ssi_set_dai_fmt(ssi, fmt);
- }
- 
--/**
-+/*
-  * Set TDM slot number and slot width
-  */
- static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
-@@ -1054,7 +1054,7 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
- 	return 0;
- }
- 
--/**
-+/*
-  * Start or stop SSI and corresponding DMA transaction.
-  *
-  * The DMA channel is in external master start and pause mode, which
-@@ -1238,7 +1238,7 @@ static struct snd_ac97_bus_ops fsl_ssi_ac97_ops = {
- 	.write = fsl_ssi_ac97_write,
+- * @dai_link[3]: DAI link structure including normal one and DPCM link
++ * @dai_link: DAI link structure including normal one and DPCM link
+  * @pdev: platform device pointer
+  * @codec_priv: CODEC private data
+  * @cpu_priv: CPU private data
+@@ -94,7 +94,7 @@ struct fsl_asoc_card_priv {
+ 	char name[32];
  };
  
 -/**
 +/*
-  * Initialize SSI registers
-  */
- static int fsl_ssi_hw_init(struct fsl_ssi *ssi)
-@@ -1267,7 +1267,7 @@ static int fsl_ssi_hw_init(struct fsl_ssi *ssi)
- 	return 0;
- }
- 
--/**
-+/*
-  * Clear SSI registers
-  */
- static void fsl_ssi_hw_clean(struct fsl_ssi *ssi)
-@@ -1285,7 +1285,7 @@ static void fsl_ssi_hw_clean(struct fsl_ssi *ssi)
- 		regmap_update_bits(ssi->regs, REG_SSI_SCR, SSI_SCR_SSIEN, 0);
- 	}
- }
--/**
-+/*
-  * Make every character in a string lower-case
-  */
- static void make_lowercase(char *s)
+  * This dapm route map exsits for DPCM link only.
+  * The other routes shall go through Device Tree.
+  *
 -- 
 2.25.1
 
