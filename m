@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 689BBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 12:23:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF36BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 12:26:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D8C1206DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 12:23:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D8C1206DF
+	by mail.kernel.org (Postfix) with ESMTPS id 5D51920771
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 12:26:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D51920771
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1M6h2PvRzDqsD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 22:23:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1MBT1dD1zDqX9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 22:26:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=hf0p=as=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,13 +28,13 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1M3x5VlhzDqN0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 22:21:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1M5F4y1fzDqXb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 22:22:25 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 208197] OF: /pci@f2000000/mac-io@17/gpio@50/...: could not find
  phandle
-Date: Tue, 07 Jul 2020 12:21:15 +0000
+Date: Tue, 07 Jul 2020 12:22:23 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
@@ -49,8 +49,8 @@ X-Bugzilla-Resolution:
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-208197-206035-mmqZWvekYj@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-208197-206035-DP18gyAtHl@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-208197-206035@https.bugzilla.kernel.org/>
 References: <bug-208197-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -75,10 +75,10 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D208197
 
---- Comment #4 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 290157
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D290157&action=3Dedit
-dmesg (5.8-rc4 + WARN_ON patch, PowerMac G4 DP)
+--- Comment #5 from Erhard F. (erhard_f@mailbox.org) ---
+(In reply to Michael Ellerman from comment #3)
+> Try this?
+See new dmesg.
 
 --=20
 You are receiving this mail because:
