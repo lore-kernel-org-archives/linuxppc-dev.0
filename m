@@ -2,87 +2,61 @@ Return-Path: <SRS0=AwiL=AS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04010C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86E83C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:52:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB61320672
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:50:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="PhkRMCL0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB61320672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2DBBF206E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:52:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DBBF206E9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1Whw6m21zDqRK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:50:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1WlT6zZLzDq9C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:52:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d41;
- helo=mail-io1-xd41.google.com; envelope-from=dianders@chromium.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=PhkRMCL0; dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1WC84M4XzDqQR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:27:57 +1000 (AEST)
-Received: by mail-io1-xd41.google.com with SMTP id i4so44177780iov.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2020 11:27:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=oM1DHY6yXzcZ+72qIs7pzRLVNbxrBF/RvTQpZ6AZWzE=;
- b=PhkRMCL0cOBM87z2xbKJgL3CzSg3isYeGP+IA1EMLxsIahQd9L+L+LwGrIZc7PupVR
- a64FI53GElPSGAoW7S4KRbWMtj7ZzQU/d6kavHWjiCkTTGRsPczF/Nc5eMops5qwua9F
- jGZbXWfjJB1ippmdWlpUMxsElo+5ounp092ew=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=oM1DHY6yXzcZ+72qIs7pzRLVNbxrBF/RvTQpZ6AZWzE=;
- b=cG1CreU+ERfKiTA9XOfogAsRZDWI7LVp6c2xuL/Ga/hLXbcO36EBrwDbm+lbqdfUlA
- 1lyDzyUll3U00Et5FPmx56BLIfZ7/DPNr/Xhrv6sqEvP5RAo8LzP9TcOs2YQn54G5tze
- pHNGmqgNS9dVsoPet2qINww0KuD5mXqw5z9gQx0WvM9oN8GBwlT2B+eOf2SuRpJRhBo8
- FUOd3ZhqIaTO8QHl6Em6TBhSpUNk3fhucWtjGKFMP7UKnalH5xe+ear8rzyAROXB0GPQ
- rBOk1m18RgtexDPR1UlOExttscpfFmqiuCSEG4GoupI4Vx0pLpDMA6h865g7288SSQMi
- pDqQ==
-X-Gm-Message-State: AOAM530VspLr7YvSeiKpd0JyXIsjxlRsiqUZkZz6E/OBgtA+UuyPvDOS
- Jo0sfSPMuhafPnD20BcClO7x6IO2orc=
-X-Google-Smtp-Source: ABdhPJwR2JunNAa6H/V9ryRYO0lrqVw9DS51On3J0nDkq6t67DgLNGYHYvEB3l7YOCpuEOVSTQqEbw==
-X-Received: by 2002:a05:6602:5c3:: with SMTP id
- w3mr33068694iox.3.1594146474527; 
- Tue, 07 Jul 2020 11:27:54 -0700 (PDT)
-Received: from mail-il1-f181.google.com (mail-il1-f181.google.com.
- [209.85.166.181])
- by smtp.gmail.com with ESMTPSA id o19sm12293267iob.5.2020.07.07.11.27.54
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 07 Jul 2020 11:27:54 -0700 (PDT)
-Received: by mail-il1-f181.google.com with SMTP id x9so36898137ila.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2020 11:27:54 -0700 (PDT)
-X-Received: by 2002:a5e:a60d:: with SMTP id q13mr32158974ioi.199.1594146071871; 
- Tue, 07 Jul 2020 11:21:11 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200707180414.10467-1-rdunlap@infradead.org>
- <20200707180414.10467-5-rdunlap@infradead.org>
-In-Reply-To: <20200707180414.10467-5-rdunlap@infradead.org>
-From: Doug Anderson <dianders@chromium.org>
-Date: Tue, 7 Jul 2020 11:21:00 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=UkyZcjziOXSYkcPOdkLBJCfxrVAHUq0SfybXXJ3pQxRg@mail.gmail.com>
-Message-ID: <CAD=FV=UkyZcjziOXSYkcPOdkLBJCfxrVAHUq0SfybXXJ3pQxRg@mail.gmail.com>
-Subject: Re: [PATCH 04/20] Documentation: kgdb: eliminate duplicated word
-To: Randy Dunlap <rdunlap@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1WJK5bGnzDqpC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:32:32 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4B1WJB69kFz9v1HL;
+ Tue,  7 Jul 2020 20:32:26 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 1NCa8ObR2Wbn; Tue,  7 Jul 2020 20:32:26 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4B1WJB5Jqsz9v1HK;
+ Tue,  7 Jul 2020 20:32:26 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C334E8B7ED;
+ Tue,  7 Jul 2020 20:32:26 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ndX5NHz7O5u9; Tue,  7 Jul 2020 20:32:26 +0200 (CEST)
+Received: from po16052vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F1B718B7D7;
+ Tue,  7 Jul 2020 20:32:25 +0200 (CEST)
+Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 816F965BB1; Tue,  7 Jul 2020 18:32:25 +0000 (UTC)
+Message-Id: <810bd8840ef990a200f58c9dea9abe767ca02a3a.1594146723.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc/signal64: Don't opencode page prefaulting
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue,  7 Jul 2020 18:32:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,58 +68,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
- linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- linux-mips <linux-mips@vger.kernel.org>, Paul Cercueil <paul@crapouillou.net>,
- keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-i2c@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Halil Pasic <pasic@linux.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
- Mali DP Maintainers <malidp@foss.arm.com>,
- Derek Kiernan <derek.kiernan@xilinx.com>,
- Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
- Tony Krowiak <akrowiak@linux.ibm.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
- Hannes Reinecke <hare@suse.com>, linux-block <linux-block@vger.kernel.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Pierre Morel <pmorel@linux.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- Wolfram Sang <wsa@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Jason Wessel <jason.wessel@windriver.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Mike Rapoport <rppt@kernel.org>, Dan Murphy <dmurphy@ti.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Instead of doing a __get_user() from the first and last location
+into a tmp var which won't be used, use fault_in_pages_readable()
 
-On Tue, Jul 7, 2020 at 11:05 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->
-> Drop the doubled word "driver".
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: Jason Wessel <jason.wessel@windriver.com>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Douglas Anderson <dianders@chromium.org>
-> Cc: kgdb-bugreport@lists.sourceforge.net
-> ---
->  Documentation/dev-tools/kgdb.rst |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/signal_64.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 55e5f76554da..c451c47538e1 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -21,6 +21,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/ratelimit.h>
+ #include <linux/syscalls.h>
++#include <linux/pagemap.h>
+ 
+ #include <asm/sigcontext.h>
+ #include <asm/ucontext.h>
+@@ -632,7 +633,6 @@ static long setup_trampoline(unsigned int syscall, unsigned int __user *tramp)
+ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 		struct ucontext __user *, new_ctx, long, ctx_size)
+ {
+-	unsigned char tmp;
+ 	sigset_t set;
+ 	unsigned long new_msr = 0;
+ 	int ctx_has_vsx_region = 0;
+@@ -667,9 +667,8 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+-	if (!access_ok(new_ctx, ctx_size)
+-	    || __get_user(tmp, (u8 __user *) new_ctx)
+-	    || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
++	if (!access_ok(new_ctx, ctx_size) ||
++	    fault_in_pages_readable((u8 __user *)new_ctx, ctx_size))
+ 		return -EFAULT;
+ 
+ 	/*
+-- 
+2.25.0
+
