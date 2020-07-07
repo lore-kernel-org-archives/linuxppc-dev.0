@@ -2,25 +2,25 @@ Return-Path: <SRS0=AwiL=AS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98BDCC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:09:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED5ECC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:11:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E44C20720
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:09:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A2FC82065F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:11:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="XPmbzEYS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E44C20720
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="E8lX9mtc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2FC82065F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1Vnk4mYFzDqyb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:09:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1Vr06JT6zDqnr
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:11:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,35 +29,37 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=XPmbzEYS; 
+ header.s=casper.20170209 header.b=E8lX9mtc; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1VjJ2nSdzDqxf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:05:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1VjL6Mg4zDqnF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:05:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
- Content-Description:In-Reply-To:References;
- bh=ljom0Anfyg1biDMYz87so/NXDLxx9+qjBdkF8XNueFk=; b=XPmbzEYSKiY23UCv9H7rAcJy2R
- M7f7R8q2JHTzLF3fw5HDgcGaxp50+pOpgQn9qzOfGc74gtagEHV6Q7icIU0zjblMzjT37udLesnhL
- t6zRDl4JbRnBH5eM4X4N08FrnDesy4TICQvkIVYNQ8qvb6PGJ54hisXDryvCJ2pZ7yLDPk64h4NLJ
- DKL+uTadTIlOv1Xkb55ANjt9sGtxhzSXyjNGbdgi4aMS6aiS0LxO0yhgK/hKDfFkwdaZv9KA85XN0
- CQPh5QhdrPKTQrQWVmG8u7dBe25NlxmYEqNYA8r1RB15O4/YZf2A/GsS1D5msHGoGj7fh08TONrvJ
- T0Hln73w==;
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=RqyRnPkRTOc/R3lqbrT2rduELR3dheWkm530I4YPdjk=; b=E8lX9mtcOkU5sxWkqKrby7vT6X
+ 5ObbPzq0n/nZnOwOYtF74Cr7SN3yxm514gKhyVaZUUUjtlTaQ0itgsX3nHoswyVD4UmaTgA//RkGd
+ hvfDxg4ilL1ditN2h4e6MpEaTh9+uZVLLCmflEb+QJrpazHWc68oCEnKKXgAJXcdVvONPVASRYIRN
+ xckpp0j/x86CuDTrXA76oJ0NvGhgewWZ4YuxJQviNJ7QaorsSgE9nl8/3+iiJJrloP4tyqaY/qsEx
+ jfcCDtiWAugmrDCXyC4rQ8aU+XxnprdVwqmDNbWpGNcYSxbzkCwNQMWACuWFTIkIAg5fIK3u/Gqmy
+ FVlYQHfw==;
 Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
  (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jsrxD-0004JY-KG; Tue, 07 Jul 2020 18:04:28 +0000
+ id 1jsrxO-0004JY-HM; Tue, 07 Jul 2020 18:04:39 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/20] Documentation: eliminate duplicated words
-Date: Tue,  7 Jul 2020 11:03:54 -0700
-Message-Id: <20200707180414.10467-1-rdunlap@infradead.org>
+Subject: [PATCH 01/20] Documentation: numaperf: eliminate duplicated word
+Date: Tue,  7 Jul 2020 11:03:55 -0700
+Message-Id: <20200707180414.10467-2-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
+References: <20200707180414.10467-1-rdunlap@infradead.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -108,87 +110,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop doubled words in various parts of Documentation/.
+Drop the duplicated word "not".
 
-
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
 Cc: linux-mm@vger.kernel.org
 Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: linux-block@vger.kernel.org
-Cc: Jason Wessel <jason.wessel@windriver.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Douglas Anderson <dianders@chromium.org>
-Cc: kgdb-bugreport@lists.sourceforge.net
-Cc: Wu Hao <hao.wu@intel.com>
-Cc: linux-fpga@vger.kernel.org
-Cc: James (Qian) Wang <james.qian.wang@arm.com>
-Cc: Liviu Dudau <liviu.dudau@arm.com>
-Cc: Mihail Atanassov <mihail.atanassov@arm.com>
-Cc: Mali DP Maintainers <malidp@foss.arm.com>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: dri-devel@lists.freedesktop.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: linux-input@vger.kernel.org
-Cc: Wolfram Sang <wsa@kernel.org>
-Cc: linux-i2c@vger.kernel.org
-Cc: Masahiro Yamada <masahiroy@kernel.org>
-Cc: Michal Marek <michal.lkml@markovi.net>
-Cc: linux-kbuild@vger.kernel.org
-Cc: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Dan Murphy <dmurphy@ti.com>
-Cc: linux-leds@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Paul Cercueil <paul@crapouillou.net>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: linux-mips@vger.kernel.org
-Cc: Derek Kiernan <derek.kiernan@xilinx.com>
-Cc: Dragan Cvetic <dragan.cvetic@xilinx.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Tony Krowiak <akrowiak@linux.ibm.com>
-Cc: Pierre Morel <pmorel@linux.ibm.com>
-Cc: Halil Pasic <pasic@linux.ibm.com>
-Cc: linux-s390@vger.kernel.org
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Hannes Reinecke <hare@suse.com>
-Cc: linux-scsi@vger.kernel.org
-Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: James Bottomley <jejb@linux.ibm.com>
-Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Cc: Mimi Zohar <zohar@linux.ibm.com>
-Cc: linux-integrity@vger.kernel.org
-Cc: keyrings@vger.kernel.org
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: kvm@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ Documentation/admin-guide/mm/numaperf.rst |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
- Documentation/admin-guide/mm/numaperf.rst             |    2 +-
- Documentation/block/pr.rst                            |    2 +-
- Documentation/core-api/printk-basics.rst              |    2 +-
- Documentation/dev-tools/kgdb.rst                      |    2 +-
- Documentation/fpga/dfl.rst                            |    2 +-
- Documentation/gpu/drm-uapi.rst                        |    2 +-
- Documentation/gpu/komeda-kms.rst                      |    2 +-
- Documentation/hid/intel-ish-hid.rst                   |    2 +-
- Documentation/i2c/upgrading-clients.rst               |    2 +-
- Documentation/kbuild/kconfig-language.rst             |    2 +-
- Documentation/leds/ledtrig-transient.rst              |    2 +-
- Documentation/maintainer/maintainer-entry-profile.rst |    2 +-
- Documentation/mips/ingenic-tcu.rst                    |    2 +-
- Documentation/misc-devices/xilinx_sdfec.rst           |    2 +-
- Documentation/powerpc/vas-api.rst                     |    2 +-
- Documentation/s390/vfio-ap.rst                        |    2 +-
- Documentation/scsi/advansys.rst                       |    2 +-
- Documentation/security/keys/trusted-encrypted.rst     |    2 +-
- Documentation/virt/kvm/api.rst                        |    2 +-
- Documentation/vm/memory-model.rst                     |    2 +-
- 20 files changed, 20 insertions(+), 20 deletions(-)
+--- linux-5.8-rc3.orig/Documentation/admin-guide/mm/numaperf.rst
++++ linux-5.8-rc3/Documentation/admin-guide/mm/numaperf.rst
+@@ -129,7 +129,7 @@ will create the following directory::
+ 
+ 	/sys/devices/system/node/nodeX/memory_side_cache/
+ 
+-If that directory is not present, the system either does not not provide
++If that directory is not present, the system either does not provide
+ a memory-side cache, or that information is not accessible to the kernel.
+ 
+ The attributes for each level of cache is provided under its cache
