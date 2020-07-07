@@ -2,64 +2,83 @@ Return-Path: <SRS0=AwiL=AS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5EE1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 09:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35189C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:21:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9B6B20CC7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 09:27:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8F11D2065F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 10:21:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="Rvt2rvwr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9B6B20CC7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y0gY2Sy9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F11D2065F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1HC32hCkzDqBS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 19:27:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (domain owner discourages use of this
- host) smtp.mailfrom=kernel.org (client-ip=210.131.2.75;
- helo=conuserg-08.nifty.com; envelope-from=masahiroy@kernel.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1JPB21XdzDqNN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 20:21:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::443;
+ helo=mail-wr1-x443.google.com; envelope-from=lee.jones@linaro.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256
- header.s=dec2015msa header.b=Rvt2rvwr; 
- dkim-atps=neutral
-Received: from conuserg-08.nifty.com (conuserg-08.nifty.com [210.131.2.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=Y0gY2Sy9; dkim-atps=neutral
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1H7v3GFszDqjv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 19:24:26 +1000 (AEST)
-Received: from oscar.flets-west.jp (softbank126090202047.bbtec.net
- [126.90.202.47]) (authenticated)
- by conuserg-08.nifty.com with ESMTP id 0679LLSC013006;
- Tue, 7 Jul 2020 18:21:21 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-08.nifty.com 0679LLSC013006
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1594113683;
- bh=im8Pzd1VP4FawMwY9ZYN303XX2s/8s2h7ZnqH1rolGw=;
- h=From:To:Cc:Subject:Date:From;
- b=Rvt2rvwr7x4Cd5sUbycF1uRFKW/sqLQnQ6oqrJl8UgcHpYm+bn5K/qB8vS1eInBCM
- 1NkzZCyW0Paxl7HhjzjGXfuuR5Zf0SfgWg53mDmshGpcCnMXIKmxFmrAaie1TUHPd+
- yQ4ApEsMwnA7ulwDgWd9wj99F1oYaRfCYfDjKtU8OvdM5kJzexVTxHdyTb2aZN0iqj
- +SPxwVChVsSp9uHp4ngTwGO5SwWQ5aRARxZRQzepXA1hziDaxrCDW07tZXaw+6CUD/
- NX+0FSXcwXqGW30rcVIU0dCO4Gzb2vJy9nls+RZktOKjv0NkTUaFYolydpjzsQHLOn
- LEpver419Mrkg==
-X-Nifty-SrcIP: [126.90.202.47]
-From: Masahiro Yamada <masahiroy@kernel.org>
-To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v2 1/2] kbuild: introduce ccflags-remove-y and asflags-remove-y
-Date: Tue,  7 Jul 2020 18:21:16 +0900
-Message-Id: <20200707092117.963394-1-masahiroy@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1JJW6wVnzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2020 20:16:58 +1000 (AEST)
+Received: by mail-wr1-x443.google.com with SMTP id z13so44550765wrw.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2020 03:16:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=8ZEmbLq4aOW35ukJy4E78RGy/Qq2YYTCi7Pk4jUv8mI=;
+ b=Y0gY2Sy9AnIXxGPBMPafdM/OU+9ALGKd8+XAf10BdrSVdmVXMQ3Drjdux2AMMLpIff
+ I9bHd7e1F6GPWDyeNwpRf5NJl51RBzzacMIqXloYMMCBSl8luOL9X9Vlh2wVEddLyVzH
+ X/EglPfk6GL5tncqxuYjwHRyb9k89v9BbmrAsS/STklgO/FkJI/85N9CuLpAYoYifrY8
+ m9rysfNJHAiL9ccDW9o8UiDwstNbizR9NdPn2J2Sl1EeTmUz+hEEOxWPUxRA1Ze5DYoF
+ uvYdXCkL+aLfmYJDTbvIyEzfu1DeN08knBxZdKrkCHIPtTnNlqsFQH5mepXeDajhBjxs
+ UYvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=8ZEmbLq4aOW35ukJy4E78RGy/Qq2YYTCi7Pk4jUv8mI=;
+ b=PrTWRdWofwfY57eBe8dfVaO0kQd/zxxPadEROdWBUbAnz82YjUTbIuYHJQRjamkbxo
+ nTEsjgKRx3W3ZMlspL/zc7dooA7YPkCAx+jn3peX1Q2IXid/oipUCDnGF3+cZs6AJ7tg
+ AjB6Qp+r/EoC02EsUipnf+iD/yJ1aNx4sIe1HBz2RmHRZ0erJI9MccPdxw5V/TigYIID
+ gp7JTosnlkdXEzMuC0y4aNiBYYtebo95ZWArEVyG8LXB0hpdXpFs3IW20DJDzJYBQrPL
+ IeNCR2ve6CvU39HFQu7vEh352BUWcD1S9ZIFYD9TzYc+CUvtvQ7oZG3UDdfmHC1PV7tT
+ R3CQ==
+X-Gm-Message-State: AOAM533oTMGZfBO89gyTGtPqk/OMrgC1ETJ9Is5efQi96v2LK+NN6o23
+ EJyovMBkG2eoMMd5OootiSyJ4w==
+X-Google-Smtp-Source: ABdhPJxbWYN/EZ506zCfhQGem0UtKR9JftLPkvuSL9odppwn/+9aRct/FXJzmr1kyNsbYQyI9tSEhw==
+X-Received: by 2002:adf:edc8:: with SMTP id v8mr52127368wro.125.1594117014212; 
+ Tue, 07 Jul 2020 03:16:54 -0700 (PDT)
+Received: from localhost.localdomain ([2.27.35.206])
+ by smtp.gmail.com with ESMTPSA id z8sm469409wmg.39.2020.07.07.03.16.52
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 07 Jul 2020 03:16:53 -0700 (PDT)
+From: Lee Jones <lee.jones@linaro.org>
+To: broonie@kernel.org, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com
+Subject: [PATCH 05/28] ASoC: fsl: fsl_ssi: Demote obvious misuse of kerneldoc
+ to standard comment blocks
+Date: Tue,  7 Jul 2020 11:16:19 +0100
+Message-Id: <20200707101642.1747944-6-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200707101642.1747944-1-lee.jones@linaro.org>
+References: <20200707101642.1747944-1-lee.jones@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,469 +92,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-doc@vger.kernel.org,
- Brendan Higgins <brendanhiggins@google.com>, Paul Mackerras <paulus@samba.org>,
- linux-kselftest@vger.kernel.org, live-patching@vger.kernel.org,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@kernel.org>,
- Joe Lawrence <joe.lawrence@redhat.com>,
- Anders Roxell <anders.roxell@linaro.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, linux-sh@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Sami Tolvanen <samitolvanen@google.com>, Petr Mladek <pmladek@suse.com>,
- Jiri Kosina <jikos@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, linux-arm-kernel@lists.infradead.org,
- kunit-dev@googlegroups.com, Michal Marek <michal.lkml@markovi.net>,
- linux-kernel@vger.kernel.org, Tal Gilboa <talgi@mellanox.com>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Lee Jones <lee.jones@linaro.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CFLAGS_REMOVE_<file>.o filters out flags when compiling a particular
-object, but there is no convenient way to do that for every object in
-a directory.
+No attempt has been made to document any of the demoted functions here.
 
-Add ccflags-remove-y and asflags-remove-y to make it easily.
+Fixes the following W=1 kernel build warning(s):
 
-Use ccflags-remove-y to clean up some Makefiles.
+ sound/soc/fsl/fsl_ssi.c:380: warning: Function parameter or member 'irq' not described in 'fsl_ssi_isr'
+ sound/soc/fsl/fsl_ssi.c:380: warning: Function parameter or member 'dev_id' not described in 'fsl_ssi_isr'
+ sound/soc/fsl/fsl_ssi.c:406: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_config_enable'
+ sound/soc/fsl/fsl_ssi.c:406: warning: Function parameter or member 'tx' not described in 'fsl_ssi_config_enable'
+ sound/soc/fsl/fsl_ssi.c:506: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_config_disable'
+ sound/soc/fsl/fsl_ssi.c:506: warning: Function parameter or member 'tx' not described in 'fsl_ssi_config_disable'
+ sound/soc/fsl/fsl_ssi.c:583: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_setup_regvals'
+ sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'substream' not described in 'fsl_ssi_set_bclk'
+ sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_bclk'
+ sound/soc/fsl/fsl_ssi.c:675: warning: Function parameter or member 'hw_params' not described in 'fsl_ssi_set_bclk'
+ sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'substream' not described in 'fsl_ssi_hw_params'
+ sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'hw_params' not described in 'fsl_ssi_hw_params'
+ sound/soc/fsl/fsl_ssi.c:798: warning: Function parameter or member 'dai' not described in 'fsl_ssi_hw_params'
+ sound/soc/fsl/fsl_ssi.c:1003: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_dai_fmt'
+ sound/soc/fsl/fsl_ssi.c:1003: warning: Function parameter or member 'fmt' not described in 'fsl_ssi_set_dai_fmt'
+ sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'dai' not described in 'fsl_ssi_set_dai_tdm_slot'
+ sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'tx_mask' not described in 'fsl_ssi_set_dai_tdm_slot'
+ sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'rx_mask' not described in 'fsl_ssi_set_dai_tdm_slot'
+ sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'slots' not described in 'fsl_ssi_set_dai_tdm_slot'
+ sound/soc/fsl/fsl_ssi.c:1018: warning: Function parameter or member 'slot_width' not described in 'fsl_ssi_set_dai_tdm_slot'
+ sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'substream' not described in 'fsl_ssi_trigger'
+ sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'cmd' not described in 'fsl_ssi_trigger'
+ sound/soc/fsl/fsl_ssi.c:1065: warning: Function parameter or member 'dai' not described in 'fsl_ssi_trigger'
+ sound/soc/fsl/fsl_ssi.c:1245: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_hw_init'
+ sound/soc/fsl/fsl_ssi.c:1274: warning: Function parameter or member 'ssi' not described in 'fsl_ssi_hw_clean'
+ sound/soc/fsl/fsl_ssi.c:1292: warning: Function parameter or member 's' not described in 'make_lowercase'
 
-The add/remove order works as follows:
+Also use correct formatting when documenting structs:
 
- [1] KBUILD_CFLAGS specifies compiler flags used globally
+ sound/soc/fsl/fsl_ssi.c:258: warning: cannot understand function prototype: 'struct fsl_ssi '
 
- [2] ccflags-y adds compiler flags for all objects in the
-     current Makefile
-
- [3] ccflags-remove-y removes compiler flags for all objects in the
-     current Makefile (New feature)
-
- [4] CFLAGS_<file> adds compiler flags per file.
-
- [5] CFLAGS_REMOVE_<file> removes compiler flags per file.
-
-Having [3] before [4] allows us to remove flags from most (but not all)
-objects in the current Makefile.
-
-For example, kernel/trace/Makefile removes $(CC_FLAGS_FTRACE)
-from all objects in the directory, then adds it back to
-trace_selftest_dynamic.o and CFLAGS_trace_kprobe_selftest.o
-
-Please note ccflags-remove-y has no effect to the sub-directories.
-In contrast, the previous notation got rid of compiler flags also from
-all the sub-directories.
-
-  arch/arm/boot/compressed/
-  arch/powerpc/xmon/
-  arch/sh/
-  kernel/trace/
-
-... have no sub-directories.
-
-  lib/
-
-... has several sub-directories.
-
-To keep the behavior, I added ccflags-remove-y to all Makefiles
-in subdirectories of lib/, except:
-
-  lib/vdso/Makefile        - Kbuild does not descend into this Makefile
-  lib/raid/test/Makefile   - This is not used for the kernel build
-
-I think commit 2464a609ded0 ("ftrace: do not trace library functions")
-excluded too much. In later commit, I will try to remove ccflags-remove-y
-from sub-directory Makefiles.
-
-Suggested-by: Sami Tolvanen <samitolvanen@google.com>
-Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
+ sound/soc/fsl/fsl_ssi.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-Changes in v2:
-  - Swap the order of [3] and [4] to keep the current behavior of
-    kernel/trace/Makefile.
-  - Add ccflags-remove-y to subdir Makefiles of lib/
-
- Documentation/kbuild/makefiles.rst | 14 ++++++++++++++
- arch/arm/boot/compressed/Makefile  |  6 +-----
- arch/powerpc/xmon/Makefile         |  3 +--
- arch/sh/boot/compressed/Makefile   |  5 +----
- kernel/trace/Makefile              |  4 ++--
- lib/842/Makefile                   |  3 +++
- lib/Makefile                       |  5 +----
- lib/crypto/Makefile                |  2 ++
- lib/dim/Makefile                   |  2 ++
- lib/fonts/Makefile                 |  2 ++
- lib/kunit/Makefile                 |  3 +++
- lib/livepatch/Makefile             |  2 ++
- lib/lz4/Makefile                   |  1 +
- lib/lzo/Makefile                   |  2 ++
- lib/math/Makefile                  |  2 ++
- lib/mpi/Makefile                   |  2 ++
- lib/raid6/Makefile                 |  3 +++
- lib/reed_solomon/Makefile          |  2 ++
- lib/xz/Makefile                    |  3 +++
- lib/zlib_deflate/Makefile          |  2 ++
- lib/zlib_dfltcc/Makefile           |  2 ++
- lib/zlib_inflate/Makefile          |  2 ++
- lib/zstd/Makefile                  |  1 +
- scripts/Makefile.lib               | 14 ++++++++------
- 24 files changed, 64 insertions(+), 23 deletions(-)
-
-diff --git a/Documentation/kbuild/makefiles.rst b/Documentation/kbuild/makefiles.rst
-index 6515ebc12b6f..14d8e7d23c04 100644
---- a/Documentation/kbuild/makefiles.rst
-+++ b/Documentation/kbuild/makefiles.rst
-@@ -368,6 +368,14 @@ more details, with real examples.
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 1a2fa7f181423..5717d664cde1e 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -203,7 +203,7 @@ struct fsl_ssi_soc_data {
+ };
  
- 		subdir-ccflags-y := -Werror
+ /**
+- * fsl_ssi: per-SSI private data
++ * struct fsl_ssi - per-SSI private data
+  *
+  * @regs: Pointer to the regmap registers
+  * @irq: IRQ of this SSI
+@@ -373,7 +373,7 @@ static bool fsl_ssi_is_i2s_cbm_cfs(struct fsl_ssi *ssi)
+ 		SND_SOC_DAIFMT_CBM_CFS;
+ }
  
-+    ccflags-remove-y, asflags-remove-y
-+	These flags are used to remove particular flags for the compiler,
-+	assembler invocations.
-+
-+	Example::
-+
-+		ccflags-remove-$(CONFIG_MCOUNT) += -pg
-+
-     CFLAGS_$@, AFLAGS_$@
- 	CFLAGS_$@ and AFLAGS_$@ only apply to commands in current
- 	kbuild makefile.
-@@ -375,6 +383,9 @@ more details, with real examples.
- 	$(CFLAGS_$@) specifies per-file options for $(CC).  The $@
- 	part has a literal value which specifies the file that it is for.
+-/**
++/*
+  * Interrupt handler to gather states
+  */
+ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+@@ -394,7 +394,7 @@ static irqreturn_t fsl_ssi_isr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
  
-+	CFLAGS_$@ has the higher priority than ccflags-remove-y; CFLAGS_$@
-+	can re-add compiler flags that were removed by ccflags-remove-y.
-+
- 	Example::
+-/**
++/*
+  * Set SCR, SIER, STCR and SRCR registers with cached values in regvals
+  *
+  * Notes:
+@@ -474,7 +474,7 @@ static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
+ 	ssi->streams |= BIT(dir);
+ }
  
- 		# drivers/scsi/Makefile
-@@ -387,6 +398,9 @@ more details, with real examples.
- 	$(AFLAGS_$@) is a similar feature for source files in assembly
- 	languages.
+-/**
++/*
+  * Exclude bits that are used by the opposite stream
+  *
+  * When both streams are active, disabling some bits for the current stream
+@@ -494,7 +494,7 @@ static void fsl_ssi_config_enable(struct fsl_ssi *ssi, bool tx)
+ #define ssi_excl_shared_bits(vals, avals, aactive) \
+ 	((vals) & _ssi_xor_shared_bits(vals, avals, aactive))
  
-+	AFLAGS_$@ has the higher priority than asflags-remove-y; AFLAGS_$@
-+	can re-add assembler flags that were removed by asflags-remove-y.
-+
- 	Example::
+-/**
++/*
+  * Unset SCR, SIER, STCR and SRCR registers with cached values in regvals
+  *
+  * Notes:
+@@ -576,7 +576,7 @@ static void fsl_ssi_tx_ac97_saccst_setup(struct fsl_ssi *ssi)
+ 	}
+ }
  
- 		# arch/arm/kernel/Makefile
-diff --git a/arch/arm/boot/compressed/Makefile b/arch/arm/boot/compressed/Makefile
-index 00602a6fba04..3d5691b23951 100644
---- a/arch/arm/boot/compressed/Makefile
-+++ b/arch/arm/boot/compressed/Makefile
-@@ -103,13 +103,9 @@ clean-files += piggy_data lib1funcs.S ashldi3.S bswapsdi2.S hyp-stub.S
+-/**
++/*
+  * Cache critical bits of SIER, SRCR, STCR and SCR to later set them safely
+  */
+ static void fsl_ssi_setup_regvals(struct fsl_ssi *ssi)
+@@ -660,7 +660,7 @@ static void fsl_ssi_shutdown(struct snd_pcm_substream *substream,
+ 	clk_disable_unprepare(ssi->clk);
+ }
  
- KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
+-/**
++/*
+  * Configure Digital Audio Interface bit clock
+  *
+  * Note: This function can be only called when using SSI as DAI master
+@@ -781,7 +781,7 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
  
--ifeq ($(CONFIG_FUNCTION_TRACER),y)
--ORIG_CFLAGS := $(KBUILD_CFLAGS)
--KBUILD_CFLAGS = $(subst -pg, , $(ORIG_CFLAGS))
--endif
--
- ccflags-y := -fpic $(call cc-option,-mno-single-pic-base,) -fno-builtin \
- 	     -I$(obj) $(DISABLE_ARM_SSP_PER_TASK_PLUGIN)
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += -pg
- asflags-y := -DZIMAGE
+-/**
++/*
+  * Configure SSI based on PCM hardware parameters
+  *
+  * Notes:
+@@ -996,7 +996,7 @@ static int _fsl_ssi_set_dai_fmt(struct fsl_ssi *ssi, unsigned int fmt)
+ 	return 0;
+ }
  
- # Supply kernel BSS size to the decompressor via a linker symbol.
-diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-index 89c76ca35640..eb25d7554ffd 100644
---- a/arch/powerpc/xmon/Makefile
-+++ b/arch/powerpc/xmon/Makefile
-@@ -7,8 +7,7 @@ UBSAN_SANITIZE := n
- KASAN_SANITIZE := n
+-/**
++/*
+  * Configure Digital Audio Interface (DAI) Format
+  */
+ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
+@@ -1010,7 +1010,7 @@ static int fsl_ssi_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
+ 	return _fsl_ssi_set_dai_fmt(ssi, fmt);
+ }
  
- # Disable ftrace for the entire directory
--ORIG_CFLAGS := $(KBUILD_CFLAGS)
--KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
+-/**
++/*
+  * Set TDM slot number and slot width
+  */
+ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+@@ -1054,7 +1054,7 @@ static int fsl_ssi_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+ 	return 0;
+ }
  
- ifdef CONFIG_CC_IS_CLANG
- # clang stores addresses on the stack causing the frame size to blow
-diff --git a/arch/sh/boot/compressed/Makefile b/arch/sh/boot/compressed/Makefile
-index ad0e2403e56f..589d2d8a573d 100644
---- a/arch/sh/boot/compressed/Makefile
-+++ b/arch/sh/boot/compressed/Makefile
-@@ -28,10 +28,7 @@ IMAGE_OFFSET	:= $(shell /bin/bash -c 'printf "0x%08x" \
- 			$(CONFIG_BOOT_LINK_OFFSET)]')
- endif
+-/**
++/*
+  * Start or stop SSI and corresponding DMA transaction.
+  *
+  * The DMA channel is in external master start and pause mode, which
+@@ -1238,7 +1238,7 @@ static struct snd_ac97_bus_ops fsl_ssi_ac97_ops = {
+ 	.write = fsl_ssi_ac97_write,
+ };
  
--ifeq ($(CONFIG_MCOUNT),y)
--ORIG_CFLAGS := $(KBUILD_CFLAGS)
--KBUILD_CFLAGS = $(subst -pg, , $(ORIG_CFLAGS))
--endif
-+ccflags-remove-$(CONFIG_MCOUNT) += -pg
+-/**
++/*
+  * Initialize SSI registers
+  */
+ static int fsl_ssi_hw_init(struct fsl_ssi *ssi)
+@@ -1267,7 +1267,7 @@ static int fsl_ssi_hw_init(struct fsl_ssi *ssi)
+ 	return 0;
+ }
  
- LDFLAGS_vmlinux := --oformat $(ld-bfd) -Ttext $(IMAGE_OFFSET) -e startup \
- 		   -T $(obj)/../../kernel/vmlinux.lds
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 6575bb0a0434..7492844a8b1b 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -2,9 +2,9 @@
- 
- # Do not instrument the tracer itself:
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- ifdef CONFIG_FUNCTION_TRACER
--ORIG_CFLAGS := $(KBUILD_CFLAGS)
--KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
- 
- # Avoid recursion due to instrumentation.
- KCSAN_SANITIZE := n
-diff --git a/lib/842/Makefile b/lib/842/Makefile
-index 6f7aad269288..b815e824ae37 100644
---- a/lib/842/Makefile
-+++ b/lib/842/Makefile
-@@ -1,3 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_842_COMPRESS) += 842_compress.o
- obj-$(CONFIG_842_DECOMPRESS) += 842_decompress.o
-diff --git a/lib/Makefile b/lib/Makefile
-index b1c42c10073b..b2ed4beddd68 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -3,10 +3,7 @@
- # Makefile for some libs needed in the kernel.
- #
- 
--ifdef CONFIG_FUNCTION_TRACER
--ORIG_CFLAGS := $(KBUILD_CFLAGS)
--KBUILD_CFLAGS = $(subst $(CC_FLAGS_FTRACE),,$(ORIG_CFLAGS))
--endif
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
- 
- # These files are disabled because they produce lots of non-interesting and/or
- # flaky coverage that is not a function of syscall inputs. For example,
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 3a435629d9ce..b557ef0b07c2 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -1,5 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- # chacha is used by the /dev/random driver which is always builtin
- obj-y						+= chacha.o
- obj-$(CONFIG_CRYPTO_LIB_CHACHA_GENERIC)		+= libchacha.o
-diff --git a/lib/dim/Makefile b/lib/dim/Makefile
-index 1d6858a108cb..97fc3e89d34e 100644
---- a/lib/dim/Makefile
-+++ b/lib/dim/Makefile
-@@ -2,6 +2,8 @@
- # DIM Dynamic Interrupt Moderation library
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_DIMLIB) += dim.o
- 
- dim-y := dim.o net_dim.o rdma_dim.o
-diff --git a/lib/fonts/Makefile b/lib/fonts/Makefile
-index ed95070860de..f951750c179e 100644
---- a/lib/fonts/Makefile
-+++ b/lib/fonts/Makefile
-@@ -1,6 +1,8 @@
- # SPDX-License-Identifier: GPL-2.0
- # Font handling
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- font-objs := fonts.o
- 
- font-objs-$(CONFIG_FONT_SUN8x16)   += font_sun8x16.o
-diff --git a/lib/kunit/Makefile b/lib/kunit/Makefile
-index 724b94311ca3..8c847557ab24 100644
---- a/lib/kunit/Makefile
-+++ b/lib/kunit/Makefile
-@@ -1,3 +1,6 @@
-+
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_KUNIT) +=			kunit.o
- 
- kunit-objs +=				test.o \
-diff --git a/lib/livepatch/Makefile b/lib/livepatch/Makefile
-index 295b94bff370..9abdf615b088 100644
---- a/lib/livepatch/Makefile
-+++ b/lib/livepatch/Makefile
-@@ -2,6 +2,8 @@
- #
- # Makefile for livepatch test code.
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_TEST_LIVEPATCH) += test_klp_atomic_replace.o \
- 				test_klp_callbacks_demo.o \
- 				test_klp_callbacks_demo2.o \
-diff --git a/lib/lz4/Makefile b/lib/lz4/Makefile
-index 5b42242afaa2..53da4cab7015 100644
---- a/lib/lz4/Makefile
-+++ b/lib/lz4/Makefile
-@@ -1,5 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
- ccflags-y += -O3
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
- 
- obj-$(CONFIG_LZ4_COMPRESS) += lz4_compress.o
- obj-$(CONFIG_LZ4HC_COMPRESS) += lz4hc_compress.o
-diff --git a/lib/lzo/Makefile b/lib/lzo/Makefile
-index 2f58fafbbddd..9565a555275b 100644
---- a/lib/lzo/Makefile
-+++ b/lib/lzo/Makefile
-@@ -1,4 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- lzo_compress-objs := lzo1x_compress.o
- lzo_decompress-objs := lzo1x_decompress_safe.o
- 
-diff --git a/lib/math/Makefile b/lib/math/Makefile
-index be6909e943bd..49aa50e28185 100644
---- a/lib/math/Makefile
-+++ b/lib/math/Makefile
-@@ -1,4 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-y += div64.o gcd.o lcm.o int_pow.o int_sqrt.o reciprocal_div.o
- 
- obj-$(CONFIG_CORDIC)		+= cordic.o
-diff --git a/lib/mpi/Makefile b/lib/mpi/Makefile
-index d5874a7f5ff9..df7883521619 100644
---- a/lib/mpi/Makefile
-+++ b/lib/mpi/Makefile
-@@ -3,6 +3,8 @@
- # MPI multiprecision maths library (from gpg)
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_MPILIB) = mpi.o
- 
- mpi-y = \
-diff --git a/lib/raid6/Makefile b/lib/raid6/Makefile
-index b4c0df6d706d..3482d6ae3f3b 100644
---- a/lib/raid6/Makefile
-+++ b/lib/raid6/Makefile
-@@ -1,4 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
-+
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_RAID6_PQ)	+= raid6_pq.o
- 
- raid6_pq-y	+= algos.o recov.o tables.o int1.o int2.o int4.o \
-diff --git a/lib/reed_solomon/Makefile b/lib/reed_solomon/Makefile
-index 5d4fa68f26cb..a5c9defdac7f 100644
---- a/lib/reed_solomon/Makefile
-+++ b/lib/reed_solomon/Makefile
-@@ -3,5 +3,7 @@
- # This is a modified version of reed solomon lib,
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_REED_SOLOMON) += reed_solomon.o
- obj-$(CONFIG_REED_SOLOMON_TEST) += test_rslib.o
-diff --git a/lib/xz/Makefile b/lib/xz/Makefile
-index fa6af814a8d1..fae9b6c7c389 100644
---- a/lib/xz/Makefile
-+++ b/lib/xz/Makefile
-@@ -1,4 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_XZ_DEC) += xz_dec.o
- xz_dec-y := xz_dec_syms.o xz_dec_stream.o xz_dec_lzma2.o
- xz_dec-$(CONFIG_XZ_DEC_BCJ) += xz_dec_bcj.o
-diff --git a/lib/zlib_deflate/Makefile b/lib/zlib_deflate/Makefile
-index 2622e03c0b94..1fcefe73536f 100644
---- a/lib/zlib_deflate/Makefile
-+++ b/lib/zlib_deflate/Makefile
-@@ -7,6 +7,8 @@
- # decompression code.
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate.o
- 
- zlib_deflate-objs := deflate.o deftree.o deflate_syms.o
-diff --git a/lib/zlib_dfltcc/Makefile b/lib/zlib_dfltcc/Makefile
-index 8e4d5afbbb10..7a8067f6e772 100644
---- a/lib/zlib_dfltcc/Makefile
-+++ b/lib/zlib_dfltcc/Makefile
-@@ -6,6 +6,8 @@
- # This is the code for s390 zlib hardware support.
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_ZLIB_DFLTCC) += zlib_dfltcc.o
- 
- zlib_dfltcc-objs := dfltcc.o dfltcc_deflate.o dfltcc_inflate.o dfltcc_syms.o
-diff --git a/lib/zlib_inflate/Makefile b/lib/zlib_inflate/Makefile
-index 27327d3e9f54..a451e96f9845 100644
---- a/lib/zlib_inflate/Makefile
-+++ b/lib/zlib_inflate/Makefile
-@@ -14,6 +14,8 @@
- # uncompression can be done without blocking on allocation).
- #
- 
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-+
- obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate.o
- 
- zlib_inflate-objs := inffast.o inflate.o infutil.o \
-diff --git a/lib/zstd/Makefile b/lib/zstd/Makefile
-index f5d778e7e5c7..01be908a2d94 100644
---- a/lib/zstd/Makefile
-+++ b/lib/zstd/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_ZSTD_COMPRESS) += zstd_compress.o
- obj-$(CONFIG_ZSTD_DECOMPRESS) += zstd_decompress.o
- 
- ccflags-y += -O3
-+ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
- 
- zstd_compress-y := fse_compress.o huf_compress.o compress.o \
- 		   entropy_common.o fse_decompress.o zstd_common.o
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 916b2f7f7098..3629f66646d7 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -111,12 +111,14 @@ basename_flags = -DKBUILD_BASENAME=$(call name-fix,$(basetarget))
- modname_flags  = -DKBUILD_MODNAME=$(call name-fix,$(modname))
- modfile_flags  = -DKBUILD_MODFILE=$(call stringify,$(modfile))
- 
--orig_c_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) \
--                 $(ccflags-y) $(CFLAGS_$(target-stem).o)
--_c_flags       = $(filter-out $(CFLAGS_REMOVE_$(target-stem).o), $(orig_c_flags))
--orig_a_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) \
--                 $(asflags-y) $(AFLAGS_$(target-stem).o)
--_a_flags       = $(filter-out $(AFLAGS_REMOVE_$(target-stem).o), $(orig_a_flags))
-+_c_flags       = $(filter-out $(CFLAGS_REMOVE_$(target-stem).o), \
-+                     $(filter-out $(ccflags-remove-y), \
-+                         $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(ccflags-y)) \
-+                     $(CFLAGS_$(target-stem).o))
-+_a_flags       = $(filter-out $(AFLAGS_REMOVE_$(target-stem).o), \
-+                     $(filter-out $(asflags-remove-y), \
-+                         $(KBUILD_CPPFLAGS) $(KBUILD_AFLAGS) $(asflags-y)) \
-+                     $(AFLAGS_$(target-stem).o))
- _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(target-stem).lds)
- 
- #
+-/**
++/*
+  * Clear SSI registers
+  */
+ static void fsl_ssi_hw_clean(struct fsl_ssi *ssi)
+@@ -1285,7 +1285,7 @@ static void fsl_ssi_hw_clean(struct fsl_ssi *ssi)
+ 		regmap_update_bits(ssi->regs, REG_SSI_SCR, SSI_SCR_SSIEN, 0);
+ 	}
+ }
+-/**
++/*
+  * Make every character in a string lower-case
+  */
+ static void make_lowercase(char *s)
 -- 
 2.25.1
 
