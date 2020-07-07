@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED5ECC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:11:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85F6BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:13:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A2FC82065F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:11:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3E71A2065F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:13:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="E8lX9mtc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2FC82065F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pCq9qSPC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E71A2065F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1Vr06JT6zDqnr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:11:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1Vt51HzdzDqvg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:13:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,34 +29,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=E8lX9mtc; 
+ header.s=casper.20170209 header.b=pCq9qSPC; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1VjL6Mg4zDqnF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:05:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1Vjg42cNzDqxd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:05:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=RqyRnPkRTOc/R3lqbrT2rduELR3dheWkm530I4YPdjk=; b=E8lX9mtcOkU5sxWkqKrby7vT6X
- 5ObbPzq0n/nZnOwOYtF74Cr7SN3yxm514gKhyVaZUUUjtlTaQ0itgsX3nHoswyVD4UmaTgA//RkGd
- hvfDxg4ilL1ditN2h4e6MpEaTh9+uZVLLCmflEb+QJrpazHWc68oCEnKKXgAJXcdVvONPVASRYIRN
- xckpp0j/x86CuDTrXA76oJ0NvGhgewWZ4YuxJQviNJ7QaorsSgE9nl8/3+iiJJrloP4tyqaY/qsEx
- jfcCDtiWAugmrDCXyC4rQ8aU+XxnprdVwqmDNbWpGNcYSxbzkCwNQMWACuWFTIkIAg5fIK3u/Gqmy
- FVlYQHfw==;
+ bh=j37n6ua73QzolTqHDVXK3ji/x5ynN2aQbXjX8l+i7HM=; b=pCq9qSPC51QMPdOaPC5R+Qke2m
+ Bfy7HZMSLQpI+AqQeJ6RTeLRQpjAauXQQ3FLIHQh6NdnMG4euXUy5T1myb35mutGzBed7/K/8gyxv
+ tZgtB2vjbe3b5g3KTr0XtzEcKnt4UksteGhBpRaxkAcnyZS+8qZ4aCuEdEB08mwoHkVGB1aO2MlD6
+ fr1btWMIPNJ8WxKOeF8UPFW/A1Z3pwxPBPaAFkYyiTa8bsL+uPysMd2ZGzB5Dw4/i+LhT9y7AtK2V
+ 72W/fDQ62iMkYDGnK5RW50dMIeUfKWry9ZExrLWPc0sT0BhikpZy2OKEhull6ugckZ76R8UCzUi0f
+ Ofl08UTA==;
 Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
  (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jsrxO-0004JY-HM; Tue, 07 Jul 2020 18:04:39 +0000
+ id 1jsrxu-0004JY-Jy; Tue, 07 Jul 2020 18:05:11 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/20] Documentation: numaperf: eliminate duplicated word
-Date: Tue,  7 Jul 2020 11:03:55 -0700
-Message-Id: <20200707180414.10467-2-rdunlap@infradead.org>
+Subject: [PATCH 04/20] Documentation: kgdb: eliminate duplicated word
+Date: Tue,  7 Jul 2020 11:03:58 -0700
+Message-Id: <20200707180414.10467-5-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
 References: <20200707180414.10467-1-rdunlap@infradead.org>
@@ -110,25 +110,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the duplicated word "not".
+Drop the doubled word "driver".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
-Cc: linux-mm@vger.kernel.org
-Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Jason Wessel <jason.wessel@windriver.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Douglas Anderson <dianders@chromium.org>
+Cc: kgdb-bugreport@lists.sourceforge.net
 ---
- Documentation/admin-guide/mm/numaperf.rst |    2 +-
+ Documentation/dev-tools/kgdb.rst |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-5.8-rc3.orig/Documentation/admin-guide/mm/numaperf.rst
-+++ linux-5.8-rc3/Documentation/admin-guide/mm/numaperf.rst
-@@ -129,7 +129,7 @@ will create the following directory::
+--- linux-next-20200701.orig/Documentation/dev-tools/kgdb.rst
++++ linux-next-20200701/Documentation/dev-tools/kgdb.rst
+@@ -872,7 +872,7 @@ The kgdboc driver contains logic to conf
+ attached keyboard. The keyboard infrastructure is only compiled into the
+ kernel when ``CONFIG_KDB_KEYBOARD=y`` is set in the kernel configuration.
  
- 	/sys/devices/system/node/nodeX/memory_side_cache/
- 
--If that directory is not present, the system either does not not provide
-+If that directory is not present, the system either does not provide
- a memory-side cache, or that information is not accessible to the kernel.
- 
- The attributes for each level of cache is provided under its cache
+-The core polled keyboard driver driver for PS/2 type keyboards is in
++The core polled keyboard driver for PS/2 type keyboards is in
+ ``drivers/char/kdb_keyboard.c``. This driver is hooked into the debug core
+ when kgdboc populates the callback in the array called
+ :c:type:`kdb_poll_funcs[]`. The :c:func:`kdb_get_kbd_char` is the top-level
