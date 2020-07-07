@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69FA0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:32:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD16AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:34:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F6F6206F6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:32:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6612620708
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:34:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="jqru0odE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F6F6206F6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="hcwO0h7e"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6612620708
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1WJY0Yf8zDr0B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:32:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1WLz3xYbzDr2P
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=jqru0odE; 
+ header.s=casper.20170209 header.b=hcwO0h7e; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1VlH17G8zDqtQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:07:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1VlZ1JDdzDqsL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:07:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=tJIgQQp/lq+jREILUSRYN/AF1TAa0oigpU58ExtznPY=; b=jqru0odEJRe3JfiVXjFLFRmrSt
- pa5r5Ka20272qOL+z4KogLvref7oMwYSTzA7LAXIRgEY4TxRcgYzOHuzs8PAQICHg+++2Zt3ii1mB
- WyW2N2KErsCRxRvlyS/zeoa7Ul+FZ6wWnEwuV4iqnjSYLGvIzGzoAsoCUjS+F1oMVjPWmc9qXR8LN
- snzlAuy1Jn/loak01j+ybmyXkbnxyRRVUzPKmme1apT7pLLizRuknJkkJOPkO+xFoM2WlG5yWdEy0
- W/mgruOZ1zdQKQn7h2SPM4LRc5OWvMUzR2UMqtBDT9fAoC31atGgpslgUfIwFD63MqrBkeBbWVUy6
- w8L2KOBQ==;
+ bh=2/YCmGUemc+wOLv/5ELjphBnftis9IDqZDEkf1/jsf8=; b=hcwO0h7eMdRn9rDomQi8lZ2Jrt
+ q36N6MZo2lW8v7E1Yeq8vm3UNGtKd+ocnn7uw5lP/6ZL+JzqoWMaG3AVp9D7qDEvJwM17EcJwr1tq
+ ZFSR5pOZCCS3pNGN84VQRedpoe9ILutFjXP4bdiscjJUsJrjJRVtFdUsqUYDpSeVYg4EwKahPkPoB
+ l7uCqz8UDA8OxxqevReZFv4r5hnxo/JZ6Ht/1CaFRFMaQ57vC6S8bGZuvqlendpdSVVu+4swXZTjV
+ jBNoOaJy3LAUWQ3ckl1KJkwWIwEyRZXnp6/F1QjXAt5ykADI/MuwSUOu+3Fl6FD8F14DIgOGfgCft
+ uL0V1V+A==;
 Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
  (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jsrzJ-0004JY-Go; Tue, 07 Jul 2020 18:06:38 +0000
+ id 1jsrzU-0004JY-Dh; Tue, 07 Jul 2020 18:06:48 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/20] Documentation: maintainer-entry-profile: eliminate
- duplicated word
-Date: Tue,  7 Jul 2020 11:04:06 -0700
-Message-Id: <20200707180414.10467-13-rdunlap@infradead.org>
+Subject: [PATCH 13/20] Documentation: mips/ingenic-tcu: eliminate duplicated
+ word
+Date: Tue,  7 Jul 2020 11:04:07 -0700
+Message-Id: <20200707180414.10467-14-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
 References: <20200707180414.10467-1-rdunlap@infradead.org>
@@ -111,24 +111,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the doubled word "have".
+Drop the doubled word "to".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@vger.kernel.org
 ---
- Documentation/maintainer/maintainer-entry-profile.rst |    2 +-
+ Documentation/mips/ingenic-tcu.rst |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200701.orig/Documentation/maintainer/maintainer-entry-profile.rst
-+++ linux-next-20200701/Documentation/maintainer/maintainer-entry-profile.rst
-@@ -31,7 +31,7 @@ Example questions to consider:
- - What branch should contributors submit against?
- - Links to any other Maintainer Entry Profiles? For example a
-   device-driver may point to an entry for its parent subsystem. This makes
--  the contributor aware of obligations a maintainer may have have for
-+  the contributor aware of obligations a maintainer may have for
-   other maintainers in the submission chain.
+--- linux-next-20200701.orig/Documentation/mips/ingenic-tcu.rst
++++ linux-next-20200701/Documentation/mips/ingenic-tcu.rst
+@@ -5,7 +5,7 @@ Ingenic JZ47xx SoCs Timer/Counter Unit h
+ ===============================================
  
+ The Timer/Counter Unit (TCU) in Ingenic JZ47xx SoCs is a multi-function
+-hardware block. It features up to to eight channels, that can be used as
++hardware block. It features up to eight channels, that can be used as
+ counters, timers, or PWM.
  
+ - JZ4725B, JZ4750, JZ4755 only have six TCU channels. The other SoCs all
