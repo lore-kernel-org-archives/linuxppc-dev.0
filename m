@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3C01C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:26:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1050BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:28:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97A6C206F6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:26:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BCBA0206F6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 18:28:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="uuz7HtSB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97A6C206F6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SwoLXbpn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCBA0206F6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1W9d6PSRzDqBN
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:26:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1WCt0KrszDr15
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 04:28:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=uuz7HtSB; 
+ header.s=casper.20170209 header.b=SwoLXbpn; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1Vkp73vWzDqgP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:06:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1Vkr0SbjzDqmh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:07:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=n0r3AeJBdJxrkDj2u02K2i7+nW9Oe1yMWegqEZLyJYA=; b=uuz7HtSBptzUF27iBREMdSAt/K
- jfqJyCiVvgKlk9ybByqRGqvz3SwIk8OhwWGYyebsPQyiZHV1dnlEZ5iCS8LFdwrQlrxxamCtUD4p+
- 9AW48pApfvdRO6OgxOdYCEVDYwMmAIdkIPgj4Q9uXPW9Z82cidbTJj2IkTlgE6eQqIxLRahVyPOsx
- JNaImE3V1R4jXAei4SIfKfLSbHOQbPehn9XqQfa84PTiCT2c0czIRdbHQTHtwoAsPoskeV+1f0TjF
- eevgAL4lPl5KDDTGkrpVnGbvdcEheR6NwmxP4l7PP2ltq4bov7OhlHCrx8NO2IEJzqEVlWVqhi0wL
- 2Bi9Jd2A==;
+ bh=jD7xUkHaujArIkx0Qqw+94A1LtaeINuMKow1sxCm4oE=; b=SwoLXbpn+/lnObyUzGcIpESpZR
+ gSvUG27zGR6WWeA04LYHBW8uwk2ZFZM22SsPc2LCH0nKorClKPlODXECGYtNuFmGIlIpXijwV/GHX
+ Evi2R2WszEz6E7PgJoWMbHshC1xVQ+wyEv/q9x1eV8ZjeFkUOkHH1MISPwqpLyBC33EQKgyQDALV4
+ GklyzjVB8rsDygyHZFgoV70Fhyiy6pcsyIV54J74SpU7kpB0WLDMEJSqCx0TZBUjB7n3ahlbNQgMT
+ qTRl0K+/lbCOLdwMEdiHUcKR/KGVy6imk4ZKzSQxjGOUyG/ibcm1RNIDS2yM+nRY+56HfOjvKId6b
+ gb2zy60g==;
 Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
  (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jsryc-0004JY-0j; Tue, 07 Jul 2020 18:05:54 +0000
+ id 1jsryx-0004JY-Ox; Tue, 07 Jul 2020 18:06:16 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/20] Documentation: hid/intel-ish-hid: eliminate duplicated
- word
-Date: Tue,  7 Jul 2020 11:04:02 -0700
-Message-Id: <20200707180414.10467-9-rdunlap@infradead.org>
+Subject: [PATCH 10/20] Documentation: kbuild/kconfig-language: eliminate
+ duplicated word
+Date: Tue,  7 Jul 2020 11:04:04 -0700
+Message-Id: <20200707180414.10467-11-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
 References: <20200707180414.10467-1-rdunlap@infradead.org>
@@ -116,21 +116,21 @@ Drop the doubled word "the".
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: linux-input@vger.kernel.org
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Michal Marek <michal.lkml@markovi.net>
+Cc: linux-kbuild@vger.kernel.org
 ---
- Documentation/hid/intel-ish-hid.rst |    2 +-
+ Documentation/kbuild/kconfig-language.rst |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200701.orig/Documentation/hid/intel-ish-hid.rst
-+++ linux-next-20200701/Documentation/hid/intel-ish-hid.rst
-@@ -235,7 +235,7 @@ There can be multiple sensor clients and
+--- linux-next-20200701.orig/Documentation/kbuild/kconfig-language.rst
++++ linux-next-20200701/Documentation/kbuild/kconfig-language.rst
+@@ -681,7 +681,7 @@ translate Kconfig logic into boolean for
+ find dead code / features (always inactive), 114 dead features were found in
+ Linux using this methodology [1]_ (Section 8: Threats to validity).
  
- To ease in implantation and allow independent driver handle each client
- this transport layer takes advantage of Linux Bus driver model. Each
--client is registered as device on the the transport bus (ishtp bus).
-+client is registered as device on the transport bus (ishtp bus).
- 
- Enumeration sequence of messages:
- 
+-Confirming this could prove useful as Kconfig stands as one of the the leading
++Confirming this could prove useful as Kconfig stands as one of the leading
+ industrial variability modeling languages [1]_ [2]_. Its study would help
+ evaluate practical uses of such languages, their use was only theoretical
+ and real world requirements were not well understood. As it stands though
