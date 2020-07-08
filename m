@@ -2,99 +2,91 @@ Return-Path: <SRS0=luaH=AT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 651D4C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:28:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61933C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:45:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E9A12067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:28:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E9A12067D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CA8BD20739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:45:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA8BD20739
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1rWD1T0KzDqkL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 17:28:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=pmorel@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1rv24f5YzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 17:45:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1qsg6HjrzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 16:58:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1rrw0pfqzDr45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 17:43:27 +1000 (AEST)
 Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0686WQ5w138659; Wed, 8 Jul 2020 02:58:06 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3251mv2pra-1
+ 0687VufR009016; Wed, 8 Jul 2020 03:43:23 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3251mv3vr0-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 02:58:06 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0686fhTU018830;
- Wed, 8 Jul 2020 02:58:05 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3251mv2pq6-1
+ Wed, 08 Jul 2020 03:43:22 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0687Zr4T018470;
+ Wed, 8 Jul 2020 07:43:21 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma02wdc.us.ibm.com with ESMTP id 324b3jkw1u-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 02:58:05 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0686lF3c008923;
- Wed, 8 Jul 2020 06:58:02 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma06ams.nl.ibm.com with ESMTP id 322h1h45mh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 06:58:02 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0686ucFI60883350
+ Wed, 08 Jul 2020 07:43:21 +0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0687hLs850987274
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 8 Jul 2020 06:56:38 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6A6024204D;
- Wed,  8 Jul 2020 06:57:59 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7F03342041;
- Wed,  8 Jul 2020 06:57:56 +0000 (GMT)
-Received: from oc3016276355.ibm.com (unknown [9.145.162.243])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  8 Jul 2020 06:57:56 +0000 (GMT)
-Subject: Re: [PATCH 16/20] Documentation: s390/vfio-ap: eliminate duplicated
- word
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-References: <20200707180414.10467-1-rdunlap@infradead.org>
- <20200707180414.10467-17-rdunlap@infradead.org>
-From: Pierre Morel <pmorel@linux.ibm.com>
-Message-ID: <89131a49-d8d0-5316-cd7f-9830bbfa7d9f@linux.ibm.com>
-Date: Wed, 8 Jul 2020 08:57:56 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.9.0
+ Wed, 8 Jul 2020 07:43:21 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3EB4CB205F;
+ Wed,  8 Jul 2020 07:43:21 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 90023B2066;
+ Wed,  8 Jul 2020 07:43:20 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.79.213.59])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed,  8 Jul 2020 07:43:20 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id E23812E48C1; Wed,  8 Jul 2020 13:13:15 +0530 (IST)
+Date: Wed, 8 Jul 2020 13:13:15 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH v2 07/10] powerpc/perf: support BHRB disable bit and new
+ filtering modes
+Message-ID: <20200708074315.GA21370@in.ibm.com>
+References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1593595262-1433-8-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <0cf26e42a3b190d5ea69d1ba61ae71bcaeee1973.camel@neuling.org>
 MIME-Version: 1.0
-In-Reply-To: <20200707180414.10467-17-rdunlap@infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0cf26e42a3b190d5ea69d1ba61ae71bcaeee1973.camel@neuling.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-08_01:2020-07-08,
+ definitions=2020-07-08_04:2020-07-08,
  2020-07-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1011
+ spamscore=0 clxscore=1015
  mlxscore=0 malwarescore=0 adultscore=0 suspectscore=0 cotscore=-2147483648
  lowpriorityscore=0 bulkscore=0 mlxlogscore=999 priorityscore=1501
  phishscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2007080042
-X-Mailman-Approved-At: Wed, 08 Jul 2020 17:26:03 +1000
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2007080049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,79 +98,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
- linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
- Paul Cercueil <paul@crapouillou.net>, keyrings@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Halil Pasic <pasic@linux.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
- Mali DP Maintainers <malidp@foss.arm.com>,
- Derek Kiernan <derek.kiernan@xilinx.com>,
- Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
- Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
- Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Douglas Anderson <dianders@chromium.org>, Wolfram Sang <wsa@kernel.org>,
- Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
- Paolo Bonzini <pbonzini@redhat.com>, linux-integrity@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>,
- Dan Murphy <dmurphy@ti.com>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego <ego@linux.vnet.ibm.com>, Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ Vaidyanathan Srinivasan <svaidyan@in.ibm.com>, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 2020-07-07 20:04, Randy Dunlap wrote:
-> Drop the doubled word "the".
+On Tue, Jul 07, 2020 at 05:17:55PM +1000, Michael Neuling wrote:
+> On Wed, 2020-07-01 at 05:20 -0400, Athira Rajeev wrote:
+> > PowerISA v3.1 has few updates for the Branch History Rolling Buffer(BHRB).
+> > First is the addition of BHRB disable bit and second new filtering
+> > modes for BHRB.
+> > 
+> > BHRB disable is controlled via Monitor Mode Control Register A (MMCRA)
+> > bit 26, namely "BHRB Recording Disable (BHRBRD)". This field controls
+> > whether BHRB entries are written when BHRB recording is enabled by other
+> > bits. Patch implements support for this BHRB disable bit.
 > 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: Tony Krowiak <akrowiak@linux.ibm.com>
-> Cc: Pierre Morel <pmorel@linux.ibm.com>
-> Cc: Halil Pasic <pasic@linux.ibm.com>
-> Cc: linux-s390@vger.kernel.org
-> ---
->   Documentation/s390/vfio-ap.rst |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Probably good to note here that this is backwards compatible. So if you have a
+> kernel that doesn't know about this bit, it'll clear it and hence you still get
+> BHRB. 
 > 
-> --- linux-next-20200701.orig/Documentation/s390/vfio-ap.rst
-> +++ linux-next-20200701/Documentation/s390/vfio-ap.rst
-> @@ -361,7 +361,7 @@ matrix device.
->       assign_domain / unassign_domain:
->         Write-only attributes for assigning/unassigning an AP usage domain to/from
->         the mediated matrix device. To assign/unassign a domain, the domain
-> -      number of the the usage domain is echoed to the respective attribute
-> +      number of the usage domain is echoed to the respective attribute
->         file.
->       matrix:
->         A read-only file for displaying the APQNs derived from the cross product
+> You should also note why you'd want to do disable this (ie. the core will run
+> faster).
+> 
+> > Secondly PowerISA v3.1 introduce filtering support for
+> > PERF_SAMPLE_BRANCH_IND_CALL/COND. The patch adds BHRB filter support
+> > for "ind_call" and "cond" in power10_bhrb_filter_map().
+> > 
+> > 'commit bb19af816025 ("powerpc/perf: Prevent kernel address leak to userspace
+> > via BHRB buffer")'
+> > added a check in bhrb_read() to filter the kernel address from BHRB buffer.
+> > Patch here modified
+> > it to avoid that check for PowerISA v3.1 based processors, since PowerISA v3.1
+> > allows
+> > only MSR[PR]=1 address to be written to BHRB buffer.
+> > 
+> > Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/perf/core-book3s.c       | 27 +++++++++++++++++++++------
+> >  arch/powerpc/perf/isa207-common.c     | 13 +++++++++++++
+> >  arch/powerpc/perf/power10-pmu.c       | 13 +++++++++++--
+> >  arch/powerpc/platforms/powernv/idle.c | 14 ++++++++++++++
+> 
+> This touches the idle code so we should get those guys on CC (adding Vaidy and
+> Ego).
+> 
+> >  4 files changed, 59 insertions(+), 8 deletions(-)
+> > 
+
+[..snip..]
+
+
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c
+> > b/arch/powerpc/platforms/powernv/idle.c
+> > index 2dd4673..7db99c7 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -611,6 +611,7 @@ static unsigned long power9_idle_stop(unsigned long psscr,
+> > bool mmu_on)
+> >  	unsigned long srr1;
+> >  	unsigned long pls;
+> >  	unsigned long mmcr0 = 0;
+> > +	unsigned long mmcra_bhrb = 0;
+
+We are saving the whole of MMCRA aren't we ? We might want to just
+name it mmcra in that case.
+
+> >  	struct p9_sprs sprs = {}; /* avoid false used-uninitialised */
+> >  	bool sprs_saved = false;
+> >  
+> > @@ -657,6 +658,15 @@ static unsigned long power9_idle_stop(unsigned long
+> > psscr, bool mmu_on)
+> >  		  */
+> >  		mmcr0		= mfspr(SPRN_MMCR0);
+> >  	}
+> > +
+> > +	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+> > +		/* POWER10 uses MMCRA[:26] as BHRB disable bit
+> > +		 * to disable BHRB logic when not used. Hence Save and
+> > +		 * restore MMCRA after a state-loss idle.
+> > +		 */
+
+Multi-line comment usually has the first line blank.
+
+		/*
+	         * Line 1
+		 * Line 2
+		 * .
+		 * .
+		 * .
+		 * Line N
+		 */
+
+> > +		mmcra_bhrb		= mfspr(SPRN_MMCRA);
+> 
+> 
+> Why is the bhrb bit of mmcra special here?
+
+The comment above could include the consequence of not saving and
+restoring MMCRA i.e
+
+- If the user hasn't asked for the BHRB to be
+  written the value of MMCRA[BHRBD] = 1.
+
+- On wakeup from stop, MMCRA[BHRBD] will be 0, since MMCRA is not a
+  previleged resource and will be lost.
+
+- Thus, if we do not save and restore the MMCRA[BHRBD], the hardware
+  will be needlessly writing to the BHRB in the problem mode.
+
+> 
+> > +	}
+> > +
+> >  	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level) {
+> >  		sprs.lpcr	= mfspr(SPRN_LPCR);
+> >  		sprs.hfscr	= mfspr(SPRN_HFSCR);
+> > @@ -721,6 +731,10 @@ static unsigned long power9_idle_stop(unsigned long
+> > psscr, bool mmu_on)
+> >  			mtspr(SPRN_MMCR0, mmcr0);
+> >  		}
+> >  
+> > +		/* Reload MMCRA to restore BHRB disable bit for POWER10 */
+> > +		if (cpu_has_feature(CPU_FTR_ARCH_31))
+> > +			mtspr(SPRN_MMCRA, mmcra_bhrb);
+> > +
+> >  		/*
+> >  		 * DD2.2 and earlier need to set then clear bit 60 in MMCRA
+> >  		 * to ensure the PMU starts running.
 > 
 
-
-Reviewed-by: Pierre Morel <pmorel@linux.ibm.com>
-
-Thanks Randy,
-
-Regards,
-Pierre
-
--- 
-Pierre Morel
-IBM Lab Boeblingen
+--
+Thanks and Regards
+gautham.
