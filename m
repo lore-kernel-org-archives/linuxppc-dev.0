@@ -1,65 +1,61 @@
-Return-Path: <SRS0=AwiL=AS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=luaH=AT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A558C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 23:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19E97C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 00:11:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A32472067D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jul 2020 23:49:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 049B120771
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 00:11:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="XzeBLZZp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A32472067D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=crapouillou.net
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="v/atDYLg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 049B120771
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1fKh44KHzDqJj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 09:49:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1fqv3RbWzDr09
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 10:11:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=crapouillou.net (client-ip=89.234.176.41; helo=crapouillou.net;
- envelope-from=paul@crapouillou.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=crapouillou.net
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=crapouillou.net header.i=@crapouillou.net
- header.a=rsa-sha256 header.s=mail header.b=XzeBLZZp; 
- dkim-atps=neutral
-X-Greylist: delayed 456 seconds by postgrey-1.36 at bilbo;
- Wed, 08 Jul 2020 04:34:12 AEST
-Received: from crapouillou.net (crapouillou.net [89.234.176.41])
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=v/atDYLg; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1WLD1xgKzDqwn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 04:34:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
- s=mail; t=1594146390; h=from:from:sender:reply-to:subject:subject:date:date:
- message-id:message-id:to:to:cc:cc:mime-version:mime-version:
- content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=EQRrwbfO2C4Em9LcWxXzackWTr0tQ5tvZFSRH8pCMe0=;
- b=XzeBLZZpNrTe4Ra4qa9YkMqrcWIB6zuFg4aTH2C2kEQMTtyYB4q4KtKp/VYw3wfurq1Kn0
- L6vYSsxjiaskMjz36Jsy2DP+Y8oQPXQCS6J5S08kAw61Tz2Iuu7CBHExV7HzjcpUKs4626
- 7D3ppRB7tG00QbsRFF8yeJYYsJftnrw=
-Date: Tue, 07 Jul 2020 20:26:10 +0200
-From: Paul Cercueil <paul@crapouillou.net>
-Subject: Re: [PATCH 13/20] Documentation: mips/ingenic-tcu: eliminate
- duplicated word
-To: Randy Dunlap <rdunlap@infradead.org>
-Message-Id: <M734DQ.WGKQZ628NBB1@crapouillou.net>
-In-Reply-To: <20200707180414.10467-14-rdunlap@infradead.org>
-References: <20200707180414.10467-1-rdunlap@infradead.org>
- <20200707180414.10467-14-rdunlap@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1fnx3ShMzDqsj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 10:10:12 +1000 (AEST)
+Received: from localhost (mobile-166-175-191-139.mycingular.net
+ [166.175.191.139])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id D4ED820771;
+ Wed,  8 Jul 2020 00:10:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1594167010;
+ bh=GRc7bmT28/LGGsLBxls6P/+Y6GitVFKoeGWw+LQ+Mwk=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:From;
+ b=v/atDYLgMKucbXsAUe1GUdgPRkPL0yNf7YGKKHQ5z4/k3CbENeBvSIhGrAZdQO++g
+ F+BN9MXxPyuUjI72ftoxL941QdlK0rC+FHFMMbVHlc2EekTddVVfTZQZk8wOjRotJR
+ tAAsdF9mi1WNnSuqgWU9/OkjzUQewK+8X08x9dCY=
+Date: Tue, 7 Jul 2020 19:10:08 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Matt Jolly <Kangie@footclan.ninja>
+Subject: Re: [PATCH] pci: pcie: AER: Fix logging of Correctable errors
+Message-ID: <20200708001008.GA404699@bjorn-Precision-5520>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 08 Jul 2020 09:43:35 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200618155511.16009-1-Kangie@footclan.ninja>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,77 +67,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
- linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>,
- keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-i2c@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Halil Pasic <pasic@linux.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
- Mali DP Maintainers <malidp@foss.arm.com>,
- Derek Kiernan <derek.kiernan@xilinx.com>, linux-mips@vger.kernel.org,
- Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
- Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
- Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Pierre Morel <pmorel@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Wolfram Sang <wsa@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Jason Wessel <jason.wessel@windriver.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>, Dan Murphy <dmurphy@ti.com>
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
-
-Le mar. 7 juil. 2020 =E0 11:04, Randy Dunlap <rdunlap@infradead.org> a=20
-=E9crit :
-> Drop the doubled word "to".
->=20
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: Paul Cercueil <paul@crapouillou.net>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> Cc: linux-mips@vger.kernel.org
-
-Reviewed-by: Paul Cercueil <paul@crapouillou.net>
-
-Cheers,
--Paul
-
+On Fri, Jun 19, 2020 at 01:55:11AM +1000, Matt Jolly wrote:
+> The AER documentation indicates that correctable (severity=Corrected)
+> errors should be output as a warning so that users can filter these
+> errors if they choose to; This functionality does not appear to have been implemented.
+> 
+> This patch modifies the functions aer_print_error and __aer_print_error
+> to send correctable errors as a warning (pci_warn), rather than as an error (pci_err). It
+> partially addresses several bugs in relation to kernel message buffer
+> spam for misbehaving devices - the root cause (possibly device firmware?) isn't
+> addressed, but the dmesg output is less alarming for end users, and can
+> be filtered separately from uncorrectable errors. This should hopefully
+> reduce the need for users to disable AER to suppress corrected errors.
+> 
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=201517
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=196183
+> 
+> Signed-off-by: Matt Jolly <Kangie@footclan.ninja>
 > ---
->  Documentation/mips/ingenic-tcu.rst |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> --- linux-next-20200701.orig/Documentation/mips/ingenic-tcu.rst
-> +++ linux-next-20200701/Documentation/mips/ingenic-tcu.rst
-> @@ -5,7 +5,7 @@ Ingenic JZ47xx SoCs Timer/Counter Unit h
->  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
->  The Timer/Counter Unit (TCU) in Ingenic JZ47xx SoCs is a=20
-> multi-function
-> -hardware block. It features up to to eight channels, that can be=20
-> used as
-> +hardware block. It features up to eight channels, that can be used as
->  counters, timers, or PWM.
->=20
->  - JZ4725B, JZ4750, JZ4755 only have six TCU channels. The other SoCs=20
-> all
+>  drivers/pci/pcie/aer.c | 36 ++++++++++++++++++++++++++----------
+>  1 file changed, 26 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index 3acf56683915..131ecc0df2cb 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -662,12 +662,18 @@ static void __aer_print_error(struct pci_dev *dev,
+>  			errmsg = i < ARRAY_SIZE(aer_uncorrectable_error_string) ?
+>  				aer_uncorrectable_error_string[i] : NULL;
+>  
+> -		if (errmsg)
+> -			pci_err(dev, "   [%2d] %-22s%s\n", i, errmsg,
+> -				info->first_error == i ? " (First)" : "");
+> -		else
+> +		if (errmsg) {
+> +			if (info->severity == AER_CORRECTABLE) {
+> +				pci_warn(dev, "   [%2d] %-22s%s\n", i, errmsg,
 
+I think we can use pci_printk() here to reduce the code duplication.
 
+And I think we can also simplify the aer_correctable_error_string/
+aer_uncorrectable_error_string stuff above, which would make this even
+simpler.
+
+I'll respond to this with my proposal.
+
+> +					info->first_error == i ? " (First)" : "");
+> +			} else {
+> +				pci_err(dev, "   [%2d] %-22s%s\n", i, errmsg,
+> +					info->first_error == i ? " (First)" : "");
+> +			}
+> +		} else {
+>  			pci_err(dev, "   [%2d] Unknown Error Bit%s\n",
+>  				i, info->first_error == i ? " (First)" : "");
+> +		}
+>  	}
+>  	pci_dev_aer_stats_incr(dev, info);
+>  }
+> @@ -686,13 +692,23 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+>  	layer = AER_GET_LAYER_ERROR(info->severity, info->status);
+>  	agent = AER_GET_AGENT(info->severity, info->status);
+>  
+> -	pci_err(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
+> -		aer_error_severity_string[info->severity],
+> -		aer_error_layer[layer], aer_agent_string[agent]);
+> +	if  (info->severity == AER_CORRECTABLE) {
+> +		pci_warn(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
+> +			aer_error_severity_string[info->severity],
+> +			aer_error_layer[layer], aer_agent_string[agent]);
+>  
+> -	pci_err(dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
+> -		dev->vendor, dev->device,
+> -		info->status, info->mask);
+> +		pci_warn(dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
+> +			dev->vendor, dev->device,
+> +			info->status, info->mask);
+> +	} else {
+> +		pci_err(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
+> +			aer_error_severity_string[info->severity],
+> +			aer_error_layer[layer], aer_agent_string[agent]);
+> +
+> +		pci_err(dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
+> +			dev->vendor, dev->device,
+> +			info->status, info->mask);
+> +	}
+>  
+>  	__aer_print_error(dev, info);
+>  
+> -- 
+> 2.26.2
+> 
