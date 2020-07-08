@@ -2,63 +2,63 @@ Return-Path: <SRS0=luaH=AT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A163BC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:14:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B38B4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:19:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 055BF20739
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:14:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="VKhQDUTO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 055BF20739
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2418320739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:19:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2418320739
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1xXg0cKSzDr3G
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 21:14:43 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1xVj2FqyzDqyB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 21:13:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=VKhQDUTO; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B1xVh6NPpz9sDX;
- Wed,  8 Jul 2020 21:13:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594206780;
- bh=q4IUb+L/TelDHVJSgRXq/ljEnyuPjr0ghtLKqra0i4Y=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=VKhQDUTOMjJ/Qc/NIPa+OVOI25qNTv1it5ofNQKNsc549N6UkH0xBOn0t8VWTniQm
- BqYKNpXMi1cWxYzcFAr39GqrokPu5DoEDZ1KIjQ1OxCsan/tuT0mEZPds/JNLzJ8ku
- D7LUe1CPwPbbY+FZ4x5BfrakL7MIC4vB4tsNIFYENbayGfOIZhG8qB9OOLmP4Bo+RK
- 1TlXVI8LEu4N4PSrABmLTDh9HWf/8nwtMUCvWPZAlPFykVfysBpUKbnRBNE0rw6gqZ
- E2/FvgdLtMnGh1GzMeejo3i/zSLEUM9L20+GQUyNRjvRMWPsDF8jqeVXg0iTmfIOGl
- YNCvVe68KCtkg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 04/10] powerpc/perf: Add power10_feat to dt_cpu_ftrs
-In-Reply-To: <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
-Date: Wed, 08 Jul 2020 21:15:16 +1000
-Message-ID: <87y2nu2r7f.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1xdn0ZVZzDr5Y
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 21:19:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.helo=cstnet.cn
+ (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+X-Greylist: delayed 443 seconds by postgrey-1.36 at bilbo;
+ Wed, 08 Jul 2020 17:30:02 AEST
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B1rYQ6HNLzDqMB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 17:30:02 +1000 (AEST)
+Received: from localhost (unknown [159.226.5.99])
+ by APP-01 (Coremail) with SMTP id qwCowAAnCOk2dAVfs4CkBA--.31422S2;
+ Wed, 08 Jul 2020 15:22:31 +0800 (CST)
+From: Xu Wang <vulab@iscas.ac.cn>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ vulab@iscas.ac.cn, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] arch: powerpc: Remove unnecessary cast in kfree()
+Date: Wed,  8 Jul 2020 07:22:28 +0000
+Message-Id: <20200708072228.30776-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.17.1
+X-CM-TRANSID: qwCowAAnCOk2dAVfs4CkBA--.31422S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7JrWxWw4rXr1rWr1xuw17Wrg_yoW3GrbEk3
+ yvkFnFkrW0qrsavanxXF1xGFn2y393Xrs5KrnFga9rt345Xw15C3W3ZrW8Gay8Jry0yrZx
+ G3Z8tr98Zas3KjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUIcSsGvfJTRUUUbzAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+ 6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+ A2z4x0Y4vE2Ix0cI8IcVAFwI0_Gr0_Xr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+ Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+ 0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+ jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVW8Jr0_Cr1UMcvjeVCFs4IE7xkEbVWUJV
+ W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1l42xK82IYc2Ij64vI
+ r41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8Gjc
+ xK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0
+ cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8V
+ AvwI8IcIk0rVWrJr0_WFyUJwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF
+ 7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUY6wZUUUUU
+X-Originating-IP: [159.226.5.99]
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiBwcLA102Yl76WQAAs8
+X-Mailman-Approved-At: Wed, 08 Jul 2020 21:17:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,54 +70,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
-> From: Madhavan Srinivasan <maddy@linux.ibm.com>
->
-> Add power10 feature function to dt_cpu_ftrs.c along
-> with a power10 specific init() to initialize pmu sprs.
->
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/reg.h        |  3 +++
->  arch/powerpc/kernel/cpu_setup_power.S |  7 +++++++
->  arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
->  3 files changed, 36 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 21a1b2d..900ada1 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1068,6 +1068,9 @@
->  #define MMCR0_PMC2_LOADMISSTIME	0x5
->  #endif
->  
-> +/* BHRB disable bit for PowerISA v3.10 */
-> +#define MMCRA_BHRB_DISABLE	0x0000002000000000
-> +
->  /*
->   * SPRG usage:
->   *
-> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-> index efdcfa7..e8b3370c 100644
-> --- a/arch/powerpc/kernel/cpu_setup_power.S
-> +++ b/arch/powerpc/kernel/cpu_setup_power.S
-> @@ -233,3 +233,10 @@ __init_PMU_ISA207:
->  	li	r5,0
->  	mtspr	SPRN_MMCRS,r5
->  	blr
-> +
-> +__init_PMU_ISA31:
-> +	li	r5,0
-> +	mtspr	SPRN_MMCR3,r5
-> +	LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
-> +	mtspr	SPRN_MMCRA,r5
-> +	blr
+Remove unnecassary casts in the argument to kfree.
 
-This doesn't seem like it belongs in this patch. It's not called?
+Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 16e86ba8aa20..1f3d26806295 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -379,7 +379,7 @@ static void pseries_hp_work_fn(struct work_struct *work)
+ 	handle_dlpar_errorlog(hp_work->errlog);
+ 
+ 	kfree(hp_work->errlog);
+-	kfree((void *)work);
++	kfree(work);
+ }
+ 
+ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog)
+-- 
+2.17.1
+
