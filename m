@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E88C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A163BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:14:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01DBF2067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:04:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 055BF20739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 11:14:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="aSrscXK+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01DBF2067D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="VKhQDUTO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 055BF20739
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1xJx2wKpzDr1Y
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 21:04:33 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1xXg0cKSzDr3G
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 21:14:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1xGc2PNnzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 21:02:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1xVj2FqyzDqyB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 21:13:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=aSrscXK+; 
+ header.a=rsa-sha256 header.s=201909 header.b=VKhQDUTO; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B1xGb4Gfbz9sRK;
- Wed,  8 Jul 2020 21:02:31 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4B1xVh6NPpz9sDX;
+ Wed,  8 Jul 2020 21:13:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594206151;
- bh=+DPI5azVuQ4kVRPLT3fkQQ80oKm73Myeb1ZiX0FJUUs=;
+ s=201909; t=1594206780;
+ bh=q4IUb+L/TelDHVJSgRXq/ljEnyuPjr0ghtLKqra0i4Y=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=aSrscXK+cGj35xAewRPrCpKVI99FbZcUxCCnr78ovlIllG0lrl7oa5+mRNyTTebII
- Nz/tFgWpdGiry6DHAUtHVDA0OINQCGGMJvG8/Kd2rhWirYpEgP/4FZWBxy8fbBBHWY
- xs5RKo+NUj6uo0dkoSabDBo+21MeJJykL2+fmuFqR60guQHbHJFcoconesbcm2jHph
- jOY+9Pwr61HsGeqCBIiitl/XOVJUWegpLwtMdQRPOLYG/zMf2RfHURBbZxbivyjHZZ
- stGpL/dh/gcEnqkXbymWi4InMTu6Ldif9GX0JlcmirmYlEAHbZ2f8c7fXowYV4ANMD
- L6eOVhy65abdQ==
+ b=VKhQDUTOMjJ/Qc/NIPa+OVOI25qNTv1it5ofNQKNsc549N6UkH0xBOn0t8VWTniQm
+ BqYKNpXMi1cWxYzcFAr39GqrokPu5DoEDZ1KIjQ1OxCsan/tuT0mEZPds/JNLzJ8ku
+ D7LUe1CPwPbbY+FZ4x5BfrakL7MIC4vB4tsNIFYENbayGfOIZhG8qB9OOLmP4Bo+RK
+ 1TlXVI8LEu4N4PSrABmLTDh9HWf/8nwtMUCvWPZAlPFykVfysBpUKbnRBNE0rw6gqZ
+ E2/FvgdLtMnGh1GzMeejo3i/zSLEUM9L20+GQUyNRjvRMWPsDF8jqeVXg0iTmfIOGl
+ YNCvVe68KCtkg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 03/10] powerpc/xmon: Add PowerISA v3.1 PMU SPRs
-In-Reply-To: <1593595262-1433-4-git-send-email-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 04/10] powerpc/perf: Add power10_feat to dt_cpu_ftrs
+In-Reply-To: <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
 References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1593595262-1433-4-git-send-email-atrajeev@linux.vnet.ibm.com>
-Date: Wed, 08 Jul 2020 21:04:46 +1000
-Message-ID: <871rlm469d.fsf@mpe.ellerman.id.au>
+ <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
+Date: Wed, 08 Jul 2020 21:15:16 +1000
+Message-ID: <87y2nu2r7f.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -78,40 +78,46 @@ Sender: "Linuxppc-dev"
 Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
 > From: Madhavan Srinivasan <maddy@linux.ibm.com>
 >
-> PowerISA v3.1 added three new perfromance
-> monitoring unit (PMU) speical purpose register (SPR).
-> They are Monitor Mode Control Register 3 (MMCR3),
-> Sampled Instruction Event Register 2 (SIER2),
-> Sampled Instruction Event Register 3 (SIER3).
->
-> Patch here adds a new dump function dump_310_sprs
-> to print these SPR values.
+> Add power10 feature function to dt_cpu_ftrs.c along
+> with a power10 specific init() to initialize pmu sprs.
 >
 > Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 > ---
->  arch/powerpc/xmon/xmon.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
+>  arch/powerpc/include/asm/reg.h        |  3 +++
+>  arch/powerpc/kernel/cpu_setup_power.S |  7 +++++++
+>  arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
+>  3 files changed, 36 insertions(+)
 >
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 7efe4bc..8917fe8 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -2022,6 +2022,20 @@ static void dump_300_sprs(void)
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 21a1b2d..900ada1 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1068,6 +1068,9 @@
+>  #define MMCR0_PMC2_LOADMISSTIME	0x5
 >  #endif
->  }
 >  
-> +static void dump_310_sprs(void)
-> +{
-> +#ifdef CONFIG_PPC64
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_31))
-> +		return;
+> +/* BHRB disable bit for PowerISA v3.10 */
+> +#define MMCRA_BHRB_DISABLE	0x0000002000000000
 > +
-> +	printf("mmcr3  = %.16lx\n",
-> +		mfspr(SPRN_MMCR3));
+>  /*
+>   * SPRG usage:
+>   *
+> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+> index efdcfa7..e8b3370c 100644
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -233,3 +233,10 @@ __init_PMU_ISA207:
+>  	li	r5,0
+>  	mtspr	SPRN_MMCRS,r5
+>  	blr
 > +
-> +	printf("sier2  = %.16lx  sier3  = %.16lx\n",
-> +		mfspr(SPRN_SIER2), mfspr(SPRN_SIER3));
+> +__init_PMU_ISA31:
+> +	li	r5,0
+> +	mtspr	SPRN_MMCR3,r5
+> +	LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
+> +	mtspr	SPRN_MMCRA,r5
+> +	blr
 
-Why not all on one line like many of the others?
+This doesn't seem like it belongs in this patch. It's not called?
 
 cheers
