@@ -2,92 +2,177 @@ Return-Path: <SRS0=luaH=AT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 930F8C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 06:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B0A1C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:22:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 168FC20720
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 06:29:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 168FC20720
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A131820739
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 07:22:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.b="Z7NBqvep";
+	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.b="Z7NBqvep"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A131820739
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B1qC103hdzDqT2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 16:29:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B1rP13mmxzDr1Y
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jul 2020 17:22:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=40.107.22.49; helo=eur05-am6-obe.outbound.protection.outlook.com;
+ envelope-from=james.qian.wang@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-armh-onmicrosoft-com header.b=Z7NBqvep;
+ dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com
+ header.i=@armh.onmicrosoft.com header.a=rsa-sha256
+ header.s=selector2-armh-onmicrosoft-com header.b=Z7NBqvep; 
+ dkim-atps=neutral
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com
+ (mail-am6eur05on2049.outbound.protection.outlook.com [40.107.22.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B1q7X3Dw1zDr55
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 16:26:00 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06864V5h003644; Wed, 8 Jul 2020 02:25:53 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3253uueu9d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 02:25:52 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0686G93q017603;
- Wed, 8 Jul 2020 06:25:50 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma02fra.de.ibm.com with ESMTP id 322hd84a6d-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 06:25:50 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0686OWOg40304710
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 8 Jul 2020 06:24:32 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5CDBF11C05C;
- Wed,  8 Jul 2020 06:24:32 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9AD6811C054;
- Wed,  8 Jul 2020 06:24:31 +0000 (GMT)
-Received: from [9.102.2.253] (unknown [9.102.2.253])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  8 Jul 2020 06:24:31 +0000 (GMT)
-Subject: Re: [PATCH v2 4/4] powerpc/mm/radix: Create separate mappings for
- hot-plugged memory
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20200625064547.228448-1-aneesh.kumar@linux.ibm.com>
- <20200625064547.228448-5-aneesh.kumar@linux.ibm.com>
- <877dve4nvj.fsf@mpe.ellerman.id.au>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <aa2e029f-d6f3-60da-7840-0b377da0337a@linux.ibm.com>
-Date: Wed, 8 Jul 2020 11:54:30 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.9.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B1rKh0fxXzDqwp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2020 17:19:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com; 
+ s=selector2-armh-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=aPkX3o0i0vVP+ei74KFkCVT0hft2CiStdUF8qUTnRpc=;
+ b=Z7NBqvep5KuQYSyH/wF3oHrHsHWaGhtoxTqVWcgqbmGVKlYftZxS+XAXeC+uHJyf/GjIMC8YdPd8VKTP/EzNmsV3qZzE9od25fFWW5t3xf6jRZBhikORdvNAsixWI/oqWI7xRWRgSrBcw+WLArC40UdFIMS3XFuQMchUVWmD2NQ=
+Received: from DB7PR05CA0039.eurprd05.prod.outlook.com (2603:10a6:10:2e::16)
+ by AM6PR08MB3992.eurprd08.prod.outlook.com (2603:10a6:20b:a4::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3174.20; Wed, 8 Jul
+ 2020 07:19:40 +0000
+Received: from DB5EUR03FT033.eop-EUR03.prod.protection.outlook.com
+ (2603:10a6:10:2e:cafe::d7) by DB7PR05CA0039.outlook.office365.com
+ (2603:10a6:10:2e::16) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3174.20 via Frontend
+ Transport; Wed, 8 Jul 2020 07:19:40 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 63.35.35.123)
+ smtp.mailfrom=arm.com; lists.ozlabs.org; dkim=pass (signature was verified)
+ header.d=armh.onmicrosoft.com;lists.ozlabs.org; dmarc=bestguesspass
+ action=none header.from=arm.com;
+Received-SPF: Pass (protection.outlook.com: domain of arm.com designates
+ 63.35.35.123 as permitted sender) receiver=protection.outlook.com;
+ client-ip=63.35.35.123; helo=64aa7808-outbound-1.mta.getcheckrecipient.com;
+Received: from 64aa7808-outbound-1.mta.getcheckrecipient.com (63.35.35.123) by
+ DB5EUR03FT033.mail.protection.outlook.com (10.152.20.76) with
+ Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.3153.24 via Frontend Transport; Wed, 8 Jul 2020 07:19:39 +0000
+Received: ("Tessian outbound 4e683f4039d5:v62");
+ Wed, 08 Jul 2020 07:19:39 +0000
+X-CheckRecipientChecked: true
+X-CR-MTA-CID: 84719459c5a0d449
+X-CR-MTA-TID: 64aa7808
+Received: from 0c7ca0ba8389.1
+ by 64aa7808-outbound-1.mta.getcheckrecipient.com id
+ 16C0E0C3-FCEE-4BFB-A29B-575CDE561425.1; 
+ Wed, 08 Jul 2020 07:19:33 +0000
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ by 64aa7808-outbound-1.mta.getcheckrecipient.com with ESMTPS id 0c7ca0ba8389.1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384);
+ Wed, 08 Jul 2020 07:19:33 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JXAJnuftCYN4eLG7y5MpPp7K77lHN5T9Fw6SesFCbuQeHzG6lPzgLMMTJA1Uer1cNKd8stOHFjRaMQzurDgVJwBB6uz/iUVJHoIeZTlcWuIgE27PmZtqJ53iy1KWZZHUbRF8PeF0ntkHOIw0ol1TgwenNheXxc0FQNM2n7BbJanjvbDJCoxqheIqDMg8BPVcK00TskgbeVESEgmZVn3kIQ/1sdzxZaDy4HpPiwBpENOGdlUC5q070kSBvJ4qGsQE/taMe9MThyGV+r6Tx6GB3QvbRUNsXxGkZuoKUnr0EsGsUwdzMev+UpP5Edn4nNfzsDO01XVdyQ9U3whG8pgD9Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=aPkX3o0i0vVP+ei74KFkCVT0hft2CiStdUF8qUTnRpc=;
+ b=bs8ObSbhVbu7ggwdmxh99Y4u/sMnXIGUjDjCgKcymNH+HAciicG7OE8oRQ65d3n4dZ4oYPXvqSaEEwsMdg/vpGKYlbl+802VIQDw8Sjym4Fq3cGS2JFb8MyDU9zjmzJBopxMnqajf0HDVCoGkRBreOOUpCZKBp/hTZsrAA4TGKQr3o9OE+sOEMK1pwkO/YjGNaPwl3WymSUpT88PqaCo90jCJgiYwWtAVY6nu2nVEQWpMfG39p54l/6Fl4NP9MlYvy7A49NiKwvoahSs1QcszhnJmt8zh34BEo1NB+7qLf0htnTdhPcFDY885OfCjERjvbRYdz7ncxg68qM9cyeemA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=arm.com; dmarc=pass action=none header.from=arm.com; dkim=pass
+ header.d=arm.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com; 
+ s=selector2-armh-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=aPkX3o0i0vVP+ei74KFkCVT0hft2CiStdUF8qUTnRpc=;
+ b=Z7NBqvep5KuQYSyH/wF3oHrHsHWaGhtoxTqVWcgqbmGVKlYftZxS+XAXeC+uHJyf/GjIMC8YdPd8VKTP/EzNmsV3qZzE9od25fFWW5t3xf6jRZBhikORdvNAsixWI/oqWI7xRWRgSrBcw+WLArC40UdFIMS3XFuQMchUVWmD2NQ=
+Authentication-Results-Original: infradead.org; dkim=none (message not signed)
+ header.d=none; infradead.org;
+ dmarc=none action=none header.from=arm.com; 
+Received: from DB6PR0801MB1719.eurprd08.prod.outlook.com (2603:10a6:4:3a::18)
+ by DB7PR08MB3866.eurprd08.prod.outlook.com (2603:10a6:10:7b::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3153.20; Wed, 8 Jul
+ 2020 07:19:30 +0000
+Received: from DB6PR0801MB1719.eurprd08.prod.outlook.com
+ ([fe80::7d48:27e3:a154:17ef]) by DB6PR0801MB1719.eurprd08.prod.outlook.com
+ ([fe80::7d48:27e3:a154:17ef%12]) with mapi id 15.20.3153.030; Wed, 8 Jul 2020
+ 07:19:30 +0000
+Date: Wed, 8 Jul 2020 15:19:23 +0800
+From: "james qian wang (Arm Technology China)" <james.qian.wang@arm.com>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH 06/20] Documentation: gpu/komeda-kms: eliminate
+ duplicated word
+Message-ID: <20200708071923.GA1127463@jamwan02-TSP300>
+References: <20200707180414.10467-1-rdunlap@infradead.org>
+ <20200707180414.10467-7-rdunlap@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200707180414.10467-7-rdunlap@infradead.org>
+X-ClientProxiedBy: SG2PR06CA0193.apcprd06.prod.outlook.com (2603:1096:4:1::25)
+ To DB6PR0801MB1719.eurprd08.prod.outlook.com
+ (2603:10a6:4:3a::18)
 MIME-Version: 1.0
-In-Reply-To: <877dve4nvj.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-08_01:2020-07-08,
- 2020-07-08 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 lowpriorityscore=0
- bulkscore=0 clxscore=1015 priorityscore=1501 spamscore=0 adultscore=0
- phishscore=0 impostorscore=0 cotscore=-2147483648 malwarescore=0
- suspectscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2007080042
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from localhost (203.126.0.111) by
+ SG2PR06CA0193.apcprd06.prod.outlook.com (2603:1096:4:1::25) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.3174.21 via Frontend Transport; Wed, 8 Jul 2020 07:19:28 +0000
+X-Originating-IP: [203.126.0.111]
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-Office365-Filtering-Correlation-Id: 3b501d04-3ac3-4dc8-4b37-08d8230f4725
+X-MS-TrafficTypeDiagnostic: DB7PR08MB3866:|AM6PR08MB3992:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <AM6PR08MB399264C69A1F846C603FADE8B3670@AM6PR08MB3992.eurprd08.prod.outlook.com>
+x-checkrecipientrouted: true
+NoDisclaimer: true
+X-MS-Oob-TLC-OOBClassifiers: OLM:5797;OLM:5797;
+X-Forefront-PRVS: 04583CED1A
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam-Untrusted: BCL:0;
+X-Microsoft-Antispam-Message-Info-Original: JMs8wCULxbtOsZOmUQzPrITahAzA4Io1/sdAjlgr8dJE3tHGP4GIeV1X4Vu2A7mx3XJFaxhGWIAT5hTG1FIKW3Ym1sxFbUxGh/7QSkykaRbClm+o7OVpeLyz4aYhx4XrqZx4wyUwOHXo1ewT5xq90DhW7ct8taT+VYtTEALZwnewyH/xUXEkZ54b7tx2dTbgmb3ihzt5xLhaa5Q3NACOdz+Nv0dTpfE3/fpA6xlFigyk5kmoRFefn5yPa7Qx2ssEHwDHqMaf4yNnDsLZu5g/qY8pi/c2exhw/X2uf0UqNx2y0qzMBjuc67vFvDR6qld6Efymt7VhzVK+9K17nyxvgw==
+X-Forefront-Antispam-Report-Untrusted: CIP:255.255.255.255; CTRY:; LANG:en;
+ SCL:1; SRV:; IPV:NLI; SFV:NSPM; H:DB6PR0801MB1719.eurprd08.prod.outlook.com;
+ PTR:; CAT:NONE; SFTY:;
+ SFS:(7916004)(4636009)(376002)(346002)(366004)(39850400004)(396003)(136003)(8936002)(478600001)(956004)(54906003)(7366002)(86362001)(7406005)(9686003)(8676002)(316002)(7416002)(6486002)(2906002)(33716001)(6666004)(6916009)(1076003)(66476007)(66556008)(4326008)(66946007)(33656002)(83380400001)(186003)(16526019)(26005)(52116002)(6496006)(5660300002);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData: s28MBsKsTNwLsb9W726e+etxqE/6znWCOOivA0sQnLqpMN6EqMSmrM6eEwj1qUVHukQiovpM6XzazVXZiSwSO9vVVgp1ps+hDhPnHxKC4Kb6paqlRLn5HNV0StemiVHmy4Ze5RLtH1yUVS5S0CPqXUnn0BQE2rrAjC0IOnPB9b/BteSh/zzB07567K+zDHCOXeSNv6L1XsQIznCLeLdxarRLq2GZ0W9dyGB4X6XZNrp26pn0U8Z5rM8uU1PhfmpcjwEaLFqiUzxwmdKOUDEqsIMuqY0H4db3enXR4Dhc38e6nJINBTEZlyTTZ0BcqpJKu0343xm65IQyoqlnecLBU7djtFNMW4L8EqqAA43UZZVM0mbg+S+zXUS2I/rxeXEqaS3jIga2A3pbxP4oXHelCX0cgHrAxNhSIJMTpH4thNLJx1P47VYKAZDftLdV1VUYP/XzobqEsn4ahCCW8xGiiixtnG5s3m48t/KIOe7xtDI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR08MB3866
+Original-Authentication-Results: infradead.org; dkim=none (message not signed)
+ header.d=none; infradead.org;
+ dmarc=none action=none header.from=arm.com; 
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped: DB5EUR03FT033.eop-EUR03.prod.protection.outlook.com
+X-Forefront-Antispam-Report: CIP:63.35.35.123; CTRY:IE; LANG:en; SCL:1; SRV:;
+ IPV:CAL; SFV:NSPM; H:64aa7808-outbound-1.mta.getcheckrecipient.com;
+ PTR:ec2-63-35-35-123.eu-west-1.compute.amazonaws.com; CAT:NONE; SFTY:;
+ SFS:(7916004)(4636009)(136003)(346002)(39860400002)(396003)(376002)(46966005)(82740400003)(16526019)(33656002)(6496006)(956004)(4326008)(33716001)(5660300002)(336012)(83380400001)(478600001)(6666004)(9686003)(2906002)(6862004)(70586007)(70206006)(26005)(1076003)(47076004)(186003)(82310400002)(316002)(6486002)(356005)(86362001)(8676002)(8936002)(81166007)(54906003);
+ DIR:OUT; SFP:1101; 
+X-MS-Office365-Filtering-Correlation-Id-Prvs: c801bed8-98ca-4271-cf60-08d8230f40e3
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: sfcZEcANIoNmSU7fibyA2TBwRmlxtz2DWeLB5LtESliv9Qv9R9eryhWgWt1r3UrYxoYPlVQCbIKvhMGIKaY78HogP+50mR5TSw/uTFhxCKQ/rnW0CP5eFLwhdpQN8tsZ3SgxnCnbUtI20lkfsRiN0NMAgOlIrC2FsiZtT/BTktOaCrEuDBDGirLtWOlyyQQGG8lHfw4qjt8QItKz8Wj9Fj0Mo7vQwyjWHP+f2qAEiVFXE0JUNEWoXvvuxGDUiuSqtntvOq8oAWeS9MSoopJUEwxFRa+SYiNAufW3EqUK+AcI/mbuER6E/dkhGL/VBZelyjD88lJ1tKx/C2p+PRv7drVugYvj4d6IQnTVY7nrq68IX7kWlcBfuykY1ziCjeEoVFoaOBlbzwJhbDndX3/SoQ==
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Jul 2020 07:19:39.7963 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3b501d04-3ac3-4dc8-4b37-08d8230f4725
+X-MS-Exchange-CrossTenant-Id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=f34e5979-57d9-4aaa-ad4d-b122a662184d; Ip=[63.35.35.123];
+ Helo=[64aa7808-outbound-1.mta.getcheckrecipient.com]
+X-MS-Exchange-CrossTenant-AuthSource: DB5EUR03FT033.eop-EUR03.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR08MB3992
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,324 +184,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Bharata B Rao <bharata@linux.ibm.com>
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
+ linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+ dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>,
+ Paul Cercueil <paul@crapouillou.net>, keyrings@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
+ Pavel Machek <pavel@ucw.cz>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
+ linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
+ linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ Halil Pasic <pasic@linux.ibm.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Mali DP Maintainers <malidp@foss.arm.com>, linux-input@vger.kernel.org,
+ Derek Kiernan <derek.kiernan@xilinx.com>, linux-mips@vger.kernel.org,
+ Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
+ Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
+ Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>, nd@arm.com,
+ Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Pierre Morel <pmorel@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Wolfram Sang <wsa@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
+ Jason Wessel <jason.wessel@windriver.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@kernel.org>, Dan Murphy <dmurphy@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/8/20 10:14 AM, Michael Ellerman wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
->> To enable memory unplug without splitting kernel page table
->> mapping, we force the max mapping size to the LMB size. LMB
->> size is the unit in which hypervisor will do memory add/remove
->> operation.
->>
->> This implies on pseries system, we now end up mapping
+On Tue, Jul 07, 2020 at 11:04:00AM -0700, Randy Dunlap wrote:
+> Drop the doubled word "and".
 > 
-> Please expand on why it "implies" that for pseries.
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: linux-doc@vger.kernel.org
+> Cc: James (Qian) Wang <james.qian.wang@arm.com>
+> Cc: Liviu Dudau <liviu.dudau@arm.com>
+> Cc: Mihail Atanassov <mihail.atanassov@arm.com>
+> Cc: Mali DP Maintainers <malidp@foss.arm.com>
+> ---
+>  Documentation/gpu/komeda-kms.rst |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->> memory with 2M page size instead of 1G. To improve
->> that we want hypervisor to hint the kernel about the hotplug
->> memory range.  This was added that as part of
->                   That
->>
->> commit b6eca183e23e ("powerpc/kernel: Enables memory
->> hot-remove after reboot on pseries guests")
->>
->> But we still don't do that on PowerVM. Once we get PowerVM
-> 
-> I think you mean PowerVM doesn't provide that hint yet?
-> 
-> Realistically it won't until P10. So this means we'll always use 2MB on
-> Power9 PowerVM doesn't it?
-> 
-> What about KVM?
-> 
-> Have you done any benchmarking on the impact of switching the linear
-> mapping to 2MB pages?
-> 
+> --- linux-next-20200701.orig/Documentation/gpu/komeda-kms.rst
+> +++ linux-next-20200701/Documentation/gpu/komeda-kms.rst
+> @@ -41,7 +41,7 @@ Compositor blends multiple layers or pix
+>  frame. its output frame can be fed into post image processor for showing it on
+>  the monitor or fed into wb_layer and written to memory at the same time.
+>  user can also insert a scaler between compositor and wb_layer to down scale
+> -the display frame first and and then write to memory.
+> +the display frame first and then write to memory.
+>
 
-The TLB impact should be minimal because with a 256M LMB size partition 
-scoped entries are still 2M and hence we end up with TLBs of 2M size.
+Thank you Randy
 
+Reviewed-by: James Qian Wang <james.qian.wang@arm.com>
 
->> updated, we can then force the 2M mapping only to hot-pluggable
->> memory region using memblock_is_hotpluggable(). Till then
->> let's depend on LMB size for finding the mapping page size
->> for linear range.
->>
-
-updated
-
-
-powerpc/mm/radix: Create separate mappings for hot-plugged memory
-
-To enable memory unplug without splitting kernel page table
-mapping, we force the max mapping size to the LMB size. LMB
-size is the unit in which hypervisor will do memory add/remove
-operation.
-
-Pseries systems supports max LMB size of 256MB. Hence on pseries,
-we now end up mapping memory with 2M page size instead of 1G. To improve
-that we want hypervisor to hint the kernel about the hotplug
-memory range.  That was added that as part of
-
-commit b6eca18 ("powerpc/kernel: Enables memory
-hot-remove after reboot on pseries guests")
-
-But PowerVM doesn't provide that hint yet. Once we get PowerVM
-updated, we can then force the 2M mapping only to hot-pluggable
-memory region using memblock_is_hotpluggable(). Till then
-let's depend on LMB size for finding the mapping page size
-for linear range.
-
-With this change KVM guest will also be doing linear mapping with
-2M page size.
-
-
-
->> Signed-off-by: Bharata B Rao <bharata@linux.ibm.com>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->>   arch/powerpc/mm/book3s64/radix_pgtable.c | 83 ++++++++++++++++++++----
->>   arch/powerpc/platforms/powernv/setup.c   | 10 ++-
->>   2 files changed, 81 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> index 78ad11812e0d..a4179e4da49d 100644
->> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
->> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> @@ -15,6 +15,7 @@
->>   #include <linux/mm.h>
->>   #include <linux/hugetlb.h>
->>   #include <linux/string_helpers.h>
->> +#include <linux/memory.h>
->>   
->>   #include <asm/pgtable.h>
->>   #include <asm/pgalloc.h>
->> @@ -34,6 +35,7 @@
->>   
->>   unsigned int mmu_pid_bits;
->>   unsigned int mmu_base_pid;
->> +unsigned int radix_mem_block_size;
-> 
-> static? __ro_after_init?
-> 
-
-Added __ro_after_iit
-
->> @@ -266,6 +268,7 @@ static unsigned long next_boundary(unsigned long addr, unsigned long end)
->>   
->>   static int __meminit create_physical_mapping(unsigned long start,
->>   					     unsigned long end,
->> +					     unsigned long max_mapping_size,
->>   					     int nid, pgprot_t _prot)
->>   {
->>   	unsigned long vaddr, addr, mapping_size = 0;
->> @@ -279,6 +282,8 @@ static int __meminit create_physical_mapping(unsigned long start,
->>   		int rc;
->>   
->>   		gap = next_boundary(addr, end) - addr;
->> +		if (gap > max_mapping_size)
->> +			gap = max_mapping_size;
->>   		previous_size = mapping_size;
->>   		prev_exec = exec;
->>   
->> @@ -329,8 +334,9 @@ static void __init radix_init_pgtable(void)
->>   
->>   	/* We don't support slb for radix */
->>   	mmu_slb_size = 0;
->> +
->>   	/*
->> -	 * Create the linear mapping, using standard page size for now
->> +	 * Create the linear mapping
->>   	 */
->>   	for_each_memblock(memory, reg) {
->>   		/*
->> @@ -346,6 +352,7 @@ static void __init radix_init_pgtable(void)
->>   
->>   		WARN_ON(create_physical_mapping(reg->base,
->>   						reg->base + reg->size,
->> +						radix_mem_block_size,
->>   						-1, PAGE_KERNEL));
->>   	}
->>   
->> @@ -486,6 +493,49 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
->>   	return 1;
->>   }
->>   
->> +static int __init probe_memory_block_size(unsigned long node, const char *uname, int
->> +					  depth, void *data)
->> +{
->> +	const __be32 *block_size;
->> +	int len;
->> +
->> +	if (depth != 1)
->> +		return 0;
->> +
->> +	if (!strcmp(uname, "ibm,dynamic-reconfiguration-memory")) {
-> 
-> 	if (strcmp(uname, "ibm,dynamic-reconfiguration-memory") != 0)
->          	return 0;
-> 
-> Then you can de-indent the rest of the body.
-> 
-
-updated
-
-> 
->> +		block_size = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
->> +		if (!block_size || len < dt_root_size_cells * sizeof(__be32))
-> 
-> This will give us a sparse warning, please do the endian conversion
-> before looking at the value.
-> 
->> +			/*
->> +			 * Nothing in the device tree
->> +			 */
->> +			return MIN_MEMORY_BLOCK_SIZE;
-> 
->> +
->> +		return dt_mem_next_cell(dt_root_size_cells, &block_size);
-> 
-> Just of_read_number() ?
-> 
-> This is misusing the return value, as I explained on one of your other
-> recent patches. You should return !0 to indicate that scanning should
-> stop, and the actual value can go via the data pointer, or better just
-> set the global.
-> 
-
-
-updated
-
-> 
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static unsigned long radix_memory_block_size(void)
->> +{
->> +	unsigned long mem_block_size = MIN_MEMORY_BLOCK_SIZE;
-> 
->> +
->> +	if (firmware_has_feature(FW_FEATURE_OPAL)) {
->> +
->> +		mem_block_size = 1UL * 1024 * 1024 * 1024;
-> 
-> We have 1GB hardcoded here and also in pnv_memory_block_size().
-> 
-> Shouldn't pnv_memory_block_size() at least be using radix_mem_block_size?
-
-
-updated
-
-> 
->> +	} else if (firmware_has_feature(FW_FEATURE_LPAR)) {
->> +		mem_block_size = of_scan_flat_dt(probe_memory_block_size, NULL);
->> +		if (!mem_block_size)
->> +			mem_block_size = MIN_MEMORY_BLOCK_SIZE;
->> +	}
->> +
->> +	return mem_block_size;
->> +}
-> 
-> It would probably be simpler if that was just inlined below.
-> 
->> +
->> +
->>   void __init radix__early_init_devtree(void)
->>   {
->>   	int rc;
->> @@ -494,17 +544,27 @@ void __init radix__early_init_devtree(void)
->>   	 * Try to find the available page sizes in the device-tree
->>   	 */
->>   	rc = of_scan_flat_dt(radix_dt_scan_page_sizes, NULL);
->> -	if (rc != 0)  /* Found */
->> -		goto found;
->> +	if (rc == 0) {
->> +		/*
->> +		 * no page size details found in device tree
->> +		 * let's assume we have page 4k and 64k support
-> 
-> Capitals and punctuation please?
-> 
->> +		 */
->> +		mmu_psize_defs[MMU_PAGE_4K].shift = 12;
->> +		mmu_psize_defs[MMU_PAGE_4K].ap = 0x0;
->> +
->> +		mmu_psize_defs[MMU_PAGE_64K].shift = 16;
->> +		mmu_psize_defs[MMU_PAGE_64K].ap = 0x5;
->> +	}
-> 
-> Moving that seems like an unrelated change. It's a reasonable change but
-> I'd rather you did it in a standalone patch.
-> 
-
-we needed that change so that we can call radix_memory_block_size() for 
-both found and !found case.
-
->>   	/*
->> -	 * let's assume we have page 4k and 64k support
->> +	 * Max mapping size used when mapping pages. We don't use
->> +	 * ppc_md.memory_block_size() here because this get called
->> +	 * early and we don't have machine probe called yet. Also
->> +	 * the pseries implementation only check for ibm,lmb-size.
->> +	 * All hypervisor supporting radix do expose that device
->> +	 * tree node.
->>   	 */
->> -	mmu_psize_defs[MMU_PAGE_4K].shift = 12;
->> -	mmu_psize_defs[MMU_PAGE_4K].ap = 0x0;
->> -
->> -	mmu_psize_defs[MMU_PAGE_64K].shift = 16;
->> -	mmu_psize_defs[MMU_PAGE_64K].ap = 0x5;
->> -found:
->> +	radix_mem_block_size = radix_memory_block_size();
-> 
-> If you did that earlier in the function, before
-> radix_dt_scan_page_sizes(), the logic would be simpler.
-> 
->>   	return;
->>   }
->>   
->> @@ -856,7 +916,8 @@ int __meminit radix__create_section_mapping(unsigned long start,
->>   		return -1;
->>   	}
->>   
->> -	return create_physical_mapping(__pa(start), __pa(end), nid, prot);
->> +	return create_physical_mapping(__pa(start), __pa(end),
->> +				       radix_mem_block_size, nid, prot);
->>   }
->>   
->>   int __meminit radix__remove_section_mapping(unsigned long start, unsigned long end)
->> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
->> index 3bc188da82ba..6e2f614590a3 100644
->> --- a/arch/powerpc/platforms/powernv/setup.c
->> +++ b/arch/powerpc/platforms/powernv/setup.c
->> @@ -399,7 +399,15 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
->>   #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
->>   static unsigned long pnv_memory_block_size(void)
->>   {
->> -	return 256UL * 1024 * 1024;
->> +	/*
->> +	 * We map the kernel linear region with 1GB large pages on radix. For
->> +	 * memory hot unplug to work our memory block size must be at least
->> +	 * this size.
->> +	 */
->> +	if (radix_enabled())
->> +		return 1UL * 1024 * 1024 * 1024;
->> +	else
->> +		return 256UL * 1024 * 1024;
->>   }
->>   #endif
->>   
->> -- 
->> 2.26.2
-> 
-> 
-> cheers
-> 
-
-
--aneesh
+>  Writeback Layer (wb_layer)
+>  --------------------------
