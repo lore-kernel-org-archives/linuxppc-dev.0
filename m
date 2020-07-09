@@ -6,67 +6,67 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A998C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5271C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:08:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39F86206F6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:06:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39F86206F6
+	by mail.kernel.org (Postfix) with ESMTPS id 8081C206F6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:08:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8081C206F6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Mzz3LPxzDrCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:06:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2N2S3LVDzDrnR
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:08:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2MBw5LqJzDqZC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2MBw2NG0zDqbq
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:30:48 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06933GOn055956; Wed, 8 Jul 2020 23:30:44 -0400
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0a-001b2d01.pphosted.com with ESMTP id 325rh2kfbq-1
+ 06933Bj6009582; Wed, 8 Jul 2020 23:30:39 -0400
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 325kt7j077-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 23:30:44 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0693Ejdh031337;
- Thu, 9 Jul 2020 03:30:43 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma01wdc.us.ibm.com with ESMTP id 325k27k54n-1
+ Wed, 08 Jul 2020 23:30:38 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0693EUEZ032627;
+ Thu, 9 Jul 2020 03:30:38 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma04wdc.us.ibm.com with ESMTP id 325k2435f1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 03:30:43 +0000
+ Thu, 09 Jul 2020 03:30:38 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0693Ug5f52953564
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0693Ubwc13960054
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 03:30:42 GMT
+ Thu, 9 Jul 2020 03:30:37 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7DEB7B2065;
- Thu,  9 Jul 2020 03:30:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 92F33B2065;
+ Thu,  9 Jul 2020 03:30:37 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BC5BEB2064;
- Thu,  9 Jul 2020 03:30:40 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6D08FB2067;
+ Thu,  9 Jul 2020 03:30:35 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.62.107])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  9 Jul 2020 03:30:40 +0000 (GMT)
+ Thu,  9 Jul 2020 03:30:35 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v6 20/23] powerpc/selftest/ptrave-pkey: Rename variables to
- make it easier to follow code
-Date: Thu,  9 Jul 2020 08:59:43 +0530
-Message-Id: <20200709032946.881753-21-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v6 18/23] powerpc/book3s64/keys/kuap: Reset AMR/IAMR values on
+ kexec
+Date: Thu,  9 Jul 2020 08:59:41 +0530
+Message-Id: <20200709032946.881753-19-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200709032946.881753-1-aneesh.kumar@linux.ibm.com>
 References: <20200709032946.881753-1-aneesh.kumar@linux.ibm.com>
@@ -77,9 +77,9 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-08_19:2020-07-08,
  2020-07-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0
- lowpriorityscore=0 mlxscore=0 clxscore=1015 bulkscore=0 phishscore=0
- mlxlogscore=999 priorityscore=1501 spamscore=0 suspectscore=0
+ adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 priorityscore=1501 mlxlogscore=999
+ bulkscore=0 mlxscore=0 phishscore=0 spamscore=0 lowpriorityscore=0
  malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2007090023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,102 +99,136 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rename variable to indicate that they are invalid values which we will use to
-test ptrace update of pkeys.
+As we kexec across kernels that use AMR/IAMR for different purposes
+we need to ensure that new kernels get kexec'd with a reset value
+of AMR/IAMR. For ex: the new kernel can use key 0 for kernel mapping and the old
+AMR value prevents access to key 0.
+
+This patch also removes reset if IAMR and AMOR in kexec_sequence. Reset of AMOR
+is not needed and the IAMR reset is partial (it doesn't do the reset
+on secondary cpus) and is redundant with this patch.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- .../selftests/powerpc/ptrace/ptrace-pkey.c    | 26 +++++++++----------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/book3s/64/kexec.h | 23 ++++++++++++++++++++++
+ arch/powerpc/include/asm/kexec.h           | 12 +++++++++++
+ arch/powerpc/kernel/misc_64.S              | 14 -------------
+ arch/powerpc/kexec/core_64.c               |  2 ++
+ arch/powerpc/mm/book3s64/pgtable.c         |  3 +++
+ 5 files changed, 40 insertions(+), 14 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/kexec.h
 
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-index bdbbbe8431e0..f9216c7a1829 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-@@ -44,7 +44,7 @@ struct shared_info {
- 	unsigned long amr2;
+diff --git a/arch/powerpc/include/asm/book3s/64/kexec.h b/arch/powerpc/include/asm/book3s/64/kexec.h
+new file mode 100644
+index 000000000000..6b5c3a248ba2
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/kexec.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef _ASM_POWERPC_BOOK3S_64_KEXEC_H_
++#define _ASM_POWERPC_BOOK3S_64_KEXEC_H_
++
++
++#define reset_sprs reset_sprs
++static inline void reset_sprs(void)
++{
++	if (cpu_has_feature(CPU_FTR_ARCH_206)) {
++		mtspr(SPRN_AMR, 0);
++		mtspr(SPRN_UAMOR, 0);
++	}
++
++	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
++		mtspr(SPRN_IAMR, 0);
++	}
++
++	/*  Do we need isync()? We are going via a kexec reset */
++	isync();
++}
++
++#endif
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index c68476818753..89f7e3462292 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -150,6 +150,18 @@ static inline void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
+ }
  
- 	/* AMR value that ptrace should refuse to write to the child. */
--	unsigned long amr3;
-+	unsigned long invalid_amr;
+ #endif /* CONFIG_KEXEC_CORE */
++
++#ifdef CONFIG_PPC_BOOK3S_64
++#include <asm/book3s/64/kexec.h>
++#endif
++
++#ifndef reset_sprs
++#define reset_sprs reset_sprs
++static inline void reset_sprs(void)
++{
++}
++#endif
++
+ #endif /* ! __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_KEXEC_H */
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 1864605eca29..7bb46ad98207 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -413,20 +413,6 @@ _GLOBAL(kexec_sequence)
+ 	li	r0,0
+ 	std	r0,16(r1)
  
- 	/* IAMR value the parent expects to read from the child. */
- 	unsigned long expected_iamr;
-@@ -57,8 +57,8 @@ struct shared_info {
- 	 * (even though they're valid ones) because userspace doesn't have
- 	 * access to those registers.
+-BEGIN_FTR_SECTION
+-	/*
+-	 * This is the best time to turn AMR/IAMR off.
+-	 * key 0 is used in radix for supervisor<->user
+-	 * protection, but on hash key 0 is reserved
+-	 * ideally we want to enter with a clean state.
+-	 * NOTE, we rely on r0 being 0 from above.
+-	 */
+-	mtspr	SPRN_IAMR,r0
+-BEGIN_FTR_SECTION_NESTED(42)
+-	mtspr	SPRN_AMOR,r0
+-END_FTR_SECTION_NESTED_IFSET(CPU_FTR_HVMODE, 42)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+-
+ 	/* save regs for local vars on new stack.
+ 	 * yes, we won't go back, but ...
  	 */
--	unsigned long new_iamr;
--	unsigned long new_uamor;
-+	unsigned long invalid_iamr;
-+	unsigned long invalid_uamor;
- };
+diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+index b4184092172a..8a449b2d8715 100644
+--- a/arch/powerpc/kexec/core_64.c
++++ b/arch/powerpc/kexec/core_64.c
+@@ -152,6 +152,8 @@ static void kexec_smp_down(void *arg)
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(0, 1);
  
- static int sys_pkey_alloc(unsigned long flags, unsigned long init_access_rights)
-@@ -100,7 +100,7 @@ static int child(struct shared_info *info)
++	reset_sprs();
++
+ 	kexec_smp_wait();
+ 	/* NOTREACHED */
+ }
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index c58ad1049909..e63fcc00744c 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -15,6 +15,7 @@
+ #include <asm/powernv.h>
+ #include <asm/firmware.h>
+ #include <asm/ultravisor.h>
++#include <asm/kexec.h>
  
- 	info->amr1 |= 3ul << pkeyshift(pkey1);
- 	info->amr2 |= 3ul << pkeyshift(pkey2);
--	info->amr3 |= info->amr2 | 3ul << pkeyshift(pkey3);
-+	info->invalid_amr |= info->amr2 | 3ul << pkeyshift(pkey3);
+ #include <mm/mmu_decl.h>
+ #include <trace/events/thp.h>
+@@ -165,6 +166,8 @@ void mmu_cleanup_all(void)
+ 		radix__mmu_cleanup_all();
+ 	else if (mmu_hash_ops.hpte_clear_all)
+ 		mmu_hash_ops.hpte_clear_all();
++
++	reset_sprs();
+ }
  
- 	if (disable_execute)
- 		info->expected_iamr |= 1ul << pkeyshift(pkey1);
-@@ -111,8 +111,8 @@ static int child(struct shared_info *info)
- 
- 	info->expected_uamor |= 3ul << pkeyshift(pkey1) |
- 				3ul << pkeyshift(pkey2);
--	info->new_iamr |= 1ul << pkeyshift(pkey1) | 1ul << pkeyshift(pkey2);
--	info->new_uamor |= 3ul << pkeyshift(pkey1);
-+	info->invalid_iamr |= 1ul << pkeyshift(pkey1) | 1ul << pkeyshift(pkey2);
-+	info->invalid_uamor |= 3ul << pkeyshift(pkey1);
- 
- 	/*
- 	 * We won't use pkey3. We just want a plausible but invalid key to test
-@@ -196,9 +196,9 @@ static int parent(struct shared_info *info, pid_t pid)
- 	PARENT_SKIP_IF_UNSUPPORTED(ret, &info->child_sync);
- 	PARENT_FAIL_IF(ret, &info->child_sync);
- 
--	info->amr1 = info->amr2 = info->amr3 = regs[0];
--	info->expected_iamr = info->new_iamr = regs[1];
--	info->expected_uamor = info->new_uamor = regs[2];
-+	info->amr1 = info->amr2 = info->invalid_amr = regs[0];
-+	info->expected_iamr = info->invalid_iamr = regs[1];
-+	info->expected_uamor = info->invalid_uamor = regs[2];
- 
- 	/* Wake up child so that it can set itself up. */
- 	ret = prod_child(&info->child_sync);
-@@ -234,10 +234,10 @@ static int parent(struct shared_info *info, pid_t pid)
- 		return ret;
- 
- 	/* Write invalid AMR value in child. */
--	ret = ptrace_write_regs(pid, NT_PPC_PKEY, &info->amr3, 1);
-+	ret = ptrace_write_regs(pid, NT_PPC_PKEY, &info->invalid_amr, 1);
- 	PARENT_FAIL_IF(ret, &info->child_sync);
- 
--	printf("%-30s AMR: %016lx\n", ptrace_write_running, info->amr3);
-+	printf("%-30s AMR: %016lx\n", ptrace_write_running, info->invalid_amr);
- 
- 	/* Wake up child so that it can verify it didn't change. */
- 	ret = prod_child(&info->child_sync);
-@@ -249,7 +249,7 @@ static int parent(struct shared_info *info, pid_t pid)
- 
- 	/* Try to write to IAMR. */
- 	regs[0] = info->amr1;
--	regs[1] = info->new_iamr;
-+	regs[1] = info->invalid_iamr;
- 	ret = ptrace_write_regs(pid, NT_PPC_PKEY, regs, 2);
- 	PARENT_FAIL_IF(!ret, &info->child_sync);
- 
-@@ -257,7 +257,7 @@ static int parent(struct shared_info *info, pid_t pid)
- 	       ptrace_write_running, regs[0], regs[1]);
- 
- 	/* Try to write to IAMR and UAMOR. */
--	regs[2] = info->new_uamor;
-+	regs[2] = info->invalid_uamor;
- 	ret = ptrace_write_regs(pid, NT_PPC_PKEY, regs, 3);
- 	PARENT_FAIL_IF(!ret, &info->child_sync);
- 
+ #ifdef CONFIG_MEMORY_HOTPLUG
 -- 
 2.26.2
 
