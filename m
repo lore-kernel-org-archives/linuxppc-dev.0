@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E0C9C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:22:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 235C2C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:24:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4F5420657
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:22:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4F5420657
+	by mail.kernel.org (Postfix) with ESMTPS id 7731D20657
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:24:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7731D20657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2NM10rWTzF1x5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:22:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2NNj56f3zF24q
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:24:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
@@ -29,64 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2L922kh4zDqkT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 12:44:06 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Llf3X6vzDqCV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:10:38 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0692VXO5029008; Wed, 8 Jul 2020 22:44:00 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 325p3he2v3-1
+ 06933XP3053751; Wed, 8 Jul 2020 23:10:33 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 325k3r3rs1-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 22:43:59 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0692ZL7L010095;
- Thu, 9 Jul 2020 02:43:56 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma04ams.nl.ibm.com with ESMTP id 325mdhg8er-1
+ Wed, 08 Jul 2020 23:10:32 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06932qJD010001;
+ Thu, 9 Jul 2020 03:10:30 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma06fra.de.ibm.com with ESMTP id 325k2qr5hw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 02:43:56 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0692hrCB61276334
+ Thu, 09 Jul 2020 03:10:29 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0693ARCe54067426
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 02:43:53 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A29AC4C046;
- Thu,  9 Jul 2020 02:43:53 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6AEDF4C044;
- Thu,  9 Jul 2020 02:43:50 +0000 (GMT)
+ Thu, 9 Jul 2020 03:10:27 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8EC03AE056;
+ Thu,  9 Jul 2020 03:10:27 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 39943AE053;
+ Thu,  9 Jul 2020 03:10:25 +0000 (GMT)
 Received: from [9.79.221.246] (unknown [9.79.221.246])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  9 Jul 2020 02:43:50 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  9 Jul 2020 03:10:24 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Message-Id: <D048ACDF-602C-4A73-929B-8F1A125D96B7@linux.vnet.ibm.com>
+Message-Id: <FFC0AE06-9BF8-446C-B6D8-C4D62B61FDBE@linux.vnet.ibm.com>
 Content-Type: multipart/alternative;
- boundary="Apple-Mail=_84966CA6-39E2-47BB-A0BF-B998D422FA69"
+ boundary="Apple-Mail=_5BBB7FC7-0E9B-4121-AFCB-D131E29B56AC"
 Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [PATCH v2 07/10] powerpc/perf: support BHRB disable bit and new
- filtering modes
-Date: Thu, 9 Jul 2020 08:13:47 +0530
-In-Reply-To: <87v9iy2pyt.fsf@mpe.ellerman.id.au>
+Subject: Re: [PATCH v2 09/10] tools/perf: Add perf tools support for extended
+ register capability in powerpc
+Date: Thu, 9 Jul 2020 08:40:22 +0530
+In-Reply-To: <87pn962owo.fsf@mpe.ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>
 References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1593595262-1433-8-git-send-email-atrajeev@linux.vnet.ibm.com>
- <87v9iy2pyt.fsf@mpe.ellerman.id.au>
+ <1593595262-1433-10-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <87pn962owo.fsf@mpe.ellerman.id.au>
 X-Mailer: Apple Mail (2.3608.80.23.2.2)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-08_19:2020-07-08,
  2020-07-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0
- spamscore=0 mlxscore=0 lowpriorityscore=0 clxscore=1015 mlxlogscore=999
- bulkscore=0 phishscore=0 priorityscore=1501 suspectscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007090014
-X-Mailman-Approved-At: Thu, 09 Jul 2020 14:05:25 +1000
+ clxscore=1015 adultscore=0
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 mlxlogscore=999
+ bulkscore=0 suspectscore=0 malwarescore=0 phishscore=0 impostorscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007090023
+X-Mailman-Approved-At: Thu, 09 Jul 2020 14:05:26 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,373 +98,235 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---Apple-Mail=_84966CA6-39E2-47BB-A0BF-B998D422FA69
+--Apple-Mail=_5BBB7FC7-0E9B-4121-AFCB-D131E29B56AC
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain;
-	charset=utf-8
+	charset=us-ascii
 
 
 
-> On 08-Jul-2020, at 5:12 PM, Michael Ellerman <mpe@ellerman.id.au> =
+> On 08-Jul-2020, at 5:34 PM, Michael Ellerman <mpe@ellerman.id.au> =
 wrote:
 >=20
 > Athira Rajeev <atrajeev@linux.vnet.ibm.com =
 <mailto:atrajeev@linux.vnet.ibm.com>> writes:
->=20
->> PowerISA v3.1 has few updates for the Branch History Rolling =
-Buffer(BHRB).
->                   ^
->                   a
->> First is the addition of BHRB disable bit and second new filtering
->                                                      ^
->                                                      is
->> modes for BHRB.
+>> From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 >>=20
->> BHRB disable is controlled via Monitor Mode Control Register A =
-(MMCRA)
->> bit 26, namely "BHRB Recording Disable (BHRBRD)". This field controls
->=20
-> Most people call that bit 37.
->=20
->> whether BHRB entries are written when BHRB recording is enabled by =
-other
->> bits. Patch implements support for this BHRB disable bit.
->       ^
->       This
->=20
->> Secondly PowerISA v3.1 introduce filtering support for
->=20
-> .. that should be in a separate patch please.
->=20
->> PERF_SAMPLE_BRANCH_IND_CALL/COND. The patch adds BHRB filter support
->                                    ^
->                                    This
->> for "ind_call" and "cond" in power10_bhrb_filter_map().
+>> Add extended regs to sample_reg_mask in the tool side to use
+>> with `-I?` option. Perf tools side uses extended mask to display
+>> the platform supported register names (with -I? option) to the user
+>> and also send this mask to the kernel to capture the extended =
+registers
+>> in each sample. Hence decide the mask value based on the processor
+>> version.
 >>=20
->> 'commit bb19af816025 ("powerpc/perf: Prevent kernel address leak to =
-userspace via BHRB buffer")'
->=20
-> That doesn't need single quotes, and should be wrapped at 72 columns
-> like the rest of the text.
->=20
->> added a check in bhrb_read() to filter the kernel address from BHRB =
-buffer. Patch here modified
->> it to avoid that check for PowerISA v3.1 based processors, since =
-PowerISA v3.1 allows
->> only MSR[PR]=3D1 address to be written to BHRB buffer.
->=20
-> And that should be a separate patch again please.
-
-Sure, I will split these to separate patches
-
->=20
+>> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+>> [Decide extended mask at run time based on platform]
 >> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> ---
->> arch/powerpc/perf/core-book3s.c       | 27 =
-+++++++++++++++++++++------
->> arch/powerpc/perf/isa207-common.c     | 13 +++++++++++++
->> arch/powerpc/perf/power10-pmu.c       | 13 +++++++++++--
->> arch/powerpc/platforms/powernv/idle.c | 14 ++++++++++++++
->> 4 files changed, 59 insertions(+), 8 deletions(-)
->>=20
->> diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c
->> index fad5159..9709606 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -466,9 +466,13 @@ static void power_pmu_bhrb_read(struct =
-perf_event *event, struct cpu_hw_events *
->> 			 * addresses at this point. Check the privileges =
-before
->> 			 * exporting it to userspace (avoid exposure of =
-regions
->> 			 * where we could have speculative execution)
->> +			 * Incase of ISA 310, BHRB will capture only =
-user-space
->                           ^
->                           In case of ISA v3.1,
+>> Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>=20
+> Will need an ack from perf tools folks, who are not on Cc by the =
+looks.
+>=20
 
-Ok,=20
->=20
->> +			 * address,hence include a check before =
-filtering code
->                           ^                                            =
-      ^
->                           addresses, hence                             =
-      .
->> 			 */
->> -			if (is_kernel_addr(addr) && =
-perf_allow_kernel(&event->attr) !=3D 0)
->> -				continue;
->> +			if (!(ppmu->flags & PPMU_ARCH_310S))
->> +				if (is_kernel_addr(addr) &&
->> +				perf_allow_kernel(&event->attr) !=3D 0)
->> +					continue;
->=20
-> The indentation is weird. You should just check all three conditions
-> with &&.
+Yes, my bad. Will make sure to add proper Cc=20
 
-Ok, will correct this.
+>> diff --git a/tools/arch/powerpc/include/uapi/asm/perf_regs.h =
+b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
+>> index f599064..485b1d5 100644
+>> --- a/tools/arch/powerpc/include/uapi/asm/perf_regs.h
+>> +++ b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
+>> @@ -48,6 +48,18 @@ enum perf_event_powerpc_regs {
+>> 	PERF_REG_POWERPC_DSISR,
+>> 	PERF_REG_POWERPC_SIER,
+>> 	PERF_REG_POWERPC_MMCRA,
+>> -	PERF_REG_POWERPC_MAX,
+>> +	/* Extended registers */
+>> +	PERF_REG_POWERPC_MMCR0,
+>> +	PERF_REG_POWERPC_MMCR1,
+>> +	PERF_REG_POWERPC_MMCR2,
+>> +	/* Max regs without the extended regs */
+>> +	PERF_REG_POWERPC_MAX =3D PERF_REG_POWERPC_MMCRA + 1,
 >=20
->>=20
->> 			/* Branches are read most recent first (ie. =
-mfbhrb 0 is
->> 			 * the most recent branch).
->> @@ -1212,7 +1216,7 @@ static void write_mmcr0(struct cpu_hw_events =
-*cpuhw, unsigned long mmcr0)
->> static void power_pmu_disable(struct pmu *pmu)
->> {
->> 	struct cpu_hw_events *cpuhw;
->> -	unsigned long flags, mmcr0, val;
->> +	unsigned long flags, mmcr0, val, mmcra =3D 0;
+> I don't really understand this idea of a max that's not the max.
 >=20
-> You initialise it below.
->=20
->> 	if (!ppmu)
->> 		return;
->> @@ -1245,12 +1249,23 @@ static void power_pmu_disable(struct pmu =
-*pmu)
->> 		mb();
->> 		isync();
->>=20
->> +		val =3D mmcra =3D cpuhw->mmcr[2];
+>> };
 >> +
->=20
-> For mmcr0 (above), val is the variable we mutate and mmcr0 is the
-> original value. But here you've done the reverse, which is confusing.
-
-Yes, I am altering mmcra here and using val as original value. I should =
-have done it reverse.
-
->=20
->> 		/*
->> 		 * Disable instruction sampling if it was enabled
->> 		 */
->> -		if (cpuhw->mmcr[2] & MMCRA_SAMPLE_ENABLE) {
->> -			mtspr(SPRN_MMCRA,
->> -			      cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE);
->> +		if (cpuhw->mmcr[2] & MMCRA_SAMPLE_ENABLE)
->> +			mmcra =3D cpuhw->mmcr[2] & ~MMCRA_SAMPLE_ENABLE;
->=20
-> You just loaded cpuhw->mmcr[2] into mmcra, use it rather than =
-referring
-> back to cpuhw->mmcr[2] over and over.
->=20
-
-Ok,
+>> +#define PERF_REG_PMU_MASK	((1ULL << PERF_REG_POWERPC_MAX) - 1)
 >> +
->> +		/* Disable BHRB via mmcra [:26] for p10 if needed */
->> +		if (!(cpuhw->mmcr[2] & MMCRA_BHRB_DISABLE))
->=20
-> You don't need to check that it's clear AFAICS. Just always set =
-disable
-> and the check against val below will catch the nop case.
-
-My thought here was to avoid writing to MMCRA ( also avoid mb() and =
-isync() ) if its not needed.
-But as you suggested, since I am comparing against original value before =
-writing, I may not need this check.
-And I missed feature check here. Will correct it.
-=20
->=20
->> +			mmcra |=3D MMCRA_BHRB_DISABLE;
+>> +/* PERF_REG_EXTENDED_MASK value for CPU_FTR_ARCH_300 */
+>> +#define PERF_REG_PMU_MASK_300   (((1ULL << (PERF_REG_POWERPC_MMCR2 + =
+1)) - 1) \
+>> +				- PERF_REG_PMU_MASK)
 >> +
->> +		/* Write SPRN_MMCRA if mmcra has either disabled
->=20
-> Comment format is wrong.
->=20
->> +		 * instruction sampling or BHRB
->=20
-> Full stop please.
-
-Sure
->=20
->> +		 */
->> +		if (val !=3D mmcra) {
->> +			mtspr(SPRN_MMCRA, mmcra);
->> 			mb();
->> 			isync();
->> 		}
->> diff --git a/arch/powerpc/perf/isa207-common.c =
-b/arch/powerpc/perf/isa207-common.c
->> index 7d4839e..463d925 100644
->> --- a/arch/powerpc/perf/isa207-common.c
->> +++ b/arch/powerpc/perf/isa207-common.c
->> @@ -404,6 +404,12 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+>> #endif /* _UAPI_ASM_POWERPC_PERF_REGS_H */
+>> diff --git a/tools/perf/arch/powerpc/include/perf_regs.h =
+b/tools/perf/arch/powerpc/include/perf_regs.h
+>> index e18a355..46ed00d 100644
+>> --- a/tools/perf/arch/powerpc/include/perf_regs.h
+>> +++ b/tools/perf/arch/powerpc/include/perf_regs.h
+>> @@ -64,7 +64,10 @@
+>> 	[PERF_REG_POWERPC_DAR] =3D "dar",
+>> 	[PERF_REG_POWERPC_DSISR] =3D "dsisr",
+>> 	[PERF_REG_POWERPC_SIER] =3D "sier",
+>> -	[PERF_REG_POWERPC_MMCRA] =3D "mmcra"
+>> +	[PERF_REG_POWERPC_MMCRA] =3D "mmcra",
+>> +	[PERF_REG_POWERPC_MMCR0] =3D "mmcr0",
+>> +	[PERF_REG_POWERPC_MMCR1] =3D "mmcr1",
+>> +	[PERF_REG_POWERPC_MMCR2] =3D "mmcr2",
+>> };
 >>=20
->> 	mmcra =3D mmcr1 =3D mmcr2 =3D mmcr3 =3D 0;
+>> static inline const char *perf_reg_name(int id)
+>> diff --git a/tools/perf/arch/powerpc/util/perf_regs.c =
+b/tools/perf/arch/powerpc/util/perf_regs.c
+>> index 0a52429..9179230 100644
+>> --- a/tools/perf/arch/powerpc/util/perf_regs.c
+>> +++ b/tools/perf/arch/powerpc/util/perf_regs.c
+>> @@ -6,9 +6,14 @@
 >>=20
->> +	/* Disable bhrb unless explicitly requested
->> +	 * by setting MMCRA [:26] bit.
+>> #include "../../../util/perf_regs.h"
+>> #include "../../../util/debug.h"
+>> +#include "../../../util/event.h"
+>> +#include "../../../util/header.h"
+>> +#include "../../../perf-sys.h"
+>>=20
+>> #include <linux/kernel.h>
+>>=20
+>> +#define PVR_POWER9		0x004E
+>> +
+>> const struct sample_reg sample_reg_masks[] =3D {
+>> 	SMPL_REG(r0, PERF_REG_POWERPC_R0),
+>> 	SMPL_REG(r1, PERF_REG_POWERPC_R1),
+>> @@ -55,6 +60,9 @@
+>> 	SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),
+>> 	SMPL_REG(sier, PERF_REG_POWERPC_SIER),
+>> 	SMPL_REG(mmcra, PERF_REG_POWERPC_MMCRA),
+>> +	SMPL_REG(mmcr0, PERF_REG_POWERPC_MMCR0),
+>> +	SMPL_REG(mmcr1, PERF_REG_POWERPC_MMCR1),
+>> +	SMPL_REG(mmcr2, PERF_REG_POWERPC_MMCR2),
+>> 	SMPL_REG_END
+>> };
+>>=20
+>> @@ -163,3 +171,50 @@ int arch_sdt_arg_parse_op(char *old_op, char =
+**new_op)
+>>=20
+>> 	return SDT_ARG_VALID;
+>> }
+>> +
+>> +uint64_t arch__intr_reg_mask(void)
+>> +{
+>> +	struct perf_event_attr attr =3D {
+>> +		.type                   =3D PERF_TYPE_HARDWARE,
+>> +		.config                 =3D PERF_COUNT_HW_CPU_CYCLES,
+>> +		.sample_type            =3D PERF_SAMPLE_REGS_INTR,
+>> +		.precise_ip             =3D 1,
+>> +		.disabled               =3D 1,
+>> +		.exclude_kernel         =3D 1,
+>> +	};
+>> +	int fd, ret;
+>> +	char buffer[64];
+>> +	u32 version;
+>> +	u64 extended_mask =3D 0;
+>> +
+>> +	/* Get the PVR value to set the extended
+>> +	 * mask specific to platform
+>=20
+> Comment format is wrong, and punctuation please.
+>=20
 >> +	 */
+>> +	get_cpuid(buffer, sizeof(buffer));
+>> +	ret =3D sscanf(buffer, "%u,", &version);
 >=20
-> Comment format again.
->=20
->> +	if (cpu_has_feature(CPU_FTR_ARCH_31))
->> +		mmcra |=3D MMCRA_BHRB_DISABLE;
->=20
-> Here we do a feature check before setting MMCRA_BHRB_DISABLE, but you
-> didn't above?
+> This is powerpc specific code, why not just use mfspr(SPRN_PVR), =
+rather
+> than redirecting via printf/sscanf.
+
+Hi Michael
+
+For perf tools, defines for `mfspr` , `SPRN_PVR` are in =
+arch/powerpc/util/header.c=20
+So I have re-used existing utility. Otherwise, we will need to include =
+these defines here as well
+Does that sounds good ?
+
 >=20
 >> +
->> 	/* Second pass: assign PMCs, set all MMCR1 fields */
->> 	for (i =3D 0; i < n_ev; ++i) {
->> 		pmc     =3D (event[i] >> EVENT_PMC_SHIFT) & =
-EVENT_PMC_MASK;
->> @@ -475,10 +481,17 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
->> 		}
->>=20
->> 		if (event[i] & EVENT_WANTS_BHRB) {
->> +			/* set MMCRA[:26] to 0 for Power10 to enable =
-BHRB */
->=20
-> "set MMCRA[:26] to 0" =3D=3D "clear MMCRA[:26]=E2=80=9D
->=20
-Ok
-
->> +			if (cpu_has_feature(CPU_FTR_ARCH_31))
->> +				mmcra &=3D ~MMCRA_BHRB_DISABLE;
->=20
-> Newline please.
->=20
->> 			val =3D (event[i] >> EVENT_IFM_SHIFT) & =
-EVENT_IFM_MASK;
->> 			mmcra |=3D val << MMCRA_IFM_SHIFT;
->> 		}
->>=20
->> +		/* set MMCRA[:26] to 0 if there is user request for BHRB =
-*/
->> +		if (cpu_has_feature(CPU_FTR_ARCH_31) && =
-has_branch_stack(pevents[i]))
->> +			mmcra &=3D ~MMCRA_BHRB_DISABLE;
+>> +	if (ret !=3D 1) {
+>> +		pr_debug("Failed to get the processor version, unable to =
+output extended registers\n");
+>> +		return PERF_REGS_MASK;
+>> +	}
 >> +
+>> +	if (version =3D=3D PVR_POWER9)
+>> +		extended_mask =3D PERF_REG_PMU_MASK_300;
+>> +	else
+>> +		return PERF_REGS_MASK;
+>> +
+>> +	attr.sample_regs_intr =3D extended_mask;
+>> +	attr.sample_period =3D 1;
+>> +	event_attr_init(&attr);
+>> +
+>> +	/*
+>> +	 * check if the pmu supports perf extended regs, before
+>> +	 * returning the register mask to sample.
+>> +	 */
+>> +	fd =3D sys_perf_event_open(&attr, 0, -1, -1, 0);
+>> +	if (fd !=3D -1) {
+>> +		close(fd);
+>> +		return (extended_mask | PERF_REGS_MASK);
+>> +	}
+>> +	return PERF_REGS_MASK;
 >=20
-> I think it would be cleaner if you did a single test, eg:
+> I think this would read a bit better like:
 >=20
-> 		if (cpu_has_feature(CPU_FTR_ARCH_31) &&
->                   (has_branch_stack(pevents[i]) || (event[i] & =
-EVENT_WANTS_BHRB)))
-> 			mmcra &=3D ~MMCRA_BHRB_DISABLE;
+> 	mask =3D PERF_REGS_MASK;
+>=20
+> 	if (version =3D=3D PVR_POWER9)
+> 		extended_mask =3D PERF_REG_PMU_MASK_300;
+>        else
+>        	return mask;
+>=20
+>        attr.sample_regs_intr =3D extended_mask;
+>        attr.sample_period =3D 1;
+>        event_attr_init(&attr);
+>=20
+>        /*
+>          * check if the pmu supports perf extended regs, before
+>          * returning the register mask to sample.
+>          */
+>        fd =3D sys_perf_event_open(&attr, 0, -1, -1, 0);
+>        if (fd !=3D -1) {
+>                close(fd);
+>                mask |=3D extended_mask;
+>        }
+>=20
+> 	return mask;
 
-Sure Michael
-
-Thanks for the review. I will address all these changes in the next =
-version
+Sure, I will try with this change
 
 Thanks
-Athira=20
->=20
->> 		if (pevents[i]->attr.exclude_user)
->> 			mmcr2 |=3D MMCR2_FCP(pmc);
->>=20
->> diff --git a/arch/powerpc/perf/power10-pmu.c =
-b/arch/powerpc/perf/power10-pmu.c
->> index d64d69d..07fb919 100644
->> --- a/arch/powerpc/perf/power10-pmu.c
->> +++ b/arch/powerpc/perf/power10-pmu.c
->> @@ -82,6 +82,8 @@
->>=20
->> /* MMCRA IFM bits - POWER10 */
->> #define POWER10_MMCRA_IFM1		0x0000000040000000UL
->> +#define POWER10_MMCRA_IFM2		0x0000000080000000UL
->> +#define POWER10_MMCRA_IFM3		0x00000000C0000000UL
->> #define POWER10_MMCRA_BHRB_MASK	0x00000000C0000000UL
->>=20
->> /* Table of alternatives, sorted by column 0 */
->> @@ -233,8 +235,15 @@ static u64 power10_bhrb_filter_map(u64 =
-branch_sample_type)
->> 	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
->> 		return -1;
->>=20
->> -	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
->> -		return -1;
->> +	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL) {
->> +		pmu_bhrb_filter |=3D POWER10_MMCRA_IFM2;
->> +		return pmu_bhrb_filter;
->> +	}
->> +
->> +	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
->> +		pmu_bhrb_filter |=3D POWER10_MMCRA_IFM3;
->> +		return pmu_bhrb_filter;
->> +	}
->>=20
->> 	if (branch_sample_type & PERF_SAMPLE_BRANCH_CALL)
->> 		return -1;
->> diff --git a/arch/powerpc/platforms/powernv/idle.c =
-b/arch/powerpc/platforms/powernv/idle.c
->> index 2dd4673..7db99c7 100644
->> --- a/arch/powerpc/platforms/powernv/idle.c
->> +++ b/arch/powerpc/platforms/powernv/idle.c
->> @@ -611,6 +611,7 @@ static unsigned long power9_idle_stop(unsigned =
-long psscr, bool mmu_on)
->> 	unsigned long srr1;
->> 	unsigned long pls;
->> 	unsigned long mmcr0 =3D 0;
->> +	unsigned long mmcra_bhrb =3D 0;
->> 	struct p9_sprs sprs =3D {}; /* avoid false used-uninitialised */
->> 	bool sprs_saved =3D false;
->>=20
->> @@ -657,6 +658,15 @@ static unsigned long power9_idle_stop(unsigned =
-long psscr, bool mmu_on)
->> 		  */
->> 		mmcr0		=3D mfspr(SPRN_MMCR0);
->> 	}
->> +
->> +	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
->> +		/* POWER10 uses MMCRA[:26] as BHRB disable bit
->=20
-> Comment format.
->=20
->> +		 * to disable BHRB logic when not used. Hence Save and
->> +		 * restore MMCRA after a state-loss idle.
->> +		 */
->> +		mmcra_bhrb		=3D mfspr(SPRN_MMCRA);
->> +	}
->=20
-> It's the whole mmcra it should be called mmcra?
-
-Yes, we are saving the whole mmcra.=20
->=20
->> +
->> 	if ((psscr & PSSCR_RL_MASK) >=3D pnv_first_spr_loss_level) {
->> 		sprs.lpcr	=3D mfspr(SPRN_LPCR);
->> 		sprs.hfscr	=3D mfspr(SPRN_HFSCR);
->> @@ -721,6 +731,10 @@ static unsigned long power9_idle_stop(unsigned =
-long psscr, bool mmu_on)
->> 			mtspr(SPRN_MMCR0, mmcr0);
->> 		}
->>=20
->> +		/* Reload MMCRA to restore BHRB disable bit for POWER10 =
-*/
->> +		if (cpu_has_feature(CPU_FTR_ARCH_31))
->> +			mtspr(SPRN_MMCRA, mmcra_bhrb);
->> +
->> 		/*
->> 		 * DD2.2 and earlier need to set then clear bit 60 in =
-MMCRA
->> 		 * to ensure the PMU starts running.
+Athira
 >=20
 >=20
 > cheers
 
 
---Apple-Mail=_84966CA6-39E2-47BB-A0BF-B998D422FA69
+--Apple-Mail=_5BBB7FC7-0E9B-4121-AFCB-D131E29B56AC
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/html;
-	charset=utf-8
+	charset=us-ascii
 
 <html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
-charset=3Dutf-8"></head><body style=3D"word-wrap: break-word; =
+charset=3Dus-ascii"></head><body style=3D"word-wrap: break-word; =
 -webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
 class=3D""><div><br class=3D""><blockquote type=3D"cite" class=3D""><div =
-class=3D"">On 08-Jul-2020, at 5:12 PM, Michael Ellerman &lt;<a =
+class=3D"">On 08-Jul-2020, at 5:34 PM, Michael Ellerman &lt;<a =
 href=3D"mailto:mpe@ellerman.id.au" class=3D"">mpe@ellerman.id.au</a>&gt; =
 wrote:</div><br class=3D"Apple-interchange-newline"><div class=3D""><span =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
@@ -490,93 +352,30 @@ font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none;" class=3D""><blockquote type=3D"cite" =
 style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 orphans: auto; text-align: start; text-indent: 0px; text-transform: =
 none; white-space: normal; widows: auto; word-spacing: 0px; =
 -webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">PowerISA v3.1 has few updates for the =
-Branch History Rolling Buffer(BHRB).<br class=3D""></blockquote><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
-start; text-indent: 0px; text-transform: none; white-space: normal; =
-widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">First =
-is the addition of BHRB disable bit and second new filtering<br =
-class=3D""></blockquote><span style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">modes for BHRB.<br class=3D""><br =
-class=3D"">BHRB disable is controlled via Monitor Mode Control Register =
-A (MMCRA)<br class=3D"">bit 26, namely "BHRB Recording Disable =
-(BHRBRD)". This field controls<br class=3D""></blockquote><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+text-decoration: none;" class=3D"">From: Anju T Sudhakar &lt;<a =
+href=3D"mailto:anju@linux.vnet.ibm.com" =
+class=3D"">anju@linux.vnet.ibm.com</a>&gt;<br class=3D""><br =
+class=3D"">Add extended regs to sample_reg_mask in the tool side to =
+use<br class=3D"">with `-I?` option. Perf tools side uses extended mask =
+to display<br class=3D"">the platform supported register names (with -I? =
+option) to the user<br class=3D"">and also send this mask to the kernel =
+to capture the extended registers<br class=3D"">in each sample. Hence =
+decide the mask value based on the processor<br class=3D"">version.<br =
+class=3D""><br class=3D"">Signed-off-by: Anju T Sudhakar &lt;<a =
+href=3D"mailto:anju@linux.vnet.ibm.com" =
+class=3D"">anju@linux.vnet.ibm.com</a>&gt;<br class=3D"">[Decide =
+extended mask at run time based on platform]<br class=3D"">Signed-off-by: =
+Athira Rajeev &lt;<a href=3D"mailto:atrajeev@linux.vnet.ibm.com" =
+class=3D"">atrajeev@linux.vnet.ibm.com</a>&gt;<br class=3D"">Reviewed-by: =
+Madhavan Srinivasan &lt;<a href=3D"mailto:maddy@linux.vnet.ibm.com" =
+class=3D"">maddy@linux.vnet.ibm.com</a>&gt;<br class=3D""></blockquote><br=
+ style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
@@ -586,150 +385,8 @@ style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
 -webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">Most people call that bit =
-37.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">whether=
- BHRB entries are written when BHRB recording is enabled by other<br =
-class=3D"">bits. Patch implements support for this BHRB disable bit.<br =
-class=3D""></blockquote><span style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
-start; text-indent: 0px; text-transform: none; white-space: normal; =
-widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D"">Secondly PowerISA v3.1 introduce filtering support for<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">.. that should be in a separate patch please.</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
-start; text-indent: 0px; text-transform: none; white-space: normal; =
-widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D"">PERF_SAMPLE_BRANCH_IND_CALL/COND. The patch adds BHRB filter =
-support<br class=3D""></blockquote><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^=
-</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T=
-his</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">for =
-"ind_call" and "cond" in power10_bhrb_filter_map().<br class=3D""><br =
-class=3D"">'commit bb19af816025 ("powerpc/perf: Prevent kernel address =
-leak to userspace via BHRB buffer")'<br class=3D""></blockquote><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">That doesn't need single quotes, =
-and should be wrapped at 72 columns</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">like the rest of the text.</span><br style=3D"caret-color: =
+display: inline !important;" class=3D"">Will need an ack from perf tools =
+folks, who are not on Cc by the looks.</span><br style=3D"caret-color: =
 rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
 normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
 normal; text-align: start; text-indent: 0px; text-transform: none; =
@@ -739,271 +396,52 @@ text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">added a check in bhrb_read() to =
-filter the kernel address from BHRB buffer. Patch here modified<br =
-class=3D"">it to avoid that check for PowerISA v3.1 based processors, =
-since PowerISA v3.1 allows<br class=3D"">only MSR[PR]=3D1 address to be =
-written to BHRB buffer.<br class=3D""></blockquote><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">And that should be a separate =
-patch again please.</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none;" class=3D""></div></blockquote><div><br =
-class=3D""></div>Sure, I will split these to separate =
-patches</div><div><br class=3D""><blockquote type=3D"cite" class=3D""><div=
- class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+class=3D""></div>Yes, my bad. Will make sure to add proper =
+Cc&nbsp;</div><div><br class=3D""><blockquote type=3D"cite" =
+class=3D""><div class=3D""><blockquote type=3D"cite" style=3D"font-family:=
+ Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
 normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D"">Signed-off-by: Athira Rajeev &lt;<a =
-href=3D"mailto:atrajeev@linux.vnet.ibm.com" =
-class=3D"">atrajeev@linux.vnet.ibm.com</a>&gt;<br class=3D"">---<br =
-class=3D"">arch/powerpc/perf/core-book3s.c =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 27 +++++++++++++++++++++------<br =
-class=3D"">arch/powerpc/perf/isa207-common.c &nbsp;&nbsp;&nbsp;&nbsp;| =
-13 +++++++++++++<br class=3D"">arch/powerpc/perf/power10-pmu.c =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| 13 +++++++++++--<br =
-class=3D"">arch/powerpc/platforms/powernv/idle.c | 14 ++++++++++++++<br =
-class=3D"">4 files changed, 59 insertions(+), 8 deletions(-)<br =
-class=3D""><br class=3D"">diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c<br class=3D"">index fad5159..9709606 =
-100644<br class=3D"">--- a/arch/powerpc/perf/core-book3s.c<br =
-class=3D"">+++ b/arch/powerpc/perf/core-book3s.c<br class=3D"">@@ -466,9 =
-+466,13 @@ static void power_pmu_bhrb_read(struct perf_event *event, =
-struct cpu_hw_events *<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* addresses at this point. =
-Check the privileges before<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* exporting it to userspace =
-(avoid exposure of regions<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* where we could have =
-speculative execution)<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* Incase of ISA 310, BHRB =
-will capture only user-space<br class=3D""></blockquote><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;^</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;In case of ISA v3.1,</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""></div></blockquote><div><br =
-class=3D""></div>Ok,&nbsp;<br class=3D""><blockquote type=3D"cite" =
-class=3D""><div class=3D""><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* address,hence include a =
-check before filtering code<br class=3D""></blockquote><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;^ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;^<=
-/span><br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;addresses, hence =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
-start; text-indent: 0px; text-transform: none; white-space: normal; =
-widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>*/<br class=3D"">-<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(is_kernel_addr(addr) &amp;&amp; perf_allow_kernel(&amp;event-&gt;attr) =
-!=3D 0)<br class=3D"">-<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>continue;<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(!(ppmu-&gt;flags &amp; PPMU_ARCH_310S))<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(is_kernel_addr(addr) &amp;&amp;<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">diff =
+--git a/tools/arch/powerpc/include/uapi/asm/perf_regs.h =
+b/tools/arch/powerpc/include/uapi/asm/perf_regs.h<br class=3D"">index =
+f599064..485b1d5 100644<br class=3D"">--- =
+a/tools/arch/powerpc/include/uapi/asm/perf_regs.h<br class=3D"">+++ =
+b/tools/arch/powerpc/include/uapi/asm/perf_regs.h<br class=3D"">@@ -48,6 =
++48,18 @@ enum perf_event_powerpc_regs {<br class=3D""><span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>perf_allow_kernel(&amp;event-&gt;attr) !=3D 0)<br class=3D"">+<span=
- class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+</span>PERF_REG_POWERPC_DSISR,<br class=3D""><span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>continue;<br class=3D""></blockquote><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">The indentation is weird. You should just check all three =
-conditions</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" class=3D"">with =
-&amp;&amp;.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""></div></blockquote><div><br class=3D""></div>Ok, will =
-correct this.<br class=3D""><blockquote type=3D"cite" class=3D""><div =
-class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>/* Branches are read most recent first (ie. mfbhrb 0 is<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-converted-space">&nbsp;</span>* the most =
-recent branch).<br class=3D"">@@ -1212,7 +1216,7 @@ static void =
-write_mmcr0(struct cpu_hw_events *cpuhw, unsigned long mmcr0)<br =
-class=3D"">static void power_pmu_disable(struct pmu *pmu)<br =
-class=3D"">{<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>struct cpu_hw_events *cpuhw;<br =
+</span>PERF_REG_POWERPC_SIER,<br class=3D""><span class=3D"Apple-tab-span"=
+ style=3D"white-space: pre;">	</span>PERF_REG_POWERPC_MMCRA,<br =
 class=3D"">-<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>unsigned long flags, mmcr0, val;<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>unsigned =
-long flags, mmcr0, val, mmcra =3D 0;<br class=3D""></blockquote><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">You initialise it =
-below.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+</span>PERF_REG_POWERPC_MAX,<br class=3D"">+<span class=3D"Apple-tab-span"=
+ style=3D"white-space: pre;">	</span>/* Extended registers */<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>PERF_REG_POWERPC_MMCR0,<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>PERF_REG_POWERPC_MMCR1,<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>PERF_REG_POWERPC_MMCR2,<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>/* Max =
+regs without the extended regs */<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>PERF_REG_POWERPC_MAX =3D PERF_REG_POWERPC_MMCRA + 1,<br =
+class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">I don't really understand this idea of a max that's not the =
+max.</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
 Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
 normal; font-weight: normal; letter-spacing: normal; text-align: start; =
 text-indent: 0px; text-transform: none; white-space: normal; =
@@ -1018,94 +456,120 @@ Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
 normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(!ppmu)<br class=3D""><span class=3D"Apple-tab-span" style=3D"white-space:=
- pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>return;<br class=3D"">@@ -1245,12 +1249,23 @@ static void =
-power_pmu_disable(struct pmu *pmu)<br class=3D""><span =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">};<br =
+class=3D"">+<br class=3D"">+#define PERF_REG_PMU_MASK<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>((1ULL =
+&lt;&lt; PERF_REG_POWERPC_MAX) - 1)<br class=3D"">+<br class=3D"">+/* =
+PERF_REG_EXTENDED_MASK value for CPU_FTR_ARCH_300 */<br =
+class=3D"">+#define PERF_REG_PMU_MASK_300 &nbsp;&nbsp;(((1ULL &lt;&lt; =
+(PERF_REG_POWERPC_MMCR2 + 1)) - 1) \<br class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mb();<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>- =
+PERF_REG_PMU_MASK)<br class=3D"">+<br class=3D"">#endif /* =
+_UAPI_ASM_POWERPC_PERF_REGS_H */<br class=3D"">diff --git =
+a/tools/perf/arch/powerpc/include/perf_regs.h =
+b/tools/perf/arch/powerpc/include/perf_regs.h<br class=3D"">index =
+e18a355..46ed00d 100644<br class=3D"">--- =
+a/tools/perf/arch/powerpc/include/perf_regs.h<br class=3D"">+++ =
+b/tools/perf/arch/powerpc/include/perf_regs.h<br class=3D"">@@ -64,7 =
++64,10 @@<br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>[PERF_REG_POWERPC_DAR] =3D =
+"dar",<br class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span>[PERF_REG_POWERPC_DSISR] =3D "dsisr",<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_SIER] =3D "sier",<br class=3D"">-<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_MMCRA] =3D "mmcra"<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_MMCRA] =3D "mmcra",<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_MMCR0] =3D "mmcr0",<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_MMCR1] =3D "mmcr1",<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>[PERF_REG_POWERPC_MMCR2] =3D "mmcr2",<br class=3D"">};<br =
+class=3D""><br class=3D"">static inline const char *perf_reg_name(int =
+id)<br class=3D"">diff --git a/tools/perf/arch/powerpc/util/perf_regs.c =
+b/tools/perf/arch/powerpc/util/perf_regs.c<br class=3D"">index =
+0a52429..9179230 100644<br class=3D"">--- =
+a/tools/perf/arch/powerpc/util/perf_regs.c<br class=3D"">+++ =
+b/tools/perf/arch/powerpc/util/perf_regs.c<br class=3D"">@@ -6,9 +6,14 =
+@@<br class=3D""><br class=3D"">#include "../../../util/perf_regs.h"<br =
+class=3D"">#include "../../../util/debug.h"<br class=3D"">+#include =
+"../../../util/event.h"<br class=3D"">+#include =
+"../../../util/header.h"<br class=3D"">+#include =
+"../../../perf-sys.h"<br class=3D""><br class=3D"">#include =
+&lt;linux/kernel.h&gt;<br class=3D""><br class=3D"">+#define =
+PVR_POWER9<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
 </span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>isync();<br class=3D""><br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>val =3D =
-mmcra =3D cpuhw-&gt;mmcr[2];<br class=3D"">+<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">For mmcr0 (above), val is the variable we mutate and mmcr0 is =
-the</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" class=3D"">original =
-value. But here you've done the reverse, which is confusing.</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""></div></blockquote><div><br class=3D""></div>Yes, I am =
-altering mmcra here and using val as original value. I should have done =
-it reverse.</div><div><br class=3D""></div><div><blockquote type=3D"cite" =
-class=3D""><div class=3D""><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span class=3D"Apple-tab-span" =
+</span>0x004E<br class=3D"">+<br class=3D"">const struct sample_reg =
+sample_reg_masks[] =3D {<br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>SMPL_REG(r0, =
+PERF_REG_POWERPC_R0),<br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>SMPL_REG(r1, =
+PERF_REG_POWERPC_R1),<br class=3D"">@@ -55,6 +60,9 @@<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(sier, PERF_REG_POWERPC_SIER),<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(mmcra, PERF_REG_POWERPC_MMCRA),<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(mmcr0, PERF_REG_POWERPC_MMCR0),<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(mmcr1, PERF_REG_POWERPC_MMCR1),<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG(mmcr2, PERF_REG_POWERPC_MMCR2),<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SMPL_REG_END<br class=3D"">};<br class=3D""><br class=3D"">@@ =
+-163,3 +171,50 @@ int arch_sdt_arg_parse_op(char *old_op, char =
+**new_op)<br class=3D""><br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>return SDT_ARG_VALID;<br =
+class=3D"">}<br class=3D"">+<br class=3D"">+uint64_t =
+arch__intr_reg_mask(void)<br class=3D"">+{<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>struct =
+perf_event_attr attr =3D {<br class=3D"">+<span class=3D"Apple-tab-span" =
 style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/*<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* Disable instruction =
-sampling if it was enabled<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>*/<br class=3D"">-<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(cpuhw-&gt;mmcr[2] &amp; MMCRA_SAMPLE_ENABLE) {<br class=3D"">-<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+style=3D"white-space: pre;">	</span>.type =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D PERF_TYPE_HARDWARE,<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>.config =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;=3D PERF_COUNT_HW_CPU_CYCLES,<br class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mtspr(SPRN_MMCRA,<br class=3D"">-<span class=3D"Apple-tab-span" =
+</span>.sample_type =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D =
+PERF_SAMPLE_REGS_INTR,<br class=3D"">+<span class=3D"Apple-tab-span" =
 style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>.precise_ip =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D=
+ 1,<br class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span>.disabled =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;=3D 1,<br class=3D"">+<span class=3D"Apple-tab-span" =
 style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;cpuhw-&gt;mmcr[2] &amp; ~MMCRA_SAMPLE_ENABLE);<br class=3D"">+<span =
+style=3D"white-space: pre;">	</span>.exclude_kernel =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D 1,<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>};<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>int fd, ret;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>char =
+buffer[64];<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>u32 version;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>u64 =
+extended_mask =3D 0;<br class=3D"">+<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>/* Get =
+the PVR value to set the extended<br class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(cpuhw-&gt;mmcr[2] &amp; MMCRA_SAMPLE_ENABLE)<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mmcra =3D =
-cpuhw-&gt;mmcr[2] &amp; ~MMCRA_SAMPLE_ENABLE;<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
+class=3D"Apple-converted-space">&nbsp;</span>* mask specific to =
+platform<br class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
@@ -1115,19 +579,7 @@ font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none; float: none; display: inline !important;" =
-class=3D"">You just loaded cpuhw-&gt;mmcr[2] into mmcra, use it rather =
-than referring</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">back to cpuhw-&gt;mmcr[2] over and over.</span><br =
+class=3D"">Comment format is wrong, and punctuation please.</span><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
@@ -1138,254 +590,18 @@ style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
 -webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""></div></blockquote><div><br class=3D""></div>Ok,<br =
-class=3D""><blockquote type=3D"cite" class=3D""><div =
 class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
 font-size: 12px; font-style: normal; font-variant-caps: normal; =
 font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
 start; text-indent: 0px; text-transform: none; white-space: normal; =
 widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">+<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>/* Disable BHRB via mmcra [:26] for p10 if needed */<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>if (!(cpuhw-&gt;mmcr[2] &amp; MMCRA_BHRB_DISABLE))<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">You don't need to check that it's clear AFAICS. Just always =
-set disable</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" class=3D"">and the check =
-against val below will catch the nop case.</span><br style=3D"caret-color:=
- rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""></div></blockquote><div><br =
-class=3D""></div>My thought here was to avoid writing to MMCRA ( also =
-avoid mb() and isync() ) if its not needed.</div><div>But as you =
-suggested, since I am comparing against original value before writing, I =
-may not need this check.</div><div>And I missed feature check here. Will =
-correct it.</div><div>&nbsp;<br class=3D""><blockquote type=3D"cite" =
-class=3D""><div class=3D""><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>mmcra |=3D MMCRA_BHRB_DISABLE;<br =
-class=3D"">+<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/* Write SPRN_MMCRA if mmcra has =
-either disabled<br class=3D""></blockquote><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">Comment format is wrong.</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* instruction sampling or =
-BHRB<br class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">Full stop please.</span><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""></div></blockquote><div><br =
-class=3D""></div>Sure<br class=3D""><blockquote type=3D"cite" =
-class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
 -webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
 class=3D"Apple-converted-space">&nbsp;</span>*/<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if (val =
-!=3D mmcra) {<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>mtspr(SPRN_MMCRA, mmcra);<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mb();<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>isync();<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
-class=3D"">diff --git a/arch/powerpc/perf/isa207-common.c =
-b/arch/powerpc/perf/isa207-common.c<br class=3D"">index 7d4839e..463d925 =
-100644<br class=3D"">--- a/arch/powerpc/perf/isa207-common.c<br =
-class=3D"">+++ b/arch/powerpc/perf/isa207-common.c<br class=3D"">@@ =
--404,6 +404,12 @@ int isa207_compute_mmcr(u64 event[], int n_ev,<br =
-class=3D""><br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>mmcra =3D mmcr1 =3D mmcr2 =3D =
-mmcr3 =3D 0;<br class=3D""><br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/* Disable bhrb unless explicitly =
-requested<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* by setting MMCRA [:26] =
-bit.<br class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-converted-space">&nbsp;</span>*/<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">Comment format again.</span><br style=3D"caret-color: rgb(0, =
-0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if =
-(cpu_has_feature(CPU_FTR_ARCH_31))<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mmcra |=3D =
-MMCRA_BHRB_DISABLE;<br class=3D""></blockquote><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">Here we do a feature check before setting MMCRA_BHRB_DISABLE, =
-but you</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" class=3D"">didn't =
-above?</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">+<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>/* Second pass: assign PMCs, set all MMCR1 fields */<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>for (i =3D 0; i &lt; n_ev; ++i) {<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>pmc =
-&nbsp;&nbsp;&nbsp;&nbsp;=3D (event[i] &gt;&gt; EVENT_PMC_SHIFT) &amp; =
-EVENT_PMC_MASK;<br class=3D"">@@ -475,10 +481,17 @@ int =
-isa207_compute_mmcr(u64 event[], int n_ev,<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
-class=3D""><br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if (event[i] &amp; =
-EVENT_WANTS_BHRB) {<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/* set MMCRA[:26] to 0 for =
-Power10 to enable BHRB */<br class=3D""></blockquote><br =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>get_cpuid(buffer, sizeof(buffer));<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>ret =3D =
+sscanf(buffer, "%u,", &amp;version);<br class=3D""></blockquote><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
@@ -1396,165 +612,30 @@ style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
 -webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">"set MMCRA[:26] to 0" =3D=3D =
-"clear MMCRA[:26]=E2=80=9D</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br =
-class=3D""></blockquote>Ok</div><div><br class=3D""><blockquote =
-type=3D"cite" class=3D""><div class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if =
-(cpu_has_feature(CPU_FTR_ARCH_31))<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mmcra =
-&amp;=3D ~MMCRA_BHRB_DISABLE;<br class=3D""></blockquote><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">Newline =
-please.</span></div></blockquote><blockquote type=3D"cite" class=3D""><div=
- class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><blockquote type=3D"cite" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>val =3D =
-(event[i] &gt;&gt; EVENT_IFM_SHIFT) &amp; EVENT_IFM_MASK;<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mmcra |=3D val &lt;&lt; MMCRA_IFM_SHIFT;<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
-class=3D""><br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/* set MMCRA[:26] to 0 if there =
-is user request for BHRB */<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if =
-(cpu_has_feature(CPU_FTR_ARCH_31) &amp;&amp; =
-has_branch_stack(pevents[i]))<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mmcra =
-&amp;=3D ~MMCRA_BHRB_DISABLE;<br class=3D"">+<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+display: inline !important;" class=3D"">This is powerpc specific code, =
+why not just use mfspr(SPRN_PVR), rather</span><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
 0); font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none; float: none; display: inline !important;" =
-class=3D"">I think it would be cleaner if you did a single test, =
-eg:</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><span class=3D"Apple-tab-span" style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;">	</span><span class=3D"Apple-tab-span" =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: pre; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;">	=
-</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
-font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none; float: none; display: inline !important;" class=3D"">if =
-(cpu_has_feature(CPU_FTR_ARCH_31) &amp;&amp;</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(has_branch_stack(pevents[i])=
- || (event[i] &amp; EVENT_WANTS_BHRB)))</span><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span class=3D"Apple-tab-span" =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: pre; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;">	=
-</span><span class=3D"Apple-tab-span" style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;">	</span><span class=3D"Apple-tab-span" style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;">	</span><span style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">mmcra &amp;=3D ~MMCRA_BHRB_DISABLE;</span><br =
+class=3D"">than redirecting via printf/sscanf.</span><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
 -webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""></div></blockquote><div><br class=3D""></div>Sure =
-Michael</div><div><br class=3D""></div><div>Thanks for the review. I =
-will address all these changes in the next version</div><div><br =
-class=3D""></div><div>Thanks</div><div>Athira&nbsp;<br =
+class=3D""></div></blockquote><div><br class=3D""></div>Hi =
+Michael</div><div><br class=3D""></div><div>For perf tools, defines for =
+`mfspr` , `SPRN_PVR` are in =
+arch/powerpc/util/header.c&nbsp;</div><div>So I have re-used existing =
+utility. Otherwise, we will need to include these defines here as =
+well</div><div>Does that sounds good ?</div><div><br =
 class=3D""><blockquote type=3D"cite" class=3D""><div class=3D""><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
@@ -1566,110 +647,63 @@ font-size: 12px; font-style: normal; font-variant-caps: normal; =
 font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
 start; text-indent: 0px; text-transform: none; white-space: normal; =
 widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(pevents[i]-&gt;attr.exclude_user)<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>mmcr2 |=3D =
-MMCR2_FCP(pmc);<br class=3D""><br class=3D"">diff --git =
-a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c<br =
-class=3D"">index d64d69d..07fb919 100644<br class=3D"">--- =
-a/arch/powerpc/perf/power10-pmu.c<br class=3D"">+++ =
-b/arch/powerpc/perf/power10-pmu.c<br class=3D"">@@ -82,6 +82,8 @@<br =
-class=3D""><br class=3D"">/* MMCRA IFM bits - POWER10 */<br =
-class=3D"">#define POWER10_MMCRA_IFM1<span class=3D"Apple-tab-span" =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">+<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>if (ret !=3D 1) {<br class=3D"">+<span class=3D"Apple-tab-span" =
 style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x0000000040000000UL<br =
-class=3D"">+#define POWER10_MMCRA_IFM2<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x0000000080000000UL<br =
-class=3D"">+#define POWER10_MMCRA_IFM3<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x00000000C0000000UL<br =
-class=3D"">#define POWER10_MMCRA_BHRB_MASK<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x00000000C0000000UL<br =
-class=3D""><br class=3D"">/* Table of alternatives, sorted by column 0 =
-*/<br class=3D"">@@ -233,8 +235,15 @@ static u64 =
-power10_bhrb_filter_map(u64 branch_sample_type)<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(branch_sample_type &amp; PERF_SAMPLE_BRANCH_ANY_RETURN)<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+style=3D"white-space: pre;">	</span>pr_debug("Failed to get the =
+processor version, unable to output extended registers\n");<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
 </span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>return -1;<br class=3D""><br class=3D"">-<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-(branch_sample_type &amp; PERF_SAMPLE_BRANCH_IND_CALL)<br =
-class=3D"">-<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>return PERF_REGS_MASK;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
+class=3D"">+<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>if (version =3D=3D PVR_POWER9)<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
 </span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>return -1;<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if (branch_sample_type &amp; =
-PERF_SAMPLE_BRANCH_IND_CALL) {<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+</span>extended_mask =3D PERF_REG_PMU_MASK_300;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>else<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>return PERF_REGS_MASK;<br class=3D"">+<br class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>pmu_bhrb_filter |=3D POWER10_MMCRA_IFM2;<br class=3D"">+<span =
+</span>attr.sample_regs_intr =3D extended_mask;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>attr.sample_period =3D 1;<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>event_attr_init(&amp;attr);<br class=3D"">+<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>/*<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-converted-space">&nbsp;</span>* check if the =
+pmu supports perf extended regs, before<br class=3D"">+<span =
 class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>return =
-pmu_bhrb_filter;<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>}<br class=3D"">+<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>if (branch_sample_type &amp; PERF_SAMPLE_BRANCH_COND) {<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>pmu_bhrb_filter |=3D POWER10_MMCRA_IFM3;<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>return =
-pmu_bhrb_filter;<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>}<br class=3D""><br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>if (branch_sample_type &amp; PERF_SAMPLE_BRANCH_CALL)<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>return -1;<br class=3D"">diff --git =
-a/arch/powerpc/platforms/powernv/idle.c =
-b/arch/powerpc/platforms/powernv/idle.c<br class=3D"">index =
-2dd4673..7db99c7 100644<br class=3D"">--- =
-a/arch/powerpc/platforms/powernv/idle.c<br class=3D"">+++ =
-b/arch/powerpc/platforms/powernv/idle.c<br class=3D"">@@ -611,6 +611,7 =
-@@ static unsigned long power9_idle_stop(unsigned long psscr, bool =
-mmu_on)<br class=3D""><span class=3D"Apple-tab-span" style=3D"white-space:=
- pre;">	</span>unsigned long srr1;<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>unsigned =
-long pls;<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>unsigned long mmcr0 =3D 0;<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>unsigned long mmcra_bhrb =3D 0;<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>struct =
-p9_sprs sprs =3D {}; /* avoid false used-uninitialised */<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>bool sprs_saved =3D false;<br class=3D""><br class=3D"">@@ -657,6 =
-+658,15 @@ static unsigned long power9_idle_stop(unsigned long psscr, =
-bool mmu_on)<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
+class=3D"Apple-converted-space">&nbsp;</span>* returning the register =
+mask to sample.<br class=3D"">+<span class=3D"Apple-tab-span" =
 style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>&nbsp;*/<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mmcr0<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>=3D mfspr(SPRN_MMCR0);<br class=3D""><span class=3D"Apple-tab-span"=
- style=3D"white-space: pre;">	</span>}<br class=3D"">+<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>if (cpu_has_feature(CPU_FTR_ARCH_31)) {<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>/* =
-POWER10 uses MMCRA[:26] as BHRB disable bit<br class=3D""></blockquote><br=
- style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">Comment format.</span><br =
+class=3D"Apple-converted-space">&nbsp;</span>*/<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>fd =3D =
+sys_perf_event_open(&amp;attr, 0, -1, -1, 0);<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if (fd !=3D=
+ -1) {<br class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space:=
+ pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span>close(fd);<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>return (extended_mask | =
+PERF_REGS_MASK);<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>}<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>return =
+PERF_REGS_MASK;<br class=3D""></blockquote><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">I think this would read a bit better like:</span><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
@@ -1679,31 +713,63 @@ style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""><blockquote type=3D"cite" style=3D"font-family: Helvetica; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+class=3D"Apple-tab-span" style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;">	</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" class=3D"">mask =3D =
+PERF_REGS_MASK;</span><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span class=3D"Apple-tab-span" =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: pre; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;">	=
+</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
 font-size: 12px; font-style: normal; font-variant-caps: normal; =
-font-weight: normal; letter-spacing: normal; orphans: auto; text-align: =
-start; text-indent: 0px; text-transform: none; white-space: normal; =
-widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px; text-decoration: none;" class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* to disable BHRB logic =
-when not used. Hence Save and<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* restore MMCRA after a =
-state-loss idle.<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>*/<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mmcra_bhrb<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>=3D mfspr(SPRN_MMCRA);<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
+font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" class=3D"">if (version =
+=3D=3D PVR_POWER9)</span><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span class=3D"Apple-tab-span" =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: pre; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;">	=
+</span><span class=3D"Apple-tab-span" style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;">	</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" class=3D"">extended_mask =
+=3D PERF_REG_PMU_MASK_300;</span><br style=3D"caret-color: rgb(0, 0, 0); =
 font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
@@ -1714,68 +780,221 @@ font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none; float: none; display: inline !important;" =
-class=3D"">It's the whole mmcra it should be called mmcra?</span><br =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else</span><br =
 style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
 12px; font-style: normal; font-variant-caps: normal; font-weight: =
 normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
 text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""></div></blockquote><div><br class=3D""></div>Yes, we are =
-saving the whole mmcra.&nbsp;<br class=3D""><blockquote type=3D"cite" =
-class=3D""><div class=3D""><br style=3D"caret-color: rgb(0, 0, 0); =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span =
+class=3D"Apple-tab-span" style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;">	</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" class=3D"">return =
+mask;</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;attr.sample_regs_intr=
+ =3D extended_mask;</span><br style=3D"caret-color: rgb(0, 0, 0); =
 font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">+<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
-((psscr &amp; PSSCR_RL_MASK) &gt;=3D pnv_first_spr_loss_level) {<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>sprs.lpcr<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>=3D mfspr(SPRN_LPCR);<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>sprs.hfscr<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>=3D mfspr(SPRN_HFSCR);<br class=3D"">@@ -721,6 +731,10 @@ =
-static unsigned long power9_idle_stop(unsigned long psscr, bool =
-mmu_on)<br class=3D""><span class=3D"Apple-tab-span" style=3D"white-space:=
- pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span><span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>mtspr(SPRN_MMCR0, mmcr0);<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>}<br =
-class=3D""><br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>/* Reload MMCRA to restore BHRB =
-disable bit for POWER10 */<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>if =
-(cpu_has_feature(CPU_FTR_ARCH_31))<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mtspr(SPRN_MMCRA, mmcra_bhrb);<br class=3D"">+<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>/*<br =
-class=3D""><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span><span class=3D"Apple-converted-space">&nbsp;</span>* DD2.2 and =
-earlier need to set then clear bit 60 in MMCRA<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
-class=3D"Apple-converted-space">&nbsp;</span>* to ensure the PMU starts =
-running.<br class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
 0); font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
 text-align: start; text-indent: 0px; text-transform: none; white-space: =
 normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;attr.sample_period =
+=3D 1;</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;event_attr_init(&amp;=
+attr);</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/*</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* check =
+if the pmu supports perf extended regs, before</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* =
+returning the register mask to sample.</span><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</span>=
+<br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant-caps: normal; =
+font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd =3D =
+sys_perf_event_open(&amp;attr, 0, -1, -1, 0);</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fd !=3D -1) =
+{</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant-caps: normal; =
+font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;close(fd);</span><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;mask |=3D extended_mask;</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" =
+class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;" class=3D""><span =
+class=3D"Apple-tab-span" style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+pre; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;">	</span><span style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;" class=3D"">return =
+mask;</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""></div></blockquote><div><br class=3D""></div>Sure, I =
+will try with this change</div><div><br =
+class=3D""></div><div>Thanks</div><div>Athira<br class=3D""><blockquote =
+type=3D"cite" class=3D""><div class=3D""><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
 text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
 0); font-family: Helvetica; font-size: 12px; font-style: normal; =
 font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
@@ -1790,5 +1009,5 @@ text-decoration: none; float: none; display: inline !important;" =
 class=3D"">cheers</span></div></blockquote></div><br =
 class=3D""></body></html>=
 
---Apple-Mail=_84966CA6-39E2-47BB-A0BF-B998D422FA69--
+--Apple-Mail=_5BBB7FC7-0E9B-4121-AFCB-D131E29B56AC--
 
