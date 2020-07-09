@@ -2,85 +2,88 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E61C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE65C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:27:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14345206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:22:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6F7AA206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:27:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vAFl0E6H"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14345206DF
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h3icAK0f"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F7AA206DF
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2XLC062kzDqNv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:22:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2XRW1MxQzDr6l
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:27:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
- helo=mail-pf1-x442.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=vAFl0E6H; dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ header.s=20161025 header.b=h3icAK0f; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2XHn2lqYzDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:20:37 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id x72so828450pfc.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2020 03:20:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2XP20GVtzDqKf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:25:08 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id d10so669850pll.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2020 03:25:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :message-id:content-transfer-encoding;
- bh=K1VxGPW0xuJmXA1rhdwVLxJA7czyM/CyNjmy8WBsRv4=;
- b=vAFl0E6HBeNrm26G8P0UQdOfXgqNlJcA/tct4oKyTFUwEd43U7dI8PbkM8WGgVIowk
- JzOfLvU81ZaMeTJzi15ONkYEhz8ZdK1bWR7BWVaIJs/P8JDNNQZ4C6ygk426LLZ1i6Ur
- FSzzF+6FLikQrB7ZepCeoeEROzURE/Dh8X1u0DbLBpr2ry99jml6TiaDBUgmGT2TZjot
- Bs/VL2qJTGoqSBj1njDvTMQmdGXXJaLZAQkf7dMbet9Ig0o24iRlaaiRDvelEBe4Vlmq
- 4o1KND3JDQfEv+NoULX20gLL2VRHXrUZDwdaew59oF71+DhmqI90PweEtb3EfegD5Mb6
- BlTA==
+ bh=b2NeK05XWB0xDJ7gbj6dxeZbhLfM0JEMlPnaA+COod8=;
+ b=h3icAK0fJlduSxaVJZTAsAbBOXWSxN4IoYHK8mdc1bCh1bsLxSIRHiIVfUBzc1NIk4
+ aoS/LYGHK2VtD9IJjgkcsYAiHBNDI5I/E9YfhQN+zvgbc0Sf+ycTqzneR/HN2BDzvLwH
+ Q2NkaNM+WU969yGnPwKGrc5gVFFKNhZLEDB8Wrk5PdIFMYw+IjQ9SG4k3hotPwn1fe1/
+ PkDr0zWaYC0j89w8FyTmwpQTbCevkciW+WhITHnKtX+zqcrDC1lMP6LttxQPbpM+yVht
+ D5GQ4RzZJEfyRBjOJVXeLp/yD/BbL/R+GWtYKEZJdg+8aZ50SP5aWC/FwiNOqOn19AgU
+ VCuA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:message-id:content-transfer-encoding;
- bh=K1VxGPW0xuJmXA1rhdwVLxJA7czyM/CyNjmy8WBsRv4=;
- b=D79ZoUFESufRGMgn3ScI/ZJ9slCVd3zY7vNKZrmJecsx04CVLcYaMyfQt5SYp1QVx2
- fqpZzFOX3UdefGa07XrXStd1qu2nPatE8Q66MuWj0Hgs+T4hfay8kXVok3ulr1auUHtZ
- qEGDnjNshznRSGAYh1bAdvJk+bqmW5NxOTH4nEaIgKtbYeYtrgpYy7RfHk5ZG7c0AX2i
- sXICmcth/Q/xX+qWGyax/6/NGIfyihFWHWXaPdzya+NGTD1wkmqgGzeNFQuqnfyK/JYu
- 4P4tlD27fTM5ps5dJ+R+4A2Ac4e0vzI0r3sagMcxBdaHadieDbtwM1lWrzfDWrpv7lAs
- /1ww==
-X-Gm-Message-State: AOAM531wuANjC93qmOY+Gd8wkF1e7++Q47nwu1VfDiakYFZHDeefKz9/
- 9wkzIBpgmBTr2I5QW/k7+Ok=
-X-Google-Smtp-Source: ABdhPJyK/kHRiKtUEQazqsog0g6PKjmX1zO9iglcz1L9RZo+7iGTY/FgnI/8ZzYcrflQm4qNDWLuzw==
-X-Received: by 2002:a63:ab0d:: with SMTP id p13mr52941361pgf.327.1594290031443; 
- Thu, 09 Jul 2020 03:20:31 -0700 (PDT)
+ bh=b2NeK05XWB0xDJ7gbj6dxeZbhLfM0JEMlPnaA+COod8=;
+ b=a6o0FPorD5LQPlvFWncuBachN0MDl5N4A65CkFG2rO92yVtG+62UeaYj9Xg6aTsPZI
+ kZSwPwQRakpfW8K0Oonm/IYRTSXrDuqC5lWLjItR1MsrzgmSmn8q4lsE9YH8PCWO5POR
+ fh4KwVumxDJ2/FHxaB+y6p6u3204+20Vcw4W8pU2oyoAAcfrQzqU966NIIMkiF9sVLYw
+ CbRpehgAJhei14CuO15d9jhtxCCg3S1MilpkZeEHJpP9ZwBkrzcAN7drSk1yVDbz3arr
+ QQAbmQxafyh8b48Nor4mwUUItC6kn+p+X6rcgDeIml+BCqWwe9g3iG69eSD2VjbeJ5YL
+ j03g==
+X-Gm-Message-State: AOAM530EIDrzPNp0Vg6bOBDTRuSYE+AxdiiWnKGbXgq/i1OC/XtuuKMM
+ 8dcsUSsO7YD1APxyPWp7ocM=
+X-Google-Smtp-Source: ABdhPJyW7NYnbURxdwM8YP4WKOabd+AK4ezMjz49kVRoyMbLLTmNSYA/GBxbPfH1AietJHL0utbNeQ==
+X-Received: by 2002:a17:90a:7185:: with SMTP id
+ i5mr15201660pjk.170.1594290304419; 
+ Thu, 09 Jul 2020 03:25:04 -0700 (PDT)
 Received: from localhost (27-33-0-186.tpgi.com.au. [27.33.0.186])
- by smtp.gmail.com with ESMTPSA id z2sm2453364pfq.67.2020.07.09.03.20.29
+ by smtp.gmail.com with ESMTPSA id l15sm2101883pjq.1.2020.07.09.03.25.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 09 Jul 2020 03:20:30 -0700 (PDT)
-Date: Thu, 09 Jul 2020 20:20:23 +1000
+ Thu, 09 Jul 2020 03:25:03 -0700 (PDT)
+Date: Thu, 09 Jul 2020 20:24:56 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 2/3] powerpc/64s: remove PROT_SAO support
-To: David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
- <paulus@ozlabs.org>
-References: <20200703011958.1166620-1-npiggin@gmail.com>
- <20200703011958.1166620-3-npiggin@gmail.com>
- <20200709043406.GB2822576@thinks.paulus.ozlabs.org>
-In-Reply-To: <20200709043406.GB2822576@thinks.paulus.ozlabs.org>
+Subject: Re: [PATCH] powerpc: select ARCH_HAS_MEMBARRIER_SYNC_CORE
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+References: <20200706021822.1515189-1-npiggin@gmail.com>
+ <cf10b0bc-de79-1b2b-8355-fc7bbeec47c3@csgroup.eu>
+ <1594098302.nadnq2txti.astroid@bobo.none>
+ <638683144.970.1594121101349.JavaMail.zimbra@efficios.com>
+ <1594185107.e130s0d92x.astroid@bobo.none>
+ <407005394.1910.1594217551840.JavaMail.zimbra@efficios.com>
+In-Reply-To: <407005394.1910.1594217551840.JavaMail.zimbra@efficios.com>
 MIME-Version: 1.0
-Message-Id: <1594288843.m3s9igh1hu.astroid@bobo.none>
+Message-Id: <1594290193.f21t9y66td.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,72 +97,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Paul Mackerras's message of July 9, 2020 2:34 pm:
-> On Fri, Jul 03, 2020 at 11:19:57AM +1000, Nicholas Piggin wrote:
->> ISA v3.1 does not support the SAO storage control attribute required to
->> implement PROT_SAO. PROT_SAO was used by specialised system software
->> (Lx86) that has been discontinued for about 7 years, and is not thought
->> to be used elsewhere, so removal should not cause problems.
+Excerpts from Mathieu Desnoyers's message of July 9, 2020 12:12 am:
+> ----- On Jul 8, 2020, at 1:17 AM, Nicholas Piggin npiggin@gmail.com wrote=
+:
+>=20
+>> Excerpts from Mathieu Desnoyers's message of July 7, 2020 9:25 pm:
+>>> ----- On Jul 7, 2020, at 1:50 AM, Nicholas Piggin npiggin@gmail.com wro=
+te:
+>>>=20
+> [...]
+>>>> I should actually change the comment for 64-bit because soft masked
+>>>> interrupt replay is an interesting case. I thought it was okay (becaus=
+e
+>>>> the IPI would cause a hard interrupt which does do the rfi) but that
+>>>> should at least be written.
+>>>=20
+>>> Yes.
+>>>=20
+>>>> The context synchronisation happens before
+>>>> the Linux IPI function is called, but for the purpose of membarrier I
+>>>> think that is okay (the membarrier just needs to have caused a memory
+>>>> barrier + context synchronistaion by the time it has done).
+>>>=20
+>>> Can you point me to the code implementing this logic ?
 >>=20
->> We rather remove it than keep support for older processors, because
->> live migrating guest partitions to newer processors may not be possible
->> if SAO is in use (or worse allowed with silent races).
+>> It's mostly in arch/powerpc/kernel/exception-64s.S and
+>> powerpc/kernel/irq.c, but a lot of asm so easier to explain.
+>>=20
+>> When any Linux code does local_irq_disable(), we set interrupts as
+>> software-masked in a per-cpu flag. When interrupts (including IPIs) come
+>> in, the first thing we do is check that flag and if we are masked, then
+>> record that the interrupt needs to be "replayed" in another per-cpu
+>> flag. The interrupt handler then exits back using RFI (which is context
+>> synchronising the CPU). Later, when the kernel code does
+>> local_irq_enable(), it checks the replay flag to see if anything needs
+>> to be done. At that point we basically just call the interrupt handler
+>> code like a normal function, and when that returns there is no context
+>> synchronising instruction.
 >=20
-> This is actually a real problem for KVM, because now we have the
-> capabilities of the host affecting the characteristics of the guest
-> virtual machine in a manner which userspace (e.g. QEMU) is unable to
-> control.
+> AFAIU this can only happen for interrupts nesting over irqoff sections,
+> therefore over kernel code, never userspace, right ?
+
+Right.
+
+>> So membarrier IPI will always cause target CPUs to perform a context
+>> synchronising instruction, but sometimes it happens before the IPI
+>> handler function runs.
 >=20
-> It would probably be better to disallow SAO on all machines than have
-> it available on some hosts and not others.  (Yes I know there is a
-> check on CPU_FTR_ARCH_206 in there, but that has been a no-op since we
-> removed the PPC970 KVM support.)
+> If my understanding is correct, the replayed interrupt handler logic
+> only nests over kernel code, which will eventually need to issue a
+> context synchronizing instruction before returning to user-space.
 
-This change doesn't change the SAO difference on the host processors
-though, just tries to slightly improve it from silently broken to
-maybe complaining a bit.
+Yes.
 
-I didn't want to stop some very old image that uses this and is running
-okay on an existing host from working, but maybe the existence of such
-a thing would contradict my reasoning. But then if we don't care about
-it why care about this KVM behaviour difference at all?
+> All we care about is that starting from the membarrier, each core
+> either:
+>=20
+> - interrupt user-space to issue the context synchronizing instruction if
+>   they were running userspace, or
+> - _eventually_ issue a context synchronizing instruction before returning
+>   to user-space if they were running kernel code.
+>=20
+> So your earlier statement "the membarrier just needs to have caused a mem=
+ory
+> barrier + context synchronistaion by the time it has done" is not strictl=
+y
+> correct: the context synchronizing instruction does not strictly need to
+> happen on each core before membarrier returns. A similar line of thoughts
+> can be followed for memory barriers.
 
-> Solving this properly will probably require creating a new KVM host
-> capability and associated machine parameter in QEMU, along with a new
-> machine type.
-
-Rather than answer any of these questions, I might take the KVM change
-out and that can be dealt with separately from guest SAO removal.
+Ah okay that makes it simpler, then no such speical comment is required=20
+for the powerpc specific interrupt handling.
 
 Thanks,
 Nick
-
->=20
-> [snip]
->=20
->> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/inc=
-lude/asm/kvm_book3s_64.h
->> index 9bb9bb370b53..fac39ff659d4 100644
->> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
->> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
->> @@ -398,9 +398,10 @@ static inline bool hpte_cache_flags_ok(unsigned lon=
-g hptel, bool is_ci)
->>  {
->>  	unsigned int wimg =3D hptel & HPTE_R_WIMG;
->> =20
->> -	/* Handle SAO */
->> +	/* Handle SAO for POWER7,8,9 */
->>  	if (wimg =3D=3D (HPTE_R_W | HPTE_R_I | HPTE_R_M) &&
->> -	    cpu_has_feature(CPU_FTR_ARCH_206))
->> +	    cpu_has_feature(CPU_FTR_ARCH_206) &&
->> +	    !cpu_has_feature(CPU_FTR_ARCH_31))
->>  		wimg =3D HPTE_R_M;
->=20
-> Paul.
->=20
