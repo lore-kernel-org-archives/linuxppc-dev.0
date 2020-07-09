@@ -2,89 +2,115 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 597F3C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0A27C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:28:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6A14206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:25:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6A14206DF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9C55E20708
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:28:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=xilinx.onmicrosoft.com header.i=@xilinx.onmicrosoft.com header.b="QLje5vTv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C55E20708
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xilinx.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2b3p2PdTzDr5Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:25:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2b6t65H2zDr1G
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:28:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=xilinx.com (client-ip=40.107.237.62;
+ helo=nam12-bn8-obe.outbound.protection.outlook.com;
+ envelope-from=draganc@xilinx.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=xilinx.onmicrosoft.com header.i=@xilinx.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-xilinx-onmicrosoft-com
+ header.b=QLje5vTv; dkim-atps=neutral
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com
+ (mail-bn8nam12on2062.outbound.protection.outlook.com [40.107.237.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YLX2lcxzDqTm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:08:04 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 069B1bDU182473; Thu, 9 Jul 2020 07:07:58 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 325s3jp7re-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 07:07:58 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 069B193K018552;
- Thu, 9 Jul 2020 11:07:57 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma04ams.nl.ibm.com with ESMTP id 325u410faa-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 11:07:56 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 069B7sgp6488516
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 11:07:54 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AA293A4062;
- Thu,  9 Jul 2020 11:07:54 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 44040A4054;
- Thu,  9 Jul 2020 11:07:53 +0000 (GMT)
-Received: from [9.85.108.151] (unknown [9.85.108.151])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  9 Jul 2020 11:07:53 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Message-Id: <8686D3D2-6AE6-479D-BD7F-36EBFBA0BEEA@linux.vnet.ibm.com>
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102"
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [PATCH v2 04/10] powerpc/perf: Add power10_feat to dt_cpu_ftrs
-Date: Thu, 9 Jul 2020 16:37:50 +0530
-In-Reply-To: <87y2nu2r7f.fsf@mpe.ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
- <87y2nu2r7f.fsf@mpe.ellerman.id.au>
-X-Mailer: Apple Mail (2.3608.80.23.2.2)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-09_05:2020-07-09,
- 2020-07-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- suspectscore=0 malwarescore=0 mlxscore=0 priorityscore=1501
- impostorscore=0 spamscore=0 lowpriorityscore=0 clxscore=1015 phishscore=0
- bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007090084
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Z2B6CJmzDqxB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:38:58 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=iWmjRlrltMhXgWEPhzLT1CVjQLHQ+ft2kanwk2l0GW75ozuiitMreZ9a9Kv2BvXBAATW6gWJv8diAFG3MwfdP4saFgOhnZBnPsFRusXVwiR2pIO6qLOaxQGQVKD66mD/qoKFHBAGax2t6T0LIwEeXK4z3xH7DoI9RApnpVaE5W+QK6F4Fw1XVwu4NUNW5GuMQoHBrLSFzaiKIWS6wL+ClfBoBnO/doF+ksJSvV+TJQp4UBzhBBWtdN6zZnkq+ckGj28HPHpTQLcgTwe1KlbgwXvWZala4Zm5z48zBcvuLIPpkVqp00POblSuyvACQQZIDApOpihps4D+js10NbZ+1w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PtPwyE17w23Xtepx41hpf1jPV+4WEloaCDZ/u/gOBJE=;
+ b=K0gAWNdrNp59Xkv6LArah6Byvk4SJw6sPyJ6kk3G0dXI9SGEBMHc9FrmUBkZ3iQW1coBJn2fEF7djSDMCpLfJzUAI+8KYAsFYPMO3/NE/SGFtoqRB9DL1BY+wnAmADeFg0gQV/u3X6qoNzu+M9Kuf57H57SpnNAhs0rXalntgee6ygIuvZ14zuwRk+b3Boai8pTjLKMqTSbTUb96542dF9NMdktqN0GbG7tuYx7apQgIU0VwwfquYp0jjzb2CQmWouXG78BaVTLrQBZnfaAqB69bFj9nSWcM4JfhxjmnENcZA2mt2AhLEgn9IaEJ/S19vQXyCRY5NyVowPSy3u8maQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=xilinx.com; dmarc=pass action=none header.from=xilinx.com;
+ dkim=pass header.d=xilinx.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=xilinx.onmicrosoft.com; s=selector2-xilinx-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PtPwyE17w23Xtepx41hpf1jPV+4WEloaCDZ/u/gOBJE=;
+ b=QLje5vTvGXjqB9Z/vM5fs0kZw3xZLUoM+4els9ImX/ngHmWtRd4bJGYeHIvb4HbMzG1X/TU6+LPiN/Lp58rF9SKA5zdTl1XacQxHvyob3xlkPDCcMPQhaO8XJUe48Ej82xVF0AosIgbS0oJk8CqVvXJ3EV2p0AU3iilVgyt/6iU=
+Received: from DM6PR02MB4140.namprd02.prod.outlook.com (2603:10b6:5:97::21) by
+ DM5PR02MB3720.namprd02.prod.outlook.com (2603:10b6:4:b2::26) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.3174.21; Thu, 9 Jul 2020 11:38:51 +0000
+Received: from DM6PR02MB4140.namprd02.prod.outlook.com
+ ([fe80::7885:10b5:7055:2ae8]) by DM6PR02MB4140.namprd02.prod.outlook.com
+ ([fe80::7885:10b5:7055:2ae8%7]) with mapi id 15.20.3153.030; Thu, 9 Jul 2020
+ 11:38:51 +0000
+From: Dragan Cvetic <draganc@xilinx.com>
+To: Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 14/20] Documentation: misc/xilinx_sdfec: eliminate
+ duplicated word
+Thread-Topic: [PATCH 14/20] Documentation: misc/xilinx_sdfec: eliminate
+ duplicated word
+Thread-Index: AQHWVIl01j2WA8nZ+0qkTNSLOgAd4qj/IPtQ
+Date: Thu, 9 Jul 2020 11:38:51 +0000
+Message-ID: <DM6PR02MB4140D40A07411B0FA50A3913CB640@DM6PR02MB4140.namprd02.prod.outlook.com>
+References: <20200707180414.10467-1-rdunlap@infradead.org>
+ <20200707180414.10467-15-rdunlap@infradead.org>
+In-Reply-To: <20200707180414.10467-15-rdunlap@infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-Auto-Response-Suppress: DR, RN, NRN, OOF, AutoReply
+X-MS-TNEF-Correlator: 
+authentication-results: infradead.org; dkim=none (message not signed)
+ header.d=none;infradead.org; dmarc=none action=none header.from=xilinx.com;
+x-originating-ip: [149.199.80.133]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: b99db2df-7741-4c88-9845-08d823fca72b
+x-ms-traffictypediagnostic: DM5PR02MB3720:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <DM5PR02MB372060AA596D7BF97137A8F8CB640@DM5PR02MB3720.namprd02.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:5236;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: qR+CT0TDr1hEwjC4JBQRtqtPfgA/sC5N4CmnJYREhBvJ7X7HQ9viUvQ2nEScuw7SMhOdq2b15tm6YR7ClyT2nWwe7ZiHimM/AIloSvl2mP/iWO7q7DVePjI17TVzEBMEv+fIcOuZqWNpJD53uSnc5Z03pFtdidFyt8lsJ0bKHhBUyE/P52fcteYiVnZhVxxqj85X6/jp7h8/A9hLCqfQwYGa/RlrFyIxrL98hMb4eYNyrppxEjO8QWYCEMulD5kMKfW6TWWcLJiqcHzYTj//98FU4wXM23GNqc2ypvg0Y79z6eSqAWQlICsaJTx2Z9kV1EMMSIao871x01XPoN9pPQ==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM6PR02MB4140.namprd02.prod.outlook.com; PTR:; CAT:NONE;
+ SFTY:;
+ SFS:(346002)(366004)(396003)(136003)(376002)(39860400002)(6506007)(86362001)(71200400001)(4326008)(26005)(55016002)(52536014)(7696005)(186003)(64756008)(66556008)(66476007)(66446008)(76116006)(66946007)(5660300002)(8676002)(7366002)(7406005)(7416002)(2906002)(53546011)(83380400001)(316002)(110136005)(54906003)(33656002)(478600001)(8936002)(9686003);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata: yxDppt/H2ZM0nUizdJqLLgKHlViRAEOvc1OPAK+znjO+8f1XTKm7UWh30LQuj3xgaq7XNAbkoc1zF/IYumIg11lPBqod9GoYzN4x9WfO8oLqW1+Gd1YvC/wmpEx7tAcGq2i4l0fu+0mWZ3IRssqU7z0CQJibKFmWnM1L7GjAiAI3xvL+m8NYL9ePm0UaP8x7IbFpLqNolvIe9m7NgFD0MeCohqAkTrwuv5rxAvTan8Ca1fXRH2BbkwpX/lIifahd5/QpAUB4HsOlx4fPVl1Ijsqukd3nPh40irZfDqVI3BY8dy5jhc2Yza+ZjI7tM+IrKPLKOVJ0wokB6hs5JSzVRZQHIdDRalAS5yG1DpPrpqZXLtyd32kI70aTL0zoy1eOCayTjV6Mr6vIHMX5LeG1Edoj7QSYaF9kwwZGrYC/i/wGoNCP7N/wILfPhu6HDzUeL/3pZpKajfyTJ8Mt4zUQuJw/WMj2mZyP6L3x0mMHX70kBDp0OVOYnY2PLd3jqQng
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: xilinx.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR02MB4140.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b99db2df-7741-4c88-9845-08d823fca72b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Jul 2020 11:38:51.4539 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 657af505-d5df-48d0-8300-c31994686c5c
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: zIfGVOCbBOp1mCjikYmTLat4R47fO8DM122rmCjbuAmLOkNMkzeszU/83YLFYmhoPdnI4mpER/bRNJrN1/HL/g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR02MB3720
 X-Mailman-Approved-At: Thu, 09 Jul 2020 22:23:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,207 +123,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>,
+ "kgdb-bugreport@lists.sourceforge.net" <kgdb-bugreport@lists.sourceforge.net>,
+ "linux-fpga@vger.kernel.org" <linux-fpga@vger.kernel.org>,
+ Liviu Dudau <liviu.dudau@arm.com>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ Paul Cercueil <paul@crapouillou.net>,
+ "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ Pavel Machek <pavel@ucw.cz>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Mihail Atanassov <mihail.atanassov@arm.com>,
+ "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Masahiro Yamada <masahiroy@kernel.org>,
+ Matthew Wilcox <willy@infradead.org>, Halil Pasic <pasic@linux.ibm.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ James Wang <james.qian.wang@arm.com>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ Mali DP Maintainers <malidp@foss.arm.com>, Wu Hao <hao.wu@intel.com>,
+ Tony Krowiak <akrowiak@linux.ibm.com>,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
+ Hannes Reinecke <hare@suse.com>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+ "linux-mm@vger.kernel.org" <linux-mm@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Pierre Morel <pmorel@linux.ibm.com>, Douglas Anderson <dianders@chromium.org>,
+ Wolfram Sang <wsa@kernel.org>, Derek Kiernan <dkiernan@xilinx.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mike Rapoport <rppt@kernel.org>, Dan Murphy <dmurphy@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=utf-8
-
-
-
-> On 08-Jul-2020, at 4:45 PM, Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
+> -----Original Message-----
+> From: Randy Dunlap <rdunlap@infradead.org>
+> Sent: Tuesday 7 July 2020 19:04
+> To: linux-kernel@vger.kernel.org
+> Cc: Randy Dunlap <rdunlap@infradead.org>; Jonathan Corbet <corbet@lwn.net=
+>; linux-doc@vger.kernel.org; linux-
+> mm@vger.kernel.org; Mike Rapoport <rppt@kernel.org>; Jens Axboe <axboe@ke=
+rnel.dk>; linux-block@vger.kernel.org; Jason
+> Wessel <jason.wessel@windriver.com>; Daniel Thompson <daniel.thompson@lin=
+aro.org>; Douglas Anderson
+> <dianders@chromium.org>; kgdb-bugreport@lists.sourceforge.net; Wu Hao <ha=
+o.wu@intel.com>; linux-fpga@vger.kernel.org;
+> James Wang <james.qian.wang@arm.com>; Liviu Dudau <liviu.dudau@arm.com>; =
+Mihail Atanassov <mihail.atanassov@arm.com>;
+> Mali DP Maintainers <malidp@foss.arm.com>; David Airlie <airlied@linux.ie=
+>; Daniel Vetter <daniel@ffwll.ch>; dri-
+> devel@lists.freedesktop.org; Srinivas Pandruvada <srinivas.pandruvada@lin=
+ux.intel.com>; Jiri Kosina <jikos@kernel.org>; linux-
+> input@vger.kernel.org; Wolfram Sang <wsa@kernel.org>; linux-i2c@vger.kern=
+el.org; Masahiro Yamada <masahiroy@kernel.org>;
+> Michal Marek <michal.lkml@markovi.net>; linux-kbuild@vger.kernel.org; Jac=
+ek Anaszewski <jacek.anaszewski@gmail.com>; Pavel
+> Machek <pavel@ucw.cz>; Dan Murphy <dmurphy@ti.com>; linux-leds@vger.kerne=
+l.org; Dan Williams <dan.j.williams@intel.com>;
+> Paul Cercueil <paul@crapouillou.net>; Thomas Bogendoerfer <tsbogend@alpha=
+.franken.de>; linux-mips@vger.kernel.org; Derek
+> Kiernan <dkiernan@xilinx.com>; Dragan Cvetic <draganc@xilinx.com>; Michae=
+l Ellerman <mpe@ellerman.id.au>; Benjamin
+> Herrenschmidt <benh@kernel.crashing.org>; Paul Mackerras <paulus@samba.or=
+g>; linuxppc-dev@lists.ozlabs.org; Tony Krowiak
+> <akrowiak@linux.ibm.com>; Pierre Morel <pmorel@linux.ibm.com>; Halil Pasi=
+c <pasic@linux.ibm.com>; linux-s390@vger.kernel.org;
+> Matthew Wilcox <willy@infradead.org>; Hannes Reinecke <hare@suse.com>; li=
+nux-scsi@vger.kernel.org; James E.J. Bottomley
+> <jejb@linux.ibm.com>; Martin K. Petersen <martin.petersen@oracle.com>; Ja=
+rkko Sakkinen <jarkko.sakkinen@linux.intel.com>;
+> Mimi Zohar <zohar@linux.ibm.com>; linux-integrity@vger.kernel.org; keyrin=
+gs@vger.kernel.org; Paolo Bonzini
+> <pbonzini@redhat.com>; kvm@vger.kernel.org; Andrew Morton <akpm@linux-fou=
+ndation.org>
+> Subject: [PATCH 14/20] Documentation: misc/xilinx_sdfec: eliminate duplic=
+ated word
 >=20
-> Athira Rajeev <atrajeev@linux.vnet.ibm.com =
-<mailto:atrajeev@linux.vnet.ibm.com>> writes:
->> From: Madhavan Srinivasan <maddy@linux.ibm.com>
->>=20
->> Add power10 feature function to dt_cpu_ftrs.c along
->> with a power10 specific init() to initialize pmu sprs.
->>=20
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
->> ---
->> arch/powerpc/include/asm/reg.h        |  3 +++
->> arch/powerpc/kernel/cpu_setup_power.S |  7 +++++++
->> arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
->> 3 files changed, 36 insertions(+)
->>=20
->> diff --git a/arch/powerpc/include/asm/reg.h =
-b/arch/powerpc/include/asm/reg.h
->> index 21a1b2d..900ada1 100644
->> --- a/arch/powerpc/include/asm/reg.h
->> +++ b/arch/powerpc/include/asm/reg.h
->> @@ -1068,6 +1068,9 @@
->> #define MMCR0_PMC2_LOADMISSTIME	0x5
->> #endif
->>=20
->> +/* BHRB disable bit for PowerISA v3.10 */
->> +#define MMCRA_BHRB_DISABLE	0x0000002000000000
->> +
->> /*
->>  * SPRG usage:
->>  *
->> diff --git a/arch/powerpc/kernel/cpu_setup_power.S =
-b/arch/powerpc/kernel/cpu_setup_power.S
->> index efdcfa7..e8b3370c 100644
->> --- a/arch/powerpc/kernel/cpu_setup_power.S
->> +++ b/arch/powerpc/kernel/cpu_setup_power.S
->> @@ -233,3 +233,10 @@ __init_PMU_ISA207:
->> 	li	r5,0
->> 	mtspr	SPRN_MMCRS,r5
->> 	blr
->> +
->> +__init_PMU_ISA31:
->> +	li	r5,0
->> +	mtspr	SPRN_MMCR3,r5
->> +	LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
->> +	mtspr	SPRN_MMCRA,r5
->> +	blr
+> Drop the doubled word "the".
 >=20
-> This doesn't seem like it belongs in this patch. It's not called?
-
-Yes, you are right, this needs to be called from `__setup_cpu_power10`.
-Since we didn=E2=80=99t had setup part for power10 in the tree =
-initially, missed it.
-I will include this update in V3=20
-
-Thanks
-Athira
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: linux-doc@vger.kernel.org
+> Cc: Derek Kiernan <derek.kiernan@xilinx.com>
+> Cc: Dragan Cvetic <dragan.cvetic@xilinx.com>
+> ---
+>  Documentation/misc-devices/xilinx_sdfec.rst |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> cheers
+> --- linux-next-20200701.orig/Documentation/misc-devices/xilinx_sdfec.rst
+> +++ linux-next-20200701/Documentation/misc-devices/xilinx_sdfec.rst
+> @@ -78,7 +78,7 @@ application interfaces:
+>    - open: Implements restriction that only a single file descriptor can =
+be open per SD-FEC instance at any time
+>    - release: Allows another file descriptor to be open, that is after cu=
+rrent file descriptor is closed
+>    - poll: Provides a method to monitor for SD-FEC Error events
+> -  - unlocked_ioctl: Provides the the following ioctl commands that allow=
+s the application configure the SD-FEC core:
+> +  - unlocked_ioctl: Provides the following ioctl commands that allows th=
+e application configure the SD-FEC core:
+>=20
+>  		- :c:macro:`XSDFEC_START_DEV`
+>  		- :c:macro:`XSDFEC_STOP_DEV`
 
+Acked-by: Dragan Cvetic <dragan.cvetic@xilinx.com>
+Thanks Randy
 
---Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=utf-8
-
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
-charset=3Dutf-8"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
-class=3D""><div><br class=3D""><blockquote type=3D"cite" class=3D""><div =
-class=3D"">On 08-Jul-2020, at 4:45 PM, Michael Ellerman &lt;<a =
-href=3D"mailto:mpe@ellerman.id.au" class=3D"">mpe@ellerman.id.au</a>&gt; =
-wrote:</div><br class=3D"Apple-interchange-newline"><div class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">Athira Rajeev &lt;</span><a =
-href=3D"mailto:atrajeev@linux.vnet.ibm.com" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px;" =
-class=3D"">atrajeev@linux.vnet.ibm.com</a><span style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&gt; writes:</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">From: Madhavan Srinivasan &lt;<a =
-href=3D"mailto:maddy@linux.ibm.com" =
-class=3D"">maddy@linux.ibm.com</a>&gt;<br class=3D""><br class=3D"">Add =
-power10 feature function to dt_cpu_ftrs.c along<br class=3D"">with a =
-power10 specific init() to initialize pmu sprs.<br class=3D""><br =
-class=3D"">Signed-off-by: Madhavan Srinivasan &lt;<a =
-href=3D"mailto:maddy@linux.ibm.com" =
-class=3D"">maddy@linux.ibm.com</a>&gt;<br class=3D"">---<br =
-class=3D"">arch/powerpc/include/asm/reg.h =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;3 +++<br =
-class=3D"">arch/powerpc/kernel/cpu_setup_power.S | &nbsp;7 +++++++<br =
-class=3D"">arch/powerpc/kernel/dt_cpu_ftrs.c &nbsp;&nbsp;&nbsp;&nbsp;| =
-26 ++++++++++++++++++++++++++<br class=3D"">3 files changed, 36 =
-insertions(+)<br class=3D""><br class=3D"">diff --git =
-a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h<br =
-class=3D"">index 21a1b2d..900ada1 100644<br class=3D"">--- =
-a/arch/powerpc/include/asm/reg.h<br class=3D"">+++ =
-b/arch/powerpc/include/asm/reg.h<br class=3D"">@@ -1068,6 +1068,9 @@<br =
-class=3D"">#define MMCR0_PMC2_LOADMISSTIME<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x5<br class=3D"">#endif<br =
-class=3D""><br class=3D"">+/* BHRB disable bit for PowerISA v3.10 */<br =
-class=3D"">+#define MMCRA_BHRB_DISABLE<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>0x0000002000000000<br =
-class=3D"">+<br class=3D"">/*<br class=3D"">&nbsp;* SPRG usage:<br =
-class=3D"">&nbsp;*<br class=3D"">diff --git =
-a/arch/powerpc/kernel/cpu_setup_power.S =
-b/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">index =
-efdcfa7..e8b3370c 100644<br class=3D"">--- =
-a/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">+++ =
-b/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">@@ -233,3 +233,10 =
-@@ __init_PMU_ISA207:<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>li<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>r5,0<br class=3D""><span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mtspr<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>SPRN_MMCRS,r5<br class=3D""><span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>blr<br class=3D"">+<br =
-class=3D"">+__init_PMU_ISA31:<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>li<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>r5,0<br =
-class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>mtspr<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>SPRN_MMCR3,r5<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>LOAD_REG_IMMEDIATE(r5, =
-MMCRA_BHRB_DISABLE)<br class=3D"">+<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>mtspr<span class=3D"Apple-tab-span"=
- style=3D"white-space: pre;">	</span>SPRN_MMCRA,r5<br class=3D"">+<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>blr<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">This doesn't seem like it belongs in this patch. It's not =
-called?</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""></div></blockquote><div><br class=3D""></div>Yes, you =
-are right, this needs to be called from =
-`__setup_cpu_power10`.</div><div>Since we didn=E2=80=99t had setup part =
-for power10 in the tree initially, missed it.</div><div>I will include =
-this update in V3&nbsp;</div><div><br =
-class=3D""></div><div>Thanks</div><div>Athira<br class=3D""><blockquote =
-type=3D"cite" class=3D""><div class=3D""><br style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">cheers</span></div></blockquote></div><br =
-class=3D""></body></html>=
-
---Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102--
-
+Dragan
