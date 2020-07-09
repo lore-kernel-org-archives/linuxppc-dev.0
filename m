@@ -6,66 +6,67 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98F8DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:47:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB46C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:49:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C32320738
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:47:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C32320738
+	by mail.kernel.org (Postfix) with ESMTPS id 8770A20657
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:49:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8770A20657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2MZL73LrzDr4D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 13:47:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Mc36ddQzDrC0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 13:49:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2MBP0ggkzDqdT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:30:20 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06930klh134422; Wed, 8 Jul 2020 23:30:16 -0400
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
- [169.53.41.122])
- by mx0b-001b2d01.pphosted.com with ESMTP id 325ktsavpk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2MBR2cnrzDqZW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:30:23 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06931bl4132722; Wed, 8 Jul 2020 23:30:18 -0400
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 325s23u55h-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 23:30:15 -0400
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
- by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0693EiWt023972;
- Thu, 9 Jul 2020 03:30:15 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 325k283xc9-1
+ Wed, 08 Jul 2020 23:30:18 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0693FubJ031393;
+ Thu, 9 Jul 2020 03:30:17 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma02wdc.us.ibm.com with ESMTP id 325k1vb5sm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 03:30:15 +0000
+ Thu, 09 Jul 2020 03:30:17 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0693UEvK39715320
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0693UG3m12452378
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 03:30:14 GMT
+ Thu, 9 Jul 2020 03:30:17 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 33B7BB205F;
+ by IMSVA (Postfix) with ESMTP id DFC8DB2066;
+ Thu,  9 Jul 2020 03:30:16 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D331DB205F;
  Thu,  9 Jul 2020 03:30:14 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95C66B2064;
- Thu,  9 Jul 2020 03:30:12 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.62.107])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  9 Jul 2020 03:30:12 +0000 (GMT)
+ Thu,  9 Jul 2020 03:30:14 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v6 09/23] powerpc/book3s64/pkeys: Simplify pkey disable branch
-Date: Thu,  9 Jul 2020 08:59:32 +0530
-Message-Id: <20200709032946.881753-10-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v6 10/23] powerpc/book3s64/pkeys: Convert pkey_total to
+ num_pkey
+Date: Thu,  9 Jul 2020 08:59:33 +0530
+Message-Id: <20200709032946.881753-11-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200709032946.881753-1-aneesh.kumar@linux.ibm.com>
 References: <20200709032946.881753-1-aneesh.kumar@linux.ibm.com>
@@ -76,11 +77,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-08_19:2020-07-08,
  2020-07-08 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 adultscore=0
- clxscore=1015 bulkscore=0 mlxlogscore=999 phishscore=0 suspectscore=0
- impostorscore=0 lowpriorityscore=0 malwarescore=0 priorityscore=1501
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007090019
+ clxscore=1015 mlxlogscore=999
+ bulkscore=0 impostorscore=0 phishscore=0 lowpriorityscore=0 mlxscore=0
+ spamscore=0 suspectscore=0 adultscore=0 priorityscore=1501 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007090019
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,52 +99,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make the default value FALSE (pkey enabled) and set to TRUE when we
-find the total number of keys supported to be zero.
+num_pkey now represents max number of keys supported such that we return
+to userspace 0 - num_pkey - 1.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/pkeys.h | 2 +-
- arch/powerpc/mm/book3s64/pkeys.c | 7 +++----
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/pkeys.h |  7 +++++--
+ arch/powerpc/mm/book3s64/pkeys.c | 14 +++++++-------
+ 2 files changed, 12 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index d06ec0948964..f984bfac814a 100644
+index f984bfac814a..26b20061512f 100644
 --- a/arch/powerpc/include/asm/pkeys.h
 +++ b/arch/powerpc/include/asm/pkeys.h
-@@ -11,7 +11,7 @@
- #include <linux/jump_label.h>
+@@ -12,7 +12,7 @@
  #include <asm/firmware.h>
  
--DECLARE_STATIC_KEY_TRUE(pkey_disabled);
-+DECLARE_STATIC_KEY_FALSE(pkey_disabled);
- extern int pkeys_total; /* total pkeys as per device tree */
+ DECLARE_STATIC_KEY_FALSE(pkey_disabled);
+-extern int pkeys_total; /* total pkeys as per device tree */
++extern int num_pkey;
  extern u32 initial_allocation_mask; /*  bits set for the initially allocated keys */
  extern u32 reserved_allocation_mask; /* bits set for reserved keys */
+ 
+@@ -44,7 +44,10 @@ static inline int vma_pkey(struct vm_area_struct *vma)
+ 	return (vma->vm_flags & ARCH_VM_PKEY_FLAGS) >> VM_PKEY_SHIFT;
+ }
+ 
+-#define arch_max_pkey() pkeys_total
++static inline int arch_max_pkey(void)
++{
++	return num_pkey;
++}
+ 
+ #define pkey_alloc_mask(pkey) (0x1 << pkey)
+ 
 diff --git a/arch/powerpc/mm/book3s64/pkeys.c b/arch/powerpc/mm/book3s64/pkeys.c
-index 59950d1cffc9..c95fb0280cd9 100644
+index c95fb0280cd9..42c236bd725f 100644
 --- a/arch/powerpc/mm/book3s64/pkeys.c
 +++ b/arch/powerpc/mm/book3s64/pkeys.c
-@@ -12,7 +12,7 @@
- #include <linux/pkeys.h>
+@@ -13,7 +13,7 @@
  #include <linux/of_device.h>
  
--DEFINE_STATIC_KEY_TRUE(pkey_disabled);
-+DEFINE_STATIC_KEY_FALSE(pkey_disabled);
- int  pkeys_total;		/* Total pkeys as per device tree */
+ DEFINE_STATIC_KEY_FALSE(pkey_disabled);
+-int  pkeys_total;		/* Total pkeys as per device tree */
++int  num_pkey;		/* Max number of pkeys supported */
  u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
  /*
-@@ -113,9 +113,8 @@ static int pkey_initialize(void)
+  *  Keys marked in the reservation list cannot be allocated by  userspace
+@@ -93,7 +93,7 @@ static int scan_pkey_feature(void)
  
- 	/* scan the device tree for pkey feature */
- 	pkeys_total = scan_pkey_feature();
--	if (pkeys_total)
--		static_branch_disable(&pkey_disabled);
--	else {
-+	if (!pkeys_total) {
-+		/* No support for pkey. Mark it disabled */
- 		static_branch_enable(&pkey_disabled);
- 		return 0;
+ static int pkey_initialize(void)
+ {
+-	int os_reserved, i;
++	int pkeys_total, i;
+ 
+ 	/*
+ 	 * We define PKEY_DISABLE_EXECUTE in addition to the arch-neutral
+@@ -133,12 +133,12 @@ static int pkey_initialize(void)
+ 	 * The OS can manage only 8 pkeys due to its inability to represent them
+ 	 * in the Linux 4K PTE. Mark all other keys reserved.
+ 	 */
+-	os_reserved = pkeys_total - 8;
++	num_pkey = min(8, pkeys_total);
+ #else
+-	os_reserved = 0;
++	num_pkey = pkeys_total;
+ #endif
+ 
+-	if (unlikely((pkeys_total - os_reserved) <= execute_only_key)) {
++	if (unlikely(num_pkey <= execute_only_key)) {
+ 		/*
+ 		 * Insufficient number of keys to support
+ 		 * execute only key. Mark it unavailable.
+@@ -185,10 +185,10 @@ static int pkey_initialize(void)
+ 	default_uamor &= ~(0x3ul << pkeyshift(1));
+ 
+ 	/*
+-	 * Prevent the usage of OS reserved the keys. Update UAMOR
++	 * Prevent the usage of OS reserved keys. Update UAMOR
+ 	 * for those keys.
+ 	 */
+-	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++) {
++	for (i = num_pkey; i < pkeys_total; i++) {
+ 		reserved_allocation_mask |= (0x1 << i);
+ 		default_uamor &= ~(0x3ul << pkeyshift(i));
  	}
 -- 
 2.26.2
