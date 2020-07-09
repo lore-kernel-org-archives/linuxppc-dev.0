@@ -2,90 +2,61 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ED16C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 01:55:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3DD6C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:07:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 999B2206F6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 01:55:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 999B2206F6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 53921206F6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:07:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53921206F6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2K5N49kgzDqwY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:55:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Lh502LxzDqwb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 13:07:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2K3T47gBzDqTv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 11:54:13 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0691WCSh019825; Wed, 8 Jul 2020 21:54:07 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 325mpbqe41-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 08 Jul 2020 21:54:06 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0691p3KU019035;
- Thu, 9 Jul 2020 01:54:04 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma04ams.nl.ibm.com with ESMTP id 325mdhg7x4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 01:54:04 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0691s2JB62914946
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 01:54:02 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5CE8A4C046;
- Thu,  9 Jul 2020 01:54:02 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 28D034C044;
- Thu,  9 Jul 2020 01:54:01 +0000 (GMT)
-Received: from [9.79.221.246] (unknown [9.79.221.246])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu,  9 Jul 2020 01:54:00 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [PATCH v2 01/10] powerpc/perf: Add support for ISA3.1 PMU SPRs
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <874kqi46cg.fsf@mpe.ellerman.id.au>
-Date: Thu, 9 Jul 2020 07:23:58 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <DF000FF6-EF09-4299-A4AD-EF76277A6EF4@linux.vnet.ibm.com>
-References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1593595262-1433-2-git-send-email-atrajeev@linux.vnet.ibm.com>
- <874kqi46cg.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2LfJ5ZQLzDqlL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:05:54 +1000 (AEST)
+IronPort-SDR: AUIK23TChj6yslj3H6jr5fx3Z7SbVJZUNK+IReLKAn+kEKs4mHPqPP1MwNm2bjO23cR1bAZZ66
+ QMhqJdeOy62w==
+X-IronPort-AV: E=McAfee;i="6000,8403,9676"; a="209459998"
+X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="209459998"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2020 20:05:49 -0700
+IronPort-SDR: DVIdpuGM2PvPHt89cgn+tlVcK9uVOSsOZaXP4y5AUVB4MyHMv7MogJ02wnCTyMHw1SDmnHy9Ai
+ mKDLaWsxRF/A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="283996687"
+Received: from lkp-server01.sh.intel.com (HELO 6136dd46483e) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 08 Jul 2020 20:05:46 -0700
+Received: from kbuild by 6136dd46483e with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jtMsb-0000NU-R6; Thu, 09 Jul 2020 03:05:45 +0000
+Date: Thu, 09 Jul 2020 11:05:40 +0800
+From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-X-Mailer: Apple Mail (2.3608.80.23.2.2)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-08_19:2020-07-08,
- 2020-07-08 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 bulkscore=0
- phishscore=0 malwarescore=0 adultscore=0 priorityscore=1501 suspectscore=0
- impostorscore=0 mlxscore=0 clxscore=1015 spamscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007090005
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 4557ac6b344b8cdf948ff8b007e8e1de34832f2e
+Message-ID: <5f068984.9hmi5mpFcIsfvrkU%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,73 +68,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
+branch HEAD: 4557ac6b344b8cdf948ff8b007e8e1de34832f2e  powerpc/64s/exception: Fix 0x1500 interrupt handler crash
 
+elapsed time: 829m
 
-> On 08-Jul-2020, at 4:32 PM, Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
->=20
-> Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
-> ...
->> diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c
->> index cd6a742..5c64bd3 100644
->> --- a/arch/powerpc/perf/core-book3s.c
->> +++ b/arch/powerpc/perf/core-book3s.c
->> @@ -39,10 +39,10 @@ struct cpu_hw_events {
->> 	unsigned int flags[MAX_HWEVENTS];
->> 	/*
->> 	 * The order of the MMCR array is:
->> -	 *  - 64-bit, MMCR0, MMCR1, MMCRA, MMCR2
->> +	 *  - 64-bit, MMCR0, MMCR1, MMCRA, MMCR2, MMCR3
->> 	 *  - 32-bit, MMCR0, MMCR1, MMCR2
->> 	 */
->> -	unsigned long mmcr[4];
->> +	unsigned long mmcr[5];
->> 	struct perf_event *limited_counter[MAX_LIMITED_HWCOUNTERS];
->> 	u8  limited_hwidx[MAX_LIMITED_HWCOUNTERS];
->> 	u64 alternatives[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
-> ...
->> @@ -1310,6 +1326,10 @@ static void power_pmu_enable(struct pmu *pmu)
->> 	if (!cpuhw->n_added) {
->> 		mtspr(SPRN_MMCRA, cpuhw->mmcr[2] & =
-~MMCRA_SAMPLE_ENABLE);
->> 		mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
->> +#ifdef CONFIG_PPC64
->> +		if (ppmu->flags & PPMU_ARCH_310S)
->> +			mtspr(SPRN_MMCR3, cpuhw->mmcr[4]);
->> +#endif /* CONFIG_PPC64 */
->> 		goto out_enable;
->> 	}
->>=20
->> @@ -1353,6 +1373,11 @@ static void power_pmu_enable(struct pmu *pmu)
->> 	if (ppmu->flags & PPMU_ARCH_207S)
->> 		mtspr(SPRN_MMCR2, cpuhw->mmcr[3]);
->>=20
->> +#ifdef CONFIG_PPC64
->> +	if (ppmu->flags & PPMU_ARCH_310S)
->> +		mtspr(SPRN_MMCR3, cpuhw->mmcr[4]);
->> +#endif /* CONFIG_PPC64 */
->=20
-> I don't think you need the #ifdef CONFIG_PPC64?
+configs tested: 113
+configs skipped: 2
 
-Hi Michael
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks for reviewing this series.
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+xtensa                         virt_defconfig
+parisc                            allnoconfig
+mips                      pic32mzda_defconfig
+arm                       netwinder_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                      pasemi_defconfig
+arm                        cerfcube_defconfig
+xtensa                          iss_defconfig
+sh                           se7343_defconfig
+arm                          ixp4xx_defconfig
+sh                           se7780_defconfig
+m68k                             alldefconfig
+arc                      axs103_smp_defconfig
+arm                          prima2_defconfig
+sh                           sh2007_defconfig
+mips                      maltaaprp_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20200708
+i386                 randconfig-a001-20200708
+i386                 randconfig-a006-20200708
+i386                 randconfig-a005-20200708
+i386                 randconfig-a004-20200708
+i386                 randconfig-a003-20200708
+x86_64               randconfig-a001-20200708
+x86_64               randconfig-a006-20200708
+x86_64               randconfig-a003-20200708
+x86_64               randconfig-a002-20200708
+x86_64               randconfig-a004-20200708
+x86_64               randconfig-a005-20200708
+i386                 randconfig-a011-20200708
+i386                 randconfig-a015-20200708
+i386                 randconfig-a014-20200708
+i386                 randconfig-a016-20200708
+i386                 randconfig-a012-20200708
+i386                 randconfig-a013-20200708
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                                allnoconfig
+um                                  defconfig
+um                               allmodconfig
+um                               allyesconfig
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
 
-SPRN_MMCR3 is not defined for PPC32 and we hit build failure for =
-pmac32_defconfig.
-The #ifdef CONFIG_PPC64 is to address this.
-
-Thanks
-Athira
-
-
->=20
-> cheers
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
