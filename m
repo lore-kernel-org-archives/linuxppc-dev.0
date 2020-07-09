@@ -2,99 +2,90 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29914C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:24:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 597F3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:25:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D40C1206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:24:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D40C1206DF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A6A14206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 12:25:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6A14206DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2YjB1G2kzDrDD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 21:24:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2b3p2PdTzDr5Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:25:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YgH06jYzDq9C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:22:34 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 069B2IdY121496; Thu, 9 Jul 2020 07:22:27 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 325kh3xw8q-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YLX2lcxzDqTm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:08:04 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 069B1bDU182473; Thu, 9 Jul 2020 07:07:58 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 325s3jp7re-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 07:22:27 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 069B3FHs125428;
- Thu, 9 Jul 2020 07:22:27 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 325kh3xw7d-1
+ Thu, 09 Jul 2020 07:07:58 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 069B193K018552;
+ Thu, 9 Jul 2020 11:07:57 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 325u410faa-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 07:22:27 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 069BKvQV015376;
- Thu, 9 Jul 2020 11:22:24 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma02fra.de.ibm.com with ESMTP id 325mr2rsek-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 11:22:24 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 069BL6Ua47579232
+ Thu, 09 Jul 2020 11:07:56 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 069B7sgp6488516
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 11:21:07 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CF2D6AE053;
- Thu,  9 Jul 2020 11:21:06 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 67361AE055;
- Thu,  9 Jul 2020 11:21:05 +0000 (GMT)
-Received: from [9.79.211.226] (unknown [9.79.211.226])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  9 Jul 2020 11:21:05 +0000 (GMT)
-Subject: Re: [PATCH 2/2] powerpc/powernv/idle: save-restore DAWR0,DAWRX0 for
- P10
-To: ego@linux.vnet.ibm.com
-References: <20200703124640.42820-1-psampat@linux.ibm.com>
- <20200703124640.42820-2-psampat@linux.ibm.com>
- <20200709090948.GB24354@in.ibm.com>
-From: Pratik Sampat <psampat@linux.ibm.com>
-Message-ID: <87fdebb1-93e1-a59d-f582-784ee1c19279@linux.ibm.com>
-Date: Thu, 9 Jul 2020 16:51:04 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.9.0
-MIME-Version: 1.0
-In-Reply-To: <20200709090948.GB24354@in.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+ Thu, 9 Jul 2020 11:07:54 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AA293A4062;
+ Thu,  9 Jul 2020 11:07:54 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 44040A4054;
+ Thu,  9 Jul 2020 11:07:53 +0000 (GMT)
+Received: from [9.85.108.151] (unknown [9.85.108.151])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  9 Jul 2020 11:07:53 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Message-Id: <8686D3D2-6AE6-479D-BD7F-36EBFBA0BEEA@linux.vnet.ibm.com>
+Content-Type: multipart/alternative;
+ boundary="Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102"
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
+Subject: Re: [PATCH v2 04/10] powerpc/perf: Add power10_feat to dt_cpu_ftrs
+Date: Thu, 9 Jul 2020 16:37:50 +0530
+In-Reply-To: <87y2nu2r7f.fsf@mpe.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1593595262-1433-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1593595262-1433-5-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <87y2nu2r7f.fsf@mpe.ellerman.id.au>
+X-Mailer: Apple Mail (2.3608.80.23.2.2)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-09_05:2020-07-09,
  2020-07-09 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  mlxlogscore=999
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 mlxscore=0 bulkscore=0
- spamscore=0 suspectscore=1 adultscore=0 impostorscore=0 malwarescore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ suspectscore=0 malwarescore=0 mlxscore=0 priorityscore=1501
+ impostorscore=0 spamscore=0 lowpriorityscore=0 clxscore=1015 phishscore=0
+ bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2007090084
+X-Mailman-Approved-At: Thu, 09 Jul 2020 22:23:07 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,85 +97,207 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, pratik.r.sampat@gmail.com,
- linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=utf-8
 
-On 09/07/20 2:39 pm, Gautham R Shenoy wrote:
-> On Fri, Jul 03, 2020 at 06:16:40PM +0530, Pratik Rajesh Sampat wrote:
->> Additional registers DAWR0, DAWRX0 may be lost on Power 10 for
->> stop levels < 4.
-> Adding Ravi Bangoria <ravi.bangoria@linux.ibm.com> to the cc.
->
->> Therefore save the values of these SPRs before entering a  "stop"
->> state and restore their values on wakeup.
->>
->> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
->
-> The saving and restoration looks good to me.
+
+
+> On 08-Jul-2020, at 4:45 PM, Michael Ellerman <mpe@ellerman.id.au> =
+wrote:
+>=20
+> Athira Rajeev <atrajeev@linux.vnet.ibm.com =
+<mailto:atrajeev@linux.vnet.ibm.com>> writes:
+>> From: Madhavan Srinivasan <maddy@linux.ibm.com>
+>>=20
+>> Add power10 feature function to dt_cpu_ftrs.c along
+>> with a power10 specific init() to initialize pmu sprs.
+>>=20
+>> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 >> ---
->>   arch/powerpc/platforms/powernv/idle.c | 10 ++++++++++
->>   1 file changed, 10 insertions(+)
->>
->> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
->> index 19d94d021357..471d4a65b1fa 100644
->> --- a/arch/powerpc/platforms/powernv/idle.c
->> +++ b/arch/powerpc/platforms/powernv/idle.c
->> @@ -600,6 +600,8 @@ struct p9_sprs {
->>   	u64 iamr;
->>   	u64 amor;
->>   	u64 uamor;
->> +	u64 dawr0;
->> +	u64 dawrx0;
->>   };
->>
->>   static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->> @@ -677,6 +679,10 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->>   		sprs.tscr	= mfspr(SPRN_TSCR);
->>   		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
->>   			sprs.ldbar = mfspr(SPRN_LDBAR);
->> +		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
->> +			sprs.dawr0 = mfspr(SPRN_DAWR0);
->> +			sprs.dawrx0 = mfspr(SPRN_DAWRX0);
->> +		}
->>
->
-> But this is within the if condition which says
->
-> 	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level)
->
-> This if condition is meant for stop4 and stop5 since these are stop
-> levels that have OPAL_PM_LOSE_HYP_CONTEXT set.
->
-> Since we can lose DAWR*, on states that lose limited hypervisor
-> context, such as stop0-2, we need to unconditionally save them
-> like AMR, IAMR etc.
->
-Right, shallow states too loose DAWR/X. Thanks for pointing it out.
-I'll fix this and resend.
+>> arch/powerpc/include/asm/reg.h        |  3 +++
+>> arch/powerpc/kernel/cpu_setup_power.S |  7 +++++++
+>> arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
+>> 3 files changed, 36 insertions(+)
+>>=20
+>> diff --git a/arch/powerpc/include/asm/reg.h =
+b/arch/powerpc/include/asm/reg.h
+>> index 21a1b2d..900ada1 100644
+>> --- a/arch/powerpc/include/asm/reg.h
+>> +++ b/arch/powerpc/include/asm/reg.h
+>> @@ -1068,6 +1068,9 @@
+>> #define MMCR0_PMC2_LOADMISSTIME	0x5
+>> #endif
+>>=20
+>> +/* BHRB disable bit for PowerISA v3.10 */
+>> +#define MMCRA_BHRB_DISABLE	0x0000002000000000
+>> +
+>> /*
+>>  * SPRG usage:
+>>  *
+>> diff --git a/arch/powerpc/kernel/cpu_setup_power.S =
+b/arch/powerpc/kernel/cpu_setup_power.S
+>> index efdcfa7..e8b3370c 100644
+>> --- a/arch/powerpc/kernel/cpu_setup_power.S
+>> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+>> @@ -233,3 +233,10 @@ __init_PMU_ISA207:
+>> 	li	r5,0
+>> 	mtspr	SPRN_MMCRS,r5
+>> 	blr
+>> +
+>> +__init_PMU_ISA31:
+>> +	li	r5,0
+>> +	mtspr	SPRN_MMCR3,r5
+>> +	LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
+>> +	mtspr	SPRN_MMCRA,r5
+>> +	blr
+>=20
+> This doesn't seem like it belongs in this patch. It's not called?
 
->>   		sprs_saved = true;
->>
->> @@ -792,6 +798,10 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->>   	mtspr(SPRN_MMCR2,	sprs.mmcr2);
->>   	if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
->>   		mtspr(SPRN_LDBAR, sprs.ldbar);
->> +	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
->> +		mtspr(SPRN_DAWR0, sprs.dawr0);
->> +		mtspr(SPRN_DAWRX0, sprs.dawrx0);
->> +	}
->
-> Likewise, we need to unconditionally restore these SPRs.
->
->
->>   	mtspr(SPRN_SPRG3,	local_paca->sprg_vdso);
->>
->> -- 
->> 2.25.4
->>
+Yes, you are right, this needs to be called from `__setup_cpu_power10`.
+Since we didn=E2=80=99t had setup part for power10 in the tree =
+initially, missed it.
+I will include this update in V3=20
+
 Thanks
-Pratik
+Athira
+>=20
+> cheers
+
+
+--Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=utf-8
+
+<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
+charset=3Dutf-8"></head><body style=3D"word-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
+class=3D""><div><br class=3D""><blockquote type=3D"cite" class=3D""><div =
+class=3D"">On 08-Jul-2020, at 4:45 PM, Michael Ellerman &lt;<a =
+href=3D"mailto:mpe@ellerman.id.au" class=3D"">mpe@ellerman.id.au</a>&gt; =
+wrote:</div><br class=3D"Apple-interchange-newline"><div class=3D""><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: =
+normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;" class=3D"">Athira Rajeev &lt;</span><a =
+href=3D"mailto:atrajeev@linux.vnet.ibm.com" style=3D"font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
+-webkit-text-stroke-width: 0px;" =
+class=3D"">atrajeev@linux.vnet.ibm.com</a><span style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">&gt; writes:</span><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><blockquote type=3D"cite" =
+style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+orphans: auto; text-align: start; text-indent: 0px; text-transform: =
+none; white-space: normal; widows: auto; word-spacing: 0px; =
+-webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D"">From: Madhavan Srinivasan &lt;<a =
+href=3D"mailto:maddy@linux.ibm.com" =
+class=3D"">maddy@linux.ibm.com</a>&gt;<br class=3D""><br class=3D"">Add =
+power10 feature function to dt_cpu_ftrs.c along<br class=3D"">with a =
+power10 specific init() to initialize pmu sprs.<br class=3D""><br =
+class=3D"">Signed-off-by: Madhavan Srinivasan &lt;<a =
+href=3D"mailto:maddy@linux.ibm.com" =
+class=3D"">maddy@linux.ibm.com</a>&gt;<br class=3D"">---<br =
+class=3D"">arch/powerpc/include/asm/reg.h =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;3 +++<br =
+class=3D"">arch/powerpc/kernel/cpu_setup_power.S | &nbsp;7 +++++++<br =
+class=3D"">arch/powerpc/kernel/dt_cpu_ftrs.c &nbsp;&nbsp;&nbsp;&nbsp;| =
+26 ++++++++++++++++++++++++++<br class=3D"">3 files changed, 36 =
+insertions(+)<br class=3D""><br class=3D"">diff --git =
+a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h<br =
+class=3D"">index 21a1b2d..900ada1 100644<br class=3D"">--- =
+a/arch/powerpc/include/asm/reg.h<br class=3D"">+++ =
+b/arch/powerpc/include/asm/reg.h<br class=3D"">@@ -1068,6 +1068,9 @@<br =
+class=3D"">#define MMCR0_PMC2_LOADMISSTIME<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>0x5<br class=3D"">#endif<br =
+class=3D""><br class=3D"">+/* BHRB disable bit for PowerISA v3.10 */<br =
+class=3D"">+#define MMCRA_BHRB_DISABLE<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>0x0000002000000000<br =
+class=3D"">+<br class=3D"">/*<br class=3D"">&nbsp;* SPRG usage:<br =
+class=3D"">&nbsp;*<br class=3D"">diff --git =
+a/arch/powerpc/kernel/cpu_setup_power.S =
+b/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">index =
+efdcfa7..e8b3370c 100644<br class=3D"">--- =
+a/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">+++ =
+b/arch/powerpc/kernel/cpu_setup_power.S<br class=3D"">@@ -233,3 +233,10 =
+@@ __init_PMU_ISA207:<br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>li<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>r5,0<br class=3D""><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>mtspr<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SPRN_MMCRS,r5<br class=3D""><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>blr<br class=3D"">+<br =
+class=3D"">+__init_PMU_ISA31:<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>li<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>r5,0<br =
+class=3D"">+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>mtspr<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>SPRN_MMCR3,r5<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>LOAD_REG_IMMEDIATE(r5, =
+MMCRA_BHRB_DISABLE)<br class=3D"">+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>mtspr<span class=3D"Apple-tab-span"=
+ style=3D"white-space: pre;">	</span>SPRN_MMCRA,r5<br class=3D"">+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>blr<br =
+class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">This doesn't seem like it belongs in this patch. It's not =
+called?</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: normal; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;" class=3D""></div></blockquote><div><br class=3D""></div>Yes, you =
+are right, this needs to be called from =
+`__setup_cpu_power10`.</div><div>Since we didn=E2=80=99t had setup part =
+for power10 in the tree initially, missed it.</div><div>I will include =
+this update in V3&nbsp;</div><div><br =
+class=3D""></div><div>Thanks</div><div>Athira<br class=3D""><blockquote =
+type=3D"cite" class=3D""><div class=3D""><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
+0); font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none; float: none; display: inline !important;" =
+class=3D"">cheers</span></div></blockquote></div><br =
+class=3D""></body></html>=
+
+--Apple-Mail=_74D9808A-91F2-4E58-9A98-12BDA6ED9102--
+
