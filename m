@@ -2,93 +2,59 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0262CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:04:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAF25C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:34:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65FD3207DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:04:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GkZHcqMU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65FD3207DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 453CF206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:34:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 453CF206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: mail.kernel.org; spf=tempfail smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2nF65rTVzDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 06:04:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::643;
- helo=mail-ej1-x643.google.com; envelope-from=jacek.anaszewski@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2nvT4tnqzDrCB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 06:33:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=GkZHcqMU; dkim-atps=neutral
-Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com
- [IPv6:2a00:1450:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2nB409rrzDr7j
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 06:01:26 +1000 (AEST)
-Received: by mail-ej1-x643.google.com with SMTP id o18so3589554eje.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2020 13:01:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=d0gYY+wvsRxBQmwzqJnWeCjIuXvxeaWsWRCnx0ubZOg=;
- b=GkZHcqMUxKmjdVenudvdvqrkXbo+JquPTX2QSgtNobUDUV+vraMZmE9cpIcAdHZJUq
- BsNZoufFprGyxI+wF74biz7ZS11pt7kce+6MsuFWiTDxGPiFDCBKH/FQV0TSZY+pJnKZ
- aQgYU21P8pRSAHEIpMjQaSk+/2UWcXpEmWTHqU2pnGGc+WJE2vTWQaeOqT9pS6Wvbnc+
- FHkBOL1YGb2IRejD/iE8bAHlYDJJb7i6xs3ZqMC0TUpFxaYPBos1PzAaPH3oFvaWN425
- C2K8MZOf+/7LZ1SzGQPQTHQjCyQFHQkVSe9p2Uwwgk+FPt9rtQwguKi6C2OAdfptqC2j
- oImw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=d0gYY+wvsRxBQmwzqJnWeCjIuXvxeaWsWRCnx0ubZOg=;
- b=bukDOwH9+Rs70xfELBa26LBti8rbLRjVGs3oWJt9HRkQGzGy0B9fMykTq0hHU9XncY
- j2Zzz9ULhBrmfLuiwehfvA4sdrqjB7o5Ai2zZrrF6ngxTLhHdQ2Pvh3QcgtNMvmLTCye
- thD0Ek5uCFKV9kJo9FeM7MllUKI9SdESXO2dKXjkg43xF+OI38HW8WJYhwEqGOX3WJC0
- TxPE0MjOe3PC5JIaJ8X4Ks9XKKNql/lL8MfBbReMhbeLeI/B+ex/o30IGVSgnfUyyl4w
- 0uqul5i8GVB4yDwGkitWwB4sE6ERe5YmGuYY3rLrtmfGHUjoUqAs2VL0DqOTv2xdVmhf
- LchA==
-X-Gm-Message-State: AOAM533t4zuxgMj3tzFhViq2nIH5YfViuvDW3kpFO4f3J1A+Wq9jwbXr
- dsjeE6OkSH+b1/2RgCZqkPQ=
-X-Google-Smtp-Source: ABdhPJxPlnTPprrTFBMP+KVIniKNlWppnSrNKOcRmi8sX8QVrNf9GjrPlFc+WTiAQakw0xXsLbAzEQ==
-X-Received: by 2002:a17:906:3a04:: with SMTP id
- z4mr51246240eje.441.1594324883183; 
- Thu, 09 Jul 2020 13:01:23 -0700 (PDT)
-Received: from ?IPv6:2a01:110f:b59:fd00:2066:8db:696f:8073?
- ([2a01:110f:b59:fd00:2066:8db:696f:8073])
- by smtp.gmail.com with ESMTPSA id t2sm2728139eds.60.2020.07.09.13.01.18
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 09 Jul 2020 13:01:22 -0700 (PDT)
-Subject: Re: [PATCH 11/20] Documentation: leds/ledtrig-transient: eliminate
- duplicated word
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-References: <20200707180414.10467-1-rdunlap@infradead.org>
- <20200707180414.10467-12-rdunlap@infradead.org>
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Message-ID: <16035116-2154-d0fe-6655-a829a9d36ceb@gmail.com>
-Date: Thu, 9 Jul 2020 22:01:17 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
-MIME-Version: 1.0
-In-Reply-To: <20200707180414.10467-12-rdunlap@infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B2nrj4Dr9zDrBx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 06:31:33 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 069KVJKK019073;
+ Thu, 9 Jul 2020 15:31:19 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 069KVI58019072;
+ Thu, 9 Jul 2020 15:31:18 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 9 Jul 2020 15:31:18 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Subject: Re: Failure to build librseq on ppc
+Message-ID: <20200709203118.GP3598@gate.crashing.org>
+References: <972420887.755.1594149430308.JavaMail.zimbra@efficios.com>
+ <20200708005922.GW3598@gate.crashing.org> <87k0ze2nv4.fsf@mpe.ellerman.id.au>
+ <20200708235331.GA3598@gate.crashing.org>
+ <1968953502.5815.1594252883512.JavaMail.zimbra@efficios.com>
+ <20200709001837.GD3598@gate.crashing.org>
+ <1769596686.6365.1594302227962.JavaMail.zimbra@efficios.com>
+ <20200709173712.GL3598@gate.crashing.org>
+ <1584179170.7410.1594316576293.JavaMail.zimbra@efficios.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1584179170.7410.1594316576293.JavaMail.zimbra@efficios.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,70 +66,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
- linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
- Paul Cercueil <paul@crapouillou.net>, keyrings@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
- Halil Pasic <pasic@linux.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
- Mali DP Maintainers <malidp@foss.arm.com>,
- Derek Kiernan <derek.kiernan@xilinx.com>,
- Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
- Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
- Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Dan Murphy <dmurphy@ti.com>,
- linux-mm@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Pierre Morel <pmorel@linux.ibm.com>, Douglas Anderson <dianders@chromium.org>,
- Wolfram Sang <wsa@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Jason Wessel <jason.wessel@windriver.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Jeanson <mjeanson@efficios.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/7/20 8:04 PM, Randy Dunlap wrote:
-> Drop the doubled word "for".
+On Thu, Jul 09, 2020 at 01:42:56PM -0400, Mathieu Desnoyers wrote:
+> > That works fine then, for a testcase.  Using r17 is not a great idea for
+> > performance (it increases the active register footprint, and causes more
+> > registers to be saved in the prologue of the functions, esp. on older
+> > compilers), and it is easier to just let the compiler choose a good
+> > register to use.  But maybe you want to see r17 in the generated
+> > testcases, as eyecatcher or something, dunno :-)
 > 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Dan Murphy <dmurphy@ti.com>
-> Cc: linux-leds@vger.kernel.org
-> ---
->   Documentation/leds/ledtrig-transient.rst |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Just to make sure I understand your recommendation. So rather than
+> hard coding r17 as the temporary registers, we could explicitly
+> declare the temporary register as a C variable, pass it as an
+> input operand to the inline asm, and then refer to it by operand
+> name in the macros using it. This way the compiler would be free
+> to perform its own register allocation.
 > 
-> --- linux-next-20200701.orig/Documentation/leds/ledtrig-transient.rst
-> +++ linux-next-20200701/Documentation/leds/ledtrig-transient.rst
-> @@ -157,7 +157,7 @@ repeat the following step as needed::
->   	echo 1 > activate - start timer = duration to run once
->   	echo none > trigger
->   
-> -This trigger is intended to be used for for the following example use cases:
-> +This trigger is intended to be used for the following example use cases:
->   
->    - Control of vibrate (phones, tablets etc.) hardware by user space app.
->    - Use of LED by user space app as activity indicator.
-> 
+> If that is what you have in mind, then yes, I think it makes a
+> lot of sense.
 
-Acked-by: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+You write to it as well, so an inout register ("+r" or such).  And yes,
+you use a local var for it (like "long tmp;").  And then you can refer
+to it like anything else in your asm, like "%3" or like
+"%[a_long_name]"; and the compiler sees it as any other register,
+exactly.
 
--- 
-Best regards,
-Jacek Anaszewski
+
+Segher
