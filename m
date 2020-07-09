@@ -2,60 +2,87 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76C6AC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F1B9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:09:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D083320786
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:08:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 207FA206A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 22:09:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="hOh4lvO6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D083320786
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LWSfhdjn";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="LWSfhdjn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 207FA206A1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2r095gnyzDqjQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 08:08:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2r2F2F1CzDrFL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 08:09:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=bmeneg@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=hOh4lvO6; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=LWSfhdjn; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=LWSfhdjn; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2qxq0G38zDrBj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 08:06:06 +1000 (AEST)
-Received: from localhost (mobile-166-175-191-139.mycingular.net
- [166.175.191.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2hst0mHfzDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 02:47:09 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1594313226;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=UspVOw6XAGLtilKBpYwpbaqQeMaCCmM2aVuZ489RO+o=;
+ b=LWSfhdjnKyWaxIDXzJHe5txJCczeUZlpJu4HSOt/ZveqCkI6SrkOLSLd79i17J5PQ+8+SH
+ 3adPyEvlaCGMhNCu3de9dA8LZhKiUVerkYGwEEAxwQpP8IKHxnLMreAO3vILouoiaWCk1u
+ lKbAiKyr/b1ne9H5sz8FU/mtSc2H3Zs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1594313226;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=UspVOw6XAGLtilKBpYwpbaqQeMaCCmM2aVuZ489RO+o=;
+ b=LWSfhdjnKyWaxIDXzJHe5txJCczeUZlpJu4HSOt/ZveqCkI6SrkOLSLd79i17J5PQ+8+SH
+ 3adPyEvlaCGMhNCu3de9dA8LZhKiUVerkYGwEEAxwQpP8IKHxnLMreAO3vILouoiaWCk1u
+ lKbAiKyr/b1ne9H5sz8FU/mtSc2H3Zs=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-486-oDlM1zC6Nci7D7IE62glIQ-1; Thu, 09 Jul 2020 12:46:55 -0400
+X-MC-Unique: oDlM1zC6Nci7D7IE62glIQ-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E7E91206A1;
- Thu,  9 Jul 2020 22:06:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594332364;
- bh=1E3KNYJwxzhk32vkxEFceHo/gsiJzSp6Aq70IvYmWQI=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=hOh4lvO6KVrS6aI6+Ob+ftOEskN/RvK0Afz3UgwW9FW6/2X96hxs19EqA5He/U1bA
- +xP3oo0uep2m07nZQ4vYHju3ZIIj7vIK3v1ta6WdtVWZhpBWYnFslhv0cuX8rFBdem
- rfOv/uGGLlBSdNUzbFcGYr7H8NrfRXMLQFKOoWok=
-Date: Thu, 9 Jul 2020 17:06:02 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Matt Jolly <Kangie@footclan.ninja>
-Subject: Re: [PATCH 2/2] PCI/AER: Log correctable errors as warning, not error
-Message-ID: <20200709220602.GA21872@bjorn-Precision-5520>
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9C8D5E918;
+ Thu,  9 Jul 2020 16:46:53 +0000 (UTC)
+Received: from localhost (ovpn-116-137.gru2.redhat.com [10.97.116.137])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 4B7085BAEA;
+ Thu,  9 Jul 2020 16:46:50 +0000 (UTC)
+From: Bruno Meneguele <bmeneg@redhat.com>
+To: linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-integrity@vger.kernel.org
+Subject: [PATCH v5] ima: move APPRAISE_BOOTPARAM dependency on ARCH_POLICY to
+ runtime
+Date: Thu,  9 Jul 2020 13:46:47 -0300
+Message-Id: <20200709164647.45153-1-bmeneg@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200708001401.405749-2-helgaas@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Mailman-Approved-At: Fri, 10 Jul 2020 08:07:42 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,98 +94,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: erichte@linux.ibm.com, Bruno Meneguele <bmeneg@redhat.com>,
+ nayna@linux.ibm.com, stable@vger.kernel.org, zohar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 07, 2020 at 07:14:01PM -0500, Bjorn Helgaas wrote:
-> From: Matt Jolly <Kangie@footclan.ninja>
-> 
-> PCIe correctable errors are recovered by hardware with no need for software
-> intervention (PCIe r5.0, sec 6.2.2.1).
-> 
-> Reduce the log level of correctable errors from KERN_ERR to KERN_WARNING.
-> 
-> The bug reports below are for correctable error logging.  This doesn't fix
-> the cause of those reports, but it may make the messages less alarming.
-> 
-> [bhelgaas: commit log, use pci_printk() to avoid code duplication]
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=201517
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=196183
-> Link: https://lore.kernel.org/r/20200618155511.16009-1-Kangie@footclan.ninja
-> Signed-off-by: Matt Jolly <Kangie@footclan.ninja>
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+APPRAISE_BOOTPARAM has been marked as dependent on !ARCH_POLICY in compile
+time, enforcing the appraisal whenever the kernel had the arch policy option
+enabled.
 
-I applied both of these to pci/error for v5.9.
+However it breaks systems where the option is set but the system didn't
+boot in a "secure boot" platform. In this scenario, anytime an appraisal
+policy (i.e. ima_policy=appraisal_tcb) is used it will be forced, without
+giving the user the opportunity to label the filesystem, before enforcing
+integrity.
 
-> ---
->  drivers/pci/pcie/aer.c | 25 +++++++++++++++----------
->  1 file changed, 15 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 9176c8a968b9..ca886bf91fd9 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -673,20 +673,23 @@ static void __aer_print_error(struct pci_dev *dev,
->  {
->  	const char **strings;
->  	unsigned long status = info->status & ~info->mask;
-> -	const char *errmsg;
-> +	const char *level, *errmsg;
->  	int i;
->  
-> -	if (info->severity == AER_CORRECTABLE)
-> +	if (info->severity == AER_CORRECTABLE) {
->  		strings = aer_correctable_error_string;
-> -	else
-> +		level = KERN_WARNING;
-> +	} else {
->  		strings = aer_uncorrectable_error_string;
-> +		level = KERN_ERR;
-> +	}
->  
->  	for_each_set_bit(i, &status, 32) {
->  		errmsg = strings[i];
->  		if (!errmsg)
->  			errmsg = "Unknown Error Bit";
->  
-> -		pci_err(dev, "   [%2d] %-22s%s\n", i, errmsg,
-> +		pci_printk(level, dev, "   [%2d] %-22s%s\n", i, errmsg,
->  				info->first_error == i ? " (First)" : "");
->  	}
->  	pci_dev_aer_stats_incr(dev, info);
-> @@ -696,6 +699,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
->  {
->  	int layer, agent;
->  	int id = ((dev->bus->number << 8) | dev->devfn);
-> +	const char *level;
->  
->  	if (!info->status) {
->  		pci_err(dev, "PCIe Bus Error: severity=%s, type=Inaccessible, (Unregistered Agent ID)\n",
-> @@ -706,13 +710,14 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
->  	layer = AER_GET_LAYER_ERROR(info->severity, info->status);
->  	agent = AER_GET_AGENT(info->severity, info->status);
->  
-> -	pci_err(dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
-> -		aer_error_severity_string[info->severity],
-> -		aer_error_layer[layer], aer_agent_string[agent]);
-> +	level = (info->severity == AER_CORRECTABLE) ? KERN_WARNING : KERN_ERR;
-> +
-> +	pci_printk(level, dev, "PCIe Bus Error: severity=%s, type=%s, (%s)\n",
-> +		   aer_error_severity_string[info->severity],
-> +		   aer_error_layer[layer], aer_agent_string[agent]);
->  
-> -	pci_err(dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
-> -		dev->vendor, dev->device,
-> -		info->status, info->mask);
-> +	pci_printk(level, dev, "  device [%04x:%04x] error status/mask=%08x/%08x\n",
-> +		   dev->vendor, dev->device, info->status, info->mask);
->  
->  	__aer_print_error(dev, info);
->  
-> -- 
-> 2.25.1
-> 
+Considering the ARCH_POLICY is only effective when secure boot is actually
+enabled this patch remove the compile time dependency and move it to a
+runtime decision, based on the secure boot state of that platform.
+
+With this patch:
+
+- x86-64 with secure boot enabled
+
+[    0.004305] Secure boot enabled
+...
+[    0.015651] Kernel command line: <...> ima_policy=appraise_tcb ima_appraise=fix
+[    0.015682] ima: appraise boot param ignored: secure boot enabled
+
+- powerpc with secure boot disabled
+
+[    0.000000] Kernel command line: <...> ima_policy=appraise_tcb ima_appraise=fix
+[    0.000000] Secure boot mode disabled
+...
+< nothing about boot param ignored >
+
+System working fine without secure boot and with both options set:
+
+CONFIG_IMA_APPRAISE_BOOTPARAM=y
+CONFIG_IMA_ARCH_POLICY=y
+
+Audit logs pointing to "missing-hash" but still being able to execute due to
+ima_appraise=fix:
+
+type=INTEGRITY_DATA msg=audit(07/09/2020 12:30:27.778:1691) : pid=4976
+uid=root auid=root ses=2
+subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 op=appraise_data
+cause=missing-hash comm=bash name=/usr/bin/evmctl dev="dm-0" ino=493150
+res=no
+
+Cc: stable@vger.kernel.org
+Fixes: d958083a8f64 ("x86/ima: define arch_get_ima_policy() for x86")
+Signed-off-by: Bruno Meneguele <bmeneg@redhat.com>
+---
+Changelog:
+v5:
+  - add pr_info() to inform user the ima_appraise= boot param is being
+	ignored due to secure boot enabled (Nayna)
+  - add some testing results to commit log
+v4:
+  - instead of change arch_policy loading code, check secure boot state at
+	"ima_appraise=" parameter handler (Mimi)
+v3:
+  - extend secure boot arch checker to also consider trusted boot
+  - enforce IMA appraisal when secure boot is effectively enabled (Nayna)
+  - fix ima_appraise flag assignment by or'ing it (Mimi)
+v2:
+  - pr_info() message prefix correction
+
+ security/integrity/ima/Kconfig        | 2 +-
+ security/integrity/ima/ima_appraise.c | 5 +++++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+index edde88dbe576..62dc11a5af01 100644
+--- a/security/integrity/ima/Kconfig
++++ b/security/integrity/ima/Kconfig
+@@ -232,7 +232,7 @@ config IMA_APPRAISE_REQUIRE_POLICY_SIGS
+ 
+ config IMA_APPRAISE_BOOTPARAM
+ 	bool "ima_appraise boot parameter"
+-	depends on IMA_APPRAISE && !IMA_ARCH_POLICY
++	depends on IMA_APPRAISE
+ 	default y
+ 	help
+ 	  This option enables the different "ima_appraise=" modes
+diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+index a9649b04b9f1..884de471b38a 100644
+--- a/security/integrity/ima/ima_appraise.c
++++ b/security/integrity/ima/ima_appraise.c
+@@ -19,6 +19,11 @@
+ static int __init default_appraise_setup(char *str)
+ {
+ #ifdef CONFIG_IMA_APPRAISE_BOOTPARAM
++	if (arch_ima_get_secureboot()) {
++		pr_info("appraise boot param ignored: secure boot enabled");
++		return 1;
++	}
++
+ 	if (strncmp(str, "off", 3) == 0)
+ 		ima_appraise = 0;
+ 	else if (strncmp(str, "log", 3) == 0)
+-- 
+2.26.2
+
