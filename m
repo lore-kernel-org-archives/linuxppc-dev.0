@@ -2,63 +2,87 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51654C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0E61C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:22:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 008AA206DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:20:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 14345206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:22:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Vq+WB38V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 008AA206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vAFl0E6H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14345206DF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2XHK57tCzDr7x
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:20:13 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2XDy4kb2zDqfC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:18:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2XLC062kzDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:22:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Vq+WB38V; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=vAFl0E6H; dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B2XDx5w9fz9sSd;
- Thu,  9 Jul 2020 20:18:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594289889;
- bh=ou5GvH7X+W5XkenHcVbChXPfY+zWQZQPug6Gv9qz3HE=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=Vq+WB38V5Vr/85nXNhGqpqupy+34Vv3WSzVEQwoNCfqjMOzALtdReOZo98sRNdF4v
- sGsRiBQZQRt9C10DozPjdUV+RVnAD+xtRpukIAyztq9aHvkQ7/XJdsPUAl3LuHK+wj
- I+iQuTB21OEn2hVajUA+VVaiYzvot5nUEtDX3PWAK0rNKp94aOfUACCnwCPfDJHTD/
- KdBs6WLMY5gzQ3OaXS2KwOuuu+1z1BuTcE9hZDf/FSr1zbkU2zqJX99Vfvgk6YPtuA
- Jd7OYgdjaDbdWZq1nwUULVHLrRzs0jKC70v2D3AgBk59KBxHS6YKhIhksR5MJn+pvZ
- 8f7eEgvbfiJuA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 4/6] powerpc/64s: implement queued spinlocks and rwlocks
-In-Reply-To: <20200706043540.1563616-5-npiggin@gmail.com>
-References: <20200706043540.1563616-1-npiggin@gmail.com>
- <20200706043540.1563616-5-npiggin@gmail.com>
-Date: Thu, 09 Jul 2020 20:20:25 +1000
-Message-ID: <877dvdvvkm.fsf@mpe.ellerman.id.au>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2XHn2lqYzDqgs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:20:37 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id x72so828450pfc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2020 03:20:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=K1VxGPW0xuJmXA1rhdwVLxJA7czyM/CyNjmy8WBsRv4=;
+ b=vAFl0E6HBeNrm26G8P0UQdOfXgqNlJcA/tct4oKyTFUwEd43U7dI8PbkM8WGgVIowk
+ JzOfLvU81ZaMeTJzi15ONkYEhz8ZdK1bWR7BWVaIJs/P8JDNNQZ4C6ygk426LLZ1i6Ur
+ FSzzF+6FLikQrB7ZepCeoeEROzURE/Dh8X1u0DbLBpr2ry99jml6TiaDBUgmGT2TZjot
+ Bs/VL2qJTGoqSBj1njDvTMQmdGXXJaLZAQkf7dMbet9Ig0o24iRlaaiRDvelEBe4Vlmq
+ 4o1KND3JDQfEv+NoULX20gLL2VRHXrUZDwdaew59oF71+DhmqI90PweEtb3EfegD5Mb6
+ BlTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=K1VxGPW0xuJmXA1rhdwVLxJA7czyM/CyNjmy8WBsRv4=;
+ b=D79ZoUFESufRGMgn3ScI/ZJ9slCVd3zY7vNKZrmJecsx04CVLcYaMyfQt5SYp1QVx2
+ fqpZzFOX3UdefGa07XrXStd1qu2nPatE8Q66MuWj0Hgs+T4hfay8kXVok3ulr1auUHtZ
+ qEGDnjNshznRSGAYh1bAdvJk+bqmW5NxOTH4nEaIgKtbYeYtrgpYy7RfHk5ZG7c0AX2i
+ sXICmcth/Q/xX+qWGyax/6/NGIfyihFWHWXaPdzya+NGTD1wkmqgGzeNFQuqnfyK/JYu
+ 4P4tlD27fTM5ps5dJ+R+4A2Ac4e0vzI0r3sagMcxBdaHadieDbtwM1lWrzfDWrpv7lAs
+ /1ww==
+X-Gm-Message-State: AOAM531wuANjC93qmOY+Gd8wkF1e7++Q47nwu1VfDiakYFZHDeefKz9/
+ 9wkzIBpgmBTr2I5QW/k7+Ok=
+X-Google-Smtp-Source: ABdhPJyK/kHRiKtUEQazqsog0g6PKjmX1zO9iglcz1L9RZo+7iGTY/FgnI/8ZzYcrflQm4qNDWLuzw==
+X-Received: by 2002:a63:ab0d:: with SMTP id p13mr52941361pgf.327.1594290031443; 
+ Thu, 09 Jul 2020 03:20:31 -0700 (PDT)
+Received: from localhost (27-33-0-186.tpgi.com.au. [27.33.0.186])
+ by smtp.gmail.com with ESMTPSA id z2sm2453364pfq.67.2020.07.09.03.20.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 09 Jul 2020 03:20:30 -0700 (PDT)
+Date: Thu, 09 Jul 2020 20:20:23 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 2/3] powerpc/64s: remove PROT_SAO support
+To: David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
+ <paulus@ozlabs.org>
+References: <20200703011958.1166620-1-npiggin@gmail.com>
+ <20200703011958.1166620-3-npiggin@gmail.com>
+ <20200709043406.GB2822576@thinks.paulus.ozlabs.org>
+In-Reply-To: <20200709043406.GB2822576@thinks.paulus.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Message-Id: <1594288843.m3s9igh1hu.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,78 +94,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
- Waiman Long <longman@redhat.com>, Will Deacon <will@kernel.org>
+Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, linux-mm@kvack.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> These have shown significantly improved performance and fairness when
-> spinlock contention is moderate to high on very large systems.
->
->  [ Numbers hopefully forthcoming after more testing, but initial
->    results look good ]
+Excerpts from Paul Mackerras's message of July 9, 2020 2:34 pm:
+> On Fri, Jul 03, 2020 at 11:19:57AM +1000, Nicholas Piggin wrote:
+>> ISA v3.1 does not support the SAO storage control attribute required to
+>> implement PROT_SAO. PROT_SAO was used by specialised system software
+>> (Lx86) that has been discontinued for about 7 years, and is not thought
+>> to be used elsewhere, so removal should not cause problems.
+>>=20
+>> We rather remove it than keep support for older processors, because
+>> live migrating guest partitions to newer processors may not be possible
+>> if SAO is in use (or worse allowed with silent races).
+>=20
+> This is actually a real problem for KVM, because now we have the
+> capabilities of the host affecting the characteristics of the guest
+> virtual machine in a manner which userspace (e.g. QEMU) is unable to
+> control.
+>=20
+> It would probably be better to disallow SAO on all machines than have
+> it available on some hosts and not others.  (Yes I know there is a
+> check on CPU_FTR_ARCH_206 in there, but that has been a no-op since we
+> removed the PPC970 KVM support.)
 
-Would be good to have something here, even if it's preliminary.
+This change doesn't change the SAO difference on the host processors
+though, just tries to slightly improve it from silently broken to
+maybe complaining a bit.
 
-> Thanks to the fast path, single threaded performance is not noticably
-> hurt.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Kconfig                      | 13 ++++++++++++
->  arch/powerpc/include/asm/Kbuild           |  2 ++
->  arch/powerpc/include/asm/qspinlock.h      | 25 +++++++++++++++++++++++
->  arch/powerpc/include/asm/spinlock.h       |  5 +++++
->  arch/powerpc/include/asm/spinlock_types.h |  5 +++++
->  arch/powerpc/lib/Makefile                 |  3 +++
+I didn't want to stop some very old image that uses this and is running
+okay on an existing host from working, but maybe the existence of such
+a thing would contradict my reasoning. But then if we don't care about
+it why care about this KVM behaviour difference at all?
 
->  include/asm-generic/qspinlock.h           |  2 ++
+> Solving this properly will probably require creating a new KVM host
+> capability and associated machine parameter in QEMU, along with a new
+> machine type.
 
-Who's ack do we need for that part?
+Rather than answer any of these questions, I might take the KVM change
+out and that can be dealt with separately from guest SAO removal.
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 24ac85c868db..17663ea57697 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -492,6 +494,17 @@ config HOTPLUG_CPU
->  
->  	  Say N if you are unsure.
->  
-> +config PPC_QUEUED_SPINLOCKS
-> +	bool "Queued spinlocks"
-> +	depends on SMP
-> +	default "y" if PPC_BOOK3S_64
+Thanks,
+Nick
 
-Not sure about default y? At least until we've got a better idea of the
-perf impact on a range of small/big new/old systems.
-
-> +	help
-> +	  Say Y here to use to use queued spinlocks which are more complex
-> +	  but give better salability and fairness on large SMP and NUMA
-> +	  systems.
-> +
-> +	  If unsure, say "Y" if you have lots of cores, otherwise "N".
-
-Would be nice if we could give a range for "lots".
-
-> diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-> index dadbcf3a0b1e..1dd8b6adff5e 100644
-> --- a/arch/powerpc/include/asm/Kbuild
-> +++ b/arch/powerpc/include/asm/Kbuild
-> @@ -6,5 +6,7 @@ generated-y += syscall_table_spu.h
->  generic-y += export.h
->  generic-y += local64.h
->  generic-y += mcs_spinlock.h
-> +generic-y += qrwlock.h
-> +generic-y += qspinlock.h
-
-The 2nd line spits a warning about a redundant entry. I think you want
-to just drop it.
-
-
-cheers
+>=20
+> [snip]
+>=20
+>> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/inc=
+lude/asm/kvm_book3s_64.h
+>> index 9bb9bb370b53..fac39ff659d4 100644
+>> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+>> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+>> @@ -398,9 +398,10 @@ static inline bool hpte_cache_flags_ok(unsigned lon=
+g hptel, bool is_ci)
+>>  {
+>>  	unsigned int wimg =3D hptel & HPTE_R_WIMG;
+>> =20
+>> -	/* Handle SAO */
+>> +	/* Handle SAO for POWER7,8,9 */
+>>  	if (wimg =3D=3D (HPTE_R_W | HPTE_R_I | HPTE_R_M) &&
+>> -	    cpu_has_feature(CPU_FTR_ARCH_206))
+>> +	    cpu_has_feature(CPU_FTR_ARCH_206) &&
+>> +	    !cpu_has_feature(CPU_FTR_ARCH_31))
+>>  		wimg =3D HPTE_R_M;
+>=20
+> Paul.
+>=20
