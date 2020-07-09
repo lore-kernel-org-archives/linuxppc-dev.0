@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92582C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 00:18:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41AB8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 00:20:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4614520775
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 00:18:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4614520775
+	by mail.kernel.org (Postfix) with ESMTPS id EA776205CB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 00:20:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA776205CB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Gwv133JzDqvV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:18:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2GzM60gFzDqxF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:20:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
@@ -27,31 +27,29 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=kernel.crashing.org
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4B2Gsy2DPSzDqr6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 10:15:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B2GxJ1FtjzDq9k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 10:18:43 +1000 (AEST)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 0690Fbi9019654;
- Wed, 8 Jul 2020 19:15:37 -0500
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 0690Ic1A019905;
+ Wed, 8 Jul 2020 19:18:38 -0500
 Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 0690FboB019653;
- Wed, 8 Jul 2020 19:15:37 -0500
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 0690IcnS019903;
+ Wed, 8 Jul 2020 19:18:38 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to
  segher@kernel.crashing.org using -f
-Date: Wed, 8 Jul 2020 19:15:36 -0500
+Date: Wed, 8 Jul 2020 19:18:37 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
 To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Subject: Re: Failure to build librseq on ppc
-Message-ID: <20200709001536.GC3598@gate.crashing.org>
+Message-ID: <20200709001837.GD3598@gate.crashing.org>
 References: <972420887.755.1594149430308.JavaMail.zimbra@efficios.com>
- <20200708005922.GW3598@gate.crashing.org>
- <841816533.1735.1594211583710.JavaMail.zimbra@efficios.com>
- <1623833219.1877.1594216801865.JavaMail.zimbra@efficios.com>
- <96994487-ae4a-3bfb-b0f1-34228e51bea2@csgroup.eu>
- <1137155888.2676.1594218740683.JavaMail.zimbra@efficios.com>
+ <20200708005922.GW3598@gate.crashing.org> <87k0ze2nv4.fsf@mpe.ellerman.id.au>
+ <20200708235331.GA3598@gate.crashing.org>
+ <1968953502.5815.1594252883512.JavaMail.zimbra@efficios.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1137155888.2676.1594218740683.JavaMail.zimbra@efficios.com>
+In-Reply-To: <1968953502.5815.1594252883512.JavaMail.zimbra@efficios.com>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,18 +69,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 08, 2020 at 10:32:20AM -0400, Mathieu Desnoyers wrote:
-> > As far as I can see, %U is mentioned in
-> > https://gcc.gnu.org/onlinedocs/gcc/Machine-Constraints.html in the
-> > powerpc subpart, at the "m" constraint.
+On Wed, Jul 08, 2020 at 08:01:23PM -0400, Mathieu Desnoyers wrote:
+> > > #define RSEQ_ASM_OP_CMPEQ(var, expect, label)                                   \
+> > >                 LOAD_WORD "%%r17, %[" __rseq_str(var) "]\n\t"                   \
+> > 
+> > The way this hardcodes r17 *will* break, btw.  The compiler will not
+> > likely want to use r17 as long as your code (after inlining etc.!) stays
+> > small, but there is Murphy's law.
 > 
-> Yep, I did notice it, but mistakenly thought it was only needed for "m<>" operand,
-> not "m".
+> r17 is in the clobber list, so it should be ok.
 
-Historically, "m" meant what "m<>" does now (in inline asm).  Too many
-people couldn't get it right ever (on other targets -- not that the
-situation was great for PowerPC, heh), so in inline asm "m" now means
-"no pre-modify or post-modify".
+What protects r17 *after* this asm statement?
 
 
 Segher
