@@ -2,60 +2,59 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BE61C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:37:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DECC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:39:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 484B720674
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:37:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 484B720674
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
+	by mail.kernel.org (Postfix) with ESMTPS id D719820674
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 04:38:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Mdhv0xEw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D719820674
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Ngb3lTHzF1sZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:37:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=informatik.wtf (client-ip=131.153.2.42;
- helo=h1.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=informatik.wtf
-Received: from h1.fbrelay.privateemail.com (h1.fbrelay.privateemail.com
- [131.153.2.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2NjY4kxszDqxg
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 14:38:57 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2N8l710rzF1R9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 14:13:59 +1000 (AEST)
-Received: from MTA-08-4.privateemail.com (mta-08.privateemail.com
- [68.65.122.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by h1.fbrelay.privateemail.com (Postfix) with ESMTPS id EEB148094E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 00:01:14 -0400 (EDT)
-Received: from MTA-08.privateemail.com (localhost [127.0.0.1])
- by MTA-08.privateemail.com (Postfix) with ESMTP id C2B376003E;
- Thu,  9 Jul 2020 00:01:09 -0400 (EDT)
-Received: from geist.attlocal.net (unknown [10.20.151.216])
- by MTA-08.privateemail.com (Postfix) with ESMTPA id F0A0D60044;
- Thu,  9 Jul 2020 04:01:08 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@informatik.wtf>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/5] powerpc/lib: Initialize a temporary mm for code
- patching
-Date: Wed,  8 Jul 2020 23:03:13 -0500
-Message-Id: <20200709040316.12789-3-cmr@informatik.wtf>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200709040316.12789-1-cmr@informatik.wtf>
-References: <20200709040316.12789-1-cmr@informatik.wtf>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Nc35hTbzF36W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 14:34:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=Mdhv0xEw; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 4B2Nc34nrTz9sRR; Thu,  9 Jul 2020 14:34:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1594269251; bh=0vflje8iQykW6xAQTgpYROqiG9MTRc6uT+kAmyWkOkQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Mdhv0xEwxQFAx6A9eiN/ntEepUWd2HRs2jU9CZrCRyFo2Dj+WkbTY3xiXpI8MxWC6
+ ur+5kQqaiCpGOBkvtkcNk39V8G65GYQI5IWZV48ni3Mgdx7zSRn/7npj2ZYa0eKaH6
+ yHRuFm/R4hLfMF4ki8/j8mmnpQn1BiHOLLiDs1v+DNsq1NN+8oYyvC70rahe7P+7gr
+ ZX1QR3R2+v2VNEO66kqHHR1xjDiH6OjtMcYydEnXgCGXZg5CfcVwtapV8zOStxaDp2
+ 3EFaxLssb+lX0o9gKEzgtI1TDWBvtbxPZxUcLd4MYmJyENjQwJomEEe9kQpblL03df
+ dbM2rBzIqXdVg==
+Date: Thu, 9 Jul 2020 14:34:06 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v2 2/3] powerpc/64s: remove PROT_SAO support
+Message-ID: <20200709043406.GB2822576@thinks.paulus.ozlabs.org>
+References: <20200703011958.1166620-1-npiggin@gmail.com>
+ <20200703011958.1166620-3-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200703011958.1166620-3-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,86 +66,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-hardening@lists.openwall.com
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ linux-api@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When code patching a STRICT_KERNEL_RWX kernel the page containing the
-address to be patched is temporarily mapped with permissive memory
-protections. Currently, a per-cpu vmalloc patch area is used for this
-purpose. While the patch area is per-cpu, the temporary page mapping is
-inserted into the kernel page tables for the duration of the patching.
-The mapping is exposed to CPUs other than the patching CPU - this is
-undesirable from a hardening perspective.
+On Fri, Jul 03, 2020 at 11:19:57AM +1000, Nicholas Piggin wrote:
+> ISA v3.1 does not support the SAO storage control attribute required to
+> implement PROT_SAO. PROT_SAO was used by specialised system software
+> (Lx86) that has been discontinued for about 7 years, and is not thought
+> to be used elsewhere, so removal should not cause problems.
+> 
+> We rather remove it than keep support for older processors, because
+> live migrating guest partitions to newer processors may not be possible
+> if SAO is in use (or worse allowed with silent races).
 
-Use the `poking_init` init hook to prepare a temporary mm and patching
-address. Initialize the temporary mm by copying the init mm. Choose a
-randomized patching address inside the temporary mm userspace address
-portion. The next patch uses the temporary mm and patching address for
-code patching.
+This is actually a real problem for KVM, because now we have the
+capabilities of the host affecting the characteristics of the guest
+virtual machine in a manner which userspace (e.g. QEMU) is unable to
+control.
 
-Based on x86 implementation:
+It would probably be better to disallow SAO on all machines than have
+it available on some hosts and not others.  (Yes I know there is a
+check on CPU_FTR_ARCH_206 in there, but that has been a no-op since we
+removed the PPC970 KVM support.)
 
-commit 4fc19708b165
-("x86/alternatives: Initialize temporary mm for patching")
+Solving this properly will probably require creating a new KVM host
+capability and associated machine parameter in QEMU, along with a new
+machine type.
 
-Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
----
- arch/powerpc/lib/code-patching.c | 33 ++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+[snip]
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 0a051dfeb177..8ae1a9e5fe6e 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -11,6 +11,8 @@
- #include <linux/cpuhotplug.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/sched/task.h>
-+#include <linux/random.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/page.h>
-@@ -44,6 +46,37 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
-+
-+static struct mm_struct *patching_mm __ro_after_init;
-+static unsigned long patching_addr __ro_after_init;
-+
-+void __init poking_init(void)
-+{
-+	spinlock_t *ptl; /* for protecting pte table */
-+	pte_t *ptep;
-+
-+	/*
-+	 * Some parts of the kernel (static keys for example) depend on
-+	 * successful code patching. Code patching under STRICT_KERNEL_RWX
-+	 * requires this setup - otherwise we cannot patch at all. We use
-+	 * BUG_ON() here and later since an early failure is preferred to
-+	 * buggy behavior and/or strange crashes later.
-+	 */
-+	patching_mm = copy_init_mm();
-+	BUG_ON(!patching_mm);
-+
-+	/*
-+	 * In hash we cannot go above DEFAULT_MAP_WINDOW easily.
-+	 * XXX: Do we want additional bits of entropy for radix?
-+	 */
-+	patching_addr = (get_random_long() & PAGE_MASK) %
-+		(DEFAULT_MAP_WINDOW - PAGE_SIZE);
-+
-+	ptep = get_locked_pte(patching_mm, patching_addr, &ptl);
-+	BUG_ON(!ptep);
-+	pte_unmap_unlock(ptep, ptl);
-+}
-+
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
- 
- static int text_area_cpu_up(unsigned int cpu)
--- 
-2.27.0
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+> index 9bb9bb370b53..fac39ff659d4 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -398,9 +398,10 @@ static inline bool hpte_cache_flags_ok(unsigned long hptel, bool is_ci)
+>  {
+>  	unsigned int wimg = hptel & HPTE_R_WIMG;
+>  
+> -	/* Handle SAO */
+> +	/* Handle SAO for POWER7,8,9 */
+>  	if (wimg == (HPTE_R_W | HPTE_R_I | HPTE_R_M) &&
+> -	    cpu_has_feature(CPU_FTR_ARCH_206))
+> +	    cpu_has_feature(CPU_FTR_ARCH_206) &&
+> +	    !cpu_has_feature(CPU_FTR_ARCH_31))
+>  		wimg = HPTE_R_M;
 
+Paul.
