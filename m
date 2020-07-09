@@ -2,97 +2,77 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A523C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:01:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38C9CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:04:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11EB52076A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:01:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11EB52076A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DCB6E2074B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:04:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ReiXtoRs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCB6E2074B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2YC55BLHzDrD1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 21:01:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2YGt5BfGzDrBf
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 21:04:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=ReiXtoRs; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Y77558FzDqSv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:58:11 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 069AYSIL095401; Thu, 9 Jul 2020 06:58:03 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 325r2cdv3u-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 06:58:03 -0400
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 069Ai6Wj113896;
- Thu, 9 Jul 2020 06:58:02 -0400
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com with ESMTP id 325r2cdv3j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 06:58:02 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 069AtcGn030785;
- Thu, 9 Jul 2020 10:58:02 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma02dal.us.ibm.com with ESMTP id 325k1nq01m-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 09 Jul 2020 10:58:02 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 069Aw12p53543332
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 9 Jul 2020 10:58:01 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4F4BE124053;
- Thu,  9 Jul 2020 10:58:01 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EE37C124052;
- Thu,  9 Jul 2020 10:58:00 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.199.58.93])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu,  9 Jul 2020 10:58:00 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id C896D2E48BA; Thu,  9 Jul 2020 14:39:48 +0530 (IST)
-Date: Thu, 9 Jul 2020 14:39:48 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/powernv/idle: save-restore DAWR0,DAWRX0 for
- P10
-Message-ID: <20200709090948.GB24354@in.ibm.com>
-References: <20200703124640.42820-1-psampat@linux.ibm.com>
- <20200703124640.42820-2-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YDv4jlwzDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:03:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=kAodoJjxw+oZcu/SKU1xNGXdBrfnaoxdi6oL3ywEXIs=; b=ReiXtoRsWHjtkeuJwfJ+pv7m8c
+ OuLBP5TSleXNRejXhR9wm2UuDuubf7xh1g4UYohYbfkJlVm4/MXRjgfMrrhYKvbCbS/Gqx7nob/K5
+ XoI4rXaic5OCSP5fs9eDY5PVQzXOxnWusnm8iax+jqgAhz/i0+I4XWWlT2v1mTX6FBa34CO6EazeR
+ RDQ0761FLfwnhc58i8tnjZlCpPF0VCSuQDnRlU5Rg0ZPAB4Rppuob2IL/G0yLfSJLwywfJyYMnTer
+ 60Wsm2Z8V0hT+4lzqGp2aC9xfRSJ3QzzSGaG9LYJemIPpx53CQYLtmoEVi1ePHIVbwT8Fa8vUEpDV
+ IfjXd6Jw==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jtUKX-00059M-Ah; Thu, 09 Jul 2020 11:03:05 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 017CC30047A;
+ Thu,  9 Jul 2020 13:03:04 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id E3C8F235B3D19; Thu,  9 Jul 2020 13:03:03 +0200 (CEST)
+Date: Thu, 9 Jul 2020 13:03:03 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks
+ for SPLPAR
+Message-ID: <20200709110303.GS597537@hirez.programming.kicks-ass.net>
+References: <20200706043540.1563616-1-npiggin@gmail.com>
+ <20200706043540.1563616-6-npiggin@gmail.com>
+ <874kqhvu1v.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200703124640.42820-2-psampat@linux.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-09_05:2020-07-09,
- 2020-07-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0 adultscore=0
- lowpriorityscore=0 malwarescore=0 clxscore=1011 mlxlogscore=999
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007090084
+In-Reply-To: <874kqhvu1v.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,85 +84,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com,
- linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, virtualization@lists.linux-foundation.org,
+ Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
+ Waiman Long <longman@redhat.com>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 03, 2020 at 06:16:40PM +0530, Pratik Rajesh Sampat wrote:
-> Additional registers DAWR0, DAWRX0 may be lost on Power 10 for
-> stop levels < 4.
-
-Adding Ravi Bangoria <ravi.bangoria@linux.ibm.com> to the cc.
-
-> Therefore save the values of these SPRs before entering a  "stop"
-> state and restore their values on wakeup.
+On Thu, Jul 09, 2020 at 08:53:16PM +1000, Michael Ellerman wrote:
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-
-
-The saving and restoration looks good to me. 
-> ---
->  arch/powerpc/platforms/powernv/idle.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/include/asm/paravirt.h           | 28 ++++++++
+> >  arch/powerpc/include/asm/qspinlock.h          | 66 +++++++++++++++++++
+> >  arch/powerpc/include/asm/qspinlock_paravirt.h |  7 ++
+> >  arch/powerpc/platforms/pseries/Kconfig        |  5 ++
+> >  arch/powerpc/platforms/pseries/setup.c        |  6 +-
+> >  include/asm-generic/qspinlock.h               |  2 +
 > 
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 19d94d021357..471d4a65b1fa 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -600,6 +600,8 @@ struct p9_sprs {
->  	u64 iamr;
->  	u64 amor;
->  	u64 uamor;
-> +	u64 dawr0;
-> +	u64 dawrx0;
->  };
-> 
->  static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
-> @@ -677,6 +679,10 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->  		sprs.tscr	= mfspr(SPRN_TSCR);
->  		if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
->  			sprs.ldbar = mfspr(SPRN_LDBAR);
-> +		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-> +			sprs.dawr0 = mfspr(SPRN_DAWR0);
-> +			sprs.dawrx0 = mfspr(SPRN_DAWRX0);
-> +		}
->
+> Another ack?
 
-
-But this is within the if condition which says
-
-	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level)
-
-This if condition is meant for stop4 and stop5 since these are stop
-levels that have OPAL_PM_LOSE_HYP_CONTEXT set.
-
-Since we can lose DAWR*, on states that lose limited hypervisor
-context, such as stop0-2, we need to unconditionally save them
-like AMR, IAMR etc.
-
-
->  		sprs_saved = true;
-> 
-> @@ -792,6 +798,10 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
->  	mtspr(SPRN_MMCR2,	sprs.mmcr2);
->  	if (!firmware_has_feature(FW_FEATURE_ULTRAVISOR))
->  		mtspr(SPRN_LDBAR, sprs.ldbar);
-> +	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-> +		mtspr(SPRN_DAWR0, sprs.dawr0);
-> +		mtspr(SPRN_DAWRX0, sprs.dawrx0);
-> +	}
-
-
-Likewise, we need to unconditionally restore these SPRs.
-
-
-> 
->  	mtspr(SPRN_SPRG3,	local_paca->sprg_vdso);
-> 
-> -- 
-> 2.25.4
-> 
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
