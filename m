@@ -2,64 +2,97 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28462C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B379C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:59:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 93B0E2074B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:53:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="IKD2ten4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93B0E2074B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D7AD22074B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 10:59:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7AD22074B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Y1F19LPzDr7x
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:53:05 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Y972JcXzDr9S
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 20:59:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Xyw6F4szDr3P
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:51:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=IKD2ten4; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B2Xyv3zTwz9sQt;
- Thu,  9 Jul 2020 20:51:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594291864;
- bh=VI4aFN/tvbsGFEJ4xA4/0VeUoMRZZnfq/gpr3pAx8G0=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=IKD2ten4BhzVwExubvn3K93mtWqnC3WWAZoRzc+c3H8YbG4WdsqsYIsWtHE7Mr0GH
- nGpjcBK6Dan3kZ/RMkJ8HleBBVOarl2j8GlhAGagpMFmLzOUokO9woJyZe4KB9Tvwf
- 0gHMuKiiBQ3KcLbW84Ee0saFgPCykKlyofIbboYWIBK9RSlMTJJFeFiEwRu+zC4apq
- bE4ngiBaxW+gJCjWBfPK2R/oK0LL8F7QhMQriTR0TsdOezFACf1z9JYBLvElvotO+B
- y9apR0IOzs3WlCA9v8OvGe3t3FZaAfE4Haq+4aFUFiz6O2rlfWYCuDwrQiPGASWc69
- zr4ZnuPJOXulA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks for
- SPLPAR
-In-Reply-To: <20200706043540.1563616-6-npiggin@gmail.com>
-References: <20200706043540.1563616-1-npiggin@gmail.com>
- <20200706043540.1563616-6-npiggin@gmail.com>
-Date: Thu, 09 Jul 2020 20:53:16 +1000
-Message-ID: <874kqhvu1v.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2Y766mK1zDqSv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 20:58:10 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 069AW0U8138271; Thu, 9 Jul 2020 06:58:04 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 325uqvagpt-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 09 Jul 2020 06:58:04 -0400
+Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 069AevYf178504;
+ Thu, 9 Jul 2020 06:58:04 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 325uqvagpg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 09 Jul 2020 06:58:04 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 069AtYQI030714;
+ Thu, 9 Jul 2020 10:58:03 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma02dal.us.ibm.com with ESMTP id 325k1nq01p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 09 Jul 2020 10:58:03 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 069Aw2bU52494804
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 9 Jul 2020 10:58:02 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 20AE8BE054;
+ Thu,  9 Jul 2020 10:58:02 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B36F6BE051;
+ Thu,  9 Jul 2020 10:58:01 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.58.93])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu,  9 Jul 2020 10:58:01 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 4DCB62E2EB8; Thu,  9 Jul 2020 14:31:11 +0530 (IST)
+Date: Thu, 9 Jul 2020 14:31:11 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv/idle: Exclude mfspr on HID1,4,5 on
+ P9 and above
+Message-ID: <20200709090111.GA24354@in.ibm.com>
+References: <20200703124640.42820-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200703124640.42820-1-psampat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-09_05:2020-07-09,
+ 2020-07-09 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 mlxscore=0 bulkscore=0
+ mlxlogscore=999 phishscore=0 clxscore=1015 malwarescore=0
+ priorityscore=1501 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2007090079
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,112 +104,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
- Waiman Long <longman@redhat.com>, Will Deacon <will@kernel.org>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: ego@linux.vnet.ibm.com, pratik.r.sampat@gmail.com,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Fri, Jul 03, 2020 at 06:16:39PM +0530, Pratik Rajesh Sampat wrote:
+> POWER9 onwards the support for the registers HID1, HID4, HID5 has been
+> receded.
+> Although mfspr on the above registers worked in Power9, In Power10
+> simulator is unrecognized. Moving their assignment under the
+> check for machines lower than Power9
+> 
+> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Nice catch.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
 > ---
->  arch/powerpc/include/asm/paravirt.h           | 28 ++++++++
->  arch/powerpc/include/asm/qspinlock.h          | 66 +++++++++++++++++++
->  arch/powerpc/include/asm/qspinlock_paravirt.h |  7 ++
->  arch/powerpc/platforms/pseries/Kconfig        |  5 ++
->  arch/powerpc/platforms/pseries/setup.c        |  6 +-
->  include/asm-generic/qspinlock.h               |  2 +
-
-Another ack?
-
-> diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
-> index 7a8546660a63..f2d51f929cf5 100644
-> --- a/arch/powerpc/include/asm/paravirt.h
-> +++ b/arch/powerpc/include/asm/paravirt.h
-> @@ -45,6 +55,19 @@ static inline void yield_to_preempted(int cpu, u32 yield_count)
->  {
->  	___bad_yield_to_preempted(); /* This would be a bug */
->  }
-> +
-> +extern void ___bad_yield_to_any(void);
-> +static inline void yield_to_any(void)
-> +{
-> +	___bad_yield_to_any(); /* This would be a bug */
-> +}
-
-Why do we do that rather than just not defining yield_to_any() at all
-and letting the build fail on that?
-
-There's a condition somewhere that we know will false at compile time
-and drop the call before linking?
-
-> diff --git a/arch/powerpc/include/asm/qspinlock_paravirt.h b/arch/powerpc/include/asm/qspinlock_paravirt.h
-> new file mode 100644
-> index 000000000000..750d1b5e0202
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/qspinlock_paravirt.h
-> @@ -0,0 +1,7 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +#ifndef __ASM_QSPINLOCK_PARAVIRT_H
-> +#define __ASM_QSPINLOCK_PARAVIRT_H
-
-_ASM_POWERPC_QSPINLOCK_PARAVIRT_H please.
-
-> +
-> +EXPORT_SYMBOL(__pv_queued_spin_unlock);
-
-Why's that in a header? Should that (eventually) go with the generic implementation?
-
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index 24c18362e5ea..756e727b383f 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -25,9 +25,14 @@ config PPC_PSERIES
->  	select SWIOTLB
->  	default y
->  
-> +config PARAVIRT_SPINLOCKS
-> +	bool
-> +	default n
-
-default n is the default.
-
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 2db8469e475f..747a203d9453 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -771,8 +771,12 @@ static void __init pSeries_setup_arch(void)
->  	if (firmware_has_feature(FW_FEATURE_LPAR)) {
->  		vpa_init(boot_cpuid);
->  
-> -		if (lppaca_shared_proc(get_lppaca()))
-> +		if (lppaca_shared_proc(get_lppaca())) {
->  			static_branch_enable(&shared_processor);
-> +#ifdef CONFIG_PARAVIRT_SPINLOCKS
-> +			pv_spinlocks_init();
-> +#endif
-> +		}
-
-We could avoid the ifdef with this I think?
-
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 434615f1d761..6ec72282888d 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -10,5 +10,9 @@
- #include <asm/simple_spinlock.h>
- #endif
-
-+#ifndef CONFIG_PARAVIRT_SPINLOCKS
-+static inline void pv_spinlocks_init(void) { }
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_SPINLOCK_H */
-
-
-cheers
+>  arch/powerpc/platforms/powernv/idle.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 2dd467383a88..19d94d021357 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -73,9 +73,6 @@ static int pnv_save_sprs_for_deep_states(void)
+>  	 */
+>  	uint64_t lpcr_val	= mfspr(SPRN_LPCR);
+>  	uint64_t hid0_val	= mfspr(SPRN_HID0);
+> -	uint64_t hid1_val	= mfspr(SPRN_HID1);
+> -	uint64_t hid4_val	= mfspr(SPRN_HID4);
+> -	uint64_t hid5_val	= mfspr(SPRN_HID5);
+>  	uint64_t hmeer_val	= mfspr(SPRN_HMEER);
+>  	uint64_t msr_val = MSR_IDLE;
+>  	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
+> @@ -117,6 +114,9 @@ static int pnv_save_sprs_for_deep_states(void)
+> 
+>  			/* Only p8 needs to set extra HID regiters */
+>  			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +				uint64_t hid1_val = mfspr(SPRN_HID1);
+> +				uint64_t hid4_val = mfspr(SPRN_HID4);
+> +				uint64_t hid5_val = mfspr(SPRN_HID5);
+> 
+>  				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
+>  				if (rc != 0)
+> -- 
+> 2.25.4
+> 
+--
+Thanks and Regards
+gautham.
