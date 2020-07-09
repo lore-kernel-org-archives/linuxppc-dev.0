@@ -2,54 +2,63 @@ Return-Path: <SRS0=USLf=AU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BB86C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:14:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DFF2C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:21:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C09002076A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:14:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C09002076A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id EFB9D206DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 11:21:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="o7Zn13YV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFB9D206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2YVD18JQzDrHt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 21:14:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net
- [217.70.183.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2YfD2DwQzDqLH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 21:21:40 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YQS4DXrzDr96
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:11:26 +1000 (AEST)
-X-Originating-IP: 81.250.144.103
-Received: from [10.30.1.142] (lneuilly-657-1-5-103.w81-250.abo.wanadoo.fr
- [81.250.144.103]) (Authenticated sender: alex@ghiti.fr)
- by relay4-d.mail.gandi.net (Postfix) with ESMTPSA id 51094E0010;
- Thu,  9 Jul 2020 11:11:07 +0000 (UTC)
-Subject: Re: [PATCH v5 1/4] riscv: Move kernel mapping to vmalloc zone
-To: Palmer Dabbelt <palmer@dabbelt.com>
-References: <mhng-831c4073-aefa-4aa0-a583-6a17f9aff9b7@palmerdabbelt-glaptop1>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <d7e3cbb7-c12a-bce2-f1db-c336d15f74bd@ghiti.fr>
-Date: Thu, 9 Jul 2020 07:11:07 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2YcD3NSkzDq9C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 21:19:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=o7Zn13YV; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4B2YcB2P66z9s1x;
+ Thu,  9 Jul 2020 21:19:54 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1594293596;
+ bh=dGEXXZrjz1Z84JNnKjB7T7gvF97Fo/wCVLXC7PO2vWs=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=o7Zn13YVTmdArBSvThw2v1J6IuZ1hE7jCtYMdh+DV7rALdtKJLjfVx6/uKpndSluA
+ pAJvJ8/EWrpJT/Emx5EA4eQXTitJpvQ4ZI/NFlfjvHOrtzsR1IZY/xTLg3T2H6i2+Q
+ M1iOD1CYug1qLcaL5ROrabf8tsgP4oRGtWJ9Trg9Y9oF6qHHwAlTddM5nJoc6R/ofs
+ wRQT+VZ4UHFilJ1ggIn+SkhNDzsxu984P3EYCdd6WwShYItX9/H+t9gXn64MS9uiXR
+ 3fo8FwP5YRI/OrFEexPAlkCcKEBYsWfAvXqL0rrwd/RBVoqtOWPGy5eGn1wfU+n0lJ
+ SEcquMooGUoBg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Haren Myneni <haren@linux.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/vas: Report proper error for address
+ translation failure
+In-Reply-To: <f8af60fd4167c9c04ee5ab47147b9e95bcb3b9ff.camel@linux.ibm.com>
+References: <f8af60fd4167c9c04ee5ab47147b9e95bcb3b9ff.camel@linux.ibm.com>
+Date: Thu, 09 Jul 2020 21:22:10 +1000
+Message-ID: <87y2ntue59.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <mhng-831c4073-aefa-4aa0-a583-6a17f9aff9b7@palmerdabbelt-glaptop1>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,424 +70,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aou@eecs.berkeley.edu, Anup Patel <Anup.Patel@wdc.com>,
- linux-kernel@vger.kernel.org, Atish Patra <Atish.Patra@wdc.com>,
- paulus@samba.org, zong.li@sifive.com, Paul Walmsley <paul.walmsley@sifive.com>,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Cc: tulioqm@br.ibm.com, abali@us.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ rzinsly@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Palmer,
+Haren Myneni <haren@linux.ibm.com> writes:
+> DMA controller uses CC=5 internally for translation fault handling. So
+> OS should be using CC=250 and should report this error to the user space
+> when NX encounters address translation failure on the request buffer.
 
-Le 7/9/20 à 1:05 AM, Palmer Dabbelt a écrit :
-> On Sun, 07 Jun 2020 00:59:46 PDT (-0700), alex@ghiti.fr wrote:
->> This is a preparatory patch for relocatable kernel.
->>
->> The kernel used to be linked at PAGE_OFFSET address and used to be loaded
->> physically at the beginning of the main memory. Therefore, we could use
->> the linear mapping for the kernel mapping.
->>
->> But the relocated kernel base address will be different from PAGE_OFFSET
->> and since in the linear mapping, two different virtual addresses cannot
->> point to the same physical address, the kernel mapping needs to lie 
->> outside
->> the linear mapping.
-> 
-> I know it's been a while, but I keep opening this up to review it and just
-> can't get over how ugly it is to put the kernel's linear map in the vmalloc
-> region.
-> 
-> I guess I don't understand why this is necessary at all.  Specifically: why
-> can't we just relocate the kernel within the linear map?  That would let 
-> the
-> bootloader put the kernel wherever it wants, modulo the physical memory 
-> size we
-> support.  We'd need to handle the regions that are coupled to the kernel's
-> execution address, but we could just put them in an explicit memory region
-> which is what we should probably be doing anyway.
+That doesn't really explain *why* the OS must use CC=250.
 
-Virtual relocation in the linear mapping requires to move the kernel 
-physically too. Zong implemented this physical move in its KASLR RFC 
-patchset, which is cumbersome since finding an available physical spot 
-is harder than just selecting a virtual range in the vmalloc range.
+Is it documented somewhere that 5 is for hardware use, and 250 is for
+software?
 
-In addition, having the kernel mapping in the linear mapping prevents 
-the use of hugepage for the linear mapping resulting in performance loss 
-(at least for the GB that encompasses the kernel).
+> This patch defines CSB_CC_ADDRESS_TRANSLATION(250) and updates
+> CSB.CC with this proper error code for user space.
 
-Why do you find this "ugly" ? The vmalloc region is just a bunch of 
-available virtual addresses to whatever purpose we want, and as noted by 
-Zong, arm64 uses the same scheme.
+We still have:
 
-> 
->> In addition, because modules and BPF must be close to the kernel (inside
->> +-2GB window), the kernel is placed at the end of the vmalloc zone minus
->> 2GB, which leaves room for modules and BPF. The kernel could not be
->> placed at the beginning of the vmalloc zone since other vmalloc
->> allocations from the kernel could get all the +-2GB window around the
->> kernel which would prevent new modules and BPF programs to be loaded.
-> 
-> Well, that's not enough to make sure this doesn't happen -- it's just 
-> enough to
-> make sure it doesn't happen very quickily.  That's the same boat we're 
-> already
-> in, though, so it's not like it's worse.
+#define CSB_CC_TRANSLATION	(5)
 
-Indeed, that's not worse, I haven't found a way to reserve vmalloc area 
-without actually allocating it.
+And it's very unclear where one or the other should be used.
 
-> 
->> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
->> Reviewed-by: Zong Li <zong.li@sifive.com>
->> ---
->>  arch/riscv/boot/loader.lds.S     |  3 +-
->>  arch/riscv/include/asm/page.h    | 10 +++++-
->>  arch/riscv/include/asm/pgtable.h | 38 ++++++++++++++-------
->>  arch/riscv/kernel/head.S         |  3 +-
->>  arch/riscv/kernel/module.c       |  4 +--
->>  arch/riscv/kernel/vmlinux.lds.S  |  3 +-
->>  arch/riscv/mm/init.c             | 58 +++++++++++++++++++++++++-------
->>  arch/riscv/mm/physaddr.c         |  2 +-
->>  8 files changed, 88 insertions(+), 33 deletions(-)
->>
->> diff --git a/arch/riscv/boot/loader.lds.S b/arch/riscv/boot/loader.lds.S
->> index 47a5003c2e28..62d94696a19c 100644
->> --- a/arch/riscv/boot/loader.lds.S
->> +++ b/arch/riscv/boot/loader.lds.S
->> @@ -1,13 +1,14 @@
->>  /* SPDX-License-Identifier: GPL-2.0 */
->>
->>  #include <asm/page.h>
->> +#include <asm/pgtable.h>
->>
->>  OUTPUT_ARCH(riscv)
->>  ENTRY(_start)
->>
->>  SECTIONS
->>  {
->> -    . = PAGE_OFFSET;
->> +    . = KERNEL_LINK_ADDR;
->>
->>      .payload : {
->>          *(.payload)
->> diff --git a/arch/riscv/include/asm/page.h 
->> b/arch/riscv/include/asm/page.h
->> index 2d50f76efe48..48bb09b6a9b7 100644
->> --- a/arch/riscv/include/asm/page.h
->> +++ b/arch/riscv/include/asm/page.h
->> @@ -90,18 +90,26 @@ typedef struct page *pgtable_t;
->>
->>  #ifdef CONFIG_MMU
->>  extern unsigned long va_pa_offset;
->> +extern unsigned long va_kernel_pa_offset;
->>  extern unsigned long pfn_base;
->>  #define ARCH_PFN_OFFSET        (pfn_base)
->>  #else
->>  #define va_pa_offset        0
->> +#define va_kernel_pa_offset    0
->>  #define ARCH_PFN_OFFSET        (PAGE_OFFSET >> PAGE_SHIFT)
->>  #endif /* CONFIG_MMU */
->>
->>  extern unsigned long max_low_pfn;
->>  extern unsigned long min_low_pfn;
->> +extern unsigned long kernel_virt_addr;
->>
->>  #define __pa_to_va_nodebug(x)    ((void *)((unsigned long) (x) + 
->> va_pa_offset))
->> -#define __va_to_pa_nodebug(x)    ((unsigned long)(x) - va_pa_offset)
->> +#define linear_mapping_va_to_pa(x)    ((unsigned long)(x) - 
->> va_pa_offset)
->> +#define kernel_mapping_va_to_pa(x)    \
->> +    ((unsigned long)(x) - va_kernel_pa_offset)
->> +#define __va_to_pa_nodebug(x)        \
->> +    (((x) >= PAGE_OFFSET) ?        \
->> +        linear_mapping_va_to_pa(x) : kernel_mapping_va_to_pa(x))
->>
->>  #ifdef CONFIG_DEBUG_VIRTUAL
->>  extern phys_addr_t __virt_to_phys(unsigned long x);
->> diff --git a/arch/riscv/include/asm/pgtable.h 
->> b/arch/riscv/include/asm/pgtable.h
->> index 35b60035b6b0..94ef3b49dfb6 100644
->> --- a/arch/riscv/include/asm/pgtable.h
->> +++ b/arch/riscv/include/asm/pgtable.h
->> @@ -11,23 +11,29 @@
->>
->>  #include <asm/pgtable-bits.h>
->>
->> -#ifndef __ASSEMBLY__
->> -
->> -/* Page Upper Directory not used in RISC-V */
->> -#include <asm-generic/pgtable-nopud.h>
->> -#include <asm/page.h>
->> -#include <asm/tlbflush.h>
->> -#include <linux/mm_types.h>
->> -
->> -#ifdef CONFIG_MMU
->> +#ifndef CONFIG_MMU
->> +#define KERNEL_VIRT_ADDR    PAGE_OFFSET
->> +#define KERNEL_LINK_ADDR    PAGE_OFFSET
->> +#else
->> +/*
->> + * Leave 2GB for modules and BPF that must lie within a 2GB range around
->> + * the kernel.
->> + */
->> +#define KERNEL_VIRT_ADDR    (VMALLOC_END - SZ_2G + 1)
->> +#define KERNEL_LINK_ADDR    KERNEL_VIRT_ADDR
-> 
-> At a bare minimum this is going to make a mess of the 32-bit port, as
-> non-relocatable kernels are now going to get linked at 1GiB which is 
-> where user
-> code is supposed to live.  That's an easy fix, though, as the 32-bit stuff
-> doesn't need any module address restrictions.
+Can one or the other get a name that makes the distinction clear.
 
-Indeed, I will take a look at that.
+cheers
 
-> 
->>  #define VMALLOC_SIZE     (KERN_VIRT_SIZE >> 1)
->>  #define VMALLOC_END      (PAGE_OFFSET - 1)
->>  #define VMALLOC_START    (PAGE_OFFSET - VMALLOC_SIZE)
->>
->>  #define BPF_JIT_REGION_SIZE    (SZ_128M)
->> -#define BPF_JIT_REGION_START    (PAGE_OFFSET - BPF_JIT_REGION_SIZE)
->> -#define BPF_JIT_REGION_END    (VMALLOC_END)
->> +#define BPF_JIT_REGION_START    PFN_ALIGN((unsigned long)&_end)
->> +#define BPF_JIT_REGION_END    (BPF_JIT_REGION_START + 
->> BPF_JIT_REGION_SIZE)
->> +
->> +#ifdef CONFIG_64BIT
->> +#define VMALLOC_MODULE_START    BPF_JIT_REGION_END
->> +#define VMALLOC_MODULE_END    (((unsigned long)&_start & PAGE_MASK) + 
->> SZ_2G)
->> +#endif
->>
->>  /*
->>   * Roughly size the vmemmap space to be large enough to fit enough
->> @@ -57,9 +63,16 @@
->>  #define FIXADDR_SIZE     PGDIR_SIZE
->>  #endif
->>  #define FIXADDR_START    (FIXADDR_TOP - FIXADDR_SIZE)
->> -
->>  #endif
->>
->> +#ifndef __ASSEMBLY__
->> +
->> +/* Page Upper Directory not used in RISC-V */
->> +#include <asm-generic/pgtable-nopud.h>
->> +#include <asm/page.h>
->> +#include <asm/tlbflush.h>
->> +#include <linux/mm_types.h>
->> +
->>  #ifdef CONFIG_64BIT
->>  #include <asm/pgtable-64.h>
->>  #else
->> @@ -483,6 +496,7 @@ static inline void __kernel_map_pages(struct page 
->> *page, int numpages, int enabl
->>
->>  #define kern_addr_valid(addr)   (1) /* FIXME */
->>
->> +extern char _start[];
->>  extern void *dtb_early_va;
->>  void setup_bootmem(void);
->>  void paging_init(void);
->> diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
->> index 98a406474e7d..8f5bb7731327 100644
->> --- a/arch/riscv/kernel/head.S
->> +++ b/arch/riscv/kernel/head.S
->> @@ -49,7 +49,8 @@ ENTRY(_start)
->>  #ifdef CONFIG_MMU
->>  relocate:
->>      /* Relocate return address */
->> -    li a1, PAGE_OFFSET
->> +    la a1, kernel_virt_addr
->> +    REG_L a1, 0(a1)
->>      la a2, _start
->>      sub a1, a1, a2
->>      add ra, ra, a1
->> diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
->> index 8bbe5dbe1341..1a8fbe05accf 100644
->> --- a/arch/riscv/kernel/module.c
->> +++ b/arch/riscv/kernel/module.c
->> @@ -392,12 +392,10 @@ int apply_relocate_add(Elf_Shdr *sechdrs, const 
->> char *strtab,
->>  }
->>
->>  #if defined(CONFIG_MMU) && defined(CONFIG_64BIT)
->> -#define VMALLOC_MODULE_START \
->> -     max(PFN_ALIGN((unsigned long)&_end - SZ_2G), VMALLOC_START)
->>  void *module_alloc(unsigned long size)
->>  {
->>      return __vmalloc_node_range(size, 1, VMALLOC_MODULE_START,
->> -                    VMALLOC_END, GFP_KERNEL,
->> +                    VMALLOC_MODULE_END, GFP_KERNEL,
->>                      PAGE_KERNEL_EXEC, 0, NUMA_NO_NODE,
->>                      __builtin_return_address(0));
->>  }
->> diff --git a/arch/riscv/kernel/vmlinux.lds.S 
->> b/arch/riscv/kernel/vmlinux.lds.S
->> index 0339b6bbe11a..a9abde62909f 100644
->> --- a/arch/riscv/kernel/vmlinux.lds.S
->> +++ b/arch/riscv/kernel/vmlinux.lds.S
->> @@ -4,7 +4,8 @@
->>   * Copyright (C) 2017 SiFive
->>   */
->>
->> -#define LOAD_OFFSET PAGE_OFFSET
->> +#include <asm/pgtable.h>
->> +#define LOAD_OFFSET KERNEL_LINK_ADDR
->>  #include <asm/vmlinux.lds.h>
->>  #include <asm/page.h>
->>  #include <asm/cache.h>
->> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
->> index 736de6c8739f..71da78914645 100644
->> --- a/arch/riscv/mm/init.c
->> +++ b/arch/riscv/mm/init.c
->> @@ -22,6 +22,9 @@
->>
->>  #include "../kernel/head.h"
->>
->> +unsigned long kernel_virt_addr = KERNEL_VIRT_ADDR;
->> +EXPORT_SYMBOL(kernel_virt_addr);
->> +
->>  unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
->>                              __page_aligned_bss;
->>  EXPORT_SYMBOL(empty_zero_page);
->> @@ -178,8 +181,12 @@ void __init setup_bootmem(void)
->>  }
->>
->>  #ifdef CONFIG_MMU
->> +/* Offset between linear mapping virtual address and kernel load 
->> address */
->>  unsigned long va_pa_offset;
->>  EXPORT_SYMBOL(va_pa_offset);
->> +/* Offset between kernel mapping virtual address and kernel load 
->> address */
->> +unsigned long va_kernel_pa_offset;
->> +EXPORT_SYMBOL(va_kernel_pa_offset);
->>  unsigned long pfn_base;
->>  EXPORT_SYMBOL(pfn_base);
->>
->> @@ -271,7 +278,7 @@ static phys_addr_t __init alloc_pmd(uintptr_t va)
->>      if (mmu_enabled)
->>          return memblock_phys_alloc(PAGE_SIZE, PAGE_SIZE);
->>
->> -    pmd_num = (va - PAGE_OFFSET) >> PGDIR_SHIFT;
->> +    pmd_num = (va - kernel_virt_addr) >> PGDIR_SHIFT;
->>      BUG_ON(pmd_num >= NUM_EARLY_PMDS);
->>      return (uintptr_t)&early_pmd[pmd_num * PTRS_PER_PMD];
->>  }
->> @@ -372,14 +379,30 @@ static uintptr_t __init 
->> best_map_size(phys_addr_t base, phys_addr_t size)
->>  #error "setup_vm() is called from head.S before relocate so it should 
->> not use absolute addressing."
->>  #endif
->>
->> +static uintptr_t load_pa, load_sz;
->> +
->> +static void __init create_kernel_page_table(pgd_t *pgdir, uintptr_t 
->> map_size)
->> +{
->> +    uintptr_t va, end_va;
->> +
->> +    end_va = kernel_virt_addr + load_sz;
->> +    for (va = kernel_virt_addr; va < end_va; va += map_size)
->> +        create_pgd_mapping(pgdir, va,
->> +                   load_pa + (va - kernel_virt_addr),
->> +                   map_size, PAGE_KERNEL_EXEC);
->> +}
->> +
->>  asmlinkage void __init setup_vm(uintptr_t dtb_pa)
->>  {
->>      uintptr_t va, end_va;
->> -    uintptr_t load_pa = (uintptr_t)(&_start);
->> -    uintptr_t load_sz = (uintptr_t)(&_end) - load_pa;
->>      uintptr_t map_size = best_map_size(load_pa, MAX_EARLY_MAPPING_SIZE);
->>
->> +    load_pa = (uintptr_t)(&_start);
->> +    load_sz = (uintptr_t)(&_end) - load_pa;
->> +
->>      va_pa_offset = PAGE_OFFSET - load_pa;
->> +    va_kernel_pa_offset = kernel_virt_addr - load_pa;
->> +
->>      pfn_base = PFN_DOWN(load_pa);
->>
->>      /*
->> @@ -402,26 +425,22 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
->>      create_pmd_mapping(fixmap_pmd, FIXADDR_START,
->>                 (uintptr_t)fixmap_pte, PMD_SIZE, PAGE_TABLE);
->>      /* Setup trampoline PGD and PMD */
->> -    create_pgd_mapping(trampoline_pg_dir, PAGE_OFFSET,
->> +    create_pgd_mapping(trampoline_pg_dir, kernel_virt_addr,
->>                 (uintptr_t)trampoline_pmd, PGDIR_SIZE, PAGE_TABLE);
->> -    create_pmd_mapping(trampoline_pmd, PAGE_OFFSET,
->> +    create_pmd_mapping(trampoline_pmd, kernel_virt_addr,
->>                 load_pa, PMD_SIZE, PAGE_KERNEL_EXEC);
->>  #else
->>      /* Setup trampoline PGD */
->> -    create_pgd_mapping(trampoline_pg_dir, PAGE_OFFSET,
->> +    create_pgd_mapping(trampoline_pg_dir, kernel_virt_addr,
->>                 load_pa, PGDIR_SIZE, PAGE_KERNEL_EXEC);
->>  #endif
->>
->>      /*
->> -     * Setup early PGD covering entire kernel which will allows
->> +     * Setup early PGD covering entire kernel which will allow
->>       * us to reach paging_init(). We map all memory banks later
->>       * in setup_vm_final() below.
->>       */
->> -    end_va = PAGE_OFFSET + load_sz;
->> -    for (va = PAGE_OFFSET; va < end_va; va += map_size)
->> -        create_pgd_mapping(early_pg_dir, va,
->> -                   load_pa + (va - PAGE_OFFSET),
->> -                   map_size, PAGE_KERNEL_EXEC);
->> +    create_kernel_page_table(early_pg_dir, map_size);
->>
->>      /* Create fixed mapping for early FDT parsing */
->>      end_va = __fix_to_virt(FIX_FDT) + FIX_FDT_SIZE;
->> @@ -441,6 +460,7 @@ static void __init setup_vm_final(void)
->>      uintptr_t va, map_size;
->>      phys_addr_t pa, start, end;
->>      struct memblock_region *reg;
->> +    static struct vm_struct vm_kernel = { 0 };
->>
->>      /* Set mmu_enabled flag */
->>      mmu_enabled = true;
->> @@ -467,10 +487,22 @@ static void __init setup_vm_final(void)
->>          for (pa = start; pa < end; pa += map_size) {
->>              va = (uintptr_t)__va(pa);
->>              create_pgd_mapping(swapper_pg_dir, va, pa,
->> -                       map_size, PAGE_KERNEL_EXEC);
->> +                       map_size, PAGE_KERNEL);
->>          }
->>      }
->>
->> +    /* Map the kernel */
->> +    create_kernel_page_table(swapper_pg_dir, PMD_SIZE);
->> +
->> +    /* Reserve the vmalloc area occupied by the kernel */
->> +    vm_kernel.addr = (void *)kernel_virt_addr;
->> +    vm_kernel.phys_addr = load_pa;
->> +    vm_kernel.size = (load_sz + PMD_SIZE - 1) & ~(PMD_SIZE - 1);
->> +    vm_kernel.flags = VM_MAP | VM_NO_GUARD;
->> +    vm_kernel.caller = __builtin_return_address(0);
->> +
->> +    vm_area_add_early(&vm_kernel);
->> +
->>      /* Clear fixmap PTE and PMD mappings */
->>      clear_fixmap(FIX_PTE);
->>      clear_fixmap(FIX_PMD);
->> diff --git a/arch/riscv/mm/physaddr.c b/arch/riscv/mm/physaddr.c
->> index e8e4dcd39fed..35703d5ef5fd 100644
->> --- a/arch/riscv/mm/physaddr.c
->> +++ b/arch/riscv/mm/physaddr.c
->> @@ -23,7 +23,7 @@ EXPORT_SYMBOL(__virt_to_phys);
->>
->>  phys_addr_t __phys_addr_symbol(unsigned long x)
->>  {
->> -    unsigned long kernel_start = (unsigned long)PAGE_OFFSET;
->> +    unsigned long kernel_start = (unsigned long)kernel_virt_addr;
->>      unsigned long kernel_end = (unsigned long)_end;
->>
->>      /*
 
-Alex
+> diff --git a/Documentation/powerpc/vas-api.rst b/Documentation/powerpc/vas-api.rst
+> index 1217c2f..78627cc 100644
+> --- a/Documentation/powerpc/vas-api.rst
+> +++ b/Documentation/powerpc/vas-api.rst
+> @@ -213,7 +213,7 @@ request buffers are not in memory. The operating system handles the fault by
+>  updating CSB with the following data:
+>  
+>  	csb.flags = CSB_V;
+> -	csb.cc = CSB_CC_TRANSLATION;
+> +	csb.cc = CSB_CC_ADDRESS_TRANSLATION;
+>  	csb.ce = CSB_CE_TERMINATION;
+>  	csb.address = fault_address;
+>  
+> diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
+> index 965b1f3..b1c9a57 100644
+> --- a/arch/powerpc/include/asm/icswx.h
+> +++ b/arch/powerpc/include/asm/icswx.h
+> @@ -77,6 +77,8 @@ struct coprocessor_completion_block {
+>  #define CSB_CC_CHAIN		(37)
+>  #define CSB_CC_SEQUENCE		(38)
+>  #define CSB_CC_HW		(39)
+> +/* User space address traslation failure */
+> +#define	CSB_CC_ADDRESS_TRANSLATION	(250)
+>  
+>  #define CSB_SIZE		(0x10)
+>  #define CSB_ALIGN		CSB_SIZE
+> diff --git a/arch/powerpc/platforms/powernv/vas-fault.c b/arch/powerpc/platforms/powernv/vas-fault.c
+> index 266a6ca..33e89d4 100644
+> --- a/arch/powerpc/platforms/powernv/vas-fault.c
+> +++ b/arch/powerpc/platforms/powernv/vas-fault.c
+> @@ -79,7 +79,7 @@ static void update_csb(struct vas_window *window,
+>  	csb_addr = (void __user *)be64_to_cpu(crb->csb_addr);
+>  
+>  	memset(&csb, 0, sizeof(csb));
+> -	csb.cc = CSB_CC_TRANSLATION;
+> +	csb.cc = CSB_CC_ADDRESS_TRANSLATION;
+>  	csb.ce = CSB_CE_TERMINATION;
+>  	csb.cs = 0;
+>  	csb.count = 0;
+> -- 
+> 1.8.3.1
