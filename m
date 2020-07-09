@@ -6,53 +6,53 @@ X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3DD6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F03B1C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:08:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 53921206F6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:07:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53921206F6
+	by mail.kernel.org (Postfix) with ESMTPS id A7701206F6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 03:08:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7701206F6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Lh502LxzDqwb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 13:07:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Ljh6C7PzDr5g
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 13:08:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2LfJ5ZQLzDqlL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:05:54 +1000 (AEST)
-IronPort-SDR: AUIK23TChj6yslj3H6jr5fx3Z7SbVJZUNK+IReLKAn+kEKs4mHPqPP1MwNm2bjO23cR1bAZZ66
- QMhqJdeOy62w==
-X-IronPort-AV: E=McAfee;i="6000,8403,9676"; a="209459998"
-X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="209459998"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2LgG5rhyzDqp7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 13:06:50 +1000 (AEST)
+IronPort-SDR: ncCEvLc0PZAtpxtJoVDhyloZIHIJ0gXNkQSxAgcwboaRABILP8tQypTjf22TavXverpCCePp0o
+ YYBldUVYTTKw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9676"; a="147005391"
+X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="147005391"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2020 20:05:49 -0700
-IronPort-SDR: DVIdpuGM2PvPHt89cgn+tlVcK9uVOSsOZaXP4y5AUVB4MyHMv7MogJ02wnCTyMHw1SDmnHy9Ai
- mKDLaWsxRF/A==
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jul 2020 20:06:48 -0700
+IronPort-SDR: CsdRuG5FAP00C+ipJ2uTCHpUlKlZvXIUO/+rIGk/SZOhVA3SSMxRh5F6FcOGDYa3hgMNq5Sv1G
+ HINI7NdFsH8w==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="283996687"
+X-IronPort-AV: E=Sophos;i="5.75,330,1589266800"; d="scan'208";a="323107354"
 Received: from lkp-server01.sh.intel.com (HELO 6136dd46483e) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 08 Jul 2020 20:05:46 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 08 Jul 2020 20:06:46 -0700
 Received: from kbuild by 6136dd46483e with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1jtMsb-0000NU-R6; Thu, 09 Jul 2020 03:05:45 +0000
-Date: Thu, 09 Jul 2020 11:05:40 +0800
+ id 1jtMta-0000NX-3t; Thu, 09 Jul 2020 03:06:46 +0000
+Date: Thu, 09 Jul 2020 11:05:56 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 4557ac6b344b8cdf948ff8b007e8e1de34832f2e
-Message-ID: <5f068984.9hmi5mpFcIsfvrkU%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 18fcf96cb354eb003297e14b1e19c1f7c067c49b
+Message-ID: <5f068994.gfhIYossyZsiKDLm%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,12 +73,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 4557ac6b344b8cdf948ff8b007e8e1de34832f2e  powerpc/64s/exception: Fix 0x1500 interrupt handler crash
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 18fcf96cb354eb003297e14b1e19c1f7c067c49b  powerpc/vdso: Provide __kernel_clock_gettime64() on vdso32
 
-elapsed time: 829m
+elapsed time: 722m
 
-configs tested: 113
+configs tested: 109
 configs skipped: 2
 
 The following configs have been built successfully.
@@ -92,11 +92,6 @@ arm64                            allyesconfig
 arm64                               defconfig
 arm64                            allmodconfig
 arm64                             allnoconfig
-xtensa                         virt_defconfig
-parisc                            allnoconfig
-mips                      pic32mzda_defconfig
-arm                       netwinder_defconfig
-openrisc                 simple_smp_defconfig
 powerpc                      pasemi_defconfig
 arm                        cerfcube_defconfig
 xtensa                          iss_defconfig
@@ -145,6 +140,7 @@ microblaze                        allnoconfig
 mips                             allyesconfig
 mips                              allnoconfig
 mips                             allmodconfig
+parisc                            allnoconfig
 parisc                              defconfig
 parisc                           allyesconfig
 parisc                           allmodconfig
@@ -185,10 +181,10 @@ sparc64                             defconfig
 sparc64                           allnoconfig
 sparc64                          allyesconfig
 sparc64                          allmodconfig
-um                                allnoconfig
-um                                  defconfig
 um                               allmodconfig
+um                                allnoconfig
 um                               allyesconfig
+um                                  defconfig
 x86_64                               rhel-7.6
 x86_64                    rhel-7.6-kselftests
 x86_64                               rhel-8.3
