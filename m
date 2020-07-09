@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96A44C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 07:37:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D7FAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 07:38:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4709D2070E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 07:37:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EFE432070E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 07:38:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="CeYbgd7M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4709D2070E
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1Vq5Rv+m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFE432070E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Sg83SdrzDr2w
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 17:37:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B2Shn6ckjzDr5k
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jul 2020 17:38:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=krzk@kernel.org; receiver=<UNKNOWN>)
@@ -29,24 +29,24 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=CeYbgd7M; dkim-atps=neutral
+ header.s=default header.b=1Vq5Rv+m; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2STz5mZGzDqyc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 17:29:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2SV54jqJzDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2020 17:29:17 +1000 (AEST)
 Received: from kozik-lap.mshome.net (unknown [194.230.155.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id EF6E72073A;
- Thu,  9 Jul 2020 07:29:01 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 50C8120786;
+ Thu,  9 Jul 2020 07:29:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594279747;
- bh=1OlynJThW+neP7pY3D7VyCLvh+Wto82XT3VjJdSrf14=;
+ s=default; t=1594279754;
+ bh=QYSGAmbCCxKq7PeNXIOIYLZvnbzZZuWLOEUVbks30dw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=CeYbgd7M7raXSRvjskZzCtfjiycAwkJSBQbaYu7SzskR+FdjOBJrPceWVDV2X+OEo
- wHxkB+BI5BO5O3chlrCGr7w6EPsitCmWmkZCYBWSFz8Zc40aAGUahEYYYI3PRdIg8z
- FrXikqSbMIQzhNovF0HG+T4q1vtDnEkxMhBT0lbc=
+ b=1Vq5Rv+mJ7JMcX+20xViqkzmfdNd9iFeiU157MTdQIU4+8aph9P1UPl4B25DGwWL5
+ hrvyew5GekUMVukmUmyVH1Uef1LLdOT9JBeKJZeXTdMus5SGdjIAF3SIv5q2RYQIiw
+ p9JIqnDhZP52EWTpOYsrInFFCFBgKwGPUHdFeSTk=
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -68,10 +68,10 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
  linux-ntb@googlegroups.com, virtualization@lists.linux-foundation.org,
  linux-arch@vger.kernel.org
-Subject: [PATCH v3 3/4] ntb: intel: Constify ioreadX() iomem argument (as in
+Subject: [PATCH v3 4/4] virtio: pci: Constify ioreadX() iomem argument (as in
  generic implementation)
-Date: Thu,  9 Jul 2020 09:28:36 +0200
-Message-Id: <20200709072837.5869-4-krzk@kernel.org>
+Date: Thu,  9 Jul 2020 09:28:37 +0200
+Message-Id: <20200709072837.5869-5-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200709072837.5869-1-krzk@kernel.org>
 References: <20200709072837.5869-1-krzk@kernel.org>
@@ -100,52 +100,34 @@ consistency among architectures.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Dave Jiang <dave.jiang@intel.com>
 ---
- drivers/ntb/hw/intel/ntb_hw_gen1.c  | 2 +-
- drivers/ntb/hw/intel/ntb_hw_gen3.h  | 2 +-
- drivers/ntb/hw/intel/ntb_hw_intel.h | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/virtio/virtio_pci_modern.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/ntb/hw/intel/ntb_hw_gen1.c b/drivers/ntb/hw/intel/ntb_hw_gen1.c
-index 423f9b8fbbcf..3185efeab487 100644
---- a/drivers/ntb/hw/intel/ntb_hw_gen1.c
-+++ b/drivers/ntb/hw/intel/ntb_hw_gen1.c
-@@ -1205,7 +1205,7 @@ int intel_ntb_peer_spad_write(struct ntb_dev *ntb, int pidx, int sidx,
- 			       ndev->peer_reg->spad);
+diff --git a/drivers/virtio/virtio_pci_modern.c b/drivers/virtio/virtio_pci_modern.c
+index db93cedd262f..90eff165a719 100644
+--- a/drivers/virtio/virtio_pci_modern.c
++++ b/drivers/virtio/virtio_pci_modern.c
+@@ -27,16 +27,16 @@
+  * method, i.e. 32-bit accesses for 32-bit fields, 16-bit accesses
+  * for 16-bit fields and 8-bit accesses for 8-bit fields.
+  */
+-static inline u8 vp_ioread8(u8 __iomem *addr)
++static inline u8 vp_ioread8(const u8 __iomem *addr)
+ {
+ 	return ioread8(addr);
+ }
+-static inline u16 vp_ioread16 (__le16 __iomem *addr)
++static inline u16 vp_ioread16 (const __le16 __iomem *addr)
+ {
+ 	return ioread16(addr);
  }
  
--static u64 xeon_db_ioread(void __iomem *mmio)
-+static u64 xeon_db_ioread(const void __iomem *mmio)
+-static inline u32 vp_ioread32(__le32 __iomem *addr)
++static inline u32 vp_ioread32(const __le32 __iomem *addr)
  {
- 	return (u64)ioread16(mmio);
+ 	return ioread32(addr);
  }
-diff --git a/drivers/ntb/hw/intel/ntb_hw_gen3.h b/drivers/ntb/hw/intel/ntb_hw_gen3.h
-index 2bc5d8356045..dea93989942d 100644
---- a/drivers/ntb/hw/intel/ntb_hw_gen3.h
-+++ b/drivers/ntb/hw/intel/ntb_hw_gen3.h
-@@ -91,7 +91,7 @@
- #define GEN3_DB_TOTAL_SHIFT		33
- #define GEN3_SPAD_COUNT			16
- 
--static inline u64 gen3_db_ioread(void __iomem *mmio)
-+static inline u64 gen3_db_ioread(const void __iomem *mmio)
- {
- 	return ioread64(mmio);
- }
-diff --git a/drivers/ntb/hw/intel/ntb_hw_intel.h b/drivers/ntb/hw/intel/ntb_hw_intel.h
-index d61fcd91714b..05e2335c9596 100644
---- a/drivers/ntb/hw/intel/ntb_hw_intel.h
-+++ b/drivers/ntb/hw/intel/ntb_hw_intel.h
-@@ -103,7 +103,7 @@ struct intel_ntb_dev;
- struct intel_ntb_reg {
- 	int (*poll_link)(struct intel_ntb_dev *ndev);
- 	int (*link_is_up)(struct intel_ntb_dev *ndev);
--	u64 (*db_ioread)(void __iomem *mmio);
-+	u64 (*db_ioread)(const void __iomem *mmio);
- 	void (*db_iowrite)(u64 db_bits, void __iomem *mmio);
- 	unsigned long			ntb_ctl;
- 	resource_size_t			db_size;
 -- 
 2.17.1
 
