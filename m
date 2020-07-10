@@ -2,97 +2,83 @@ Return-Path: <SRS0=5Snk=AV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B4E1C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 05:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABC5DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 05:32:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41CD72063A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 05:30:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41CD72063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 58D1C20720
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 05:32:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MECJoRc/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58D1C20720
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B31pV5d0xzDqM7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 15:30:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B31s82K89zDrJY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 15:32:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42f;
+ helo=mail-wr1-x42f.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=MECJoRc/; dkim-atps=neutral
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com
+ [IPv6:2a00:1450:4864:20::42f])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B31dR0f27zDrHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 15:22:34 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06A52LUK095386; Fri, 10 Jul 2020 01:22:17 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 326bpq85f6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 10 Jul 2020 01:22:17 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06A52SWo095789;
- Fri, 10 Jul 2020 01:22:17 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 326bpq85en-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 10 Jul 2020 01:22:16 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06A5EoKc030490;
- Fri, 10 Jul 2020 05:22:15 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma05fra.de.ibm.com with ESMTP id 326bc904w2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 10 Jul 2020 05:22:15 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06A5MC8559113526
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 10 Jul 2020 05:22:12 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 351ABA4060;
- Fri, 10 Jul 2020 05:22:12 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4E037A4062;
- Fri, 10 Jul 2020 05:22:10 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.85.105.207])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 10 Jul 2020 05:22:10 +0000 (GMT)
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- mikey@neuling.org, ravi.bangoria@linux.ibm.com, ego@linux.vnet.ibm.com,
- svaidy@linux.ibm.com, psampat@linux.ibm.com, pratik.r.sampat@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/3] powerpc/powernv/idle: Exclude mfspr on HID1, 4,
- 5 on P9 and above
-Date: Fri, 10 Jul 2020 10:52:05 +0530
-Message-Id: <20200710052207.12003-2-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200710052207.12003-1-psampat@linux.ibm.com>
-References: <20200710052207.12003-1-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B31g54SdtzDrG2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 15:24:01 +1000 (AEST)
+Received: by mail-wr1-x42f.google.com with SMTP id r12so4522316wrj.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jul 2020 22:24:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Eh22AL+ZrBA8xyIy9itm/0/DNb4G9ZozryqPyphXIIU=;
+ b=MECJoRc/zW5hU3Oo7fI5cuJt3LnCqtPTZwAtiUJ1z6X8ud04HGzgWLSs7Cgqu4+Txb
+ KZp+cHruCBin1woUvfGMBLyX0T5+eg7r9V0ioFUcDeTBZORx7TP0VYcQmfYAKQ1CfAPz
+ 3V6AJmM0QUEYrWxUCHd3as+5COD9wTYJH3Z1/WWDhlyMsYWXkybYRKx08NcGr+bf2YDk
+ F0hXUb9hl1lQDPuc4CDwNLdzKjliS1F+pRCu1nlV7D/urOsvfoM1CwfrwCl0m03y7rkq
+ Xejxq5kXlXAuB8jQ8SVveUwBcSu7Y3VdJyJHom3rqf4iRP9066T+Rzh6scJmmusDf/Xc
+ pyzA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Eh22AL+ZrBA8xyIy9itm/0/DNb4G9ZozryqPyphXIIU=;
+ b=IsQtKRBpTfYCOyzKzWmfUD6njcKN/KqYinyPOrEIqiI/7jFYTFRNBB6GSEhRRojT0u
+ gg7gqNIyw7osKOlGily19JhCTSHuZGQj8gkm/7OI+YLrhA3lJra06d1gLq6HTc8qQD3X
+ 40ycFDA5rUynfZNxP8LHIu/TpNwuFN53CkUKQtT9O+DKVjr6AD8aGMJnDd7DA+cYOA0V
+ An9YgL2pOl6DWSewEdKQVqH73SYDXifVSKFqshu3i8NrmJ23PNxkBB9dKb5irIo/9f27
+ Z7n2Rz7LOXStTHlpL4LeC2GwADtvBNwr7Z3MC6EePlAC806H/FK5h+jeQqgKnaP03Cyn
+ 5PuQ==
+X-Gm-Message-State: AOAM531cudsHGTLgoR0saW/cnKFlBp9aWw/SJqdYkLhwBCeqIxAg1Ygk
+ eYTBNPQLTbATwGEvTNXxZA/GOlUQkiQ=
+X-Google-Smtp-Source: ABdhPJwcOC01HvD10MtIKwnTj/+bP6lIe8QwBIeTI2eSJ2SFsOiSZEv87AF61D53nc/u3UiN6PVyug==
+X-Received: by 2002:adf:e40e:: with SMTP id g14mr71935886wrm.271.1594358634150; 
+ Thu, 09 Jul 2020 22:23:54 -0700 (PDT)
+Received: from 192-168-1-18.tpgi.com.au ([220.240.245.68])
+ by smtp.gmail.com with ESMTPSA id 92sm9090941wrr.96.2020.07.09.22.23.52
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 09 Jul 2020 22:23:53 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: PowerNV PCI & SR-IOV cleanups
+Date: Fri, 10 Jul 2020 15:23:25 +1000
+Message-Id: <20200710052340.737567-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-10_01:2020-07-09,
- 2020-07-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- phishscore=0 mlxscore=0 mlxlogscore=853 malwarescore=0 clxscore=1015
- spamscore=0 suspectscore=0 impostorscore=0 adultscore=0 priorityscore=1501
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007100029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,42 +94,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-POWER9 onwards the support for the registers HID1, HID4, HID5 has been
-receded.
-Although mfspr on the above registers worked in Power9, In Power10
-simulator is unrecognized. Moving their assignment under the
-check for machines lower than Power9
+Finally bit the bullet and learned how all the MMIO->PE mapping setup
+actually works. As a side effect I found a bunch of oddities in how
+PowerNV SR-IOV support is implemented. This series mostly sorts that
+out with a few more generic cleanups along the way.
 
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/idle.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This is largely prep work for supporting VFs in the 32bit MMIO window.
+This is an unfortunate necessity due to how the Linux BAR allocator
+handles BARs marked as non-prefetchable. The distinction
+between prefetch and non-prefetchable BARs was made largely irrelevant
+with the introduction of PCIe, but the BAR allocator is overly
+conservative. It will always place non-pref bars in the prefetchable
+window, which is 32bit only. This results in us being unable to use VFs
+from NVMe drives and a few different RAID cards.
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 2dd467383a88..19d94d021357 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -73,9 +73,6 @@ static int pnv_save_sprs_for_deep_states(void)
- 	 */
- 	uint64_t lpcr_val	= mfspr(SPRN_LPCR);
- 	uint64_t hid0_val	= mfspr(SPRN_HID0);
--	uint64_t hid1_val	= mfspr(SPRN_HID1);
--	uint64_t hid4_val	= mfspr(SPRN_HID4);
--	uint64_t hid5_val	= mfspr(SPRN_HID5);
- 	uint64_t hmeer_val	= mfspr(SPRN_HMEER);
- 	uint64_t msr_val = MSR_IDLE;
- 	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
-@@ -117,6 +114,9 @@ static int pnv_save_sprs_for_deep_states(void)
- 
- 			/* Only p8 needs to set extra HID regiters */
- 			if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
-+				uint64_t hid1_val = mfspr(SPRN_HID1);
-+				uint64_t hid4_val = mfspr(SPRN_HID4);
-+				uint64_t hid5_val = mfspr(SPRN_HID5);
- 
- 				rc = opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
- 				if (rc != 0)
--- 
-2.25.4
+This series is based on top of these two:
+
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=187630
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=187688
+
+Rebases cleanly on top of the first, but I haven't tested that one plus
+this extensively.
+
+Oliver
+
 
