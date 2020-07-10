@@ -2,79 +2,83 @@ Return-Path: <SRS0=5Snk=AV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE12EC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 12:48:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CBF7C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 14:08:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 191102078B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 12:48:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DD6F020748
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 14:08:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GUYwLpsj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 191102078B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="tX0Z+ctA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD6F020748
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B3CX250CDzDrFr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jul 2020 22:48:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B3FHx4CdBzDqx5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 00:08:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d32;
- helo=mail-io1-xd32.google.com; envelope-from=oohall@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
+ envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=efficios.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=GUYwLpsj; dkim-atps=neutral
-Received: from mail-io1-xd32.google.com (mail-io1-xd32.google.com
- [IPv6:2607:f8b0:4864:20::d32])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
+ header.s=default header.b=tX0Z+ctA; dkim-atps=neutral
+Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B3CSY1YrHzDrN8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 22:45:32 +1000 (AEST)
-Received: by mail-io1-xd32.google.com with SMTP id q8so5852522iow.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2020 05:45:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=sZcRO1f+b9jNVOk+x2TB9QgvGJvzpJtVdNfPnEf5s1o=;
- b=GUYwLpsj8qQAESV2nZd93IXVIRWuIKi4fAaq36fiyQN+QxUJg0T4bppoDK9gQHLScZ
- YAAXDocKH5MOsyJXBEgwuG72PzgdztqVAgEH4w+z75r9Uj2DQZ8xay6QAmq1lI0ADqOq
- CtyWQlCoXV8NWFM0QNSlwS9UqM8BYnPXvWN2T3I0bW21ku15Gvf7ARrmVbumtEKDOPhB
- 1BMsvfn3g37abilL4UdaVOXZMEceW+cW9EGAL5AL3rGnNz5dJcUQ5hKdmbJ43gVqvwD8
- /+3fUkS8N9dAZC1TAkv/rgcl7t4zGd5ehkS1Sof82TnBIFP9SNnF5wHaUe1tjJrTjFRT
- 77YA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=sZcRO1f+b9jNVOk+x2TB9QgvGJvzpJtVdNfPnEf5s1o=;
- b=PAF7SyjEZ0y4UJJkGLTG0AVqOzaOUDDI0E/1hVfA2ywGmuBwiiciyR0EBdeHA9r6kj
- VqFFEetDg05368mIQErZG1O8nQ6j8qJ/6Iz0uZkKerx8axpyW74BDaMxbsQmyplwQnL/
- 1RYs6/3zzUwr7wDyj897qLzdA+te3FHILsDoY+hjZEt0PqbLA8lZkxCZ2WQMreyRb4Zv
- Y1+Hwoa/AV2qdjH20eE9CoN1yd4kqiLvfQs5/o/3tcIkYUDPurBGMmHEXwynw8D7J+Uj
- Axx3HiE43t5AdxRhzuCX7MXuCE8iweL/CjfEUZdwwBPmRU4QMlgsFe6i9+rkS8zWJaNT
- CMhg==
-X-Gm-Message-State: AOAM531TLz4JWT3Q3M70YCZdTd2F3KTQYTH26tCCsTuJ7bsIlzd4UKVy
- P6mPvyX2IZJmj/AL3pCoWrdK2uyCrbkY8a3XC3c=
-X-Google-Smtp-Source: ABdhPJxddDuO4dGAjJ2ezUEpnPpnjF6sV6CTpQ/0brpm0QJ+Wj5WblRjFKwmGirGRFIaag3TnGFsZuG4284+KODqSb8=
-X-Received: by 2002:a02:b714:: with SMTP id g20mr69585673jam.117.1594385129117; 
- Fri, 10 Jul 2020 05:45:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B3F9G6M4GzDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2020 00:02:25 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 1B461298879;
+ Fri, 10 Jul 2020 10:02:21 -0400 (EDT)
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id 2BiScK0fe1u8; Fri, 10 Jul 2020 10:02:20 -0400 (EDT)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 6D811298878;
+ Fri, 10 Jul 2020 10:02:20 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 6D811298878
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1594389740;
+ bh=0EkqjwsH0H0xxnwMT/RWqspCkdB2B7uZF5aJW0Wao3Y=;
+ h=Date:From:To:Message-ID:MIME-Version;
+ b=tX0Z+ctAnZAnrVOs5hysRho1sIHuKvsjg5npb/ItfbalRbpZCaprBM3f97Nqv++iF
+ 1mgg+f/XX9W9ntFnXtPM7REvilsr+YHQ6Pj8rhVnXUtbBNb8nShczT53+Q7rh2aRHK
+ Qjy1eKkBH9cRx/6BZQ3LzHIvjD4Cl1ox8dgOPU+77rYk1lwhQhdYMGRPeDDA6AvMvb
+ VJp2XXwu811UjkPyVHOjj4XV3NFvVsbb/fhH/2juRlPj8kACLEhGws7WfiPE2YVu5x
+ DNF2gQuOaak05BceNZTehg4AlMyT32m0nkLD+aIWlEhZ2YQz8chwP1pMgsOXYi27uH
+ itFaq90YkTvtA==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id YrZbt6-uVw7a; Fri, 10 Jul 2020 10:02:20 -0400 (EDT)
+Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
+ by mail.efficios.com (Postfix) with ESMTP id 51E41298E1B;
+ Fri, 10 Jul 2020 10:02:20 -0400 (EDT)
+Date: Fri, 10 Jul 2020 10:02:20 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Message-ID: <1650470150.8264.1594389740219.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20200710015646.2020871-5-npiggin@gmail.com>
+References: <20200710015646.2020871-1-npiggin@gmail.com>
+ <20200710015646.2020871-5-npiggin@gmail.com>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
 MIME-Version: 1.0
-References: <20200710052340.737567-1-oohall@gmail.com>
- <20200710064535.GA8354@infradead.org>
-In-Reply-To: <20200710064535.GA8354@infradead.org>
-From: "Oliver O'Halloran" <oohall@gmail.com>
-Date: Fri, 10 Jul 2020 22:45:17 +1000
-Message-ID: <CAOSf1CFj3x+V=0UwDpCOJ8v+sgSihUCaTbwwT1ziddPeYmD=Uw@mail.gmail.com>
-Subject: Re: PowerNV PCI & SR-IOV cleanups
-To: Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [167.114.26.124]
+X-Mailer: Zimbra 8.8.15_GA_3955 (ZimbraWebClient - FF78 (Linux)/8.8.15_GA_3953)
+Thread-Topic: x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+Thread-Index: 5tzhALkLP55vvKf+GxzXrBgB5cOxKQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,52 +90,316 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci <linux-pci@vger.kernel.org>,
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Peter Zijlstra <peterz@infradead.org>, x86 <x86@kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 10, 2020 at 4:45 PM Christoph Hellwig <hch@infradead.org> wrote:
->
-> On Fri, Jul 10, 2020 at 03:23:25PM +1000, Oliver O'Halloran wrote:
-> > This is largely prep work for supporting VFs in the 32bit MMIO window.
-> > This is an unfortunate necessity due to how the Linux BAR allocator
-> > handles BARs marked as non-prefetchable. The distinction
-> > between prefetch and non-prefetchable BARs was made largely irrelevant
-> > with the introduction of PCIe, but the BAR allocator is overly
-> > conservative. It will always place non-pref bars in the prefetchable
-> > window, which is 32bit only. This results in us being unable to use VFs
-> > from NVMe drives and a few different RAID cards.
->
-> How about fixing that in the core PCI code?
+----- On Jul 9, 2020, at 9:56 PM, Nicholas Piggin npiggin@gmail.com wrote:
 
-I've been kicking around the idea but I've never managed to convince
-myself that ignoring the non-prefetchable bit is a safe thing to do in
-generic code. Since Gen3 at least the PCIe Base spec has provided some
-guidance about when you can put non-prefetchable BARs in the
-prefetchable window and as of the Gen5 spec it lists these conditions:
+> And get rid of the generic sync_core_before_usermode facility.
+> 
+> This helper is the wrong way around I think. The idea that membarrier
+> state requires a core sync before returning to user is the easy one
+> that does not need hiding behind membarrier calls. The gap in core
+> synchronization due to x86's sysret/sysexit and lazy tlb mode, is the
+> tricky detail that is better put in x86 lazy tlb code.
+> 
+> Consider if an arch did not synchronize core in switch_mm either, then
+> membarrier_mm_sync_core_before_usermode would be in the wrong place
+> but arch specific mmu context functions would still be the right place.
+> There is also a exit_lazy_tlb case that is not covered by this call, which
+> could be a bugs (kthread use mm the membarrier process's mm then context
+> switch back to the process without switching mm or lazy mm switch).
+> 
+> This makes lazy tlb code a bit more modular.
 
-> 1) The entire path from the host to the adapter is over PCI Express.
-> 2) No conventional PCI or PCI-X devices do peer-to-peer reads to the range mapped by the BAR.
-> 3) The PCI Express Host Bridge does no byte merging. (This is believed to be true on most platforms.)
-> 4) Any locations with read side-effects are never the target of Memory Reads with the TH bit Set.
-> 5) The range mapped by the BAR is never the target of a speculative Memory Read, either Host initiated or peer-to-peer.
+I agree that moving this logic to exit_lazy_tlb is much more modular and
+cleaner.
 
-1) Is easy enough to verify.
-2) Is probably true, but who knows.
-3) I know this is true for the platforms I'm looking at since the HW
-designers assure me there is no merging happening at the host-bridge
-level. Merging of MMIO ops does seem like an insane thing to do so
-it's probably true in general too, but there's no real way to tell.
-4) Is also *probably* true since the TH bit is only set when it's
-explicitly enabled via the TLP Processing Hints extended capability in
-config space. I guess it's possible firmware might enable that without
-Linux realising, but in that case Linux is probably not doing BAR
-allocation.
-5) I have no idea about, but it seems difficult to make any kind of
-general statement about.
+Thanks,
 
-I might just be being paranoid.
+Mathieu
 
-Oliver
+
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> .../membarrier-sync-core/arch-support.txt     |  6 +++-
+> arch/x86/include/asm/mmu_context.h            | 35 +++++++++++++++++++
+> arch/x86/include/asm/sync_core.h              | 28 ---------------
+> include/linux/sched/mm.h                      | 14 --------
+> include/linux/sync_core.h                     | 21 -----------
+> kernel/cpu.c                                  |  4 ++-
+> kernel/kthread.c                              |  2 +-
+> kernel/sched/core.c                           | 16 ++++-----
+> 8 files changed, 51 insertions(+), 75 deletions(-)
+> delete mode 100644 arch/x86/include/asm/sync_core.h
+> delete mode 100644 include/linux/sync_core.h
+> 
+> diff --git a/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+> b/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+> index 52ad74a25f54..bd43fb1f5986 100644
+> --- a/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+> +++ b/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+> @@ -5,6 +5,10 @@
+> #
+> # Architecture requirements
+> #
+> +# If your architecture returns to user-space through non-core-serializing
+> +# instructions, you need to ensure these are done in switch_mm and
+> exit_lazy_tlb
+> +# (if lazy tlb switching is implemented).
+> +#
+> # * arm/arm64/powerpc
+> #
+> # Rely on implicit context synchronization as a result of exception return
+> @@ -24,7 +28,7 @@
+> # instead on write_cr3() performed by switch_mm() to provide core serialization
+> # after changing the current mm, and deal with the special case of kthread ->
+> # uthread (temporarily keeping current mm into active_mm) by issuing a
+> -# sync_core_before_usermode() in that specific case.
+> +# serializing instruction in exit_lazy_mm() in that specific case.
+> #
+>     -----------------------
+>     |         arch |status|
+> diff --git a/arch/x86/include/asm/mmu_context.h
+> b/arch/x86/include/asm/mmu_context.h
+> index 255750548433..5263863a9be8 100644
+> --- a/arch/x86/include/asm/mmu_context.h
+> +++ b/arch/x86/include/asm/mmu_context.h
+> @@ -6,6 +6,7 @@
+> #include <linux/atomic.h>
+> #include <linux/mm_types.h>
+> #include <linux/pkeys.h>
+> +#include <linux/sched/mm.h>
+> 
+> #include <trace/events/tlb.h>
+> 
+> @@ -95,6 +96,40 @@ static inline void switch_ldt(struct mm_struct *prev, struct
+> mm_struct *next)
+> #define enter_lazy_tlb enter_lazy_tlb
+> extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
+> 
+> +#ifdef CONFIG_MEMBARRIER
+> +/*
+> + * Ensure that a core serializing instruction is issued before returning
+> + * to user-mode, if a SYNC_CORE was requested. x86 implements return to
+> + * user-space through sysexit, sysrel, and sysretq, which are not core
+> + * serializing.
+> + *
+> + * See the membarrier comment in finish_task_switch as to why this is done
+> + * in exit_lazy_tlb.
+> + */
+> +#define exit_lazy_tlb exit_lazy_tlb
+> +static inline void exit_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+> +{
+> +	/* Switching mm is serializing with write_cr3 */
+> +        if (tsk->mm != mm)
+> +                return;
+> +
+> +        if (likely(!(atomic_read(&mm->membarrier_state) &
+> +                     MEMBARRIER_STATE_PRIVATE_EXPEDITED_SYNC_CORE)))
+> +                return;
+> +
+> +	/* With PTI, we unconditionally serialize before running user code. */
+> +	if (static_cpu_has(X86_FEATURE_PTI))
+> +		return;
+> +	/*
+> +	 * Return from interrupt and NMI is done through iret, which is core
+> +	 * serializing.
+> +	 */
+> +	if (in_irq() || in_nmi())
+> +		return;
+> +	sync_core();
+> +}
+> +#endif
+> +
+> /*
+>  * Init a new mm.  Used on mm copies, like at fork()
+>  * and on mm's that are brand-new, like at execve().
+> diff --git a/arch/x86/include/asm/sync_core.h b/arch/x86/include/asm/sync_core.h
+> deleted file mode 100644
+> index c67caafd3381..000000000000
+> --- a/arch/x86/include/asm/sync_core.h
+> +++ /dev/null
+> @@ -1,28 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0 */
+> -#ifndef _ASM_X86_SYNC_CORE_H
+> -#define _ASM_X86_SYNC_CORE_H
+> -
+> -#include <linux/preempt.h>
+> -#include <asm/processor.h>
+> -#include <asm/cpufeature.h>
+> -
+> -/*
+> - * Ensure that a core serializing instruction is issued before returning
+> - * to user-mode. x86 implements return to user-space through sysexit,
+> - * sysrel, and sysretq, which are not core serializing.
+> - */
+> -static inline void sync_core_before_usermode(void)
+> -{
+> -	/* With PTI, we unconditionally serialize before running user code. */
+> -	if (static_cpu_has(X86_FEATURE_PTI))
+> -		return;
+> -	/*
+> -	 * Return from interrupt and NMI is done through iret, which is core
+> -	 * serializing.
+> -	 */
+> -	if (in_irq() || in_nmi())
+> -		return;
+> -	sync_core();
+> -}
+> -
+> -#endif /* _ASM_X86_SYNC_CORE_H */
+> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
+> index 480a4d1b7dd8..9b026264b445 100644
+> --- a/include/linux/sched/mm.h
+> +++ b/include/linux/sched/mm.h
+> @@ -7,7 +7,6 @@
+> #include <linux/sched.h>
+> #include <linux/mm_types.h>
+> #include <linux/gfp.h>
+> -#include <linux/sync_core.h>
+> 
+> /*
+>  * Routines for handling mm_structs
+> @@ -364,16 +363,6 @@ enum {
+> #include <asm/membarrier.h>
+> #endif
+> 
+> -static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct
+> *mm)
+> -{
+> -	if (current->mm != mm)
+> -		return;
+> -	if (likely(!(atomic_read(&mm->membarrier_state) &
+> -		     MEMBARRIER_STATE_PRIVATE_EXPEDITED_SYNC_CORE)))
+> -		return;
+> -	sync_core_before_usermode();
+> -}
+> -
+> extern void membarrier_exec_mmap(struct mm_struct *mm);
+> 
+> #else
+> @@ -387,9 +376,6 @@ static inline void membarrier_arch_switch_mm(struct
+> mm_struct *prev,
+> static inline void membarrier_exec_mmap(struct mm_struct *mm)
+> {
+> }
+> -static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct
+> *mm)
+> -{
+> -}
+> #endif
+> 
+> #endif /* _LINUX_SCHED_MM_H */
+> diff --git a/include/linux/sync_core.h b/include/linux/sync_core.h
+> deleted file mode 100644
+> index 013da4b8b327..000000000000
+> --- a/include/linux/sync_core.h
+> +++ /dev/null
+> @@ -1,21 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0 */
+> -#ifndef _LINUX_SYNC_CORE_H
+> -#define _LINUX_SYNC_CORE_H
+> -
+> -#ifdef CONFIG_ARCH_HAS_SYNC_CORE_BEFORE_USERMODE
+> -#include <asm/sync_core.h>
+> -#else
+> -/*
+> - * This is a dummy sync_core_before_usermode() implementation that can be used
+> - * on all architectures which return to user-space through core serializing
+> - * instructions.
+> - * If your architecture returns to user-space through non-core-serializing
+> - * instructions, you need to write your own functions.
+> - */
+> -static inline void sync_core_before_usermode(void)
+> -{
+> -}
+> -#endif
+> -
+> -#endif /* _LINUX_SYNC_CORE_H */
+> -
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 6ff2578ecf17..134688d79589 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -572,7 +572,9 @@ static int finish_cpu(unsigned int cpu)
+> 
+> 	/*
+> 	 * idle_task_exit() will have switched to &init_mm, now
+> -	 * clean up any remaining active_mm state.
+> +	 * clean up any remaining active_mm state. exit_lazy_tlb
+> +	 * is not done, if an arch did any accounting in these
+> +	 * functions it would have to be added.
+> 	 */
+> 	if (mm != &init_mm)
+> 		idle->active_mm = &init_mm;
+> diff --git a/kernel/kthread.c b/kernel/kthread.c
+> index e813d92f2eab..6f93c649aa97 100644
+> --- a/kernel/kthread.c
+> +++ b/kernel/kthread.c
+> @@ -1251,9 +1251,9 @@ void kthread_use_mm(struct mm_struct *mm)
+> 	finish_arch_post_lock_switch();
+> #endif
+> 
+> +	exit_lazy_tlb(active_mm, tsk);
+> 	if (active_mm != mm)
+> 		mmdrop(active_mm);
+> -	exit_lazy_tlb(active_mm, tsk);
+> 
+> 	to_kthread(tsk)->oldfs = get_fs();
+> 	set_fs(USER_DS);
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index debc917bc69b..31e22c79826c 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -3294,22 +3294,19 @@ static struct rq *finish_task_switch(struct task_struct
+> *prev)
+> 	kcov_finish_switch(current);
+> 
+> 	fire_sched_in_preempt_notifiers(current);
+> +
+> 	/*
+> 	 * When switching through a kernel thread, the loop in
+> 	 * membarrier_{private,global}_expedited() may have observed that
+> 	 * kernel thread and not issued an IPI. It is therefore possible to
+> 	 * schedule between user->kernel->user threads without passing though
+> -	 * switch_mm(). Membarrier requires a barrier after storing to
+> -	 * rq->curr, before returning to userspace, so provide them here:
+> -	 *
+> -	 * - a full memory barrier for {PRIVATE,GLOBAL}_EXPEDITED, implicitly
+> -	 *   provided by mmdrop(),
+> -	 * - a sync_core for SYNC_CORE.
+> +	 * switch_mm(). Membarrier requires a full barrier after storing to
+> +	 * rq->curr, before returning to userspace, for
+> +	 * {PRIVATE,GLOBAL}_EXPEDITED. This is implicitly provided by mmdrop().
+> 	 */
+> -	if (mm) {
+> -		membarrier_mm_sync_core_before_usermode(mm);
+> +	if (mm)
+> 		mmdrop(mm);
+> -	}
+> +
+> 	if (unlikely(prev_state == TASK_DEAD)) {
+> 		if (prev->sched_class->task_dead)
+> 			prev->sched_class->task_dead(prev);
+> @@ -6292,6 +6289,7 @@ void idle_task_exit(void)
+> 	BUG_ON(current != this_rq()->idle);
+> 
+> 	if (mm != &init_mm) {
+> +		/* enter_lazy_tlb is not done because we're about to go down */
+> 		switch_mm(mm, &init_mm, current);
+> 		finish_arch_post_lock_switch();
+> 	}
+> --
+> 2.23.0
+
+-- 
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
