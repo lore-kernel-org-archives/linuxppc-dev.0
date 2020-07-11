@@ -2,61 +2,60 @@ Return-Path: <SRS0=BGHj=AW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75B12C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 11:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D08BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 18:26:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DEF36206D9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 11:49:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 977A720725
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 18:26:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="QgPVAto0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEF36206D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="m5px95qy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 977A720725
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B3p9l6TWSzDr7Z
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jul 2020 21:49:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B3yzx3CsbzDr0f
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jul 2020 04:26:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=m5px95qy; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B3p7x1w51zDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2020 21:48:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=QgPVAto0; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B3p7t6VJpz9sRR;
- Sat, 11 Jul 2020 21:48:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594468092;
- bh=dKeMPZ3coLq1t8Os4YUhMXsxVwacg9mcb6Um7+nbyMM=;
- h=From:To:Cc:Subject:Date:From;
- b=QgPVAto0j6mboSpyNKkOHIg8wO9JF4IADPuieLiPwIrMP2FbdryVnD8LcLbW4qg1U
- iN/+V221zlRheQ11w1bQdv3czDd5LLJzrfgKoxkRrXYdM5bH+1eYG6uMZZ7Og5a8Ng
- Plw9PScJqaTppcY94gVfZN8fJ/etNju2ci0aych9cf8poRtj49R94tf/YX+ZRhxDJ3
- fXIb1CP5Bf4k//8kMJBi6SWD83XsP/qgVbge0pyrvIdiHduGeIi3whlYEb+L4mPXHy
- SYSW/yjHvNqkVTHaTGnThhkWUEDXflOv1Rxjetq6FYzCq/JVsEE6LCRrp6M1VeC3Kl
- FDqw2iem7rn/w==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.8-6 tag
-Date: Sat, 11 Jul 2020 21:50:20 +1000
-Message-ID: <87v9iuuv7n.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B3yxt2mMmzDqwh
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2020 04:25:06 +1000 (AEST)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.8-6 tag
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1594491903;
+ bh=oYGvCW3yUBOS6t24P0LEztiJ6EUnBWqM3dyRFnrIBMg=;
+ h=From:In-Reply-To:References:Date:To:Cc:From;
+ b=m5px95qyOoXIxZgQ4L3qj8JD+Wsx0KtjxH3JEz7eAEk7EfNGUAUB15p0hEkQKIjvm
+ mT9wLMo/3659OgPDe6dsF0aIh/qWIjsyotnfVW4RmyyjG25bN656htHDXhc3MPzYmR
+ qsPAyoX2N7+k/fMJMs74WiTHwv+o4bBUA+Sc3Wio=
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87v9iuuv7n.fsf@mpe.ellerman.id.au>
+References: <87v9iuuv7n.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <87v9iuuv7n.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ tags/powerpc-5.8-6
+X-PR-Tracked-Commit-Id: 4557ac6b344b8cdf948ff8b007e8e1de34832f2e
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 997c4431f04d8f0d6063bac3bcdceba8d939b879
+Message-Id: <159449190315.25373.16727566755171701075.pr-tracker-bot@kernel.org>
+Date: Sat, 11 Jul 2020 18:25:03 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,60 +67,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
  npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+The pull request you sent on Sat, 11 Jul 2020 21:50:20 +1000:
 
-Hi Linus,
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.8-6
 
-Please pull another powerpc fix for 5.8:
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/997c4431f04d8f0d6063bac3bcdceba8d939b879
 
-The following changes since commit 19ab500edb5d6020010caba48ce3b4ce4182ab63:
+Thank you!
 
-  powerpc/mm/pkeys: Make pkey access check work on execute_only_key (2020-06-29 16:17:02 +1000)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.8-6
-
-for you to fetch changes up to 4557ac6b344b8cdf948ff8b007e8e1de34832f2e:
-
-  powerpc/64s/exception: Fix 0x1500 interrupt handler crash (2020-07-08 20:41:06 +1000)
-
-- ------------------------------------------------------------------
-powerpc fixes for 5.8 #6
-
-One fix for a crash/soft lockup on Power8, caused by the exception rework we did
-in v5.7.
-
-Thanks to:
-  Paul Menzel, Nicholas Piggin.
-
-- ------------------------------------------------------------------
-Nicholas Piggin (1):
-      powerpc/64s/exception: Fix 0x1500 interrupt handler crash
-
-
- arch/powerpc/kernel/exceptions-64s.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl8JpzUACgkQUevqPMjh
-pYD5Zg/+JSMK0phSPCEpBusdlwIeuP5JwQzMCPZgiz7wGsOl6OMF/pMekvQmYzsD
-/9VKTWejulkn1Q1Gz3dhEEaVRJhjErPN0xb3tdrXmzyK2s67kwbkd+PhkmXyzRJ/
-ByEHmg8K3kKhB3FEC/BimNzcjAhVy2bIqBR1+4gTjF/PDc9heugv9iOpnw2uvhGu
-/DoYyQScWnC01PgOd8/dFDykELj98s/p4hKNx6JnteGi5cjrWClqJGJYCBc4xhs/
-rPSA5ybUzuN+CbMZbvDi7sJPw+w4AYIC5kVYsZqRuJVGYGh0y4qcxSYK4BL0FDO2
-UWdCLUFOkZqHtGhOUMn886YQnhPFukxVOVfLCIlkWcYeXK3HwQld8LrfzHUoMjBk
-ao06xwccNyzGlRUn0lYKuRFRGyEtWXNDqLQZ9L4Klowwe9BG5HdYRzrNxLsyi7p0
-yom6hevA5w2Sw9rZJrtImWevrsIp7ZexOcVBdfCGwCt9WlWHvT4C5iT0kMFGBh50
-Tx/nKAaBWVN9p8OLX4qsmUlRIeAGQdV18HiAaLo5YubUSJ9Ne5ZGcTTZ42VwxvaM
-1VCMUfexdr/oljy1BUP/ZTldcj8dF6saaWDb+yWWh8sUmKdsduXJP/5640au9FxS
-EBofwuyiU0u8aoV9oH4km+Tqp2WtFhMtrgTNNgHtPix7C8ck2Y4=
-=u9rR
------END PGP SIGNATURE-----
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
