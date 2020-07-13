@@ -2,61 +2,97 @@ Return-Path: <SRS0=XY74=AY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5961BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 22:50:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EDB6C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 22:58:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F1D1E20DD4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 22:50:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="MWvKJTjv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1D1E20DD4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A1EC02065F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 22:58:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1EC02065F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Jkb6H5lzDqfd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 08:49:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Jw52d1xzDqXJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 08:58:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=MWvKJTjv; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5HgF1JTmzDqXv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 08:02:01 +1000 (AEST)
-Received: from localhost (mobile-166-175-191-139.mycingular.net
- [166.175.191.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5Jsg09T0zDqXK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 08:56:05 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06DMXLu7000760; Mon, 13 Jul 2020 18:55:57 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3276ag6paq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 13 Jul 2020 18:55:56 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06DMoDGF016169;
+ Mon, 13 Jul 2020 22:55:54 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04fra.de.ibm.com with ESMTP id 327527hbu0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 13 Jul 2020 22:55:53 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 06DMtpBP63177196
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 13 Jul 2020 22:55:51 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A09AD4C04E;
+ Mon, 13 Jul 2020 22:55:51 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 48B0A4C050;
+ Mon, 13 Jul 2020 22:55:51 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 13 Jul 2020 22:55:51 +0000 (GMT)
+Received: from [9.206.162.5] (unknown [9.206.162.5])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A520620663;
- Mon, 13 Jul 2020 22:01:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594677718;
- bh=HSAUHsS9kXD1HIJNE6WsRPhRQVem0B8cFajFbFBR0EI=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=MWvKJTjvl/1YEIl1J2bYU68QOMCk3laZW9SifUEehjNOErgOIYQha/bgzSaTFKI2l
- QuIAmIsupUSbzYcZR4NjPAxoi7WbrMXAjLRHTnmV/Yc0VJOJrp/0Y79w5eZfIKt71L
- +1J5CchrY3/xdkH17Ff+7DtiGZ9FgLPSUNKvv7eo=
-Date: Mon, 13 Jul 2020 17:01:56 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
-Subject: Re: [RFC PATCH 00/35] Move all PCIBIOS* definitions into arch/x86
-Message-ID: <20200713220156.GA284762@bjorn-Precision-5520>
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EB288A01E5;
+ Tue, 14 Jul 2020 08:55:49 +1000 (AEST)
+Subject: Re: [PATCH] ocxl: Replace HTTP links with HTTPS ones
+To: "Alexander A. Klimov" <grandmaster@al2klimov.de>, fbarrat@linux.ibm.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20200713175506.36676-1-grandmaster@al2klimov.de>
+From: Andrew Donnellan <ajd@linux.ibm.com>
+Message-ID: <ce36c905-f7d7-f204-5224-fec98179986b@linux.ibm.com>
+Date: Tue, 14 Jul 2020 08:55:41 +1000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200713122247.10985-1-refactormyself@gmail.com>
-X-Mailman-Approved-At: Tue, 14 Jul 2020 08:35:04 +1000
+In-Reply-To: <20200713175506.36676-1-grandmaster@al2klimov.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-13_17:2020-07-13,
+ 2020-07-13 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxscore=0 adultscore=0
+ mlxlogscore=778 malwarescore=0 phishscore=0 priorityscore=1501
+ clxscore=1011 lowpriorityscore=0 suspectscore=0 spamscore=0 bulkscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007130163
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,116 +104,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>, linux-sh@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-nvme@lists.infradead.org,
- Yicong Yang <yangyicong@hisilicon.com>, Keith Busch <kbusch@kernel.org>,
- Realtek linux nic maintainers <nic_swsd@realtek.com>,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- bcm-kernel-feedback-list@broadcom.com, sparclinux@vger.kernel.org,
- rfi@lists.rocketboards.org, Toan Le <toan@os.amperecomputing.com>,
- Greg Ungerer <gerg@linux-m68k.org>,
- Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh@kernel.org>,
- Stefano Stabellini <sstabellini@kernel.org>, Sagi Grimberg <sagi@grimberg.me>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-scsi@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-atm-general@lists.sourceforge.net, Russell King <linux@armlinux.org.uk>,
- Ley Foon Tan <ley.foon.tan@intel.com>, Christoph Hellwig <hch@lst.de>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- Chas Williams <3chas3@gmail.com>, xen-devel@lists.xenproject.org,
- Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org,
- linux-kernel-mentees@lists.linuxfoundation.org,
- Kevin Hilman <khilman@baylibre.com>, Guenter Roeck <linux@roeck-us.net>,
- linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Ray Jui <rjui@broadcom.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Yue Wang <yue.wang@Amlogic.com>, Jens Axboe <axboe@fb.com>,
- Jakub Kicinski <kuba@kernel.org>, linux-m68k@lists.linux-m68k.org,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Michael Buesch <m@bues.ch>,
- skhan@linuxfoundation.org, bjorn@helgaas.com,
- linux-amlogic@lists.infradead.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Juergen Gross <jgross@suse.com>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Scott Branden <sbranden@broadcom.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Jingoo Han <jingoohan1@gmail.com>, netdev@vger.kernel.org,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-renesas-soc@vger.kernel.org, Brian King <brking@us.ibm.com>,
- Philipp Zabel <p.zabel@pengutronix.de>, linux-alpha@vger.kernel.org,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Gustavo Pimentel <gustavo.pimentel@synopsys.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 13, 2020 at 02:22:12PM +0200, Saheed O. Bolarinwa wrote:
-> This goal of these series is to move the definition of *all* PCIBIOS* from
-> include/linux/pci.h to arch/x86 and limit their use within there.
-> All other tree specific definition will be left for intact. Maybe they can
-> be renamed.
+On 14/7/20 3:55 am, Alexander A. Klimov wrote:
+> Rationale:
+> Reduces attack surface on kernel devs opening the links for MITM
+> as HTTPS traffic is much harder to manipulate.
+> 
+> Deterministic algorithm:
+> For each file:
+>    If not .svg:
+>      For each line:
+>        If doesn't contain `\bxmlns\b`:
+>          For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+> 	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+>              If both the HTTP and HTTPS versions
+>              return 200 OK and serve the same content:
+>                Replace HTTP with HTTPS.
+> 
+> Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
 
-More comments later, but a few trivial whitespace issues you can clean
-up in the meantime.  Don't repost for at least a few days to avoid
-spamming everybody.  I found these with:
+Thanks.
 
-  $ b4 am -om/ 20200713122247.10985-1-refactormyself@gmail.com
-  $ git am m/20200713_refactormyself_move_all_pcibios_definitions_into_arch_x86.mbx
+Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-  Applying: atm: Change PCIBIOS_SUCCESSFUL to 0
-  .git/rebase-apply/patch:11: trailing whitespace.
-	  iadev = INPH_IA_DEV(dev);
-  .git/rebase-apply/patch:12: trailing whitespace.
-	  for(i=0; i<64; i++)
-  .git/rebase-apply/patch:13: trailing whitespace.
-	    if ((error = pci_read_config_dword(iadev->pci,
-  .git/rebase-apply/patch:16: trailing whitespace, space before tab in indent.
-		return error;
-  .git/rebase-apply/patch:17: trailing whitespace.
-	  writel(0, iadev->reg+IPHASE5575_EXT_RESET);
-  warning: squelched 5 whitespace errors
-  warning: 10 lines add whitespace errors.
-  Applying: atm: Tidy Success/Failure checks
-  .git/rebase-apply/patch:13: trailing whitespace.
-
-  .git/rebase-apply/patch:14: trailing whitespace.
-	  iadev = INPH_IA_DEV(dev);
-  .git/rebase-apply/patch:15: trailing whitespace.
-	  for(i=0; i<64; i++)
-  .git/rebase-apply/patch:21: trailing whitespace.
-	  writel(0, iadev->reg+IPHASE5575_EXT_RESET);
-  .git/rebase-apply/patch:22: trailing whitespace.
-	  for(i=0; i<64; i++)
-  warning: squelched 3 whitespace errors
-  warning: 8 lines add whitespace errors.
-  Applying: atm: Fix Style ERROR- assignment in if condition
-  .git/rebase-apply/patch:12: trailing whitespace.
-	  unsigned int pci[64];
-  .git/rebase-apply/patch:13: trailing whitespace.
-
-  .git/rebase-apply/patch:14: trailing whitespace.
-	  iadev = INPH_IA_DEV(dev);
-  .git/rebase-apply/patch:23: trailing whitespace.
-	  writel(0, iadev->reg+IPHASE5575_EXT_RESET);
-  .git/rebase-apply/patch:32: trailing whitespace.
-	  udelay(5);
-  warning: squelched 2 whitespace errors
-  warning: 7 lines add whitespace errors.
-  Applying: PCI: Change PCIBIOS_SUCCESSFUL to 0
-  .git/rebase-apply/patch:37: trailing whitespace.
-  struct pci_ops apecs_pci_ops =
-  .git/rebase-apply/patch:50: trailing whitespace.
-  static int
-  .git/rebase-apply/patch:59: trailing whitespace.
-  struct pci_ops cia_pci_ops =
-  .git/rebase-apply/patch:94: trailing whitespace.
-  static int
-  .git/rebase-apply/patch:103: trailing whitespace.
-  struct pci_ops lca_pci_ops =
-  warning: squelched 10 whitespace errors
-  warning: 15 lines add whitespace errors.
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+ajd@linux.ibm.com             IBM Australia Limited
