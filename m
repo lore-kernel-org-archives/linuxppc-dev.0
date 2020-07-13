@@ -6,85 +6,89 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51559C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 17:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F369C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 17:44:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D949C20771
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 17:42:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D949C20771
+	by mail.kernel.org (Postfix) with ESMTPS id AB24320773
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 17:44:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB24320773
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B59vL17D0zDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:42:06 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B59xX6GtDzDqMK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:44:00 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B59Tn5JtHzDqM6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 03:23:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B59Tw4LqTzDqTC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 03:23:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4B59Tm6JVhz8vnS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 03:23:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4B59Tw0VT1z8vnS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 03:23:32 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4B59Tm0HNnz9sSt; Tue, 14 Jul 2020 03:23:24 +1000 (AEST)
+ id 4B59Tv3Yl4z9sTT; Tue, 14 Jul 2020 03:23:31 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B59Tl1XYcz9sRk
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2020 03:23:23 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06DH3eQa114867; Mon, 13 Jul 2020 13:23:15 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 4B59Tt4MNHz9sTS
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2020 03:23:30 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06DH1pkk138306; Mon, 13 Jul 2020 13:23:22 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3276afxevw-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3279kwk34v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 13 Jul 2020 13:23:14 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06DH3dDl114843;
- Mon, 13 Jul 2020 13:23:14 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3276afxev5-1
+ Mon, 13 Jul 2020 13:23:22 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06DH2JkB140555;
+ Mon, 13 Jul 2020 13:23:21 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3279kwk34b-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 13 Jul 2020 13:23:14 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06DHLPL7027246;
- Mon, 13 Jul 2020 17:23:11 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma02fra.de.ibm.com with ESMTP id 327527tfd5-1
+ Mon, 13 Jul 2020 13:23:21 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06DHMlDU014402;
+ Mon, 13 Jul 2020 17:23:19 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06fra.de.ibm.com with ESMTP id 328rbqr2yv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 13 Jul 2020 17:23:11 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06DHLsXD65470486
+ Mon, 13 Jul 2020 17:23:19 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 06DHNGke53019072
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 13 Jul 2020 17:21:54 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 071445204E;
- Mon, 13 Jul 2020 17:21:54 +0000 (GMT)
+ Mon, 13 Jul 2020 17:23:16 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DA73942045;
+ Mon, 13 Jul 2020 17:23:16 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9516C4203F;
+ Mon, 13 Jul 2020 17:23:13 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.102.3.11])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B26F75204F;
- Mon, 13 Jul 2020 17:21:50 +0000 (GMT)
-Subject: [PATCH v3 05/12] powerpc/drmem: make lmb walk a bit more flexible
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 13 Jul 2020 17:23:13 +0000 (GMT)
+Subject: [PATCH v3 10/12] ppc64/kexec_file: prepare elfcore header for
+ crashing kernel
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 13 Jul 2020 22:51:49 +0530
-Message-ID: <159466090332.24747.9255471295044653085.stgit@hbathini.in.ibm.com>
+Date: Mon, 13 Jul 2020 22:53:12 +0530
+Message-ID: <159466098739.24747.5860501703617893464.stgit@hbathini.in.ibm.com>
 In-Reply-To: <159466074408.24747.10036072269371204890.stgit@hbathini.in.ibm.com>
 References: <159466074408.24747.10036072269371204890.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -96,11 +100,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-13_15:2020-07-13,
  2020-07-13 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 adultscore=0
- mlxlogscore=999 malwarescore=0 phishscore=0 priorityscore=1501
- clxscore=1015 lowpriorityscore=0 suspectscore=0 spamscore=0 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007130122
+ lowpriorityscore=0
+ clxscore=1015 suspectscore=2 phishscore=0 priorityscore=1501 bulkscore=0
+ malwarescore=0 mlxscore=0 mlxlogscore=999 spamscore=0 impostorscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007130120
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,372 +127,375 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, numa & prom are the users of drmem lmb walk code. Loading
-kdump with kexec_file also needs to walk the drmem LMBs to setup the
-usable memory ranges for kdump kernel. But there are couple of issues
-in using the code as is. One, walk_drmem_lmb() code is built into the
-.init section currently, while kexec_file needs it later. Two, there
-is no scope to pass data to the callback function for processing and/
-or erroring out on certain conditions.
-
-Fix that by, moving drmem LMB walk code out of .init section, adding
-scope to pass data to the callback function and bailing out when
-an error is encountered in the callback function.
+Prepare elf headers for the crashing kernel's core file using
+crash_prepare_elf64_headers() and pass on this info to kdump
+kernel by updating its command line with elfcorehdr parameter.
+Also, add elfcorehdr location to reserve map to avoid it from
+being stomped on while booting.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 Tested-by: Pingfan Liu <piliu@redhat.com>
 ---
 
-Patch 05/12
-
 v2 -> v3:
 * Unchanged. Added Tested-by tag from Pingfan.
 
 v1 -> v2:
-* No changes.
+* Tried merging adjacent memory ranges on hitting maximum ranges limit
+  to reduce reallocations for memory ranges and also, minimize PT_LOAD
+  segments for elfcore.
+* Updated add_rtas_mem_range() & add_opal_mem_range() callsites based on
+  the new prototype for these functions.
 
 
- arch/powerpc/include/asm/drmem.h |    9 ++--
- arch/powerpc/kernel/prom.c       |   13 +++---
- arch/powerpc/mm/drmem.c          |   87 +++++++++++++++++++++++++-------------
- arch/powerpc/mm/numa.c           |   13 +++---
- 4 files changed, 78 insertions(+), 44 deletions(-)
+ arch/powerpc/include/asm/kexec.h  |    6 +
+ arch/powerpc/kexec/elf_64.c       |   12 ++
+ arch/powerpc/kexec/file_load.c    |   49 ++++++++++
+ arch/powerpc/kexec/file_load_64.c |  181 +++++++++++++++++++++++++++++++++++++
+ 4 files changed, 248 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index 414d209..17ccc64 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -90,13 +90,14 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
- }
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 037cf2b..8b0a6d6 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -112,12 +112,18 @@ struct kimage_arch {
+ 	unsigned long backup_start;
+ 	void *backup_buf;
  
- u64 drmem_lmb_memory_max(void);
--void __init walk_drmem_lmbs(struct device_node *dn,
--			void (*func)(struct drmem_lmb *, const __be32 **));
-+int walk_drmem_lmbs(struct device_node *dn, void *data,
-+		    int (*func)(struct drmem_lmb *, const __be32 **, void *));
- int drmem_update_dt(void);
- 
- #ifdef CONFIG_PPC_PSERIES
--void __init walk_drmem_lmbs_early(unsigned long node,
--			void (*func)(struct drmem_lmb *, const __be32 **));
-+int __init
-+walk_drmem_lmbs_early(unsigned long node, void *data,
-+		      int (*func)(struct drmem_lmb *, const __be32 **, void *));
++	unsigned long elfcorehdr_addr;
++	unsigned long elf_headers_sz;
++	void *elf_headers;
++
+ #ifdef CONFIG_IMA_KEXEC
+ 	phys_addr_t ima_buffer_addr;
+ 	size_t ima_buffer_size;
  #endif
+ };
  
- static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 9cc49f2..7df78de 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -468,8 +468,9 @@ static bool validate_mem_limit(u64 base, u64 *size)
-  * This contains a list of memory blocks along with NUMA affinity
-  * information.
-  */
--static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
--					const __be32 **usm)
-+static int  __init early_init_drmem_lmb(struct drmem_lmb *lmb,
-+					const __be32 **usm,
-+					void *data)
- {
- 	u64 base, size;
- 	int is_kexec_kdump = 0, rngs;
-@@ -484,7 +485,7 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
- 	 */
- 	if ((lmb->flags & DRCONF_MEM_RESERVED) ||
- 	    !(lmb->flags & DRCONF_MEM_ASSIGNED))
--		return;
-+		return 0;
- 
- 	if (*usm)
- 		is_kexec_kdump = 1;
-@@ -499,7 +500,7 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
- 		 */
- 		rngs = dt_mem_next_cell(dt_root_size_cells, usm);
- 		if (!rngs) /* there are no (base, size) duple */
--			return;
-+			return 0;
++char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
++			  unsigned long cmdline_len);
+ int setup_purgatory(struct kimage *image, const void *slave_code,
+ 		    const void *fdt, unsigned long kernel_load_addr,
+ 		    unsigned long fdt_load_addr);
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index 4838b42..40a028c 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -36,6 +36,7 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	void *fdt;
+ 	const void *slave_code;
+ 	struct elfhdr ehdr;
++	char *modified_cmdline = NULL;
+ 	struct kexec_elf_info elf_info;
+ 	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
+ 				  .buf_max = ppc64_rma_size };
+@@ -74,6 +75,16 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 			pr_err("Failed to load kdump kernel segments\n");
+ 			goto out;
+ 		}
++
++		/* Setup cmdline for kdump kernel case */
++		modified_cmdline = setup_kdump_cmdline(image, cmdline,
++						       cmdline_len);
++		if (!modified_cmdline) {
++			pr_err("Setting up cmdline for kdump kernel failed\n");
++			ret = -EINVAL;
++			goto out;
++		}
++		cmdline = modified_cmdline;
  	}
  
- 	do {
-@@ -524,6 +525,8 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
- 		if (lmb->flags & DRCONF_MEM_HOTREMOVABLE)
- 			memblock_mark_hotplug(base, size);
- 	} while (--rngs);
+ 	if (initrd != NULL) {
+@@ -130,6 +141,7 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 		pr_err("Error setting up the purgatory.\n");
+ 
+ out:
++	kfree(modified_cmdline);
+ 	kexec_free_elf_info(&elf_info);
+ 
+ 	/* Make kimage_file_post_load_cleanup free the fdt buffer for us. */
+diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
+index 99a2c4d..2e74992 100644
+--- a/arch/powerpc/kexec/file_load.c
++++ b/arch/powerpc/kexec/file_load.c
+@@ -17,11 +17,46 @@
+ #include <linux/slab.h>
+ #include <linux/kexec.h>
+ #include <linux/libfdt.h>
++#include <asm/setup.h>
+ #include <asm/ima.h>
+ 
+ #define SLAVE_CODE_SIZE		256	/* First 0x100 bytes */
+ 
+ /**
++ * setup_kdump_cmdline - Prepend "elfcorehdr=<addr> " to command line
++ *                       of kdump kernel for exporting the core.
++ * @image:               Kexec image
++ * @cmdline:             Command line parameters to update.
++ * @cmdline_len:         Length of the cmdline parameters.
++ *
++ * kdump segment must be setup before calling this function.
++ *
++ * Returns new cmdline buffer for kdump kernel on success, NULL otherwise.
++ */
++char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
++			  unsigned long cmdline_len)
++{
++	int elfcorehdr_strlen;
++	char *cmdline_ptr;
 +
-+	return 0;
- }
- #endif /* CONFIG_PPC_PSERIES */
- 
-@@ -534,7 +537,7 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
- #ifdef CONFIG_PPC_PSERIES
- 	if (depth == 1 &&
- 	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
--		walk_drmem_lmbs_early(node, early_init_drmem_lmb);
-+		walk_drmem_lmbs_early(node, NULL, early_init_drmem_lmb);
- 		return 0;
- 	}
- #endif
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 59327ce..b2eeea3 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -14,6 +14,8 @@
- #include <asm/prom.h>
- #include <asm/drmem.h>
- 
-+static int n_root_addr_cells, n_root_size_cells;
++	cmdline_ptr = kzalloc(COMMAND_LINE_SIZE, GFP_KERNEL);
++	if (!cmdline_ptr)
++		return NULL;
 +
- static struct drmem_lmb_info __drmem_info;
- struct drmem_lmb_info *drmem_info = &__drmem_info;
- 
-@@ -189,12 +191,13 @@ int drmem_update_dt(void)
- 	return rc;
- }
- 
--static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
-+static void read_drconf_v1_cell(struct drmem_lmb *lmb,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
--	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	lmb->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	lmb->drc_index = of_read_number(p++, 1);
- 
- 	p++; /* skip reserved field */
-@@ -205,29 +208,33 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
--			void (*func)(struct drmem_lmb *, const __be32 **))
-+static int
-+__walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm, void *data,
-+		     int (*func)(struct drmem_lmb *, const __be32 **, void *))
- {
- 	struct drmem_lmb lmb;
- 	u32 i, n_lmbs;
-+	int ret = 0;
- 
- 	n_lmbs = of_read_number(prop++, 1);
--	if (n_lmbs == 0)
--		return;
--
- 	for (i = 0; i < n_lmbs; i++) {
- 		read_drconf_v1_cell(&lmb, &prop);
--		func(&lmb, &usm);
-+		ret = func(&lmb, &usm, data);
-+		if (ret)
-+			break;
- 	}
++	elfcorehdr_strlen = sprintf(cmdline_ptr, "elfcorehdr=0x%lx ",
++				    image->arch.elfcorehdr_addr);
 +
-+	return ret;
- }
- 
--static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
-+static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
- 	dr_cell->seq_lmbs = of_read_number(p++, 1);
--	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	dr_cell->drc_index = of_read_number(p++, 1);
- 	dr_cell->aa_index = of_read_number(p++, 1);
- 	dr_cell->flags = of_read_number(p++, 1);
-@@ -235,17 +242,16 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
--			void (*func)(struct drmem_lmb *, const __be32 **))
-+static int
-+__walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm, void *data,
-+		     int (*func)(struct drmem_lmb *, const __be32 **, void *))
- {
- 	struct of_drconf_cell_v2 dr_cell;
- 	struct drmem_lmb lmb;
- 	u32 i, j, lmb_sets;
-+	int ret = 0;
- 
- 	lmb_sets = of_read_number(prop++, 1);
--	if (lmb_sets == 0)
--		return;
--
- 	for (i = 0; i < lmb_sets; i++) {
- 		read_drconf_v2_cell(&dr_cell, &prop);
- 
-@@ -259,21 +265,29 @@ static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
- 
--			func(&lmb, &usm);
-+			ret = func(&lmb, &usm, data);
-+			if (ret)
-+				break;
++	if (elfcorehdr_strlen + cmdline_len > COMMAND_LINE_SIZE) {
++		pr_err("Appending elfcorehdr=<addr> exceeds cmdline size\n");
++		kfree(cmdline_ptr);
++		return NULL;
++	}
++
++	memcpy(cmdline_ptr + elfcorehdr_strlen, cmdline, cmdline_len);
++	return cmdline_ptr;
++}
++
++/**
+  * setup_purgatory - initialize the purgatory's global variables
+  * @image:		kexec image.
+  * @slave_code:		Slave code for the purgatory.
+@@ -215,6 +250,20 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
  		}
  	}
+ 
++	if (image->type == KEXEC_TYPE_CRASH) {
++		/*
++		 * Avoid elfcorehdr from being stomped on in kdump kernel by
++		 * setting up memory reserve map.
++		 */
++		ret = fdt_add_mem_rsv(fdt, image->arch.elfcorehdr_addr,
++				      image->arch.elf_headers_sz);
++		if (ret) {
++			pr_err("Error reserving elfcorehdr memory: %s\n",
++			       fdt_strerror(ret));
++			goto err;
++		}
++	}
 +
-+	return ret;
+ 	ret = setup_ima_buffer(image, fdt, chosen_node);
+ 	if (ret) {
+ 		pr_err("Error setting up the new device tree.\n");
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index 152f61a..2531bb5 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -122,6 +122,77 @@ static int get_usable_memory_ranges(struct crash_mem **mem_ranges)
  }
  
- #ifdef CONFIG_PPC_PSERIES
--void __init walk_drmem_lmbs_early(unsigned long node,
--			void (*func)(struct drmem_lmb *, const __be32 **))
-+int __init walk_drmem_lmbs_early(unsigned long node, void *data,
-+		int (*func)(struct drmem_lmb *, const __be32 **, void *))
- {
- 	const __be32 *prop, *usm;
--	int len;
-+	int len, ret = -ENODEV;
+ /**
++ * get_crash_memory_ranges - Get crash memory ranges. This list includes
++ *                           first/crashing kernel's memory regions that
++ *                           would be exported via an elfcore.
++ * @mem_ranges:              Range list to add the memory ranges to.
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++static int get_crash_memory_ranges(struct crash_mem **mem_ranges)
++{
++	struct memblock_region *reg;
++	struct crash_mem *tmem;
++	int ret;
++
++	for_each_memblock(memory, reg) {
++		u64 base, size;
++
++		base = (u64)reg->base;
++		size = (u64)reg->size;
++
++		/* Skip backup memory region, which needs a separate entry */
++		if (base == BACKUP_SRC_START) {
++			if (size > BACKUP_SRC_SIZE) {
++				base = BACKUP_SRC_END + 1;
++				size -= BACKUP_SRC_SIZE;
++			} else
++				continue;
++		}
++
++		ret = add_mem_range(mem_ranges, base, size);
++		if (ret)
++			goto out;
++
++		/* Try merging adjacent ranges before reallocation attempt */
++		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
++			sort_memory_ranges(*mem_ranges, true);
++	}
++
++	/* Reallocate memory ranges if there is no space to split ranges */
++	tmem = *mem_ranges;
++	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
++		tmem = realloc_mem_ranges(mem_ranges);
++		if (!tmem)
++			goto out;
++	}
++
++	/* Exclude crashkernel region */
++	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
++	if (ret)
++		goto out;
++
++	ret = add_rtas_mem_range(mem_ranges);
++	if (ret)
++		goto out;
++
++	ret = add_opal_mem_range(mem_ranges);
++	if (ret)
++		goto out;
++
++	/* create a separate program header for the backup region */
++	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
++	if (ret)
++		goto out;
++
++	sort_memory_ranges(*mem_ranges, false);
++out:
++	if (ret)
++		pr_err("Failed to setup crash memory ranges\n");
++	return ret;
++}
++
++/**
+  * __locate_mem_hole_top_down - Looks top down for a large enough memory hole
+  *                              in the memory regions between buf_min & buf_max
+  *                              for the buffer. If found, sets kbuf->mem.
+@@ -900,6 +971,103 @@ static int load_backup_segment(struct kimage *image, struct kexec_buf *kbuf)
+ }
  
- 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
- 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
--		return;
+ /**
++ * update_backup_region_phdr - Update backup region's offset for the core to
++ *                             export the region appropriately.
++ * @image:                     Kexec image.
++ * @ehdr:                      ELF core header.
++ *
++ * Assumes an exclusive program header is setup for the backup region
++ * in the ELF headers
++ *
++ * Returns nothing.
++ */
++static void update_backup_region_phdr(struct kimage *image, Elf64_Ehdr *ehdr)
++{
++	Elf64_Phdr *phdr;
++	unsigned int i;
++
++	phdr = (Elf64_Phdr *)(ehdr + 1);
++	for (i = 0; i < ehdr->e_phnum; i++) {
++		if (phdr->p_paddr == BACKUP_SRC_START) {
++			phdr->p_offset = image->arch.backup_start;
++			pr_debug("Backup region offset updated to 0x%lx\n",
++				 image->arch.backup_start);
++			return;
++		}
++	}
++}
++
++/**
++ * prepare_elf_headers - Prepare headers for the elfcore to be exported as
++ *                       /proc/vmcore by the kdump kernel.
++ * @image:               Kexec image.
++ * @cmem:                Crash memory ranges to be exported via elfcore.
++ * @addr:                Vmalloc'd memory allocated by crash_prepare_elf64_headers
++ *                       to prepare the elf headers.
++ * @sz:                  Size of the vmalloc'd memory allocated.
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++static int prepare_elf_headers(struct kimage *image, struct crash_mem *cmem,
++			       void **addr, unsigned long *sz)
++{
++	int ret;
++
++	ret = crash_prepare_elf64_headers(cmem, false, addr, sz);
++
++	/* Fix the offset for backup region in the ELF header */
++	if (!ret)
++		update_backup_region_phdr(image, *addr);
++
++	return ret;
++}
++
++/**
++ * load_elfcorehdr_segment - Setup crash memory ranges and initialize elfcorehdr
++ *                           segment needed to load kdump kernel.
++ * @image:                   Kexec image.
++ * @kbuf:                    Buffer contents and memory parameters.
++ *
++ * Returns 0 on success, negative errno on error.
++ */
++static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
++{
++	struct crash_mem *cmem = NULL;
++	unsigned long headers_sz;
++	void *headers = NULL;
++	int ret;
++
++	ret = get_crash_memory_ranges(&cmem);
++	if (ret)
++		goto out;
++
++	/* Setup elfcorehdr segment */
++	ret = prepare_elf_headers(image, cmem, &headers, &headers_sz);
++	if (ret) {
++		pr_err("Failed to prepare elf headers for the core\n");
++		goto out;
++	}
++
++	kbuf->buffer = headers;
++	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
++	kbuf->bufsz = kbuf->memsz = headers_sz;
++	kbuf->top_down = false;
++
++	ret = kexec_add_buffer(kbuf);
++	if (ret) {
++		vfree(headers);
++		goto out;
++	}
++
++	image->arch.elfcorehdr_addr = kbuf->mem;
++	image->arch.elf_headers_sz = headers_sz;
++	image->arch.elf_headers = headers;
++out:
++	kfree(cmem);
++	return ret;
++}
++
++/**
+  * load_crashdump_segments_ppc64 - Initialize the additional segements needed
+  *                                 to load kdump kernel.
+  * @image:                         Kexec image.
+@@ -920,6 +1088,15 @@ int load_crashdump_segments_ppc64(struct kimage *image,
+ 	}
+ 	pr_debug("Loaded the backup region at 0x%lx\n", kbuf->mem);
+ 
++	/* Load elfcorehdr segment - to export crashing kernel's vmcore */
++	ret = load_elfcorehdr_segment(image, kbuf);
++	if (ret) {
++		pr_err("Failed to load elfcorehdr segment\n");
 +		return ret;
++	}
++	pr_debug("Loaded elf core header at 0x%lx, bufsz=0x%lx memsz=0x%lx\n",
++		 image->arch.elfcorehdr_addr, kbuf->bufsz, kbuf->memsz);
 +
-+	/* Get the address & size cells */
-+	n_root_addr_cells = dt_root_addr_cells;
-+	n_root_size_cells = dt_root_size_cells;
- 
- 	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
- 
-@@ -281,20 +295,21 @@ void __init walk_drmem_lmbs_early(unsigned long node,
- 
- 	prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &len);
- 	if (prop) {
--		__walk_drmem_v1_lmbs(prop, usm, func);
-+		ret = __walk_drmem_v1_lmbs(prop, usm, data, func);
- 	} else {
- 		prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2",
- 					   &len);
- 		if (prop)
--			__walk_drmem_v2_lmbs(prop, usm, func);
-+			ret = __walk_drmem_v2_lmbs(prop, usm, data, func);
- 	}
- 
- 	memblock_dump_all();
-+	return ret;
- }
- 
- #endif
- 
--static int __init init_drmem_lmb_size(struct device_node *dn)
-+static int init_drmem_lmb_size(struct device_node *dn)
- {
- 	const __be32 *prop;
- 	int len;
-@@ -303,12 +318,12 @@ static int __init init_drmem_lmb_size(struct device_node *dn)
- 		return 0;
- 
- 	prop = of_get_property(dn, "ibm,lmb-size", &len);
--	if (!prop || len < dt_root_size_cells * sizeof(__be32)) {
-+	if (!prop || len < n_root_size_cells * sizeof(__be32)) {
- 		pr_info("Could not determine LMB size\n");
- 		return -1;
- 	}
- 
--	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
-+	drmem_info->lmb_size = of_read_number(prop, n_root_size_cells);
  	return 0;
  }
  
-@@ -329,24 +344,36 @@ static const __be32 *of_get_usable_memory(struct device_node *dn)
- 	return prop;
+@@ -1280,5 +1457,9 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
+ 	vfree(image->arch.backup_buf);
+ 	image->arch.backup_buf = NULL;
+ 
++	vfree(image->arch.elf_headers);
++	image->arch.elf_headers = NULL;
++	image->arch.elf_headers_sz = 0;
++
+ 	return kexec_image_post_load_cleanup_default(image);
  }
- 
--void __init walk_drmem_lmbs(struct device_node *dn,
--			    void (*func)(struct drmem_lmb *, const __be32 **))
-+int walk_drmem_lmbs(struct device_node *dn, void *data,
-+		    int (*func)(struct drmem_lmb *, const __be32 **, void *))
- {
- 	const __be32 *prop, *usm;
-+	int ret = -ENODEV;
-+
-+	if (!of_root)
-+		return ret;
-+
-+	/* Get the address & size cells */
-+	of_node_get(of_root);
-+	n_root_addr_cells = of_n_addr_cells(of_root);
-+	n_root_size_cells = of_n_size_cells(of_root);
-+	of_node_put(of_root);
- 
- 	if (init_drmem_lmb_size(dn))
--		return;
-+		return ret;
- 
- 	usm = of_get_usable_memory(dn);
- 
- 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
- 	if (prop) {
--		__walk_drmem_v1_lmbs(prop, usm, func);
-+		ret = __walk_drmem_v1_lmbs(prop, usm, data, func);
- 	} else {
- 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
- 		if (prop)
--			__walk_drmem_v2_lmbs(prop, usm, func);
-+			ret = __walk_drmem_v2_lmbs(prop, usm, data, func);
- 	}
-+
-+	return ret;
- }
- 
- static void __init init_drmem_v1_lmbs(const __be32 *prop)
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 9fcf2d1..88eb689 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -644,8 +644,9 @@ static inline int __init read_usm_ranges(const __be32 **usm)
-  * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
-  * node.  This assumes n_mem_{addr,size}_cells have been set.
-  */
--static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
--					const __be32 **usm)
-+static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
-+					const __be32 **usm,
-+					void *data)
- {
- 	unsigned int ranges, is_kexec_kdump = 0;
- 	unsigned long base, size, sz;
-@@ -657,7 +658,7 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
- 	 */
- 	if ((lmb->flags & DRCONF_MEM_RESERVED)
- 	    || !(lmb->flags & DRCONF_MEM_ASSIGNED))
--		return;
-+		return 0;
- 
- 	if (*usm)
- 		is_kexec_kdump = 1;
-@@ -669,7 +670,7 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
- 	if (is_kexec_kdump) {
- 		ranges = read_usm_ranges(usm);
- 		if (!ranges) /* there are no (base, size) duple */
--			return;
-+			return 0;
- 	}
- 
- 	do {
-@@ -686,6 +687,8 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
- 		if (sz)
- 			memblock_set_node(base, sz, &memblock.memory, nid);
- 	} while (--ranges);
-+
-+	return 0;
- }
- 
- static int __init parse_numa_properties(void)
-@@ -787,7 +790,7 @@ static int __init parse_numa_properties(void)
- 	 */
- 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (memory) {
--		walk_drmem_lmbs(memory, numa_setup_drmem_lmb);
-+		walk_drmem_lmbs(memory, NULL, numa_setup_drmem_lmb);
- 		of_node_put(memory);
- 	}
- 
 
