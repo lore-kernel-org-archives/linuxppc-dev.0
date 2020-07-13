@@ -2,88 +2,88 @@ Return-Path: <SRS0=XY74=AY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 431A7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 05:25:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2371C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 05:31:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABC852068F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 05:25:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VsPMs39W"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABC852068F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9D2C12068F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 05:31:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D2C12068F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B4sY51hrTzDqRy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:25:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B4shr00VJzDqVn
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:31:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=VsPMs39W; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B4sW6680SzDqF5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 15:23:29 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id s26so5511493pfm.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2020 22:23:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
- :content-transfer-encoding;
- bh=8HTpo0rLAbXQ9sJmED8h5spUCrEX7xc2cH23pVXei/c=;
- b=VsPMs39WKpM0JSOhcFGXdH9t/tCGCCpJEGsF1vTCw8+UNA5nMg6xZPPEZzO/anZPpC
- rzhUt+jLNHMlV7n/IMmqTgltf3WX7SfGPMpwDEvjb7nZ3mIcJpAbeZQqOxAvX7HLc94C
- 8jSCVmUWSZ8cwecHfZz9HrTB3fB9MHrdVoxMQ66rZ9uHC/G1uMKcllLeMFJG6uvG9T/k
- zYMNxqQQLGq1QPgHvsYrwhEmdOrmDLTlrP/KUuw5Zar+SLbi4SDKEDZan8K/yyrTepnI
- qpbAh8QOiOjJYTbKlsN7Lv+d7QI1yDlFn6sPrT8f1ChKaQosFxOK9LNTcGI3EGidJy7H
- vTfA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=8HTpo0rLAbXQ9sJmED8h5spUCrEX7xc2cH23pVXei/c=;
- b=O0W4aAZkPZcvtgXsD4WnAncTQdRK+58u1bdEFhgQtN03OH9Ss4QjjOt+zk6Xztl0me
- MC3401Z5M60/BuxxecOMDR3Q4jGf0F2r7OszqdOXUvEUg+9gpCBGByHZToHlauEUQvbJ
- u1S+0OzUozwvGT2V9bId43Wfh4DEbiIJVc7Z6gFFzIq9BQYifacvn69pvhiRE+72lDxQ
- E1s25i+V5zYnzrwYkSNyyrje4rLi+v9voBND89qWra/l9MKFNfnN8qhaJK3aFD39XZ4V
- ytMiKoc6K5fkezfCRm9Hgxt00MMpZZzLxCIMV2OjeKk8JBjHF93CG1mMRaQGM7Psjn/g
- EJgQ==
-X-Gm-Message-State: AOAM531IX5AAswys4Q9Acm24XRiUIF0IaWzUkebJOt2EqEepA5PfoH62
- sbjk8ZXI56KUpLizTzdJz18=
-X-Google-Smtp-Source: ABdhPJwJbVRh3lz7pO+zhlE9p9BHDFomi7Q38ZynCP+xUInus4jUuggHpQQg9GCais0r5Nr6eovRdA==
-X-Received: by 2002:a63:5412:: with SMTP id i18mr54386771pgb.63.1594617807820; 
- Sun, 12 Jul 2020 22:23:27 -0700 (PDT)
-Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
- by smtp.gmail.com with ESMTPSA id 16sm13359573pjb.48.2020.07.12.22.23.26
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 12 Jul 2020 22:23:27 -0700 (PDT)
-Date: Mon, 13 Jul 2020 15:23:21 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/3] Power10 basic energy management
-To: benh@kernel.crashing.org, ego@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- mikey@neuling.org, mpe@ellerman.id.au, paulus@samba.org,
- pratik.r.sampat@gmail.com, Pratik Rajesh Sampat <psampat@linux.ibm.com>,
- ravi.bangoria@linux.ibm.com, svaidy@linux.ibm.com
-References: <20200710052207.12003-1-psampat@linux.ibm.com>
-In-Reply-To: <20200710052207.12003-1-psampat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B4sfb0MDwzDqJc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 15:29:58 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06D51qVj036163; Mon, 13 Jul 2020 01:29:51 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3279k2q7ra-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 13 Jul 2020 01:29:51 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06D5PZ1n004547;
+ Mon, 13 Jul 2020 05:29:49 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 3275281tw9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 13 Jul 2020 05:29:48 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06D5TkEl42336478
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 13 Jul 2020 05:29:46 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3232111C054;
+ Mon, 13 Jul 2020 05:29:46 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E6A6411C04C;
+ Mon, 13 Jul 2020 05:29:43 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.199.58.151])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 13 Jul 2020 05:29:43 +0000 (GMT)
+Date: Mon, 13 Jul 2020 10:59:41 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Subject: Re: [v3 1/5] KVM: PPC: Book3S HV: Disable page merging in
+ H_SVM_INIT_START
+Message-ID: <20200713052941.GF7902@in.ibm.com>
+References: <1594458827-31866-1-git-send-email-linuxram@us.ibm.com>
+ <1594458827-31866-2-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-Message-Id: <1594617564.57k8bsyfd0.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1594458827-31866-2-git-send-email-linuxram@us.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-12_14:2020-07-10,
+ 2020-07-12 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ spamscore=0 malwarescore=0 phishscore=0 adultscore=0 mlxscore=0
+ bulkscore=0 mlxlogscore=943 priorityscore=1501 impostorscore=0
+ suspectscore=5 clxscore=1015 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2007130034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,36 +95,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: bharata@linux.ibm.com
+Cc: ldufour@linux.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
+ sathnaga@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ bauerman@linux.ibm.com, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Pratik Rajesh Sampat's message of July 10, 2020 3:22 pm:
-> Changelog v1 --> v2:
-> 1. Save-restore DAWR and DAWRX unconditionally as they are lost in
-> shallow idle states too
-> 2. Rename pnv_first_spr_loss_level to pnv_first_fullstate_loss_level to
-> correct naming terminology
->=20
-> Pratik Rajesh Sampat (3):
->   powerpc/powernv/idle: Exclude mfspr on HID1,4,5 on P9 and above
->   powerpc/powernv/idle: save-restore DAWR0,DAWRX0 for P10
->   powerpc/powernv/idle: Rename pnv_first_spr_loss_level variable
->=20
->  arch/powerpc/platforms/powernv/idle.c | 34 +++++++++++++++++----------
->  1 file changed, 22 insertions(+), 12 deletions(-)
+On Sat, Jul 11, 2020 at 02:13:43AM -0700, Ram Pai wrote:
+> Merging of pages associated with each memslot of a SVM is
+> disabled the page is migrated in H_SVM_PAGE_IN handler.
+> 
+> This operation should have been done much earlier; the moment the VM
+> is initiated for secure-transition. Delaying this operation, increases
+> the probability for those pages to acquire new references , making it
+> impossible to migrate those pages in H_SVM_PAGE_IN handler.
+> 
+> Disable page-migration in H_SVM_INIT_START handling.
 
-These look okay to me, but the CPU_FTR_ARCH_300 test for=20
-pnv_power9_idle_init() is actually wrong, it should be a PVR test=20
-because idle is not completely architected (not even shallow stop=20
-states, unfortunately).
+While it is a good idea to disable KSM merging for all VMAs during
+H_SVM_INIT_START, I am curious if you did observe an actual case of
+ksm_madvise() failing which resulted in subsequent H_SVM_PAGE_IN
+failing to migrate?
 
-It doesn't look like we support POWER10 idle correctly yet, and on older
-kernels it wouldn't work even if we fixed newer, so ideally the PVR=20
-check would be backported as a fix in the front of the series.
+> 
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_uvmem.c | 96 +++++++++++++++++++++++++++++---------
+>  1 file changed, 74 insertions(+), 22 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> index 3d987b1..bfc3841 100644
+> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
+> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> @@ -211,6 +211,65 @@ static bool kvmppc_gfn_is_uvmem_pfn(unsigned long gfn, struct kvm *kvm,
+>  	return false;
+>  }
+>  
+> +static int kvmppc_memslot_page_merge(struct kvm *kvm,
+> +		struct kvm_memory_slot *memslot, bool merge)
+> +{
+> +	unsigned long gfn = memslot->base_gfn;
+> +	unsigned long end, start = gfn_to_hva(kvm, gfn);
+> +	int ret = 0;
+> +	struct vm_area_struct *vma;
+> +	int merge_flag = (merge) ? MADV_MERGEABLE : MADV_UNMERGEABLE;
+> +
+> +	if (kvm_is_error_hva(start))
+> +		return H_STATE;
 
-Sadly, we have no OPAL idle driver yet. Hopefully we will before the
-next processor shows up :P
+This and other cases below seem to be a new return value from
+H_SVM_INIT_START. May be update the documentation too along with
+this patch?
 
-Thanks,
-Nick
+> +
+> +	end = start + (memslot->npages << PAGE_SHIFT);
+> +
+> +	down_write(&kvm->mm->mmap_sem);
+
+When you rebase the patches against latest upstream you may want to
+replace the above and other instances by mmap_write/read_lock().
+
+> +	do {
+> +		vma = find_vma_intersection(kvm->mm, start, end);
+> +		if (!vma) {
+> +			ret = H_STATE;
+> +			break;
+> +		}
+> +		ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
+> +			  merge_flag, &vma->vm_flags);
+> +		if (ret) {
+> +			ret = H_STATE;
+> +			break;
+> +		}
+> +		start = vma->vm_end + 1;
+> +	} while (end > vma->vm_end);
+> +
+> +	up_write(&kvm->mm->mmap_sem);
+> +	return ret;
+> +}
+> +
+> +static int __kvmppc_page_merge(struct kvm *kvm, bool merge)
+> +{
+> +	struct kvm_memslots *slots;
+> +	struct kvm_memory_slot *memslot;
+> +	int ret = 0;
+> +
+> +	slots = kvm_memslots(kvm);
+> +	kvm_for_each_memslot(memslot, slots) {
+> +		ret = kvmppc_memslot_page_merge(kvm, memslot, merge);
+> +		if (ret)
+> +			break;
+> +	}
+> +	return ret;
+> +}
+> +
+> +static inline int kvmppc_disable_page_merge(struct kvm *kvm)
+> +{
+> +	return __kvmppc_page_merge(kvm, false);
+> +}
+> +
+> +static inline int kvmppc_enable_page_merge(struct kvm *kvm)
+> +{
+> +	return __kvmppc_page_merge(kvm, true);
+> +}
+> +
+>  unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
+>  {
+>  	struct kvm_memslots *slots;
+> @@ -232,11 +291,18 @@ unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
+>  		return H_AUTHORITY;
+>  
+>  	srcu_idx = srcu_read_lock(&kvm->srcu);
+> +
+> +	/* disable page-merging for all memslot */
+> +	ret = kvmppc_disable_page_merge(kvm);
+> +	if (ret)
+> +		goto out;
+> +
+> +	/* register the memslot */
+>  	slots = kvm_memslots(kvm);
+>  	kvm_for_each_memslot(memslot, slots) {
+>  		if (kvmppc_uvmem_slot_init(kvm, memslot)) {
+>  			ret = H_PARAMETER;
+> -			goto out;
+> +			break;
+>  		}
+>  		ret = uv_register_mem_slot(kvm->arch.lpid,
+>  					   memslot->base_gfn << PAGE_SHIFT,
+> @@ -245,9 +311,12 @@ unsigned long kvmppc_h_svm_init_start(struct kvm *kvm)
+>  		if (ret < 0) {
+>  			kvmppc_uvmem_slot_free(kvm, memslot);
+>  			ret = H_PARAMETER;
+> -			goto out;
+> +			break;
+>  		}
+>  	}
+> +
+> +	if (ret)
+> +		kvmppc_enable_page_merge(kvm);
+
+Is there any use of enabling KSM merging in the failure path here?
+Won't UV terminate the VM if H_SVM_INIT_START fails? If there is no need,
+you can do away with some extra routines above.
+
+>  out:
+>  	srcu_read_unlock(&kvm->srcu, srcu_idx);
+>  	return ret;
+> @@ -384,7 +453,7 @@ static struct page *kvmppc_uvmem_get_page(unsigned long gpa, struct kvm *kvm)
+>   */
+>  static int kvmppc_svm_page_in(struct vm_area_struct *vma, unsigned long start,
+>  		   unsigned long end, unsigned long gpa, struct kvm *kvm,
+> -		   unsigned long page_shift, bool *downgrade)
+> +		   unsigned long page_shift)
+>  {
+>  	unsigned long src_pfn, dst_pfn = 0;
+>  	struct migrate_vma mig;
+> @@ -400,18 +469,6 @@ static int kvmppc_svm_page_in(struct vm_area_struct *vma, unsigned long start,
+>  	mig.src = &src_pfn;
+>  	mig.dst = &dst_pfn;
+>  
+> -	/*
+> -	 * We come here with mmap_sem write lock held just for
+> -	 * ksm_madvise(), otherwise we only need read mmap_sem.
+> -	 * Hence downgrade to read lock once ksm_madvise() is done.
+> -	 */
+> -	ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
+> -			  MADV_UNMERGEABLE, &vma->vm_flags);
+
+I haven't seen the subsequent patches yet, but guess you are
+taking care of disabling KSM mering for hot-plugged memory too.
+
+Regards,
+Bharata.
