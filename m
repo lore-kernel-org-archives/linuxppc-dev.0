@@ -2,50 +2,74 @@ Return-Path: <SRS0=XY74=AY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD76C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:49:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6755C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:51:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 230CF2075B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:49:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 230CF2075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwn.net
+	by mail.kernel.org (Postfix) with ESMTPS id 7D95A20663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:51:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="u/HSfMU9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D95A20663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B57P63WZ9zDqWQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 01:49:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B57RL3R9jzDqXS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 01:51:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=luto@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net
- (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lwn.net
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=u/HSfMU9; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B57KC35RlzDqRC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 01:45:51 +1000 (AEST)
-Received: from lwn.net (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B57NK1PxRzDqTD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 01:48:32 +1000 (AEST)
+Received: from mail-wr1-f42.google.com (mail-wr1-f42.google.com
+ [209.85.221.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ms.lwn.net (Postfix) with ESMTPSA id C5A1F823;
- Mon, 13 Jul 2020 15:45:39 +0000 (UTC)
-Date: Mon, 13 Jul 2020 09:45:38 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH 00/20] Documentation: eliminate duplicated words
-Message-ID: <20200713094538.68e0c810@lwn.net>
-In-Reply-To: <20200707180414.10467-1-rdunlap@infradead.org>
-References: <20200707180414.10467-1-rdunlap@infradead.org>
-Organization: LWN.net
+ by mail.kernel.org (Postfix) with ESMTPSA id 80EF22083B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 15:48:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1594655309;
+ bh=FiLSo9R0STPJ54NQ+j4cquzz90YqRrZ+tVdT8FICfPw=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=u/HSfMU9F7rxmTiqX4sRr4Pk8VxlDbewsgkjIe6pG2nB4ATgq01e1Xrr0clJ4LJmf
+ KF6xr1Xv2GX82a28cw4dDUZuiL8A6ohB3EUIdPA0Gz22eJVXxmjte4lc3XkjzocFbw
+ v5Jvv0F2fEGEoQbUjFwMLPV7iO/JAL2dOHC42qck=
+Received: by mail-wr1-f42.google.com with SMTP id z2so17087845wrp.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 08:48:29 -0700 (PDT)
+X-Gm-Message-State: AOAM533gMOiGVpyy3mTo33hX66D2pvg7cSKtEGBMptFtWoOkxZWQQsDv
+ z4BsrWUNdNHaHVkaUEYuqFIsH+w5gjXdAvmHlKpoTQ==
+X-Google-Smtp-Source: ABdhPJx0toL1Ye0o0H7c4Y3A41BrSlbEq0nHhnxAApxWZf2y0+ABJ/8JMUZOzKNFFHuITvPQPnyOqJdLGjq2hZLzWb4=
+X-Received: by 2002:adf:a111:: with SMTP id o17mr79174967wro.257.1594655308027; 
+ Mon, 13 Jul 2020 08:48:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+References: <20200710015646.2020871-1-npiggin@gmail.com>
+ <20200710015646.2020871-5-npiggin@gmail.com>
+ <CALCETrVqHDLo09HcaoeOoAVK8w+cNWkSNTLkDDU=evUhaXkyhQ@mail.gmail.com>
+ <1594613902.1wzayj0p15.astroid@bobo.none>
+ <1594647408.wmrazhwjzb.astroid@bobo.none>
+ <284592761.9860.1594649601492.JavaMail.zimbra@efficios.com>
+In-Reply-To: <284592761.9860.1594649601492.JavaMail.zimbra@efficios.com>
+From: Andy Lutomirski <luto@kernel.org>
+Date: Mon, 13 Jul 2020 08:48:16 -0700
+X-Gmail-Original-Message-ID: <CALCETrUHsYp0oGAiy3N-yAauPyx2nKqp1AiETgSJWc77GwO-Sg@mail.gmail.com>
+Message-ID: <CALCETrUHsYp0oGAiy3N-yAauPyx2nKqp1AiETgSJWc77GwO-Sg@mail.gmail.com>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,68 +81,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
- linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
- dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>,
- Paul Cercueil <paul@crapouillou.net>, keyrings@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
- Pavel Machek <pavel@ucw.cz>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
- linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
- linux-scsi@vger.kernel.org, Masahiro Yamada <masahiroy@kernel.org>,
- Matthew Wilcox <willy@infradead.org>, Halil Pasic <pasic@linux.ibm.com>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
- Mali DP Maintainers <malidp@foss.arm.com>,
- Derek Kiernan <derek.kiernan@xilinx.com>, linux-mips@vger.kernel.org,
- Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
- Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
- Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
- Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Pierre Morel <pmorel@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Wolfram Sang <wsa@kernel.org>, Daniel Vetter <daniel@ffwll.ch>,
- Jason Wessel <jason.wessel@windriver.com>, Paolo Bonzini <pbonzini@redhat.com>,
- linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Mike Rapoport <rppt@kernel.org>, Dan Murphy <dmurphy@ti.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Peter Zijlstra <peterz@infradead.org>, x86 <x86@kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-mm <linux-mm@kvack.org>,
+ Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue,  7 Jul 2020 11:03:54 -0700
-Randy Dunlap <rdunlap@infradead.org> wrote:
+On Mon, Jul 13, 2020 at 7:13 AM Mathieu Desnoyers
+<mathieu.desnoyers@efficios.com> wrote:
+>
+> ----- On Jul 13, 2020, at 9:47 AM, Nicholas Piggin npiggin@gmail.com wrote:
+>
+> > Excerpts from Nicholas Piggin's message of July 13, 2020 2:45 pm:
+> >> Excerpts from Andy Lutomirski's message of July 11, 2020 3:04 am:
+> >>> Also, as it stands, I can easily see in_irq() ceasing to promise to
+> >>> serialize.  There are older kernels for which it does not promise to
+> >>> serialize.  And I have plans to make it stop serializing in the
+> >>> nearish future.
+> >>
+> >> You mean x86's return from interrupt? Sounds fun... you'll konw where to
+> >> update the membarrier sync code, at least :)
+> >
+> > Oh, I should actually say Mathieu recently clarified a return from
+> > interrupt doesn't fundamentally need to serialize in order to support
+> > membarrier sync core.
+>
+> Clarification to your statement:
+>
+> Return from interrupt to kernel code does not need to be context serializing
+> as long as kernel serializes before returning to user-space.
+>
+> However, return from interrupt to user-space needs to be context serializing.
+>
 
->  Documentation/admin-guide/mm/numaperf.rst             |    2 +-
->  Documentation/block/pr.rst                            |    2 +-
->  Documentation/core-api/printk-basics.rst              |    2 +-
->  Documentation/dev-tools/kgdb.rst                      |    2 +-
->  Documentation/fpga/dfl.rst                            |    2 +-
->  Documentation/gpu/drm-uapi.rst                        |    2 +-
->  Documentation/gpu/komeda-kms.rst                      |    2 +-
->  Documentation/hid/intel-ish-hid.rst                   |    2 +-
->  Documentation/i2c/upgrading-clients.rst               |    2 +-
->  Documentation/kbuild/kconfig-language.rst             |    2 +-
->  Documentation/leds/ledtrig-transient.rst              |    2 +-
->  Documentation/maintainer/maintainer-entry-profile.rst |    2 +-
->  Documentation/mips/ingenic-tcu.rst                    |    2 +-
->  Documentation/misc-devices/xilinx_sdfec.rst           |    2 +-
->  Documentation/powerpc/vas-api.rst                     |    2 +-
->  Documentation/s390/vfio-ap.rst                        |    2 +-
->  Documentation/scsi/advansys.rst                       |    2 +-
->  Documentation/security/keys/trusted-encrypted.rst     |    2 +-
->  Documentation/virt/kvm/api.rst                        |    2 +-
->  Documentation/vm/memory-model.rst                     |    2 +-
->  20 files changed, 20 insertions(+), 20 deletions(-)
+Indeed, and I figured this out on the first read through because I'm
+quite familiar with the x86 entry code.  But Nick somehow missed this,
+and Nick is the one who wrote the patch.
 
-I've applied this set, minus #17 that was already picked up by Martin.
+Nick, I think this helps prove my point.  The code you're submitting
+may well be correct, but it's unmaintainable.  At the very least, this
+needs a comment explaining, from the perspective of x86, *exactly*
+what exit_lazy_tlb() is promising, why it's promising it, how it
+achieves that promise, and what code cares about it.  Or we could do
+something with TIF flags and make this all less magical, although that
+will probably end up very slightly slower.
 
-Thanks,
-
-jon
+--Andy
