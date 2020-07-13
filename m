@@ -2,80 +2,76 @@ Return-Path: <SRS0=XY74=AY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44118C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:37:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E50CC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:40:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 81AB420773
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:37:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hlFk02nn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81AB420773
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4B90120771
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 15:40:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B90120771
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B57730WZ3zDqMp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 01:37:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::543;
- helo=mail-ed1-x543.google.com; envelope-from=refactormyself@gmail.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B57BZ5g9fzDqQB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 01:40:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=hlFk02nn; dkim-atps=neutral
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
- [IPv6:2a00:1450:4864:20::543])
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B54815J6MzDqR0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 23:22:40 +1000 (AEST)
-Received: by mail-ed1-x543.google.com with SMTP id dg28so13669399edb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 06:22:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=TEh/JkkBeDq0BmwWDLkY2ALcEwIhER9cNUR1loI6e78=;
- b=hlFk02nnRr+rQKvpcmIRPBcv9Vppks3wU3BsbHQlS35RNRr0Lm2YUw7/utWjHu70OH
- fu21BCriHQitKJ9VJJ9HkQBoc0oNiPianJ9DfryJ5s4iB77Gi9+P+wSDFA8dw7sDMdjN
- CRk+C/cn77UZdk8p4eMVCYK2N1kZ9NOWbvXAMsA8NoetiFgB4PjRem+NJr8k6FdLryN7
- KSXqy55pf7Mo7GW41Rrh43kHUodvpJcq7yyqbdwHNICmnMteEU7rrwF/z8u+pZc3nMOJ
- t5bRIsTEDAnzpyq0Z/t5ptBct6erL48Bl/rPmxQHyXzHf8lqWgUjMDOqwGt/I2ULZZSO
- jYxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=TEh/JkkBeDq0BmwWDLkY2ALcEwIhER9cNUR1loI6e78=;
- b=AxjHD5yI5lRAqBmsFY7iCbdlFSd5WbhyoE+6VlBpNR/LxhQnn9ZkbCug56v8bfrUez
- HEvqQg1I6hfBW/UE1GD3FOIq+Qc6B0RK7KrU7U4eCAA3pBDZXNmM5pcE4FqqVw8z22fE
- QJ+/FlK43bJAarMQZZ4NukeLIhb5TyQAt3LdR3J0w14/Ja7Q0+8M19+UKTT5m+sHCf+c
- zqfR1NGmQDb/0Zu1T5889+wbO0fi+gSVdt0LfoYFv8hCpuixOF3YJhhPwwdFsVDQE59w
- KWUaLaLjkwhreOQciKLoNGxJilEJlLd23vopCMJA2VBA4loP5K8JeWqtUR/VR0XARbmW
- xakA==
-X-Gm-Message-State: AOAM532EcXLibIpgepqnYGkzd6SObBhfx36J2a+hdj+FSlI/N+3cImGZ
- hIdzIc7sSuVDmVtOYlpKYq4=
-X-Google-Smtp-Source: ABdhPJw69dKLZM419xxp02IeffDX2nQ+F52A+jh3cXUOZ7YUfQhM+G+xXauU5Oq4EhNqFD1PfU4cXQ==
-X-Received: by 2002:a50:fb93:: with SMTP id e19mr83849853edq.106.1594646556147; 
- Mon, 13 Jul 2020 06:22:36 -0700 (PDT)
-Received: from net.saheed (54007186.dsl.pool.telekom.hu. [84.0.113.134])
- by smtp.gmail.com with ESMTPSA id n9sm11806540edr.46.2020.07.13.06.22.30
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 13 Jul 2020 06:22:35 -0700 (PDT)
-From: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
-To: helgaas@kernel.org
-Subject: [RFC PATCH 00/35] Move all PCIBIOS* definitions into arch/x86
-Date: Mon, 13 Jul 2020 14:22:12 +0200
-Message-Id: <20200713122247.10985-1-refactormyself@gmail.com>
-X-Mailer: git-send-email 2.18.2
-X-Mailman-Approved-At: Tue, 14 Jul 2020 01:32:14 +1000
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B56VF1X82zDqTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 01:08:35 +1000 (AEST)
+Received: from mail-ej1-f41.google.com ([209.85.218.41]) by
+ mrelayeu.kundenserver.de (mreue106 [212.227.15.145]) with ESMTPSA (Nemesis)
+ id 1MVubb-1kKTWr3heX-00Rqwt for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul
+ 2020 17:08:28 +0200
+Received: by mail-ej1-f41.google.com with SMTP id lx13so17619660ejb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 08:08:27 -0700 (PDT)
+X-Gm-Message-State: AOAM530yhRomNGJu5W5NckTaVFTb/p4XV9P6MYFetXmUpb6FqpttOFLM
+ J+NKRM3O1DByvMgCj/aOT94dHeloffD8V+4kTEE=
+X-Google-Smtp-Source: ABdhPJwTQltR//Qoy7CJjbYFWf5SE8su8bBzApvuOmTDy/uiiaL5a6kEWZGPL3gOs+ATNW8dGkRO2Pf0imsPrOKn0vM=
+X-Received: by 2002:ac2:51a1:: with SMTP id f1mr53585665lfk.173.1594652906936; 
+ Mon, 13 Jul 2020 08:08:26 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200713122247.10985-1-refactormyself@gmail.com>
+In-Reply-To: <20200713122247.10985-1-refactormyself@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 13 Jul 2020 17:08:10 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3NWSZw6678k1O2eJ6-c5GuW7484PRvEzU9MEPPrCD-yw@mail.gmail.com>
+Message-ID: <CAK8P3a3NWSZw6678k1O2eJ6-c5GuW7484PRvEzU9MEPPrCD-yw@mail.gmail.com>
+Subject: Re: [RFC PATCH 00/35] Move all PCIBIOS* definitions into arch/x86
+To: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:NarOHKs64zhyCkyzN8W5lgAX1lhX3WRKQ2GDC1doYr5FkeR9DCa
+ Bi8SbTX5C4OX8uINYaWOIUe4BwvsJkXKAyRx3MH0TmZfLnSUYsnNx4zFryhjyuQvL+W1C6+
+ /O5QQekoMypRr3uMNRZAZOQI1YxSLtgYFrJJn939KrroUCo/oVH97IxzjAiJ9rlxaCAH3T4
+ L60d+BxWj9CG5VERenzMA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:KQg/58nuSO8=:eJ9fRA8uFDi4ozZEfqHug5
+ tV6yeZ//e/VerCpXibl/dLTFHEWZgadxs5iJucTU9sNbb8CPeqcRm36K42wMOPVPfsaG3TAUP
+ MP0sQ7egW75n3ryYLJfzo9aukI858pgPEbqOgwo4DCmczm/rNDtrbMxqb+9DauszG5ajwPOYr
+ aUEXDJFdhr5SU/EJVBV6QeJii5uq/0Lda+UuTbAfItvrO3JgEDaS3Us1Pw8WAq0h2E3ktJcas
+ bJ7p343dFyeSSE8k93n4/merF0Ph7TO2xQ/psLRSaIqWjNw+HBAS5MlycX2wjSntGteT97Y5c
+ IA4dN9dJBB2lbi9PPM2y2aZNDJIHHvXfhxtuuGF0Wbi+V3sEWiXfRwOcBsh20USUG1EBXEltP
+ sl5ZeTqi67wOwWBqJvNr7xSiOcO0VkAGEEnqjCrbdBn0sVcIss2nEjusxIeVuspb/pqmtHsxx
+ PWfHbQgj6q4xonr7DTm1Wu6xiXJp60o+b/EYIxnAvNfkeKEyCatmAMzAcjZwhBsv3YHnql5IG
+ uzpZv1L5lfohpiG4dyYjPs3Eyy7q6h9D431mP4Ih/jvNWJ8Fy/m6EU5q4XoQcsg0drZCpr1WS
+ QovyAc9oGHxFMmpaIeXhIJDu6oUCOrQaYwJFOENQDovXjXkNjavcAycHHU32BMznfEz+3NxYA
+ j3/ShyOYOGSYhFOqTIheZQKLmw0X6xgCUCKyIIFqnUDmFQ+JI/WyfgdL6tBQLpfESQE32s7+d
+ a6aQT69lFoyeswUvXto+KZnWTaU5/l0XYufcsxPTgs4LnVJMQu2qKR4PS8MbNyG3Vbx9wszaC
+ a2+2xDVyB4vF6IZ+zyvjuf1Cq8dr/YXiEraM9Hy/u6PTme8JYnnalwXLf2sowuegshPj3RRol
+ biKyPIhJVwJmRH6588MttJy7krBeY3U3KTeV9u4ZE0h3ob9KND6K2a7XOObUogBSe64alUHV2
+ AHgfMr/pH6GEmCFD+4rRLrFSnspEcui+N45whkvtPMA8PM+gZEVtY
+X-Mailman-Approved-At: Tue, 14 Jul 2020 01:32:15 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,267 +84,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Rich Felker <dalias@libc.org>,
- "Martin K. Petersen" <martin.petersen@oracle.com>, linux-sh@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-nvme@lists.infradead.org,
- Yicong Yang <yangyicong@hisilicon.com>, Keith Busch <kbusch@kernel.org>,
- netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linux-i2c@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com,
- sparclinux@vger.kernel.org, rfi@lists.rocketboards.org,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-pci <linux-pci@vger.kernel.org>, linux-nvme@lists.infradead.org,
+ Yicong Yang <yangyicong@hisilicon.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Realtek linux nic maintainers <nic_swsd@realtek.com>,
+ Paul Mackerras <paulus@samba.org>, Linux I2C <linux-i2c@vger.kernel.org>,
+ bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, rfi@lists.rocketboards.org,
  Toan Le <toan@os.amperecomputing.com>, Greg Ungerer <gerg@linux-m68k.org>,
  Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh@kernel.org>,
  Stefano Stabellini <sstabellini@kernel.org>, Sagi Grimberg <sagi@grimberg.me>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-scsi@vger.kernel.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  linux-atm-general@lists.sourceforge.net, Russell King <linux@armlinux.org.uk>,
- Realtek linux nic maintainers <nic_swsd@realtek.com>,
- Christoph Hellwig <hch@lst.de>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Ley Foon Tan <ley.foon.tan@intel.com>, Christoph Hellwig <hch@lst.de>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
- Chas Williams <3chas3@gmail.com>, xen-devel@lists.xenproject.org,
- Matt Turner <mattst88@gmail.com>, linux-mips@vger.kernel.org,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Chas Williams <3chas3@gmail.com>, xen-devel <xen-devel@lists.xenproject.org>,
+ Matt Turner <mattst88@gmail.com>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
  linux-kernel-mentees@lists.linuxfoundation.org,
  Kevin Hilman <khilman@baylibre.com>, Guenter Roeck <linux@roeck-us.net>,
  linux-hwmon@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Ray Jui <rjui@broadcom.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>,
- Yue Wang <yue.wang@Amlogic.com>, Jens Axboe <axboe@fb.com>,
- Jakub Kicinski <kuba@kernel.org>, linux-m68k@lists.linux-m68k.org,
+ Andrew Donnellan <ajd@linux.ibm.com>, Ray Jui <rjui@broadcom.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+ Yue Wang <yue.wang@amlogic.com>, Jens Axboe <axboe@fb.com>,
+ Jakub Kicinski <kuba@kernel.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>,
  Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Michael Buesch <m@bues.ch>,
- skhan@linuxfoundation.org, bjorn@helgaas.com,
- linux-amlogic@lists.infradead.org,
+ Shuah Khan <skhan@linuxfoundation.org>, bjorn@helgaas.com,
+ "open list:ARM/Amlogic Meson SoC support" <linux-amlogic@lists.infradead.org>,
  Boris Ostrovsky <boris.ostrovsky@oracle.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Juergen Gross <jgross@suse.com>, Michal Simek <monstr@monstr.eu>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Richard Henderson <rth@twiddle.net>, Juergen Gross <jgross@suse.com>,
+ Michal Simek <monstr@monstr.eu>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  Scott Branden <sbranden@broadcom.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Jingoo Han <jingoohan1@gmail.com>,
- "Saheed O. Bolarinwa" <refactormyself@gmail.com>,
+ Jingoo Han <jingoohan1@gmail.com>, Networking <netdev@vger.kernel.org>,
  Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-renesas-soc@vger.kernel.org, Brian King <brking@us.ibm.com>,
- Philipp Zabel <p.zabel@pengutronix.de>, linux-alpha@vger.kernel.org,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Keith Busch <kbusch@kernel.org>, Brian King <brking@us.ibm.com>,
+ Philipp Zabel <p.zabel@pengutronix.de>, alpha <linux-alpha@vger.kernel.org>,
  Frederic Barrat <fbarrat@linux.ibm.com>,
  Gustavo Pimentel <gustavo.pimentel@synopsys.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
  Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jul 13, 2020 at 3:22 PM Saheed O. Bolarinwa
+<refactormyself@gmail.com> wrote:
+> This goal of these series is to move the definition of *all* PCIBIOS* from
+> include/linux/pci.h to arch/x86 and limit their use within there.
+> All other tree specific definition will be left for intact. Maybe they can
+> be renamed.
+>
+> PCIBIOS* is an x86 concept as defined by the PCI spec. The returned error
+> codes of PCIBIOS* are positive values and this introduces some complexities
+> which other archs need not incur.
 
+I think the intention is good, but I find the series in its current
+form very hard
+to review, in particular the way you touch some functions three times with
+trivial changes. Instead of
 
-This goal of these series is to move the definition of *all* PCIBIOS* from
-include/linux/pci.h to arch/x86 and limit their use within there.
-All other tree specific definition will be left for intact. Maybe they can
-be renamed.
+1) replace PCIBIOS_SUCCESSFUL with 0
+2) drop pointless 0-comparison
+3) reformat whitespace
 
-PCIBIOS* is an x86 concept as defined by the PCI spec. The returned error
-codes of PCIBIOS* are positive values and this introduces some complexities
-which other archs need not incur.
+I would suggest to combine the first two steps into one patch per
+subsystem and drop the third step.
 
-PLAN:
+> PLAN:
+>
+> 1.   [PATCH v0 1-36] Replace all PCIBIOS_SUCCESSFUL with 0
+>
+> 2a.  Audit all functions returning PCIBIOS_* error values directly or
+>      indirectly and prevent possible bug coming in (2b)
+>
+> 2b.  Make all functions returning PCIBIOS_* error values call
+>      pcibios_err_to_errno(). *This will change their behaviour, for good.*
+>
+> 3.   Clone a pcibios_err_to_errno() into arch/x86/pci/pcbios.c as _v2.
+>      This handles the positive error codes directly and will not use any
+>      PCIBIOS* definitions. So calls to it have no outside dependence.
+>
+> 4.   Make all x86 codes that needs to convert to -E* values call the
+>      cloned version - pcibios_err_to_errno_v2()
+>
+> 5.   Assign PCIBIOS_* errors values directly to generic -E* errors
+>
+> 6.   Refactor pcibios_err_to_errno() and mark it deprecated
+>
+> 7.   Replace all calls to pcibios_err_to_errno() with the proper -E* value
+>      or 0.
+>
+> 8.   Remove all PCIBIOS* definitions in include/linux/pci.h and
+>      pcibios_err_to_errno() too.
+>
+> 9.   Redefine all PCIBIOS* definitions with original values inside
+>      arch/x86/pci/pcbios.c
+>
+> 10.  Redefine pcibios_err_to_errno() inside arch/x86/pci/pcbios.c
+>
+> 11.  Replace pcibios_err_to_errno_v2() calls with pcibios_err_to_errno()
+>
+> 12.  Remove pcibios_err_to_errno_v2()
+>
+> Suggested-by: Bjorn Helgaas <bjorn@helgaas.com>
+> Suggested-by: Yicong Yang <yangyicong@hisilicon.com>
+> Signed-off-by: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
 
-1.   [PATCH v0 1-36] Replace all PCIBIOS_SUCCESSFUL with 0
+I would hope that there is a simpler procedure to get to good
+code than 12 steps that rename the same things multiple times.
 
-2a.  Audit all functions returning PCIBIOS_* error values directly or
-     indirectly and prevent possible bug coming in (2b)
+Maybe the work can be split up differently, with a similar end result
+but fewer and easier reviewed patches. The way I'd look at the
+problem, there are three main areas that can be dealt with one at
+a time:
 
-2b.  Make all functions returning PCIBIOS_* error values call 
-     pcibios_err_to_errno(). *This will change their behaviour, for good.*
+a) callers of the high-level config space accessors
+   pci_{write,read}_config_{byte,word,dword}, mostly in device
+   drivers.
+b) low-level implementation of the config space accessors
+    through struct pci_ops
+c) all other occurrences of these constants
 
-3.   Clone a pcibios_err_to_errno() into arch/x86/pci/pcbios.c as _v2.
-     This handles the positive error codes directly and will not use any
-     PCIBIOS* definitions. So calls to it have no outside dependence.
+Starting with a), my first question is whether any high-level drivers
+even need to care about errors from these functions. I see 4913
+callers that ignore the return code, and 576 that actually
+check it, and almost none care about the specific error (as you
+found as well). Unless we conclude that most PCI drivers are
+wrong, could we just change the return type to 'void' and assume
+they never fail for valid arguments on a valid pci_device* ?
 
-4.   Make all x86 codes that needs to convert to -E* values call the 
-     cloned version - pcibios_err_to_errno_v2()
+For b), it might be nice to also change other aspects of the interface,
+e.g. passing a pci_host_bridge pointer plus bus number instead of
+a pci_bus pointer, or having the callback in the pci_host_bridge
+structure.
 
-5.   Assign PCIBIOS_* errors values directly to generic -E* errors
+> Bolarinwa Olayemi Saheed (35):
+>   Change PCIBIOS_SUCCESSFUL to 0
+>   Change PCIBIOS_SUCCESSFUL to 0
+>   Change PCIBIOS_SUCCESSFUL to 0
+>   Tidy Success/Failure checks
+>   Change PCIBIOS_SUCCESSFUL to 0
+>   Tidy Success/Failure checks
+>   Change PCIBIOS_SUCCESSFUL to 0
 
-6.   Refactor pcibios_err_to_errno() and mark it deprecated
+Some patches have identical subject lines including the subsystem
+prefix, which you should avoid. Try to also fix the git request-pull
+output to not drop that prefix here so the list makes more sense.
 
-7.   Replace all calls to pcibios_err_to_errno() with the proper -E* value
-     or 0.
-
-8.   Remove all PCIBIOS* definitions in include/linux/pci.h and 
-     pcibios_err_to_errno() too.
-
-9.   Redefine all PCIBIOS* definitions with original values inside 
-     arch/x86/pci/pcbios.c
-
-10.  Redefine pcibios_err_to_errno() inside arch/x86/pci/pcbios.c
-
-11.  Replace pcibios_err_to_errno_v2() calls with pcibios_err_to_errno()
-
-12.  Remove pcibios_err_to_errno_v2()
-
-Suggested-by: Bjorn Helgaas <bjorn@helgaas.com>
-Suggested-by: Yicong Yang <yangyicong@hisilicon.com>
-Signed-off-by: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
-
-
-Bolarinwa Olayemi Saheed (35):
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Fix Style ERROR: assignment in if condition
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-  Change PCIBIOS_SUCCESSFUL to 0
-  Tidy Success/Failure checks
-
- arch/alpha/kernel/core_apecs.c                |  4 +--
- arch/alpha/kernel/core_cia.c                  |  4 +--
- arch/alpha/kernel/core_irongate.c             |  4 +--
- arch/alpha/kernel/core_lca.c                  |  4 +--
- arch/alpha/kernel/core_marvel.c               |  4 +--
- arch/alpha/kernel/core_mcpcia.c               |  4 +--
- arch/alpha/kernel/core_polaris.c              |  4 +--
- arch/alpha/kernel/core_t2.c                   |  4 +--
- arch/alpha/kernel/core_titan.c                |  4 +--
- arch/alpha/kernel/core_tsunami.c              |  4 +--
- arch/alpha/kernel/core_wildfire.c             |  4 +--
- arch/alpha/kernel/sys_miata.c                 |  2 +-
- arch/arm/common/it8152.c                      |  4 +--
- arch/arm/mach-cns3xxx/pcie.c                  |  2 +-
- arch/arm/mach-footbridge/dc21285.c            |  4 +--
- arch/arm/mach-iop32x/pci.c                    |  6 ++--
- arch/arm/mach-ixp4xx/common-pci.c             |  8 ++---
- arch/arm/mach-orion5x/pci.c                   |  4 +--
- arch/arm/plat-orion/pcie.c                    |  8 ++---
- arch/m68k/coldfire/pci.c                      |  8 ++---
- arch/microblaze/pci/indirect_pci.c            |  4 +--
- arch/mips/pci/fixup-ath79.c                   |  2 +-
- arch/mips/pci/ops-bcm63xx.c                   | 14 ++++----
- arch/mips/pci/ops-bonito64.c                  |  4 +--
- arch/mips/pci/ops-gt64xxx_pci0.c              |  4 +--
- arch/mips/pci/ops-lantiq.c                    |  4 +--
- arch/mips/pci/ops-loongson2.c                 |  4 +--
- arch/mips/pci/ops-mace.c                      |  4 +--
- arch/mips/pci/ops-msc.c                       |  4 +--
- arch/mips/pci/ops-rc32434.c                   |  6 ++--
- arch/mips/pci/ops-sni.c                       |  4 +--
- arch/mips/pci/ops-tx3927.c                    |  2 +-
- arch/mips/pci/ops-tx4927.c                    |  2 +-
- arch/mips/pci/ops-vr41xx.c                    |  4 +--
- arch/mips/pci/pci-alchemy.c                   |  6 ++--
- arch/mips/pci/pci-ar2315.c                    |  5 ++-
- arch/mips/pci/pci-ar71xx.c                    |  4 +--
- arch/mips/pci/pci-ar724x.c                    |  6 ++--
- arch/mips/pci/pci-bcm1480.c                   |  4 +--
- arch/mips/pci/pci-bcm1480ht.c                 |  4 +--
- arch/mips/pci/pci-mt7620.c                    |  4 +--
- arch/mips/pci/pci-octeon.c                    | 12 +++----
- arch/mips/pci/pci-rt2880.c                    |  4 +--
- arch/mips/pci/pci-rt3883.c                    |  4 +--
- arch/mips/pci/pci-sb1250.c                    |  4 +--
- arch/mips/pci/pci-virtio-guest.c              |  4 +--
- arch/mips/pci/pci-xlp.c                       |  4 +--
- arch/mips/pci/pci-xlr.c                       |  4 +--
- arch/mips/pci/pci-xtalk-bridge.c              | 14 ++++----
- arch/mips/pci/pcie-octeon.c                   |  4 +--
- arch/mips/txx9/generic/pci.c                  |  5 ++-
- arch/powerpc/kernel/rtas_pci.c                |  4 +--
- arch/powerpc/platforms/4xx/pci.c              |  4 +--
- arch/powerpc/platforms/52xx/efika.c           |  4 +--
- arch/powerpc/platforms/52xx/mpc52xx_pci.c     |  4 +--
- arch/powerpc/platforms/82xx/pq2.c             |  2 +-
- arch/powerpc/platforms/85xx/mpc85xx_cds.c     |  2 +-
- arch/powerpc/platforms/85xx/mpc85xx_ds.c      |  2 +-
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c    |  2 +-
- arch/powerpc/platforms/chrp/pci.c             |  8 ++---
- arch/powerpc/platforms/embedded6xx/holly.c    |  2 +-
- .../platforms/embedded6xx/mpc7448_hpc2.c      |  2 +-
- arch/powerpc/platforms/fsl_uli1575.c          |  2 +-
- arch/powerpc/platforms/maple/pci.c            | 18 +++++-----
- arch/powerpc/platforms/pasemi/pci.c           |  6 ++--
- arch/powerpc/platforms/powermac/pci.c         |  8 ++---
- arch/powerpc/platforms/powernv/eeh-powernv.c  |  4 +--
- arch/powerpc/platforms/powernv/pci.c          |  4 +--
- arch/powerpc/platforms/pseries/eeh_pseries.c  |  4 +--
- arch/powerpc/sysdev/fsl_pci.c                 |  2 +-
- arch/powerpc/sysdev/indirect_pci.c            |  4 +--
- arch/powerpc/sysdev/tsi108_pci.c              |  4 +--
- arch/sh/drivers/pci/common.c                  |  3 +-
- arch/sh/drivers/pci/ops-dreamcast.c           |  4 +--
- arch/sh/drivers/pci/ops-sh4.c                 |  4 +--
- arch/sh/drivers/pci/ops-sh7786.c              |  8 ++---
- arch/sh/drivers/pci/pci.c                     |  2 +-
- arch/sparc/kernel/pci_common.c                | 28 +++++++--------
- arch/unicore32/kernel/pci.c                   |  4 +--
- drivers/atm/iphase.c                          | 20 ++++++-----
- drivers/atm/lanai.c                           |  8 ++---
- drivers/bcma/driver_pci_host.c                |  4 +--
- drivers/hwmon/sis5595.c                       | 13 +++----
- drivers/hwmon/via686a.c                       | 13 +++----
- drivers/hwmon/vt8231.c                        | 13 +++----
- drivers/i2c/busses/i2c-ali15x3.c              |  5 ++-
- drivers/i2c/busses/i2c-nforce2.c              |  3 +-
- drivers/i2c/busses/i2c-sis5595.c              | 15 +++-----
- drivers/misc/cxl/vphb.c                       |  4 +--
- drivers/net/ethernet/realtek/r8169_main.c     |  2 +-
- drivers/nvme/host/pci.c                       |  2 +-
- drivers/pci/access.c                          | 14 ++++----
- drivers/pci/controller/dwc/pci-meson.c        |  4 +--
- .../pci/controller/dwc/pcie-designware-host.c |  2 +-
- drivers/pci/controller/dwc/pcie-designware.c  |  4 +--
- drivers/pci/controller/dwc/pcie-hisi.c        |  4 +--
- drivers/pci/controller/dwc/pcie-tegra194.c    |  4 +--
- .../pci/controller/mobiveil/pcie-mobiveil.c   |  4 +--
- drivers/pci/controller/pci-aardvark.c         |  4 +--
- drivers/pci/controller/pci-ftpci100.c         |  4 +--
- drivers/pci/controller/pci-hyperv.c           |  8 ++---
- drivers/pci/controller/pci-mvebu.c            |  4 +--
- drivers/pci/controller/pci-thunder-ecam.c     | 36 +++++++++----------
- drivers/pci/controller/pci-thunder-pem.c      |  4 +--
- drivers/pci/controller/pci-xgene.c            |  5 ++-
- drivers/pci/controller/pcie-altera.c          | 16 ++++-----
- drivers/pci/controller/pcie-iproc.c           | 10 +++---
- drivers/pci/controller/pcie-mediatek.c        |  4 +--
- drivers/pci/controller/pcie-rcar-host.c       |  8 ++---
- drivers/pci/controller/pcie-rockchip-host.c   | 10 +++---
- drivers/pci/pci-bridge-emul.c                 | 14 ++++----
- drivers/pci/pci.c                             |  8 ++---
- drivers/pci/pcie/bw_notification.c            |  4 +--
- drivers/pci/probe.c                           |  4 +--
- drivers/pci/quirks.c                          |  4 +--
- drivers/pci/syscall.c                         |  8 ++---
- drivers/pci/xen-pcifront.c                    |  2 +-
- drivers/scsi/ipr.c                            | 16 ++++-----
- drivers/scsi/pmcraid.c                        |  6 ++--
- drivers/ssb/driver_gige.c                     |  4 +--
- drivers/ssb/driver_pcicore.c                  |  4 +--
- drivers/xen/xen-pciback/conf_space.c          |  2 +-
- 122 files changed, 347 insertions(+), 369 deletions(-)
-
--- 
-2.18.2
-
+        Arnd
