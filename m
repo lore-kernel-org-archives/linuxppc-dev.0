@@ -2,85 +2,88 @@ Return-Path: <SRS0=XY74=AY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C366FC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 13:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8559BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 13:49:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FEAB206F0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 13:32:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B139D2072D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 13:49:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ayIR4bAO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FEAB206F0
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CtIxbjVv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B139D2072D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B54MV28KHzDqWd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 23:32:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B54kz4Hb5zDqVW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jul 2020 23:49:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::643;
- helo=mail-ej1-x643.google.com; envelope-from=refactormyself@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ayIR4bAO; dkim-atps=neutral
-Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com
- [IPv6:2a00:1450:4864:20::643])
+ header.s=20161025 header.b=CtIxbjVv; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B548k3rpLzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 23:23:17 +1000 (AEST)
-Received: by mail-ej1-x643.google.com with SMTP id dp18so17118900ejc.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 06:23:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B54hb3SHMzDqTJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 23:47:26 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id s189so989537pgc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 06:47:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=lE8AN0pbCu/dDP6jrScw+PxyAG3fiRl3vN639OZNf9c=;
- b=ayIR4bAOLjTG4FPDTwj9Bv/rT1Mu5DSxUxmly1JRltd3/t49vc11ms35/6SaQTBnDW
- grgTbiRcbvJv/DP8VfCI2t5YIAma/O83HsL8bg6F3jmYn8DjHIHlFyBlPbwgK9NZvLpV
- NhVTBRZ7lKyJjY2HhB4nOgVrjuzjGx7Gbvx/0Ct/jc4ZoZkaXRHDGimKOxD6qy9dBCS+
- sqcnADgH9diLoghHvHkKw+ljTOKr7vUjZGCiVth+JL4t+Oj2ZMh2VG+Nl97H8BDvhtip
- 06AOHg8fxgsVax5a7Dn03qBbGWuJCeSxlPhhmGspiYLN45bio5jqhu1ESiQs78Ezc6ow
- QJuw==
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=mRbOWPWSQUmvbKy0Vhub198si/9PqoOoJ0fQEFD1GNw=;
+ b=CtIxbjVvQWa4NtOA2BUa9bC75CZlL25vYzXPl0w/DuaxfU7K7Mef69GwIEcJ/9v5p6
+ OyTNMFwhm1f7HQM2uGsZmLP6xjXBKRuhMQ9hjYqV97z8vDpzvMPKqVrCZulwKV7l0ws5
+ K3UvPYHj/ywEJNqexpv9wcG57oWMcuiEgeUfm8PlVDi9B4tbFzDLz+RsIOz47QLajLgr
+ bl4VArfJGMgjlFM+VPivRlfKklIGQka+bNxVx5kmcekxM4Un3QInWNH/VVOGvCzsetup
+ O936Idv00TK0lxrJMmpDZv2HzgcR7mQsgOx8oeQ7xRjaoRoTVDzsffuYhhhu9CHwevtT
+ ptHA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=lE8AN0pbCu/dDP6jrScw+PxyAG3fiRl3vN639OZNf9c=;
- b=oiW7CA2XFTJVMH8RdEsQ7MBc21b5Q8SR5pSD39u47Vo4TGrPBSBST69YpzL/FSwCDx
- Ut239rOTK4syWNKb3RQgKMDDgQSUViL2wCWaVQOLCJluGyvj1auajz9YNBjInMe3EGaD
- 89ZQyPfYbldPHdoKycXTdS8I2MSg1czdxqJdC0mOxk68h/C9E/Lvox4hieyNf3GV7338
- vy0PXEv73k3cW/TNdyWggH2S6KcRRAwzeSXMqZ7tsOu0SWkIN1b/30m+zHErH3675MlI
- zjrhV/zSgZBFrRmaYXh5l9lPDicgeo2/aR4DmYm/K3veJ5mMWJ7V4bZYK6l826hPPF+F
- h00g==
-X-Gm-Message-State: AOAM532SjbDsfQP7WkWGgeYzM8/SYTCY1RlmmFCDsRLxKMse1UoU6Psb
- kH8tHCnRTySUkH2HrB4j5l0=
-X-Google-Smtp-Source: ABdhPJxhwheaZHFk6xB+rN51Yz6X0yo6JNfKZG64pSHUWsziY38Td4p53F5FZbITqU6TE36B/dChCA==
-X-Received: by 2002:a17:906:c24e:: with SMTP id
- bl14mr71978064ejb.285.1594646593479; 
- Mon, 13 Jul 2020 06:23:13 -0700 (PDT)
-Received: from net.saheed (54007186.dsl.pool.telekom.hu. [84.0.113.134])
- by smtp.gmail.com with ESMTPSA id n9sm11806540edr.46.2020.07.13.06.23.12
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=mRbOWPWSQUmvbKy0Vhub198si/9PqoOoJ0fQEFD1GNw=;
+ b=gH0Ahoq/Hh0Gq2ZJvkcrZAzlqhly5xnmaVPFUp4iWpSLROcfTffHVkMClMZTmE3A5P
+ 52q9+Mz03zLwzQfTuH3H0pacnznSQzSYxDa3aKC8iB8akFRuHcPkJFFx6J/Tg1H20kkj
+ bBuYAAEZIpPvtHBFmZlZIGy+COx2jFd9zfZ9icd63UYtn4oidlFXfdDjRppv59LbpFZh
+ 9qBTwdBfGUfL2ycQmMnAMj/dYs7rcSDuKqOppEzfQSn7OIVWPiqXx1fMw6mvG/94EeQB
+ e3hyLMXJnyNcFw5O/288m5ZzvBqFNyBJw1e/0vCEVf02Hbr1Kvq7jp8y1cnJP9LJBCPq
+ KSmg==
+X-Gm-Message-State: AOAM5301q5ESjDaWNW9qvc3ZtxNH5dfZwsJcn40VXoP8Esb4rlIaP/mM
+ gIZkJrUJ8If8hKkZXsWldBA=
+X-Google-Smtp-Source: ABdhPJy5mkqYezxWFiByUdDFyfgS7gHSAPhE+WWD7boFv7QO+6zf4EAUVlnl8xvc6AjqSYD9L+nxnA==
+X-Received: by 2002:a63:e057:: with SMTP id n23mr67589534pgj.368.1594648043180; 
+ Mon, 13 Jul 2020 06:47:23 -0700 (PDT)
+Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id h15sm15368954pjc.14.2020.07.13.06.47.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 13 Jul 2020 06:23:13 -0700 (PDT)
-From: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
-To: helgaas@kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [RFC PATCH 27/35] powerpc: Tidy Success/Failure checks
-Date: Mon, 13 Jul 2020 14:22:39 +0200
-Message-Id: <20200713122247.10985-28-refactormyself@gmail.com>
-X-Mailer: git-send-email 2.18.2
-In-Reply-To: <20200713122247.10985-1-refactormyself@gmail.com>
-References: <20200713122247.10985-1-refactormyself@gmail.com>
+ Mon, 13 Jul 2020 06:47:20 -0700 (PDT)
+Date: Mon, 13 Jul 2020 23:47:14 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+To: Andy Lutomirski <luto@kernel.org>
+References: <20200710015646.2020871-1-npiggin@gmail.com>
+ <20200710015646.2020871-5-npiggin@gmail.com>
+ <CALCETrVqHDLo09HcaoeOoAVK8w+cNWkSNTLkDDU=evUhaXkyhQ@mail.gmail.com>
+ <1594613902.1wzayj0p15.astroid@bobo.none>
+In-Reply-To: <1594613902.1wzayj0p15.astroid@bobo.none>
+MIME-Version: 1.0
+Message-Id: <1594647408.wmrazhwjzb.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,68 +95,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Saheed O. Bolarinwa" <refactormyself@gmail.com>, skhan@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, bjorn@helgaas.com,
- linux-kernel-mentees@lists.linuxfoundation.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove unnecessary check for 0.
+Excerpts from Nicholas Piggin's message of July 13, 2020 2:45 pm:
+> Excerpts from Andy Lutomirski's message of July 11, 2020 3:04 am:
+>> Also, as it stands, I can easily see in_irq() ceasing to promise to
+>> serialize.  There are older kernels for which it does not promise to
+>> serialize.  And I have plans to make it stop serializing in the
+>> nearish future.
+>=20
+> You mean x86's return from interrupt? Sounds fun... you'll konw where to=20
+> update the membarrier sync code, at least :)
 
-Signed-off-by: "Saheed O. Bolarinwa" <refactormyself@gmail.com>
----
-This patch depends on PATCH 26/35
+Oh, I should actually say Mathieu recently clarified a return from
+interrupt doesn't fundamentally need to serialize in order to support
+membarrier sync core.
 
- arch/powerpc/platforms/powernv/eeh-powernv.c | 4 ++--
- arch/powerpc/platforms/pseries/eeh_pseries.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-July/214171.html
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 92f145dc9c1d..834cb6175cc4 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -318,7 +318,7 @@ static int pnv_eeh_find_ecap(struct pci_dn *pdn, int cap)
- 
- 	if (!edev || !edev->pcie_cap)
- 		return 0;
--	if (pnv_pci_cfg_read(pdn, pos, 4, &header) != 0)
-+	if (pnv_pci_cfg_read(pdn, pos, 4, &header))
- 		return 0;
- 	else if (!header)
- 		return 0;
-@@ -331,7 +331,7 @@ static int pnv_eeh_find_ecap(struct pci_dn *pdn, int cap)
- 		if (pos < 256)
- 			break;
- 
--		if (pnv_pci_cfg_read(pdn, pos, 4, &header) != 0)
-+		if (pnv_pci_cfg_read(pdn, pos, 4, &header))
- 			break;
- 	}
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 9c023b928f2c..aec6f76879a9 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -200,7 +200,7 @@ static int pseries_eeh_find_ecap(struct pci_dn *pdn, int cap)
- 
- 	if (!edev || !edev->pcie_cap)
- 		return 0;
--	if (rtas_read_config(pdn, pos, 4, &header) != 0)
-+	if (rtas_read_config(pdn, pos, 4, &header))
- 		return 0;
- 	else if (!header)
- 		return 0;
-@@ -213,7 +213,7 @@ static int pseries_eeh_find_ecap(struct pci_dn *pdn, int cap)
- 		if (pos < 256)
- 			break;
- 
--		if (rtas_read_config(pdn, pos, 4, &header) != 0)
-+		if (rtas_read_config(pdn, pos, 4, &header))
- 			break;
- 	}
- 
--- 
-2.18.2
+So you may not need to do anything more if you relaxed it.
 
+Thanks,
+Nick
