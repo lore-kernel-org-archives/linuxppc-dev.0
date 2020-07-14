@@ -2,71 +2,79 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AC8FC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8EB3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:47:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AEB5222200
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:50:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5A7B622203
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:47:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DksICHfF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEB5222200
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="DzRdxgzq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A7B622203
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5cjs0MD8zDqgd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 20:50:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5cdw5p5HzDqXt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 20:47:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=DksICHfF; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5c022ncKzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 20:17:38 +1000 (AEST)
-Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com
- [209.85.167.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A62FA221FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 10:17:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594721855;
- bh=tldfCbGX7WNIgoKko/oLYaOyXTRH6GokxksB76il3+4=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=DksICHfFzLTi2jnMW6IqkkfB6+xn8fJMlnPu8j1reZowCIHMLfNFnXzU52PvyNYbZ
- j2TK2ZFVmqCoCb7Q2LLLsKqkXHWKPUKGZI4JRVcJxLZqa2UBZz2ZLVRauu/Mv7h/ec
- pYk/GtMhAIcYsVlBfKFsxVJMnf21GFNnqPMFbWBo=
-Received: by mail-oi1-f177.google.com with SMTP id h17so13522140oie.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 03:17:35 -0700 (PDT)
-X-Gm-Message-State: AOAM5337zBRj0pLk4VCJczAiJYhkHdWDM/WUvI9IW6tLECw+sKsmoDh+
- obOLIK1o+8fvCNdi+/wHXhmsCfRmsf+R0Rr2cTg=
-X-Google-Smtp-Source: ABdhPJxHHl/ZjkVDcXGAU0II8SE5bwBs6xJ0c4UdVyd0y5ppCMRxVQyn5lUlldodDVcBZUaDabRWLahEt2DwHdim5zE=
-X-Received: by 2002:aca:d643:: with SMTP id n64mr3011967oig.33.1594721853647; 
- Tue, 14 Jul 2020 03:17:33 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
- <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
- <20200714095243.GB1442951@linux.intel.com>
-In-Reply-To: <20200714095243.GB1442951@linux.intel.com>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Tue, 14 Jul 2020 13:17:22 +0300
-X-Gmail-Original-Message-ID: <CAMj1kXGV_bWehdQvxaMBTOYHXUoFjifBWNpyVy3gaWKktko1mg@mail.gmail.com>
-Message-ID: <CAMj1kXGV_bWehdQvxaMBTOYHXUoFjifBWNpyVy3gaWKktko1mg@mail.gmail.com>
+ spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk
+ (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk;
+ envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=armlinux.org.uk
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256
+ header.s=pandora-2019 header.b=DzRdxgzq; 
+ dkim-atps=neutral
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5bVk2zv5zDqPT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:55:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+ MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=J4Ka59dcMikVp35QPQMFqJHxEAVMkkUAFnV88fuGsI4=; b=DzRdxgzqEKSDZhMDp+2U2nh2c
+ IArxVML1LOtJWFiuW0xPmOxkAa0qr6V6rEZ4el59j7/XsgBHo1IpGZn++6KaXAmUh+HCdrDrIbcO3
+ esZT32ryUAbv3Ergm9f4wl3EbKkosBtpwoeVrKvQA29j0K9Ac8tdMuxVw9QqtQ9M4fucRYfDKowOG
+ 0omhBwWG2VVBCaAA6eqLsRQBEYwte95h9sI6CgwWuRGpea2Z+9U1YVVdnUoiIXMxXcHoyX3Z+eode
+ qaC+kavumdZei7rN7gurw8Q65G3DqOX4YG2qgnEON+ohmmJQ1tumlMSoCZOWcyplyDHMDnM0bpJig
+ b3yUQyNLg==;
+Received: from shell.armlinux.org.uk
+ ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:39344)
+ by pandora.armlinux.org.uk with esmtpsa
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <linux@armlinux.org.uk>)
+ id 1jvHdD-0004xm-TI; Tue, 14 Jul 2020 10:53:47 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
+ (envelope-from <linux@shell.armlinux.org.uk>)
+ id 1jvHdC-0007CZ-L9; Tue, 14 Jul 2020 10:53:46 +0100
+Date: Tue, 14 Jul 2020 10:53:46 +0100
+From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 Subject: Re: [PATCH 1/3] module: Rename module_alloc() to text_alloc() and
  move to kernel proper
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20200714095346.GA1551@shell.armlinux.org.uk>
+References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
+ <20200713183410.GY1551@shell.armlinux.org.uk>
+ <20200714094928.GA1442951@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200714094928.GA1442951@linux.intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Tue, 14 Jul 2020 20:36:21 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,12 +95,11 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>,
  Andy Lutomirski <luto@kernel.org>, Yonghong Song <yhs@fb.com>,
  Thomas Gleixner <tglx@linutronix.de>, Jiri Kosina <jkosina@suse.cz>,
- Anup Patel <anup.patel@wdc.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anup Patel <anup.patel@wdc.com>, linux-kernel@vger.kernel.org,
  Philipp Rudo <prudo@linux.ibm.com>, Torsten Duwe <duwe@lst.de>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
  Vincent Chen <deanbo422@gmail.com>,
  "open list:S390" <linux-s390@vger.kernel.org>,
  Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
@@ -128,16 +135,15 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
  Amit Daniel Kachhap <amit.kachhap@arm.com>,
  Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
- Jiri Olsa <jolsa@redhat.com>,
- "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+ Jiri Olsa <jolsa@redhat.com>, Ard Biesheuvel <ardb@kernel.org>,
  Vincenzo Frascino <vincenzo.frascino@arm.com>,
  Anders Roxell <anders.roxell@linaro.org>, Sven Schnelle <svens@stackframe.org>,
  "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Paul E. McKenney" <paulmck@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- KP Singh <kpsingh@chromium.org>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Nick Hu <nickhu@andestech.com>,
+ "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, KP Singh <kpsingh@chromium.org>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Nick Hu <nickhu@andestech.com>,
  "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
  "open list:MIPS" <linux-mips@vger.kernel.org>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -148,41 +154,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jul 2020 at 12:53, Jarkko Sakkinen
-<jarkko.sakkinen@linux.intel.com> wrote:
->
-> On Mon, Jul 13, 2020 at 10:49:48PM +0300, Ard Biesheuvel wrote:
-> > This patch suggests that there are other reasons why conflating
-> > allocation of module space and allocating  text pages for other uses
-> > is a bad idea, but switching all users to text_alloc() is a step in
-> > the wrong direction. It would be better to stop using module_alloc()
-> > in core code except in the module loader, and have a generic
-> > text_alloc() that can be overridden by the arch if necessary. Note
-> > that x86  and s390 are the only architectures that use module_alloc()
-> > in ftrace code.
->
-> This series essentially does this: introduces text_alloc() and
-> text_memfree(), which have generic implementations in kernel/text.c.
-> Those can be overriddent by arch specific implementations.
->
-> What you think should be done differently than in my patch set?
->
+On Tue, Jul 14, 2020 at 12:49:28PM +0300, Jarkko Sakkinen wrote:
+> On Mon, Jul 13, 2020 at 07:34:10PM +0100, Russell King - ARM Linux admin wrote:
+> > On Mon, Jul 13, 2020 at 09:19:37PM +0300, Jarkko Sakkinen wrote:
+> > > Rename module_alloc() to text_alloc() and module_memfree() to
+> > > text_memfree(), and move them to kernel/text.c, which is unconditionally
+> > > compiled to the kernel proper. This allows kprobes, ftrace and bpf to
+> > > allocate space for executable code without requiring to compile the modules
+> > > support (CONFIG_MODULES=y) in.
+> > 
+> > I'm not sure this is a good idea for 32-bit ARM.  The code you are
+> > moving for 32-bit ARM is quite specific to module use in that it also
+> > supports allocating from the vmalloc area, where the module code
+> > knows to add PLT entries.
+> > 
+> > If the other proposed users of this text_alloc() do not have the logic
+> > to add PLT entries when branches between kernel code and this
+> > allocation are not reachable by, e.g. a 26-bit signed offset for 32-bit
+> > ARM code, then this code is not suitable for that use.
+> 
+> My intention is to use this in kprobes code in the place of
+> module_alloc().  I'm not sure why moving this code out of the module
+> subsystem could possibly break anything.  Unfortunately I forgot to add
+> covere letter to my series. Sending v2 with that to explain my use case
+> for this.
 
-On arm64, module_alloc is only used by the module loader, and so
-pulling it out and renaming it will cause unused code to be
-incorporated into the kernel when building without module support,
-which is the use case you claim to be addressing.
+Ah, so you're merely renaming module_alloc() to text_alloc() everywhere?
+It sounded from the initial patch like you were also converting other
+users to use module_alloc().
 
-Module_alloc has semantics that are intimately tied to the module
-loader, but over the years, it ended up being (ab)used by other
-subsystems, which don't require those semantics but just need n pages
-of vmalloc space with executable permissions.
-
-So the correct approach is to make text_alloc() implement just that,
-generically, and switch bpf etc to use it. Then, only on architectures
-that need it, override it with an implementation that has the required
-additional semantics.
-
-Refactoring 10+ architectures like this without any regard for how
-text_alloc() deviates from module_alloc() just creates a lot of churn
-that others will have to clean up after you.
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
