@@ -2,72 +2,97 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0CC5C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 06:47:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA29C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 06:50:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33605221F0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 06:47:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BC3AF221F0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 06:49:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kPFbutbK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33605221F0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D6enXb3M"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC3AF221F0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5WKp1s5vzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 16:47:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5WNP38CHzDqB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 16:49:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::743;
+ helo=mail-qk1-x743.google.com; envelope-from=leobras.c@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=kPFbutbK; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=D6enXb3M; dkim-atps=neutral
+Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
+ [IPv6:2607:f8b0:4864:20::743])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5W4N26b0zDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 16:36:04 +1000 (AEST)
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com
- [209.85.167.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1B94322225
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 06:36:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594708562;
- bh=rMGDsLugxhJ6ZQ/FTRs1UWrQVzA58IvbXzTThQvg9II=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=kPFbutbKKgUJXSiHH0OTfDBjGlJ5KA++yL8URL7JhPTgkklLoUJyDFX+EYKk0Eumi
- 21FGhGo46N7BGEkeW9hr9CtVUNJ/q5Hea0icVEGjX5vRVsdS2B2OYojUIpsJ9ZISP7
- yJGXh8pWtUYJARgvVZkqH55srxrlN/jsETL1SrzQ=
-Received: by mail-oi1-f178.google.com with SMTP id l63so13069922oih.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 23:36:02 -0700 (PDT)
-X-Gm-Message-State: AOAM5328egADJIP89Vy3Qt6wIJYS+FinbiyDy6H5j+wATdfHGHnQfVbN
- ExJe4xjeLp/aMuJtN8FViNJdIoqTyfCl3WVMxrQ=
-X-Google-Smtp-Source: ABdhPJxeIqtBGKiL/BO7yZP2m6SYAvzirQX9jLPamq/B/I05RCp3jdo+tgAtgh/y0esL3fR2qht2nHhgvHlmtvjg1H0=
-X-Received: by 2002:aca:f257:: with SMTP id q84mr2598467oih.174.1594708560357; 
- Mon, 13 Jul 2020 23:36:00 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
- <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
- <20200713220436.2f21d366@oasis.local.home>
-In-Reply-To: <20200713220436.2f21d366@oasis.local.home>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Tue, 14 Jul 2020 09:35:48 +0300
-X-Gmail-Original-Message-ID: <CAMj1kXELzkrXiM=CouaVnQbY-Sfd30ccCk4D+PkY7g63op8Jvg@mail.gmail.com>
-Message-ID: <CAMj1kXELzkrXiM=CouaVnQbY-Sfd30ccCk4D+PkY7g63op8Jvg@mail.gmail.com>
-Subject: Re: [PATCH 1/3] module: Rename module_alloc() to text_alloc() and
- move to kernel proper
-To: Steven Rostedt <rostedt@goodmis.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5WJZ74G2zDqXf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 16:46:38 +1000 (AEST)
+Received: by mail-qk1-x743.google.com with SMTP id l6so14645530qkc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 23:46:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :organization:user-agent:mime-version:content-transfer-encoding;
+ bh=dzxfeYMtkjsMRhuGgWk+6usvf7YkNVFphbzmaI9AE80=;
+ b=D6enXb3MQ6lRfQoiLzp7fWvveVWEPafnRj0qOq8HR749w3FZ37ez2NYcHDpWVcNJ8C
+ E6oilKdejmb5r0rqLFJB+CCLpscI8XUiIVZ8bDM7z6I/7R0PfB+60Ow/jN3FMTFb+aqf
+ VIHAGF84TrYoYpJzXubl8z4dY24kY+GAm+G0m27ZFHu72vmK0NVCiy4kSnFIwVT401mB
+ pkAFtMTtLD4gEXq7awDLySJq5spWEL2tFvchp9MVLxoMnoF7vhSgssNg+M6z59ENUxiH
+ RLqIUZYFM3dl6pT13dxMsHSTwb+OG1YiOQOwRreOhSXvfmOqJOBWL9iUxFa+QBQb4eC8
+ ukrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:organization:user-agent:mime-version
+ :content-transfer-encoding;
+ bh=dzxfeYMtkjsMRhuGgWk+6usvf7YkNVFphbzmaI9AE80=;
+ b=ABcg3IYjWJpXNqzXpPh8c08gCNZn4eTdivvpIZe0YOVhpO+eXQ+oUxTI/SfVj9LoKn
+ xCCzFy5KReyvV51HekiyNQz4fEkotCwchFpewOyqUv05dfsQfMU/chtzdKt/hSB9gPng
+ 2gBRQGXNp+rugrUSVKLCwQ5qHYFNBcI2Os+NyBNPlkd5LGHCjETEVF+PYblyVPI/Gl6O
+ fRJws2WEuU43oxRlCc6I1Z2S70kedSTBDbdMAUfVIssO96CTXgZgJ+47Sphez5GSxK6/
+ RgWS/k7H/ETvPSx3J2CnIG0rxdzXhv/kg6/ae/W7JEu+3yu/rUP1KuzOSKbjQ6+wbhKT
+ ljag==
+X-Gm-Message-State: AOAM531G2oMSiL2xCP66maIxKhq0JfGTSiCE0oUXkiAVpQra381DhAd8
+ t9Ql9lfyh2Qw3MUTysjxIdQ=
+X-Google-Smtp-Source: ABdhPJyC3/V/9okdvc0CGcOc+6fmRvKD6sJ98UlaqvKOZ2nYA2QIkbbrDx8NW6BywsBA4Kr4BtJlsQ==
+X-Received: by 2002:a37:4bcd:: with SMTP id y196mr3029955qka.495.1594709195156; 
+ Mon, 13 Jul 2020 23:46:35 -0700 (PDT)
+Received: from LeoBras (179-125-193-229.dynamic.desktop.com.br.
+ [179.125.193.229])
+ by smtp.gmail.com with ESMTPSA id a68sm20906352qkc.110.2020.07.13.23.46.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 13 Jul 2020 23:46:34 -0700 (PDT)
+Message-ID: <846ba63b1f1fc4c9366f39b2cf09df71a19da891.camel@gmail.com>
+Subject: Re: [PATCH v3 4/6] powerpc/pseries/iommu: Remove default DMA window
+ before creating DDW
+From: Leonardo Bras <leobras.c@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thiago Jung Bauermann
+ <bauerman@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>
+Date: Tue, 14 Jul 2020 03:46:29 -0300
+In-Reply-To: <eb357d42f5605a2b0234c04de477e171134c24f5.camel@gmail.com>
+References: <20200703061844.111865-1-leobras.c@gmail.com>
+ <20200703061844.111865-5-leobras.c@gmail.com>
+ <cc15a81d-04d9-3ee4-4fdb-093618f6e635@ozlabs.ru>
+ <8c29be499e8741e7d77d53ca005034a2ca0179ac.camel@gmail.com>
+ <18fd94d2-4365-16d1-7c85-af07d5c9a0f3@ozlabs.ru>
+ <eb357d42f5605a2b0234c04de477e171134c24f5.camel@gmail.com>
+Organization: IBM
 Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Tue, 14 Jul 2020 16:45:34 +1000
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,115 +104,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Kefeng Wang <wangkefeng.wang@huawei.com>, Paul Mackerras <paulus@samba.org>,
- Zong Li <zong.li@sifive.com>, Andi Kleen <ak@linux.intel.com>,
- Paul Burton <paulburton@kernel.org>,
- Vincent Whitchurch <vincent.whitchurch@axis.com>,
- Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>,
- Andy Lutomirski <luto@kernel.org>, Yonghong Song <yhs@fb.com>,
- Thomas Gleixner <tglx@linutronix.de>, Jiri Kosina <jkosina@suse.cz>,
- Anup Patel <anup.patel@wdc.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Philipp Rudo <prudo@linux.ibm.com>, Torsten Duwe <duwe@lst.de>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Vincent Chen <deanbo422@gmail.com>,
- "open list:S390" <linux-s390@vger.kernel.org>,
- Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
- John Fastabend <john.fastabend@gmail.com>,
- Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, Iurii Zaikin <yzaikin@google.com>,
- Andrii Nakryiko <andriin@fb.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>, Damien Le Moal <damien.lemoal@wdc.com>,
- Peter Oberparleiter <oberpar@linux.ibm.com>,
- Sean Christopherson <sean.j.christopherson@intel.com>,
- Martin KaFai Lau <kafai@fb.com>, Song Liu <songliubraving@fb.com>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Atish Patra <atish.patra@wdc.com>, Will Deacon <will@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Masahiro Yamada <masahiroy@kernel.org>,
- Nayna Jain <nayna@linux.ibm.com>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Dmitry Vyukov <dvyukov@google.com>, Sami Tolvanen <samitolvanen@google.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Mao Han <han_mao@c-sky.com>,
- Marco Elver <elver@google.com>, Babu Moger <Babu.Moger@amd.com>,
- Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
- Ben Dooks <ben-linux@fluff.org>, Guan Xuetao <gxt@pku.edu.cn>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Jessica Yu <jeyu@kernel.org>,
- "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <bpf@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
- Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Amit Daniel Kachhap <amit.kachhap@arm.com>,
- Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
- Jiri Olsa <jolsa@redhat.com>,
- "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Anders Roxell <anders.roxell@linaro.org>, Sven Schnelle <svens@stackframe.org>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Paul E. McKenney" <paulmck@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- KP Singh <kpsingh@chromium.org>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Nick Hu <nickhu@andestech.com>,
- "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jul 2020 at 05:04, Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> On Mon, 13 Jul 2020 22:49:48 +0300
-> Ard Biesheuvel <ardb@kernel.org> wrote:
->
-> > On arm64, we no longer use module_alloc for bpf or kprobes, to avoid
-> > wasting va space on code that does not need to be loaded close to the
-> > kernel. Also, module_alloc() allocates kasan shadow, which is
-> > unnecessary for kprobes or bpf programs, which don't have kasan
-> > instrumentation.
-> >
-> > This patch suggests that there are other reasons why conflating
-> > allocation of module space and allocating  text pages for other uses
-> > is a bad idea, but switching all users to text_alloc() is a step in
-> > the wrong direction. It would be better to stop using module_alloc()
-> > in core code except in the module loader, and have a generic
-> > text_alloc() that can be overridden by the arch if necessary. Note
-> > that x86  and s390 are the only architectures that use module_alloc()
-> > in ftrace code.
-> >
-> > Please have a look at alloc_insn_page() or bpf_jit_alloc_exec() in the
-> > arm64 tree to see what I mean.
->
-> Hmm, so you have another method for allocating memory for trampolines?
-> (I haven't looked at those functions you pointed out, out of sheer
-> laziness ;-)
->
-> It would be nice to implement the trampoline optimization in arm, which
-> x86 has (see arch_ftrace_update_trampoline() and
-> arch_ftrace_trampoline_func()).
->
-> It helps when you have two different callbacks for different functions
-> (like having live patching enabled and function tracing enabled, or
-> kprobes using ftrace). Each callback will get its own allocated
-> trampoline to jump to instead of jumping to the a trampoline that calls
-> a looping function that tests to see which callback wants to be called
-> by the traced function.
->
+In fact, the changes over the last patch are more complex than the
+current patch. 
+Just for reference, that's how enable_ddw() currently patches:
 
-So in what sense are ftrace trampolines like kernel modules, apart
-from the fact that they are executable pages that live in the vmalloc
-space?
+@@ -1087,7 +1119,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct
+device_node *pdn)
+        struct device_node *dn;
+        u32 ddw_avail[DDW_APPLICABLE_SIZE];
+        struct direct_window *window;
+-       struct property *win64;
++       struct property *win64, *default_win = NULL;
+        struct dynamic_dma_window_prop *ddwprop;
+        struct failed_ddw_pdn *fpdn;
+ 
+@@ -1133,14 +1165,38 @@ static u64 enable_ddw(struct pci_dev *dev,
+struct device_node *pdn)
+        if (ret != 0)
+                goto out_failed;
+ 
++       /*
++        * If there is no window available, remove the default DMA
+window,
++        * if it's present. This will make all the resources available
+to the
++        * new DDW window.
++        * If anything fails after this, we need to restore it, so also
+check
++        * for extensions presence.
++        */
+        if (query.windows_available == 0) {
+-               /*
+-                * no additional windows are available for this device.
+-                * We might be able to reallocate the existing window,
+-                * trading in for a larger page size.
+-                */
+-               dev_dbg(&dev->dev, "no free dynamic windows");
+-               goto out_failed;
++               int reset_win_ext;
++
++               default_win = of_find_property(pdn, "ibm,dma-window",
+NULL);
++               if (!default_win)
++                       goto out_failed;
++
++               reset_win_ext = ddw_read_ext(pdn,
+DDW_EXT_RESET_DMA_WIN, NULL);
++               if (reset_win_ext) {
++                       default_win = NULL;
++                       goto out_failed;
++               }
++
++               remove_dma_window(pdn, ddw_avail, default_win);
++
++               /* Query again, to check if the window is available */
++               ret = query_ddw(dev, ddw_avail, &query, pdn);
++               if (ret != 0)
++                       goto out_failed;
++
++               if (query.windows_available == 0) {
++                       /* no windows are available for this device. */
++                       dev_dbg(&dev->dev, "no free dynamic windows");
++                       goto out_failed;
++               }
+        }
+        if (query.page_size & 4) {
+                page_shift = 24; /* 16MB */
+@@ -1231,6 +1287,8 @@ static u64 enable_ddw(struct pci_dev *dev, struct
+device_node *pdn)
+        kfree(win64);
+ 
+ out_failed:
++       if (default_win)
++               reset_dma_window(dev, pdn);
+ 
+        fpdn = kzalloc(sizeof(*fpdn), GFP_KERNEL);
+        if (!fpdn)
+
