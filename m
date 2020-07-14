@@ -4,70 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29806C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59C09C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:55:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CCE8920B80
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:49:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCE8920B80
+	by mail.kernel.org (Postfix) with ESMTPS id 824512193E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:55:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 824512193E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Sj06LBYzDqcJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:49:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5SrL68sWzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:55:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5SRJ0WdVzDqVl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 14:37:15 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5SRS2mpWzDqTd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 14:37:24 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06E4Yj2C081240; Tue, 14 Jul 2020 00:37:10 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3279aaubr8-1
+ 06E4YG9U141502; Tue, 14 Jul 2020 00:37:19 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 328s0cvuwh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Jul 2020 00:37:10 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06E4UnbR026920;
- Tue, 14 Jul 2020 04:37:08 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 327527twty-1
+ Tue, 14 Jul 2020 00:37:19 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06E4TaBD032554;
+ Tue, 14 Jul 2020 04:37:16 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 3275282wsc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Jul 2020 04:37:08 +0000
+ Tue, 14 Jul 2020 04:37:16 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06E4b3vC9044288
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06E4bBmO64356534
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 14 Jul 2020 04:37:03 GMT
+ Tue, 14 Jul 2020 04:37:12 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8731FA405C;
- Tue, 14 Jul 2020 04:37:03 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DDE0DA4054;
+ Tue, 14 Jul 2020 04:37:11 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 89814A405B;
- Tue, 14 Jul 2020 04:37:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6D320A405B;
+ Tue, 14 Jul 2020 04:37:09 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.85.70.163])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 14 Jul 2020 04:37:01 +0000 (GMT)
+ Tue, 14 Jul 2020 04:37:09 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 07/11] Powerpc/numa: Detect support for coregroup
-Date: Tue, 14 Jul 2020 10:06:20 +0530
-Message-Id: <20200714043624.5648-8-srikar@linux.vnet.ibm.com>
+Subject: [PATCH 10/11] powerpc/smp: Implement cpu_to_coregroup_id
+Date: Tue, 14 Jul 2020 10:06:23 +0530
+Message-Id: <20200714043624.5648-11-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
 References: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
@@ -76,11 +76,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-13_17:2020-07-13,
  2020-07-13 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 impostorscore=0 priorityscore=1501 suspectscore=0
- clxscore=1015 spamscore=0 malwarescore=0 phishscore=0 mlxlogscore=999
- mlxscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007140034
+ mlxscore=0 priorityscore=1501
+ suspectscore=0 spamscore=0 malwarescore=0 mlxlogscore=997
+ lowpriorityscore=0 phishscore=0 clxscore=1015 impostorscore=0 adultscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007140029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,14 +103,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support for grouping cores based on the device-tree classification.
-- The last domain in the associativity domains always refers to the
-core.
-- If primary reference domain happens to be the penultimate domain in
-the associativity domains device-tree property, then there are no
-coregroups. However if its not a penultimate domain, then there are
-coregroups. There can be more than one coregroup. For now we would be
-interested in the last or the smallest coregroups.
+Lookup the coregroup id from the associativity array.
+
+If unable to detect the coregroup id, fallback on the core id.
+This way, ensure sched_domain degenerates and an extra sched domain is
+not created.
+
+Ideally this function should have been implemented in
+arch/powerpc/kernel/smp.c. However if its implemented in mm/numa.c, we
+don't need to find the primary domain again.
+
+If the device-tree mentions more than one coregroup, then kernel
+implements only the last or the smallest coregroup, which currently
+corresponds to the penultimate domain in the device-tree.
 
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: Michael Ellerman <michaele@au1.ibm.com>
@@ -123,94 +128,37 @@ Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/smp.h |  1 +
- arch/powerpc/kernel/smp.c      |  1 +
- arch/powerpc/mm/numa.c         | 34 +++++++++++++++++++++-------------
- 3 files changed, 23 insertions(+), 13 deletions(-)
+ arch/powerpc/mm/numa.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 49a25e2400f2..5bdc17a7049f 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -28,6 +28,7 @@
- extern int boot_cpuid;
- extern int spinning_secondaries;
- extern u32 *cpu_to_phys_id;
-+extern bool coregroup_enabled;
- 
- extern void cpu_die(void);
- extern int cpu_to_chip_id(int cpu);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index f8faf75135af..96e47450d9b3 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -74,6 +74,7 @@ static DEFINE_PER_CPU(int, cpu_state) = { 0 };
- 
- struct task_struct *secondary_current;
- bool has_big_cores;
-+bool coregroup_enabled;
- 
- DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
- DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index fc7b0505bdd8..a43eab455be4 100644
+index d9ab9da85eab..4e85564ef62a 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -887,7 +887,9 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- static void __init find_possible_nodes(void)
+@@ -1697,6 +1697,23 @@ static const struct proc_ops topology_proc_ops = {
+ 
+ int cpu_to_coregroup_id(int cpu)
  {
- 	struct device_node *rtas;
--	u32 numnodes, i;
-+	const __be32 *domains;
-+	int prop_length, max_nodes;
-+	u32 i;
- 
- 	if (!numa_enabled)
- 		return;
-@@ -896,25 +898,31 @@ static void __init find_possible_nodes(void)
- 	if (!rtas)
- 		return;
- 
--	if (of_property_read_u32_index(rtas, "ibm,current-associativity-domains",
--				min_common_depth, &numnodes)) {
--		/*
--		 * ibm,current-associativity-domains is a fairly recent
--		 * property. If it doesn't exist, then fallback on
--		 * ibm,max-associativity-domains. Current denotes what the
--		 * platform can support compared to max which denotes what the
--		 * Hypervisor can support.
--		 */
--		if (of_property_read_u32_index(rtas, "ibm,max-associativity-domains",
--				min_common_depth, &numnodes))
-+	/*
-+	 * ibm,current-associativity-domains is a fairly recent property. If
-+	 * it doesn't exist, then fallback on ibm,max-associativity-domains.
-+	 * Current denotes what the platform can support compared to max
-+	 * which denotes what the Hypervisor can support.
-+	 */
-+	domains = of_get_property(rtas, "ibm,current-associativity-domains",
-+					&prop_length);
-+	if (!domains) {
-+		domains = of_get_property(rtas, "ibm,max-associativity-domains",
-+					&prop_length);
-+		if (!domains)
- 			goto out;
- 	}
- 
--	for (i = 0; i < numnodes; i++) {
-+	max_nodes = of_read_number(&domains[min_common_depth], 1);
-+	for (i = 0; i < max_nodes; i++) {
- 		if (!node_possible(i))
- 			node_set(i, node_possible_map);
- 	}
- 
-+	prop_length /= sizeof(int);
-+	if (prop_length > min_common_depth + 2)
-+		coregroup_enabled = 1;
++	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
++	int index;
 +
- out:
- 	of_node_put(rtas);
++	if (cpu < 0 || cpu > nr_cpu_ids)
++		return -1;
++
++	if (!firmware_has_feature(FW_FEATURE_VPHN))
++		goto out;
++
++	if (vphn_get_associativity(cpu, associativity))
++		goto out;
++
++	index = of_read_number(associativity, 1);
++	if ((index > min_common_depth + 1) && coregroup_enabled)
++		return of_read_number(&associativity[index - 1], 1);
++
++out:
+ 	return cpu_to_core_id(cpu);
  }
+ 
 -- 
 2.17.1
 
