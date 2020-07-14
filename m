@@ -7,89 +7,75 @@ X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79CA3C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 02:42:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C365C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:10:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B3056208FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 02:42:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E612621D95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:10:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FrlaItIQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3056208FE
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V5oh4Dup"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E612621D95
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Ptl46lHzDqYB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 12:42:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5QWY0SXyzDqWv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 13:10:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::743;
- helo=mail-qk1-x743.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::144;
+ helo=mail-il1-x144.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=FrlaItIQ; dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
+ header.s=20161025 header.b=V5oh4Dup; dkim-atps=neutral
+Received: from mail-il1-x144.google.com (mail-il1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5Prm4vfZzDqY7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 12:40:40 +1000 (AEST)
-Received: by mail-qk1-x743.google.com with SMTP id b185so14348925qkg.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 19:40:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5QT812h2zDqNW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 13:08:42 +1000 (AEST)
+Received: by mail-il1-x144.google.com with SMTP id i18so13053738ilk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2020 20:08:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :organization:user-agent:mime-version:content-transfer-encoding;
- bh=VhnzMvRh92bFnB/5JzWL/d0Vx8GKiVAJ76KkNSRUr2c=;
- b=FrlaItIQduAS/q8vh6uL7Tyi1GyQ/HVTA6SK7who6fyJ+dcqTPFsM0HxWEtovLQ1Mr
- tjShazsTsayLomr6pmq7Hw9/B4eSwPfhIAKzqgaq0RX0UMJm69bl0UlVUbHV2IBP3ScJ
- RG0Stwlmm33AbJ32V78v0gMbU+AUykc6Kum7LMlemilraH16BOYOA0bYWKOsscKpqW9j
- GcBLrqgHZKFEZoUb2Kw5Oz7yPhB0cWl3JKsg2iM0pCdiOBqPlOlYPF3eWT1lAwK/fuwx
- grrgJYaRwP69bRHmsKXYpnLlge7cydbLTXXiuipJTtkxHTxWARO3SjITTmd9q5kF8qik
- vg3Q==
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=sz3xB9q2T+AmXjBVthXa7QV3Qo3chIa7XeDU228UGxE=;
+ b=V5oh4DupNtnU0KUw/CANl8igLqEmOhOpyYOGwjwrqhoFx1mkclJX0G3awCXChYzz0Z
+ 2MdxFOJYMc9vBErqY8+6N7Rx9LLpDH/x1YDNA0l+D1HMxObJqXqPA3FwXFSBoTQziaGT
+ dF3WYXPLZ7GpNvkzoxeJyirYupmAMwi89r+4HW8nUKkT4pfzSTVG1nxlOlQL9mmI2gx1
+ jDLNkUovr+pk5sK6c7DR1ICmXj1Es0cZpLyiHlP2y+MaIRCV2r8N1JK7MGvkPToflJTl
+ ziTWFt8ExZPnSmI5ADJyfwhEcxe2L+xiNg9a2JkWjzKoy5dfB8UZ4ZoJWM4GEsrnk/C7
+ yrQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:organization:user-agent:mime-version
- :content-transfer-encoding;
- bh=VhnzMvRh92bFnB/5JzWL/d0Vx8GKiVAJ76KkNSRUr2c=;
- b=IeiqEhGstMtsXKPQesCb7ZNqSfacn/UAqCpoO2WZ6w68rAVykXIFg1tt11WaX8KtBP
- JxBALW890AXOuApl1j3cl6V5t2caoXPnh018BMGB2gRhQuck+juIdC4BoO5argR1fQwD
- 53HgekUT3IhvZDBWhxoP3eJ3gSMTSBqts10l6NMpJKrEmF2YrRWupTCxdVnLmT6s/TpF
- HiUsHy1z1cHqYvIMpPCIa4xtOW+EBqQwoy3HhT3MjbZbNhYj0cTTvjU+fTF8Kqv7q2gc
- NIz4vn7y3G+vYib10w1xlfrmg6BRnq2WRXJ2HXrc6ICN0iiIyOdOYxrK89JmmpWvOrD2
- kiEA==
-X-Gm-Message-State: AOAM532/bNq1l4nVKk9dXVvnPJ9XQezuES+GBxZJGyu31ZqnlZ40PN3v
- ZNzp72UK4ajpZ20u/jSDRhU=
-X-Google-Smtp-Source: ABdhPJxi0YtrONtF+8IAfqRVT5Lj4N4py9/mZBmawj9Vet9x7vAv3tmeIH/IeS7nBwMCwQoHFVLsKg==
-X-Received: by 2002:a37:d0d:: with SMTP id 13mr2671093qkn.234.1594694436832;
- Mon, 13 Jul 2020 19:40:36 -0700 (PDT)
-Received: from LeoBras (179-125-193-229.dynamic.desktop.com.br.
- [179.125.193.229])
- by smtp.gmail.com with ESMTPSA id r7sm20604694qtm.66.2020.07.13.19.40.33
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 13 Jul 2020 19:40:36 -0700 (PDT)
-Message-ID: <8c29be499e8741e7d77d53ca005034a2ca0179ac.camel@gmail.com>
-Subject: Re: [PATCH v3 4/6] powerpc/pseries/iommu: Remove default DMA window
- before creating DDW
-From: Leonardo Bras <leobras.c@gmail.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
- <mpe@ellerman.id.au>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thiago Jung Bauermann
- <bauerman@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>
-Date: Mon, 13 Jul 2020 23:40:30 -0300
-In-Reply-To: <cc15a81d-04d9-3ee4-4fdb-093618f6e635@ozlabs.ru>
-References: <20200703061844.111865-1-leobras.c@gmail.com>
- <20200703061844.111865-5-leobras.c@gmail.com>
- <cc15a81d-04d9-3ee4-4fdb-093618f6e635@ozlabs.ru>
-Organization: IBM
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=sz3xB9q2T+AmXjBVthXa7QV3Qo3chIa7XeDU228UGxE=;
+ b=eBO6AGRhbGPq5aUUYZ9PZNhoznQHw5zinx6EZuUCaCzzJSvw3SUuGYUlOG5swvbCFh
+ 8jml3hC8m93TG9cc0wIvpuUZ2D+6Fn/yrHcPS9SuFsIajmdoZr4sDTOjOwW+GtqGZFO4
+ 3ywDBBCHiDuDqrqukuZE6Fre08azeS3RfcNI/y/D0TEZFmYgf7u+DAK3DbMpPrEH+PY+
+ j56IgRVUtgAOAoTjNqUV0VYuvSQQ/0U7AnRnkdV9oUMT2IEl4SJOdEZT4doW6U70Ktg6
+ 5q7zPGzXguX8B7QIPEN7mA6vhczsIi71mKveQfvnp4cIIJnwzRghJG8Ypj42On0D33VI
+ Kyow==
+X-Gm-Message-State: AOAM533D520cN0jQBK/tPxJ3LU/gqTcTNMqOoTSjshYVRCZ5/yBQEssL
+ WH7CCPynmDaKyYNmMQsO9GWHoNxIxrjooAsuKBo=
+X-Google-Smtp-Source: ABdhPJw1qfwV3n6TNqg1W6qsLkRkDGhrHwVDryp/fPdoukXPaBpzML/tdWCJg2fdKPEPAIhjSXFgewWOklHQIc0M5CQ=
+X-Received: by 2002:a92:9a97:: with SMTP id c23mr2879174ill.258.1594696118980; 
+ Mon, 13 Jul 2020 20:08:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <20200706013619.459420-1-oohall@gmail.com>
+ <20200706013619.459420-15-oohall@gmail.com>
+ <d2ce45e8-92e6-f875-fd38-c3fa82bf8f4e@ozlabs.ru>
+In-Reply-To: <d2ce45e8-92e6-f875-fd38-c3fa82bf8f4e@ozlabs.ru>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Tue, 14 Jul 2020 13:08:26 +1000
+Message-ID: <CAOSf1CGRXox-fO7cJNA+0APjrQOUve01jUbjLmXWqjH=07cGxg@mail.gmail.com>
+Subject: Re: [PATCH 14/14] powerpc/eeh: Move PE tree setup into the platform
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,202 +87,172 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thank you for this feedback Alexey!
+On Tue, Jul 14, 2020 at 11:50 AM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>
+> On 06/07/2020 11:36, Oliver O'Halloran wrote:
+> >  /**
+> >   * eeh_pe_tree_insert - Add EEH device to parent PE
+> >   * @edev: EEH device
+> > + * @new_pe_parent: PE to create additional PEs under
+> >   *
+> > - * Add EEH device to the parent PE. If the parent PE already
+> > - * exists, the PE type will be changed to EEH_PE_BUS. Otherwise,
+> > - * we have to create new PE to hold the EEH device and the new
+> > - * PE will be linked to its parent PE as well.
+> > + * Add EEH device to the PE in edev->pe_config_addr. If a PE already
+> > + * exists with that address then @edev is added to that PE. Otherwise
+> > + * a new PE is created and inserted into the PE tree as a child of
+> > + * @new_pe_parent.
+> > + *
+> > + * If @new_pe_parent is NULL then the new PE will be inserted under
+> > + * directly under the the PHB.
+> >   */
+> > -int eeh_pe_tree_insert(struct eeh_dev *edev)
+> > +int eeh_pe_tree_insert(struct eeh_dev *edev, struct eeh_pe *new_pe_parent)
+> >  {
+> >       struct pci_controller *hose = edev->controller;
+> >       struct eeh_pe *pe, *parent;
+>
+>
+> We can ditch this "parent" in that single place now and use "pe"
+> instead. And name the new parameter simply "parent". Dunno if it
+> improves things though.
 
-On Mon, 2020-07-13 at 17:33 +1000, Alexey Kardashevskiy wrote:
-> [...]
-> > -	int len, ret;
-> > +	int len, ret, reset_win_ext;
-> 
-> Make it "reset_token".
+I did this at some point and then decided not to. It added a bunch of
+noise to the diff and calling the parameter "parent" ended up being
+pretty unreadable. The parameter is "the parent of the PE that will be
+created to contain edev", or "parent of the parent PE". It's pretty
+unwieldy.
 
-Oh, it's not a token here, it just checks if the reset_win extension
-exists. The token would be returned in *value, but since we did not
-need it here, it's not copied.
+> > @@ -399,7 +366,7 @@ int eeh_pe_tree_insert(struct eeh_dev *edev)
+> >                       }
+> >
+> >                       eeh_edev_dbg(edev,
+> > -                                  "Added to device PE (parent: PE#%x)\n",
+> > +                                  "Added to existing PE (parent: PE#%x)\n",
+> >                                    pe->parent->addr);
+> >               } else {
+> >                       /* Mark the PE as type of PCI bus */
+> > @@ -431,10 +398,9 @@ int eeh_pe_tree_insert(struct eeh_dev *edev)
+> >        * to PHB directly. Otherwise, we have to associate the
+> >        * PE with its parent.
+> >        */
+> > -     parent = eeh_pe_get_parent(edev);
+> > -     if (!parent) {
+> > -             parent = eeh_phb_pe_get(hose);
+> > -             if (!parent) {
+> > +     if (!new_pe_parent) {
+> > +             new_pe_parent = eeh_phb_pe_get(hose);
+> > +             if (!new_pe_parent) {
+>
+>
+>
+> afaict only pseries can realisticly pass new_pe_parent==NULL so this
+> chunk could go to pseries_eeh_pe_get_parent.
 
-> > [...]
-> > -out_failed:
-> > +out_restore_defwin:
-> > +	if (default_win && reset_win_ext == 0)
-> 
-> reset_win_ext potentially may be uninitialized here. Yeah I know it is
-> tied to default_win but still.
+pnv_eeh_get_upstream_pe() will never return the PHB PE so
+new_pe_parent will be NULL for the first PE created under a PowerNV
+PHB. I guess we could move the PHB PE handling into the platform too,
+but I think that just results in having to special case PHB PEs in two
+places rather than one.
 
-I can't see it being used uninitialized here, as you said it's tied to
-default_win. 
-Could you please tell me how it can be used uninitialized here, or what
-is bad by doing this way?
+> > +static struct eeh_pe *pseries_eeh_pe_get_parent(struct eeh_dev *edev)
+> > +{
+> > +     struct eeh_dev *parent;
+> > +     struct pci_dn *pdn = eeh_dev_to_pdn(edev);
+> > +
+> > +     /*
+> > +      * It might have the case for the indirect parent
+> > +      * EEH device already having associated PE, but
+> > +      * the direct parent EEH device doesn't have yet.
+> > +      */
+> > +     if (edev->physfn)
+> > +             pdn = pci_get_pdn(edev->physfn);
+> > +     else
+> > +             pdn = pdn ? pdn->parent : NULL;
+> > +     while (pdn) {
+> > +             /* We're poking out of PCI territory */
+>
+>
+> We are traversing up PCI hierarchy here - pci_dn->parent, how is this
+> out of PCI territory? Or I understand "out of" incorrectly?
+>
+>
+> > +             parent = pdn_to_eeh_dev(pdn);
+> > +             if (!parent)
+> > +                     return NULL;
 
-> After looking at this function for a few minutes, it could use some
-> refactoring (way too many gotos)  such as:
-
-Yes, I agree.
-
-> 1. move (query.page_size & xx) checks before "if
-> (query.windows_available == 0)"
-
-Moving 'page_size selection' above 'checking windows available' will
-need us to duplicate the 'page_size selection' after the new query,
-inside the if.
-I mean, as query will be done again, it will need to get the (new) page
-size.
-
-> 2. move "win64 = kzalloc(sizeof(struct property), GFP_KERNEL)" before
-> "if (query.windows_available == 0)"
-
-> 3. call "reset_dma_window(dev, pdn)" inside the "if
-> (query.windows_available == 0)" branch.
-
-> Then you can drop all "goto out_restore_defwin" and move default_win and
-> reset_win_ext inside "if (query.windows_available == 0)".
-
-I did all changes suggested locally and did some analysis in the
-result:
-
-I did not see a way to put default_win and reset_win_ext inside 
-"if (query.windows_available == 0)", because if we still need a way to
-know if the default window was removed, and if so, restore in case
-anything ever fails ahead (like creating the node property). 
-
-But from that analysis I noted it's possible to remove all the new
-"goto out_restore_defwin", if we do default_win = NULL if
-ddw_read_ext() fails. 
-
-So testing only default_win should always be enough to say if the
-default window was deleted, and reset_win_ext could be moved inside "if
-(query.windows_available == 0)".
-Also, it would avoid reset_win_ext being 'used uninitialized' and
-"out_restore_defwin:" would not be needed.
-
-Against the current patch, we would have something like this:
-
-#####
-
- static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- {
--       int len, ret, reset_win_ext;
-+       int len, ret;
-        struct ddw_query_response query;
-        struct ddw_create_response create;
-        int page_shift;
-@@ -1173,25 +1173,28 @@ static u64 enable_ddw(struct pci_dev *dev,
-struct device_node *pdn)
-         * for extensions presence.
-         */
-        if (query.windows_available == 0) {
-+               int reset_win_ext;
-                default_win = of_find_property(pdn, "ibm,dma-window",
-NULL);
-                if (!default_win)
-                        goto out_failed;
- 
-                reset_win_ext = ddw_read_ext(pdn,
-DDW_EXT_RESET_DMA_WIN, NULL);
--               if (reset_win_ext)
-+               if (reset_win_ext){
-+                       default_win = NULL;
-                        goto out_failed;
-+               }
- 
-                remove_dma_window(pdn, ddw_avail, default_win);
- 
-                /* Query again, to check if the window is available */
-                ret = query_ddw(dev, ddw_avail, &query, pdn);
-                if (ret != 0)
--                       goto out_restore_defwin;
-+                       goto out_failed;
- 
-                if (query.windows_available == 0) {
-                        /* no windows are available for this device. */
-                        dev_dbg(&dev->dev, "no free dynamic windows");
--                       goto out_restore_defwin;
-+                       goto out_failed;
-                }
-        }
-        if (query.page_size & 4) {
-@@ -1203,7 +1206,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct
-device_node *pdn)
-        } else {
-                dev_dbg(&dev->dev, "no supported direct page size in
-mask %x",
-                          query.page_size);
--               goto out_restore_defwin;
-+               goto out_failed;
-        }
-        /* verify the window * number of ptes will map the partition */
-        /* check largest block * page size > max memory hotplug addr */
-@@ -1212,14 +1215,14 @@ static u64 enable_ddw(struct pci_dev *dev,
-struct device_node *pdn)
-                dev_dbg(&dev->dev, "can't map partition max 0x%llx with
-%llu "
-                          "%llu-sized pages\n",
-max_addr,  query.largest_available_block,
-                          1ULL << page_shift);
--               goto out_restore_defwin;
-+               goto out_failed;
-        }
-        len = order_base_2(max_addr);
-        win64 = kzalloc(sizeof(struct property), GFP_KERNEL);
-        if (!win64) {
-                dev_info(&dev->dev,
-                        "couldn't allocate property for 64bit dma
-window\n");
--               goto out_restore_defwin;
-+               goto out_failed;
-        }
-        win64->name = kstrdup(DIRECT64_PROPNAME, GFP_KERNEL);
-        win64->value = ddwprop = kmalloc(sizeof(*ddwprop), GFP_KERNEL);
-@@ -1282,11 +1285,10 @@ static u64 enable_ddw(struct pci_dev *dev,
-struct device_node *pdn)
-        kfree(win64->value);
-        kfree(win64);
- 
--out_restore_defwin:
--       if (default_win && reset_win_ext == 0)
-+out_failed:
-+       if (default_win)
-                reset_dma_window(dev, pdn);
- 
--out_failed:
-        fpdn = kzalloc(sizeof(*fpdn), GFP_KERNEL);
-        if (!fpdn)
-                goto out_unlock;
-
-#####
-
-What do you think?
+If there's no eeh dev then the node we're looking at is a PHB rather
+than an actual PCI device so it stops looking. I think. The comment
+was copied over from the existing code and I haven't spent a whole lot
+of time parsing it's meaning.
 
 
 
-> The rest of the series is good as it is,
+> > @@ -301,6 +343,8 @@ void pseries_eeh_init_edev(struct pci_dn *pdn)
+> >       if (ret) {
+> >               eeh_edev_dbg(edev, "EEH failed to enable on device (code %d)\n", ret);
+> >       } else {
+> > +             struct eeh_pe *parent;
+> > +
+> >               /* Retrieve PE address */
+> >               edev->pe_config_addr = pseries_eeh_get_pe_addr(pdn);
+> >               pe.addr = edev->pe_config_addr;
+> > @@ -313,16 +357,23 @@ void pseries_eeh_init_edev(struct pci_dn *pdn)
+> >               if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT)
+> >                       enable = 1;
+> >
+> > -             if (enable) {
+> > +             /* This device doesn't support EEH, but it may have an
+> > +              * EEH parent, in which case we mark it as supported.
+> > +              */
+> > +             parent = pseries_eeh_pe_get_parent(edev);
+> > +             if (parent && !enable)
+> > +                     edev->pe_config_addr = parent->addr;
+>
+>
+> What if pseries_eeh_pe_get_parent() returned NULL - we won't write
+> edev->pe_config_addr so it remains 0 which is fine just by accident? :)
 
-Thank you :)
+edev->pe_config_addr is set above when we call
+pseries_eeh_get_pe_addr(). The check there is mainly to cover the case
+where pseries_eeh_get_pe_addr() fails because the device is on a
+subordinate bus rather than the root bus of the PE. PAPR says the
+get-pe-addr-info RTAS call can fail in that situation and that you're
+supposed to traverse up the DT to find the pe_config_addr, which is
+what pe_get_parent() does. Yeah it's confusing, but that's what it
+does today too.
 
->  however it may conflict with
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20200713062348.100552-1-aik@ozlabs.ru/
-> and the patchset it is made on top of -
-> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=188385 .
+> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>
+> > +
+> > +             if (enable || parent) {
+> >                       eeh_add_flag(EEH_ENABLED);
+> > -                     eeh_pe_tree_insert(edev);
+> > +                     eeh_pe_tree_insert(edev, parent);
 
-<From the message of the first link>
-> (do not rush, let me finish reviewing this first) 
+> >               } else if (pdn->parent && pdn_to_eeh_dev(pdn->parent) &&
+> >                          (pdn_to_eeh_dev(pdn->parent))->pe) {
+> >                       /* This device doesn't support EEH, but it may have an
+> >                        * EEH parent, in which case we mark it as supported.
+> >                        */
+> >                       edev->pe_config_addr = pdn_to_eeh_dev(pdn->parent)->pe_config_addr;
+> > -                     eeh_pe_tree_insert(edev);
+> > +                     eeh_pe_tree_insert(edev, parent);
 
-Ok, I have no problem rebasing on top of those patchsets, but what
-would you suggest to be done?
+I think I was supposed to delete this hunk and then forgot to since it
+handles the same case mentioned above.
 
-Would it be ok doing a big multi-author patchset, so we guarantee it
-being applied in the correct order?
-
-(You probably want me to rebase my patchset on top of Hellwig + yours,
-right?) 
-
-
-> thanks,
-Thank you!
-
-
-
+> >               }
+> >               eeh_edev_dbg(edev, "EEH is %s on device (code %d)\n",
+> >                            (enable ? "enabled" : "unsupported"), ret);
+> >
+>
+> --
+> Alexey
