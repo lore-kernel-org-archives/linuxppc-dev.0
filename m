@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0946CC433E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E9AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:41:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B5C3E22206
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:45:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5C3E22206
+	by mail.kernel.org (Postfix) with ESMTPS id 1666E22203
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 10:41:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1666E22203
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5cbq4QDQzDqfj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 20:45:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5cWX1MNNzDqf5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 20:41:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=134.134.136.31; helo=mga06.intel.com;
+ (client-ip=134.134.136.24; helo=mga09.intel.com;
  envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5bS45lVHzDqPT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:53:24 +1000 (AEST)
-IronPort-SDR: hLUGmt6SfNSj9WEhz+h4C8g/om0TiHIbXT46bC+yZWFKR+SRMmkcegMJHDsCjLA8uzq8zpFAWU
- rRqS+asxIGJg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9681"; a="210390057"
-X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="210390057"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5bNH6Bm7zDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:50:06 +1000 (AEST)
+IronPort-SDR: i7NeRXdpvHGrxMijbezYHg+GAFMSfCRoefNbA8O3aJlkhVSyBelIogBRtqzwWoZJGMsdhkFg6g
+ BMrVm6LP/hlA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9681"; a="150283211"
+X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="150283211"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Jul 2020 02:53:21 -0700
-IronPort-SDR: RDFryWjT5IPgyN0I9WSx3D0rEVyZsRnRcmM2w8IlDz5eZHQ5NWNaSaMHRdjqbP5kEXT4e4FnSP
- cdXTPY+LWXbQ==
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Jul 2020 02:50:04 -0700
+IronPort-SDR: Zf6uf7lGVSkE2/rZ+zXkFFeUCB3RynW1VIuDIr1OkK11uY/JL11IeJTNx2H4/X4g8otzbtLAPa
+ V12JB3HM4xew==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="459634031"
+X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="459631608"
 Received: from rmarti11-mobl.ger.corp.intel.com (HELO localhost)
  ([10.252.54.57])
- by orsmga005.jf.intel.com with ESMTP; 14 Jul 2020 02:52:44 -0700
-Date: Tue, 14 Jul 2020 12:52:43 +0300
+ by orsmga005.jf.intel.com with ESMTP; 14 Jul 2020 02:49:29 -0700
+Date: Tue, 14 Jul 2020 12:49:28 +0300
 From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Ard Biesheuvel <ardb@kernel.org>
+To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
 Subject: Re: [PATCH 1/3] module: Rename module_alloc() to text_alloc() and
  move to kernel proper
-Message-ID: <20200714095243.GB1442951@linux.intel.com>
+Message-ID: <20200714094928.GA1442951@linux.intel.com>
 References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
- <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
+ <20200713183410.GY1551@shell.armlinux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
+In-Reply-To: <20200713183410.GY1551@shell.armlinux.org.uk>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Tue, 14 Jul 2020 20:36:21 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,12 +79,11 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>,
  Andy Lutomirski <luto@kernel.org>, Yonghong Song <yhs@fb.com>,
  Thomas Gleixner <tglx@linutronix.de>, Jiri Kosina <jkosina@suse.cz>,
- Anup Patel <anup.patel@wdc.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Anup Patel <anup.patel@wdc.com>, linux-kernel@vger.kernel.org,
  Philipp Rudo <prudo@linux.ibm.com>, Torsten Duwe <duwe@lst.de>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
  Vincent Chen <deanbo422@gmail.com>,
  "open list:S390" <linux-s390@vger.kernel.org>,
  Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
@@ -120,16 +119,15 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
  Amit Daniel Kachhap <amit.kachhap@arm.com>,
  Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
- Jiri Olsa <jolsa@redhat.com>,
- "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+ Jiri Olsa <jolsa@redhat.com>, Ard Biesheuvel <ardb@kernel.org>,
  Vincenzo Frascino <vincenzo.frascino@arm.com>,
  Anders Roxell <anders.roxell@linaro.org>, Sven Schnelle <svens@stackframe.org>,
  "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Paul E. McKenney" <paulmck@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- KP Singh <kpsingh@chromium.org>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Nick Hu <nickhu@andestech.com>,
+ "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, KP Singh <kpsingh@chromium.org>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Nick Hu <nickhu@andestech.com>,
  "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
  "open list:MIPS" <linux-mips@vger.kernel.org>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -140,20 +138,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 13, 2020 at 10:49:48PM +0300, Ard Biesheuvel wrote:
-> This patch suggests that there are other reasons why conflating
-> allocation of module space and allocating  text pages for other uses
-> is a bad idea, but switching all users to text_alloc() is a step in
-> the wrong direction. It would be better to stop using module_alloc()
-> in core code except in the module loader, and have a generic
-> text_alloc() that can be overridden by the arch if necessary. Note
-> that x86  and s390 are the only architectures that use module_alloc()
-> in ftrace code.
+On Mon, Jul 13, 2020 at 07:34:10PM +0100, Russell King - ARM Linux admin wrote:
+> On Mon, Jul 13, 2020 at 09:19:37PM +0300, Jarkko Sakkinen wrote:
+> > Rename module_alloc() to text_alloc() and module_memfree() to
+> > text_memfree(), and move them to kernel/text.c, which is unconditionally
+> > compiled to the kernel proper. This allows kprobes, ftrace and bpf to
+> > allocate space for executable code without requiring to compile the modules
+> > support (CONFIG_MODULES=y) in.
+> 
+> I'm not sure this is a good idea for 32-bit ARM.  The code you are
+> moving for 32-bit ARM is quite specific to module use in that it also
+> supports allocating from the vmalloc area, where the module code
+> knows to add PLT entries.
+> 
+> If the other proposed users of this text_alloc() do not have the logic
+> to add PLT entries when branches between kernel code and this
+> allocation are not reachable by, e.g. a 26-bit signed offset for 32-bit
+> ARM code, then this code is not suitable for that use.
 
-This series essentially does this: introduces text_alloc() and
-text_memfree(), which have generic implementations in kernel/text.c.
-Those can be overriddent by arch specific implementations.
-
-What you think should be done differently than in my patch set?
+My intention is to use this in kprobes code in the place of
+module_alloc().  I'm not sure why moving this code out of the module
+subsystem could possibly break anything.  Unfortunately I forgot to add
+covere letter to my series. Sending v2 with that to explain my use case
+for this.
 
 /Jarkko
