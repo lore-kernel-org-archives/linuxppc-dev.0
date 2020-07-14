@@ -2,53 +2,85 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 604DAC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21E2AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:40:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFA9221D95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 03:13:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFA9221D95
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id C9CFA20B80
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:40:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9CFA20B80
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Qb80SzjzDqZm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 13:13:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=bz71=az=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5SWJ3RggzDqVK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:40:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5P3N5KwHzDqTq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 12:04:48 +1000 (AEST)
-Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1BD2E2186A;
- Tue, 14 Jul 2020 02:04:38 +0000 (UTC)
-Date: Mon, 13 Jul 2020 22:04:36 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ard Biesheuvel <ardb@kernel.org>
-Subject: Re: [PATCH 1/3] module: Rename module_alloc() to text_alloc() and
- move to kernel proper
-Message-ID: <20200713220436.2f21d366@oasis.local.home>
-In-Reply-To: <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
-References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
- <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 14 Jul 2020 13:11:22 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5SQz3RDZzDqPg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 14:36:59 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06E4WxBb172456; Tue, 14 Jul 2020 00:36:54 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 327tn9xwnn-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jul 2020 00:36:54 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06E4RAsF028340;
+ Tue, 14 Jul 2020 04:36:52 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 3274pgtuqu-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jul 2020 04:36:52 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 06E4al0T59638250
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Jul 2020 04:36:47 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 517FAA4054;
+ Tue, 14 Jul 2020 04:36:47 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 12940A405B;
+ Tue, 14 Jul 2020 04:36:45 +0000 (GMT)
+Received: from srikart450.in.ibm.com (unknown [9.85.70.163])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Jul 2020 04:36:44 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 01/11] powerpc/smp: Cache node for reuse
+Date: Tue, 14 Jul 2020 10:06:14 +0530
+Message-Id: <20200714043624.5648-2-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
+References: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-13_17:2020-07-13,
+ 2020-07-13 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ priorityscore=1501 adultscore=0 bulkscore=0 spamscore=0 phishscore=0
+ impostorscore=0 suspectscore=0 lowpriorityscore=0 clxscore=1015 mlxscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007140029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,109 +92,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- Kefeng Wang <wangkefeng.wang@huawei.com>, Paul Mackerras <paulus@samba.org>,
- Zong Li <zong.li@sifive.com>, Andi Kleen <ak@linux.intel.com>,
- Paul Burton <paulburton@kernel.org>,
- Vincent Whitchurch <vincent.whitchurch@axis.com>,
- Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>,
- Andy Lutomirski <luto@kernel.org>, Yonghong Song <yhs@fb.com>,
- Thomas Gleixner <tglx@linutronix.de>, Jiri Kosina <jkosina@suse.cz>,
- Anup Patel <anup.patel@wdc.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Philipp Rudo <prudo@linux.ibm.com>, Torsten Duwe <duwe@lst.de>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Vincent Chen <deanbo422@gmail.com>,
- "open list:S390" <linux-s390@vger.kernel.org>,
- Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
- John Fastabend <john.fastabend@gmail.com>,
- Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, Iurii Zaikin <yzaikin@google.com>,
- Andrii Nakryiko <andriin@fb.com>, Vasily Gorbik <gor@linux.ibm.com>,
- "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>, Damien Le Moal <damien.lemoal@wdc.com>,
- Peter Oberparleiter <oberpar@linux.ibm.com>,
- Sean Christopherson <sean.j.christopherson@intel.com>,
- Martin KaFai Lau <kafai@fb.com>, Song Liu <songliubraving@fb.com>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Atish Patra <atish.patra@wdc.com>, Will Deacon <will@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Masahiro Yamada <masahiroy@kernel.org>,
- Nayna Jain <nayna@linux.ibm.com>, Ley Foon Tan <ley.foon.tan@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Dmitry Vyukov <dvyukov@google.com>, Sami Tolvanen <samitolvanen@google.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Mao Han <han_mao@c-sky.com>,
- Marco Elver <elver@google.com>, Babu Moger <Babu.Moger@amd.com>,
- Borislav Petkov <bp@alien8.de>, Greentime Hu <green.hu@gmail.com>,
- Ben Dooks <ben-linux@fluff.org>, Guan Xuetao <gxt@pku.edu.cn>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Jessica Yu <jeyu@kernel.org>, "open list:BPF JIT for MIPS
- \(32-BIT AND 64-BIT\)" <bpf@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, "open list:SPARC + UltraSPARC
- \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
- Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Amit Daniel Kachhap <amit.kachhap@arm.com>,
- Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
- Jiri Olsa <jolsa@redhat.com>,
- "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Anders Roxell <anders.roxell@linaro.org>, Sven Schnelle <svens@stackframe.org>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
- "Paul E. McKenney" <paulmck@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- KP Singh <kpsingh@chromium.org>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Nick Hu <nickhu@andestech.com>, "open list:BPF JIT for MIPS
- \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>, "open
- list:MIPS" <linux-mips@vger.kernel.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, "open list:LINUX FOR POWERPC \(32-BIT AND
- 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nick Piggin <npiggin@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Jul 2020 22:49:48 +0300
-Ard Biesheuvel <ardb@kernel.org> wrote:
+While cpu_to_node is inline function with access to per_cpu variable.
+However when using repeatedly, it may be cleaner to cache it in a local
+variable.
 
-> On arm64, we no longer use module_alloc for bpf or kprobes, to avoid
-> wasting va space on code that does not need to be loaded close to the
-> kernel. Also, module_alloc() allocates kasan shadow, which is
-> unnecessary for kprobes or bpf programs, which don't have kasan
-> instrumentation.
-> 
-> This patch suggests that there are other reasons why conflating
-> allocation of module space and allocating  text pages for other uses
-> is a bad idea, but switching all users to text_alloc() is a step in
-> the wrong direction. It would be better to stop using module_alloc()
-> in core code except in the module loader, and have a generic
-> text_alloc() that can be overridden by the arch if necessary. Note
-> that x86  and s390 are the only architectures that use module_alloc()
-> in ftrace code.
-> 
-> Please have a look at alloc_insn_page() or bpf_jit_alloc_exec() in the
-> arm64 tree to see what I mean.
+Also fix a build error in a some weird config.
+"error: _numa_cpu_lookup_table_ undeclared"
 
-Hmm, so you have another method for allocating memory for trampolines?
-(I haven't looked at those functions you pointed out, out of sheer
-laziness ;-)
+No functional change
 
-It would be nice to implement the trampoline optimization in arm, which
-x86 has (see arch_ftrace_update_trampoline() and
-arch_ftrace_trampoline_func()).
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+Cc: Nick Piggin <npiggin@au1.ibm.com>
+Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Michael Neuling <mikey@linux.ibm.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-It helps when you have two different callbacks for different functions
-(like having live patching enabled and function tracing enabled, or
-kprobes using ftrace). Each callback will get its own allocated
-trampoline to jump to instead of jumping to the a trampoline that calls
-a looping function that tests to see which callback wants to be called
-by the traced function.
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 73199470c265..680c0edcc59d 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -843,7 +843,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 
+ 	DBG("smp_prepare_cpus\n");
+ 
+-	/* 
++	/*
+ 	 * setup_cpu may need to be called on the boot cpu. We havent
+ 	 * spun any cpus up but lets be paranoid.
+ 	 */
+@@ -854,20 +854,24 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	cpu_callin_map[boot_cpuid] = 1;
+ 
+ 	for_each_possible_cpu(cpu) {
++		int node = cpu_to_node(cpu);
++
+ 		zalloc_cpumask_var_node(&per_cpu(cpu_sibling_map, cpu),
+-					GFP_KERNEL, cpu_to_node(cpu));
++					GFP_KERNEL, node);
+ 		zalloc_cpumask_var_node(&per_cpu(cpu_l2_cache_map, cpu),
+-					GFP_KERNEL, cpu_to_node(cpu));
++					GFP_KERNEL, node);
+ 		zalloc_cpumask_var_node(&per_cpu(cpu_core_map, cpu),
+-					GFP_KERNEL, cpu_to_node(cpu));
++					GFP_KERNEL, node);
++#ifdef CONFIG_NEED_MULTIPLE_NODES
+ 		/*
+ 		 * numa_node_id() works after this.
+ 		 */
+ 		if (cpu_present(cpu)) {
+-			set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
+-			set_cpu_numa_mem(cpu,
+-				local_memory_node(numa_cpu_lookup_table[cpu]));
++			node = numa_cpu_lookup_table[cpu];
++			set_cpu_numa_node(cpu, node);
++			set_cpu_numa_mem(cpu, local_memory_node(node));
+ 		}
++#endif
+ 	}
+ 
+ 	/* Init the cpumasks so the boot CPU is related to itself */
+-- 
+2.17.1
 
--- Steve
