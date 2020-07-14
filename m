@@ -2,56 +2,87 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EE48C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:38:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DD93C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:56:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 466E52067D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:38:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 466E52067D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4BE45223B0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:56:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YaPkEvwk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BE45223B0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5jmm0HQDzDqXQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 00:38:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5k9H2JlfzDqXt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 00:56:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
- envelope-from=weiyongjun1@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::441;
+ helo=mail-wr1-x441.google.com; envelope-from=lee.jones@linaro.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-X-Greylist: delayed 918 seconds by postgrey-1.36 at bilbo;
- Wed, 15 Jul 2020 00:29:55 AEST
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=YaPkEvwk; dkim-atps=neutral
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5jb76F9QzDqbw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 00:29:55 +1000 (AEST)
-Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 881A14886A9F576467E5;
- Tue, 14 Jul 2020 22:14:28 +0800 (CST)
-Received: from kernelci-master.huawei.com (10.175.101.6) by
- DGGEMS414-HUB.china.huawei.com (10.3.19.214) with Microsoft SMTP Server id
- 14.3.487.0; Tue, 14 Jul 2020 22:14:21 +0800
-From: Wei Yongjun <weiyongjun1@huawei.com>
-To: Hulk Robot <hulkci@huawei.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: [PATCH -next] cpuidle/pseries: Make symbol 'pseries_idle_driver'
- static
-Date: Tue, 14 Jul 2020 22:24:24 +0800
-Message-ID: <20200714142424.66648-1-weiyongjun1@huawei.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5k3V4gT9zDqVm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 00:51:01 +1000 (AEST)
+Received: by mail-wr1-x441.google.com with SMTP id f18so22197711wrs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 07:51:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=6pwz2ffWzBJ40s4OQQcEx95BGb6IW3I0JlI9ImusOaw=;
+ b=YaPkEvwkRMrXCrAr3GD3Lq5esr1zvrFowgkVtFLyXE9aeQ+n6qHPlhaUhK4AYO4xUs
+ hm5M2HAtd3m5JHJjY2xKUYjnMD1tdtfs5OPz2xXGUBp2zizzY0ZWTKvQ9U0A5cXFSIRJ
+ j3yMdMtUprKvhoEl35KqZAv8e37m9RfHJ9JDTy287GDX+MDLsV7UmkJ7LDgRcd0qsysv
+ Ia93V3kAPH4VDyioq5fO47gOCGnLqoR2QLu1mPSgJAUAUCITRKMczfB1Ec4oXyA2jWHx
+ PQLY4by7vk9xQhpkcw3oZfR/uB2heai2vAqu8clRrz2QEmp5oM3aCK3aViE9BDI4b5mz
+ 3u7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=6pwz2ffWzBJ40s4OQQcEx95BGb6IW3I0JlI9ImusOaw=;
+ b=kSvqgplDHGfadSNAw6qI3tIWe5/dN9kmT9y0mxx4Ivrbj9EQgrqB8ZMgZL84hxBShM
+ LaiOtu5LjWAYw5kTfJgZlUwxme+JAXHOPISNw6lVMO/pT479t+HL5kAiznmMnZXXnE/p
+ sF2Q3/w3nfwa+nF9oljnfVo0xksgBpUaZO3B5s/caPNYbQ6cdWtC+AcC/uv5qqGzKSbl
+ KweWBWr0sVaroP4JG/xtqAsPHyyAcUSeubhDvqs67MoercgHp0PTW19YimWRBndBEcjY
+ bfNQOaRRqrees2UTwJWD8+YDnmQW8lMrLfN7vIVESWbvOlmqEN6hJzz5/X9FN+oaNUrO
+ HT2A==
+X-Gm-Message-State: AOAM531kKB4DMAd7rlegkbRdb6F8EvKsqL6FIPzYejkaFLjqlLpbXPBv
+ iqdacYO+aHzKWg39Nr0mXCjzKA==
+X-Google-Smtp-Source: ABdhPJxR1XkWPEdO/OToyZfeyPk6VSF/2G2O+HfpfRXS3rTqGgoQ4md522X2INCeZPPwNAHNuFWGZw==
+X-Received: by 2002:a5d:650e:: with SMTP id x14mr6401946wru.187.1594738258660; 
+ Tue, 14 Jul 2020 07:50:58 -0700 (PDT)
+Received: from localhost.localdomain ([2.31.163.61])
+ by smtp.gmail.com with ESMTPSA id a84sm4653305wmh.47.2020.07.14.07.50.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 14 Jul 2020 07:50:58 -0700 (PDT)
+From: Lee Jones <lee.jones@linaro.org>
+To: rjw@rjwysocki.net,
+	viresh.kumar@linaro.org
+Subject: [PATCH 06/13] cpufreq: powernv-cpufreq: Functions only used in
+ call-backs should be static
+Date: Tue, 14 Jul 2020 15:50:42 +0100
+Message-Id: <20200714145049.2496163-7-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200714145049.2496163-1-lee.jones@linaro.org>
+References: <20200714145049.2496163-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.175.101.6]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,37 +94,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Wei Yongjun <weiyongjun1@huawei.com>,
- linux-pm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The sparse tool complains as follows:
+Fixes the following W=1 kernel build warning(s):
 
-drivers/cpuidle/cpuidle-pseries.c:25:23: warning:
- symbol 'pseries_idle_driver' was not declared. Should it be static?
- 
-'pseries_idle_driver' is not used outside of this file, so marks
-it static.
+ drivers/cpufreq/powernv-cpufreq.c:669:6: warning: no previous prototype for ‘gpstate_timer_handler’ [-Wmissing-prototypes]
+ drivers/cpufreq/powernv-cpufreq.c:902:6: warning: no previous prototype for ‘powernv_cpufreq_work_fn’ [-Wmissing-prototypes]
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/cpuidle/cpuidle-pseries.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/powernv-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 6513ef2af66a..3e058ad2bb51 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -22,7 +22,7 @@
- #include <asm/idle.h>
- #include <asm/plpar_wrappers.h>
- 
--struct cpuidle_driver pseries_idle_driver = {
-+static struct cpuidle_driver pseries_idle_driver = {
- 	.name             = "pseries_idle",
- 	.owner            = THIS_MODULE,
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 8646eb197cd96..068cc53abe320 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -666,7 +666,7 @@ static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
+  * according quadratic equation. Queues a new timer if it is still not equal
+  * to local pstate
+  */
+-void gpstate_timer_handler(struct timer_list *t)
++static void gpstate_timer_handler(struct timer_list *t)
+ {
+ 	struct global_pstate_info *gpstates = from_timer(gpstates, t, timer);
+ 	struct cpufreq_policy *policy = gpstates->policy;
+@@ -899,7 +899,7 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+ 	.notifier_call = powernv_cpufreq_reboot_notifier,
  };
+ 
+-void powernv_cpufreq_work_fn(struct work_struct *work)
++static void powernv_cpufreq_work_fn(struct work_struct *work)
+ {
+ 	struct chip *chip = container_of(work, struct chip, throttle);
+ 	struct cpufreq_policy *policy;
+-- 
+2.25.1
 
