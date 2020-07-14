@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21E2AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:40:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A11C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:42:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9CFA20B80
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:40:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9CFA20B80
+	by mail.kernel.org (Postfix) with ESMTPS id AB24420B80
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 04:42:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB24420B80
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5SWJ3RggzDqVK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:40:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5SYT0D4QzDqWp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 14:42:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
@@ -30,44 +30,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5SQz3RDZzDqPg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 14:36:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5SR437RVzDqTb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 14:37:04 +1000 (AEST)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06E4WxBb172456; Tue, 14 Jul 2020 00:36:54 -0400
+ 06E4X46o172718; Tue, 14 Jul 2020 00:36:59 -0400
 Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 327tn9xwnn-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 327tn9xwqg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Jul 2020 00:36:54 -0400
+ Tue, 14 Jul 2020 00:36:59 -0400
 Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06E4RAsF028340;
- Tue, 14 Jul 2020 04:36:52 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 3274pgtuqu-1
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06E4RAsG028340;
+ Tue, 14 Jul 2020 04:36:57 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06ams.nl.ibm.com with ESMTP id 3274pgtuqw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 14 Jul 2020 04:36:52 +0000
+ Tue, 14 Jul 2020 04:36:57 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06E4al0T59638250
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06E4aquR66125878
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 14 Jul 2020 04:36:47 GMT
+ Tue, 14 Jul 2020 04:36:53 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 517FAA4054;
- Tue, 14 Jul 2020 04:36:47 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id CF14BA4054;
+ Tue, 14 Jul 2020 04:36:52 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 12940A405B;
- Tue, 14 Jul 2020 04:36:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 7BAC7A4060;
+ Tue, 14 Jul 2020 04:36:50 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.85.70.163])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 14 Jul 2020 04:36:44 +0000 (GMT)
+ Tue, 14 Jul 2020 04:36:50 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 01/11] powerpc/smp: Cache node for reuse
-Date: Tue, 14 Jul 2020 10:06:14 +0530
-Message-Id: <20200714043624.5648-2-srikar@linux.vnet.ibm.com>
+Subject: [PATCH 03/11] powerpc/smp: Move powerpc_topology above
+Date: Tue, 14 Jul 2020 10:06:16 +0530
+Message-Id: <20200714043624.5648-4-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
 References: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
@@ -103,14 +103,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While cpu_to_node is inline function with access to per_cpu variable.
-However when using repeatedly, it may be cleaner to cache it in a local
-variable.
+Just moving the powerpc_topology description above.
+This will help in using functions in this file and avoid declarations.
 
-Also fix a build error in a some weird config.
-"error: _numa_cpu_lookup_table_ undeclared"
-
-No functional change
+No other functional changes
 
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: Michael Ellerman <michaele@au1.ibm.com>
@@ -123,53 +119,150 @@ Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/smp.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/smp.c | 116 +++++++++++++++++++-------------------
+ 1 file changed, 58 insertions(+), 58 deletions(-)
 
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 73199470c265..680c0edcc59d 100644
+index 069ea4b21c6d..24529f6134aa 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -843,7 +843,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+@@ -818,6 +818,64 @@ static int init_cpu_l1_cache_map(int cpu)
+ 	return err;
+ }
  
- 	DBG("smp_prepare_cpus\n");
- 
--	/* 
-+	/*
- 	 * setup_cpu may need to be called on the boot cpu. We havent
- 	 * spun any cpus up but lets be paranoid.
- 	 */
-@@ -854,20 +854,24 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpu_callin_map[boot_cpuid] = 1;
- 
- 	for_each_possible_cpu(cpu) {
-+		int node = cpu_to_node(cpu);
++static bool shared_caches;
 +
- 		zalloc_cpumask_var_node(&per_cpu(cpu_sibling_map, cpu),
--					GFP_KERNEL, cpu_to_node(cpu));
-+					GFP_KERNEL, node);
- 		zalloc_cpumask_var_node(&per_cpu(cpu_l2_cache_map, cpu),
--					GFP_KERNEL, cpu_to_node(cpu));
-+					GFP_KERNEL, node);
- 		zalloc_cpumask_var_node(&per_cpu(cpu_core_map, cpu),
--					GFP_KERNEL, cpu_to_node(cpu));
-+					GFP_KERNEL, node);
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
- 		/*
- 		 * numa_node_id() works after this.
- 		 */
- 		if (cpu_present(cpu)) {
--			set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
--			set_cpu_numa_mem(cpu,
--				local_memory_node(numa_cpu_lookup_table[cpu]));
-+			node = numa_cpu_lookup_table[cpu];
-+			set_cpu_numa_node(cpu, node);
-+			set_cpu_numa_mem(cpu, local_memory_node(node));
- 		}
++#ifdef CONFIG_SCHED_SMT
++/* cpumask of CPUs with asymmetric SMT dependency */
++static int powerpc_smt_flags(void)
++{
++	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
++
++	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
++		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
++		flags |= SD_ASYM_PACKING;
++	}
++	return flags;
++}
 +#endif
- 	}
++
++/*
++ * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
++ * This topology makes it *much* cheaper to migrate tasks between adjacent cores
++ * since the migrated task remains cache hot. We want to take advantage of this
++ * at the scheduler level so an extra topology level is required.
++ */
++static int powerpc_shared_cache_flags(void)
++{
++	return SD_SHARE_PKG_RESOURCES;
++}
++
++/*
++ * We can't just pass cpu_l2_cache_mask() directly because
++ * returns a non-const pointer and the compiler barfs on that.
++ */
++static const struct cpumask *shared_cache_mask(int cpu)
++{
++	if (shared_caches)
++		return cpu_l2_cache_mask(cpu);
++
++	if (has_big_cores)
++		return cpu_smallcore_mask(cpu);
++
++	return cpu_smt_mask(cpu);
++}
++
++#ifdef CONFIG_SCHED_SMT
++static const struct cpumask *smallcore_smt_mask(int cpu)
++{
++	return cpu_smallcore_mask(cpu);
++}
++#endif
++
++static struct sched_domain_topology_level powerpc_topology[] = {
++#ifdef CONFIG_SCHED_SMT
++	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
++#endif
++	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
++	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++	{ NULL, },
++};
++
+ static int init_big_cores(void)
+ {
+ 	int cpu;
+@@ -1249,8 +1307,6 @@ static void add_cpu_to_masks(int cpu)
+ 			set_cpus_related(cpu, i, cpu_core_mask);
+ }
  
- 	/* Init the cpumasks so the boot CPU is related to itself */
+-static bool shared_caches;
+-
+ /* Activate a secondary processor. */
+ void start_secondary(void *unused)
+ {
+@@ -1314,62 +1370,6 @@ int setup_profiling_timer(unsigned int multiplier)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_SCHED_SMT
+-/* cpumask of CPUs with asymmetric SMT dependency */
+-static int powerpc_smt_flags(void)
+-{
+-	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+-
+-	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+-		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+-		flags |= SD_ASYM_PACKING;
+-	}
+-	return flags;
+-}
+-#endif
+-
+-/*
+- * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
+- * This topology makes it *much* cheaper to migrate tasks between adjacent cores
+- * since the migrated task remains cache hot. We want to take advantage of this
+- * at the scheduler level so an extra topology level is required.
+- */
+-static int powerpc_shared_cache_flags(void)
+-{
+-	return SD_SHARE_PKG_RESOURCES;
+-}
+-
+-/*
+- * We can't just pass cpu_l2_cache_mask() directly because
+- * returns a non-const pointer and the compiler barfs on that.
+- */
+-static const struct cpumask *shared_cache_mask(int cpu)
+-{
+-	if (shared_caches)
+-		return cpu_l2_cache_mask(cpu);
+-
+-	if (has_big_cores)
+-		return cpu_smallcore_mask(cpu);
+-
+-	return cpu_smt_mask(cpu);
+-}
+-
+-#ifdef CONFIG_SCHED_SMT
+-static const struct cpumask *smallcore_smt_mask(int cpu)
+-{
+-	return cpu_smallcore_mask(cpu);
+-}
+-#endif
+-
+-static struct sched_domain_topology_level powerpc_topology[] = {
+-#ifdef CONFIG_SCHED_SMT
+-	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+-#endif
+-	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
+-	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+-	{ NULL, },
+-};
+-
+ void __init smp_cpus_done(unsigned int max_cpus)
+ {
+ 	/*
 -- 
 2.17.1
 
