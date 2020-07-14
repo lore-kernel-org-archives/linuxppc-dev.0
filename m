@@ -2,72 +2,65 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5A72C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 12:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19677C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 12:47:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39691208FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 12:44:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ar1cDZLa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39691208FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C4B762242C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 12:47:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4B762242C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5gFG0l2tzDqf3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 22:44:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5gJS663NzDqf1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 22:47:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=ar1cDZLa; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=none (no SPF record) smtp.mailfrom=linux.intel.com
+ (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5fhq4zzQzDqPT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 22:19:39 +1000 (AEST)
-Received: from mail-oi1-f182.google.com (mail-oi1-f182.google.com
- [209.85.167.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 8ED022250F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 12:19:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594729177;
- bh=73cu8NzDGBuqOXhOBF+rg0NLb3dQh7k1JimFoYpB24w=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=ar1cDZLafHpWY/gHpnUvdxJdUxoLVpUsM8q464FqW1ohRBXgAQVPSH0HrjeAZ4pal
- MyVXKEXfTUVJmjWorcI2M8qI1sWkou0ScUc/0+Ik/SQ4y9+0oyYqsO0fDOrjFxoAOH
- DOgc4Ct7o4Ui5Qq2mFJlYXm0Q+5t3ATgdPod5TZ0=
-Received: by mail-oi1-f182.google.com with SMTP id k6so13705082oij.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 05:19:37 -0700 (PDT)
-X-Gm-Message-State: AOAM5316IhgN6IPErzJVhC5cH/kImw781U6SJ+s7MWX6Z0ymW5LsXUrV
- 14F1Cjz6ydU4ThzFMDYst5VWlQMFh5hqamK8QuE=
-X-Google-Smtp-Source: ABdhPJxRxTNProj1NH8Oaajy/to/u8CmhErFBN+XMz1+9P1Fq4i4bVbpLEv1Ps3p6Pb5Kjhx8Fs0CzAuCp0KEK65nzk=
-X-Received: by 2002:aca:f257:: with SMTP id q84mr3507154oih.174.1594729175795; 
- Tue, 14 Jul 2020 05:19:35 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200714094625.1443261-1-jarkko.sakkinen@linux.intel.com>
- <20200714094625.1443261-2-jarkko.sakkinen@linux.intel.com>
- <20200714102826.GB4756@willie-the-truck>
- <20200714112927.GV10769@hirez.programming.kicks-ass.net>
-In-Reply-To: <20200714112927.GV10769@hirez.programming.kicks-ass.net>
-From: Ard Biesheuvel <ardb@kernel.org>
-Date: Tue, 14 Jul 2020 15:19:24 +0300
-X-Gmail-Original-Message-ID: <CAMj1kXGG4vxWrp1de1FxdU=8F4Jof00=T1x-7e+BW7_HP-oZMQ@mail.gmail.com>
-Message-ID: <CAMj1kXGG4vxWrp1de1FxdU=8F4Jof00=T1x-7e+BW7_HP-oZMQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5f9q4CdhzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 21:56:14 +1000 (AEST)
+IronPort-SDR: sqAKgBkQDqgPo9MaXsE8HveqnBLfm0H7p0UdZkhvkUTLbDdE+VtYNeUE0zHujzZu0RKDBB+I4f
+ LUAksfC0XClw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9681"; a="146355992"
+X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="146355992"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Jul 2020 04:56:11 -0700
+IronPort-SDR: 487d/LctlM4NM8jYh/JS9KK/zGZd1fU1eze/erpvpmGH/ZEWZizBiq2A4pLK65bnn1iknNmTRD
+ CTFA4LupyJiQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,350,1589266800"; d="scan'208";a="269990139"
+Received: from pipper-mobl1.ger.corp.intel.com (HELO localhost)
+ ([10.249.46.185])
+ by fmsmga008.fm.intel.com with ESMTP; 14 Jul 2020 04:55:32 -0700
+Date: Tue, 14 Jul 2020 14:55:30 +0300
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+To: Ard Biesheuvel <ardb@kernel.org>
+Subject: Re: [PATCH 1/3] module: Rename module_alloc() to text_alloc() and
  move to kernel proper
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20200714115530.GC1463346@linux.intel.com>
+References: <20200713182030.1418041-1-jarkko.sakkinen@linux.intel.com>
+ <CAMj1kXGhZYxjZTP+_PGdBy4hZgdeeTNUkuaE_eQKwB4pPAYNXA@mail.gmail.com>
+ <20200714095243.GB1442951@linux.intel.com>
+ <CAMj1kXGV_bWehdQvxaMBTOYHXUoFjifBWNpyVy3gaWKktko1mg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAMj1kXGV_bWehdQvxaMBTOYHXUoFjifBWNpyVy3gaWKktko1mg@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Tue, 14 Jul 2020 22:39:54 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -86,33 +79,34 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Paul Burton <paulburton@kernel.org>,
  Vincent Whitchurch <vincent.whitchurch@axis.com>,
  Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Jiri Kosina <jkosina@suse.cz>, Anup Patel <anup.patel@wdc.com>,
+ Andy Lutomirski <luto@kernel.org>, Yonghong Song <yhs@fb.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Jiri Kosina <jkosina@suse.cz>,
+ Anup Patel <anup.patel@wdc.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Philipp Rudo <prudo@linux.ibm.com>, Torsten Duwe <duwe@lst.de>,
  Masami Hiramatsu <mhiramat@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>,
  "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Vincent Chen <deanbo422@gmail.com>, Omar Sandoval <osandov@fb.com>,
+ Vincent Chen <deanbo422@gmail.com>,
  "open list:S390" <linux-s390@vger.kernel.org>,
  Joe Lawrence <joe.lawrence@redhat.com>, Helge Deller <deller@gmx.de>,
  John Fastabend <john.fastabend@gmail.com>,
  Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
- Yonghong Song <yhs@fb.com>, Iurii Zaikin <yzaikin@google.com>,
- Andrii Nakryiko <andriin@fb.com>, Thomas Huth <thuth@redhat.com>,
- Vasily Gorbik <gor@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>, Iurii Zaikin <yzaikin@google.com>,
+ Andrii Nakryiko <andriin@fb.com>, Vasily Gorbik <gor@linux.ibm.com>,
  "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
  Daniel Axtens <dja@axtens.net>, Damien Le Moal <damien.lemoal@wdc.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ Sean Christopherson <sean.j.christopherson@intel.com>,
  Martin KaFai Lau <kafai@fb.com>, Song Liu <songliubraving@fb.com>,
  Paul Walmsley <paul.walmsley@sifive.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>,
- Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Atish Patra <atish.patra@wdc.com>, Will Deacon <will@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Masahiro Yamada <masahiroy@kernel.org>,
- Nayna Jain <nayna@linux.ibm.com>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>, Atish Patra <atish.patra@wdc.com>,
+ Will Deacon <will@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Masahiro Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Ley Foon Tan <ley.foon.tan@intel.com>,
  Christian Borntraeger <borntraeger@de.ibm.com>,
- Sami Tolvanen <samitolvanen@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Sami Tolvanen <samitolvanen@google.com>,
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Mao Han <han_mao@c-sky.com>,
  Marco Elver <elver@google.com>, Steven Rostedt <rostedt@goodmis.org>,
  Babu Moger <Babu.Moger@amd.com>, Borislav Petkov <bp@alien8.de>,
@@ -123,7 +117,7 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <bpf@vger.kernel.org>,
  "David S. Miller" <davem@davemloft.net>,
  Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- David Howells <dhowells@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
  "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
  Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
  Amit Daniel Kachhap <amit.kachhap@arm.com>,
@@ -136,10 +130,11 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
  Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>,
  "Paul E. McKenney" <paulmck@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- KP Singh <kpsingh@chromium.org>, Dmitry Vyukov <dvyukov@google.com>,
+ KP Singh <kpsingh@chromium.org>, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
  Nick Hu <nickhu@andestech.com>,
  "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
  "open list:MIPS" <linux-mips@vger.kernel.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Palmer Dabbelt <palmer@dabbelt.com>,
  "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
  <linuxppc-dev@lists.ozlabs.org>
@@ -147,52 +142,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jul 2020 at 14:31, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Tue, Jul 14, 2020 at 11:28:27AM +0100, Will Deacon wrote:
->
-> > As Ard says, module_alloc() _is_ special, in the sense that the virtual
-> > memory it allocates wants to be close to the kernel text, whereas the
-> > concept of allocating executable memory is broader and doesn't have these
-> > restrictions. So, while I'm in favour of having a text_alloc() interface
-> > that can be used by callers which only require an executable mapping, I'd
-> > much prefer for the module_alloc() code to remain for, err, modules.
->
-> So on x86 all those things (kprobes, bpf, ftrace) require that same
-> closeness.
->
-> An interface like the late vmalloc_exec() will simply not work for us.
->
+On Tue, Jul 14, 2020 at 01:17:22PM +0300, Ard Biesheuvel wrote:
+> > This series essentially does this: introduces text_alloc() and
+> > text_memfree(), which have generic implementations in kernel/text.c.
+> > Those can be overriddent by arch specific implementations.
+> >
+> > What you think should be done differently than in my patch set?
+> >
+> 
+> On arm64, module_alloc is only used by the module loader, and so
+> pulling it out and renaming it will cause unused code to be
+> incorporated into the kernel when building without module support,
+> which is the use case you claim to be addressing.
 
-Fair enough. So for x86, implementing text_alloc() as an alias of
-module_alloc() makes sense. But that is not the case in general.
+It certainly does not cause the full module loader to be bundle, only
+the allocator.
 
-> We recently talked about arm64-kprobes and how you're not doing any of
-> the optimizations and fully rely on the exception return. And I see
-> you're one of the few archs that has bpf_jit_alloc_exec() (also,
-> shouldn't you be using PAGE_KERNEL_EXEC there?). But the BPF core seems
-> to use module_alloc() as a default means of allocating text.
->
+> Module_alloc has semantics that are intimately tied to the module
+> loader, but over the years, it ended up being (ab)used by other
+> subsystems, which don't require those semantics but just need n pages
+> of vmalloc space with executable permissions.
+> 
+> So the correct approach is to make text_alloc() implement just that,
+> generically, and switch bpf etc to use it. Then, only on architectures
+> that need it, override it with an implementation that has the required
+> additional semantics.
+> 
+> Refactoring 10+ architectures like this without any regard for how
+> text_alloc() deviates from module_alloc() just creates a lot of churn
+> that others will have to clean up after you.
 
-Indeed. Which means it uses up module space which may be scarce,
-especially on 32-bit ARM, and gets backed by kasan shadow pages, which
-only makes sense for modules (if CONFIG_KASAN=y)
+Using generic text_alloc() in kernel/kprobes.c would make it behave
+differently in arch's that reimplement module_alloc(). That's the main
+driver for my approach.
 
->
-> So what should this look like? Have a text_alloc() with an argument that
-> indicates where? But then I suppose we also need a means to manage PLT
-> entries. Otherwise I don't exactly see how you're going to call BPF
-> code, or how that BPF stuff is going to call back into its helpers.
->
-
-If x86 chooses to back its implementation of text_alloc() by
-module_alloc(), that is absolutely fine. But arm64 has no use for
-text_alloc() at all today (bpf and kprobes don't use module_alloc(),
-and ftrace does not implement dynamic trampoline allocation), and in
-the general case, bpf, kprobes, ftrace and the module loader all have
-different requirements that deviate subtly between architectures.
-
-So perhaps the answer is to have text_alloc() not with a 'where'
-argument but with a 'why' argument. Or more simply, just have separate
-alloc/free APIs for each case, with generic versions that can be
-overridden by the architecture.
+/Jarkko
