@@ -2,56 +2,56 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C281C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 09:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A858C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 09:15:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3667321D7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 09:14:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3667321D7B
+	by mail.kernel.org (Postfix) with ESMTPS id 310A621D7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 09:15:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 310A621D7B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5ZZg3q25zDqcl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 19:14:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5Zcn6Cc5zDqcy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 19:15:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
  envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5ZTG4n7lzDqWc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:09:22 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 74C2F1A113A;
- Tue, 14 Jul 2020 11:09:19 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5ZTL4SkVzDqWT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:09:25 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3A68D200F54;
+ Tue, 14 Jul 2020 11:09:23 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 242A11A01C1;
- Tue, 14 Jul 2020 11:09:13 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id DA146200F44;
+ Tue, 14 Jul 2020 11:09:16 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net
  [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E132A40305;
- Tue, 14 Jul 2020 17:09:04 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C88D9402BB;
+ Tue, 14 Jul 2020 17:09:08 +0800 (SGT)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: perex@perex.cz, tiwai@suse.com, lgirdwood@gmail.com, broonie@kernel.org,
  kuninori.morimoto.gx@renesas.com, katsuhiro@katsuster.net,
  samuel@sholland.org, alsa-devel@alsa-project.org, robh+dt@kernel.org,
  devicetree@vger.kernel.org, timur@kernel.org, nicoleotsuka@gmail.com,
  Xiubo.Lee@gmail.com, festevam@gmail.com
-Subject: [PATCH 1/3] ASoC: simple-card-utils: Support configure pin_name for
- asoc_simple_init_jack
-Date: Tue, 14 Jul 2020 17:05:34 +0800
-Message-Id: <1594717536-5188-2-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 2/3] ASoC: bindings: fsl-asoc-card: Support hp-det-gpio and
+ mic-det-gpio
+Date: Tue, 14 Jul 2020 17:05:35 +0800
+Message-Id: <1594717536-5188-3-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1594717536-5188-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1594717536-5188-1-git-send-email-shengjiu.wang@nxp.com>
@@ -72,72 +72,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the pin_name is fixed in asoc_simple_init_jack, but some driver
-may use a different pin_name. So add a new parameter in
-asoc_simple_init_jack for configuring pin_name.
-
-If this parameter is NULL, then the default pin_name is used.
+Add headphone and microphone detection GPIO support.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- include/sound/simple_card_utils.h     | 6 +++---
- sound/soc/generic/simple-card-utils.c | 7 ++++---
- 2 files changed, 7 insertions(+), 6 deletions(-)
+ Documentation/devicetree/bindings/sound/fsl-asoc-card.txt | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/include/sound/simple_card_utils.h b/include/sound/simple_card_utils.h
-index bbdd1542d6f1..86a1e956991e 100644
---- a/include/sound/simple_card_utils.h
-+++ b/include/sound/simple_card_utils.h
-@@ -12,9 +12,9 @@
- #include <sound/soc.h>
+diff --git a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+index 133d7e14a4d0..8a6a3d0fda5e 100644
+--- a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
++++ b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+@@ -69,6 +69,9 @@ Optional properties:
+ 			        coexisting in order to support the old bindings
+ 				of wm8962 and sgtl5000.
  
- #define asoc_simple_init_hp(card, sjack, prefix) \
--	asoc_simple_init_jack(card, sjack, 1, prefix)
-+	asoc_simple_init_jack(card, sjack, 1, prefix, NULL)
- #define asoc_simple_init_mic(card, sjack, prefix) \
--	asoc_simple_init_jack(card, sjack, 0, prefix)
-+	asoc_simple_init_jack(card, sjack, 0, prefix, NULL)
++  - hp-det-gpio		: The GPIO that detect headphones are plugged in
++  - mic-det-gpio	: The GPIO that detect microphones are plugged in
++
+ Optional unless SSI is selected as a CPU DAI:
  
- struct asoc_simple_dai {
- 	const char *name;
-@@ -131,7 +131,7 @@ int asoc_simple_parse_pin_switches(struct snd_soc_card *card,
- 
- int asoc_simple_init_jack(struct snd_soc_card *card,
- 			       struct asoc_simple_jack *sjack,
--			       int is_hp, char *prefix);
-+			       int is_hp, char *prefix, char *pin);
- int asoc_simple_init_priv(struct asoc_simple_priv *priv,
- 			       struct link_info *li);
- 
-diff --git a/sound/soc/generic/simple-card-utils.c b/sound/soc/generic/simple-card-utils.c
-index 8c54dc6710fe..b408cb5ed644 100644
---- a/sound/soc/generic/simple-card-utils.c
-+++ b/sound/soc/generic/simple-card-utils.c
-@@ -540,7 +540,8 @@ EXPORT_SYMBOL_GPL(asoc_simple_parse_pin_switches);
- 
- int asoc_simple_init_jack(struct snd_soc_card *card,
- 			  struct asoc_simple_jack *sjack,
--			  int is_hp, char *prefix)
-+			  int is_hp, char *prefix,
-+			  char *pin)
- {
- 	struct device *dev = card->dev;
- 	enum of_gpio_flags flags;
-@@ -557,12 +558,12 @@ int asoc_simple_init_jack(struct snd_soc_card *card,
- 
- 	if (is_hp) {
- 		snprintf(prop, sizeof(prop), "%shp-det-gpio", prefix);
--		pin_name	= "Headphones";
-+		pin_name	= pin ? pin : "Headphones";
- 		gpio_name	= "Headphone detection";
- 		mask		= SND_JACK_HEADPHONE;
- 	} else {
- 		snprintf(prop, sizeof(prop), "%smic-det-gpio", prefix);
--		pin_name	= "Mic Jack";
-+		pin_name	= pin ? pin : "Mic Jack";
- 		gpio_name	= "Mic detection";
- 		mask		= SND_JACK_MICROPHONE;
- 	}
+   - mux-int-port	: The internal port of the i.MX audio muxer (AUDMUX)
 -- 
 2.27.0
 
