@@ -2,87 +2,103 @@ Return-Path: <SRS0=DUdi=AZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6059BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 15:00:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF38C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 15:12:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09F272245A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 15:00:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Yr1SJcM2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09F272245A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id D11D9214DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jul 2020 15:12:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D11D9214DB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B5kG60f0qzDqQn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 01:00:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::443;
- helo=mail-wr1-x443.google.com; envelope-from=lee.jones@linaro.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
- header.s=google header.b=Yr1SJcM2; dkim-atps=neutral
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
- [IPv6:2a00:1450:4864:20::443])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B5kXS4wNbzDqf6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 01:12:40 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B5k3V4dgGzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 00:51:01 +1000 (AEST)
-Received: by mail-wr1-x443.google.com with SMTP id q5so22195468wru.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 07:51:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=sa7IFFvEjkUEYkKGNfZ4AaOfAhDNPotc0mtcZbr7pMU=;
- b=Yr1SJcM2AwK2hW8wKdiFtlaK6rKbZ3NlkGx8d1Od6cqVH4nDmmoGCDQVhLHIDws+3d
- 2OVvC3aJXzU/ZjRq+haMRmCsqS9W94aOftUL13uUTXk4ZnJIiwTbqrjSFcSQ6+MBToTA
- Wlf9HuAi0Aza+9dtw/LHZF7rOTCDvLKrgawrfm5e6w/OV2eflKYPT6fW2ypIM7ewVmNc
- 6sZcE8UtKJDkeu8wqVxcoXJajhBkeReoa/7FhnEB2BS2H5Z5vYRvhfarz4C2XXTsWwBv
- aBmWOuw/i4Vdi3oCKJV1Zdhv/857tPWI3NzjMDJuHyaPTGpybciaeB3NKBD0sTczkWGs
- so9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=sa7IFFvEjkUEYkKGNfZ4AaOfAhDNPotc0mtcZbr7pMU=;
- b=B4dCE8jjBki5YMbG/NJg78s9yX/nd9yZEHL8NqL2g/Ybfp8CNX656Zy6khfCBbqx3Z
- 4A+gQ7Axm87z1gctQ9qdapxJTOQaYoCGTkRejJ58H/qULoij3TtCnpvbMNTYHA7Un11z
- UpGf+iZJ8H24520KsSCEfOqWFS/stYdzsfF68lalO1MubaAGLTOCutsTRvn5tapi8ogi
- 3Af/H5KujN8WumHAco30TNrs8wWhjkNPjERvD3PAk5SDq7nzprpeoouBJGrgaBwlAfNZ
- 1XgJtsA9XxwdDrxH8LX48HpP/8GjATsWcbGExqCHL+wWLr5lRRDtG7OEI2UD7ffKWBYd
- YVFg==
-X-Gm-Message-State: AOAM531RUkMf7+O+Tc8sVEzWQ+hCrf5UItKnbzTfZBuCy4bDLyeGtxhY
- 6+zL3Nw39uKSNoTgTVtNh8o6+w==
-X-Google-Smtp-Source: ABdhPJzNf9Z+WHkT0D9c7/YKzZVAjpjagqUFxoxaf/blhTxuH25LgfvUKpph8N2tIaWR9WV7qZZ8hg==
-X-Received: by 2002:adf:82f5:: with SMTP id 108mr6084464wrc.218.1594738257584; 
- Tue, 14 Jul 2020 07:50:57 -0700 (PDT)
-Received: from localhost.localdomain ([2.31.163.61])
- by smtp.gmail.com with ESMTPSA id a84sm4653305wmh.47.2020.07.14.07.50.56
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 14 Jul 2020 07:50:57 -0700 (PDT)
-From: Lee Jones <lee.jones@linaro.org>
-To: rjw@rjwysocki.net,
-	viresh.kumar@linaro.org
-Subject: [PATCH 05/13] cpufreq/arch: powerpc: pasemi: Move prototypes to
- shared header
-Date: Tue, 14 Jul 2020 15:50:41 +0100
-Message-Id: <20200714145049.2496163-6-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200714145049.2496163-1-lee.jones@linaro.org>
-References: <20200714145049.2496163-1-lee.jones@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5kQz1mcLzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 01:07:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4B5kQw5d8vz8tZk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 01:07:52 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4B5kQw4HH9z9sRN; Wed, 15 Jul 2020 01:07:52 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4B5kQw19pRz9sQt;
+ Wed, 15 Jul 2020 01:07:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06EF3ACR030872; Tue, 14 Jul 2020 11:07:46 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 328s1hqkw0-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jul 2020 11:07:46 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06EF6Jql030994;
+ Tue, 14 Jul 2020 15:07:44 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma04fra.de.ibm.com with ESMTP id 327527hrbd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Jul 2020 15:07:44 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06EF7dma53805290
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Jul 2020 15:07:39 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B95FBAE057;
+ Tue, 14 Jul 2020 15:07:39 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C3A7AE05A;
+ Tue, 14 Jul 2020 15:07:39 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.155.184])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Jul 2020 15:07:38 +0000 (GMT)
+Message-ID: <1594739258.12900.164.camel@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries: detect secure and trusted boot
+ state of the system.
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Daniel Axtens <dja@axtens.net>, Nayna Jain <nayna@linux.ibm.com>,
+ linuxppc-dev@ozlabs.org
+Date: Tue, 14 Jul 2020 11:07:38 -0400
+In-Reply-To: <87y2nmtxce.fsf@dja-thinkpad.axtens.net>
+References: <1594434329-31219-1-git-send-email-nayna@linux.ibm.com>
+ <87y2nmtxce.fsf@dja-thinkpad.axtens.net>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-14_05:2020-07-14,
+ 2020-07-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=999 bulkscore=0
+ lowpriorityscore=0 impostorscore=0 spamscore=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 mlxscore=0 clxscore=1011 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007140113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,126 +110,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Olof Johansson <olof@lixom.net>, Lee Jones <lee.jones@linaro.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If function callers and providers do not share the same prototypes the
-compiler complains of missing prototypes.  Fix this by moving the
-already existing prototypes out to a mutually convenient location.
+On Tue, 2020-07-14 at 16:38 +1000, Daniel Axtens wrote:
+> Hi Nayna,
+> 
+> Thanks! Would you be able to fold in some of the information from my
+> reply to v1 into the changelog? Until we have public PAPR release with
+> it, that information is the extent of the public documentation. It would
+> be good to get it into the git log rather than just floating around in
+> the mail archives!
+> 
+> A couple of small nits:
+> 
+> > +	if (enabled)
+> > +		goto out;
+> > +
+> > +	if (!of_property_read_u32(of_root, "ibm,secure-boot", &secureboot)) {
+> > +		if (secureboot)
+> > +			enabled = (secureboot > 1) ? true : false;
+> 
+> Your tests double up here - you don't need both the 'if' statement and
+> the 'secureboot > 1' ternary operator.
+> 
+> Just
+> 
+> +	if (!of_property_read_u32(of_root, "ibm,secure-boot", &secureboot)) {
+> +		enabled = (secureboot > 1) ? true : false;
+> 
+> or even
+> 
+> +	if (!of_property_read_u32(of_root, "ibm,secure-boot", &secureboot)) {
+> +		enabled = (secureboot > 1);
+> 
+> would work.
 
-Fixes the following W=1 kernel build warning(s):
+I haven't been following this thread, which might be the reason I'm
+missing something here.  The patch description should explain why the
+test is for "(secureboot > 1)", rather than a fixed number.
 
- drivers/cpufreq/pasemi-cpufreq.c:109:5: warning: no previous prototype for ‘check_astate’ [-Wmissing-prototypes]
- 109 | int check_astate(void)
- | ^~~~~~~~~~~~
- drivers/cpufreq/pasemi-cpufreq.c:114:6: warning: no previous prototype for ‘restore_astate’ [-Wmissing-prototypes]
- 114 | void restore_astate(int cpu)
- | ^~~~~~~~~~~~~~
+thanks,
 
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- arch/powerpc/platforms/pasemi/pasemi.h    | 15 ------------
- arch/powerpc/platforms/pasemi/powersave.S |  2 ++
- drivers/cpufreq/pasemi-cpufreq.c          |  1 +
- include/linux/platform_data/pasemi.h      | 28 +++++++++++++++++++++++
- 4 files changed, 31 insertions(+), 15 deletions(-)
- create mode 100644 include/linux/platform_data/pasemi.h
-
-diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
-index 70b56048ed1be..528d81ef748ad 100644
---- a/arch/powerpc/platforms/pasemi/pasemi.h
-+++ b/arch/powerpc/platforms/pasemi/pasemi.h
-@@ -15,21 +15,6 @@ extern void __init pasemi_map_registers(void);
- extern void idle_spin(void);
- extern void idle_doze(void);
- 
--/* Restore astate to last set */
--#ifdef CONFIG_PPC_PASEMI_CPUFREQ
--extern int check_astate(void);
--extern void restore_astate(int cpu);
--#else
--static inline int check_astate(void)
--{
--	/* Always return >0 so we never power save */
--	return 1;
--}
--static inline void restore_astate(int cpu)
--{
--}
--#endif
--
- extern struct pci_controller_ops pasemi_pci_controller_ops;
- 
- #endif /* _PASEMI_PASEMI_H */
-diff --git a/arch/powerpc/platforms/pasemi/powersave.S b/arch/powerpc/platforms/pasemi/powersave.S
-index d0215d5329ca7..7747b48963286 100644
---- a/arch/powerpc/platforms/pasemi/powersave.S
-+++ b/arch/powerpc/platforms/pasemi/powersave.S
-@@ -5,6 +5,8 @@
-  * Maintained by: Olof Johansson <olof@lixom.net>
-  */
- 
-+#include <linux/platform_data/pasemi.h>
-+
- #include <asm/processor.h>
- #include <asm/page.h>
- #include <asm/ppc_asm.h>
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index c66f566a854cb..c6bb3ecc90ef3 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -15,6 +15,7 @@
- #include <linux/timer.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-+#include <linux/platform_data/pasemi.h>
- 
- #include <asm/hw_irq.h>
- #include <asm/io.h>
-diff --git a/include/linux/platform_data/pasemi.h b/include/linux/platform_data/pasemi.h
-new file mode 100644
-index 0000000000000..3fed0687fcc9a
---- /dev/null
-+++ b/include/linux/platform_data/pasemi.h
-@@ -0,0 +1,28 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2020 Linaro Ltd.
-+ *
-+ * Author: Lee Jones <lee.jones@linaro.org>
-+ */
-+
-+#ifndef _LINUX_PLATFORM_DATA_PASEMI_H
-+#define _LINUX_PLATFORM_DATA_PASEMI_H
-+
-+/* Restore astate to last set */
-+#ifdef CONFIG_PPC_PASEMI_CPUFREQ
-+int check_astate(void);
-+void restore_astate(int cpu);
-+#else
-+static inline int check_astate(void)
-+{
-+	/* Always return >0 so we never power save */
-+	return 1;
-+}
-+static inline void restore_astate(int cpu)
-+{
-+}
-+#endif
-+
-+#endif /* _LINUX_PLATFORM_DATA_PASEMI_H */
-+
-+
--- 
-2.25.1
-
+Mimi
