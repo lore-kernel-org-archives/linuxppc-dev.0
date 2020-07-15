@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41EC4C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:30:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2798AC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:52:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0CE22067D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:30:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0CE22067D
+	by mail.kernel.org (Postfix) with ESMTPS id 7E09B20656
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:52:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E09B20656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6XC95Gv6zDqrX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 08:30:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6Xj43lpLzDqlP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 08:52:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (SPF Permanent Error: Unknown mechanism
  found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
@@ -29,22 +29,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
 Received: from kernel.crashing.org (kernel.crashing.org [76.164.61.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6X9N456ZzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 08:28:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6Xg54f8KzDqgM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 08:51:13 +1000 (AEST)
 Received: from localhost (gate.crashing.org [63.228.1.57])
  (authenticated bits=0)
- by kernel.crashing.org (8.14.7/8.14.7) with ESMTP id 06FMQfq2014030
+ by kernel.crashing.org (8.14.7/8.14.7) with ESMTP id 06FMnOHG014418
  (version=TLSv1/SSLv3 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Wed, 15 Jul 2020 17:26:45 -0500
-Message-ID: <627b214e6fc0624093caa8155d7006de111aacfb.camel@kernel.crashing.org>
+ Wed, 15 Jul 2020 17:49:27 -0500
+Message-ID: <5d4b3a716f85017c17c52a85915fba9e19509e81.camel@kernel.crashing.org>
 Subject: Re: [RFC PATCH 00/35] Move all PCIBIOS* definitions into arch/x86
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>, Bjorn Helgaas <helgaas@kernel.org>
-Date: Thu, 16 Jul 2020 08:26:40 +1000
-In-Reply-To: <CAK8P3a3OEOosC2VEHb3z7hTA=BjVp0nv9bNxBWzEnmgSDDTX3Q@mail.gmail.com>
-References: <CAK8P3a3EZX8=649R9cYF6_=ivh1Xyrgsc5mUtS=d5yvQ3doZaQ@mail.gmail.com>
- <20200714234625.GA428442@bjorn-Precision-5520>
- <CAK8P3a3OEOosC2VEHb3z7hTA=BjVp0nv9bNxBWzEnmgSDDTX3Q@mail.gmail.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, David Laight <David.Laight@ACULAB.COM>
+Date: Thu, 16 Jul 2020 08:49:21 +1000
+In-Reply-To: <20200715221230.GA563957@bjorn-Precision-5520>
+References: <20200715221230.GA563957@bjorn-Precision-5520>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 Mime-Version: 1.0
@@ -60,52 +58,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci <linux-pci@vger.kernel.org>, Keith Busch <kbusch@kernel.org>,
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-pci <linux-pci@vger.kernel.org>, "bjorn@helgaas.com" <bjorn@helgaas.com>,
  Paul Mackerras <paulus@samba.org>, sparclinux <sparclinux@vger.kernel.org>,
- Toan Le <toan@os.amperecomputing.com>, Kjetil Oftedal <oftedal@gmail.com>,
- Greg Ungerer <gerg@linux-m68k.org>,
+ Toan Le <toan@os.amperecomputing.com>, Christoph Hellwig <hch@lst.de>,
  Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh@kernel.org>,
  Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Sagi Grimberg <sagi@grimberg.me>, Russell King <linux@armlinux.org.uk>,
- Ley Foon Tan <ley.foon.tan@intel.com>, Christoph Hellwig <hch@lst.de>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@baylibre.com>,
+ Sagi Grimberg <sagi@grimberg.me>, Kevin Hilman <khilman@baylibre.com>,
+ Russell King <linux@armlinux.org.uk>, Ley Foon Tan <ley.foon.tan@intel.com>,
+ Greg Ungerer <gerg@linux-m68k.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
  Jakub Kicinski <kuba@kernel.org>, Matt Turner <mattst88@gmail.com>,
- linux-kernel-mentees@lists.linuxfoundation.org,
- Guenter Roeck <linux@roeck-us.net>, Ray Jui <rjui@broadcom.com>,
+ "linux-kernel-mentees@lists.linuxfoundation.org"
+ <linux-kernel-mentees@lists.linuxfoundation.org>,
+ Guenter Roeck <linux@roeck-us.net>, Arnd Bergmann <arnd@arndb.de>,
+ Ray Jui <rjui@broadcom.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Jens Axboe <axboe@fb.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Shuah Khan <skhan@linuxfoundation.org>, bjorn@helgaas.com,
+ Shuah Khan <skhan@linuxfoundation.org>, Keith Busch <kbusch@kernel.org>,
  Boris Ostrovsky <boris.ostrovsky@oracle.com>,
  Richard Henderson <rth@twiddle.net>, Juergen Gross <jgross@suse.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  Scott Branden <sbranden@broadcom.com>, Jingoo Han <jingoohan1@gmail.com>,
- "Saheed O. Bolarinwa" <refactormyself@gmail.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Philipp Zabel <p.zabel@pengutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Saheed O. Bolarinwa" <refactormyself@gmail.com>,
+ 'Oliver O'Halloran' <oohall@gmail.com>,
  Gustavo Pimentel <gustavo.pimentel@synopsys.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
+ Bjorn Helgaas <bhelgaas@google.com>, "David S. Miller" <davem@davemloft.net>,
  Heiner Kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2020-07-15 at 08:47 +0200, Arnd Bergmann wrote:
-> drivers/misc/cardreader/rts5261.c:      retval =
-> rtsx_pci_write_config_dword(pcr, PCR_SETTING_REG2, lval);
+On Wed, 2020-07-15 at 17:12 -0500, Bjorn Helgaas wrote:
+> > I've 'played' with PCIe error handling - without much success.
+> > What might be useful is for a driver that has just read ~0u to
+> > be able to ask 'has there been an error signalled for this device?'.
 > 
-> That last one is interesting because I think this is a case in which
-> we
-> actually want to check for errors, as the driver seems to use it
-> to ensure that accessing extended config space at offset 0x814
-> works before relying on the value. Unfortunately the implementation
-> seems buggy as it a) keeps using the possibly uninitialized value
-> after
-> printing a warning and b) returns the PCIBIOS_* value in place of a
-> negative errno and then ignores it in the caller.
+> In many cases a driver will know that ~0 is not a valid value for the
+> register it's reading.  But if ~0 *could* be valid, an interface like
+> you suggest could be useful.  I don't think we have anything like that
+> today, but maybe we could.  It would certainly be nice if the PCI core
+> noticed, logged, and cleared errors.  We have some of that for AER,
+> but that's an optional feature, and support for the error bits in the
+> garden-variety PCI_STATUS register is pretty haphazard.  As you note
+> below, this sort of SERR/PERR reporting is frequently hard-wired in
+> ways that takes it out of our purview.
 
-In cases like this, usually checking against ~0 is sufficient
+We do have pci_channel_state (via pci_channel_offline()) which covers
+the cases where the underlying error handling (such as EEH or unplug)
+results in the device being offlined though this tend to be
+asynchronous so it might take a few ~0's before you get it.
+
+It's typically used to break potentially infinite loops in some
+drivers.
+
+There is no interface to check whether *an* error happened though for
+the most cases it will be captured in the status register, which is
+harvested (and cleared ?) by some EDAC drivers iirc... 
+
+All this lacks coordination, I agree.
 
 Cheers,
 Ben.
