@@ -2,64 +2,75 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A029C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F32B2C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:28:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6747820720
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:24:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="mybKQfP/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6747820720
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id AC6DD206E9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:28:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC6DD206E9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6GmG2cbYzDqbx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:24:46 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6Gqz61D5zDqlp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:27:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ACULAB.COM
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6Gjt3XvLzDqj1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 22:22:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=mybKQfP/; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B6Gjs49tdz9s1x;
- Wed, 15 Jul 2020 22:22:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1594815761;
- bh=Y8j90lrvJqU8LkgdUr74V2K/s7Gh4WhJQGlePVUnek8=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=mybKQfP/UVFZuhYRuLtxJsKUd4PMqXYvQ4BG43NxDXD67VzjEl65QG5gpw1vQvngE
- jB6+kGgkGsDvXAHjeQRGUosfNu94A+eBAOKyUhFoEsAluH5GM14CZZFqNQIv2y3zXz
- IN4QrF9YEhOlYFNAnbye0ZO3jQnYak96lX4fvR81V8BRBakvbizOJW2mXXha5ISDj8
- s+YufzfAcVsYd3QnoMnbLgphqPZyGrJRWrUt2IHz1kcG3fG2hFLyDmpTm57KIO91e1
- Wolmts2eLiKj4cQtbm37OqhXF0gZ1TWjRDj6+aCkLDZya2EBcL8aOiuz13Aj/30cjI
- PhHN5cZA0tOlg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, nathanl@linux.ibm.com
-Subject: Re: [PATCH] pseries: Fix 64 bit logical memory block panic
-In-Reply-To: <20200715000820.1255764-1-anton@ozlabs.org>
-References: <20200715000820.1255764-1-anton@ozlabs.org>
-Date: Wed, 15 Jul 2020 22:22:35 +1000
-Message-ID: <87365tufw4.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6Gby1SVQzDqdS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 22:17:31 +1000 (AEST)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-118-VUzQIPn9PGiRcCFwemuUlA-1; Wed, 15 Jul 2020 09:15:49 +0100
+X-MC-Unique: VUzQIPn9PGiRcCFwemuUlA-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Wed, 15 Jul 2020 09:15:47 +0100
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Wed, 15 Jul 2020 09:15:47 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Jarkko Sakkinen' <jarkko.sakkinen@linux.intel.com>, Peter Zijlstra
+ <peterz@infradead.org>
+Subject: RE: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
+ move to kernel proper
+Thread-Topic: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
+ move to kernel proper
+Thread-Index: AQHWWhTZJFla60Gj2kinqcyPQzfqlakISLKA
+Date: Wed, 15 Jul 2020 08:15:47 +0000
+Message-ID: <778f330d994340c89241f5318a54422f@AcuMS.aculab.com>
+References: <20200714094625.1443261-1-jarkko.sakkinen@linux.intel.com>
+ <20200714094625.1443261-2-jarkko.sakkinen@linux.intel.com>
+ <20200714102826.GB4756@willie-the-truck>
+ <20200714112927.GV10769@hirez.programming.kicks-ass.net>
+ <CAMj1kXGG4vxWrp1de1FxdU=8F4Jof00=T1x-7e+BW7_HP-oZMQ@mail.gmail.com>
+ <20200714130109.GX10769@hirez.programming.kicks-ass.net>
+ <20200714163103.GA1472166@linux.intel.com>
+In-Reply-To: <20200714163103.GA1472166@linux.intel.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Wed, 15 Jul 2020 22:25:51 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,36 +82,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Song Liu <songliubraving@fb.com>,
+ Paul Mackerras <paulus@samba.org>, Zong Li <zong.li@sifive.com>,
+ Andi Kleen <ak@linux.intel.com>, Paul Burton <paulburton@kernel.org>,
+ Vincent Whitchurch <vincent.whitchurch@axis.com>,
+ Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>, Andy
+ Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri
+ Kosina <jkosina@suse.cz>, Anup Patel <anup.patel@wdc.com>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Philipp Rudo <prudo@linux.ibm.com>,
+ Torsten Duwe <duwe@lst.de>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Mark
+ Rutland <mark.rutland@arm.com>,
+ "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+ Vincent Chen <deanbo422@gmail.com>, Omar Sandoval <osandov@fb.com>,
+ "open list:S390" <linux-s390@vger.kernel.org>,
+ Joe Lawrence <joe.lawrence@redhat.com>, Helge
+ Deller <deller@gmx.de>, John Fastabend <john.fastabend@gmail.com>, Anil S
+ Keshavamurthy <anil.s.keshavamurthy@intel.com>, Yonghong Song <yhs@fb.com>,
+ Iurii Zaikin <yzaikin@google.com>, Andrii Nakryiko <andriin@fb.com>, Thomas
+ Huth <thuth@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>, "moderated
+ list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
+ Daniel Axtens <dja@axtens.net>, Damien Le Moal <damien.lemoal@wdc.com>,
+ Martin KaFai Lau <kafai@fb.com>, Kefeng Wang <wangkefeng.wang@huawei.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Alexei Starovoitov <ast@kernel.org>, Atish Patra <atish.patra@wdc.com>, Will
+ Deacon <will@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Masahiro
+ Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Ley Foon Tan <ley.foon.tan@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Sami Tolvanen <samitolvanen@google.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Mao Han <han_mao@c-sky.com>,
+ Marco Elver <elver@google.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Babu Moger <Babu.Moger@amd.com>, Borislav Petkov <bp@alien8.de>,
+ Greentime Hu <green.hu@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
+ Guan Xuetao <gxt@pku.edu.cn>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
+ Jessica Yu <jeyu@kernel.org>,
+ "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <bpf@vger.kernel.org>,
+ "David S. Miller" <davem@davemloft.net>, Thiago Jung
+ Bauermann <bauerman@linux.ibm.com>, David Howells <dhowells@redhat.com>,
+ Amit Daniel Kachhap <amit.kachhap@arm.com>,
+ Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
+ Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
+ Sven Schnelle <svens@stackframe.org>, Ard Biesheuvel <ardb@kernel.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ Anders Roxell <anders.roxell@linaro.org>, Jiri Olsa <jolsa@redhat.com>,
+ "maintainer:X86 ARCHITECTURE \(32-BIT AND
+ 64-BIT\)" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, "open
+ list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
+ Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, KP Singh <kpsingh@chromium.org>,
+ Dmitry Vyukov <dvyukov@google.com>, Nick Hu <nickhu@andestech.com>,
+ "open list:BPF
+ JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, "open
+ list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Anton Blanchard <anton@ozlabs.org> writes:
-> Booting with a 4GB LMB size causes us to panic:
->
->   qemu-system-ppc64: OS terminated: OS panic:
->       Memory block size not suitable: 0x0
->
-> Fix pseries_memory_block_size() to handle 64 bit LMBs.
->
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Anton Blanchard <anton@ozlabs.org>
-> ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 5ace2f9a277e..6574ac33e887 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -27,7 +27,7 @@ static bool rtas_hp_event;
->  unsigned long pseries_memory_block_size(void)
->  {
->  	struct device_node *np;
-> -	unsigned int memblock_size = MIN_MEMORY_BLOCK_SIZE;
-> +	uint64_t memblock_size = MIN_MEMORY_BLOCK_SIZE;
+From: Jarkko Sakkinen
+> Sent: 14 July 2020 17:31
+..
+> There is one arch (nios2), which uses a regular kzalloc(). This means
+> that both text_alloc() and text_memfree() need to be weaks symbols and
+> nios2 needs to have overriding text.c to do its thing.
 
-I changed it to u64.
+That could be handled by an arch-specific inline wrapper in a .h file.
 
-cheers
+Although I actually suspect the nios2 code is just being lazy.
+The processor is a very simple in-order 32bit soft cpu for Intel (Altera)
+FPGA.
+
+We have four nios2 cpu on one of our fpga images - all running small
+(almost single function) code loops.
+I can't imagine actually trying to run Linux on one to do anything
+useful - clock speed is unlikely to be much above 100MHz.
+We can't meet timing at 125MHZ (I've tried quite hard) so have
+to run at 62.5MHz because of the PCIe clock.
+
+=09David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
+
