@@ -2,62 +2,81 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,LONGWORDS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLACK autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A23FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:57:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEA3CC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:58:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E06E20663
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:57:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E06E20663
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 23D6820663
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:58:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JNnaIhVC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23D6820663
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B629740LXzDqWj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:56:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B62CD6H3SzDqf0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:58:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d44;
+ helo=mail-io1-xd44.google.com; envelope-from=oohall@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=JNnaIhVC; dkim-atps=neutral
+Received: from mail-io1-xd44.google.com (mail-io1-xd44.google.com
+ [IPv6:2607:f8b0:4864:20::d44])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B62556L97zDqW6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 12:53:28 +1000 (AEST)
-IronPort-SDR: rAiszWKb7Ha0Tige4IXC3uSmeUSd26sBZRzhUUY/ATV6HI3ig8zh88FUxtbZmcXLo0KRlbG11U
- 7jufohCY/8TQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9682"; a="148218172"
-X-IronPort-AV: E=Sophos;i="5.75,353,1589266800"; d="scan'208";a="148218172"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Jul 2020 19:53:16 -0700
-IronPort-SDR: sEF+p7Skr4TGmJjM3gqpSAqxRghkOcWQjq4UsPZyJva9Uu9NqdOznj8vJ6ndsirNopVPms2lbL
- KSQ4QiN426Cg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,353,1589266800"; d="scan'208";a="360572499"
-Received: from lkp-server01.sh.intel.com (HELO e1edd1aee32c) ([10.239.97.150])
- by orsmga001.jf.intel.com with ESMTP; 14 Jul 2020 19:53:15 -0700
-Received: from kbuild by e1edd1aee32c with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1jvXXm-00001W-LT; Wed, 15 Jul 2020 02:53:14 +0000
-Date: Wed, 15 Jul 2020 10:52:39 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- b710d27bf72068b15b2f0305d825988183e2ff28
-Message-ID: <5f0e6f77.ozELO5+qzkfRPeNp%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B625g3lWjzDqVK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 12:53:59 +1000 (AEST)
+Received: by mail-io1-xd44.google.com with SMTP id i4so652230iov.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:53:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=AtFp8U1b6BENSgSZDGY3gDXQq0rheXhSd0EOSiGFWLg=;
+ b=JNnaIhVCX8VLZK2m3RK/vp9B/cEEGk18cxihQxh4k0yXk4a5FWxyqJ/VCUgQR/vdxv
+ Kfm/5YWihmxDwBj7ERBb4vijxKYIao2ynnxy2AtRtIWruwSSbrPSVNrJgawU1ED9JQml
+ 0qSrzhQOWZ+6JZ6WUMsFyhLo8f9ZI8ZOkqAXeS6v4dZEtqDVVasuiF1YPCY+qnA+dgIL
+ hghLPYw1JO/Td/8ZqDacTxYXGyA70pWJUSPZ774K/HjJUo46MOzFPkd0CRMSxWENLGFu
+ lCxkKcT0joYrLW6R1K43kRwakpboggMwFtmg685RiDHEqgJnvMO+nbO1DxxD3cdNWVf3
+ mUMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=AtFp8U1b6BENSgSZDGY3gDXQq0rheXhSd0EOSiGFWLg=;
+ b=GqZuKb2j7kfYljP7QNH1GRvvPsFgv+s+OtPfXUj9lC3WYjAaJb5MgQEt3DVbs0WMDy
+ AflJkvMYkMWF0h9xMMO8t16C5iAPaYqsjZloqcgg8DjWRByQmZKnnu2uRvAVCdmk/bNo
+ 9jBt8I6R28QCi63vDFvTJPDij+iEKS0ZgjmweIKcGAGWDNVAI6agAZd9fs+tOOdTR6XV
+ U0/tNxLnm+jmd5CcpsSLUA8Bi3gU7Dm1OauZ0jl1N0jVEMWoW+pG0xyeXom7jcz+CHOv
+ kvbf0CJDmevmgqOFiS1hnuzkR+gYXNyK2WfvUw9INQl7yV/H3D/XEKO1L8+X0AwTFbYr
+ RTbg==
+X-Gm-Message-State: AOAM533OZat63+LIj8qZ0SzwzmFM8m++4ulcNhnA4yyniYHjiuxyUlYy
+ gL/uCiuqQ067qhaPxCh1M0Zmx++7tZHx/aVqkCy1zcTL
+X-Google-Smtp-Source: ABdhPJz7xBzwR8YE6iLTdClmpOTXjWCHJzFFFbJ1XU39bIYHPFokE9G6qq1pmHNyDgfc6+RJln2EYVdr4jiYeRzTer4=
+X-Received: by 2002:a05:6638:250f:: with SMTP id
+ v15mr9280844jat.97.1594781634836; 
+ Tue, 14 Jul 2020 19:53:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <20200710052340.737567-1-oohall@gmail.com>
+ <20200710052340.737567-11-oohall@gmail.com>
+ <dd85f256-0f52-f2f5-f729-2d5b7269f895@ozlabs.ru>
+In-Reply-To: <dd85f256-0f52-f2f5-f729-2d5b7269f895@ozlabs.ru>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Date: Wed, 15 Jul 2020 12:53:43 +1000
+Message-ID: <CAOSf1CGkQBL5caG7tgCUzC7OP55qVk86_XbAx9L43+hy7YNXSw@mail.gmail.com>
+Subject: Re: [PATCH 10/15] powerpc/powernv/pci: Refactor pnv_ioda_alloc_pe()
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,133 +88,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: b710d27bf72068b15b2f0305d825988183e2ff28  powerpc/pseries/svm: Fix incorrect check for shared_lppaca_size
+On Wed, Jul 15, 2020 at 12:29 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>
+>
+>
+> On 10/07/2020 15:23, Oliver O'Halloran wrote:
+> > Rework the PE allocation logic to allow allocating blocks of PEs rather
+> > than individually. We'll use this to allocate contigious blocks of PEs for
+> > the SR-IOVs.
+>
+> The patch does not do just this, it also adds missing mutexes (which is
+> good) but still misses them in pnv_pci_sriov_disable() and
+> pnv_pci_ioda_pe_dump().
 
-elapsed time: 721m
-
-configs tested: 110
-configs skipped: 6
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                               allnoconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm64                            allmodconfig
-arm64                             allnoconfig
-sh                           se7724_defconfig
-sh                          sdk7786_defconfig
-arm                          tango4_defconfig
-sh                            migor_defconfig
-i386                             allyesconfig
-arm                         s3c6400_defconfig
-m68k                         amcore_defconfig
-c6x                               allnoconfig
-xtensa                generic_kc705_defconfig
-mips                           ip27_defconfig
-mips                  mips_paravirt_defconfig
-c6x                        evmc6474_defconfig
-powerpc                      pasemi_defconfig
-sh                        dreamcast_defconfig
-openrisc                         alldefconfig
-m68k                        m5407c3_defconfig
-arm                          ep93xx_defconfig
-arm                          moxart_defconfig
-sparc                               defconfig
-mips                        maltaup_defconfig
-mips                          rb532_defconfig
-powerpc                mpc7448_hpc2_defconfig
-mips                        nlm_xlp_defconfig
-sh                 kfr2r09-romimage_defconfig
-openrisc                            defconfig
-xtensa                          iss_defconfig
-arm                  colibri_pxa270_defconfig
-ia64                      gensparse_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                              debian-10.3
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                              allnoconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                              allnoconfig
-m68k                           sun3_defconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-nios2                            allyesconfig
-c6x                              allyesconfig
-openrisc                         allyesconfig
-nds32                               defconfig
-nds32                             allnoconfig
-csky                             allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-h8300                            allmodconfig
-xtensa                              defconfig
-arc                                 defconfig
-arc                              allyesconfig
-sh                               allmodconfig
-sh                                allnoconfig
-microblaze                        allnoconfig
-mips                             allyesconfig
-mips                              allnoconfig
-mips                             allmodconfig
-parisc                            allnoconfig
-parisc                              defconfig
-parisc                           allyesconfig
-parisc                           allmodconfig
-powerpc                          allyesconfig
-powerpc                          rhel-kconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a001-20200714
-i386                 randconfig-a005-20200714
-i386                 randconfig-a002-20200714
-i386                 randconfig-a006-20200714
-i386                 randconfig-a003-20200714
-i386                 randconfig-a004-20200714
-i386                 randconfig-a016-20200714
-i386                 randconfig-a011-20200714
-i386                 randconfig-a015-20200714
-i386                 randconfig-a012-20200714
-i386                 randconfig-a013-20200714
-i386                 randconfig-a014-20200714
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-s390                             allyesconfig
-s390                              allnoconfig
-s390                             allmodconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc64                             defconfig
-sparc64                           allnoconfig
-sparc64                          allyesconfig
-sparc64                          allmodconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                              fedora-25
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+The current implementation doesn't need the mutex because alloc,
+reserve and free all use atomic bit ops. The mutex has been there
+forever with nothing actually using it, but with the change we need to
+prevent modifications to the bitmap while alloc() is scanning it. I
+probably should have mentioned that in the commit message.
