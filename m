@@ -2,91 +2,62 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 068D6C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CB8BC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:47:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA56320663
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:44:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="alvhxN7Z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA56320663
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 39EF220663
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:47:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39EF220663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B67Ch6KGJzDqHl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 16:44:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B67Gc4KgLzDqfS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 16:47:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
- helo=mail-pl1-x642.google.com; envelope-from=nicoleotsuka@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=46.105.50.32; helo=7.mo69.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=alvhxN7Z; dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 957 seconds by postgrey-1.36 at bilbo;
+ Wed, 15 Jul 2020 16:45:13 AEST
+Received: from 7.mo69.mail-out.ovh.net (7.mo69.mail-out.ovh.net [46.105.50.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B678471wkzDqjd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 16:41:24 +1000 (AEST)
-Received: by mail-pl1-x642.google.com with SMTP id d1so1977556plr.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 23:41:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=H3GOXsEias8O11m7veg8//yn3qcFVNyaC+qfLEtL+Ng=;
- b=alvhxN7ZMAQKl7g8xDR8IV6PagrJ9Hahmx//vd3jdPyUs04mYsJSaxa0f8L68+OQ+l
- E3+DxH4KmqLcBJpeV9Jtr26IcaITP+oQr6l47Zv8aHE9du2IrS27lUGCdfK6hvhSFm0E
- AnJa4gH3mgO0SYfVUP/lsMRqaZy/c5gUkHzpKYExnEj2d08k0QFoyDyd+gqaYlNKZegr
- d4bihMgLhmzBMDkqnkc2gq+sxeD2jmO6GA5EQrht3RujORiO3efOGCf9/0izJVYJAjLt
- WXryT0azR8FlK9noO8I9iG9LqC1nhEQ8wjDsmCf5ak4sEtEY9j0xzqPHAf3pv+idT7uJ
- yiIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=H3GOXsEias8O11m7veg8//yn3qcFVNyaC+qfLEtL+Ng=;
- b=kZd2RtHLXhHJQWRH0A0xwy5JbUk9MCvq2BWCEpeuW772s9NSYlfpEyBqWdWvVNKnKw
- CKrITDpm42VsaZppWVAQtK7tHi+qP/vBGMnSUg0bBvaURGPu9IxcrLiQS0uSxjdzoez9
- U2gpY1drJffbssExlvsuWvLezWHwHtWmTxKbqme/FLWLcKsw+We54AW8qD+bchkjiuOB
- 4lZHlLpasbMxdVNY72covB/5Ze2r1kSqQ30mZYvT23PEAVoEuuon8vZ/U3P87+Ccp3qp
- HRAJCzZvB5dVZWlAxBR8OnzZp8bEoaDlClqHXuuz2SZIf81URWe+TSkZvmnlFE1g98ZE
- Gdlg==
-X-Gm-Message-State: AOAM533YJdhmWp6tF6OAsEA3/ovI5zQ/cQsCzcdQN8wbqVKksAtoPjZz
- 9WNTFwB7EYz6C6SS2Rfx1sA=
-X-Google-Smtp-Source: ABdhPJx7Fa/qDN3qyOdO0QPaUPtwX+pk9Uzy1ivVjam/CKWrJ+m4kN3YIdTdkOkLBa39I3kofrPxrQ==
-X-Received: by 2002:a17:90a:1d06:: with SMTP id
- c6mr9005046pjd.194.1594795282729; 
- Tue, 14 Jul 2020 23:41:22 -0700 (PDT)
-Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
- by smtp.gmail.com with ESMTPSA id bx18sm958690pjb.49.2020.07.14.23.41.21
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 14 Jul 2020 23:41:22 -0700 (PDT)
-Date: Tue, 14 Jul 2020 23:40:58 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Subject: Re: [PATCH 3/3] ASoC: fsl-asoc-card: Support Headphone and
- Microphone Jack detection
-Message-ID: <20200715064057.GA14081@Asurada-Nvidia>
-References: <1594717536-5188-1-git-send-email-shengjiu.wang@nxp.com>
- <1594717536-5188-4-git-send-email-shengjiu.wang@nxp.com>
- <20200714211432.GA10818@Asurada-Nvidia>
- <CAA+D8ANQ_B9jJUhLYQnKxKJcVrmvakxPo58h433QqFhdu2nRPA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B67DT0gfBzDq61
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 16:45:11 +1000 (AEST)
+Received: from player774.ha.ovh.net (unknown [10.110.103.200])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id 253CF9888A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 08:29:09 +0200 (CEST)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player774.ha.ovh.net (Postfix) with ESMTPSA id 0AEF8146AA8E2;
+ Wed, 15 Jul 2020 06:29:02 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-103G0052bfd424a-5f63-4d60-b697-d28668566bf1,D756FEFB7EDC1B892B7A3E282F77C60775DBB805)
+ smtp.auth=groug@kaod.org
+Date: Wed, 15 Jul 2020 08:28:59 +0200
+From: Greg Kurz <groug@kaod.org>
+To: YueHaibing <yuehaibing@huawei.com>
+Subject: Re: [PATCH -next] powerpc/xive: Remove unused inline function
+ xive_kexec_teardown_cpu()
+Message-ID: <20200715082859.4b61560e@bahia.lan>
+In-Reply-To: <20200715025040.33952-1-yuehaibing@huawei.com>
+References: <20200715025040.33952-1-yuehaibing@huawei.com>
+X-Mailer: Claws Mail 3.17.5 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAA+D8ANQ_B9jJUhLYQnKxKJcVrmvakxPo58h433QqFhdu2nRPA@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 11687966933504858421
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrfedugddutdelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpeffhffvuffkjghfofggtgfgsehtjeertdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehkefhtdehgeehheejledufeekhfdvleefvdeihefhkefhudffhfeuuedvffdthfenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejgedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,106 +69,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Linux-ALSA <alsa-devel@alsa-project.org>,
- kuninori.morimoto.gx@renesas.com, Timur Tabi <timur@kernel.org>,
- samuel@sholland.org, katsuhiro@katsuster.net,
- Fabio Estevam <festevam@gmail.com>, Shengjiu Wang <shengjiu.wang@nxp.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Brown <broonie@kernel.org>, Takashi Iwai <tiwai@suse.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 15, 2020 at 12:14:01PM +0800, Shengjiu Wang wrote:
-> On Wed, Jul 15, 2020 at 5:16 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> >
-> > Hi Shengjiu,
-> >
-> > The whole series looks good to me. Just a couple of small
-> > questions inline:
-> >
-> > On Tue, Jul 14, 2020 at 05:05:36PM +0800, Shengjiu Wang wrote:
-> > > Use asoc_simple_init_jack function from simple card to implement
-> > > the Headphone and Microphone detection.
-> > > Register notifier to disable Speaker when Headphone is plugged in
-> > > and enable Speaker when Headphone is unplugged.
-> > > Register notifier to disable Digital Microphone when Analog Microphone
-> > > is plugged in and enable DMIC when Analog Microphone is unplugged.
-> > >
-> > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > > ---
-> > >  sound/soc/fsl/Kconfig         |  1 +
-> > >  sound/soc/fsl/fsl-asoc-card.c | 69 ++++++++++++++++++++++++++++++++++-
-> > >  2 files changed, 68 insertions(+), 2 deletions(-)
-> >
-> > >  static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
-> > >  {
-> > >       struct fsl_asoc_card_priv *priv = snd_soc_card_get_drvdata(card);
-> > > @@ -745,8 +789,29 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
-> > >       snd_soc_card_set_drvdata(&priv->card, priv);
-> > >
-> > >       ret = devm_snd_soc_register_card(&pdev->dev, &priv->card);
-> > > -     if (ret && ret != -EPROBE_DEFER)
-> > > -             dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-> > > +     if (ret) {
-> > > +             if (ret != -EPROBE_DEFER)
-> > > +                     dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
-> >
-> > I think we may move this EPROBE_DEFER to the asrc_fail label.
-> 
-> If we move this to asrc_fail label, then it will be hard to define the
-> error message.
-> There are many places that goto asrc_fail.
+On Wed, 15 Jul 2020 10:50:40 +0800
+YueHaibing <yuehaibing@huawei.com> wrote:
 
-Oh...good point...
-
-> > > +             goto asrc_fail;
-> > > +     }
-> > > +
-> > > +     if (of_property_read_bool(np, "hp-det-gpio")) {
-> >
-> > Could we move this check inside asoc_simple_init_jack? There's no
-> > problem with doing it here though, yet I got a bit confused by it
-> > as I thought it's a boolean type property, which would be against
-> > the DT bindings until I saw asoc_simple_init_jack() uses the same
-> > string to get the GPIO. Just it probably would be a bit tricky as
-> > we need it to be optional here.
-> >
-> > Otherwise, I think we may add a line of comments to indicate that
-> > the API would use the same string to get the GPIO.
+> commit e27e0a94651e ("powerpc/xive: Remove xive_kexec_teardown_cpu()")
+> left behind this, remove it.
 > 
-> In asoc_simple_init_jack, gpio_is_valid() will be invalid when there is
-> no "hp-det-gpio" property, and asoc_simple_init_jack will return 0.
-> 
-> The reason why I add a check here is mostly for
-> snd_soc_jack_notifier_register().
-> when there is no jack created, there will be a kernel dump.
-> 
-> or I can use this code:
-> 
-> -       if (of_property_read_bool(np, "hp-det-gpio")) {
-> -               ret = asoc_simple_init_jack(&priv->card, &priv->hp_jack,
-> -                                           1, NULL, "Headphone Jack");
-> -               if (ret)
-> -                       goto asrc_fail;
-> +       ret = asoc_simple_init_jack(&priv->card, &priv->hp_jack,
-> +                                   1, NULL, "Headphone Jack");
-> +       if (ret)
-> +               goto asrc_fail;
-> 
-> +       if (priv->hp_jack.jack.jack)
->                 snd_soc_jack_notifier_register(&priv->hp_jack.jack,
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
 
-It's pretty clean but not very obvious for the "optional" part.
-So I think that it'd be slightly better to go for your previous
-solution, but with a line of comments to show: these properties
-are optional and asoc_simple_init_jack() uses the same strings.
+Reviewed-by: Greg Kurz <groug@kaod.org>
 
-Please add to all three changes once the comments being added:
+>  arch/powerpc/include/asm/xive.h | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+> index d08ea11b271c..309b4d65b74f 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -155,7 +155,6 @@ static inline void xive_smp_probe(void) { }
+>  static inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
+>  static inline void xive_smp_setup_cpu(void) { }
+>  static inline void xive_smp_disable_cpu(void) { }
+> -static inline void xive_kexec_teardown_cpu(int secondary) { }
+>  static inline void xive_shutdown(void) { }
+>  static inline void xive_flush_interrupt(void) { }
+>  
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-
-Thanks
