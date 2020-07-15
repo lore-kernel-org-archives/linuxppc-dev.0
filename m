@@ -2,62 +2,86 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CB8BC433E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:47:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E44FC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:49:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39EF220663
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:47:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39EF220663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id AF50320663
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 06:49:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lixom-net.20150623.gappssmtp.com header.i=@lixom-net.20150623.gappssmtp.com header.b="D+l25n5b"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF50320663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lixom.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B67Gc4KgLzDqfS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 16:47:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=46.105.50.32; helo=7.mo69.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B67K00hQBzDqFB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 16:49:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 957 seconds by postgrey-1.36 at bilbo;
- Wed, 15 Jul 2020 16:45:13 AEST
-Received: from 7.mo69.mail-out.ovh.net (7.mo69.mail-out.ovh.net [46.105.50.32])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=lixom.net
+ (client-ip=2607:f8b0:4864:20::143; helo=mail-il1-x143.google.com;
+ envelope-from=olof@lixom.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lixom.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=lixom-net.20150623.gappssmtp.com
+ header.i=@lixom-net.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=D+l25n5b; dkim-atps=neutral
+Received: from mail-il1-x143.google.com (mail-il1-x143.google.com
+ [IPv6:2607:f8b0:4864:20::143])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B67DT0gfBzDq61
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 16:45:11 +1000 (AEST)
-Received: from player774.ha.ovh.net (unknown [10.110.103.200])
- by mo69.mail-out.ovh.net (Postfix) with ESMTP id 253CF9888A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 08:29:09 +0200 (CEST)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player774.ha.ovh.net (Postfix) with ESMTPSA id 0AEF8146AA8E2;
- Wed, 15 Jul 2020 06:29:02 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass
- (GARM-103G0052bfd424a-5f63-4d60-b697-d28668566bf1,D756FEFB7EDC1B892B7A3E282F77C60775DBB805)
- smtp.auth=groug@kaod.org
-Date: Wed, 15 Jul 2020 08:28:59 +0200
-From: Greg Kurz <groug@kaod.org>
-To: YueHaibing <yuehaibing@huawei.com>
-Subject: Re: [PATCH -next] powerpc/xive: Remove unused inline function
- xive_kexec_teardown_cpu()
-Message-ID: <20200715082859.4b61560e@bahia.lan>
-In-Reply-To: <20200715025040.33952-1-yuehaibing@huawei.com>
-References: <20200715025040.33952-1-yuehaibing@huawei.com>
-X-Mailer: Claws Mail 3.17.5 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B67GV6tzdzDqg8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 16:46:58 +1000 (AEST)
+Received: by mail-il1-x143.google.com with SMTP id h16so1044420ilj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 23:46:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=lixom-net.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc:content-transfer-encoding;
+ bh=Ia+M7c1s6u4QzvRmg9F+yYUkSaBCxJOCiZePFvIuDVc=;
+ b=D+l25n5bcv1TSbCDuyiTk2BK9pkdINNUwW67aGOacRlIyk0ySLjsGWzDcPBj31btQV
+ uDr2HcZeXtm3d3NwwZOa3vRzLezh5c0YssPAMkbS4z+ueh4VLm6jhtIsezInCY+VOLYl
+ BWZMjKveeau7A9dBxlUHol1MsZAX4gMmGiQ22HEQSAMHuE1v8qFSSyrhqJ/IvSH0bD1O
+ mBebeftKbgCJRjoXd4nqNPwbuhndA7VOSBCMd+m7SUzXm4ERmEfKnrRO9kPL69Dl3KM4
+ KsO97+80nmLk1lFqu5rINAAxsAApi+EPfJlcn8P3YWd2UyctKlIKgf7jwSTcD25f0bRS
+ 0frg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=Ia+M7c1s6u4QzvRmg9F+yYUkSaBCxJOCiZePFvIuDVc=;
+ b=Ooyev9+Z7KOxb1ZrQava0C4q5EZNTjJZWNe0a0pv/IiZds6HSbjAzMyLh4azXCTTeg
+ MYQq/TLvLO3DD2B23JL53C5nN8QTQCgjuTueNPlVp9EOTCXj7orjcV4wnyXSWz7vY0Ry
+ dzon6roFUrFPtyhWqpFDOnljYOYaJR/vkWsOnRaYh5VxTx93QtePoLXvWQJhpScsk14y
+ VgMsXC9fPrXJuPwW5dfIpdY+1oLtGNDmKAltRUTEYWGiNP9OktYbQpuoM9rlJJ5TaxhN
+ OOgWGbmMmDwDsPRol7SATorSRzx6CTuQwGOUb/sbVo30cGkcPlT4iSLIXV/nq3sRuV3E
+ aWpw==
+X-Gm-Message-State: AOAM530qJV0UtLHuegOPkqlAuUNTWMmIXv8gLYEo6JYzXh+28T/6WpLM
+ e8ppP57sBxShPem8Is+dGinEv0UQ4fLzZHjDwhjwcg==
+X-Google-Smtp-Source: ABdhPJyNtTQ6tjiuB0fOsiGMKDn204hJD42fgcPc/S+ZwIlU4lbiCn47FJ7HiWLEM0DrOPmZUmzgdMVyttDg+xz5UnM=
+X-Received: by 2002:a92:49c3:: with SMTP id k64mr7793042ilg.278.1594795615165; 
+ Tue, 14 Jul 2020 23:46:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 11687966933504858421
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrfedugddutdelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucenucfjughrpeffhffvuffkjghfofggtgfgsehtjeertdertddvnecuhfhrohhmpefirhgvghcumfhurhiiuceoghhrohhugheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehkefhtdehgeehheejledufeekhfdvleefvdeihefhkefhudffhfeuuedvffdthfenucfkpheptddrtddrtddrtddpkedvrddvheefrddvtdekrddvgeeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjeejgedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+References: <20200714145049.2496163-1-lee.jones@linaro.org>
+ <20200714145049.2496163-6-lee.jones@linaro.org>
+ <CAOesGMjCZMyWLe+tpNFstC88odeSCKS8bM6Oj9cpaj6j7U94rQ@mail.gmail.com>
+ <20200715063311.GP1398296@dell>
+In-Reply-To: <20200715063311.GP1398296@dell>
+From: Olof Johansson <olof@lixom.net>
+Date: Tue, 14 Jul 2020 23:46:44 -0700
+Message-ID: <CAOesGMjnyq7iRQBopBQ2Dn7ziNGo4cjdKhceL0=gxrt1MuZY1g@mail.gmail.com>
+Subject: Re: [PATCH 05/13] cpufreq/arch: powerpc: pasemi: Move prototypes to
+ shared header
+To: Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,36 +93,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, viresh kumar <viresh.kumar@linaro.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM Mailing List <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Jul 2020 10:50:40 +0800
-YueHaibing <yuehaibing@huawei.com> wrote:
+On Tue, Jul 14, 2020 at 11:33 PM Lee Jones <lee.jones@linaro.org> wrote:
+>
+> On Tue, 14 Jul 2020, Olof Johansson wrote:
+>
+> > On Tue, Jul 14, 2020 at 7:50 AM Lee Jones <lee.jones@linaro.org> wrote:
+> > >
+> > > If function callers and providers do not share the same prototypes th=
+e
+> > > compiler complains of missing prototypes.  Fix this by moving the
+> > > already existing prototypes out to a mutually convenient location.
+> > >
+> > > Fixes the following W=3D1 kernel build warning(s):
+> > >
+> > >  drivers/cpufreq/pasemi-cpufreq.c:109:5: warning: no previous prototy=
+pe for =E2=80=98check_astate=E2=80=99 [-Wmissing-prototypes]
+> > >  109 | int check_astate(void)
+> > >  | ^~~~~~~~~~~~
+> > >  drivers/cpufreq/pasemi-cpufreq.c:114:6: warning: no previous prototy=
+pe for =E2=80=98restore_astate=E2=80=99 [-Wmissing-prototypes]
+> > >  114 | void restore_astate(int cpu)
+> > >  | ^~~~~~~~~~~~~~
+> > >
+> > > Cc: Olof Johansson <olof@lixom.net>
+> > > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Cc: Paul Mackerras <paulus@samba.org>
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> > > ---
+> > >  arch/powerpc/platforms/pasemi/pasemi.h    | 15 ------------
+> > >  arch/powerpc/platforms/pasemi/powersave.S |  2 ++
+> > >  drivers/cpufreq/pasemi-cpufreq.c          |  1 +
+> > >  include/linux/platform_data/pasemi.h      | 28 +++++++++++++++++++++=
+++
+> > >  4 files changed, 31 insertions(+), 15 deletions(-)
+> > >  create mode 100644 include/linux/platform_data/pasemi.h
+> > >
+> > > diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/pl=
+atforms/pasemi/pasemi.h
+> > > index 70b56048ed1be..528d81ef748ad 100644
+> > > --- a/arch/powerpc/platforms/pasemi/pasemi.h
+> > > +++ b/arch/powerpc/platforms/pasemi/pasemi.h
+> > > @@ -15,21 +15,6 @@ extern void __init pasemi_map_registers(void);
+> > >  extern void idle_spin(void);
+> > >  extern void idle_doze(void);
+> > >
+> > > -/* Restore astate to last set */
+> > > -#ifdef CONFIG_PPC_PASEMI_CPUFREQ
+> > > -extern int check_astate(void);
+> > > -extern void restore_astate(int cpu);
+> > > -#else
+> > > -static inline int check_astate(void)
+> > > -{
+> > > -       /* Always return >0 so we never power save */
+> > > -       return 1;
+> > > -}
+> > > -static inline void restore_astate(int cpu)
+> > > -{
+> > > -}
+> > > -#endif
+> > > -
+> > >  extern struct pci_controller_ops pasemi_pci_controller_ops;
+> > >
+> > >  #endif /* _PASEMI_PASEMI_H */
+> > > diff --git a/arch/powerpc/platforms/pasemi/powersave.S b/arch/powerpc=
+/platforms/pasemi/powersave.S
+> > > index d0215d5329ca7..7747b48963286 100644
+> > > --- a/arch/powerpc/platforms/pasemi/powersave.S
+> > > +++ b/arch/powerpc/platforms/pasemi/powersave.S
+> > > @@ -5,6 +5,8 @@
+> > >   * Maintained by: Olof Johansson <olof@lixom.net>
+> > >   */
+> > >
+> > > +#include <linux/platform_data/pasemi.h>
+> > > +
+> > >  #include <asm/processor.h>
+> > >  #include <asm/page.h>
+> > >  #include <asm/ppc_asm.h>
+> > > diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasem=
+i-cpufreq.c
+> > > index c66f566a854cb..c6bb3ecc90ef3 100644
+> > > --- a/drivers/cpufreq/pasemi-cpufreq.c
+> > > +++ b/drivers/cpufreq/pasemi-cpufreq.c
+> > > @@ -15,6 +15,7 @@
+> > >  #include <linux/timer.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/of_address.h>
+> > > +#include <linux/platform_data/pasemi.h>
+> > >
+> > >  #include <asm/hw_irq.h>
+> > >  #include <asm/io.h>
+> > > diff --git a/include/linux/platform_data/pasemi.h b/include/linux/pla=
+tform_data/pasemi.h
+> > > new file mode 100644
+> > > index 0000000000000..3fed0687fcc9a
+> > > --- /dev/null
+> > > +++ b/include/linux/platform_data/pasemi.h
+> > > @@ -0,0 +1,28 @@
+> > > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > > +/*
+> > > + * Copyright (C) 2020 Linaro Ltd.
+> > > + *
+> > > + * Author: Lee Jones <lee.jones@linaro.org>
+> > > + */
+> >
+> > Absolutely not. It's neither your copyright, nor your authorship.
+>
+> The file was new.  Anyway, the point is now moot.
 
-> commit e27e0a94651e ("powerpc/xive: Remove xive_kexec_teardown_cpu()")
-> left behind this, remove it.
-> 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
+The contents was copied and pasted from other material, not originally
+produced by you.
 
-Reviewed-by: Greg Kurz <groug@kaod.org>
+I suggest you consult with Linaro lawyers on how to handle this if you
+have to do something like it in the future.
 
->  arch/powerpc/include/asm/xive.h | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-> index d08ea11b271c..309b4d65b74f 100644
-> --- a/arch/powerpc/include/asm/xive.h
-> +++ b/arch/powerpc/include/asm/xive.h
-> @@ -155,7 +155,6 @@ static inline void xive_smp_probe(void) { }
->  static inline int  xive_smp_prepare_cpu(unsigned int cpu) { return -EINVAL; }
->  static inline void xive_smp_setup_cpu(void) { }
->  static inline void xive_smp_disable_cpu(void) { }
-> -static inline void xive_kexec_teardown_cpu(int secondary) { }
->  static inline void xive_shutdown(void) { }
->  static inline void xive_flush_interrupt(void) { }
->  
 
+-Olof
