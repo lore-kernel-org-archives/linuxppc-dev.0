@@ -2,75 +2,79 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F32B2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 586E8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:30:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC6DD206E9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:28:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC6DD206E9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
+	by mail.kernel.org (Postfix) with ESMTPS id 07478206E9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:30:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="d7fTd5KW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07478206E9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6Gqz61D5zDqlp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:27:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6Gtj1vMSzDqml
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:30:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
- helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
+ envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ACULAB.COM
-Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
+ dmarc=pass (p=none dis=none) header.from=efficios.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
+ header.s=default header.b=d7fTd5KW; dkim-atps=neutral
+Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6Gby1SVQzDqdS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 22:17:31 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
- TLS) by relay.mimecast.com with ESMTP id
- uk-mta-118-VUzQIPn9PGiRcCFwemuUlA-1; Wed, 15 Jul 2020 09:15:49 +0100
-X-MC-Unique: VUzQIPn9PGiRcCFwemuUlA-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Wed, 15 Jul 2020 09:15:47 +0100
-Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
- AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Wed, 15 Jul 2020 09:15:47 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Jarkko Sakkinen' <jarkko.sakkinen@linux.intel.com>, Peter Zijlstra
- <peterz@infradead.org>
-Subject: RE: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
- move to kernel proper
-Thread-Topic: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
- move to kernel proper
-Thread-Index: AQHWWhTZJFla60Gj2kinqcyPQzfqlakISLKA
-Date: Wed, 15 Jul 2020 08:15:47 +0000
-Message-ID: <778f330d994340c89241f5318a54422f@AcuMS.aculab.com>
-References: <20200714094625.1443261-1-jarkko.sakkinen@linux.intel.com>
- <20200714094625.1443261-2-jarkko.sakkinen@linux.intel.com>
- <20200714102826.GB4756@willie-the-truck>
- <20200714112927.GV10769@hirez.programming.kicks-ass.net>
- <CAMj1kXGG4vxWrp1de1FxdU=8F4Jof00=T1x-7e+BW7_HP-oZMQ@mail.gmail.com>
- <20200714130109.GX10769@hirez.programming.kicks-ass.net>
- <20200714163103.GA1472166@linux.intel.com>
-In-Reply-To: <20200714163103.GA1472166@linux.intel.com>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6GqF3dg5zDqWj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 22:27:19 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 9F49228115E;
+ Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id Dl7BREeXYyAE; Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 628C528115D;
+ Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 628C528115D
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1594816035;
+ bh=TPZk1GxCJoMUtYrz9jqLjh21bcDfMdLDKQPSdffICmI=;
+ h=Date:From:To:Message-ID:MIME-Version;
+ b=d7fTd5KWxvmgO4I8LgyPOUjfjlKiObobBtc68vjoGxtqLj+iGrO9px2YRd+0OxLqB
+ PCXMgM51z27gLqvyXwAclVTQ7TNoj22s1a0AiFsejmKKDq54zCagSw7CI1vvzc1bGz
+ gn7L4hDJj0qgjhsPdjy3R4TZKBwdlHCzbwpCWICdi1zgN8YeVd60kijEoRSTTA7w2k
+ EllO2ulvcs0ExLTmolqWMzxVgcS0EQRQIbwFC0tqApBErwJrC1jlzMQE6u4h9xRRg5
+ EyUz+zXrhfqatsRPGJVhkcZBhz3HdMgAGie6tRl7WpRxn6vsUi1Uyxh7YjEFIa6bPC
+ tdz9sw90KTjsw==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id OrLV38hoRJkS; Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
+ by mail.efficios.com (Postfix) with ESMTP id 5612A28115C;
+ Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+Date: Wed, 15 Jul 2020 08:27:15 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Message-ID: <849841781.14062.1594816035327.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20200715094829.252208-1-npiggin@gmail.com>
+References: <20200715094829.252208-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc: select ARCH_HAS_MEMBARRIER_SYNC_CORE
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Wed, 15 Jul 2020 22:25:51 +1000
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [167.114.26.124]
+X-Mailer: Zimbra 8.8.15_GA_3955 (ZimbraWebClient - FF78 (Linux)/8.8.15_GA_3953)
+Thread-Topic: powerpc: select ARCH_HAS_MEMBARRIER_SYNC_CORE
+Thread-Index: 3xz9KaI4NJiQWIgfXkzcTMmBc5tGIA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,93 +86,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Song Liu <songliubraving@fb.com>,
- Paul Mackerras <paulus@samba.org>, Zong Li <zong.li@sifive.com>,
- Andi Kleen <ak@linux.intel.com>, Paul Burton <paulburton@kernel.org>,
- Vincent Whitchurch <vincent.whitchurch@axis.com>,
- Petr Mladek <pmladek@suse.com>, Brian Gerst <brgerst@gmail.com>, Andy
- Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri
- Kosina <jkosina@suse.cz>, Anup Patel <anup.patel@wdc.com>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Philipp Rudo <prudo@linux.ibm.com>,
- Torsten Duwe <duwe@lst.de>, Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Mark
- Rutland <mark.rutland@arm.com>,
- "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
- Vincent Chen <deanbo422@gmail.com>, Omar Sandoval <osandov@fb.com>,
- "open list:S390" <linux-s390@vger.kernel.org>,
- Joe Lawrence <joe.lawrence@redhat.com>, Helge
- Deller <deller@gmx.de>, John Fastabend <john.fastabend@gmail.com>, Anil S
- Keshavamurthy <anil.s.keshavamurthy@intel.com>, Yonghong Song <yhs@fb.com>,
- Iurii Zaikin <yzaikin@google.com>, Andrii Nakryiko <andriin@fb.com>, Thomas
- Huth <thuth@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>, "moderated
- list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
- Daniel Axtens <dja@axtens.net>, Damien Le Moal <damien.lemoal@wdc.com>,
- Martin KaFai Lau <kafai@fb.com>, Kefeng Wang <wangkefeng.wang@huawei.com>,
- Paul Walmsley <paul.walmsley@sifive.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Alexei Starovoitov <ast@kernel.org>, Atish Patra <atish.patra@wdc.com>, Will
- Deacon <will@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Masahiro
- Yamada <masahiroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>,
- Ley Foon Tan <ley.foon.tan@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Sami Tolvanen <samitolvanen@google.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Mao Han <han_mao@c-sky.com>,
- Marco Elver <elver@google.com>, Steven Rostedt <rostedt@goodmis.org>,
- Babu Moger <Babu.Moger@amd.com>, Borislav Petkov <bp@alien8.de>,
- Greentime Hu <green.hu@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
- Guan Xuetao <gxt@pku.edu.cn>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Jessica Yu <jeyu@kernel.org>,
- "open list:BPF JIT for MIPS \(32-BIT AND 64-BIT\)" <bpf@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>, Thiago Jung
- Bauermann <bauerman@linux.ibm.com>, David Howells <dhowells@redhat.com>,
- Amit Daniel Kachhap <amit.kachhap@arm.com>,
- Sandipan Das <sandipan@linux.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
- "open list:SPARC + UltraSPARC \(sparc/sparc64\)" <sparclinux@vger.kernel.org>,
- Tiezhu Yang <yangtiezhu@loongson.cn>, Miroslav Benes <mbenes@suse.cz>,
- Sven Schnelle <svens@stackframe.org>, Ard Biesheuvel <ardb@kernel.org>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Anders Roxell <anders.roxell@linaro.org>, Jiri Olsa <jolsa@redhat.com>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND
- 64-BIT\)" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, "open
- list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
- Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, KP Singh <kpsingh@chromium.org>,
- Dmitry Vyukov <dvyukov@google.com>, Nick Hu <nickhu@andestech.com>,
- "open list:BPF
- JIT for MIPS \(32-BIT AND 64-BIT\)" <netdev@vger.kernel.org>,
- "open list:MIPS" <linux-mips@vger.kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, "open
- list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andy Lutomirski <luto@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Jarkko Sakkinen
-> Sent: 14 July 2020 17:31
-..
-> There is one arch (nios2), which uses a regular kzalloc(). This means
-> that both text_alloc() and text_memfree() need to be weaks symbols and
-> nios2 needs to have overriding text.c to do its thing.
+----- On Jul 15, 2020, at 5:48 AM, Nicholas Piggin npiggin@gmail.com wrote:
+[...]
+> index 47bd4ea0837d..a4704f405e8d 100644
+> --- a/arch/powerpc/include/asm/exception-64s.h
+> +++ b/arch/powerpc/include/asm/exception-64s.h
+> @@ -68,6 +68,13 @@
+>  *
+>  * The nop instructions allow us to insert one or more instructions to flush the
+>  * L1-D cache when returning to userspace or a guest.
+> + *
+> + * powerpc relies on return from interrupt/syscall being context synchronising
+> + * (which hrfid, rfid, and rfscv are) to support ARCH_HAS_MEMBARRIER_SYNC_CORE
+> + * without additional additional synchronisation instructions. soft-masked
+> + * interrupt replay does not include a context-synchronising rfid, but those
+> + * always return to kernel, the context sync is only required for IPIs which
+> + * return to user.
+>  */
+> #define RFI_FLUSH_SLOT							\
+> 	RFI_FLUSH_FIXUP_SECTION;					\
 
-That could be handled by an arch-specific inline wrapper in a .h file.
+I suspect the statement "the context sync is only required for IPIs which return to
+user." is misleading.
 
-Although I actually suspect the nios2 code is just being lazy.
-The processor is a very simple in-order 32bit soft cpu for Intel (Altera)
-FPGA.
+As I recall that we need more than just context sync after IPI. We need context sync
+in return path of any trap/interrupt/system call which returns to user-space, else
+we'd need to add the proper core serializing barriers in the scheduler, as we had
+to do for lazy tlb on x86.
 
-We have four nios2 cpu on one of our fpga images - all running small
-(almost single function) code loops.
-I can't imagine actually trying to run Linux on one to do anything
-useful - clock speed is unlikely to be much above 100MHz.
-We can't meet timing at 125MHZ (I've tried quite hard) so have
-to run at 62.5MHz because of the PCIe clock.
+Or am I missing something ?
 
-=09David
+Thanks,
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+Mathieu
 
+-- 
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
