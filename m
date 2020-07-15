@@ -2,166 +2,79 @@ Return-Path: <SRS0=XJaO=A2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A13F6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E304C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:23:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23A2D20729
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:21:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8891520729
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 02:23:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="xPJ3zCb2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23A2D20729
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LyiKMduN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8891520729
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B61Mj0nHpzDqSF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:21:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B61Q053mHzDqB9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:23:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::243;
- helo=mail-oi1-x243.google.com; envelope-from=aik@ozlabs.ru;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::341;
+ helo=mail-ot1-x341.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=xPJ3zCb2; dkim-atps=neutral
-Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
- [IPv6:2607:f8b0:4864:20::243])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=LyiKMduN; dkim-atps=neutral
+Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com
+ [IPv6:2607:f8b0:4864:20::341])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B61HV4dKzzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 12:17:26 +1000 (AEST)
-Received: by mail-oi1-x243.google.com with SMTP id y22so779891oie.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:17:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:references:from:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=S3jmlCC6y67G4LfDI5AL1Iz8qrVAA3ZIzaEcqyQbXbA=;
- b=xPJ3zCb2fC4LCrvUXlTATZ+j79sqSnGcS4UjwganfLo3/btSQYcDzLFJZXY/JhAVfY
- EgwDtW6KdVJvTdt21k8dxuI0XhWKxJmSufOadEQsvq1mxvoP1RxITIiH7DDl8PgV3Ivn
- SrqwqTWwaLCfPAS0iMko3NHc+4n6gz5QCjChI2jtafy5aXCRIrH+5BJNst9HkrsX1IE9
- fEd7i7ty1x34b3w1dZ7LUFX2OomsjYm925vec6F7Rk8j5mLGaIhHlv1s1Y9KJFqRE1hq
- gtRdKsQkT4p9jt7QMya1aH0SPF0cGOJjpdYdNhOTyLsEPzAhdOyVeTtvXMyr98fp2Vf9
- 7V/w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B61Ks2B65zDqcS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 12:19:28 +1000 (AEST)
+Received: by mail-ot1-x341.google.com with SMTP id a21so293769otq.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2020 19:19:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=jUGDSqi69Akm05/pcLfGWY4X/8FfrjE00ft2xbB2QWc=;
+ b=LyiKMduNZ8amiKsL4mV2djbji46jZdOVOhCtuuxnxYh2j8/R8NLmA3TJNQLsBkFYoX
+ okplpVx4+6AukyRFBAISHPONayC/g0qbsj+iojklDReG+oS/dSbVtlrUhrSUpBFf1ps+
+ zLnpl+1TX/6G54yUd9wXE0o8/GhEHCQS+LxDmYHceFVHmrzzWLjRl5Vhl4J+zg9K+e00
+ LjvHCE8tvHakMGrVePDgw5UTjWC7FxXRgfb+Cfmj1mQmm1NTjpEGxaq1GIP0QldK8Y+8
+ Psflpfpl4t0xVMKzPKygcBpsBGNb0FTT6DBRZPnLiRs80MS+f5u9ZNAmugEZVrZXj3un
+ XXkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:references:from:autocrypt:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=S3jmlCC6y67G4LfDI5AL1Iz8qrVAA3ZIzaEcqyQbXbA=;
- b=MK0qlrVM2GF2f+wINBOCIqh1NLcxkEoDESzMbb9kQEzNb7zOlLKc1eRvG5WvuN48vr
- ldyo0T+ijco05qXoTWNeiNmjIYltrZcMA21weildZWhP4GT+lg79JenT89mDq4UYx0EO
- fB5Gn3DvfWRLj93hyr5hfbms1zyUoqVIQUkGoqLxMwDw+g3U3hSp8vwPtGoyX4PHrUh3
- PsdPzZjs+foktjlkysfVyH1PcJVzay+Jfc6+V3viOdCPJMTVJZM4W4hzKu2E+ljwug1n
- +nQ17VPv4vOYFA0YWXzqd0Q5+PRjAnStH7Tve06egl6JZHw+G9E90VQt2y+BrLI3+ZK0
- SFeA==
-X-Gm-Message-State: AOAM530ORj/LbG4KzvhFjxdhdVOIaBgDN5fIPGbgIM6LZ5AqQzlZ3of9
- kU18iJ3PMNpxotO1Jna164e8dqTk7eo7AA==
-X-Google-Smtp-Source: ABdhPJxrSAGuyUD+7zTvoJVWkzxjZgCRh9qgC+KXuwf3thAPD81MfbzRIDWicBYVH6aFS4yiyyLBJQ==
-X-Received: by 2002:a17:90b:380b:: with SMTP id
- mq11mr7833008pjb.46.1594778970544; 
- Tue, 14 Jul 2020 19:09:30 -0700 (PDT)
-Received: from [192.168.10.94] (124-171-83-152.dyn.iinet.net.au.
- [124.171.83.152])
- by smtp.gmail.com with ESMTPSA id o4sm308782pjo.16.2020.07.14.19.09.28
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 14 Jul 2020 19:09:29 -0700 (PDT)
-Subject: Re: [PATCH 09/15] powerpc/powernv/sriov: Factor out M64 BAR setup
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20200710052340.737567-1-oohall@gmail.com>
- <20200710052340.737567-10-oohall@gmail.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <4692395e-ff35-1efa-dc15-21107f7bc0ad@ozlabs.ru>
-Date: Wed, 15 Jul 2020 12:09:26 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=jUGDSqi69Akm05/pcLfGWY4X/8FfrjE00ft2xbB2QWc=;
+ b=FoY/y04v0kPPyKMbyokjkbYVrWPtVRYOIl9Rtv8EjhwbcIuPvr9QVsv8GmZCUkm9+h
+ 1oMXiHyOEdqITMngir+G4WUpTXLJ79GK9gG4CV7qLSan+ieOqvaqMYha44v6CQNY4hbO
+ P998CpbjP82+YYooFB9+41sluVphlSwE/CKrrgVBidYMlxJojt0IyqYArvijzzLqjIgH
+ dohysHItwZtIu2x+9gUP2oSYcvYVUa34vmnNLMcLiDY6cpdcQtUnojYDzoK64Y2ZZwRQ
+ KBpiDkakyPukazdnnMw32nB3NqrDvFrbSf8HmtfbEO7lRfcVFWuAxaTQuTEkq08Ts3Jd
+ XmDQ==
+X-Gm-Message-State: AOAM530kHY29sQ0p8hF3GlBpIkU6WsoJtDMf90nlxJVLuMbl7hWZxUA0
+ zSivOaxIVkj4hxYLVkl/yNsQIsDn7tvkTI28C0E=
+X-Google-Smtp-Source: ABdhPJxA3/h2hp+186jfFN98nqbXbToX4EPKX9nJpqjoSCVuMQkCDABArgMs3H6kAYlMXvfQTM4ZFAbL+ThF3/ADSYQ=
+X-Received: by 2002:a9d:7f06:: with SMTP id j6mr6685899otq.51.1594779565671;
+ Tue, 14 Jul 2020 19:19:25 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200710052340.737567-10-oohall@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20200708045046.135702-1-ravi.bangoria@linux.ibm.com>
+ <20200708045046.135702-3-ravi.bangoria@linux.ibm.com>
+In-Reply-To: <20200708045046.135702-3-ravi.bangoria@linux.ibm.com>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Wed, 15 Jul 2020 12:19:14 +1000
+Message-ID: <CACzsE9qSjWKWGDQPGSk-c5f5pxUyWWtUFW+AzzB5M76qFcQ-Cw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/9] powerpc/watchpoint: Fix DAWR exception constraint
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -173,217 +86,256 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, apopple@linux.ibm.com,
+ mikey@neuling.org, miltonm@us.ibm.com, peterz@infradead.org, oleg@redhat.com,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, jolsa@kernel.org, fweisbec@gmail.com,
+ pedromfc@br.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 10/07/2020 15:23, Oliver O'Halloran wrote:
-> The sequence required to use the single PE BAR mode is kinda janky and
-> requires a little explanation. The API was designed with P7-IOC style
-> windows where the setup process is something like:
-> 
-> 1. Configure the window start / end address
-> 2. Enable the window
-> 3. Map the segments of each window to the PE
-> 
-> For Single PE BARs the process is:
-> 
-> 1. Set the PE for segment zero on a disabled window
-> 2. Set the range
-> 3. Enable the window
-> 
-> Move the OPAL calls into their own helper functions where the quirks can be
-> contained.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-
-
-I'd use "segmented" instead of "accordion". Otherwise,
-
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-
-
-
+On Wed, Jul 8, 2020 at 2:52 PM Ravi Bangoria
+<ravi.bangoria@linux.ibm.com> wrote:
+>
+> Pedro Miraglia Franco de Carvalho noticed that on p8, DAR value is
+> inconsistent with different type of load/store. Like for byte,word
+> etc. load/stores, DAR is set to the address of the first byte of
+> overlap between watch range and real access. But for quadword load/
+> store it's set to the address of the first byte of real access. This
+> issue has been fixed in p10. In p10(ISA 3.1), DAR is always set to
+> the address of the first byte of overlap. Commit 27985b2a640e
+> ("powerpc/watchpoint: Don't ignore extraneous exceptions blindly")
+> wrongly assumes that DAR is set to the address of the first byte of
+> overlap for all load/stores on p8 as well. Fix that. With the fix,
+> we now rely on 'ea' provided by analyse_instr(). If analyse_instr()
+> fails, generate event unconditionally on p8, and on p10 generate
+> event only if DAR is within a DAWR range.
+>
+> Note: 8xx is not affected.
+>
+> Fixes: 27985b2a640e ("powerpc/watchpoint: Don't ignore extraneous exceptions blindly")
+> Fixes: 74c6881019b7 ("powerpc/watchpoint: Prepare handler to handle more than one watchpoint")
+> Reported-by: Pedro Miraglia Franco de Carvalho <pedromfc@br.ibm.com>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 > ---
->  arch/powerpc/platforms/powernv/pci-sriov.c | 132 ++++++++++++++++-----
->  1 file changed, 103 insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-sriov.c b/arch/powerpc/platforms/powernv/pci-sriov.c
-> index e4c65cb49757..d53a85ccb538 100644
-> --- a/arch/powerpc/platforms/powernv/pci-sriov.c
-> +++ b/arch/powerpc/platforms/powernv/pci-sriov.c
-> @@ -320,6 +320,102 @@ static int pnv_pci_vf_release_m64(struct pci_dev *pdev, u16 num_vfs)
->  	return 0;
+>  arch/powerpc/kernel/hw_breakpoint.c | 93 +++++++++++++++++++----------
+>  1 file changed, 63 insertions(+), 30 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+> index 031e6defc08e..7a66c370a105 100644
+> --- a/arch/powerpc/kernel/hw_breakpoint.c
+> +++ b/arch/powerpc/kernel/hw_breakpoint.c
+> @@ -498,11 +498,11 @@ static bool dar_in_user_range(unsigned long dar, struct arch_hw_breakpoint *info
+>         return ((info->address <= dar) && (dar - info->address < info->len));
 >  }
->  
-> +
-> +/*
-> + * PHB3 and beyond support "accordion" windows. The window's address range
-> + * is subdivided into phb->ioda.total_pe_num segments and there's a 1-1
-> + * mapping between PEs and segments.
-> + *
-> + * They're called that because as the window size changes the segment sizes
-> + * change with it. Sort of like an accordion, sort of.
-> + */
-> +static int64_t pnv_ioda_map_m64_accordion(struct pnv_phb *phb,
-> +					  int window_id,
-> +					  resource_size_t start,
-> +					  resource_size_t size)
-> +{
-> +	int64_t rc;
-> +
-> +	rc = opal_pci_set_phb_mem_window(phb->opal_id,
-> +					 OPAL_M64_WINDOW_TYPE,
-> +					 window_id,
-> +					 start,
-> +					 0, /* unused */
-> +					 size);
-> +	if (rc)
-> +		goto out;
-> +
-> +	rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> +				      OPAL_M64_WINDOW_TYPE,
-> +				      window_id,
-> +				      OPAL_ENABLE_M64_SPLIT);
-> +out:
-> +	if (rc)
-> +		pr_err("Failed to map M64 window #%d: %lld\n", window_id, rc);
-> +
-> +	return rc;
-> +}
-> +
-> +static int64_t pnv_ioda_map_m64_single(struct pnv_phb *phb,
-> +				       int pe_num,
-> +				       int window_id,
-> +				       resource_size_t start,
-> +				       resource_size_t size)
-> +{
-> +	int64_t rc;
-> +
-> +	/*
-> +	 * The API for setting up m64 mmio windows seems to have been designed
-> +	 * with P7-IOC in mind. For that chip each M64 BAR (window) had a fixed
-> +	 * split of 8 equally sized segments each of which could individually
-> +	 * assigned to a PE.
-> +	 *
-> +	 * The problem with this is that the API doesn't have any way to
-> +	 * communicate the number of segments we want on a BAR. This wasn't
-> +	 * a problem for p7-ioc since you didn't have a choice, but the
-> +	 * single PE windows added in PHB3 don't map cleanly to this API.
-> +	 *
-> +	 * As a result we've got this slightly awkward process where we
-> +	 * call opal_pci_map_pe_mmio_window() to put the single in single
-> +	 * PE mode, and set the PE for the window before setting the address
-> +	 * bounds. We need to do it this way because the single PE windows
-> +	 * for PHB3 have different alignment requirements on PHB3.
-> +	 */
-> +	rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> +					 pe_num,
-> +					 OPAL_M64_WINDOW_TYPE,
-> +					 window_id,
-> +					 0);
-> +	if (rc)
-> +		goto out;
-> +
-> +	/*
-> +	 * NB: In single PE mode the window needs to be aligned to 32MB
-> +	 */
-> +	rc = opal_pci_set_phb_mem_window(phb->opal_id,
-> +					 OPAL_M64_WINDOW_TYPE,
-> +					 window_id,
-> +					 start,
-> +					 0, /* ignored by FW, m64 is 1-1 */
-> +					 size);
-> +	if (rc)
-> +		goto out;
-> +
-> +	/*
-> +	 * Now actually enable it. We specified the BAR should be in "non-split"
-> +	 * mode so FW will validate that the BAR is in single PE mode.
-> +	 */
-> +	rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> +				      OPAL_M64_WINDOW_TYPE,
-> +				      window_id,
-> +				      OPAL_ENABLE_M64_NON_SPLIT);
-> +out:
-> +	if (rc)
-> +		pr_err("Error mapping single PE BAR\n");
-> +
-> +	return rc;
-> +}
-> +
->  static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>
+> -static bool dar_user_range_overlaps(unsigned long dar, int size,
+> -                                   struct arch_hw_breakpoint *info)
+> +static bool ea_user_range_overlaps(unsigned long ea, int size,
+> +                                  struct arch_hw_breakpoint *info)
 >  {
->  	struct pnv_iov_data   *iov;
-> @@ -330,7 +426,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->  	int64_t                rc;
->  	int                    total_vfs;
->  	resource_size_t        size, start;
-> -	int                    pe_num;
->  	int                    m64_bars;
->  
->  	phb = pci_bus_to_pnvhb(pdev->bus);
-> @@ -359,49 +454,28 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->  			} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
->  			set_bit(win, iov->used_m64_bar_mask);
->  
-> +
->  			if (iov->m64_single_mode) {
->  				size = pci_iov_resource_size(pdev,
->  							PCI_IOV_RESOURCES + i);
->  				start = res->start + size * j;
-> +				rc = pnv_ioda_map_m64_single(phb, win,
-> +							     iov->pe_num_map[j],
-> +							     start,
-> +							     size);
->  			} else {
->  				size = resource_size(res);
->  				start = res->start;
-> -			}
->  
-> -			/* Map the M64 here */
-> -			if (iov->m64_single_mode) {
-> -				pe_num = iov->pe_num_map[j];
-> -				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> -						pe_num, OPAL_M64_WINDOW_TYPE,
-> -						win, 0);
-> +				rc = pnv_ioda_map_m64_accordion(phb, win, start,
-> +								size);
->  			}
->  
-> -			rc = opal_pci_set_phb_mem_window(phb->opal_id,
-> -						 OPAL_M64_WINDOW_TYPE,
-> -						 win,
-> -						 start,
-> -						 0, /* unused */
-> -						 size);
+> -       return ((dar < info->address + info->len) &&
+> -               (dar + size > info->address));
+> +       return ((ea < info->address + info->len) &&
+> +               (ea + size > info->address));
+>  }
+>
+>  static bool dar_in_hw_range(unsigned long dar, struct arch_hw_breakpoint *info)
+> @@ -515,20 +515,22 @@ static bool dar_in_hw_range(unsigned long dar, struct arch_hw_breakpoint *info)
+>         return ((hw_start_addr <= dar) && (hw_end_addr > dar));
+>  }
+>
+> -static bool dar_hw_range_overlaps(unsigned long dar, int size,
+> -                                 struct arch_hw_breakpoint *info)
+> +static bool ea_hw_range_overlaps(unsigned long ea, int size,
+> +                                struct arch_hw_breakpoint *info)
+>  {
+>         unsigned long hw_start_addr, hw_end_addr;
+>
+>         hw_start_addr = ALIGN_DOWN(info->address, HW_BREAKPOINT_SIZE);
+>         hw_end_addr = ALIGN(info->address + info->len, HW_BREAKPOINT_SIZE);
+>
+> -       return ((dar < hw_end_addr) && (dar + size > hw_start_addr));
+> +       return ((ea < hw_end_addr) && (ea + size > hw_start_addr));
+>  }
+>
+>  /*
+>   * If hw has multiple DAWR registers, we also need to check all
+>   * dawrx constraint bits to confirm this is _really_ a valid event.
+> + * If type is UNKNOWN, but privilege level matches, consider it as
+> + * a positive match.
+>   */
+>  static bool check_dawrx_constraints(struct pt_regs *regs, int type,
+>                                     struct arch_hw_breakpoint *info)
+> @@ -536,7 +538,12 @@ static bool check_dawrx_constraints(struct pt_regs *regs, int type,
+>         if (OP_IS_LOAD(type) && !(info->type & HW_BRK_TYPE_READ))
+>                 return false;
+>
+> -       if (OP_IS_STORE(type) && !(info->type & HW_BRK_TYPE_WRITE))
+> +       /*
+> +        * The Cache Management instructions other than dcbz never
+> +        * cause a match. i.e. if type is CACHEOP, the instruction
+> +        * is dcbz, and dcbz is treated as Store.
+> +        */
+> +       if ((OP_IS_STORE(type) || type == CACHEOP) && !(info->type & HW_BRK_TYPE_WRITE))
+>                 return false;
+This change seems seperate to this commit?
+>
+>         if (is_kernel_addr(regs->nip) && !(info->type & HW_BRK_TYPE_KERNEL))
+> @@ -553,7 +560,8 @@ static bool check_dawrx_constraints(struct pt_regs *regs, int type,
+>   * including extraneous exception. Otherwise return false.
+>   */
+>  static bool check_constraints(struct pt_regs *regs, struct ppc_inst instr,
+> -                             int type, int size, struct arch_hw_breakpoint *info)
+> +                             unsigned long ea, int type, int size,
+> +                             struct arch_hw_breakpoint *info)
+>  {
+>         bool in_user_range = dar_in_user_range(regs->dar, info);
+>         bool dawrx_constraints;
+> @@ -569,11 +577,10 @@ static bool check_constraints(struct pt_regs *regs, struct ppc_inst instr,
+>         }
+>
+>         if (unlikely(ppc_inst_equal(instr, ppc_inst(0)))) {
+> -               if (in_user_range)
+> -                       return true;
 > -
-> -
->  			if (rc != OPAL_SUCCESS) {
->  				dev_err(&pdev->dev, "Failed to map M64 window #%d: %lld\n",
->  					win, rc);
->  				goto m64_failed;
->  			}
-> -
-> -			if (iov->m64_single_mode)
-> -				rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> -				     OPAL_M64_WINDOW_TYPE, win, 2);
-> -			else
-> -				rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> -				     OPAL_M64_WINDOW_TYPE, win, 1);
-> -
-> -			if (rc != OPAL_SUCCESS) {
-> -				dev_err(&pdev->dev, "Failed to enable M64 window #%d: %llx\n",
-> -					win, rc);
-> -				goto m64_failed;
-> -			}
->  		}
->  	}
->  	return 0;
-> 
+> -               if (dar_in_hw_range(regs->dar, info)) {
+> -                       info->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
+> +               if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+> +                       if (dar_in_hw_range(regs->dar, info))
+> +                               return true;
+> +               } else {
+>                         return true;
+I think this would be clearer as:
+        if (cpu_has_feature(CPU_FTR_ARCH_31) &&
+!(dar_in_hw_range(regs->dar, info)))
+            return false;
+        else
+            return true;
 
--- 
-Alexey
+>                 }
+>                 return false;
+> @@ -581,10 +588,20 @@ static bool check_constraints(struct pt_regs *regs, struct ppc_inst instr,
+>
+>         dawrx_constraints = check_dawrx_constraints(regs, type, info);
+>
+> -       if (dar_user_range_overlaps(regs->dar, size, info))
+> +       if (type == UNKNOWN) {
+> +               if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+> +                       if (dar_in_hw_range(regs->dar, info))
+> +                               return dawrx_constraints;
+> +               } else {
+> +                       return dawrx_constraints;
+> +               }
+> +               return false;
+> +       }
+Similar thing here, it could be:
+        if ((cpu_has_feature(CPU_FTR_ARCH_31)) &&
+!(dar_in_hw_range(regs->dar, info)))
+            return false;
+        else
+            return dawrx_constraints;
+> +
+> +       if (ea_user_range_overlaps(ea, size, info))
+>                 return dawrx_constraints;
+>
+> -       if (dar_hw_range_overlaps(regs->dar, size, info)) {
+> +       if (ea_hw_range_overlaps(ea, size, info)) {
+>                 if (dawrx_constraints) {
+>                         info->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
+>                         return true;
+> @@ -593,8 +610,17 @@ static bool check_constraints(struct pt_regs *regs, struct ppc_inst instr,
+>         return false;
+>  }
+>
+> +static int cache_op_size(void)
+> +{
+> +#ifdef __powerpc64__
+> +       return ppc64_caches.l1d.block_size;
+> +#else
+> +       return L1_CACHE_BYTES;
+> +#endif
+> +}
+> +
+>  static void get_instr_detail(struct pt_regs *regs, struct ppc_inst *instr,
+> -                            int *type, int *size, bool *larx_stcx)
+> +                            int *type, int *size, unsigned long *ea)
+>  {
+>         struct instruction_op op;
+>
+> @@ -602,16 +628,23 @@ static void get_instr_detail(struct pt_regs *regs, struct ppc_inst *instr,
+>                 return;
+>
+>         analyse_instr(&op, regs, *instr);
+> -
+> -       /*
+> -        * Set size = 8 if analyse_instr() fails. If it's a userspace
+> -        * watchpoint(valid or extraneous), we can notify user about it.
+> -        * If it's a kernel watchpoint, instruction  emulation will fail
+> -        * in stepping_handler() and watchpoint will be disabled.
+> -        */
+>         *type = GETTYPE(op.type);
+> -       *size = !(*type == UNKNOWN) ? GETSIZE(op.type) : 8;
+> -       *larx_stcx = (*type == LARX || *type == STCX);
+> +       *ea = op.ea;
+> +#ifdef __powerpc64__
+> +       if (!(regs->msr & MSR_64BIT))
+> +               *ea &= 0xffffffffUL;
+> +#endif
+> +
+> +       *size = GETSIZE(op.type);
+> +       if (*type == CACHEOP) {
+> +               *size = cache_op_size();
+> +               *ea &= ~(*size - 1);
+> +       }
+Again related to CACHEOP, should these changes be mentioned in the
+commit message?
+> +}
+> +
+> +static bool is_larx_stcx_instr(int type)
+> +{
+> +       return type == LARX || type == STCX;
+>  }
+>
+>  /*
+> @@ -678,7 +711,7 @@ int hw_breakpoint_handler(struct die_args *args)
+>         struct ppc_inst instr = ppc_inst(0);
+>         int type = 0;
+>         int size = 0;
+> -       bool larx_stcx = false;
+> +       unsigned long ea;
+>
+>         /* Disable breakpoints during exception handling */
+>         hw_breakpoint_disable();
+> @@ -692,7 +725,7 @@ int hw_breakpoint_handler(struct die_args *args)
+>         rcu_read_lock();
+>
+>         if (!IS_ENABLED(CONFIG_PPC_8xx))
+> -               get_instr_detail(regs, &instr, &type, &size, &larx_stcx);
+> +               get_instr_detail(regs, &instr, &type, &size, &ea);
+>
+>         for (i = 0; i < nr_wp_slots(); i++) {
+>                 bp[i] = __this_cpu_read(bp_per_reg[i]);
+> @@ -702,7 +735,7 @@ int hw_breakpoint_handler(struct die_args *args)
+>                 info[i] = counter_arch_bp(bp[i]);
+>                 info[i]->type &= ~HW_BRK_TYPE_EXTRANEOUS_IRQ;
+>
+> -               if (check_constraints(regs, instr, type, size, info[i])) {
+> +               if (check_constraints(regs, instr, ea, type, size, info[i])) {
+>                         if (!IS_ENABLED(CONFIG_PPC_8xx) &&
+>                             ppc_inst_equal(instr, ppc_inst(0))) {
+>                                 handler_error(bp[i], info[i]);
+> @@ -744,7 +777,7 @@ int hw_breakpoint_handler(struct die_args *args)
+>         }
+>
+>         if (!IS_ENABLED(CONFIG_PPC_8xx)) {
+> -               if (larx_stcx) {
+> +               if (is_larx_stcx_instr(type)) {
+>                         for (i = 0; i < nr_wp_slots(); i++) {
+>                                 if (!hit[i])
+>                                         continue;
+> --
+> 2.26.2
+>
