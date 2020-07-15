@@ -7,91 +7,81 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83762C433EB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 11:54:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FDD3C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:09:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E814420658
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 11:54:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E814420658
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 235562065D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 12:09:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 235562065D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6G4v130GzDqn4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 21:54:07 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6G2s3xP1zDqjJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 21:52:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4B6G2s0Q3Qz8sZx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 21:52:21 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4B6G2r72nkz9sTX; Wed, 15 Jul 2020 21:52:20 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6GQb375FzDqkL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jul 2020 22:09:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B6G2r3ptZz9sTS;
- Wed, 15 Jul 2020 21:52:18 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06FBYM84047694; Wed, 15 Jul 2020 07:52:14 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3298ebmcbp-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6GMR4GfPzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 22:06:43 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06FC2D8f133838; Wed, 15 Jul 2020 08:06:36 -0400
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 329r1hrfdv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 15 Jul 2020 07:52:14 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06FBjuJk003424;
- Wed, 15 Jul 2020 11:52:12 GMT
+ Wed, 15 Jul 2020 08:06:36 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06FC62lf008370;
+ Wed, 15 Jul 2020 12:06:34 GMT
 Received: from b06cxnps4076.portsmouth.uk.ibm.com
  (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma05fra.de.ibm.com with ESMTP id 327q2y1v9j-1
+ by ppma03fra.de.ibm.com with ESMTP id 327527j80v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 15 Jul 2020 11:52:11 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ Wed, 15 Jul 2020 12:06:34 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06FBq9eH48955640
+ 06FC6WFc56098904
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 15 Jul 2020 11:52:09 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E72AD4203F;
- Wed, 15 Jul 2020 11:52:08 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AD19742041;
- Wed, 15 Jul 2020 11:52:07 +0000 (GMT)
-Received: from swastik.ibm.com (unknown [9.160.119.166])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 15 Jul 2020 11:52:07 +0000 (GMT)
-From: Nayna Jain <nayna@linux.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3] powerpc/pseries: detect secure and trusted boot state of
- the system.
-Date: Wed, 15 Jul 2020 07:52:01 -0400
-Message-Id: <1594813921-12425-1-git-send-email-nayna@linux.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
+ Wed, 15 Jul 2020 12:06:32 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id EB29C4C044;
+ Wed, 15 Jul 2020 12:06:31 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 765C14C052;
+ Wed, 15 Jul 2020 12:06:30 +0000 (GMT)
+Received: from srikart450.in.ibm.com (unknown [9.85.111.3])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 15 Jul 2020 12:06:30 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/2] powerpc/numa: Limit possible nodes to within
+ num_possible_nodes
+Date: Wed, 15 Jul 2020 17:35:33 +0530
+Message-Id: <20200715120534.3673-1-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <871rljfet9.fsf@linux.ibm.com>
+References: <871rljfet9.fsf@linux.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-15_10:2020-07-15,
  2020-07-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- adultscore=0 lowpriorityscore=0 impostorscore=0 malwarescore=0 spamscore=0
- mlxscore=0 phishscore=0 bulkscore=0 mlxlogscore=999 suspectscore=1
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007150093
+ clxscore=1015 malwarescore=0
+ priorityscore=1501 spamscore=0 mlxlogscore=999 lowpriorityscore=0
+ impostorscore=0 adultscore=0 mlxscore=0 bulkscore=0 phishscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007150098
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,102 +93,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Mimi Zohar <zohar@linux.ibm.com>, Daniel Axtens <dja@axtens.net>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The device-tree property to check secure and trusted boot state is
-different for guests(pseries) compared to baremetal(powernv).
+MAX_NUMNODES is a theoretical maximum number of nodes thats is supported
+by the kernel. Device tree properties exposes the number of possible
+nodes on the current platform. The kernel would detected this and would
+use it for most of its resource allocations.  If the platform now
+increases the nodes to over what was already exposed, then it may lead
+to inconsistencies. Hence limit it to the already exposed nodes.
 
-This patch updates the existing is_ppc_secureboot_enabled() and
-is_ppc_trustedboot_enabled() functions to add support for pseries.
-
-The secureboot and trustedboot state are exposed via device-tree property:
-/proc/device-tree/ibm,secure-boot and /proc/device-tree/ibm,trusted-boot
-
-The values of ibm,secure-boot under pseries are interpreted as:
-
-0 - Disabled
-1 - Enabled in Log-only mode. This patch interprets this value as
-disabled, since audit mode is currently not supported for Linux.
-2 - Enabled and enforced.
-3-9 - Enabled and enforcing; requirements are at the discretion of the
-operating system.
-
-The values of ibm,trusted-boot under pseries are interpreted as:
-0 - Disabled
-1 - Enabled
-
-Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+Suggested-by: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
-v3:
-* fixed double check. Thanks Daniel for noticing it.
-* updated patch description.
+ arch/powerpc/mm/numa.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v2:
-* included Michael Ellerman's feedback.
-* added Daniel Axtens's Reviewed-by.
-
- arch/powerpc/kernel/secure_boot.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/secure_boot.c b/arch/powerpc/kernel/secure_boot.c
-index 4b982324d368..118bcb5f79c4 100644
---- a/arch/powerpc/kernel/secure_boot.c
-+++ b/arch/powerpc/kernel/secure_boot.c
-@@ -6,6 +6,7 @@
- #include <linux/types.h>
- #include <linux/of.h>
- #include <asm/secure_boot.h>
-+#include <asm/machdep.h>
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 8ec7ff05ae47..a2c5fe0d0cad 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -221,7 +221,7 @@ static void initialize_distance_lookup_table(int nid,
+ 	}
+ }
  
- static struct device_node *get_ppc_fw_sb_node(void)
- {
-@@ -23,12 +24,19 @@ bool is_ppc_secureboot_enabled(void)
- {
- 	struct device_node *node;
- 	bool enabled = false;
-+	u32 secureboot;
+-/* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
++/* Returns nid in the range [0..num_possible_nodes()-1], or -1 if no useful numa
+  * info is found.
+  */
+ static int associativity_to_nid(const __be32 *associativity)
+@@ -235,7 +235,7 @@ static int associativity_to_nid(const __be32 *associativity)
+ 		nid = of_read_number(&associativity[min_common_depth], 1);
  
- 	node = get_ppc_fw_sb_node();
- 	enabled = of_property_read_bool(node, "os-secureboot-enforcing");
--
- 	of_node_put(node);
+ 	/* POWER4 LPAR uses 0xffff as invalid node */
+-	if (nid == 0xffff || nid >= MAX_NUMNODES)
++	if (nid == 0xffff || nid >= num_possible_nodes())
+ 		nid = NUMA_NO_NODE;
  
-+	if (enabled)
-+		goto out;
-+
-+	if (!of_property_read_u32(of_root, "ibm,secure-boot", &secureboot))
-+		enabled = (secureboot > 1);
-+
-+out:
- 	pr_info("Secure boot mode %s\n", enabled ? "enabled" : "disabled");
+ 	if (nid > 0 &&
+@@ -448,7 +448,7 @@ static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
+ 		index = lmb->aa_index * aa.array_sz + min_common_depth - 1;
+ 		nid = of_read_number(&aa.arrays[index], 1);
  
- 	return enabled;
-@@ -38,12 +46,19 @@ bool is_ppc_trustedboot_enabled(void)
- {
- 	struct device_node *node;
- 	bool enabled = false;
-+	u32 trustedboot;
+-		if (nid == 0xffff || nid >= MAX_NUMNODES)
++		if (nid == 0xffff || nid >= num_possible_nodes())
+ 			nid = default_nid;
  
- 	node = get_ppc_fw_sb_node();
- 	enabled = of_property_read_bool(node, "trusted-enabled");
--
- 	of_node_put(node);
- 
-+	if (enabled)
-+		goto out;
-+
-+	if (!of_property_read_u32(of_root, "ibm,trusted-boot", &trustedboot))
-+		enabled = (trustedboot > 0);
-+
-+out:
- 	pr_info("Trusted boot mode %s\n", enabled ? "enabled" : "disabled");
- 
- 	return enabled;
+ 		if (nid > 0) {
 -- 
-2.26.2
+2.18.2
 
