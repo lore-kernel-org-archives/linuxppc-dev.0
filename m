@@ -2,95 +2,95 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD930C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:25:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F69DC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 07:15:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58EF82067D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:25:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58EF82067D
+	by mail.kernel.org (Postfix) with ESMTPS id 7DB392070E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 07:15:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DB392070E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6klm2cjXzDqhl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 16:25:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6lrT2BH7zDqxF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 17:15:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6kYH083fzDqfS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 16:16:50 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06G61fZE119424; Thu, 16 Jul 2020 02:16:46 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6lpL0STYzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 17:13:13 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06G7272Z146246; Thu, 16 Jul 2020 03:13:08 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 329uej7fcr-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32afvkv0mf-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 02:16:46 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06G62MTf121684;
- Thu, 16 Jul 2020 02:16:46 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 329uej7fbw-1
+ Thu, 16 Jul 2020 03:13:07 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06G72aZj148595;
+ Thu, 16 Jul 2020 03:13:07 -0400
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32afvkv0k7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 02:16:45 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06G6GhWv010072;
- Thu, 16 Jul 2020 06:16:43 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04fra.de.ibm.com with ESMTP id 327527jndp-1
+ Thu, 16 Jul 2020 03:13:07 -0400
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06G7Bip0026881;
+ Thu, 16 Jul 2020 07:13:05 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma05fra.de.ibm.com with ESMTP id 327q2y2b94-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 06:16:43 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06G6GeIu47644924
+ Thu, 16 Jul 2020 07:13:05 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06G7D2wC22937694
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 16 Jul 2020 06:16:40 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 83A2C42054;
- Thu, 16 Jul 2020 06:16:40 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A85A42042;
- Thu, 16 Jul 2020 06:16:37 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.79.215.148])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 16 Jul 2020 06:16:36 +0000 (GMT)
-From: Balamuruhan S <bala24@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2 4/4] powerpc sstep: add testcases for vsx load/store
- instructions
-Date: Thu, 16 Jul 2020 11:45:58 +0530
-Message-Id: <20200716061558.1532199-5-bala24@linux.ibm.com>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <20200716061558.1532199-1-bala24@linux.ibm.com>
+ Thu, 16 Jul 2020 07:13:02 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2378E5204E;
+ Thu, 16 Jul 2020 07:13:02 +0000 (GMT)
+Received: from [9.199.37.124] (unknown [9.199.37.124])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4510052052;
+ Thu, 16 Jul 2020 07:13:00 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Subject: Re: [PATCH v2 2/4] powerpc/sstep: support emulation for vsx vector
+ paired storage access instructions
+To: Balamuruhan S <bala24@linux.ibm.com>
 References: <20200716061558.1532199-1-bala24@linux.ibm.com>
+ <20200716061558.1532199-3-bala24@linux.ibm.com>
+Message-ID: <bdc051d7-118f-0a2d-918a-f3db2ce31b44@linux.ibm.com>
+Date: Thu, 16 Jul 2020 12:42:59 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=y
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200716061558.1532199-3-bala24@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-15_12:2020-07-15,
- 2020-07-15 signatures=0
+ definitions=2020-07-16_01:2020-07-15,
+ 2020-07-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 bulkscore=0
- malwarescore=0 priorityscore=1501 spamscore=0 phishscore=0 adultscore=0
- suspectscore=1 mlxlogscore=920 clxscore=1015 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007160042
+ phishscore=0 mlxlogscore=999
+ bulkscore=0 clxscore=1015 spamscore=0 adultscore=0 mlxscore=0
+ lowpriorityscore=0 suspectscore=0 malwarescore=0 impostorscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007160049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,358 +102,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com,
- Balamuruhan S <bala24@linux.ibm.com>, paulus@samba.org, sandipan@linux.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, paulus@samba.org,
+ sandipan@linux.ibm.com, jniethe5@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-add testcases for vsx load/store vector paired instructions,
-        * Load VSX Vector Paired (lxvp)
-        * Load VSX Vector Paired Indexed (lxvpx)
-        * Prefixed Load VSX Vector Paired (plxvp)
-        * Store VSX Vector Paired (stxvp)
-        * Store VSX Vector Paired Indexed (stxvpx)
-        * Prefixed Store VSX Vector Paired (pstxvp)
+Hi Bala,
 
-Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
----
- arch/powerpc/include/asm/ppc-opcode.h |   7 +
- arch/powerpc/lib/test_emulate_step.c  | 273 ++++++++++++++++++++++++++
- 2 files changed, 280 insertions(+)
+> @@ -709,6 +722,8 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+>   	reg->d[0] = reg->d[1] = 0;
+>   
+>   	switch (op->element_size) {
+> +	case 32:
+> +		/* [p]lxvp[x] or [p]stxvp[x] */
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index f7ffbe11624e..aa688d13981a 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -389,6 +389,10 @@
- #define PPC_INST_VCMPEQUD		0x100000c7
- #define PPC_INST_VCMPEQUB		0x10000006
- 
-+/* Prefixes */
-+#define PPC_PREFIX_MLS			0x06000000
-+#define PPC_PREFIX_8LS			0x04000000
-+
- /* macros to insert fields into opcodes */
- #define ___PPC_RA(a)	(((a) & 0x1f) << 16)
- #define ___PPC_RB(b)	(((b) & 0x1f) << 11)
-@@ -420,6 +424,9 @@
- #define __PPC_CT(t)	(((t) & 0x0f) << 21)
- #define __PPC_SPR(r)	((((r) & 0x1f) << 16) | ((((r) >> 5) & 0x1f) << 11))
- #define __PPC_RC21	(0x1 << 10)
-+#define __PPC_PRFX_R(r)	(((r) & 0x1) << 20)
-+#define __PPC_TP(tp)	(((tp) & 0xf) << 22)
-+#define __PPC_TX(tx)	(((tx) & 0x1) << 21)
- 
- /*
-  * Both low and high 16 bits are added as SIGNED additions, so if low 16 bits
-diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-index 46af80279ebc..98ecbc66bef8 100644
---- a/arch/powerpc/lib/test_emulate_step.c
-+++ b/arch/powerpc/lib/test_emulate_step.c
-@@ -14,7 +14,13 @@
- #include <asm/inst.h>
- 
- #define IMM_L(i)		((uintptr_t)(i) & 0xffff)
-+#define IMM_H(i)		(((uintptr_t)(i) >> 16) & 0x3ffff)
- #define IMM_DS(i)		((uintptr_t)(i) & 0xfffc)
-+#define IMM_DQ(i)		(((uintptr_t)(i) & 0xfff) << 4)
-+
-+#define PLXVP_EX_OP		0xe8000000
-+#define PSTXVP_EX_OP		0xf8000000
-+
- 
- /*
-  * Defined with TEST_ prefix so it does not conflict with other
-@@ -47,6 +53,21 @@
- 					___PPC_RA(a) | ___PPC_RB(b))
- #define TEST_LXVD2X(s, a, b)	ppc_inst(PPC_INST_LXVD2X | VSX_XX1((s), R##a, R##b))
- #define TEST_STXVD2X(s, a, b)	ppc_inst(PPC_INST_STXVD2X | VSX_XX1((s), R##a, R##b))
-+#define TEST_LXVP(tp, tx, a, i) \
-+	(PPC_INST_LXVP | __PPC_TP(tp) | __PPC_TX(tx) | ___PPC_RA(a) | IMM_DQ(i))
-+#define TEST_STXVP(sp, sx, a, i) \
-+	(PPC_INST_STXVP | __PPC_TP(sp) | __PPC_TX(sx) | ___PPC_RA(a) | IMM_DQ(i) | 0x1)
-+#define TEST_LXVPX(tp, tx, a, b) \
-+	(PPC_INST_LXVPX | __PPC_TP(tp) | __PPC_TX(tx) | ___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_STXVPX(sp, sx, a, b) \
-+	(PPC_INST_STXVPX | __PPC_TP(sp) | __PPC_TX(sx) | ___PPC_RA(a) | ___PPC_RB(b))
-+#define TEST_PLXVP(a, i, pr, tp, tx) \
-+	((PPC_PREFIX_8LS | __PPC_PRFX_R(pr) | IMM_H(i)) << 32 | \
-+	 (PLXVP_EX_OP | __PPC_TP(tp) | __PPC_TX(tx) | ___PPC_RA(a) | IMM_L(i)))
-+#define TEST_PSTXVP(a, i, pr, sp, sx) \
-+	((PPC_PREFIX_8LS | __PPC_PRFX_R(pr) | IMM_H(i)) << 32 | \
-+	 (PSTXVP_EX_OP | __PPC_TP(sp) | __PPC_TX(sx) | ___PPC_RA(a) | IMM_L(i)))
-+
- #define TEST_ADD(t, a, b)	ppc_inst(PPC_INST_ADD | ___PPC_RT(t) |		\
- 					___PPC_RA(a) | ___PPC_RB(b))
- #define TEST_ADD_DOT(t, a, b)	ppc_inst(PPC_INST_ADD | ___PPC_RT(t) |		\
-@@ -444,6 +465,255 @@ static void __init test_lxvd2x_stxvd2x(void)
- }
- #endif /* CONFIG_VSX */
- 
-+#ifdef CONFIG_VSX
-+static void __init test_lxvp_stxvp(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		vector128 a[2];
-+		u32 b[8];
-+	} c;
-+	u32 cached_b[8];
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+	/*** lxvp ***/
-+
-+	cached_b[0] = c.b[0] = 18233;
-+	cached_b[1] = c.b[1] = 34863571;
-+	cached_b[2] = c.b[2] = 834;
-+	cached_b[3] = c.b[3] = 6138911;
-+	cached_b[4] = c.b[4] = 1234;
-+	cached_b[5] = c.b[5] = 5678;
-+	cached_b[6] = c.b[6] = 91011;
-+	cached_b[7] = c.b[7] = 121314;
-+
-+	regs.gpr[4] = (unsigned long)&c.a;
-+
-+	/*
-+	 * lxvp XTp,DQ(RA)
-+	 * XTp = 32×TX + 2×Tp
-+	 * let TX=1 Tp=1 RA=4 DQ=0
-+	 */
-+	stepped = emulate_step(&regs, ppc_inst(TEST_LXVP(1, 1, 4, 0)));
-+
-+	if (stepped == 1 && cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("lxvp", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("lxvp", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("lxvp", "FAIL");
-+	}
-+
-+	/*** stxvp ***/
-+
-+	c.b[0] = 21379463;
-+	c.b[1] = 87;
-+	c.b[2] = 374234;
-+	c.b[3] = 4;
-+	c.b[4] = 90;
-+	c.b[5] = 122;
-+	c.b[6] = 555;
-+	c.b[7] = 32144;
-+
-+	/*
-+	 * stxvp XSp,DQ(RA)
-+	 * XSp = 32×SX + 2×Sp
-+	 * let SX=1 Sp=1 RA=4 DQ=0
-+	 */
-+	stepped = emulate_step(&regs, ppc_inst(TEST_STXVP(1, 1, 4, 0)));
-+
-+	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3] &&
-+	    cached_b[4] == c.b[4] && cached_b[5] == c.b[5] &&
-+	    cached_b[6] == c.b[6] && cached_b[7] == c.b[7] &&
-+	    cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("stxvp", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("stxvp", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("stxvp", "FAIL");
-+	}
-+}
-+#else
-+static void __init test_lxvp_stxvp(void)
-+{
-+	show_result("lxvp", "SKIP (CONFIG_VSX is not set)");
-+	show_result("stxvp", "SKIP (CONFIG_VSX is not set)");
-+}
-+#endif /* CONFIG_VSX */
-+
-+#ifdef CONFIG_VSX
-+static void __init test_lxvpx_stxvpx(void)
-+{
-+	struct pt_regs regs;
-+	union {
-+		vector128 a[2];
-+		u32 b[8];
-+	} c;
-+	u32 cached_b[8];
-+	int stepped = -1;
-+
-+	init_pt_regs(&regs);
-+
-+	/*** lxvpx ***/
-+
-+	cached_b[0] = c.b[0] = 18233;
-+	cached_b[1] = c.b[1] = 34863571;
-+	cached_b[2] = c.b[2] = 834;
-+	cached_b[3] = c.b[3] = 6138911;
-+	cached_b[4] = c.b[4] = 1234;
-+	cached_b[5] = c.b[5] = 5678;
-+	cached_b[6] = c.b[6] = 91011;
-+	cached_b[7] = c.b[7] = 121314;
-+
-+	regs.gpr[3] = (unsigned long)&c.a;
-+	regs.gpr[4] = 0;
-+
-+	/*
-+	 * lxvpx XTp,RA,RB
-+	 * XTp = 32×TX + 2×Tp
-+	 * let TX=1 Tp=1 RA=3 RB=4
-+	 */
-+	stepped = emulate_step(&regs, ppc_inst(TEST_LXVPX(1, 1, 3, 4)));
-+
-+	if (stepped == 1 && cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("lxvpx", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("lxvpx", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("lxvpx", "FAIL");
-+	}
-+
-+	/*** stxvpx ***/
-+
-+	c.b[0] = 21379463;
-+	c.b[1] = 87;
-+	c.b[2] = 374234;
-+	c.b[3] = 4;
-+	c.b[4] = 90;
-+	c.b[5] = 122;
-+	c.b[6] = 555;
-+	c.b[7] = 32144;
-+
-+	/*
-+	 * stxvpx XSp,RA,RB
-+	 * XSp = 32×SX + 2×Sp
-+	 * let SX=1 Sp=1 RA=3 RB=4
-+	 */
-+	stepped = emulate_step(&regs, ppc_inst(TEST_STXVPX(1, 1, 3, 4)));
-+
-+	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3] &&
-+	    cached_b[4] == c.b[4] && cached_b[5] == c.b[5] &&
-+	    cached_b[6] == c.b[6] && cached_b[7] == c.b[7] &&
-+	    cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("stxvpx", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("stxvpx", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("stxvpx", "FAIL");
-+	}
-+}
-+#else
-+static void __init test_lxvpx_stxvpx(void)
-+{
-+	show_result("lxvpx", "SKIP (CONFIG_VSX is not set)");
-+	show_result("stxvpx", "SKIP (CONFIG_VSX is not set)");
-+}
-+#endif /* CONFIG_VSX */
-+
-+#ifdef CONFIG_VSX
-+static void __init test_plxvp_pstxvp(void)
-+{
-+	struct ppc_inst instr;
-+	struct pt_regs regs;
-+	union {
-+		vector128 a[2];
-+		u32 b[8];
-+	} c;
-+	u32 cached_b[8];
-+	int stepped = -1;
-+
-+	/*
-+	 * plxvp XTp,D(RA),R
-+	 * XSp = 32×SX + 2×Sp
-+	 * let RA=3 R=0 D=d0||d1=0 R=0 Sp=1 SX=1
-+	 */
-+	instr = ppc_inst_prefix(TEST_PLXVP(3, 0, 0, 1, 1) >> 32,
-+			TEST_PLXVP(3, 0, 0, 1, 1) & 0xffffffff);
-+
-+	/*** plxvpx ***/
-+
-+	cached_b[0] = c.b[0] = 18233;
-+	cached_b[1] = c.b[1] = 34863571;
-+	cached_b[2] = c.b[2] = 834;
-+	cached_b[3] = c.b[3] = 6138911;
-+	cached_b[4] = c.b[4] = 1234;
-+	cached_b[5] = c.b[5] = 5678;
-+	cached_b[6] = c.b[6] = 91011;
-+	cached_b[7] = c.b[7] = 121314;
-+
-+	init_pt_regs(&regs);
-+	regs.gpr[3] = (unsigned long)&c.a;
-+
-+	stepped = emulate_step(&regs, instr);
-+	if (stepped == 1 && cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("plxvpx", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("plxvpx", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("plxvpx", "FAIL");
-+	}
-+
-+	/*** pstxvpx ***/
-+
-+	c.b[0] = 21379463;
-+	c.b[1] = 87;
-+	c.b[2] = 374234;
-+	c.b[3] = 4;
-+	c.b[4] = 90;
-+	c.b[5] = 122;
-+	c.b[6] = 555;
-+	c.b[7] = 32144;
-+
-+	/*
-+	 * pstxvpx XTp,D(RA),R
-+	 * XSp = 32×SX + 2×Sp
-+	 * let RA=3 D=d0||d1=0 R=0 Sp=1 SX=1
-+	 */
-+	instr = ppc_inst_prefix(TEST_PSTXVP(3, 0, 0, 1, 1) >> 32,
-+			TEST_PSTXVP(3, 0, 0, 1, 1) & 0xffffffff);
-+
-+	stepped = emulate_step(&regs, instr);
-+
-+	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3] &&
-+	    cached_b[4] == c.b[4] && cached_b[5] == c.b[5] &&
-+	    cached_b[6] == c.b[6] && cached_b[7] == c.b[7] &&
-+	    cpu_has_feature(CPU_FTR_VSX)) {
-+		show_result("pstxvpx", "PASS");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("pstxvpx", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("pstxvpx", "FAIL");
-+	}
-+}
-+#else
-+static void __init test_plxvp_pstxvp(void)
-+{
-+	show_result("plxvpx", "SKIP (CONFIG_VSX is not set)");
-+	show_result("pstxvpx", "SKIP (CONFIG_VSX is not set)");
-+}
-+#endif /* CONFIG_VSX */
-+
- static void __init run_tests_load_store(void)
- {
- 	test_ld();
-@@ -455,6 +725,9 @@ static void __init run_tests_load_store(void)
- 	test_lfdx_stfdx();
- 	test_lvx_stvx();
- 	test_lxvd2x_stxvd2x();
-+	test_lxvp_stxvp();
-+	test_lxvpx_stxvpx();
-+	test_plxvp_pstxvp();
- }
- 
- struct compute_test {
--- 
-2.24.1
+This function does not emulate stvxp ^^^^
 
+>   	case 16:
+>   		/* whole vector; lxv[x] or lxvl[l] */
+>   		if (size == 0)
+> @@ -717,7 +732,7 @@ void emulate_vsx_load(struct instruction_op *op, union vsx_reg *reg,
+>   		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
+>   			rev = !rev;
+>   		if (rev)
+> -			do_byte_reverse(reg, 16);
+> +			do_byte_reverse(reg, size);
+>   		break;
+>   	case 8:
+>   		/* scalar loads, lxvd2x, lxvdsx */
+> @@ -793,6 +808,22 @@ void emulate_vsx_store(struct instruction_op *op, const union vsx_reg *reg,
+>   	size = GETSIZE(op->type);
+>   
+>   	switch (op->element_size) {
+> +	case 32:
+> +		/* [p]lxvp[x] or [p]stxvp[x] */
+
+This function does not emulate lxvp ^^^^
+
+> +		if (size == 0)
+> +			break;
+> +		if (IS_LE && (op->vsx_flags & VSX_LDLEFT))
+> +			rev = !rev;
+
+Why this if condition ^^^^ ?
+
+> +		if (rev) {
+> +			/* reverse 32 bytes */
+> +			buf.d[0] = byterev_8(reg->d[3]);
+> +			buf.d[1] = byterev_8(reg->d[2]);
+> +			buf.d[2] = byterev_8(reg->d[1]);
+> +			buf.d[3] = byterev_8(reg->d[0]);
+> +			reg = &buf;
+> +		}
+> +		memcpy(mem, reg, size);
+> +		break;
+>   	case 16:
+>   		/* stxv, stxvx, stxvl, stxvll */
+>   		if (size == 0)
+> @@ -861,28 +892,33 @@ static nokprobe_inline int do_vsx_load(struct instruction_op *op,
+>   				       bool cross_endian)
+>   {
+>   	int reg = op->reg;
+> -	u8 mem[16];
+> +	int i, nr_vsx_regs;
+> +	u8 mem[32];
+>   	union vsx_reg buf;
+>   	int size = GETSIZE(op->type);
+>   
+>   	if (!address_ok(regs, ea, size) || copy_mem_in(mem, ea, size, regs))
+>   		return -EFAULT;
+>   
+> +	nr_vsx_regs = size / sizeof(__vector128);
+>   	emulate_vsx_load(op, &buf, mem, cross_endian);
+>   	preempt_disable();
+>   	if (reg < 32) {
+>   		/* FP regs + extensions */
+>   		if (regs->msr & MSR_FP) {
+> -			load_vsrn(reg, &buf);
+> +			for (i = 0; i < nr_vsx_regs; i++)
+> +				load_vsrn(reg + i, &buf.v[i]);
+>   		} else {
+>   			current->thread.fp_state.fpr[reg][0] = buf.d[0];
+>   			current->thread.fp_state.fpr[reg][1] = buf.d[1];
+
+Should we change else part as well?
+
+>   		}
+>   	} else {
+>   		if (regs->msr & MSR_VEC)
+> -			load_vsrn(reg, &buf);
+> +			for (i = 0; i < nr_vsx_regs; i++)
+> +				load_vsrn(reg + i, &buf.v[i]);
+> +
+
+Unnecessary line.
+
+>   		else
+> -			current->thread.vr_state.vr[reg - 32] = buf.v;
+> +			current->thread.vr_state.vr[reg - 32] = buf.v[0];
+
+Same here. else part, should we add:
+
+     if (vsx 32 byte)
+         current->thread.vr_state.vr[reg - 32 + 1] = buf.v[1];
+
+>   	}
+>   	preempt_enable();
+>   	return 0;
+> @@ -893,27 +929,31 @@ static nokprobe_inline int do_vsx_store(struct instruction_op *op,
+>   					bool cross_endian)
+>   {
+>   	int reg = op->reg;
+> -	u8 mem[16];
+> +	int i, nr_vsx_regs;
+> +	u8 mem[32];
+>   	union vsx_reg buf;
+>   	int size = GETSIZE(op->type);
+>   
+>   	if (!address_ok(regs, ea, size))
+>   		return -EFAULT;
+>   
+> +	nr_vsx_regs = size / sizeof(__vector128);
+>   	preempt_disable();
+>   	if (reg < 32) {
+>   		/* FP regs + extensions */
+>   		if (regs->msr & MSR_FP) {
+> -			store_vsrn(reg, &buf);
+> +			for (i = 0; i < nr_vsx_regs; i++)
+> +				store_vsrn(reg + i, &buf.v[i]);
+>   		} else {
+>   			buf.d[0] = current->thread.fp_state.fpr[reg][0];
+>   			buf.d[1] = current->thread.fp_state.fpr[reg][1];
+>   		}
+>   	} else {
+>   		if (regs->msr & MSR_VEC)
+> -			store_vsrn(reg, &buf);
+> +			for (i = 0; i < nr_vsx_regs; i++)
+> +				store_vsrn(reg + i, &buf.v[i]);
+>   		else
+> -			buf.v = current->thread.vr_state.vr[reg - 32];
+> +			buf.v[0] = current->thread.vr_state.vr[reg - 32];
+>   	}
+>   	preempt_enable();
+>   	emulate_vsx_store(op, &buf, mem, cross_endian);
+> 
+
+Ravi
