@@ -6,37 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B56CFC433E5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83CBDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:18:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 362EB207BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:15:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 362EB207BC
+	by mail.kernel.org (Postfix) with ESMTPS id 3BE7B207BC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:18:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BE7B207BC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6x9P2FfJzDqPv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:15:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6xF53c6xzDqws
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:18:33 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vQB1vYgzDqS7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vQB1mg0zDqly
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 4B6vQ16bPwz9sVW; Thu, 16 Jul 2020 22:56:09 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vQ53Sk2z9sVY; Thu, 16 Jul 2020 22:56:13 +1000 (AEST)
+ id 4B6vPx4Cy7z9sTg; Thu, 16 Jul 2020 22:56:05 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Sandipan Das <sandipan@linux.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <20200604125610.649668-1-sandipan@linux.ibm.com>
-References: <20200604125610.649668-1-sandipan@linux.ibm.com>
-Subject: Re: [PATCH v3 0/3] selftests: powerpc: Fixes and execute-disable test
- for pkeys
-Message-Id: <159490400411.3805857.17323999819214487510.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:56:13 +1000 (AEST)
+To: linuxppc-dev@ozlabs.org, Nayna Jain <nayna@linux.ibm.com>
+In-Reply-To: <1594813921-12425-1-git-send-email-nayna@linux.ibm.com>
+References: <1594813921-12425-1-git-send-email-nayna@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/pseries: detect secure and trusted boot state
+ of the system.
+Message-Id: <159490401795.3805857.12377577444442862197.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:56:05 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,31 +50,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fweimer@redhat.com, aneesh.kumar@linux.ibm.com, linuxram@us.ibm.com,
- linux-mm@kvack.org, linux-kselftest@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bauerman@linux.ibm.com
+Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 4 Jun 2020 18:26:07 +0530, Sandipan Das wrote:
-> This fixes the way the Authority Mask Register (AMR) is updated
-> by the existing pkey tests and adds a new test to verify the
-> functionality of execute-disabled pkeys.
+On Wed, 15 Jul 2020 07:52:01 -0400, Nayna Jain wrote:
+> The device-tree property to check secure and trusted boot state is
+> different for guests(pseries) compared to baremetal(powernv).
 > 
-> Previous versions can be found at:
-> v2: https://lore.kernel.org/linuxppc-dev/20200527030342.13712-1-sandipan@linux.ibm.com/
-> v1: https://lore.kernel.org/linuxppc-dev/20200508162332.65316-1-sandipan@linux.ibm.com/
+> This patch updates the existing is_ppc_secureboot_enabled() and
+> is_ppc_trustedboot_enabled() functions to add support for pseries.
+> 
+> The secureboot and trustedboot state are exposed via device-tree property:
+> /proc/device-tree/ibm,secure-boot and /proc/device-tree/ibm,trusted-boot
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] selftests/powerpc: Fix pkey access right updates
-      https://git.kernel.org/powerpc/c/828ca4320d130bbe1d12866152600c49ff6a9f79
-[2/3] selftests/powerpc: Move Hash MMU check to utilities
-      https://git.kernel.org/powerpc/c/c405b738daf9d8e8a5aedfeb6be851681e65e54b
-[3/3] selftests/powerpc: Add test for execute-disabled pkeys
-      https://git.kernel.org/powerpc/c/1addb6444791f9e87fce0eb9882ec96a4a76e615
+[1/1] powerpc/pseries: Detect secure and trusted boot state of the system.
+      https://git.kernel.org/powerpc/c/61f879d97ce4510dd29d676a20d67692e3b34806
 
 cheers
