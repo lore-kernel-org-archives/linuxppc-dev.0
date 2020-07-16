@@ -6,39 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11B54C433E5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:39:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AE4FC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:42:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2921207DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:38:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2921207DD
+	by mail.kernel.org (Postfix) with ESMTPS id D625F20760
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:42:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D625F20760
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6wMP2VPZzDqyb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:38:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6wQz32n3zDq9W
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:42:03 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPr3jzZzDqhb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPr681MzDqlS
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPh0ndYz9sV1; Thu, 16 Jul 2020 22:55:52 +1000 (AEST)
+ id 4B6vPl45qbz9sTZ; Thu, 16 Jul 2020 22:55:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <810bd8840ef990a200f58c9dea9abe767ca02a3a.1594146723.git.christophe.leroy@csgroup.eu>
-References: <810bd8840ef990a200f58c9dea9abe767ca02a3a.1594146723.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/signal64: Don't opencode page prefaulting
-Message-Id: <159490400694.3805857.15212813327289950599.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:55:52 +1000 (AEST)
+To: Frederic Barrat <fbarrat@linux.ibm.com>, ajd@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, alastair@au1.ibm.com, clombard@linux.ibm.com
+In-Reply-To: <20200619140439.153962-1-fbarrat@linux.ibm.com>
+References: <20200619140439.153962-1-fbarrat@linux.ibm.com>
+Subject: Re: [PATCH v5] ocxl: control via sysfs whether the FPGA is reloaded
+ on a link reset
+Message-Id: <159490400534.3805857.2300058940140905291.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:55:55 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,18 +49,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 7 Jul 2020 18:32:25 +0000 (UTC), Christophe Leroy wrote:
-> Instead of doing a __get_user() from the first and last location
-> into a tmp var which won't be used, use fault_in_pages_readable()
+On Fri, 19 Jun 2020 16:04:39 +0200, Frederic Barrat wrote:
+> Some opencapi FPGA images allow to control if the FPGA should be reloaded
+> on the next adapter reset. If it is supported, the image specifies it
+> through a Vendor Specific DVSEC in the config space of function 0.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/signal64: Don't opencode page prefaulting
-      https://git.kernel.org/powerpc/c/96032f983ca32ad1d43c73da922dbc7022754c3c
+[1/1] ocxl: control via sysfs whether the FPGA is reloaded on a link reset
+      https://git.kernel.org/powerpc/c/87db7579ebd5ded337056eb765542eb2608f16e3
 
 cheers
