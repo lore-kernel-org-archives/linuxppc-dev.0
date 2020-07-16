@@ -6,39 +6,37 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83CBDC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:18:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89A55C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:21:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BE7B207BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:18:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BE7B207BC
+	by mail.kernel.org (Postfix) with ESMTPS id 3EE15206F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:21:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EE15206F4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6xF53c6xzDqws
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:18:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6xHt1mw6zDqL9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:20:58 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vQB1mg0zDqly
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vQB6SfkzDqlY
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 4B6vQ16bPwz9sVW; Thu, 16 Jul 2020 22:56:09 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPx4Cy7z9sTg; Thu, 16 Jul 2020 22:56:05 +1000 (AEST)
+ id 4B6vQ4596Jz9sVd; Thu, 16 Jul 2020 22:56:12 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Nayna Jain <nayna@linux.ibm.com>
-In-Reply-To: <1594813921-12425-1-git-send-email-nayna@linux.ibm.com>
-References: <1594813921-12425-1-git-send-email-nayna@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/pseries: detect secure and trusted boot state
- of the system.
-Message-Id: <159490401795.3805857.12377577444442862197.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:56:05 +1000 (AEST)
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20200705133557.443607-1-oohall@gmail.com>
+References: <20200705133557.443607-1-oohall@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: Make pnv_pci_sriov_enable() and
+ friends static
+Message-Id: <159490400643.3805857.6624760376298129538.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:56:12 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,27 +48,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>,
- Daniel Axtens <dja@axtens.net>
+Cc: kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Jul 2020 07:52:01 -0400, Nayna Jain wrote:
-> The device-tree property to check secure and trusted boot state is
-> different for guests(pseries) compared to baremetal(powernv).
-> 
-> This patch updates the existing is_ppc_secureboot_enabled() and
-> is_ppc_trustedboot_enabled() functions to add support for pseries.
-> 
-> The secureboot and trustedboot state are exposed via device-tree property:
-> /proc/device-tree/ibm,secure-boot and /proc/device-tree/ibm,trusted-boot
-> 
-> [...]
+On Sun, 5 Jul 2020 23:35:56 +1000, Oliver O'Halloran wrote:
+> The kernel test robot noticed these are non-static which causes Clang to
+> print some warnings. These are called via ppc_md function pointers so
+> there's no need for them to be non-static.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: Detect secure and trusted boot state of the system.
-      https://git.kernel.org/powerpc/c/61f879d97ce4510dd29d676a20d67692e3b34806
+[1/2] powerpc/powernv: Make pnv_pci_sriov_enable() and friends static
+      https://git.kernel.org/powerpc/c/93eacd94e09db2b1bb0343f8115385e5c34abf0a
+[2/2] powerpc/powernv: Move pnv_ioda_setup_bus_dma under CONFIG_IOMMU_API
+      https://git.kernel.org/powerpc/c/e3417faec526cbf97773dca691dcd743f5bfeb64
 
 cheers
