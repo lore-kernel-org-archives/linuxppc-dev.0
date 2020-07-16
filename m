@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11D22C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45B40C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:31:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF96020760
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:28:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF96020760
+	by mail.kernel.org (Postfix) with ESMTPS id F1F0220760
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:31:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1F0220760
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6w7k3D5nzDqwn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:28:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6wBr1PWyzDr34
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:31:32 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPf4y5dzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPm0YG2zDql9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPb6rTHz9sTC; Thu, 16 Jul 2020 22:55:47 +1000 (AEST)
+ id 4B6vPg1xcLz9sTk; Thu, 16 Jul 2020 22:55:50 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: nathanl@linux.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <cover.1588079622.git.christophe.leroy@c-s.fr>
-References: <cover.1588079622.git.christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v8 0/8] powerpc: switch VDSO to C implementation
-Message-Id: <159490400799.3805857.1673818426986159282.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:55:47 +1000 (AEST)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, corbet@lwn.net,
+ Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <261923c075d1cb49d02493685e8585d4ea2a5197.1593698951.git.christophe.leroy@csgroup.eu>
+References: <261923c075d1cb49d02493685e8585d4ea2a5197.1593698951.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] docs: powerpc: Clarify book3s/32 MMU families
+Message-Id: <159490400710.3805857.5851125255446308712.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:55:50 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,27 +50,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
- luto@kernel.org, tglx@linutronix.de, vincenzo.frascino@arm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Apr 2020 13:16:46 +0000 (UTC), Christophe Leroy wrote:
-> This is the seventh version of a series to switch powerpc VDSO to
-> generic C implementation.
+On Thu, 2 Jul 2020 14:09:21 +0000 (UTC), Christophe Leroy wrote:
+> Documentation wrongly tells that book3s/32 CPU have hash MMU.
 > 
-> Main changes since v7 are:
-> - Added gettime64 on PPC32
+> 603 and e300 core only have software loaded TLB.
 > 
-> This series applies on today's powerpc/merge branch.
+> 755, 7450 family and e600 core have both hash MMU and software loaded
+> TLB. This can be selected by setting a bit in HID2 (755) or
+> HID0 (others). At the time being this is not supported by the kernel.
 > 
 > [...]
 
-Patch 1 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/8] powerpc/vdso64: Switch from __get_datapage() to get_datapage inline macro
-      https://git.kernel.org/powerpc/c/793d74a8c78e05d6833bfcf582e24e40bd92518f
+[1/1] docs: powerpc: Clarify book3s/32 MMU families
+      https://git.kernel.org/powerpc/c/7d38f089731fe129a49e254028caec6f05420f18
 
 cheers
