@@ -6,37 +6,36 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CE5FC433E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA6F4C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:16:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC07320760
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:13:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC07320760
+	by mail.kernel.org (Postfix) with ESMTPS id 81BF12065F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:16:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81BF12065F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6vpG6wm4zDqfZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:13:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6vs34wqyzDqyG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:16:07 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPV4QQ7zDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPY6NRKzDqLg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPS3rW4z9sSt; Thu, 16 Jul 2020 22:55:39 +1000 (AEST)
+ id 4B6vPX5nyWz9sTF; Thu, 16 Jul 2020 22:55:43 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, mpe@ellerman.id.au, Anton Blanchard <anton@ozlabs.org>,
- nathanl@linux.ibm.com, benh@kernel.crashing.org
-In-Reply-To: <20200715000820.1255764-1-anton@ozlabs.org>
-References: <20200715000820.1255764-1-anton@ozlabs.org>
-Subject: Re: [PATCH] pseries: Fix 64 bit logical memory block panic
-Message-Id: <159490401687.3805857.17630085630429748973.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:55:39 +1000 (AEST)
+To: Balamuruhan S <bala24@linux.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <20200624113038.908074-1-bala24@linux.ibm.com>
+References: <20200624113038.908074-1-bala24@linux.ibm.com>
+Subject: Re: [PATCH v2 0/6] consolidate PowerPC instruction encoding macros
+Message-Id: <159490401620.3805857.3389858911871132386.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:55:43 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,22 +47,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: ravi.bangoria@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org, sandipan@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Jul 2020 10:08:20 +1000, Anton Blanchard wrote:
-> Booting with a 4GB LMB size causes us to panic:
+On Wed, 24 Jun 2020 17:00:32 +0530, Balamuruhan S wrote:
+> ppc-opcode.h have base instruction encoding wrapped with stringify_in_c()
+> for raw encoding to have compatibility. But there are redundant macros for
+> base instruction encodings in bpf, instruction emulation test infrastructure
+> and powerpc selftests.
 > 
->   qemu-system-ppc64: OS terminated: OS panic:
->       Memory block size not suitable: 0x0
+> Currently PPC_INST_* macros are used for encoding instruction opcode and PPC_*
+> for raw instuction encoding, this rfc patchset introduces PPC_RAW_* macros for
+> base instruction encoding and reuse it from elsewhere. With this change we can
+> avoid redundant macro definitions in multiple files and start adding new
+> instructions in ppc-opcode.h in future.
 > 
-> Fix pseries_memory_block_size() to handle 64 bit LMBs.
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] pseries: Fix 64 bit logical memory block panic
-      https://git.kernel.org/powerpc/c/89c140bbaeee7a55ed0360a88f294ead2b95201b
+[1/6] powerpc/ppc-opcode: Introduce PPC_RAW_* macros for base instruction encoding
+      https://git.kernel.org/powerpc/c/db551f8cc6a33f79cd2d2a6cfd1903f044e828a8
+[2/6] powerpc/ppc-opcode: Move ppc instruction encoding from test_emulate_step
+      https://git.kernel.org/powerpc/c/1d33dd84080f4a430bde2fc363d9b70f0a010c19
+[3/6] powerpc/bpf_jit: Reuse instruction macros from ppc-opcode.h
+      https://git.kernel.org/powerpc/c/0654186510a40e7e1fa788cb941d1a156ba2dcb2
+[4/6] powerpc/ppc-opcode: Consolidate powerpc instructions from bpf_jit.h
+      https://git.kernel.org/powerpc/c/3a181237916310b2bbbad158d97933bb2b4e7552
+[5/6] powerpc/ppc-opcode: Reuse raw instruction macros to stringify
+      https://git.kernel.org/powerpc/c/357c572948310c88868cee00e64ca3f7fc933a74
+[6/6] powerpc/ppc-opcode: Fold PPC_INST_* macros into PPC_RAW_* macros
+      https://git.kernel.org/powerpc/c/e4208f1399b1bf7ed84ba359a6ba0979d1df4029
 
 cheers
