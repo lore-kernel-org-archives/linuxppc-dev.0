@@ -6,37 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6587CC433E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:24:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 108DDC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:26:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 895A42074B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:24:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 895A42074B
+	by mail.kernel.org (Postfix) with ESMTPS id 9762320760
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:26:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9762320760
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6w2P4Gs2zDr30
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:24:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6w5G34KXzDr1N
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:26:42 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPc2zHLzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPf4yB5zDqS7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:55:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPb2Lb8z9sTg; Thu, 16 Jul 2020 22:55:46 +1000 (AEST)
+ id 4B6vPc4zFDz9sTh; Thu, 16 Jul 2020 22:55:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Bin Meng <bmeng.cn@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <1588394694-517-1-git-send-email-bmeng.cn@gmail.com>
-References: <1588394694-517-1-git-send-email-bmeng.cn@gmail.com>
-Subject: Re: [PATCH v2] powerpc: Drop CONFIG_MTD_M25P80 in 85xx-hw.config
-Message-Id: <159490400462.3805857.10443151945400247524.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:55:46 +1000 (AEST)
+To: npiggin@gmail.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <173de3b659fa3a5f126a0eb170522cccd909950f.1594125164.git.christophe.leroy@csgroup.eu>
+References: <173de3b659fa3a5f126a0eb170522cccd909950f.1594125164.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/signal_32: Remove !FULL_REGS() special
+ handling in PPC64 save_general_regs()
+Message-Id: <159490400779.3805857.2201061957365361885.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:55:48 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,18 +51,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Bin Meng <bin.meng@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 1 May 2020 21:44:54 -0700, Bin Meng wrote:
-> Drop CONFIG_MTD_M25P80 that was removed in
-> commit b35b9a10362d ("mtd: spi-nor: Move m25p80 code in spi-nor.c")
+On Tue, 7 Jul 2020 12:33:35 +0000 (UTC), Christophe Leroy wrote:
+> Since commit ("1bd79336a426 powerpc: Fix various
+> syscall/signal/swapcontext bugs"), getting save_general_regs() called
+> without FULL_REGS() is very unlikely and generates a warning.
+> 
+> The 32-bit version of save_general_regs() doesn't take care of it
+> at all and copies all registers anyway since that commit.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Drop CONFIG_MTD_M25P80 in 85xx-hw.config
-      https://git.kernel.org/powerpc/c/76f09371bc05d6eb8d5a01823c9eaab768d6e934
+[1/2] powerpc/signal_32: Remove !FULL_REGS() special handling in PPC64 save_general_regs()
+      https://git.kernel.org/powerpc/c/667e3c413ecf20371692fd2dc37e06dc14d0b140
+[2/2] powerpc/signal_32: Simplify loop in PPC64 save_general_regs()
+      https://git.kernel.org/powerpc/c/020c4831e01264f8b62af6ca9e669b7c51881a56
 
 cheers
