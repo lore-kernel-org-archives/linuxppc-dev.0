@@ -2,86 +2,62 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,LONGWORDS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C3DAC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 02:37:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E75A5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 02:56:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1B5C207CB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 02:37:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uNLf3n0D"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1B5C207CB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 63FED2076C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 02:56:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63FED2076C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6dhC6Fs2zDqtr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 12:37:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6f6D69K8zDqty
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 12:56:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::444;
- helo=mail-wr1-x444.google.com; envelope-from=npiggin@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=uNLf3n0D; dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6ddl2Y9SzDqZN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 12:35:21 +1000 (AEST)
-Received: by mail-wr1-x444.google.com with SMTP id k6so5270307wrn.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 19:35:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :message-id:content-transfer-encoding;
- bh=zXeIy2ePTaW1WcCtqXXzYiM+52x43mwukDkyOFdBArE=;
- b=uNLf3n0D7Qu4h1hbLPUuunRiVCBX2Lyi8LRRfrkUyw/6bxvl47ZrFT7AC0G7UdacXX
- c6+QrsjNTwoOq37N5uFU3QbbBZ5cRutFyI9ZXl2FVTjma5MpfbtwJA9JB75KD3mnpInx
- HcZiDM+TqoKevx4n6G0jFXwA3RYHSIbITjePdij1I8rqNjv3lGDhPeQb/4sr19zZ1D43
- xEuD1M/m9160XiL7U4s0w5QSSil+NxJItFWA0LUt+cI91b3UmLubjqFi5eRUOzZBUeW4
- 2ReYm7yv5QnD3OD5iJ+QI454gI1nvkIo/ThBY1fJjyr0XfrD+eFc/s0fgm1bT2X+ofsi
- btdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=zXeIy2ePTaW1WcCtqXXzYiM+52x43mwukDkyOFdBArE=;
- b=ocbPfZw9vj/YA0/1kKlzQ6PcAkKTFbV/ewKUZVMvt/BoolAqjGH/PM2p9aeEcWpNXL
- 4oVo8LiTXp28krKF5KnQtYE2GTFE8AmWN9TvUnX3KJshAndXPZdpZVUjlWkqeZ6qItz5
- 8aFlaAdE6YSFLYvOzDfP7Ij7KFTM2gkFpIhy10I19sRuWbehHF/ET9lRepan82E0aS+o
- 5G+4XiWgM3KYnboe2Ay8ptZwrImrUY7BdMO+SgZAli9BM5COpbqFUggdB4TL91eXgU66
- AgA3bNIESM5ecITF+OVSn5Wu0TyI6JTo4TsBub6GF6h31klRuptgDk4M0zRYgraSs5LM
- u+fw==
-X-Gm-Message-State: AOAM531nTI3yN3hir3RkQ6lSHnMTqKo9CSnUnRKYoMkeBPL0p4uRay8f
- B8YKRXPNq/6C/OLX8hP4rieGXXPp
-X-Google-Smtp-Source: ABdhPJyExXtlVi+Zc+5Zqws9ZmSeFfANLu2ZDScXx6Mtc2Gkhtt4LsfwhHFZsu0tuLx0owk7AOkMTg==
-X-Received: by 2002:adf:e80d:: with SMTP id o13mr2571048wrm.112.1594866918928; 
- Wed, 15 Jul 2020 19:35:18 -0700 (PDT)
-Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
- by smtp.gmail.com with ESMTPSA id g13sm6584482wro.84.2020.07.15.19.35.17
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 15 Jul 2020 19:35:18 -0700 (PDT)
-Date: Thu, 16 Jul 2020 12:35:12 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH 7/7] lazy tlb: shoot lazies, a non-refcounting lazy
- tlb option
-To: Andy Lutomirski <luto@amacapital.net>
-References: <1594708054.04iuyxuyb5.astroid@bobo.none>
- <6D3D1346-DB1E-43EB-812A-184918CCC16A@amacapital.net>
-In-Reply-To: <6D3D1346-DB1E-43EB-812A-184918CCC16A@amacapital.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6f3s2t8rzDqrs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 12:54:28 +1000 (AEST)
+IronPort-SDR: v3o4NHfUxfM2b9mLsZl9oFPV6P0w9pMjgpwYNcYwjXzE/s+cdtpwl1kguHxwpZzRK1YvUBxyaJ
+ 3wUz6LJP0ffg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9683"; a="137439273"
+X-IronPort-AV: E=Sophos;i="5.75,357,1589266800"; d="scan'208";a="137439273"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Jul 2020 19:54:22 -0700
+IronPort-SDR: tmDTe+LHhVibmuy/uZdbpjEG9ROPptO6EArQnIXJTDVpruNP4jqNjL9XvZ9bVkzQdK1IyK9FGN
+ EQy1qYtBA0DA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,357,1589266800"; d="scan'208";a="325007260"
+Received: from lkp-server02.sh.intel.com (HELO 02dcbd16d3ea) ([10.239.97.151])
+ by FMSMGA003.fm.intel.com with ESMTP; 15 Jul 2020 19:54:21 -0700
+Received: from kbuild by 02dcbd16d3ea with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jvu2O-00000k-UZ; Thu, 16 Jul 2020 02:54:20 +0000
+Date: Thu, 16 Jul 2020 10:52:55 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 085563a9059b42c635151e970fd3af941f46a0fd
+Message-ID: <5f0fc107.6FhsDUZ1mudboFYS%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Message-Id: <1594866490.ultl891sgk.astroid@bobo.none>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,143 +69,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Andy Lutomirski <luto@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Andy Lutomirski's message of July 14, 2020 10:46 pm:
->=20
->=20
->> On Jul 13, 2020, at 11:31 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->>=20
->> =EF=BB=BFExcerpts from Nicholas Piggin's message of July 14, 2020 3:04 p=
-m:
->>> Excerpts from Andy Lutomirski's message of July 14, 2020 4:18 am:
->>>>=20
->>>>> On Jul 13, 2020, at 9:48 AM, Nicholas Piggin <npiggin@gmail.com> wrot=
-e:
->>>>>=20
->>>>> =EF=BB=BFExcerpts from Andy Lutomirski's message of July 14, 2020 1:5=
-9 am:
->>>>>>> On Thu, Jul 9, 2020 at 6:57 PM Nicholas Piggin <npiggin@gmail.com> =
-wrote:
->>>>>>>=20
->>>>>>> On big systems, the mm refcount can become highly contented when do=
-ing
->>>>>>> a lot of context switching with threaded applications (particularly
->>>>>>> switching between the idle thread and an application thread).
->>>>>>>=20
->>>>>>> Abandoning lazy tlb slows switching down quite a bit in the importa=
-nt
->>>>>>> user->idle->user cases, so so instead implement a non-refcounted sc=
-heme
->>>>>>> that causes __mmdrop() to IPI all CPUs in the mm_cpumask and shoot =
-down
->>>>>>> any remaining lazy ones.
->>>>>>>=20
->>>>>>> On a 16-socket 192-core POWER8 system, a context switching benchmar=
-k
->>>>>>> with as many software threads as CPUs (so each switch will go in an=
-d
->>>>>>> out of idle), upstream can achieve a rate of about 1 million contex=
-t
->>>>>>> switches per second. After this patch it goes up to 118 million.
->>>>>>>=20
->>>>>>=20
->>>>>> I read the patch a couple of times, and I have a suggestion that cou=
-ld
->>>>>> be nonsense.  You are, effectively, using mm_cpumask() as a sort of
->>>>>> refcount.  You're saying "hey, this mm has no more references, but i=
-t
->>>>>> still has nonempty mm_cpumask(), so let's send an IPI and shoot down
->>>>>> those references too."  I'm wondering whether you actually need the
->>>>>> IPI.  What if, instead, you actually treated mm_cpumask as a refcoun=
-t
->>>>>> for real?  Roughly, in __mmdrop(), you would only free the page tabl=
-es
->>>>>> if mm_cpumask() is empty.  And, in the code that removes a CPU from
->>>>>> mm_cpumask(), you would check if mm_users =3D=3D 0 and, if so, check=
- if
->>>>>> you just removed the last bit from mm_cpumask and potentially free t=
-he
->>>>>> mm.
->>>>>>=20
->>>>>> Getting the locking right here could be a bit tricky -- you need to
->>>>>> avoid two CPUs simultaneously exiting lazy TLB and thinking they
->>>>>> should free the mm, and you also need to avoid an mm with mm_users
->>>>>> hitting zero concurrently with the last remote CPU using it lazily
->>>>>> exiting lazy TLB.  Perhaps this could be resolved by having mm_count
->>>>>> =3D=3D 1 mean "mm_cpumask() is might contain bits and, if so, it own=
-s the
->>>>>> mm" and mm_count =3D=3D 0 meaning "now it's dead" and using some car=
-eful
->>>>>> cmpxchg or dec_return to make sure that only one CPU frees it.
->>>>>>=20
->>>>>> Or maybe you'd need a lock or RCU for this, but the idea would be to
->>>>>> only ever take the lock after mm_users goes to zero.
->>>>>=20
->>>>> I don't think it's nonsense, it could be a good way to avoid IPIs.
->>>>>=20
->>>>> I haven't seen much problem here that made me too concerned about IPI=
-s=20
->>>>> yet, so I think the simple patch may be good enough to start with
->>>>> for powerpc. I'm looking at avoiding/reducing the IPIs by combining t=
-he
->>>>> unlazying with the exit TLB flush without doing anything fancy with
->>>>> ref counting, but we'll see.
->>>>=20
->>>> I would be cautious with benchmarking here. I would expect that the
->>>> nasty cases may affect power consumption more than performance =E2=80=
-=94 the=20
->>>> specific issue is IPIs hitting idle cores, and the main effects are to=
-=20
->>>> slow down exit() a bit but also to kick the idle core out of idle.=20
->>>> Although, if the idle core is in a deep sleep, that IPI could be=20
->>>> *very* slow.
->>>=20
->>> It will tend to be self-limiting to some degree (deeper idle cores
->>> would tend to have less chance of IPI) but we have bigger issues on
->>> powerpc with that, like broadcast IPIs to the mm cpumask for THP
->>> management. Power hasn't really shown up as an issue but powerpc
->>> CPUs may have their own requirements and issues there, shall we say.
->>>=20
->>>> So I think it=E2=80=99s worth at least giving this a try.
->>>=20
->>> To be clear it's not a complete solution itself. The problem is of=20
->>> course that mm cpumask gives you false negatives, so the bits
->>> won't always clean up after themselves as CPUs switch away from their
->>> lazy tlb mms.
->>=20
->> ^^
->>=20
->> False positives: CPU is in the mm_cpumask, but is not using the mm
->> as a lazy tlb. So there can be bits left and never freed.
->>=20
->> If you closed the false positives, you're back to a shared mm cache
->> line on lazy mm context switches.
->=20
-> x86 has this exact problem. At least no more than 64*8 CPUs share the cac=
-he line :)
->=20
-> Can your share your benchmark?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 085563a9059b42c635151e970fd3af941f46a0fd  powerpc/perf: Add kernel support for new MSR[HV PR] bits in trace-imc
 
-Just testing the IPI rates (on a smaller 176 CPU system), on a
-kernel compile, it causes about 300 shootdown interrupts (not
-300 broadcasts but total interrupts).
+elapsed time: 735m
 
-And very short lived fork;exec;exit things like typical scripting
-commands doesn't typically generate any.
+configs tested: 88
+configs skipped: 2
 
-So yeah the really high exit rate things self-limit pretty well.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I documented the concern and added a few of the possible ways to
-further reduce IPIs in the comments though.
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arc                          axs101_defconfig
+c6x                        evmc6457_defconfig
+sh                 kfr2r09-romimage_defconfig
+powerpc                    gamecube_defconfig
+arm                          lpd270_defconfig
+arm                        clps711x_defconfig
+arm                           corgi_defconfig
+riscv                            allyesconfig
+arm                         orion5x_defconfig
+i386                              allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a016-20200715
+i386                 randconfig-a011-20200715
+i386                 randconfig-a015-20200715
+i386                 randconfig-a012-20200715
+i386                 randconfig-a013-20200715
+i386                 randconfig-a014-20200715
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                                    lkp
+x86_64                              fedora-25
 
-Thanks,
-Nick
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
