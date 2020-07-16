@@ -2,94 +2,97 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3602CC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE3DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:27:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF5112067D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:23:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF5112067D
+	by mail.kernel.org (Postfix) with ESMTPS id 7DED12067D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 06:27:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DED12067D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6kjR2BRzzDqj1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 16:23:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6kp05PLHzDqdx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 16:27:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bala24@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6kYC0BK5zDqfb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 16:16:46 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06G627dp175882; Thu, 16 Jul 2020 02:16:41 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6kl039BQzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 16:25:15 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06G63qRS002670; Thu, 16 Jul 2020 02:25:10 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32afvktem6-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32afv02jqk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 02:16:41 -0400
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06G63a0m180610;
- Thu, 16 Jul 2020 02:16:41 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32afvktekq-1
+ Thu, 16 Jul 2020 02:25:10 -0400
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06G6Jrlq045854;
+ Thu, 16 Jul 2020 02:25:10 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32afv02jpt-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 02:16:41 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06G6FoPg015435;
- Thu, 16 Jul 2020 06:16:39 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma05fra.de.ibm.com with ESMTP id 327q2y2aff-1
+ Thu, 16 Jul 2020 02:25:10 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06G6FNCB014255;
+ Thu, 16 Jul 2020 06:25:08 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06ams.nl.ibm.com with ESMTP id 3274pgw40r-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 16 Jul 2020 06:16:39 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06G6Gao816974118
+ Thu, 16 Jul 2020 06:25:07 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06G6P5eZ57475180
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 16 Jul 2020 06:16:36 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 36F8942042;
- Thu, 16 Jul 2020 06:16:36 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DEE3442054;
- Thu, 16 Jul 2020 06:16:31 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.79.215.148])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 16 Jul 2020 06:16:31 +0000 (GMT)
-From: Balamuruhan S <bala24@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2 3/4] powerpc ppc-opcode: add opcodes for vsx vector paired
- instructions
-Date: Thu, 16 Jul 2020 11:45:57 +0530
-Message-Id: <20200716061558.1532199-4-bala24@linux.ibm.com>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <20200716061558.1532199-1-bala24@linux.ibm.com>
+ Thu, 16 Jul 2020 06:25:05 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3496C11C052;
+ Thu, 16 Jul 2020 06:25:05 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4175E11C04A;
+ Thu, 16 Jul 2020 06:25:03 +0000 (GMT)
+Received: from [9.199.37.124] (unknown [9.199.37.124])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 16 Jul 2020 06:25:03 +0000 (GMT)
+Subject: Re: [PATCH v2 1/4] powerpc/sstep: support new VSX vector paired
+ storage access instructions
+To: Balamuruhan S <bala24@linux.ibm.com>
 References: <20200716061558.1532199-1-bala24@linux.ibm.com>
+ <20200716061558.1532199-2-bala24@linux.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Message-ID: <dc9be7d3-12d9-e834-292a-3aff68dd0e55@linux.ibm.com>
+Date: Thu, 16 Jul 2020 11:55:02 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200716061558.1532199-2-bala24@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-15_12:2020-07-15,
  2020-07-15 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 mlxlogscore=890
- bulkscore=0 clxscore=1015 spamscore=0 adultscore=0 mlxscore=0
- lowpriorityscore=0 suspectscore=1 malwarescore=0 impostorscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ spamscore=0 bulkscore=0
+ clxscore=1015 mlxscore=0 priorityscore=1501 impostorscore=0
+ mlxlogscore=780 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ adultscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2007160042
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,39 +105,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, jniethe5@gmail.com,
- Balamuruhan S <bala24@linux.ibm.com>, paulus@samba.org, sandipan@linux.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, paulus@samba.org,
+ sandipan@linux.ibm.com, jniethe5@gmail.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-add instruction opcodes for new vsx vector paired instructions,
-        * Load VSX Vector Paired (lxvp)
-        * Load VSX Vector Paired Indexed (lxvpx)
-        * Store VSX Vector Paired (stxvp)
-        * Store VSX Vector Paired Indexed (stxvpx)
+Hi Bala,
 
-Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
----
- arch/powerpc/include/asm/ppc-opcode.h | 4 ++++
- 1 file changed, 4 insertions(+)
+> @@ -2382,6 +2386,15 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+>   			op->vsx_flags = VSX_SPLAT;
+>   			break;
+>   
+> +		case 333:       /* lxvpx */
+> +			if (!cpu_has_feature(CPU_FTR_ARCH_31))
+> +				return -1;
+> +			op->reg = VSX_REGISTER_XTP(rd);
+> +			op->type = MKOP(LOAD_VSX, 0, 32);
+> +			op->element_size = 32;
+> +			op->vsx_flags = VSX_CHECK_VEC;
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 777d5056a71c..f7ffbe11624e 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -210,6 +210,10 @@
- #define PPC_INST_ISEL			0x7c00001e
- #define PPC_INST_ISEL_MASK		0xfc00003e
- #define PPC_INST_LDARX			0x7c0000a8
-+#define PPC_INST_LXVP			0x18000000
-+#define PPC_INST_LXVPX			0x7c00029a
-+#define PPC_INST_STXVP			0x18000001
-+#define PPC_INST_STXVPX			0x7c00039a
- #define PPC_INST_STDCX			0x7c0001ad
- #define PPC_INST_LQARX			0x7c000228
- #define PPC_INST_STQCX			0x7c00016d
--- 
-2.24.1
+Why VSX_CHECK_VEC?
 
+Ravi
