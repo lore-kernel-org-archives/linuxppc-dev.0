@@ -2,41 +2,84 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1B97C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:36:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0987CC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:41:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B5552065D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:36:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B5552065D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id B5DD8206F4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 14:40:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5DD8206F4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6xf70vF8zDqhl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:36:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6xkw0zYszDqlf
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:40:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vQL0nl6zDqll
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vQB1hKYz9sVj; Thu, 16 Jul 2020 22:56:17 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-In-Reply-To: <20200629103703.4538-1-srikar@linux.vnet.ibm.com>
-References: <20200629103703.4538-1-srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] Implement shared_cpu_list for powerpc
-Message-Id: <159490400590.3805857.12420499524607707011.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:56:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6wrr0W0NzDr15
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 00:00:59 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06GDx3Co058518; Thu, 16 Jul 2020 10:00:53 -0400
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32adag3vc8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jul 2020 10:00:51 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06GDxwbY020394;
+ Thu, 16 Jul 2020 14:00:46 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma03dal.us.ibm.com with ESMTP id 327529kejf-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 16 Jul 2020 14:00:46 +0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06GE0kpY18481492
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 16 Jul 2020 14:00:46 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E88FA112062;
+ Thu, 16 Jul 2020 14:00:45 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BFE8E112061;
+ Thu, 16 Jul 2020 14:00:45 +0000 (GMT)
+Received: from localhost (unknown [9.160.93.85])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 16 Jul 2020 14:00:45 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v3 0/4] powerpc/mm/radix: Memory unplug fixes
+In-Reply-To: <20200709131925.922266-1-aneesh.kumar@linux.ibm.com>
+References: <20200709131925.922266-1-aneesh.kumar@linux.ibm.com>
+Date: Thu, 16 Jul 2020 09:00:45 -0500
+Message-ID: <87r1tb1rw2.fsf@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-16_06:2020-07-16,
+ 2020-07-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0
+ clxscore=1015 malwarescore=0 lowpriorityscore=0 spamscore=0
+ impostorscore=0 suspectscore=1 phishscore=0 mlxlogscore=918
+ priorityscore=1501 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2007160105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,31 +91,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Bharata B Rao <bharata@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 29 Jun 2020 16:07:00 +0530, Srikar Dronamraju wrote:
-> shared_cpu_list sysfs file is missing in powerpc and shared_cpu_map gives an
-> extra newline character.
-> 
-> Before this patchset
-> # ls /sys/devices/system/cpu0/cache/index1
-> coherency_line_size  number_of_sets  size  ways_of_associativity
-> level                shared_cpu_map  type
-> # cat /sys/devices/system/cpu0/cache/index1/shared_cpu_map
-> 00ff
-> 
-> [...]
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+> This is the next version of the fixes for memory unplug on radix.
+> The issues and the fix are described in the actual patches.
 
-Applied to powerpc/next.
+I guess this isn't actually causing problems at runtime right now, but I
+notice calls to resize_hpt_for_hotplug() from arch_add_memory() and
+arch_remove_memory(), which ought to be mmu-agnostic:
 
-[1/3] powerpc/cacheinfo: Use cpumap_print to print cpumap
-      https://git.kernel.org/powerpc/c/5658cf085ba3c3f3c24ac0f7210f0473794df506
-[2/3] powerpc/cacheinfo: Make cpumap_show code reusable
-      https://git.kernel.org/powerpc/c/74b7492e417812ea0f5002e210e2ac07a5728d17
-[3/3] powerpc/cacheinfo: Add per cpu per index shared_cpu_list
-      https://git.kernel.org/powerpc/c/a87a77cb947cc9fc89f0dad51aeee66a61cc7fc4
+int __ref arch_add_memory(int nid, u64 start, u64 size,
+			  struct mhp_params *params)
+{
+	unsigned long start_pfn = start >> PAGE_SHIFT;
+	unsigned long nr_pages = size >> PAGE_SHIFT;
+	int rc;
 
-cheers
+	resize_hpt_for_hotplug(memblock_phys_mem_size());
+
+	start = (unsigned long)__va(start);
+	rc = create_section_mapping(start, start + size, nid,
+				    params->pgprot);
+...
+
