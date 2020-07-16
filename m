@@ -1,4 +1,4 @@
-Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 668FDC433E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:00:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45C7AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CEBE020760
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:59:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EB9C320787
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 00:03:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EhlCQmpQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEBE020760
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XAIocMRK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB9C320787
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7B7w751ZzDqs6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 09:59:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7BDY0kn5zDqsd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 10:03:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
@@ -28,32 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=EhlCQmpQ; dkim-atps=neutral
+ header.s=default header.b=XAIocMRK; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7B4V2pt8zDqlV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 09:56:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B7B5N5R21zDr9L
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 09:57:44 +1000 (AEST)
 Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AD9002076D;
- Thu, 16 Jul 2020 23:56:54 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6EB922076D;
+ Thu, 16 Jul 2020 23:57:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1594943815;
- bh=zeAWV8quqJcjNdKGBpwqdnxqQ3lUBTZRlol3e/xmC50=;
+ s=default; t=1594943862;
+ bh=0KEn9GGodMAd0GZ7nJ9P9iUYKaDti52GK2guzJb/P4w=;
  h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=EhlCQmpQ7D8+Rn5PCJWFdB4BBXPH3Bk1PrJuvJj6/Oj1ZgeuiK1NWg2XGZijXsYHB
- aNqNi/XV32KgqSAOZNPTEWDRLdQUGTFAVvK8pQSOub7lzDtWaLt/4byf4UdFLNhh4v
- LMr7SSnohO5HKgSSliZeGyjXVSOegfT+XDRKhN+U=
-Date: Fri, 17 Jul 2020 00:56:45 +0100
+ b=XAIocMRK2IbotWianyYDXpavaPbno1JrNsGdRieeU6p/nLKKp8TYjuaPvzd8Jmwid
+ Fl6z5R/ElUHBtrvDsmRq9ov6ZJKonxNpOsCHQTNWXB/41cfytpBn0nuwCLqEesKOSY
+ efn3YpQdcJvpe+uPIEP0XSfH7W768BnAPDHbpn4E=
+Date: Fri, 17 Jul 2020 00:57:33 +0100
 From: Mark Brown <broonie@kernel.org>
 To: Lee Jones <lee.jones@linaro.org>, lgirdwood@gmail.com
-In-Reply-To: <20200715150009.407442-1-lee.jones@linaro.org>
-References: <20200715150009.407442-1-lee.jones@linaro.org>
-Subject: Re: [PATCH v2 1/1] ASoC: fsl: fsl-asoc-card: Trivial: Fix misspelling
- of 'exists'
-Message-Id: <159494380521.42174.8014458780867404653.b4-ty@kernel.org>
+In-Reply-To: <20200715094447.3170843-1-lee.jones@linaro.org>
+References: <20200715094447.3170843-1-lee.jones@linaro.org>
+Subject: Re: [PATCH 1/1] ASoC: fsl: fsl-asoc-card: Trivial: Fix misspelling of
+ 'exists'
+Message-Id: <159494380521.42174.11701175343660094863.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,7 +73,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Jul 2020 16:00:09 +0100, Lee Jones wrote:
+On Wed, 15 Jul 2020 10:44:47 +0100, Lee Jones wrote:
 > 
 
 
