@@ -2,56 +2,83 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 197D6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 01:32:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2115C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 01:37:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F84120775
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 01:32:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F84120775
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 6D3A42078C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 01:37:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UHwwNzkJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D3A42078C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6cFK4tJ5zDqfc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 11:32:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6cM02dzQzDqHF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 11:37:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::443;
+ helo=mail-wr1-x443.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=UHwwNzkJ; dkim-atps=neutral
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6cBX1cxLzDqrm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 11:30:08 +1000 (AEST)
-Received: from localhost (unknown [IPv6:2601:601:9f00:477::3d5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 7053C1274BDCC;
- Wed, 15 Jul 2020 18:29:59 -0700 (PDT)
-Date: Wed, 15 Jul 2020 18:29:56 -0700 (PDT)
-Message-Id: <20200715.182956.490791427431304861.davem@davemloft.net>
-To: kuba@kernel.org
-Subject: Re: [PATCH net-next] ibmvnic: Increase driver logging
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20200715170632.11f0bf19@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-References: <1594857115-22380-1-git-send-email-tlfalcon@linux.ibm.com>
- <20200715170632.11f0bf19@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
-X-Mailer: Mew version 6.8 on Emacs 26.3
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Wed, 15 Jul 2020 18:29:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6cJq1cQyzDqs2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 11:35:37 +1000 (AEST)
+Received: by mail-wr1-x443.google.com with SMTP id q5so5109887wru.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2020 18:35:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=No2sfoa2XC1AzcEtK/n3qxZKzaVyUKVOKE64N4pMv54=;
+ b=UHwwNzkJQ9qTDaaKlL7k/lxPK/jXaantEE3zp7KA0EWNHj+HPs1rIs3rWntTeks/o6
+ +m98G3qHhJuhXaaq8kMs5n1L5gaAOL7G69soMsn2LermUDffcrkQbg8d+lBD47KfkOh/
+ FWZtngpH9SVgpETAzmg1pSM0PbGP6WNa29gZ+OX8j6AX2NOPsVo5JekiDu9xM8T4vAHp
+ 9UgE8r8MqhF6H8LT7VR4ApCSXcZABKDhLkgudTSABbnCCuQGVny9DcDP7TsXxuamZzZ3
+ fjAdMjVOkP5eknRNuqoyR2YW5UBzUKfG4rWkEWM9oqKqMhkBYXrBPeuBDzmHjTQZLURl
+ aVqA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=No2sfoa2XC1AzcEtK/n3qxZKzaVyUKVOKE64N4pMv54=;
+ b=AtdRNMIwnM5bce/qiBv4TsQqflAfIHP/XMZq7+KTBuv5PRm+35niMe9e45R2t7GAyF
+ 2T27G5FOjgHGABKezaolNVghWyBaKovVyPc4bEQTw6Dt9vpc9fQyaEjV4W4vNVKGPMUE
+ lwkiTDfEmjQvpSlwoVwexZ6vzdz6WYAFrE7wgHdhcrRkkwM6FYwxOtU0rMNko/c66UHM
+ UYz7NSNUkUbzPEatIfrL+plj2opZbBbPBWtmT96B2D40/nEE4nxNkNdY0GZKbOJZM9N1
+ xUjMdE1oCje/Dm8mMjxhQ72/gJraP4ZtH//Q4/UQjg/9bg+/8PE3kJpBsgbuzzyCWqtJ
+ NHrw==
+X-Gm-Message-State: AOAM532gIwYMmN5uWRYNQoSj1Gd+yaWKQM9LKDTuOXDSHLfUGsluPp2o
+ opysHANpCN1i34RTIz57wvW113I8
+X-Google-Smtp-Source: ABdhPJzKwW4E8EKZahCMqsAY6dQ2dsSbs4WSKcT9kAgysOtibkSAFbX7DAlm2f6LYw5ti733qyoBTA==
+X-Received: by 2002:a5d:6088:: with SMTP id w8mr2313955wrt.49.1594863332634;
+ Wed, 15 Jul 2020 18:35:32 -0700 (PDT)
+Received: from bobo.ibm.com (110-174-173-27.tpgi.com.au. [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id p29sm6155879wmi.43.2020.07.15.18.35.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 15 Jul 2020 18:35:32 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc: select ARCH_HAS_MEMBARRIER_SYNC_CORE
+Date: Thu, 16 Jul 2020 11:35:22 +1000
+Message-Id: <20200716013522.338318-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,26 +90,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: drt@linux.ibm.com, netdev@vger.kernel.org, tlfalcon@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Andreas Schwab <schwab@linux-m68k.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Wed, 15 Jul 2020 17:06:32 -0700
+powerpc return from interrupt and return from system call sequences are
+context synchronising.
 
-> On Wed, 15 Jul 2020 18:51:55 -0500 Thomas Falcon wrote:
->>  	free_netdev(netdev);
->>  	dev_set_drvdata(&dev->dev, NULL);
->> +	netdev_info(netdev, "VNIC client device has been successfully removed.\n");
-> 
-> A step too far, perhaps.
-> 
-> In general this patch looks a little questionable IMHO, this amount of
-> logging output is not commonly seen in drivers. All the the info
-> messages are just static text, not even carrying any extra information.
-> In an era of ftrace, and bpftrace, do we really need this?
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
 
-Agreed, this is too much.  This is debugging, and thus suitable for tracing
-facilities, at best.
+v3: more comment fixes
+
+ .../features/sched/membarrier-sync-core/arch-support.txt  | 4 ++--
+ arch/powerpc/Kconfig                                      | 1 +
+ arch/powerpc/include/asm/exception-64e.h                  | 6 +++++-
+ arch/powerpc/include/asm/exception-64s.h                  | 8 ++++++++
+ arch/powerpc/kernel/entry_32.S                            | 6 ++++++
+ 5 files changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/features/sched/membarrier-sync-core/arch-support.txt b/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+index 8a521a622966..52ad74a25f54 100644
+--- a/Documentation/features/sched/membarrier-sync-core/arch-support.txt
++++ b/Documentation/features/sched/membarrier-sync-core/arch-support.txt
+@@ -5,7 +5,7 @@
+ #
+ # Architecture requirements
+ #
+-# * arm/arm64
++# * arm/arm64/powerpc
+ #
+ # Rely on implicit context synchronization as a result of exception return
+ # when returning from IPI handler, and when returning to user-space.
+@@ -45,7 +45,7 @@
+     |       nios2: | TODO |
+     |    openrisc: | TODO |
+     |      parisc: | TODO |
+-    |     powerpc: | TODO |
++    |     powerpc: |  ok  |
+     |       riscv: | TODO |
+     |        s390: | TODO |
+     |          sh: | TODO |
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9fa23eb320ff..920c4e3ca4ef 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -131,6 +131,7 @@ config PPC
+ 	select ARCH_HAS_PTE_DEVMAP		if PPC_BOOK3S_64
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_MEMBARRIER_CALLBACKS
++	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC32 && !HIBERNATION)
+ 	select ARCH_HAS_TICK_BROADCAST		if GENERIC_CLOCKEVENTS_BROADCAST
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index 54a98ef7d7fe..72b6657acd2d 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -204,7 +204,11 @@ exc_##label##_book3e:
+ 	LOAD_REG_ADDR(r3,interrupt_base_book3e);\
+ 	ori	r3,r3,vector_offset@l;		\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
+-
++/*
++ * powerpc relies on return from interrupt/syscall being context synchronising
++ * (which rfi is) to support ARCH_HAS_MEMBARRIER_SYNC_CORE without additional
++ * synchronisation instructions.
++ */
+ #define RFI_TO_KERNEL							\
+ 	rfi
+ 
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 47bd4ea0837d..d7a1a427a690 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -68,6 +68,14 @@
+  *
+  * The nop instructions allow us to insert one or more instructions to flush the
+  * L1-D cache when returning to userspace or a guest.
++ *
++ * powerpc relies on return from interrupt/syscall being context synchronising
++ * (which hrfid, rfid, and rfscv are) to support ARCH_HAS_MEMBARRIER_SYNC_CORE
++ * without additional synchronisation instructions.
++ *
++ * soft-masked interrupt replay does not include a context-synchronising rfid,
++ * but those always return to kernel, the sync is only required when returning
++ * to user.
+  */
+ #define RFI_FLUSH_SLOT							\
+ 	RFI_FLUSH_FIXUP_SECTION;					\
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 217ebdf5b00b..f4d0af8e1136 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -35,6 +35,12 @@
+ 
+ #include "head_32.h"
+ 
++/*
++ * powerpc relies on return from interrupt/syscall being context synchronising
++ * (which rfi is) to support ARCH_HAS_MEMBARRIER_SYNC_CORE without additional
++ * synchronisation instructions.
++ */
++
+ /*
+  * Align to 4k in order to ensure that all functions modyfing srr0/srr1
+  * fit into one page in order to not encounter a TLB miss between the
+-- 
+2.23.0
+
