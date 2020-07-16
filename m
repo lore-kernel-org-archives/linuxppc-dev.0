@@ -2,59 +2,89 @@ Return-Path: <SRS0=Exvj=A3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DATE_IN_PAST_06_12,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC14C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 09:15:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AC65C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 10:07:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E6F92063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 09:15:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 81D552074B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 10:06:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="RTZbaMPF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E6F92063A
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bl7dbS4T"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81D552074B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6pW42L4vzDqh2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 19:15:12 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6qfm6LKWzDqdd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 20:06:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044;
+ helo=mail-pj1-x1044.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=bl7dbS4T; dkim-atps=neutral
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com
+ [IPv6:2607:f8b0:4864:20::1044])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6pSP3rm5zDqFC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 19:12:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=RTZbaMPF; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 4B6pSN5296z9sSt; Thu, 16 Jul 2020 19:12:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1594890772; bh=JeI8v2lLOzWwduE+5cSU76pNmQxFjMg77GPeGybRqHk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=RTZbaMPFL0TPpJfiHejGfdYRHvlga0aS4vZNXrPbMuwZdsmoKvb6b0dSgPoWnNbRn
- ChfPK8y9gaspYvb/FvXX9OSOqKRzVN/T1S3KgxeO+8qpJp0UE5AcvM4p4oTQL3cy5p
- WMNrskZhplqFVyet1GF5MzBJvqqNXLqNjtF9ENpfcQZR3p3vyYGqsWit4nKSBv/9Aw
- tBuQWyBQXbKOMxxHSPtCcTFeu3r8OL3dqtmP6rQSz+QD6ao6Pl0f9uCC/hgwtyY+sb
- 72TyY/oRNMCFRCxil/bBfQVhS8nPrxrb8J1BDilqmExbEL13Vc1bXs30bUrpcOKRwN
- UuwV+n07ETsIQ==
-Date: Thu, 16 Jul 2020 11:30:30 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] pseries: Fix 64 bit logical memory block panic
-Message-ID: <20200716013030.GA4076912@thinks.paulus.ozlabs.org>
-References: <20200715000820.1255764-1-anton@ozlabs.org>
- <87d04x3q6m.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6qb60zxWzDqx9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 20:03:45 +1000 (AEST)
+Received: by mail-pj1-x1044.google.com with SMTP id b92so4408416pjc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 03:03:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=HzIbutGmLrLif9xBPq32ksQXCD4wvXBqbvefIYna8wU=;
+ b=bl7dbS4T4uDjdhahJk0bCdTaM3dC1r+F5i8++IxyKP2qnF2Kf/rLnM18Ahb2BQj84+
+ X8rk719vY3DynXplaAKcF6U2zU6SW98a3GhFzdFE8OGuy8RFhP7fGa6EV1ETGVQEWTd1
+ Mf7XSgUl+AIvYgwE2i17W/Z1qPH34WVz3AxetZZeUeTCl0udyR+Zpi1gXsEDzHchQB5K
+ SRsEl2UQID0/PTfY+V12/dgTQxru9rz1uX91W3Ay1wB1rNmszHGR0jNnXufPtbZ7agzA
+ GRg3qZAPwI2+KnlBfnWqXmc320TXESStI+zEl+6Cv3EcyGSD+QmPeMPqa26dtaIVA6h/
+ j7+g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=HzIbutGmLrLif9xBPq32ksQXCD4wvXBqbvefIYna8wU=;
+ b=cL9sst3OKGuku6DTjbZm/hbBzpSHBKNUOqyHynhJI7VTittL2vbiUXgOnBb6Nit93b
+ MsPekU5g/BWVmGVKrVwAEFxb4zIu1t4CKXM5HUt445Qbd3C024ZNY7a7vE3LPD8pyPEo
+ uGGX4sSOF0taQla4TolmOkQy9Rup0nIGny1+njwSCK8dbNnq8nDv0E4ckEq/GEnHZz+M
+ VaFxam79LWYwYFmWlofzb1hH7mrxc+B/1SoxlzYiCVHA8Vynj6hOA6CgVUs2eFX5x5fr
+ VayDXNaehXZFndW1fzokDB0N22Wc8WEtff0mh0BI2klDoeIJ0AwKQVGRYN7qSLz4Yzuu
+ WyNA==
+X-Gm-Message-State: AOAM533T24WmduD3NRX4sVeR+RRSQp9CgZkC5rBgpLrdip5SVlHFkWrl
+ b2pz6kYX7+7coeKQga/zKxk=
+X-Google-Smtp-Source: ABdhPJz/0JtE0/eGZGAu9L0wDX7GXQ/CJQgKm6kh7sieTO8a1OloSXoQV79VZaFvU7UdYKEcVxmDrw==
+X-Received: by 2002:a17:90b:2351:: with SMTP id
+ ms17mr4083381pjb.105.1594893823195; 
+ Thu, 16 Jul 2020 03:03:43 -0700 (PDT)
+Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id s194sm4639978pgs.24.2020.07.16.03.03.41
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 16 Jul 2020 03:03:42 -0700 (PDT)
+Date: Thu, 16 Jul 2020 20:03:36 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+To: Andy Lutomirski <luto@amacapital.net>, Peter Zijlstra
+ <peterz@infradead.org>
+References: <1594868476.6k5kvx8684.astroid@bobo.none>
+ <EFAD6E2F-EC08-4EB3-9ECC-2A963C023FC5@amacapital.net>
+ <20200716085032.GO10769@hirez.programming.kicks-ass.net>
+In-Reply-To: <20200716085032.GO10769@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87d04x3q6m.fsf@linux.ibm.com>
+Message-Id: <1594892300.mxnq3b9a77.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,120 +96,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ x86 <x86@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-mm <linux-mm@kvack.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 15, 2020 at 06:12:25PM +0530, Aneesh Kumar K.V wrote:
-> Anton Blanchard <anton@ozlabs.org> writes:
-> 
-> > Booting with a 4GB LMB size causes us to panic:
-> >
-> >   qemu-system-ppc64: OS terminated: OS panic:
-> >       Memory block size not suitable: 0x0
-> >
-> > Fix pseries_memory_block_size() to handle 64 bit LMBs.
-> >
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Anton Blanchard <anton@ozlabs.org>
-> > ---
-> >  arch/powerpc/platforms/pseries/hotplug-memory.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> > index 5ace2f9a277e..6574ac33e887 100644
-> > --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> > +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> > @@ -27,7 +27,7 @@ static bool rtas_hp_event;
-> >  unsigned long pseries_memory_block_size(void)
-> >  {
-> >  	struct device_node *np;
-> > -	unsigned int memblock_size = MIN_MEMORY_BLOCK_SIZE;
-> > +	uint64_t memblock_size = MIN_MEMORY_BLOCK_SIZE;
-> >  	struct resource r;
-> >  
-> >  	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> 
-> We need similar changes at more places?
-> 
-> modified   arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -85,7 +85,7 @@ extern unsigned int mmu_base_pid;
->  /*
->   * memory block size used with radix translation.
->   */
-> -extern unsigned int __ro_after_init radix_mem_block_size;
-> +extern unsigned long __ro_after_init radix_mem_block_size;
->  
->  #define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
->  #define PRTB_ENTRIES	(1ul << mmu_pid_bits)
-> modified   arch/powerpc/include/asm/drmem.h
-> @@ -21,7 +21,7 @@ struct drmem_lmb {
->  struct drmem_lmb_info {
->  	struct drmem_lmb        *lmbs;
->  	int                     n_lmbs;
-> -	u32                     lmb_size;
-> +	u64                     lmb_size;
->  };
->  
->  extern struct drmem_lmb_info *drmem_info;
-> modified   arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -34,7 +34,7 @@
->  
->  unsigned int mmu_pid_bits;
->  unsigned int mmu_base_pid;
-> -unsigned int radix_mem_block_size __ro_after_init;
-> +unsigned long radix_mem_block_size __ro_after_init;
+Excerpts from Peter Zijlstra's message of July 16, 2020 6:50 pm:
+> On Wed, Jul 15, 2020 at 10:18:20PM -0700, Andy Lutomirski wrote:
+>> > On Jul 15, 2020, at 9:15 PM, Nicholas Piggin <npiggin@gmail.com> wrote=
+:
+>=20
+>> > CPU0                     CPU1
+>> >                         1. user stuff
+>> > a. membarrier()          2. enter kernel
+>> > b. read rq->curr         3. rq->curr switched to kthread
+>> > c. is kthread, skip IPI  4. switch_to kthread
+>> > d. return to user        5. rq->curr switched to user thread
+>> >                 6. switch_to user thread
+>> >                 7. exit kernel
+>> >                         8. more user stuff
+>=20
+>> I find it hard to believe that this is x86 only. Why would thread
+>> switch imply core sync on any architecture?  Is x86 unique in having a
+>> stupid expensive core sync that is heavier than smp_mb()?
+>=20
+> smp_mb() is nowhere near the most expensive barrier we have in Linux,
+> mb() might qualify, since that has some completion requirements since it
+> needs to serialize against external actors.
+>=20
+> On x86_64 things are rather murky, we have:
+>=20
+> 	LOCK prefix -- which implies smp_mb() before and after RmW
+> 	LFENCE -- which used to be rmb like, until Spectre, and now it
+> 		  is ISYNC like. Since ISYNC ensures an empty pipeline,
+> 		  it also implies all loads are retired (and therefore
+> 		  complete) it implies rmb.
+> 	MFENCE -- which is a memop completion barrier like, it makes
+> 		  sure all previously issued memops are complete.
+>=20
+> if you read that carefully, you'll note you'll have to use LFENCE +
+> MFENCE to order against non-memops instructions.
+>=20
+> But none of them imply dumping the instruction decoder caches, that only
+> happens on core serializing instructions like CR3 writes, IRET, CPUID
+> and a few others, I think we recently got a SERIALIZE instruction to add
+> to this list.
+>=20
+>=20
+> On ARM64 there's something a whole different set of barriers, and again
+> smp_mb() isn't nowhere near the top of the list. They have roughly 3
+> classes:
+>=20
+> 	ISB -- instruction sync barrier
+> 	DMB(x) -- memory ordering in domain x
+> 	DSB(x) -- memory completion in domain x
+>=20
+> And they have at least 3 domains (IIRC), system, outer, inner.
+>=20
+> The ARM64 __switch_to() includes a dsb(sy), just like PowerPC used to
+> have a SYNC, but since PowerPC is rare for only having one rediculously
+> heavy serializing instruction, we got to re-use the smp_mb() early in
+> __schedule() instead, but ARM64 can't do that.
+>=20
+>=20
+> So rather than say that x86 is special here, I'd say that PowerPC is
+> special here.
 
-These changes look fine.
+PowerPC is "special", I'll agree with you there :)
 
->  static __ref void *early_alloc_pgtable(unsigned long size, int nid,
->  			unsigned long region_start, unsigned long region_end)
-> modified   arch/powerpc/mm/drmem.c
-> @@ -268,14 +268,15 @@ static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
->  void __init walk_drmem_lmbs_early(unsigned long node,
->  			void (*func)(struct drmem_lmb *, const __be32 **))
->  {
-> +	const __be64 *lmb_prop;
->  	const __be32 *prop, *usm;
->  	int len;
->  
-> -	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
-> -	if (!prop || len < dt_root_size_cells * sizeof(__be32))
-> +	lmb_prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
-> +	if (!lmb_prop || len < sizeof(__be64))
->  		return;
->  
-> -	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
-> +	drmem_info->lmb_size = be64_to_cpup(lmb_prop);
+It does have a SYNC (HWSYNC) instruction that is mb(). It does not
+serialize the core.
 
-This particular change shouldn't be necessary.  We already have
-dt_mem_next_cell() returning u64, and it knows how to combine two
-cells to give a u64 (for dt_root_size_cells == 2).
+ISYNC is a nop. ICBI ; ISYNC does serialize the core.
 
->  	usm = of_get_flat_dt_prop(node, "linux,drconf-usable-memory", &len);
->  
-> @@ -296,19 +297,19 @@ void __init walk_drmem_lmbs_early(unsigned long node,
->  
->  static int __init init_drmem_lmb_size(struct device_node *dn)
->  {
-> -	const __be32 *prop;
-> +	const __be64 *prop;
->  	int len;
->  
->  	if (drmem_info->lmb_size)
->  		return 0;
->  
->  	prop = of_get_property(dn, "ibm,lmb-size", &len);
-> -	if (!prop || len < dt_root_size_cells * sizeof(__be32)) {
-> +	if (!prop || len < sizeof(__be64)) {
->  		pr_info("Could not determine LMB size\n");
->  		return -1;
->  	}
->  
-> -	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
-> +	drmem_info->lmb_size = be64_to_cpup(prop);
+Difference between them is probably much the same as difference between
+MFENCE and CPUID on x86 CPUs. Serializing the core is almost always=20
+pretty expensive. HWSYNC/MFENCE can be expensive if you have a lot of
+or difficult (not exclusive in cache) outstanding with critical reads
+after the barrier, but it can also be somewhat cheap if there are few
+writes, and executed past, it only needs to hold up subsequent reads.
 
-Same comment here.
+That said... implementation details. powerpc CPUs have traditionally
+had fairly costly HWSYNC.
 
-Paul.
+
+>> But I=E2=80=99m wondering if all this deferred sync stuff is wrong. In t=
+he
+>> brave new world of io_uring and such, perhaps kernel access matter
+>> too.  Heck, even:
+>=20
+> IIRC the membarrier SYNC_CORE use-case is about user-space
+> self-modifying code.
+>=20
+> Userspace re-uses a text address and needs to SYNC_CORE before it can be
+> sure the old text is forgotten. Nothing the kernel does matters there.
+>=20
+> I suppose the manpage could be more clear there.
+
+True, but memory ordering of kernel stores from kernel threads for
+regular mem barrier is the concern here.
+
+Does io_uring update completion queue from kernel thread or interrupt,
+for example? If it does, then membarrier will not order such stores
+with user memory accesses.
+
+Thanks,
+Nick
