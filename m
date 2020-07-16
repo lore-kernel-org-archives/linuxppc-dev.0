@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F9F6C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC11CC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:47:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0916A207DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:45:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0916A207DD
+	by mail.kernel.org (Postfix) with ESMTPS id 8A3B9207DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 13:47:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A3B9207DD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B6wVP53TWzDq9W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:45:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B6wY64FNKzDqT9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jul 2020 23:47:22 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPr655RzDqjx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B6vPs070vzDqll
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:56:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4B6vPn2Rw8z9sTX; Thu, 16 Jul 2020 22:55:56 +1000 (AEST)
+ id 4B6vPp1gQVz9sV6; Thu, 16 Jul 2020 22:55:57 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, ajd@linux.ibm.com, arnd@arndb.de,
- fbarrat@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- "Alexander A. Klimov" <grandmaster@al2klimov.de>, gregkh@linuxfoundation.org
-In-Reply-To: <20200713175506.36676-1-grandmaster@al2klimov.de>
-References: <20200713175506.36676-1-grandmaster@al2klimov.de>
-Subject: Re: [PATCH] ocxl: Replace HTTP links with HTTPS ones
-Message-Id: <159490401723.3805857.13113660971237867416.b4-ty@ellerman.id.au>
-Date: Thu, 16 Jul 2020 22:55:56 +1000 (AEST)
+To: oss@buserror.net, linux-kernel@vger.kernel.org, mpe@ellerman.id.au,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ "Alexander A. Klimov" <grandmaster@al2klimov.de>, benh@kernel.crashing.org
+In-Reply-To: <20200713192656.37443-1-grandmaster@al2klimov.de>
+References: <20200713192656.37443-1-grandmaster@al2klimov.de>
+Subject: Re: [PATCH] powerpc/Kconfig: Replace HTTP links with HTTPS ones
+Message-Id: <159490401741.3805857.15601592351577773975.b4-ty@ellerman.id.au>
+Date: Thu, 16 Jul 2020 22:55:57 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,7 +53,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Jul 2020 19:55:06 +0200, Alexander A. Klimov wrote:
+On Mon, 13 Jul 2020 21:26:56 +0200, Alexander A. Klimov wrote:
 > Rationale:
 > Reduces attack surface on kernel devs opening the links for MITM
 > as HTTPS traffic is much harder to manipulate.
@@ -71,7 +71,7 @@ On Mon, 13 Jul 2020 19:55:06 +0200, Alexander A. Klimov wrote:
 
 Applied to powerpc/next.
 
-[1/1] ocxl: Replace HTTP links with HTTPS ones
-      https://git.kernel.org/powerpc/c/07497137a5efa9b2628c18083e8b07b33160153d
+[1/1] powerpc/Kconfig: Replace HTTP links with HTTPS ones
+      https://git.kernel.org/powerpc/c/9a3e3dccbf4317d02d28f8f99a5d1ccce42f9922
 
 cheers
