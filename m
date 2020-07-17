@@ -2,53 +2,55 @@ Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9E6FC433E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 02:52:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A1DC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 03:23:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 890362076A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 02:52:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 890362076A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rowland.harvard.edu
+	by mail.kernel.org (Postfix) with ESMTPS id 75BCC207BC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 03:23:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75BCC207BC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7FzK4jtVzDr1G
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 12:52:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=netrider.rowland.org (client-ip=192.131.102.5;
- helo=netrider.rowland.org; envelope-from=stern+5f164ff8@netrider.rowland.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rowland.harvard.edu
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by lists.ozlabs.org (Postfix) with SMTP id 4B7FxL05lJzDr9W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 12:51:00 +1000 (AEST)
-Received: (qmail 1127425 invoked by uid 1000); 16 Jul 2020 17:24:16 -0400
-Date: Thu, 16 Jul 2020 17:24:16 -0400
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
- membarrier_mm_sync_core_before_usermode
-Message-ID: <20200716212416.GA1126458@rowland.harvard.edu>
-References: <20200710015646.2020871-1-npiggin@gmail.com>
- <1594613902.1wzayj0p15.astroid@bobo.none>
- <1594647408.wmrazhwjzb.astroid@bobo.none>
- <284592761.9860.1594649601492.JavaMail.zimbra@efficios.com>
- <1594868476.6k5kvx8684.astroid@bobo.none>
- <1594873644.viept6os6j.astroid@bobo.none>
- <1494299304.15894.1594914382695.JavaMail.zimbra@efficios.com>
- <1370747990.15974.1594915396143.JavaMail.zimbra@efficios.com>
- <595582123.17106.1594925921537.JavaMail.zimbra@efficios.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7GgD3MrmzDqtG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 13:23:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B7Gd248GwzDqTN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 13:21:55 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5723DD6E;
+ Thu, 16 Jul 2020 20:21:53 -0700 (PDT)
+Received: from [192.168.0.129] (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E0ED73F68F;
+ Thu, 16 Jul 2020 20:21:43 -0700 (PDT)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH V5 1/4] mm/debug_vm_pgtable: Add tests validating arch
+ helpers for core MM features
+To: Steven Price <steven.price@arm.com>, linux-mm@kvack.org
+References: <1594610587-4172-1-git-send-email-anshuman.khandual@arm.com>
+ <1594610587-4172-2-git-send-email-anshuman.khandual@arm.com>
+ <2ff756c5-28e2-b64a-3788-260ba30c6409@arm.com>
+Message-ID: <efdd0b57-6515-2ee7-a245-a23be6a1d823@arm.com>
+Date: Fri, 17 Jul 2020 08:50:35 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <595582123.17106.1594925921537.JavaMail.zimbra@efficios.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <2ff756c5-28e2-b64a-3788-260ba30c6409@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,105 +62,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, paulmck <paulmck@kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
- x86 <x86@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, linux-mm <linux-mm@kvack.org>,
- Andy Lutomirski <luto@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ agordeev@linux.ibm.com, Will Deacon <will@kernel.org>,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ gerald.schaefer@de.ibm.com, ziy@nvidia.com,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-snps-arc@lists.infradead.org,
+ Vasily Gorbik <gor@linux.ibm.com>, cai@lca.pw,
+ Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A . Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ christophe.leroy@c-s.fr, Vineet Gupta <vgupta@synopsys.com>,
+ linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ aneesh.kumar@linux.ibm.com, Borislav Petkov <bp@alien8.de>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 16, 2020 at 02:58:41PM -0400, Mathieu Desnoyers wrote:
-> ----- On Jul 16, 2020, at 12:03 PM, Mathieu Desnoyers mathieu.desnoyers@efficios.com wrote:
+
+
+On 07/16/2020 07:44 PM, Steven Price wrote:
+> On 13/07/2020 04:23, Anshuman Khandual wrote:
+>> This adds new tests validating arch page table helpers for these following
+>> core memory features. These tests create and test specific mapping types at
+>> various page table levels.
+>>
+>> 1. SPECIAL mapping
+>> 2. PROTNONE mapping
+>> 3. DEVMAP mapping
+>> 4. SOFTDIRTY mapping
+>> 5. SWAP mapping
+>> 6. MIGRATION mapping
+>> 7. HUGETLB mapping
+>> 8. THP mapping
+>>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+>> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Cc: Mike Rapoport <rppt@linux.ibm.com>
+>> Cc: Vineet Gupta <vgupta@synopsys.com>
+>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>> Cc: Will Deacon <will@kernel.org>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+>> Cc: Vasily Gorbik <gor@linux.ibm.com>
+>> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Cc: Borislav Petkov <bp@alien8.de>
+>> Cc: "H. Peter Anvin" <hpa@zytor.com>
+>> Cc: Kirill A. Shutemov <kirill@shutemov.name>
+>> Cc: Paul Walmsley <paul.walmsley@sifive.com>
+>> Cc: Palmer Dabbelt <palmer@dabbelt.com>
+>> Cc: linux-snps-arc@lists.infradead.org
+>> Cc: linux-arm-kernel@lists.infradead.org
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: linux-s390@vger.kernel.org
+>> Cc: linux-riscv@lists.infradead.org
+>> Cc: x86@kernel.org
+>> Cc: linux-mm@kvack.org
+>> Cc: linux-arch@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Tested-by: Vineet Gupta <vgupta@synopsys.com>    #arc
+>> Reviewed-by: Zi Yan <ziy@nvidia.com>
+>> Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
+>> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+>> ---
+>>   mm/debug_vm_pgtable.c | 302 +++++++++++++++++++++++++++++++++++++++++-
+>>   1 file changed, 301 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+>> index 61ab16fb2e36..2fac47db3eb7 100644
+>> --- a/mm/debug_vm_pgtable.c
+>> +++ b/mm/debug_vm_pgtable.c
+> [...]
+>> +
+>> +static void __init pte_swap_tests(unsigned long pfn, pgprot_t prot)
+>> +{
+>> +    swp_entry_t swp;
+>> +    pte_t pte;
+>> +
+>> +    pte = pfn_pte(pfn, prot);
+>> +    swp = __pte_to_swp_entry(pte);
 > 
-> > ----- On Jul 16, 2020, at 11:46 AM, Mathieu Desnoyers
-> > mathieu.desnoyers@efficios.com wrote:
-> > 
-> >> ----- On Jul 16, 2020, at 12:42 AM, Nicholas Piggin npiggin@gmail.com wrote:
-> >>> I should be more complete here, especially since I was complaining
-> >>> about unclear barrier comment :)
-> >>> 
-> >>> 
-> >>> CPU0                     CPU1
-> >>> a. user stuff            1. user stuff
-> >>> b. membarrier()          2. enter kernel
-> >>> c. smp_mb()              3. smp_mb__after_spinlock(); // in __schedule
-> >>> d. read rq->curr         4. rq->curr switched to kthread
-> >>> e. is kthread, skip IPI  5. switch_to kthread
-> >>> f. return to user        6. rq->curr switched to user thread
-> >>> g. user stuff            7. switch_to user thread
-> >>>                         8. exit kernel
-> >>>                         9. more user stuff
-> >>> 
-> >>> What you're really ordering is a, g vs 1, 9 right?
-> >>> 
-> >>> In other words, 9 must see a if it sees g, g must see 1 if it saw 9,
-> >>> etc.
-> >>> 
-> >>> Userspace does not care where the barriers are exactly or what kernel
-> >>> memory accesses might be being ordered by them, so long as there is a
-> >>> mb somewhere between a and g, and 1 and 9. Right?
-> >> 
-> >> This is correct.
-> > 
-> > Actually, sorry, the above is not quite right. It's been a while
-> > since I looked into the details of membarrier.
-> > 
-> > The smp_mb() at the beginning of membarrier() needs to be paired with a
-> > smp_mb() _after_ rq->curr is switched back to the user thread, so the
-> > memory barrier is between store to rq->curr and following user-space
-> > accesses.
-> > 
-> > The smp_mb() at the end of membarrier() needs to be paired with the
-> > smp_mb__after_spinlock() at the beginning of schedule, which is
-> > between accesses to userspace memory and switching rq->curr to kthread.
-> > 
-> > As to *why* this ordering is needed, I'd have to dig through additional
-> > scenarios from https://lwn.net/Articles/573436/. Or maybe Paul remembers ?
+> Minor issue: this doesn't look necessarily valid - there's no reason a normal PTE can be turned into a swp_entry. In practise this is likely to work on all architectures because there's no reason not to use (at least) all the PFN bits for the swap entry, but it doesn't exactly seem correct.
+
+Agreed, that it is a simple test but nonetheless a valid one which
+makes sure that PFN value remained unchanged during pte <---> swp
+conversion.
+
 > 
-> Thinking further about this, I'm beginning to consider that maybe we have been
-> overly cautious by requiring memory barriers before and after store to rq->curr.
+> Can we start with a swp_entry_t (from __swp_entry()) and check the round trip of that?
 > 
-> If CPU0 observes a CPU1's rq->curr->mm which differs from its own process (current)
-> while running the membarrier system call, it necessarily means that CPU1 had
-> to issue smp_mb__after_spinlock when entering the scheduler, between any user-space
-> loads/stores and update of rq->curr.
-> 
-> Requiring a memory barrier between update of rq->curr (back to current process's
-> thread) and following user-space memory accesses does not seem to guarantee
-> anything more than what the initial barrier at the beginning of __schedule already
-> provides, because the guarantees are only about accesses to user-space memory.
-> 
-> Therefore, with the memory barrier at the beginning of __schedule, just observing that
-> CPU1's rq->curr differs from current should guarantee that a memory barrier was issued
-> between any sequentially consistent instructions belonging to the current process on
-> CPU1.
-> 
-> Or am I missing/misremembering an important point here ?
+> It would also seem sensible to have a check that is_swap_pte(__swp_entry_to_pte(__swp_entry(x,y))) is true.
 
-Is it correct to say that the switch_to operations in 5 and 7 include 
-memory barriers?  If they do, then skipping the IPI should be okay.
-
-The reason is as follows: The guarantee you need to enforce is that 
-anything written by CPU0 before the membarrier() will be visible to CPU1 
-after it returns to user mode.  Let's say that a writes to X and 9 
-reads from X.
-
-Then we have an instance of the Store Buffer pattern:
-
-	CPU0			CPU1
-	a. Write X		6. Write rq->curr for user thread
-	c. smp_mb()		7. switch_to memory barrier
-	d. Read rq->curr	9. Read X
-
-In this pattern, the memory barriers make it impossible for both reads 
-to miss their corresponding writes.  Since d does fail to read 6 (it 
-sees the earlier value stored by 4), 9 must read a.
-
-The other guarantee you need is that g on CPU0 will observe anything 
-written by CPU1 in 1.  This is easier to see, using the fact that 3 is a 
-memory barrier and d reads from 4.
-
-Alan Stern
+From past experiences, getting any these new tests involving platform
+helpers, working on all existing enabled archs is neither trivial nor
+going to be quick. Existing tests here are known to succeed in enabled
+platforms. Nonetheless, proposed tests as in the above suggestions do
+make sense but will try to accommodate them in a later patch.
