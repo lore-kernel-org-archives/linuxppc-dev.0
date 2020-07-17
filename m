@@ -2,53 +2,88 @@ Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2915FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 17:46:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BB6DC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 17:54:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4605F20717
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 17:46:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4605F20717
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rowland.harvard.edu
+	by mail.kernel.org (Postfix) with ESMTPS id BD703206BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 17:54:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="BxSh5lyJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD703206BE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7dpN3LqnzDqsZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 03:46:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7dzs6GLrzDrRn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 03:54:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=netrider.rowland.org (client-ip=192.131.102.5;
- helo=netrider.rowland.org; envelope-from=stern+5f164ff8@netrider.rowland.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=rowland.harvard.edu
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by lists.ozlabs.org (Postfix) with SMTP id 4B7dll5lm0zDrPr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 03:44:03 +1000 (AEST)
-Received: (qmail 1156982 invoked by uid 1000); 17 Jul 2020 13:44:00 -0400
-Date: Fri, 17 Jul 2020 13:44:00 -0400
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
- membarrier_mm_sync_core_before_usermode
-Message-ID: <20200717174400.GA1156312@rowland.harvard.edu>
+ smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
+ envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=efficios.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
+ header.s=default header.b=BxSh5lyJ; dkim-atps=neutral
+Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B7dxv3ZgDzDrQ9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 03:52:50 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 817512C997D;
+ Fri, 17 Jul 2020 13:52:47 -0400 (EDT)
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id sy2IH5AMEi0S; Fri, 17 Jul 2020 13:52:47 -0400 (EDT)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 098BD2C997C;
+ Fri, 17 Jul 2020 13:52:47 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com 098BD2C997C
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1595008367;
+ bh=4fWMpAwGTjIs1YHFuRjsIAcqCINrApuOxB7mCqdeBnc=;
+ h=Date:From:To:Message-ID:MIME-Version;
+ b=BxSh5lyJZ96gwEnmA0pVCNFKaUSvh3mbFF5nYNrwNoD3YLC1PNim24YjG7i2REP1q
+ PCIv3oRydbKYQts2sqpnwk4Md/9LVuQsFkUMKcaLBWP1CBte4ivSV/JuAzDhX0xktP
+ u37Ozgu82qPbPy7fULxzzznmmt1yvBa4/EsBhnVtaNidxyQJ1iECc6CjCy4P1zDg2Z
+ Z4U+9+jXodBMD3GqOJyoFrUOlxqcdqOaUyWc176SPKSLtx8D+Tcq9QBzcSacUlC2+3
+ CnC3xdUvw8oLsg8aQWS+61kRPVqpHBcWdsIkt9C35AqDyGcnOIpe9BMFeH30ci6VBC
+ xwD0mGQaCkTAw==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id hfAD4r_B6LZl; Fri, 17 Jul 2020 13:52:46 -0400 (EDT)
+Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
+ by mail.efficios.com (Postfix) with ESMTP id EB36D2C9D87;
+ Fri, 17 Jul 2020 13:52:46 -0400 (EDT)
+Date: Fri, 17 Jul 2020 13:52:46 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Message-ID: <2035777331.19291.1595008366858.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20200717174400.GA1156312@rowland.harvard.edu>
 References: <20200710015646.2020871-1-npiggin@gmail.com>
- <1370747990.15974.1594915396143.JavaMail.zimbra@efficios.com>
- <595582123.17106.1594925921537.JavaMail.zimbra@efficios.com>
  <20200716212416.GA1126458@rowland.harvard.edu>
  <1770378591.18523.1594993165391.JavaMail.zimbra@efficios.com>
  <20200717145102.GC1147780@rowland.harvard.edu>
  <1697220787.18880.1595000348405.JavaMail.zimbra@efficios.com>
  <20200717161145.GA1150454@rowland.harvard.edu>
  <12700909.18968.1595002969773.JavaMail.zimbra@efficios.com>
+ <20200717174400.GA1156312@rowland.harvard.edu>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12700909.18968.1595002969773.JavaMail.zimbra@efficios.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [167.114.26.124]
+X-Mailer: Zimbra 8.8.15_GA_3955 (ZimbraWebClient - FF78 (Linux)/8.8.15_GA_3953)
+Thread-Topic: x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+Thread-Index: GWd8J1ng+COq8abrHOCrIFRVXkZ+eQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,82 +105,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 17, 2020 at 12:22:49PM -0400, Mathieu Desnoyers wrote:
-> ----- On Jul 17, 2020, at 12:11 PM, Alan Stern stern@rowland.harvard.edu wrote:
-> 
-> >> > I agree with Nick: A memory barrier is needed somewhere between the
-> >> > assignment at 6 and the return to user mode at 8.  Otherwise you end up
-> >> > with the Store Buffer pattern having a memory barrier on only one side,
-> >> > and it is well known that this arrangement does not guarantee any
-> >> > ordering.
-> >> 
-> >> Yes, I see this now. I'm still trying to wrap my head around why the memory
-> >> barrier at the end of membarrier() needs to be paired with a scheduler
-> >> barrier though.
-> > 
-> > The memory barrier at the end of membarrier() on CPU0 is necessary in
-> > order to enforce the guarantee that any writes occurring on CPU1 before
-> > the membarrier() is executed will be visible to any code executing on
-> > CPU0 after the membarrier().  Ignoring the kthread issue, we can have:
-> > 
-> >	CPU0			CPU1
-> >				x = 1
-> >				barrier()
-> >				y = 1
-> >	r2 = y
-> >	membarrier():
-> >	  a: smp_mb()
-> >	  b: send IPI		IPI-induced mb
-> >	  c: smp_mb()
-> >	r1 = x
-> > 
-> > The writes to x and y are unordered by the hardware, so it's possible to
-> > have r2 = 1 even though the write to x doesn't execute until b.  If the
-> > memory barrier at c is omitted then "r1 = x" can be reordered before b
-> > (although not before a), so we get r1 = 0.  This violates the guarantee
-> > that membarrier() is supposed to provide.
-> > 
-> > The timing of the memory barrier at c has to ensure that it executes
-> > after the IPI-induced memory barrier on CPU1.  If it happened before
-> > then we could still end up with r1 = 0.  That's why the pairing matters.
-> > 
-> > I hope this helps your head get properly wrapped.  :-)
-> 
-> It does help a bit! ;-)
-> 
-> This explains this part of the comment near the smp_mb at the end of membarrier:
-> 
->          * Memory barrier on the caller thread _after_ we finished
->          * waiting for the last IPI. [...]
-> 
-> However, it does not explain why it needs to be paired with a barrier in the
-> scheduler, clearly for the case where the IPI is skipped. I wonder whether this part
-> of the comment is factually correct:
-> 
->          * [...] Matches memory barriers around rq->curr modification in scheduler.
+----- On Jul 17, 2020, at 1:44 PM, Alan Stern stern@rowland.harvard.edu wrote:
 
-The reasoning is pretty much the same as above:
+> On Fri, Jul 17, 2020 at 12:22:49PM -0400, Mathieu Desnoyers wrote:
+>> ----- On Jul 17, 2020, at 12:11 PM, Alan Stern stern@rowland.harvard.edu wrote:
+>> 
+>> >> > I agree with Nick: A memory barrier is needed somewhere between the
+>> >> > assignment at 6 and the return to user mode at 8.  Otherwise you end up
+>> >> > with the Store Buffer pattern having a memory barrier on only one side,
+>> >> > and it is well known that this arrangement does not guarantee any
+>> >> > ordering.
+>> >> 
+>> >> Yes, I see this now. I'm still trying to wrap my head around why the memory
+>> >> barrier at the end of membarrier() needs to be paired with a scheduler
+>> >> barrier though.
+>> > 
+>> > The memory barrier at the end of membarrier() on CPU0 is necessary in
+>> > order to enforce the guarantee that any writes occurring on CPU1 before
+>> > the membarrier() is executed will be visible to any code executing on
+>> > CPU0 after the membarrier().  Ignoring the kthread issue, we can have:
+>> > 
+>> >	CPU0			CPU1
+>> >				x = 1
+>> >				barrier()
+>> >				y = 1
+>> >	r2 = y
+>> >	membarrier():
+>> >	  a: smp_mb()
+>> >	  b: send IPI		IPI-induced mb
+>> >	  c: smp_mb()
+>> >	r1 = x
+>> > 
+>> > The writes to x and y are unordered by the hardware, so it's possible to
+>> > have r2 = 1 even though the write to x doesn't execute until b.  If the
+>> > memory barrier at c is omitted then "r1 = x" can be reordered before b
+>> > (although not before a), so we get r1 = 0.  This violates the guarantee
+>> > that membarrier() is supposed to provide.
+>> > 
+>> > The timing of the memory barrier at c has to ensure that it executes
+>> > after the IPI-induced memory barrier on CPU1.  If it happened before
+>> > then we could still end up with r1 = 0.  That's why the pairing matters.
+>> > 
+>> > I hope this helps your head get properly wrapped.  :-)
+>> 
+>> It does help a bit! ;-)
+>> 
+>> This explains this part of the comment near the smp_mb at the end of membarrier:
+>> 
+>>          * Memory barrier on the caller thread _after_ we finished
+>>          * waiting for the last IPI. [...]
+>> 
+>> However, it does not explain why it needs to be paired with a barrier in the
+>> scheduler, clearly for the case where the IPI is skipped. I wonder whether this
+>> part
+>> of the comment is factually correct:
+>> 
+>>          * [...] Matches memory barriers around rq->curr modification in scheduler.
+> 
+> The reasoning is pretty much the same as above:
+> 
+>	CPU0			CPU1
+>				x = 1
+>				barrier()
+>				y = 1
+>	r2 = y
+>	membarrier():
+>	  a: smp_mb()
+>				switch to kthread (includes mb)
+>	  b: read rq->curr == kthread
+>				switch to user (includes mb)
+>	  c: smp_mb()
+>	r1 = x
+> 
+> Once again, it is possible that x = 1 doesn't become visible to CPU0
+> until shortly before b.  But if c is omitted then "r1 = x" can be
+> reordered before b (to any time after a), so we can have r1 = 0.
+> 
+> Here the timing requirement is that c executes after the first memory
+> barrier on CPU1 -- which is one of the ones around the rq->curr
+> modification.  (In fact, in this scenario CPU1's switch back to the user
+> process is irrelevant.)
 
-	CPU0			CPU1
-				x = 1
-				barrier()
-				y = 1
-	r2 = y
-	membarrier():
-	  a: smp_mb()
-				switch to kthread (includes mb)
-	  b: read rq->curr == kthread
-				switch to user (includes mb)
-	  c: smp_mb()
-	r1 = x
+That indeed covers the last scenario I was wondering about. Thanks Alan!
 
-Once again, it is possible that x = 1 doesn't become visible to CPU0 
-until shortly before b.  But if c is omitted then "r1 = x" can be 
-reordered before b (to any time after a), so we can have r1 = 0.
+Mathieu
 
-Here the timing requirement is that c executes after the first memory 
-barrier on CPU1 -- which is one of the ones around the rq->curr 
-modification.  (In fact, in this scenario CPU1's switch back to the user 
-process is irrelevant.)
+> 
+> Alan Stern
 
-Alan Stern
+-- 
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
