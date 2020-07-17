@@ -2,79 +2,90 @@ Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F19C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 05:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF970C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 05:50:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A212C206F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 05:48:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pbgYazza"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A212C206F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8B9F42070A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 05:50:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B9F42070A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7KtY6c0czDq7W
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:48:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::342;
- helo=mail-ot1-x342.google.com; envelope-from=jniethe5@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7Kwh1j91zDrCC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:50:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=pbgYazza; dkim-atps=neutral
-Received: from mail-ot1-x342.google.com (mail-ot1-x342.google.com
- [IPv6:2607:f8b0:4864:20::342])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7KpY4KvzzDrJ7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 15:45:25 +1000 (AEST)
-Received: by mail-ot1-x342.google.com with SMTP id 72so6077088otc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 22:45:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=JHkdyRAcZkv1Vdi/CSUR9aW83f/Brxcwc8MUQ7kmTKI=;
- b=pbgYazzaArA2nnQJoKycAuv1HgDXSO+TAsN+cjtFYjPGNKFEbzIACwyHf+sPwauUCX
- vBMGHv7/ccm4+VDg5tof8NYSFES173qlMMod1wFvM3L38Gyv5PjDjYgkSCj+e7kJdkG8
- eGnTzy2+7dzif4l85l+AFxBkzhyZZW+oL6Ss3Z/McHcZ27aEnyAKBPJ94QEeRRFll7xT
- +IqwXpXL+Q0H6cXnE0wdTvd3RhPjWkIFR/4lYdZI+QMPOwXgiP9oKoKucoJAsCcO9k8c
- EeOTHFmcdRr5WAouYtWnMDFN121P5F/dnD9FrAVV0TFUh9JE8eBdSo1TnjPH0jKCFFV/
- YSlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=JHkdyRAcZkv1Vdi/CSUR9aW83f/Brxcwc8MUQ7kmTKI=;
- b=ED4RDs7Navp6CHmtDDrQzrrktLE8/737fp6Xyo1cxzS2vBpu487DzL2YRzj4bphEyP
- USKjOug49cI3zBexsO9JDafU5fVTIOOk91K438kkpI62/7VjzrQ6F3BygXtV0YeRv9u/
- 8B74xiOSh65zgulSg+zM0//LyiOg/XAgEhhZCUHwmBbJo9ph4HvNVn72pUQlGa8ldk0I
- eZZqygsi6cKVgCecUbI4t4iOf185O5mTR00ORnWg2ur+n1oWGjzEVmtSWjMpZb0nElbK
- Sc0bpA1jmbR0VKxgaxDtOT4cfd+JR5Kq92m43CKTGJpF02JghX31hbmqxZaQyGRqX3nN
- 8Vrw==
-X-Gm-Message-State: AOAM532RBuMHyifKosuD56+knTcyB9IyUbvNZ2JgmNN0vESuGfrQ64kv
- V17a5dPUXyiP72gn9Y6X2wXE/A1q91pC76xInqY=
-X-Google-Smtp-Source: ABdhPJxiyKw7Csu4IqifiSBr4IftmnIMA8UrFJtjTi0CrfVhwfFFjAU7z8vnrsqzKV4EY24AKbZRPrqme1N9Oys2gd8=
-X-Received: by 2002:a9d:7f06:: with SMTP id j6mr7355306otq.51.1594964722770;
- Thu, 16 Jul 2020 22:45:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B7Kpt6Lk6zDrGn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 15:45:42 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06H5dcFY106874; Fri, 17 Jul 2020 01:45:33 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32b61jr46k-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 17 Jul 2020 01:45:33 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06H5drxT004555;
+ Fri, 17 Jul 2020 05:45:32 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma04dal.us.ibm.com with ESMTP id 32752a22tk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 17 Jul 2020 05:45:32 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06H5jUZR47514050
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 17 Jul 2020 05:45:30 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8DB26124054;
+ Fri, 17 Jul 2020 05:45:30 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E3A77124052;
+ Fri, 17 Jul 2020 05:45:29 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.199.61.65])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 17 Jul 2020 05:45:29 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 840492E3026; Fri, 17 Jul 2020 11:15:25 +0530 (IST)
+Date: Fri, 17 Jul 2020 11:15:25 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 03/11] powerpc/smp: Move powerpc_topology above
+Message-ID: <20200717054525.GC25851@in.ibm.com>
+References: <20200714043624.5648-1-srikar@linux.vnet.ibm.com>
+ <20200714043624.5648-4-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
- <20200717040958.70561-6-ravi.bangoria@linux.ibm.com>
-In-Reply-To: <20200717040958.70561-6-ravi.bangoria@linux.ibm.com>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Fri, 17 Jul 2020 15:44:13 +1000
-Message-ID: <CACzsE9oE+OMnWEXvbZZbq35YzpSzCbBHWEJcjtCgkcq-YrABng@mail.gmail.com>
-Subject: Re: [PATCH v4 05/10] powerpc/dt_cpu_ftrs: Add feature for 2nd DAWR
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200714043624.5648-4-srikar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-17_03:2020-07-16,
+ 2020-07-17 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ spamscore=0 clxscore=1015 bulkscore=0 mlxlogscore=999 adultscore=0
+ phishscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 mlxscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007170038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,96 +97,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, apopple@linux.ibm.com,
- mikey@neuling.org, miltonm@us.ibm.com, peterz@infradead.org, oleg@redhat.com,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, jolsa@kernel.org, fweisbec@gmail.com,
- pedromfc@br.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nick Piggin <npiggin@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 17, 2020 at 2:10 PM Ravi Bangoria
-<ravi.bangoria@linux.ibm.com> wrote:
->
-> Add new device-tree feature for 2nd DAWR. If this feature is present,
-> 2nd DAWR is supported, otherwise not.
->
-> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+On Tue, Jul 14, 2020 at 10:06:16AM +0530, Srikar Dronamraju wrote:
+> Just moving the powerpc_topology description above.
+> This will help in using functions in this file and avoid declarations.
+> 
+> No other functional changes
+> 
+> Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> Cc: Michael Ellerman <michaele@au1.ibm.com>
+> Cc: Nick Piggin <npiggin@au1.ibm.com>
+> Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Cc: Michael Neuling <mikey@linux.ibm.com>
+> Cc: Anton Blanchard <anton@au1.ibm.com>
+> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
 > ---
->  arch/powerpc/include/asm/cputable.h | 7 +++++--
->  arch/powerpc/kernel/dt_cpu_ftrs.c   | 7 +++++++
->  2 files changed, 12 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index e506d429b1af..3445c86e1f6f 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -214,6 +214,7 @@ static inline void cpu_feature_keys_init(void) { }
->  #define CPU_FTR_P9_TLBIE_ERAT_BUG      LONG_ASM_CONST(0x0001000000000000)
->  #define CPU_FTR_P9_RADIX_PREFETCH_BUG  LONG_ASM_CONST(0x0002000000000000)
->  #define CPU_FTR_ARCH_31                        LONG_ASM_CONST(0x0004000000000000)
-> +#define CPU_FTR_DAWR1                  LONG_ASM_CONST(0x0008000000000000)
->
->  #ifndef __ASSEMBLY__
->
-> @@ -497,14 +498,16 @@ static inline void cpu_feature_keys_init(void) { }
->  #define CPU_FTRS_POSSIBLE      \
->             (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
->              CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
-> -            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
-> +            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
-> +            CPU_FTR_DAWR1)
->  #else
->  #define CPU_FTRS_POSSIBLE      \
->             (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
->              CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
->              CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | \
->              CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | CPU_FTRS_POWER9 | \
-> -            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
-> +            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
-> +            CPU_FTR_DAWR1)
-Instead of putting CPU_FTR_DAWR1 into CPU_FTRS_POSSIBLE should it go
-into CPU_FTRS_POWER10?
-Then it will be picked up by CPU_FTRS_POSSIBLE.
->  #endif /* CONFIG_CPU_LITTLE_ENDIAN */
->  #endif
->  #else
-> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> index ac650c233cd9..c78cd3596ec4 100644
-> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> @@ -574,6 +574,12 @@ static int __init feat_enable_mma(struct dt_cpu_feature *f)
->         return 1;
+>  arch/powerpc/kernel/smp.c | 116 +++++++++++++++++++-------------------
+>  1 file changed, 58 insertions(+), 58 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 069ea4b21c6d..24529f6134aa 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -818,6 +818,64 @@ static int init_cpu_l1_cache_map(int cpu)
+>  	return err;
 >  }
->
-> +static int __init feat_enable_debug_facilities_v31(struct dt_cpu_feature *f)
+> 
+> +static bool shared_caches;
+> +
+> +#ifdef CONFIG_SCHED_SMT
+> +/* cpumask of CPUs with asymmetric SMT dependency */
+> +static int powerpc_smt_flags(void)
 > +{
-> +       cur_cpu_spec->cpu_features |= CPU_FTR_DAWR1;
-> +       return 1;
+> +	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+> +
+> +	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+> +		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+> +		flags |= SD_ASYM_PACKING;
+> +	}
+> +	return flags;
+> +}
+> +#endif
+> +
+> +/*
+> + * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
+> + * This topology makes it *much* cheaper to migrate tasks between adjacent cores
+> + * since the migrated task remains cache hot. We want to take advantage of this
+> + * at the scheduler level so an extra topology level is required.
+> + */
+> +static int powerpc_shared_cache_flags(void)
+> +{
+> +	return SD_SHARE_PKG_RESOURCES;
 > +}
 > +
->  struct dt_cpu_feature_match {
->         const char *name;
->         int (*enable)(struct dt_cpu_feature *f);
-> @@ -649,6 +655,7 @@ static struct dt_cpu_feature_match __initdata
->         {"wait-v3", feat_enable, 0},
->         {"prefix-instructions", feat_enable, 0},
->         {"matrix-multiply-assist", feat_enable_mma, 0},
-> +       {"debug-facilities-v31", feat_enable_debug_facilities_v31, 0},
-Since all feat_enable_debug_facilities_v31() does is set
-CPU_FTR_DAWR1, if you just have:
-{"debug-facilities-v31", feat_enable, CPU_FTR_DAWR1},
-I think cpufeatures_process_feature() should set it in for you at this point:
-            if (m->enable(f)) {
-                cur_cpu_spec->cpu_features |= m->cpu_ftr_bit_mask;
-                break;
-            }
-
->  };
->
->  static bool __initdata using_dt_cpu_ftrs;
-> --
-> 2.26.2
->
+> +/*
+> + * We can't just pass cpu_l2_cache_mask() directly because
+> + * returns a non-const pointer and the compiler barfs on that.
+> + */
+> +static const struct cpumask *shared_cache_mask(int cpu)
+> +{
+> +	if (shared_caches)
+> +		return cpu_l2_cache_mask(cpu);
+> +
+> +	if (has_big_cores)
+> +		return cpu_smallcore_mask(cpu);
+> +
+> +	return cpu_smt_mask(cpu);
+> +}
+> +
+> +#ifdef CONFIG_SCHED_SMT
+> +static const struct cpumask *smallcore_smt_mask(int cpu)
+> +{
+> +	return cpu_smallcore_mask(cpu);
+> +}
+> +#endif
+> +
+> +static struct sched_domain_topology_level powerpc_topology[] = {
+> +#ifdef CONFIG_SCHED_SMT
+> +	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+> +#endif
+> +	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
+> +	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+> +	{ NULL, },
+> +};
+> +
+>  static int init_big_cores(void)
+>  {
+>  	int cpu;
+> @@ -1249,8 +1307,6 @@ static void add_cpu_to_masks(int cpu)
+>  			set_cpus_related(cpu, i, cpu_core_mask);
+>  }
+> 
+> -static bool shared_caches;
+> -
+>  /* Activate a secondary processor. */
+>  void start_secondary(void *unused)
+>  {
+> @@ -1314,62 +1370,6 @@ int setup_profiling_timer(unsigned int multiplier)
+>  	return 0;
+>  }
+> 
+> -#ifdef CONFIG_SCHED_SMT
+> -/* cpumask of CPUs with asymmetric SMT dependency */
+> -static int powerpc_smt_flags(void)
+> -{
+> -	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+> -
+> -	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+> -		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+> -		flags |= SD_ASYM_PACKING;
+> -	}
+> -	return flags;
+> -}
+> -#endif
+> -
+> -/*
+> - * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
+> - * This topology makes it *much* cheaper to migrate tasks between adjacent cores
+> - * since the migrated task remains cache hot. We want to take advantage of this
+> - * at the scheduler level so an extra topology level is required.
+> - */
+> -static int powerpc_shared_cache_flags(void)
+> -{
+> -	return SD_SHARE_PKG_RESOURCES;
+> -}
+> -
+> -/*
+> - * We can't just pass cpu_l2_cache_mask() directly because
+> - * returns a non-const pointer and the compiler barfs on that.
+> - */
+> -static const struct cpumask *shared_cache_mask(int cpu)
+> -{
+> -	if (shared_caches)
+> -		return cpu_l2_cache_mask(cpu);
+> -
+> -	if (has_big_cores)
+> -		return cpu_smallcore_mask(cpu);
+> -
+> -	return cpu_smt_mask(cpu);
+> -}
+> -
+> -#ifdef CONFIG_SCHED_SMT
+> -static const struct cpumask *smallcore_smt_mask(int cpu)
+> -{
+> -	return cpu_smallcore_mask(cpu);
+> -}
+> -#endif
+> -
+> -static struct sched_domain_topology_level powerpc_topology[] = {
+> -#ifdef CONFIG_SCHED_SMT
+> -	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+> -#endif
+> -	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
+> -	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+> -	{ NULL, },
+> -};
+> -
+>  void __init smp_cpus_done(unsigned int max_cpus)
+>  {
+>  	/*
+> -- 
+> 2.17.1
+> 
