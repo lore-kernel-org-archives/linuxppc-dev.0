@@ -2,86 +2,53 @@ Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 934D9C433E5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 507D6C433E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:38:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 431772076A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:36:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 431772076A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E60AA2070A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 15:38:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E60AA2070A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rowland.harvard.edu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7Zwh45bszDqsD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 01:36:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7Zz0685WzDqpK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 01:38:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=netrider.rowland.org (client-ip=192.131.102.5;
+ helo=netrider.rowland.org; envelope-from=stern+5f164ff8@netrider.rowland.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7YhD0XkzzDr5L
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 00:40:43 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06HEWMwB076549; Fri, 17 Jul 2020 10:40:36 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32792yb9jg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 10:40:35 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06HEdp4g001805;
- Fri, 17 Jul 2020 14:40:30 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma02fra.de.ibm.com with ESMTP id 327527y0ef-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 14:40:30 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06HEdDhG31785324
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jul 2020 14:39:13 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 250D84C05A;
- Fri, 17 Jul 2020 14:39:13 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A1AB44C046;
- Fri, 17 Jul 2020 14:39:10 +0000 (GMT)
-Received: from localhost.localdomain.localdomain (unknown [9.77.207.73])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 17 Jul 2020 14:39:10 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [v3 13/15] tools/perf: Add perf tools support for extended register
- capability in powerpc
-Date: Fri, 17 Jul 2020 10:38:25 -0400
-Message-Id: <1594996707-3727-14-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-17_06:2020-07-17,
- 2020-07-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1
- mlxlogscore=999 priorityscore=1501 lowpriorityscore=0 clxscore=1015
- adultscore=0 impostorscore=0 spamscore=0 malwarescore=0 bulkscore=0
- mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007170103
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rowland.harvard.edu
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+ by lists.ozlabs.org (Postfix) with SMTP id 4B7YwD0F8mzDrPl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 00:51:06 +1000 (AEST)
+Received: (qmail 1150141 invoked by uid 1000); 17 Jul 2020 10:51:02 -0400
+Date: Fri, 17 Jul 2020 10:51:02 -0400
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+Message-ID: <20200717145102.GC1147780@rowland.harvard.edu>
+References: <20200710015646.2020871-1-npiggin@gmail.com>
+ <284592761.9860.1594649601492.JavaMail.zimbra@efficios.com>
+ <1594868476.6k5kvx8684.astroid@bobo.none>
+ <1594873644.viept6os6j.astroid@bobo.none>
+ <1494299304.15894.1594914382695.JavaMail.zimbra@efficios.com>
+ <1370747990.15974.1594915396143.JavaMail.zimbra@efficios.com>
+ <595582123.17106.1594925921537.JavaMail.zimbra@efficios.com>
+ <20200716212416.GA1126458@rowland.harvard.edu>
+ <1770378591.18523.1594993165391.JavaMail.zimbra@efficios.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1770378591.18523.1594993165391.JavaMail.zimbra@efficios.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,197 +60,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, svaidyan@in.ibm.com,
- acme@kernel.org, jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, paulmck <paulmck@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
+ x86 <x86@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-mm <linux-mm@kvack.org>,
+ Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+On Fri, Jul 17, 2020 at 09:39:25AM -0400, Mathieu Desnoyers wrote:
+> ----- On Jul 16, 2020, at 5:24 PM, Alan Stern stern@rowland.harvard.edu wrote:
+> 
+> > On Thu, Jul 16, 2020 at 02:58:41PM -0400, Mathieu Desnoyers wrote:
+> >> ----- On Jul 16, 2020, at 12:03 PM, Mathieu Desnoyers
+> >> mathieu.desnoyers@efficios.com wrote:
+> >> 
+> >> > ----- On Jul 16, 2020, at 11:46 AM, Mathieu Desnoyers
+> >> > mathieu.desnoyers@efficios.com wrote:
+> >> > 
+> >> >> ----- On Jul 16, 2020, at 12:42 AM, Nicholas Piggin npiggin@gmail.com wrote:
+> >> >>> I should be more complete here, especially since I was complaining
+> >> >>> about unclear barrier comment :)
+> >> >>> 
+> >> >>> 
+> >> >>> CPU0                     CPU1
+> >> >>> a. user stuff            1. user stuff
+> >> >>> b. membarrier()          2. enter kernel
+> >> >>> c. smp_mb()              3. smp_mb__after_spinlock(); // in __schedule
+> >> >>> d. read rq->curr         4. rq->curr switched to kthread
+> >> >>> e. is kthread, skip IPI  5. switch_to kthread
+> >> >>> f. return to user        6. rq->curr switched to user thread
+> >> >>> g. user stuff            7. switch_to user thread
+> >> >>>                         8. exit kernel
+> >> >>>                         9. more user stuff
 
-Add extended regs to sample_reg_mask in the tool side to use
-with `-I?` option. Perf tools side uses extended mask to display
-the platform supported register names (with -I? option) to the user
-and also send this mask to the kernel to capture the extended registers
-in each sample. Hence decide the mask value based on the processor
-version.
+...
 
-Currently definitions for `mfspr`, `SPRN_PVR` are part of
-`arch/powerpc/util/header.c`. Move this to a header file so that
-these definitions can be re-used in other source files as well.
+> >> Requiring a memory barrier between update of rq->curr (back to current process's
+> >> thread) and following user-space memory accesses does not seem to guarantee
+> >> anything more than what the initial barrier at the beginning of __schedule
+> >> already
+> >> provides, because the guarantees are only about accesses to user-space memory.
 
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-[Decide extended mask at run time based on platform]
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- tools/arch/powerpc/include/uapi/asm/perf_regs.h | 14 ++++++-
- tools/perf/arch/powerpc/include/perf_regs.h     |  5 ++-
- tools/perf/arch/powerpc/util/header.c           |  9 +----
- tools/perf/arch/powerpc/util/perf_regs.c        | 49 +++++++++++++++++++++++++
- tools/perf/arch/powerpc/util/utils_header.h     | 15 ++++++++
- 5 files changed, 82 insertions(+), 10 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/util/utils_header.h
+...
 
-diff --git a/tools/arch/powerpc/include/uapi/asm/perf_regs.h b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-index f599064..225c64c 100644
---- a/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-+++ b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-@@ -48,6 +48,18 @@ enum perf_event_powerpc_regs {
- 	PERF_REG_POWERPC_DSISR,
- 	PERF_REG_POWERPC_SIER,
- 	PERF_REG_POWERPC_MMCRA,
--	PERF_REG_POWERPC_MAX,
-+	/* Extended registers */
-+	PERF_REG_POWERPC_MMCR0,
-+	PERF_REG_POWERPC_MMCR1,
-+	PERF_REG_POWERPC_MMCR2,
-+	/* Max regs without the extended regs */
-+	PERF_REG_POWERPC_MAX = PERF_REG_POWERPC_MMCRA + 1,
- };
-+
-+#define PERF_REG_PMU_MASK	((1ULL << PERF_REG_POWERPC_MAX) - 1)
-+
-+/* PERF_REG_EXTENDED_MASK value for CPU_FTR_ARCH_300 */
-+#define PERF_REG_PMU_MASK_300   (((1ULL << (PERF_REG_POWERPC_MMCR2 + 1)) - 1) - PERF_REG_PMU_MASK)
-+
-+#define PERF_REG_MAX_ISA_300   (PERF_REG_POWERPC_MMCR2 + 1)
- #endif /* _UAPI_ASM_POWERPC_PERF_REGS_H */
-diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
-index e18a355..46ed00d 100644
---- a/tools/perf/arch/powerpc/include/perf_regs.h
-+++ b/tools/perf/arch/powerpc/include/perf_regs.h
-@@ -64,7 +64,10 @@
- 	[PERF_REG_POWERPC_DAR] = "dar",
- 	[PERF_REG_POWERPC_DSISR] = "dsisr",
- 	[PERF_REG_POWERPC_SIER] = "sier",
--	[PERF_REG_POWERPC_MMCRA] = "mmcra"
-+	[PERF_REG_POWERPC_MMCRA] = "mmcra",
-+	[PERF_REG_POWERPC_MMCR0] = "mmcr0",
-+	[PERF_REG_POWERPC_MMCR1] = "mmcr1",
-+	[PERF_REG_POWERPC_MMCR2] = "mmcr2",
- };
- 
- static inline const char *perf_reg_name(int id)
-diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
-index d487007..1a95017 100644
---- a/tools/perf/arch/powerpc/util/header.c
-+++ b/tools/perf/arch/powerpc/util/header.c
-@@ -7,17 +7,10 @@
- #include <string.h>
- #include <linux/stringify.h>
- #include "header.h"
-+#include "utils_header.h"
- #include "metricgroup.h"
- #include <api/fs/fs.h>
- 
--#define mfspr(rn)       ({unsigned long rval; \
--			 asm volatile("mfspr %0," __stringify(rn) \
--				      : "=r" (rval)); rval; })
--
--#define SPRN_PVR        0x11F	/* Processor Version Register */
--#define PVR_VER(pvr)    (((pvr) >>  16) & 0xFFFF) /* Version field */
--#define PVR_REV(pvr)    (((pvr) >>   0) & 0xFFFF) /* Revison field */
--
- int
- get_cpuid(char *buffer, size_t sz)
- {
-diff --git a/tools/perf/arch/powerpc/util/perf_regs.c b/tools/perf/arch/powerpc/util/perf_regs.c
-index 0a52429..d64ba0c 100644
---- a/tools/perf/arch/powerpc/util/perf_regs.c
-+++ b/tools/perf/arch/powerpc/util/perf_regs.c
-@@ -6,9 +6,15 @@
- 
- #include "../../../util/perf_regs.h"
- #include "../../../util/debug.h"
-+#include "../../../util/event.h"
-+#include "../../../util/header.h"
-+#include "../../../perf-sys.h"
-+#include "utils_header.h"
- 
- #include <linux/kernel.h>
- 
-+#define PVR_POWER9		0x004E
-+
- const struct sample_reg sample_reg_masks[] = {
- 	SMPL_REG(r0, PERF_REG_POWERPC_R0),
- 	SMPL_REG(r1, PERF_REG_POWERPC_R1),
-@@ -55,6 +61,9 @@
- 	SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),
- 	SMPL_REG(sier, PERF_REG_POWERPC_SIER),
- 	SMPL_REG(mmcra, PERF_REG_POWERPC_MMCRA),
-+	SMPL_REG(mmcr0, PERF_REG_POWERPC_MMCR0),
-+	SMPL_REG(mmcr1, PERF_REG_POWERPC_MMCR1),
-+	SMPL_REG(mmcr2, PERF_REG_POWERPC_MMCR2),
- 	SMPL_REG_END
- };
- 
-@@ -163,3 +172,43 @@ int arch_sdt_arg_parse_op(char *old_op, char **new_op)
- 
- 	return SDT_ARG_VALID;
- }
-+
-+uint64_t arch__intr_reg_mask(void)
-+{
-+	struct perf_event_attr attr = {
-+		.type                   = PERF_TYPE_HARDWARE,
-+		.config                 = PERF_COUNT_HW_CPU_CYCLES,
-+		.sample_type            = PERF_SAMPLE_REGS_INTR,
-+		.precise_ip             = 1,
-+		.disabled               = 1,
-+		.exclude_kernel         = 1,
-+	};
-+	int fd;
-+	u32 version;
-+	u64 extended_mask = 0, mask = PERF_REGS_MASK;
-+
-+	/*
-+	 * Get the PVR value to set the extended
-+	 * mask specific to platform.
-+	 */
-+	version = (((mfspr(SPRN_PVR)) >>  16) & 0xFFFF);
-+	if (version == PVR_POWER9)
-+		extended_mask = PERF_REG_PMU_MASK_300;
-+	else
-+		return mask;
-+
-+	attr.sample_regs_intr = extended_mask;
-+	attr.sample_period = 1;
-+	event_attr_init(&attr);
-+
-+	/*
-+	 * check if the pmu supports perf extended regs, before
-+	 * returning the register mask to sample.
-+	 */
-+	fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
-+	if (fd != -1) {
-+		close(fd);
-+		mask |= extended_mask;
-+	}
-+	return mask;
-+}
-diff --git a/tools/perf/arch/powerpc/util/utils_header.h b/tools/perf/arch/powerpc/util/utils_header.h
-new file mode 100644
-index 0000000..5788eb1
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/utils_header.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __PERF_UTIL_HEADER_H
-+#define __PERF_UTIL_HEADER_H
-+
-+#include <linux/stringify.h>
-+
-+#define mfspr(rn)       ({unsigned long rval; \
-+			asm volatile("mfspr %0," __stringify(rn) \
-+				: "=r" (rval)); rval; })
-+
-+#define SPRN_PVR        0x11F   /* Processor Version Register */
-+#define PVR_VER(pvr)    (((pvr) >>  16) & 0xFFFF) /* Version field */
-+#define PVR_REV(pvr)    (((pvr) >>   0) & 0xFFFF) /* Revison field */
-+
-+#endif /* __PERF_UTIL_HEADER_H */
--- 
-1.8.3.1
+> > Is it correct to say that the switch_to operations in 5 and 7 include
+> > memory barriers?  If they do, then skipping the IPI should be okay.
+> > 
+> > The reason is as follows: The guarantee you need to enforce is that
+> > anything written by CPU0 before the membarrier() will be visible to CPU1
+> > after it returns to user mode.  Let's say that a writes to X and 9
+> > reads from X.
+> > 
+> > Then we have an instance of the Store Buffer pattern:
+> > 
+> >	CPU0			CPU1
+> >	a. Write X		6. Write rq->curr for user thread
+> >	c. smp_mb()		7. switch_to memory barrier
+> >	d. Read rq->curr	9. Read X
+> > 
+> > In this pattern, the memory barriers make it impossible for both reads
+> > to miss their corresponding writes.  Since d does fail to read 6 (it
+> > sees the earlier value stored by 4), 9 must read a.
+> > 
+> > The other guarantee you need is that g on CPU0 will observe anything
+> > written by CPU1 in 1.  This is easier to see, using the fact that 3 is a
+> > memory barrier and d reads from 4.
+> 
+> Right, and Nick's reply involving pairs of loads/stores on each side
+> clarifies the situation even further.
 
+The key part of my reply was the question: "Is it correct to say that 
+the switch_to operations in 5 and 7 include memory barriers?"  From the 
+text quoted above and from Nick's reply, it seems clear that they do 
+not.
+
+I agree with Nick: A memory barrier is needed somewhere between the 
+assignment at 6 and the return to user mode at 8.  Otherwise you end up 
+with the Store Buffer pattern having a memory barrier on only one side, 
+and it is well known that this arrangement does not guarantee any 
+ordering.
+
+One thing I don't understand about all this: Any context switch has to 
+include a memory barrier somewhere, but both you and Nick seem to be 
+saying that steps 6 and 7 don't include (or don't need) any memory 
+barriers.  What am I missing?
+
+Alan Stern
