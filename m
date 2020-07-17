@@ -2,92 +2,80 @@ Return-Path: <SRS0=mPqZ=A4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65C17C433E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 387F2C433E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:38:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1BD602070A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:34:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1BD602070A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D2E7B206BE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:38:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kh1uw69R"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2E7B206BE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7JF13Jz2zDrDT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 14:34:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7JK53GpbzDqkS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 14:38:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::342;
+ helo=mail-ot1-x342.google.com; envelope-from=jniethe5@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Kh1uw69R; dkim-atps=neutral
+Received: from mail-ot1-x342.google.com (mail-ot1-x342.google.com
+ [IPv6:2607:f8b0:4864:20::342])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7HrP2Q8xzDqmq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 14:16:52 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06H413bd082849; Fri, 17 Jul 2020 00:16:44 -0400
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32as6e2e7x-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 00:16:44 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06H4Gg9Z032153;
- Fri, 17 Jul 2020 04:16:42 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06fra.de.ibm.com with ESMTP id 328rbqsxmp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 04:16:42 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06H4GeLP30278032
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jul 2020 04:16:40 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 372CEA405F;
- Fri, 17 Jul 2020 04:16:40 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 24A37A4054;
- Fri, 17 Jul 2020 04:16:39 +0000 (GMT)
-Received: from [9.85.81.62] (unknown [9.85.81.62])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 17 Jul 2020 04:16:38 +0000 (GMT)
-Subject: Re: [powerpc:next-test 125/127]
- arch/powerpc/mm/book3s64/pkeys.c:392:7: error: implicit declaration of
- function 'is_pkey_enabled'; did you mean
-To: kernel test robot <lkp@intel.com>
-References: <202007170943.BGjGSyKg%lkp@intel.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <4afe08ee-d039-dec6-70c3-383497e52440@linux.ibm.com>
-Date: Fri, 17 Jul 2020 09:46:38 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B7J0t2s8czDrJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 14:24:14 +1000 (AEST)
+Received: by mail-ot1-x342.google.com with SMTP id 95so5966226otw.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2020 21:24:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=fYRhNeJyMfpc078wL/j31HurR5nJxYBJf2WPWtqv67M=;
+ b=Kh1uw69RH6AnDF+LGaQL/TlfB/OoFmyUPwbfUkO50aMlcjf5CR/uR2PYWm7tPKN3fV
+ jR7mdlp9am3bRba3SEs4mJ98wUxBm4j2ANKGObN41QYgd+VRpQW4DhrruTPnYQ3z3glV
+ OY5crlzGJJfGYp25p7IlnG4R7X17m+302T7QWNmLhESiLM4WbYkDMX2KCYfgRGhkjRuJ
+ 3t0kqv/fHJB1zQf2vfXSNrkDp/YM2LsW2XiRDXXq2zu7YrIoAu+G2Ill1BAKf03VcY/i
+ /5olQ54IGuE99Z71PV7RCYsBFnoPJGHOYD32Q1XVFWl21dG2i54dvNwZZMKgR2jKspFb
+ 2S2g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=fYRhNeJyMfpc078wL/j31HurR5nJxYBJf2WPWtqv67M=;
+ b=H0HCjr6tsjkL96bmLdm0I+vO12MX9OHqhGHEaM7kfKeaoNGgA6kCtQBh8FF+YQuQpN
+ n3Ga7+MAqhM9NskpPBTJdLzSNvBvwygJj1R8I72QoLKLjW9LlxHLn0GzDlT4w6Sr5sqC
+ zgsJdjhVE2zrdQ/23zuROfplBcSQewDLe+SpvhtkIWqPpLFdefRSdhuozY5TDqwtogdQ
+ 37KVa/6p+ltD3eXUipebZZEtozXtjpAjzhQdlDp5mVxVaV2AcZYs4aHGz21enPpsClSg
+ Qgq+rVs9z3l9l8HRiKfLR867uhXFyxF3UnukJ4mH83dVyVznPrcmKb6uGKiYzxs0w5z0
+ fCpg==
+X-Gm-Message-State: AOAM533gJuXL1H/CkN7rinIBZJHpPeZHLClwasynkcUd7/R+Uahqw+hD
+ K5YgMbuHKCuA5GlV3DrnIZq9VKrBdggb9mZd5UE=
+X-Google-Smtp-Source: ABdhPJy9Qve7h79FN/Grjt90XmaceRcsY/1aZcCD1+74wKOmBXvf2VJ15Vwm0aB6fQ4xmUck1IdK6oqrCnN+I8ERfv0=
+X-Received: by 2002:a9d:6a12:: with SMTP id g18mr7790181otn.155.1594959850557; 
+ Thu, 16 Jul 2020 21:24:10 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <202007170943.BGjGSyKg%lkp@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-16_11:2020-07-16,
- 2020-07-16 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- adultscore=0 clxscore=1015 suspectscore=0 mlxscore=0 bulkscore=0
- malwarescore=0 priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0
- mlxlogscore=895 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007170025
+References: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
+ <20200717040958.70561-5-ravi.bangoria@linux.ibm.com>
+In-Reply-To: <20200717040958.70561-5-ravi.bangoria@linux.ibm.com>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Fri, 17 Jul 2020 14:23:03 +1000
+Message-ID: <CACzsE9py0x7wFyG-FgjK-cF8L02OQyOKbqDzP6agFt-Dxc4ejg@mail.gmail.com>
+Subject: Re: [PATCH v4 04/10] powerpc/watchpoint: Enable watchpoint
+ functionality on power10 guest
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,46 +87,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@lists.01.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, apopple@linux.ibm.com,
+ mikey@neuling.org, miltonm@us.ibm.com, peterz@infradead.org, oleg@redhat.com,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, jolsa@kernel.org, fweisbec@gmail.com,
+ pedromfc@br.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/17/20 7:29 AM, kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-> head:   0fbd1eb4df96e1cbd039e0b95fdf62cf65a7faf9
-> commit: ed411c66eea2ccf93a634ae661a1f79c2bc63d88 [125/127] powerpc/book3s64/pkeys: Remove is_pkey_enabled()
-> config: powerpc-allmodconfig (attached as .config)
-> compiler: powerpc64-linux-gcc (GCC) 9.3.0
-> reproduce (this is a W=1 build):
->          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          git checkout ed411c66eea2ccf93a634ae661a1f79c2bc63d88
->          # save the attached .config to linux build tree
->          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-9.3.0 make.cross ARCH=powerpc
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kernel test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
->     arch/powerpc/mm/book3s64/pkeys.c: In function 'pkey_access_permitted':
->>> arch/powerpc/mm/book3s64/pkeys.c:392:7: error: implicit declaration of function 'is_pkey_enabled'; did you mean 'arch_pkeys_enabled'? [-Werror=implicit-function-declaration]
->       392 |  if (!is_pkey_enabled(pkey))
->           |       ^~~~~~~~~~~~~~~
->           |       arch_pkeys_enabled
->     cc1: some warnings being treated as errors
-> 
-> vim +392 arch/powerpc/mm/book3s64/pkeys.c
-> 
-
-
-We removed that upstream in
-
-19ab500edb5d6020010caba48ce3b4ce4182ab63     powerpc/mm/pkeys: Make pkey 
-access check work on execute_only_key
-
-
-next-test need to be rebased?
-
--aneesh
+On Fri, Jul 17, 2020 at 2:10 PM Ravi Bangoria
+<ravi.bangoria@linux.ibm.com> wrote:
+>
+> CPU_FTR_DAWR is by default enabled for host via CPU_FTRS_DT_CPU_BASE
+> (controlled by CONFIG_PPC_DT_CPU_FTRS). But cpu-features device-tree
+> node is not PAPR compatible and thus not yet used by kvm or pHyp
+> guests. Enable watchpoint functionality on power10 guest (both kvm
+> and powervm) by adding CPU_FTR_DAWR to CPU_FTRS_POWER10. Note that
+> this change does not enable 2nd DAWR support.
+>
+> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+I ran the ptrace-hwbreak selftest successfully within a power10 kvm guest.
+Tested-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/include/asm/cputable.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index bac2252c839e..e506d429b1af 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -478,7 +478,7 @@ static inline void cpu_feature_keys_init(void) { }
+>             CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+>             CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
+>             CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_PKEY | \
+> -           CPU_FTR_ARCH_31)
+> +           CPU_FTR_ARCH_31 | CPU_FTR_DAWR)
+>  #define CPU_FTRS_CELL  (CPU_FTR_LWSYNC | \
+>             CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>             CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> --
+> 2.26.2
+>
