@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0D32C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 380EFC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:25:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99877206F4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:21:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99877206F4
+	by mail.kernel.org (Postfix) with ESMTPS id E42EA20704
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 04:25:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E42EA20704
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B7Hy32WCTzDqnD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 14:21:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B7J2Q4wbgzDrJC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jul 2020 14:25:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
@@ -30,51 +30,52 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B7Hjd0D51zDr9K
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 14:11:00 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B7Hjp71sNzDr8p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2020 14:11:09 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06H4294Y073452; Fri, 17 Jul 2020 00:10:52 -0400
+ 06H41t4e063697; Fri, 17 Jul 2020 00:11:01 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32axd20mab-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32auqune0a-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 00:10:52 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06H43KxO077059;
- Fri, 17 Jul 2020 00:10:51 -0400
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32axd20m9d-1
+ Fri, 17 Jul 2020 00:11:01 -0400
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06H42gK4066686;
+ Fri, 17 Jul 2020 00:11:00 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32auqundyu-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 00:10:51 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06H4An6i008164;
- Fri, 17 Jul 2020 04:10:49 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma03fra.de.ibm.com with ESMTP id 327527k692-1
+ Fri, 17 Jul 2020 00:11:00 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06H4AbRZ003898;
+ Fri, 17 Jul 2020 04:10:58 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 329nmyjfvc-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 17 Jul 2020 04:10:49 +0000
+ Fri, 17 Jul 2020 04:10:58 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06H4Ak9D17367502
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06H4AtEY29557146
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 17 Jul 2020 04:10:46 GMT
+ Fri, 17 Jul 2020 04:10:55 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 67339AE053;
- Fri, 17 Jul 2020 04:10:46 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 070CAAE04D;
+ Fri, 17 Jul 2020 04:10:55 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 34490AE045;
- Fri, 17 Jul 2020 04:10:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2A750AE057;
+ Fri, 17 Jul 2020 04:10:51 +0000 (GMT)
 Received: from bangoria.ibmuc.com (unknown [9.199.41.4])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 17 Jul 2020 04:10:41 +0000 (GMT)
+ Fri, 17 Jul 2020 04:10:50 +0000 (GMT)
 From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 To: mpe@ellerman.id.au, mikey@neuling.org
-Subject: [PATCH v4 05/10] powerpc/dt_cpu_ftrs: Add feature for 2nd DAWR
-Date: Fri, 17 Jul 2020 09:39:53 +0530
-Message-Id: <20200717040958.70561-6-ravi.bangoria@linux.ibm.com>
+Subject: [PATCH v4 07/10] powerpc/watchpoint: Rename current H_SET_MODE DAWR
+ macro
+Date: Fri, 17 Jul 2020 09:39:55 +0530
+Message-Id: <20200717040958.70561-8-ravi.bangoria@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
 References: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
@@ -85,11 +86,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-16_11:2020-07-16,
  2020-07-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound
- score=100 lowpriorityscore=0
- adultscore=0 clxscore=1015 mlxscore=100 malwarescore=0 impostorscore=0
- suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0 spamscore=100
- mlxlogscore=-1000 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007170025
+ score=100 malwarescore=0
+ bulkscore=0 adultscore=0 clxscore=1015 phishscore=0 spamscore=100
+ impostorscore=0 lowpriorityscore=0 suspectscore=0 priorityscore=1501
+ mlxscore=100 mlxlogscore=-1000 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2007170025
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,71 +112,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add new device-tree feature for 2nd DAWR. If this feature is present,
-2nd DAWR is supported, otherwise not.
+Current H_SET_MODE hcall macro name for setting/resetting DAWR0 is
+H_SET_MODE_RESOURCE_SET_DAWR. Add suffix 0 to macro name as well.
 
 Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 ---
- arch/powerpc/include/asm/cputable.h | 7 +++++--
- arch/powerpc/kernel/dt_cpu_ftrs.c   | 7 +++++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/hvcall.h         | 2 +-
+ arch/powerpc/include/asm/plpar_wrappers.h | 2 +-
+ arch/powerpc/kvm/book3s_hv.c              | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index e506d429b1af..3445c86e1f6f 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -214,6 +214,7 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTR_P9_TLBIE_ERAT_BUG	LONG_ASM_CONST(0x0001000000000000)
- #define CPU_FTR_P9_RADIX_PREFETCH_BUG	LONG_ASM_CONST(0x0002000000000000)
- #define CPU_FTR_ARCH_31			LONG_ASM_CONST(0x0004000000000000)
-+#define CPU_FTR_DAWR1			LONG_ASM_CONST(0x0008000000000000)
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 43486e773bd6..b785e9f0071c 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -355,7 +355,7 @@
  
- #ifndef __ASSEMBLY__
+ /* Values for 2nd argument to H_SET_MODE */
+ #define H_SET_MODE_RESOURCE_SET_CIABR		1
+-#define H_SET_MODE_RESOURCE_SET_DAWR		2
++#define H_SET_MODE_RESOURCE_SET_DAWR0		2
+ #define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE	3
+ #define H_SET_MODE_RESOURCE_LE			4
  
-@@ -497,14 +498,16 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
- 	     CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
--	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
-+	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
-+	     CPU_FTR_DAWR1)
- #else
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
- 	     CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | \
- 	     CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | CPU_FTRS_POWER9 | \
--	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
-+	     CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
-+	     CPU_FTR_DAWR1)
- #endif /* CONFIG_CPU_LITTLE_ENDIAN */
- #endif
- #else
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index ac650c233cd9..c78cd3596ec4 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -574,6 +574,12 @@ static int __init feat_enable_mma(struct dt_cpu_feature *f)
- 	return 1;
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 4293c5d2ddf4..d12c3680d946 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -312,7 +312,7 @@ static inline long plpar_set_ciabr(unsigned long ciabr)
+ 
+ static inline long plpar_set_watchpoint0(unsigned long dawr0, unsigned long dawrx0)
+ {
+-	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
++	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR0, dawr0, dawrx0);
  }
  
-+static int __init feat_enable_debug_facilities_v31(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->cpu_features |= CPU_FTR_DAWR1;
-+	return 1;
-+}
-+
- struct dt_cpu_feature_match {
- 	const char *name;
- 	int (*enable)(struct dt_cpu_feature *f);
-@@ -649,6 +655,7 @@ static struct dt_cpu_feature_match __initdata
- 	{"wait-v3", feat_enable, 0},
- 	{"prefix-instructions", feat_enable, 0},
- 	{"matrix-multiply-assist", feat_enable_mma, 0},
-+	{"debug-facilities-v31", feat_enable_debug_facilities_v31, 0},
- };
- 
- static bool __initdata using_dt_cpu_ftrs;
+ static inline long plpar_signal_sys_reset(long cpu)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 6bf66649ab92..7ad692c2d7c7 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -764,7 +764,7 @@ static int kvmppc_h_set_mode(struct kvm_vcpu *vcpu, unsigned long mflags,
+ 			return H_P3;
+ 		vcpu->arch.ciabr  = value1;
+ 		return H_SUCCESS;
+-	case H_SET_MODE_RESOURCE_SET_DAWR:
++	case H_SET_MODE_RESOURCE_SET_DAWR0:
+ 		if (!kvmppc_power8_compatible(vcpu))
+ 			return H_P2;
+ 		if (!ppc_breakpoint_available())
 -- 
 2.26.2
 
