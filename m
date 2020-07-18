@@ -2,55 +2,57 @@ Return-Path: <SRS0=UddX=A5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 468F4C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 10:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D97FCC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 11:13:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B735520724
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 10:53:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B735520724
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=hadess.net
+	by mail.kernel.org (Postfix) with ESMTPS id 3D8172070E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 11:13:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D8172070E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=al2klimov.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B84bV6240zDrQ2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 20:53:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=hadess.net (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=hadess@hadess.net; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B85320txtzDrPh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jul 2020 21:13:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=hadess.net
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B84Yl1yjdzDqWX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 20:51:54 +1000 (AEST)
-Received: from relay5-d.mail.gandi.net (unknown [217.70.183.197])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 7B62D3A1BE3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 10:39:15 +0000 (UTC)
-X-Originating-IP: 82.255.60.242
-Received: from classic (lns-bzn-39-82-255-60-242.adsl.proxad.net
- [82.255.60.242]) (Authenticated sender: hadess@hadess.net)
- by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id DF9991C0002;
- Sat, 18 Jul 2020 10:38:36 +0000 (UTC)
-Message-ID: <c1ce6d1eaeed9e239742c12f4f82c84ad3f36fd4.camel@hadess.net>
-Subject: Re: [PATCH] HID: udraw-ps3: Replace HTTP links with HTTPS ones
-From: Bastien Nocera <hadess@hadess.net>
-To: "Alexander A. Klimov" <grandmaster@al2klimov.de>, jikos@kernel.org, 
- benjamin.tissoires@redhat.com, mpe@ellerman.id.au,
- benh@kernel.crashing.org,  paulus@samba.org, linux-input@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Date: Sat, 18 Jul 2020 12:38:35 +0200
-In-Reply-To: <20200718103344.3407-1-grandmaster@al2klimov.de>
-References: <20200718103344.3407-1-grandmaster@al2klimov.de>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.3 (3.36.3-1.fc32) 
+ spf=none (no SPF record) smtp.mailfrom=al2klimov.de
+ (client-ip=2a01:4f8:c0c:1465::1; helo=smtp.al2klimov.de;
+ envelope-from=grandmaster@al2klimov.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=al2klimov.de
+Received: from smtp.al2klimov.de (smtp.al2klimov.de
+ [IPv6:2a01:4f8:c0c:1465::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B851M3czyzDqW1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2020 21:12:23 +1000 (AEST)
+Received: from authenticated-user (PRIMARY_HOSTNAME [PUBLIC_IP])
+ by smtp.al2klimov.de (Postfix) with ESMTPA id 214F8BC073;
+ Sat, 18 Jul 2020 11:12:15 +0000 (UTC)
+From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, shawnguo@kernel.org,
+ s.hauer@pengutronix.de, kernel@pengutronix.de, linux-imx@nxp.com,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl: Replace HTTP links with HTTPS ones
+Date: Sat, 18 Jul 2020 13:12:09 +0200
+Message-Id: <20200718111209.11760-1-grandmaster@al2klimov.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Spamd-Bar: ++++++
+Authentication-Results: smtp.al2klimov.de;
+ auth=pass smtp.auth=aklimov@al2klimov.de
+ smtp.mailfrom=grandmaster@al2klimov.de
+X-Spam: Yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,29 +64,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2020-07-18 at 12:33 +0200, Alexander A. Klimov wrote:
-> Rationale:
-> Reduces attack surface on kernel devs opening the links for MITM
-> as HTTPS traffic is much harder to manipulate.
-> 
-> Deterministic algorithm:
-> For each file:
->   If not .svg:
->     For each line:
->       If doesn't contain `\bxmlns\b`:
->         For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
-> 	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
->             If both the HTTP and HTTPS versions
->             return 200 OK and serve the same content:
->               Replace HTTP with HTTPS.
-> 
-> Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
 
-Looks good!
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
 
-Acked-by: Bastien Nocera <hadess@hadess.net>
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ Continuing my work started at 93431e0607e5.
+ See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
+
+ If there are any URLs to be removed completely
+ or at least not (just) HTTPSified:
+ Just clearly say so and I'll *undo my change*.
+ See also: https://lkml.org/lkml/2020/6/27/64
+
+ If there are any valid, but yet not changed URLs:
+ See: https://lkml.org/lkml/2020/6/26/837
+
+ If you apply the patch, please let me know.
+
+
+ sound/soc/fsl/imx-audmix.c | 4 ++--
+ sound/soc/fsl/imx-audmux.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
+index e09b45de0efd..96980cb0497f 100644
+--- a/sound/soc/fsl/imx-audmix.c
++++ b/sound/soc/fsl/imx-audmix.c
+@@ -6,8 +6,8 @@
+  * License. You may obtain a copy of the GNU General Public License
+  * Version 2 or later at the following locations:
+  *
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
++ * https://www.opensource.org/licenses/gpl-license.html
++ * https://www.gnu.org/copyleft/gpl.html
+  */
+ 
+ #include <linux/module.h>
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index 3ce85a43e08f..25c18b9e348f 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -5,7 +5,7 @@
+ // Copyright 2009 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ //
+ // Initial development of this code was funded by
+-// Phytec Messtechnik GmbH, http://www.phytec.de
++// Phytec Messtechnik GmbH, https://www.phytec.de
+ 
+ #include <linux/clk.h>
+ #include <linux/debugfs.h>
+-- 
+2.27.0
 
