@@ -4,90 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F3D9C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 13:11:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E91CC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 13:14:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84E6C207FC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 13:11:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84E6C207FC
+	by mail.kernel.org (Postfix) with ESMTPS id 1528420729
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 13:14:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1528420729
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9MZJ1jTszDqfV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 23:11:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9Md80BwdzDqfy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 23:14:20 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9M7z2Z92zDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 22:52:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9M855dK1zDqLq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 22:52:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4B9M7y6qbnz8tQV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 22:52:30 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4B9M845lfYz8tqK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 22:52:36 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4B9M7y4xYnz9sTN; Mon, 20 Jul 2020 22:52:30 +1000 (AEST)
+ id 4B9M836ZVQz9sTN; Mon, 20 Jul 2020 22:52:35 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B9M7x6M72z9sSn
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2020 22:52:29 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06KCXKoH139282; Mon, 20 Jul 2020 08:52:22 -0400
+ by ozlabs.org (Postfix) with ESMTPS id 4B9M824p1tz9sSJ
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2020 22:52:34 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06KCjnC4051649; Mon, 20 Jul 2020 08:52:28 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32bvquhyew-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32d5h4kr28-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Jul 2020 08:52:21 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06KCXnhI140349;
- Mon, 20 Jul 2020 08:52:20 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32bvquhydf-1
+ Mon, 20 Jul 2020 08:52:28 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06KCVjme005895;
+ Mon, 20 Jul 2020 08:52:27 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32d5h4kr1h-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Jul 2020 08:52:20 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06KCntla017595;
- Mon, 20 Jul 2020 12:52:16 GMT
+ Mon, 20 Jul 2020 08:52:27 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06KCpqJg019540;
+ Mon, 20 Jul 2020 12:52:25 GMT
 Received: from b06cxnps4074.portsmouth.uk.ibm.com
  (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 32brq7tqhg-1
+ by ppma06ams.nl.ibm.com with ESMTP id 32brbh2nd8-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 20 Jul 2020 12:52:15 +0000
+ Mon, 20 Jul 2020 12:52:25 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
  by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06KCowpG62849096
+ 06KCqMn157409700
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 20 Jul 2020 12:50:58 GMT
+ Mon, 20 Jul 2020 12:52:22 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 48AFC42042;
- Mon, 20 Jul 2020 12:50:58 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C340B4204C;
+ Mon, 20 Jul 2020 12:52:22 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A32164203F;
- Mon, 20 Jul 2020 12:50:54 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 88AEA42041;
+ Mon, 20 Jul 2020 12:52:19 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.85.112.199])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 20 Jul 2020 12:50:54 +0000 (GMT)
-Subject: [PATCH v4 02/12] powerpc/kexec_file: mark PPC64 specific code
+ Mon, 20 Jul 2020 12:52:19 +0000 (GMT)
+Subject: [PATCH v4 05/12] powerpc/drmem: make lmb walk a bit more flexible
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 20 Jul 2020 18:20:53 +0530
-Message-ID: <159524944437.20855.741145114651806824.stgit@hbathini.in.ibm.com>
+Date: Mon, 20 Jul 2020 18:22:18 +0530
+Message-ID: <159524953218.20855.2416133823763690974.stgit@hbathini.in.ibm.com>
 In-Reply-To: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
 References: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -99,11 +98,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-20_07:2020-07-20,
  2020-07-20 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 spamscore=0
- bulkscore=0 impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
- suspectscore=0 adultscore=0 clxscore=1015 phishscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007200086
+ suspectscore=0
+ mlxlogscore=999 clxscore=1015 mlxscore=0 malwarescore=0 bulkscore=0
+ phishscore=0 impostorscore=0 adultscore=0 lowpriorityscore=0
+ priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2007200084
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,27 +119,31 @@ Cc: Pingfan Liu <piliu@redhat.com>, Kexec-ml <kexec@lists.infradead.org>,
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
  lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Sourabh Jain <sourabhjain@linux.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Laurent Dufour <ldufour@linux.ibm.com>, Dave Young <dyoung@redhat.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Dave Young <dyoung@redhat.com>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
  Eric Biederman <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some of the kexec_file_load code isn't PPC64 specific. Move PPC64
-specific code from kexec/file_load.c to kexec/file_load_64.c. Also,
-rename purgatory/trampoline.S to purgatory/trampoline_64.S in the
-same spirit. No functional changes.
+Currently, numa & prom are the users of drmem lmb walk code. Loading
+kdump with kexec_file also needs to walk the drmem LMBs to setup the
+usable memory ranges for kdump kernel. But there are couple of issues
+in using the code as is. One, walk_drmem_lmb() code is built into the
+.init section currently, while kexec_file needs it later. Two, there
+is no scope to pass data to the callback function for processing and/
+or erroring out on certain conditions.
+
+Fix that by, moving drmem LMB walk code out of .init section, adding
+scope to pass data to the callback function and bailing out when
+an error is encountered in the callback function.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 Tested-by: Pingfan Liu <piliu@redhat.com>
-Reviewed-by: Laurent Dufour <ldufour@linux.ibm.com>
 Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
 
 v3 -> v4:
-* Moved common code back to set_new_fdt() from setup_new_fdt_ppc64()
-  function. Added Reviewed-by tags from Laurent & Thiago.
+* Unchanged. Added Reviewed-by tag from Thiago.
 
 v2 -> v3:
 * Unchanged. Added Tested-by tag from Pingfan.
@@ -149,468 +152,347 @@ v1 -> v2:
 * No changes.
 
 
- arch/powerpc/include/asm/kexec.h       |    9 ++
- arch/powerpc/kexec/Makefile            |    2 -
- arch/powerpc/kexec/elf_64.c            |    7 +-
- arch/powerpc/kexec/file_load.c         |   19 +----
- arch/powerpc/kexec/file_load_64.c      |   87 ++++++++++++++++++++++++
- arch/powerpc/purgatory/Makefile        |    4 +
- arch/powerpc/purgatory/trampoline.S    |  117 --------------------------------
- arch/powerpc/purgatory/trampoline_64.S |  117 ++++++++++++++++++++++++++++++++
- 8 files changed, 222 insertions(+), 140 deletions(-)
- create mode 100644 arch/powerpc/kexec/file_load_64.c
- delete mode 100644 arch/powerpc/purgatory/trampoline.S
- create mode 100644 arch/powerpc/purgatory/trampoline_64.S
+ arch/powerpc/include/asm/drmem.h |    9 ++--
+ arch/powerpc/kernel/prom.c       |   13 +++---
+ arch/powerpc/mm/drmem.c          |   87 +++++++++++++++++++++++++-------------
+ arch/powerpc/mm/numa.c           |   13 +++---
+ 4 files changed, 78 insertions(+), 44 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index c684768..ac8fd48 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -116,6 +116,15 @@ int setup_new_fdt(const struct kimage *image, void *fdt,
- 		  unsigned long initrd_load_addr, unsigned long initrd_len,
- 		  const char *cmdline);
- int delete_fdt_mem_rsv(void *fdt, unsigned long start, unsigned long size);
-+
-+#ifdef CONFIG_PPC64
-+int setup_purgatory_ppc64(struct kimage *image, const void *slave_code,
-+			  const void *fdt, unsigned long kernel_load_addr,
-+			  unsigned long fdt_load_addr);
-+int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
-+			unsigned long initrd_load_addr,
-+			unsigned long initrd_len, const char *cmdline);
-+#endif /* CONFIG_PPC64 */
- #endif /* CONFIG_KEXEC_FILE */
+diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
+index 414d209..17ccc64 100644
+--- a/arch/powerpc/include/asm/drmem.h
++++ b/arch/powerpc/include/asm/drmem.h
+@@ -90,13 +90,14 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
+ }
  
- #else /* !CONFIG_KEXEC_CORE */
-diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
-index 86380c6..67c3553 100644
---- a/arch/powerpc/kexec/Makefile
-+++ b/arch/powerpc/kexec/Makefile
-@@ -7,7 +7,7 @@ obj-y				+= core.o crash.o core_$(BITS).o
+ u64 drmem_lmb_memory_max(void);
+-void __init walk_drmem_lmbs(struct device_node *dn,
+-			void (*func)(struct drmem_lmb *, const __be32 **));
++int walk_drmem_lmbs(struct device_node *dn, void *data,
++		    int (*func)(struct drmem_lmb *, const __be32 **, void *));
+ int drmem_update_dt(void);
  
- obj-$(CONFIG_PPC32)		+= relocate_32.o
+ #ifdef CONFIG_PPC_PSERIES
+-void __init walk_drmem_lmbs_early(unsigned long node,
+-			void (*func)(struct drmem_lmb *, const __be32 **));
++int __init
++walk_drmem_lmbs_early(unsigned long node, void *data,
++		      int (*func)(struct drmem_lmb *, const __be32 **, void *));
+ #endif
  
--obj-$(CONFIG_KEXEC_FILE)	+= file_load.o elf_$(BITS).o
-+obj-$(CONFIG_KEXEC_FILE)	+= file_load.o file_load_$(BITS).o elf_$(BITS).o
+ static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9cc49f2..7df78de 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -468,8 +468,9 @@ static bool validate_mem_limit(u64 base, u64 *size)
+  * This contains a list of memory blocks along with NUMA affinity
+  * information.
+  */
+-static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
+-					const __be32 **usm)
++static int  __init early_init_drmem_lmb(struct drmem_lmb *lmb,
++					const __be32 **usm,
++					void *data)
+ {
+ 	u64 base, size;
+ 	int is_kexec_kdump = 0, rngs;
+@@ -484,7 +485,7 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
+ 	 */
+ 	if ((lmb->flags & DRCONF_MEM_RESERVED) ||
+ 	    !(lmb->flags & DRCONF_MEM_ASSIGNED))
+-		return;
++		return 0;
  
- ifdef CONFIG_HAVE_IMA_KEXEC
- ifdef CONFIG_IMA
-diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
-index 3072fd6..23ad04c 100644
---- a/arch/powerpc/kexec/elf_64.c
-+++ b/arch/powerpc/kexec/elf_64.c
-@@ -88,7 +88,8 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
- 		goto out;
+ 	if (*usm)
+ 		is_kexec_kdump = 1;
+@@ -499,7 +500,7 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
+ 		 */
+ 		rngs = dt_mem_next_cell(dt_root_size_cells, usm);
+ 		if (!rngs) /* there are no (base, size) duple */
+-			return;
++			return 0;
  	}
  
--	ret = setup_new_fdt(image, fdt, initrd_load_addr, initrd_len, cmdline);
-+	ret = setup_new_fdt_ppc64(image, fdt, initrd_load_addr,
-+				  initrd_len, cmdline);
- 	if (ret)
- 		goto out;
+ 	do {
+@@ -524,6 +525,8 @@ static void __init early_init_drmem_lmb(struct drmem_lmb *lmb,
+ 		if (lmb->flags & DRCONF_MEM_HOTREMOVABLE)
+ 			memblock_mark_hotplug(base, size);
+ 	} while (--rngs);
++
++	return 0;
+ }
+ #endif /* CONFIG_PPC_PSERIES */
  
-@@ -107,8 +108,8 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
- 	pr_debug("Loaded device tree at 0x%lx\n", fdt_load_addr);
+@@ -534,7 +537,7 @@ static int __init early_init_dt_scan_memory_ppc(unsigned long node,
+ #ifdef CONFIG_PPC_PSERIES
+ 	if (depth == 1 &&
+ 	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0) {
+-		walk_drmem_lmbs_early(node, early_init_drmem_lmb);
++		walk_drmem_lmbs_early(node, NULL, early_init_drmem_lmb);
+ 		return 0;
+ 	}
+ #endif
+diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
+index 59327ce..b2eeea3 100644
+--- a/arch/powerpc/mm/drmem.c
++++ b/arch/powerpc/mm/drmem.c
+@@ -14,6 +14,8 @@
+ #include <asm/prom.h>
+ #include <asm/drmem.h>
  
- 	slave_code = elf_info.buffer + elf_info.proghdrs[0].p_offset;
--	ret = setup_purgatory(image, slave_code, fdt, kernel_load_addr,
--			      fdt_load_addr);
-+	ret = setup_purgatory_ppc64(image, slave_code, fdt, kernel_load_addr,
-+				    fdt_load_addr);
- 	if (ret)
- 		pr_err("Error setting up the purgatory.\n");
++static int n_root_addr_cells, n_root_size_cells;
++
+ static struct drmem_lmb_info __drmem_info;
+ struct drmem_lmb_info *drmem_info = &__drmem_info;
  
-diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-index 143c917..38439ab 100644
---- a/arch/powerpc/kexec/file_load.c
-+++ b/arch/powerpc/kexec/file_load.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * ppc64 code to implement the kexec_file_load syscall
-+ * powerpc code to implement the kexec_file_load syscall
-  *
-  * Copyright (C) 2004  Adam Litke (agl@us.ibm.com)
-  * Copyright (C) 2004  IBM Corp.
-@@ -20,22 +20,7 @@
- #include <linux/libfdt.h>
- #include <asm/ima.h>
+@@ -189,12 +191,13 @@ int drmem_update_dt(void)
+ 	return rc;
+ }
  
--#define SLAVE_CODE_SIZE		256
+-static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
++static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
+ 
+-	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	lmb->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	lmb->drc_index = of_read_number(p++, 1);
+ 
+ 	p++; /* skip reserved field */
+@@ -205,29 +208,33 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
+ 	*prop = p;
+ }
+ 
+-static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
+-			void (*func)(struct drmem_lmb *, const __be32 **))
++static int
++__walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm, void *data,
++		     int (*func)(struct drmem_lmb *, const __be32 **, void *))
+ {
+ 	struct drmem_lmb lmb;
+ 	u32 i, n_lmbs;
++	int ret = 0;
+ 
+ 	n_lmbs = of_read_number(prop++, 1);
+-	if (n_lmbs == 0)
+-		return;
 -
--const struct kexec_file_ops * const kexec_file_loaders[] = {
--	&kexec_elf64_ops,
--	NULL
--};
--
--int arch_kexec_kernel_image_probe(struct kimage *image, void *buf,
--				  unsigned long buf_len)
--{
--	/* We don't support crash kernels yet. */
--	if (image->type == KEXEC_TYPE_CRASH)
--		return -EOPNOTSUPP;
--
--	return kexec_image_probe_default(image, buf, buf_len);
--}
-+#define SLAVE_CODE_SIZE		256	/* First 0x100 bytes */
- 
- /**
-  * setup_purgatory - initialize the purgatory's global variables
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-new file mode 100644
-index 0000000..41fe8b6
---- /dev/null
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -0,0 +1,87 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * ppc64 code to implement the kexec_file_load syscall
-+ *
-+ * Copyright (C) 2004  Adam Litke (agl@us.ibm.com)
-+ * Copyright (C) 2004  IBM Corp.
-+ * Copyright (C) 2004,2005  Milton D Miller II, IBM Corporation
-+ * Copyright (C) 2005  R Sharada (sharada@in.ibm.com)
-+ * Copyright (C) 2006  Mohan Kumar M (mohan@in.ibm.com)
-+ * Copyright (C) 2020  IBM Corporation
-+ *
-+ * Based on kexec-tools' kexec-ppc64.c, kexec-elf-rel-ppc64.c, fs2dt.c.
-+ * Heavily modified for the kernel by
-+ * Hari Bathini <hbathini@linux.ibm.com>.
-+ */
+ 	for (i = 0; i < n_lmbs; i++) {
+ 		read_drconf_v1_cell(&lmb, &prop);
+-		func(&lmb, &usm);
++		ret = func(&lmb, &usm, data);
++		if (ret)
++			break;
+ 	}
 +
-+#include <linux/kexec.h>
-+#include <linux/of_fdt.h>
-+#include <linux/libfdt.h>
-+
-+const struct kexec_file_ops * const kexec_file_loaders[] = {
-+	&kexec_elf64_ops,
-+	NULL
-+};
-+
-+/**
-+ * setup_purgatory_ppc64 - initialize PPC64 specific purgatory's global
-+ *                         variables and call setup_purgatory() to initialize
-+ *                         common global variable.
-+ * @image:                 kexec image.
-+ * @slave_code:            Slave code for the purgatory.
-+ * @fdt:                   Flattened device tree for the next kernel.
-+ * @kernel_load_addr:      Address where the kernel is loaded.
-+ * @fdt_load_addr:         Address where the flattened device tree is loaded.
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+int setup_purgatory_ppc64(struct kimage *image, const void *slave_code,
-+			  const void *fdt, unsigned long kernel_load_addr,
-+			  unsigned long fdt_load_addr)
-+{
-+	int ret;
-+
-+	ret = setup_purgatory(image, slave_code, fdt, kernel_load_addr,
-+			      fdt_load_addr);
-+	if (ret)
-+		pr_err("Failed to setup purgatory symbols");
 +	return ret;
-+}
-+
-+/**
-+ * setup_new_fdt_ppc64 - Update the flattend device-tree of the kernel
-+ *                       being loaded.
-+ * @image:               kexec image being loaded.
-+ * @fdt:                 Flattened device tree for the next kernel.
-+ * @initrd_load_addr:    Address where the next initrd will be loaded.
-+ * @initrd_len:          Size of the next initrd, or 0 if there will be none.
-+ * @cmdline:             Command line for the next kernel, or NULL if there will
-+ *                       be none.
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
-+			unsigned long initrd_load_addr,
-+			unsigned long initrd_len, const char *cmdline)
-+{
-+	return setup_new_fdt(image, fdt, initrd_load_addr, initrd_len, cmdline);
-+}
-+
-+/**
-+ * arch_kexec_kernel_image_probe - Does additional handling needed to setup
-+ *                                 kexec segments.
-+ * @image:                         kexec image being loaded.
-+ * @buf:                           Buffer pointing to elf data.
-+ * @buf_len:                       Length of the buffer.
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+int arch_kexec_kernel_image_probe(struct kimage *image, void *buf,
-+				  unsigned long buf_len)
-+{
-+	/* We don't support crash kernels yet. */
-+	if (image->type == KEXEC_TYPE_CRASH)
-+		return -EOPNOTSUPP;
-+
-+	return kexec_image_probe_default(image, buf, buf_len);
-+}
-diff --git a/arch/powerpc/purgatory/Makefile b/arch/powerpc/purgatory/Makefile
-index 7c6d8b1..348f5958 100644
---- a/arch/powerpc/purgatory/Makefile
-+++ b/arch/powerpc/purgatory/Makefile
-@@ -2,11 +2,11 @@
+ }
  
- KASAN_SANITIZE := n
+-static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
++static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
  
--targets += trampoline.o purgatory.ro kexec-purgatory.c
-+targets += trampoline_$(BITS).o purgatory.ro kexec-purgatory.c
+ 	dr_cell->seq_lmbs = of_read_number(p++, 1);
+-	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	dr_cell->drc_index = of_read_number(p++, 1);
+ 	dr_cell->aa_index = of_read_number(p++, 1);
+ 	dr_cell->flags = of_read_number(p++, 1);
+@@ -235,17 +242,16 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 	*prop = p;
+ }
  
- LDFLAGS_purgatory.ro := -e purgatory_start -r --no-undefined
+-static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
+-			void (*func)(struct drmem_lmb *, const __be32 **))
++static int
++__walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm, void *data,
++		     int (*func)(struct drmem_lmb *, const __be32 **, void *))
+ {
+ 	struct of_drconf_cell_v2 dr_cell;
+ 	struct drmem_lmb lmb;
+ 	u32 i, j, lmb_sets;
++	int ret = 0;
  
--$(obj)/purgatory.ro: $(obj)/trampoline.o FORCE
-+$(obj)/purgatory.ro: $(obj)/trampoline_$(BITS).o FORCE
- 		$(call if_changed,ld)
+ 	lmb_sets = of_read_number(prop++, 1);
+-	if (lmb_sets == 0)
+-		return;
+-
+ 	for (i = 0; i < lmb_sets; i++) {
+ 		read_drconf_v2_cell(&dr_cell, &prop);
  
- quiet_cmd_bin2c = BIN2C   $@
-diff --git a/arch/powerpc/purgatory/trampoline.S b/arch/powerpc/purgatory/trampoline.S
-deleted file mode 100644
-index a5a83c3..0000000
---- a/arch/powerpc/purgatory/trampoline.S
-+++ /dev/null
-@@ -1,117 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * kexec trampoline
-- *
-- * Based on code taken from kexec-tools and kexec-lite.
-- *
-- * Copyright (C) 2004 - 2005, Milton D Miller II, IBM Corporation
-- * Copyright (C) 2006, Mohan Kumar M, IBM Corporation
-- * Copyright (C) 2013, Anton Blanchard, IBM Corporation
-- */
--
--#include <asm/asm-compat.h>
--
--	.machine ppc64
--	.balign 256
--	.globl purgatory_start
--purgatory_start:
--	b	master
--
--	/* ABI: possible run_at_load flag at 0x5c */
--	.org purgatory_start + 0x5c
--	.globl run_at_load
--run_at_load:
--	.long 0
--	.size run_at_load, . - run_at_load
--
--	/* ABI: slaves start at 60 with r3=phys */
--	.org purgatory_start + 0x60
--slave:
--	b .
--	/* ABI: end of copied region */
--	.org purgatory_start + 0x100
--	.size purgatory_start, . - purgatory_start
--
--/*
-- * The above 0x100 bytes at purgatory_start are replaced with the
-- * code from the kernel (or next stage) by setup_purgatory().
-- */
--
--master:
--	or	%r1,%r1,%r1	/* low priority to let other threads catchup */
--	isync
--	mr	%r17,%r3	/* save cpu id to r17 */
--	mr	%r15,%r4	/* save physical address in reg15 */
--
--	or	%r3,%r3,%r3	/* ok now to high priority, lets boot */
--	lis	%r6,0x1
--	mtctr	%r6		/* delay a bit for slaves to catch up */
--	bdnz	.		/* before we overwrite 0-100 again */
--
--	bl	0f		/* Work out where we're running */
--0:	mflr	%r18
--
--	/* load device-tree address */
--	ld	%r3, (dt_offset - 0b)(%r18)
--	mr	%r16,%r3	/* save dt address in reg16 */
--	li	%r4,20
--	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
--	cmpwi	%cr0,%r6,2	/* v2 or later? */
--	blt	1f
--	li	%r4,28
--	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
--1:
--	/* load the kernel address */
--	ld	%r4,(kernel - 0b)(%r18)
--
--	/* load the run_at_load flag */
--	/* possibly patched by kexec */
--	ld	%r6,(run_at_load - 0b)(%r18)
--	/* and patch it into the kernel */
--	stw	%r6,(0x5c)(%r4)
--
--	mr	%r3,%r16	/* restore dt address */
--
--	li	%r5,0		/* r5 will be 0 for kernel */
--
--	mfmsr	%r11
--	andi.	%r10,%r11,1	/* test MSR_LE */
--	bne	.Little_endian
--
--	mtctr	%r4		/* prepare branch to */
--	bctr			/* start kernel */
--
--.Little_endian:
--	mtsrr0	%r4		/* prepare branch to */
--
--	clrrdi	%r11,%r11,1	/* clear MSR_LE */
--	mtsrr1	%r11
--
--	rfid			/* update MSR and start kernel */
--
--
--	.balign 8
--	.globl kernel
--kernel:
--	.8byte  0x0
--	.size kernel, . - kernel
--
--	.balign 8
--	.globl dt_offset
--dt_offset:
--	.8byte  0x0
--	.size dt_offset, . - dt_offset
--
--
--	.data
--	.balign 8
--.globl purgatory_sha256_digest
--purgatory_sha256_digest:
--	.skip	32
--	.size purgatory_sha256_digest, . - purgatory_sha256_digest
--
--	.balign 8
--.globl purgatory_sha_regions
--purgatory_sha_regions:
--	.skip	8 * 2 * 16
--	.size purgatory_sha_regions, . - purgatory_sha_regions
-diff --git a/arch/powerpc/purgatory/trampoline_64.S b/arch/powerpc/purgatory/trampoline_64.S
-new file mode 100644
-index 0000000..a5a83c3
---- /dev/null
-+++ b/arch/powerpc/purgatory/trampoline_64.S
-@@ -0,0 +1,117 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * kexec trampoline
-+ *
-+ * Based on code taken from kexec-tools and kexec-lite.
-+ *
-+ * Copyright (C) 2004 - 2005, Milton D Miller II, IBM Corporation
-+ * Copyright (C) 2006, Mohan Kumar M, IBM Corporation
-+ * Copyright (C) 2013, Anton Blanchard, IBM Corporation
-+ */
+@@ -259,21 +265,29 @@ static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
+ 			lmb.aa_index = dr_cell.aa_index;
+ 			lmb.flags = dr_cell.flags;
+ 
+-			func(&lmb, &usm);
++			ret = func(&lmb, &usm, data);
++			if (ret)
++				break;
+ 		}
+ 	}
 +
-+#include <asm/asm-compat.h>
++	return ret;
+ }
+ 
+ #ifdef CONFIG_PPC_PSERIES
+-void __init walk_drmem_lmbs_early(unsigned long node,
+-			void (*func)(struct drmem_lmb *, const __be32 **))
++int __init walk_drmem_lmbs_early(unsigned long node, void *data,
++		int (*func)(struct drmem_lmb *, const __be32 **, void *))
+ {
+ 	const __be32 *prop, *usm;
+-	int len;
++	int len, ret = -ENODEV;
+ 
+ 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
+ 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
+-		return;
++		return ret;
 +
-+	.machine ppc64
-+	.balign 256
-+	.globl purgatory_start
-+purgatory_start:
-+	b	master
++	/* Get the address & size cells */
++	n_root_addr_cells = dt_root_addr_cells;
++	n_root_size_cells = dt_root_size_cells;
+ 
+ 	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
+ 
+@@ -281,20 +295,21 @@ void __init walk_drmem_lmbs_early(unsigned long node,
+ 
+ 	prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory", &len);
+ 	if (prop) {
+-		__walk_drmem_v1_lmbs(prop, usm, func);
++		ret = __walk_drmem_v1_lmbs(prop, usm, data, func);
+ 	} else {
+ 		prop = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2",
+ 					   &len);
+ 		if (prop)
+-			__walk_drmem_v2_lmbs(prop, usm, func);
++			ret = __walk_drmem_v2_lmbs(prop, usm, data, func);
+ 	}
+ 
+ 	memblock_dump_all();
++	return ret;
+ }
+ 
+ #endif
+ 
+-static int __init init_drmem_lmb_size(struct device_node *dn)
++static int init_drmem_lmb_size(struct device_node *dn)
+ {
+ 	const __be32 *prop;
+ 	int len;
+@@ -303,12 +318,12 @@ static int __init init_drmem_lmb_size(struct device_node *dn)
+ 		return 0;
+ 
+ 	prop = of_get_property(dn, "ibm,lmb-size", &len);
+-	if (!prop || len < dt_root_size_cells * sizeof(__be32)) {
++	if (!prop || len < n_root_size_cells * sizeof(__be32)) {
+ 		pr_info("Could not determine LMB size\n");
+ 		return -1;
+ 	}
+ 
+-	drmem_info->lmb_size = dt_mem_next_cell(dt_root_size_cells, &prop);
++	drmem_info->lmb_size = of_read_number(prop, n_root_size_cells);
+ 	return 0;
+ }
+ 
+@@ -329,24 +344,36 @@ static const __be32 *of_get_usable_memory(struct device_node *dn)
+ 	return prop;
+ }
+ 
+-void __init walk_drmem_lmbs(struct device_node *dn,
+-			    void (*func)(struct drmem_lmb *, const __be32 **))
++int walk_drmem_lmbs(struct device_node *dn, void *data,
++		    int (*func)(struct drmem_lmb *, const __be32 **, void *))
+ {
+ 	const __be32 *prop, *usm;
++	int ret = -ENODEV;
 +
-+	/* ABI: possible run_at_load flag at 0x5c */
-+	.org purgatory_start + 0x5c
-+	.globl run_at_load
-+run_at_load:
-+	.long 0
-+	.size run_at_load, . - run_at_load
++	if (!of_root)
++		return ret;
 +
-+	/* ABI: slaves start at 60 with r3=phys */
-+	.org purgatory_start + 0x60
-+slave:
-+	b .
-+	/* ABI: end of copied region */
-+	.org purgatory_start + 0x100
-+	.size purgatory_start, . - purgatory_start
++	/* Get the address & size cells */
++	of_node_get(of_root);
++	n_root_addr_cells = of_n_addr_cells(of_root);
++	n_root_size_cells = of_n_size_cells(of_root);
++	of_node_put(of_root);
+ 
+ 	if (init_drmem_lmb_size(dn))
+-		return;
++		return ret;
+ 
+ 	usm = of_get_usable_memory(dn);
+ 
+ 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
+ 	if (prop) {
+-		__walk_drmem_v1_lmbs(prop, usm, func);
++		ret = __walk_drmem_v1_lmbs(prop, usm, data, func);
+ 	} else {
+ 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
+ 		if (prop)
+-			__walk_drmem_v2_lmbs(prop, usm, func);
++			ret = __walk_drmem_v2_lmbs(prop, usm, data, func);
+ 	}
 +
-+/*
-+ * The above 0x100 bytes at purgatory_start are replaced with the
-+ * code from the kernel (or next stage) by setup_purgatory().
-+ */
++	return ret;
+ }
+ 
+ static void __init init_drmem_v1_lmbs(const __be32 *prop)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 9fcf2d1..88eb689 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -644,8 +644,9 @@ static inline int __init read_usm_ranges(const __be32 **usm)
+  * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
+  * node.  This assumes n_mem_{addr,size}_cells have been set.
+  */
+-static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+-					const __be32 **usm)
++static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
++					const __be32 **usm,
++					void *data)
+ {
+ 	unsigned int ranges, is_kexec_kdump = 0;
+ 	unsigned long base, size, sz;
+@@ -657,7 +658,7 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+ 	 */
+ 	if ((lmb->flags & DRCONF_MEM_RESERVED)
+ 	    || !(lmb->flags & DRCONF_MEM_ASSIGNED))
+-		return;
++		return 0;
+ 
+ 	if (*usm)
+ 		is_kexec_kdump = 1;
+@@ -669,7 +670,7 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+ 	if (is_kexec_kdump) {
+ 		ranges = read_usm_ranges(usm);
+ 		if (!ranges) /* there are no (base, size) duple */
+-			return;
++			return 0;
+ 	}
+ 
+ 	do {
+@@ -686,6 +687,8 @@ static void __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
+ 		if (sz)
+ 			memblock_set_node(base, sz, &memblock.memory, nid);
+ 	} while (--ranges);
 +
-+master:
-+	or	%r1,%r1,%r1	/* low priority to let other threads catchup */
-+	isync
-+	mr	%r17,%r3	/* save cpu id to r17 */
-+	mr	%r15,%r4	/* save physical address in reg15 */
-+
-+	or	%r3,%r3,%r3	/* ok now to high priority, lets boot */
-+	lis	%r6,0x1
-+	mtctr	%r6		/* delay a bit for slaves to catch up */
-+	bdnz	.		/* before we overwrite 0-100 again */
-+
-+	bl	0f		/* Work out where we're running */
-+0:	mflr	%r18
-+
-+	/* load device-tree address */
-+	ld	%r3, (dt_offset - 0b)(%r18)
-+	mr	%r16,%r3	/* save dt address in reg16 */
-+	li	%r4,20
-+	LWZX_BE	%r6,%r3,%r4	/* fetch __be32 version number at byte 20 */
-+	cmpwi	%cr0,%r6,2	/* v2 or later? */
-+	blt	1f
-+	li	%r4,28
-+	STWX_BE	%r17,%r3,%r4	/* Store my cpu as __be32 at byte 28 */
-+1:
-+	/* load the kernel address */
-+	ld	%r4,(kernel - 0b)(%r18)
-+
-+	/* load the run_at_load flag */
-+	/* possibly patched by kexec */
-+	ld	%r6,(run_at_load - 0b)(%r18)
-+	/* and patch it into the kernel */
-+	stw	%r6,(0x5c)(%r4)
-+
-+	mr	%r3,%r16	/* restore dt address */
-+
-+	li	%r5,0		/* r5 will be 0 for kernel */
-+
-+	mfmsr	%r11
-+	andi.	%r10,%r11,1	/* test MSR_LE */
-+	bne	.Little_endian
-+
-+	mtctr	%r4		/* prepare branch to */
-+	bctr			/* start kernel */
-+
-+.Little_endian:
-+	mtsrr0	%r4		/* prepare branch to */
-+
-+	clrrdi	%r11,%r11,1	/* clear MSR_LE */
-+	mtsrr1	%r11
-+
-+	rfid			/* update MSR and start kernel */
-+
-+
-+	.balign 8
-+	.globl kernel
-+kernel:
-+	.8byte  0x0
-+	.size kernel, . - kernel
-+
-+	.balign 8
-+	.globl dt_offset
-+dt_offset:
-+	.8byte  0x0
-+	.size dt_offset, . - dt_offset
-+
-+
-+	.data
-+	.balign 8
-+.globl purgatory_sha256_digest
-+purgatory_sha256_digest:
-+	.skip	32
-+	.size purgatory_sha256_digest, . - purgatory_sha256_digest
-+
-+	.balign 8
-+.globl purgatory_sha_regions
-+purgatory_sha_regions:
-+	.skip	8 * 2 * 16
-+	.size purgatory_sha_regions, . - purgatory_sha_regions
++	return 0;
+ }
+ 
+ static int __init parse_numa_properties(void)
+@@ -787,7 +790,7 @@ static int __init parse_numa_properties(void)
+ 	 */
+ 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+ 	if (memory) {
+-		walk_drmem_lmbs(memory, numa_setup_drmem_lmb);
++		walk_drmem_lmbs(memory, NULL, numa_setup_drmem_lmb);
+ 		of_node_put(memory);
+ 	}
+ 
 
