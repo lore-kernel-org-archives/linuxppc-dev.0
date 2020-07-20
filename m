@@ -2,89 +2,81 @@ Return-Path: <SRS0=hLaT=A7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E23B2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 00:04:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA029C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 00:40:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F46421744
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 00:04:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9631F21744
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 00:40:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OaExb+xE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F46421744
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mKUpi/C/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9631F21744
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
+Authentication-Results: mail.kernel.org; spf=tempfail smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B925q5RQZzDqsW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 10:04:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B92tq3kmyzDqlw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jul 2020 10:40:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=OaExb+xE; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ header.s=20161025 header.b=mKUpi/C/; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B922G6zfZzDqlp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 10:01:26 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id j19so9440949pgm.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2020 17:01:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B92rv0R03zDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2020 10:38:22 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id p3so9515737pgh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2020 17:38:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:references:in-reply-to:mime-version:message-id
+ h=date:from:subject:to:cc:mime-version:message-id
  :content-transfer-encoding;
- bh=Qp/O47B+/PTH5X4r1WOkvdClsD8CXSU1831njywVtAo=;
- b=OaExb+xEqxuCJzRAkbSTE7/vjzqXUxq0pS5W7iEGg3sQSK7pKf41wbBSVIuJDpORU0
- 5FlO6/kh4s4F57PcL+uXBcfem6TRvn6uYQelzWm8U/ppLVZPQXH8e4ZcSxiaGro+a1eZ
- TZX4IrosFE9de4fHS1QpS4Wb5yZW4hmz+AzHAPmmXz2vpnpmOqP6JdFboPpwngh+XHEE
- vwQ0CQFfoxP0kpYEmERctaoqftHj6ymkgTfHbAwiN+A2OFQEZ/i7o9SBgN4lTtjNJUKE
- uuNBY9bCjd9IvAh+L8Ugd89CCS2JdzBywV/ENymGAV2itR5dCxel1E3OSiqdnsFEVbIa
- 6OyQ==
+ bh=XFq1tbFsgX2AZdMgYvw8N+gQKnN3+VgEwdSA0SX4/tw=;
+ b=mKUpi/C/VrbkHgaAlfwHD+1TzhYa5ul9sEEkCLJouYkaK5jdWeGoRgaXfbw07dzvX2
+ NzyjGf4e8K0QeJ2EDCqXqSQJIOSUgchdsOZcx6pUC26pIDCvP5XCwEsy4wIRtUaVmzrr
+ kPZGnmnUm1qxmh2p4NkAaXSIxKcrHlAWA1EfQ2ayfOL3U1OuCne6OD72Yug7GE646uuP
+ Mk9QZhIb+UM3SQFn5yCYG0ubBU7qfQjsAnANXBJdGyHYKz4U9e3x9t0aJFNQLYwVTGzN
+ MY3+Hn7teHGvhHaBOLkQmK16Rj4yVCZEc1OdpXfMwapUOQoZyox8ZEh2W2gj5N/T//Hn
+ Vh6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:references:in-reply-to
- :mime-version:message-id:content-transfer-encoding;
- bh=Qp/O47B+/PTH5X4r1WOkvdClsD8CXSU1831njywVtAo=;
- b=Mi3s/praLA3Ix0mFOrWe0UcJh4RZyMnuZFNi2CR2A3EO1Zkbj8UAuSNXcstvduebFN
- YLhXx+v8op3Vj9cnlPh/OqA4PhPD83dgNudH1zvWbCqTSMMg8oqEIUS0lY3INBweW5S4
- ityHxh9X/OWh29Pm3ajHg6/LL/RXOtE1MVz7e86irzd+uHvSmvCWRdYTfyW++gMlSnnm
- kHNQKdmp2H4QTXSpMrgiAOw53Ksi6EYyU7Ao37O3WvRCfo8Oo6c1k6SJ/cIlo2DlpAHY
- TJc/YNQsK/kL8Wf5Frbb22ptjxsUe4/UdbSc/joFVJcNQAw/xFGftxXtA5cK6RbnwU/5
- Xttg==
-X-Gm-Message-State: AOAM530q8WkzCSwiJD6fZg64A+IGPh4tASvB+DrpvALimhSdt2/WB74g
- pQ+7ZK9vK3ARa69Z9fUyOG+X7uNf
-X-Google-Smtp-Source: ABdhPJxYwegdwxjg9r4YggaJjpy8/UCuo3gHlm19zg8v0ePWpunlzjf/YTaJClvq282r5JEsBMdI4Q==
-X-Received: by 2002:a05:6a00:2294:: with SMTP id
- f20mr17462713pfe.126.1595203283725; 
- Sun, 19 Jul 2020 17:01:23 -0700 (PDT)
+ h=x-gm-message-state:date:from:subject:to:cc:mime-version:message-id
+ :content-transfer-encoding;
+ bh=XFq1tbFsgX2AZdMgYvw8N+gQKnN3+VgEwdSA0SX4/tw=;
+ b=Hn9Vbizo6zcsgmgacSSIVbI5DefcoV32oF1lBaWjzNbnH5WimQhU6Ydm5Qvb5oPpJO
+ s1NoLdKHj3jlFXCW3gpMvT3zwzKTT/07f3kFYRhYtMvVpFLxzIqMLeMyEXW15Bb7xLkK
+ Bgf5ATb16jDY+0Mu6Tjzd5hV5ZMgySz85dc2gM3J96ikZb/jYsp0lp3InyAvfC//8dcu
+ gHnMZbTGyMHKP7rEWEWuDjMyEEO39Nv/leOMHJZiyI+ShQvD92nCaa1S+8Z9YQXIdKt2
+ ihKllMUId4pDHP6/unYXTjgBImYHhQChG5MAMLIFXfkCN7YPH0C6PGAP7pBtXWybcr5s
+ 2Drw==
+X-Gm-Message-State: AOAM530pzh9Zv8T32epwZ+EgSbLSk8+1ji8Ji0azT9TRmMo6kZEyhb8R
+ 9zaImECIRhvAPb9EdjoqOPeaG4rO
+X-Google-Smtp-Source: ABdhPJwKnuIipkmIajupZTNxeEfnOBQT2VjNliL94btuuxQncHtcH3EQkViU0lPNZOjdJTZ6aogM6g==
+X-Received: by 2002:a05:6a00:1596:: with SMTP id
+ u22mr17321339pfk.102.1595205500660; 
+ Sun, 19 Jul 2020 17:38:20 -0700 (PDT)
 Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
- by smtp.gmail.com with ESMTPSA id y6sm9807212pji.2.2020.07.19.17.01.22
+ by smtp.gmail.com with ESMTPSA id z11sm14633320pfk.46.2020.07.19.17.38.19
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 19 Jul 2020 17:01:23 -0700 (PDT)
-Date: Mon, 20 Jul 2020 10:01:17 +1000
+ Sun, 19 Jul 2020 17:38:20 -0700 (PDT)
+Date: Mon, 20 Jul 2020 10:38:15 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 3/3] powerpc/powernv/idle: Exclude mfspr on HID1, 4,
- 5 on P9 and above
-To: benh@kernel.crashing.org, ego@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- mikey@neuling.org, mpe@ellerman.id.au, paulus@samba.org,
- pratik.r.sampat@gmail.com, Pratik Rajesh Sampat <psampat@linux.ibm.com>,
- svaidy@linux.ibm.com
-References: <20200717185306.60607-1-psampat@linux.ibm.com>
- <20200717185306.60607-4-psampat@linux.ibm.com>
-In-Reply-To: <20200717185306.60607-4-psampat@linux.ibm.com>
+Subject: io_uring kthread_use_mm / mmget_not_zero possible abuse
+To: Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>
 MIME-Version: 1.0
-Message-Id: <1595203265.suaijimybo.astroid@bobo.none>
+Message-Id: <1595203632.x8vplwce1a.astroid@bobo.none>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -98,52 +90,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arch@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Excerpts from Pratik Rajesh Sampat's message of July 18, 2020 4:53 am:
-> POWER9 onwards the support for the registers HID1, HID4, HID5 has been
-> receded.
-> Although mfspr on the above registers worked in Power9, In Power10
-> simulator is unrecognized. Moving their assignment under the
-> check for machines lower than Power9
->=20
-> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+When I last looked at this (predating io_uring), as far as I remember it wa=
+s=20
+not permitted to actually switch to (use_mm) an mm user context that was=20
+pinned with mmget_not_zero. Those pins were only allowed to look at page=20
+tables, vmas, etc., but not actually run the CPU in that mm context.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+sparc/kernel/smp_64.c depends heavily on this, e.g.,
 
-> ---
->  arch/powerpc/platforms/powernv/idle.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platfor=
-ms/powernv/idle.c
-> index d439e11af101..d24d6671f3e8 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -73,9 +73,6 @@ static int pnv_save_sprs_for_deep_states(void)
->  	 */
->  	uint64_t lpcr_val	=3D mfspr(SPRN_LPCR);
->  	uint64_t hid0_val	=3D mfspr(SPRN_HID0);
-> -	uint64_t hid1_val	=3D mfspr(SPRN_HID1);
-> -	uint64_t hid4_val	=3D mfspr(SPRN_HID4);
-> -	uint64_t hid5_val	=3D mfspr(SPRN_HID5);
->  	uint64_t hmeer_val	=3D mfspr(SPRN_HMEER);
->  	uint64_t msr_val =3D MSR_IDLE;
->  	uint64_t psscr_val =3D pnv_deepest_stop_psscr_val;
-> @@ -117,6 +114,9 @@ static int pnv_save_sprs_for_deep_states(void)
-> =20
->  			/* Only p8 needs to set extra HID regiters */
->  			if (!pvr_version_is(PVR_POWER9)) {
-> +				uint64_t hid1_val =3D mfspr(SPRN_HID1);
-> +				uint64_t hid4_val =3D mfspr(SPRN_HID4);
-> +				uint64_t hid5_val =3D mfspr(SPRN_HID5);
-> =20
->  				rc =3D opal_slw_set_reg(pir, SPRN_HID1, hid1_val);
->  				if (rc !=3D 0)
-> --=20
-> 2.25.4
->=20
->=20
+void smp_flush_tlb_mm(struct mm_struct *mm)
+{
+        u32 ctx =3D CTX_HWBITS(mm->context);
+        int cpu =3D get_cpu();
+
+        if (atomic_read(&mm->mm_users) =3D=3D 1) {
+                cpumask_copy(mm_cpumask(mm), cpumask_of(cpu));
+                goto local_flush_and_out;
+        }
+
+        smp_cross_call_masked(&xcall_flush_tlb_mm,
+                              ctx, 0, 0,
+                              mm_cpumask(mm));
+
+local_flush_and_out:
+        __flush_tlb_mm(ctx, SECONDARY_CONTEXT);
+
+        put_cpu();
+}
+
+If a kthread comes in concurrently between the mm_users test and the=20
+mm_cpumask reset, and does mmget_not_zero(); kthread_use_mm() then we have=20
+another CPU switched to mm context but not in the mm_cpumask. It's then=20
+possible for our thread to schedule on that CPU and not go through a=20
+switch_mm (because kthread_unuse_mm will make it lazy, then we can switch=20
+back to our user thread and un-lazy it).
+
+powerpc has something similar.
+
+I don't think this is documented anywhere and certainly isn't checked for=20
+unfortunately, so I don't really blame io_uring.
+
+The simplest fix is for io_uring to carry mm_users references. If that can'=
+t=20
+be done or we decide to lift the limitation on mmget_not_zero references, w=
+e=20
+can come up with a way to synchronize things.
+
+On powerpc for example, we IPI all targets in mm_cpumask before clearing=20
+them, so we could disable interrupts while kthread_use_mm does the mm switc=
+h=20
+sequence, and have the IPI handler check that current->mm hasn't been set t=
+o=20
+mm, for example.
+
+sparc is a bit harder because it doesn't IPI targets if it thinks it can=20
+avoid it. But powerpc found that just doing one IPI isn't a big burden here=
+=20
+so maybe we change sparc to do that too. I would be inclined to fix this=20
+mmget_not_zero quirk if we can, unless someone has a very good way to test=20
+and enforce it, it'll just happen again.
+
+Comments?
+
+Thanks,
+Nick
