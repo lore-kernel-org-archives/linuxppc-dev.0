@@ -2,49 +2,100 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C32C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:02:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1540FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:59:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A05462072E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:02:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A05462072E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id C23942073A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:59:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C23942073A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9lL420ZczDqgD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 14:02:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
- helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9lGV52mmzDqhl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 13:59:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4B9lJ02YjXzDqVR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 14:00:47 +1000 (AEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id E0F9D29AFB;
- Tue, 21 Jul 2020 00:00:37 -0400 (EDT)
-Date: Tue, 21 Jul 2020 14:00:33 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Masahiro Yamada <masahiroy@kernel.org>
-Subject: Re: [PATCH v2 13/16] scripts/kallsyms: move ignored symbol types to
- is_ignored_symbol()
-In-Reply-To: <CAK7LNATVDfHJG=+G6DqkR-vSyVhb8KmxcT0ae+ukdi_otthi8A@mail.gmail.com>
-Message-ID: <alpine.LNX.2.23.453.2007211312530.8@nippy.intranet>
-References: <20191123160444.11251-1-yamada.masahiro@socionext.com>
- <20191123160444.11251-14-yamada.masahiro@socionext.com>
- <alpine.LNX.2.23.453.2007201132240.8@nippy.intranet>
- <CAK7LNATVDfHJG=+G6DqkR-vSyVhb8KmxcT0ae+ukdi_otthi8A@mail.gmail.com>
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9lDl1LYZzDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 13:57:58 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06L3W2PF088512; Mon, 20 Jul 2020 23:57:47 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32d91us242-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 20 Jul 2020 23:57:47 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06L3YMmJ094633;
+ Mon, 20 Jul 2020 23:57:46 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32d91us23p-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 20 Jul 2020 23:57:46 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06L3ojhX002974;
+ Tue, 21 Jul 2020 03:57:44 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma04ams.nl.ibm.com with ESMTP id 32brq83d9d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 21 Jul 2020 03:57:44 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 06L3uIDm62456124
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 21 Jul 2020 03:56:18 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E37F6AE045;
+ Tue, 21 Jul 2020 03:57:41 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 84FB4AE051;
+ Tue, 21 Jul 2020 03:57:38 +0000 (GMT)
+Received: from [9.199.47.202] (unknown [9.199.47.202])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 21 Jul 2020 03:57:38 +0000 (GMT)
+Subject: Re: [PATCH v4 09/10] powerpc/watchpoint: Return available watchpoints
+ dynamically
+To: Jordan Niethe <jniethe5@gmail.com>
+References: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
+ <20200717040958.70561-10-ravi.bangoria@linux.ibm.com>
+ <CACzsE9r0acLUkV35mVxy1AEK_xObs0yz+fD6UdbNdc6uz=Buqw@mail.gmail.com>
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Message-ID: <ccfcf488-0ec9-1737-8368-a848de1d72d1@linux.ibm.com>
+Date: Tue, 21 Jul 2020 09:27:37 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <CACzsE9r0acLUkV35mVxy1AEK_xObs0yz+fD6UdbNdc6uz=Buqw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-20_19:2020-07-20,
+ 2020-07-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0
+ spamscore=0 priorityscore=1501 impostorscore=0 mlxscore=0 bulkscore=0
+ lowpriorityscore=0 adultscore=0 suspectscore=0 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007210020
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,61 +107,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, apopple@linux.ibm.com,
+ mikey@neuling.org, miltonm@us.ibm.com, peterz@infradead.org, oleg@redhat.com,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, jolsa@kernel.org, fweisbec@gmail.com,
+ pedromfc@br.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 20 Jul 2020, Masahiro Yamada wrote:
 
-> 
-> I got a similar report before.
-> 
-> I'd like to know whether or not
-> this is the same issue as fixed by
-> 7883a14339299773b2ce08dcfd97c63c199a9289
-> 
 
-The problem can be observed with 3d77e6a8804ab ("Linux 5.7").
-So it appears that 7883a14339299 ("scripts/kallsyms: fix wrong 
-kallsyms_relative_base") is not sufficient to fix it.
+On 7/20/20 9:12 AM, Jordan Niethe wrote:
+> On Fri, Jul 17, 2020 at 2:11 PM Ravi Bangoria
+> <ravi.bangoria@linux.ibm.com> wrote:
+>>
+>> So far Book3S Powerpc supported only one watchpoint. Power10 is
+>> introducing 2nd DAWR. Enable 2nd DAWR support for Power10.
+>> Availability of 2nd DAWR will depend on CPU_FTR_DAWR1.
+>>
+>> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/cputable.h      | 4 +++-
+>>   arch/powerpc/include/asm/hw_breakpoint.h | 5 +++--
+>>   2 files changed, 6 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+>> index 3445c86e1f6f..36a0851a7a9b 100644
+>> --- a/arch/powerpc/include/asm/cputable.h
+>> +++ b/arch/powerpc/include/asm/cputable.h
+>> @@ -633,7 +633,9 @@ enum {
+>>    * Maximum number of hw breakpoint supported on powerpc. Number of
+>>    * breakpoints supported by actual hw might be less than this.
+>>    */
+>> -#define HBP_NUM_MAX    1
+>> +#define HBP_NUM_MAX    2
+>> +#define HBP_NUM_ONE    1
+>> +#define HBP_NUM_TWO    2
+> I wonder if these defines are necessary - has it any advantage over
+> just using the literal?
 
-> 
-> Does your problem happen on the latest kernel?
+No, not really. Initially I had something like:
 
-Unfortunately this cross compiler (gcc 4.6.4) is too old to build 
-v5.8-rc1 or later. I will have to upgrade.
+#define HBP_NUM_MAX    2
+#define HBP_NUM_P8_P9  1
+#define HBP_NUM_P10    2
 
-> Which version of binutils are you using?
-> 
+But then I thought it's also not right. So I made it _ONE and _TWO.
+Now the function that decides nr watchpoints dynamically (nr_wp_slots)
+is in different file, I thought to keep it like this so it would be
+easier to figure out why _MAX is 2.
 
-This toolchain uses binutils 2.22.
+>>
+>>   #endif /* !__ASSEMBLY__ */
+>>
+>> diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+>> index cb424799da0d..d4eab1694bcd 100644
+>> --- a/arch/powerpc/include/asm/hw_breakpoint.h
+>> +++ b/arch/powerpc/include/asm/hw_breakpoint.h
+>> @@ -5,10 +5,11 @@
+>>    * Copyright 2010, IBM Corporation.
+>>    * Author: K.Prasad <prasad@linux.vnet.ibm.com>
+>>    */
+>> -
+> Was removing this line deliberate?
 
-In case it helps,
+Nah. Will remove that hunk.
 
-$ powerpc-linux-gnu-nm -n vmlinux |head                  
-         w mach_chrp
-00000005 a LG_CACHELINE_BYTES
-00000005 a LG_CACHELINE_BYTES
-00000005 a LG_CACHELINE_BYTES
-0000000c a Hash_bits
-0000001f a CACHELINE_MASK
-0000001f a CACHELINE_MASK
-0000001f a CACHELINE_MASK
-00000020 a CACHELINE_BYTES
-00000020 a CACHELINE_BYTES
-00000020 a CACHELINE_BYTES
-00000020 a reg
-0003ffc0 a Hash_msk
-c0000000 T _start
-c0000000 A _stext
-c0000000 A _text
-c000000c T __start
-c0000054 t __after_mmu_off
-c0000090 t turn_on_mmu
-c00000c4 T __secondary_hold
-c00000dc T __secondary_hold_spinloop
-c00000e0 T __secondary_hold_acknowledge
-c0000100 t Reset
+>>   #ifndef _PPC_BOOK3S_64_HW_BREAKPOINT_H
+>>   #define _PPC_BOOK3S_64_HW_BREAKPOINT_H
+>>
+>> +#include <asm/cpu_has_feature.h>
+>> +
+>>   #ifdef __KERNEL__
+>>   struct arch_hw_breakpoint {
+>>          unsigned long   address;
+>> @@ -46,7 +47,7 @@ struct arch_hw_breakpoint {
+>>
+>>   static inline int nr_wp_slots(void)
+>>   {
+>> -       return HBP_NUM_MAX;
+>> +       return cpu_has_feature(CPU_FTR_DAWR1) ? HBP_NUM_TWO : HBP_NUM_ONE;
+> So it'd be something like:
+> +       return cpu_has_feature(CPU_FTR_DAWR1) ? HBP_NUM_MAX : 1;
+> But thinking that there might be more slots added in the future, it
+> may be better to make the number of slots a variable that is set
+> during the init and then have this function return that.
+
+Not sure I follow. What do you mean by setting number of slots a
+variable that is set during the init?
+
+Thanks,
+Ravi
