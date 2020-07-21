@@ -2,68 +2,84 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5720AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:15:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 927B1C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:32:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB95A206E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:15:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="m0w7oLyK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB95A206E3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id F378B20792
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 03:32:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F378B20792
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9kHr1X4xzDqSN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 13:15:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9kfx4flFzDqdm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 13:32:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9kFw20ZBzDqZF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 13:13:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=m0w7oLyK; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B9kFt5n5Sz9sRf;
- Tue, 21 Jul 2020 13:13:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595301235;
- bh=EoSqXwlvylHMHxLR6CYQvgQ2OeIGAlT5JoTMEhUNdIs=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=m0w7oLyKkmlfse5grRWAmneduN4y/iL3YRNHG7SqxAY30pTAvIw4lUOq2Zs3FekAm
- afPZ8b46fuAI61PgChkTUy/hjqnMZDdF8R7UsSewcqpd8hd1KjypPErLWPAXAXavX7
- RWzaXv9N4jeN5wNDH2OFkP+FrTMHkRDyxNuMz2l74AsW5jyPpZcH5hzdH20PN5M5NX
- Rw8Q+Uy6RMyVtbbH8jNX192nSKANbOh1YkL1tEUTU7yogdmWxCTHnbkrshlu+za+va
- y/ICUL8UqvPxw05rQOYIfBr8pr1oH6HFU/F/l6CoaPkN64AlfKNITNUlMnRQYW4C0x
- RRF5th7naeVFg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [powerpc:next-test 103/106]
- arch/powerpc/mm/book3s64/radix_pgtable.c:513:21: error: use of undeclared
- identifier 'SECTION_SIZE_BITS'
-In-Reply-To: <20200720183900.Horde.y2dVSL93KA1P6bzz7IKxoA1@messagerie.si.c-s.fr>
-References: <202007190428.5Q47y2Gy%lkp@intel.com>
- <87zh7w108a.fsf@linux.ibm.com>
- <20200720183900.Horde.y2dVSL93KA1P6bzz7IKxoA1@messagerie.si.c-s.fr>
-Date: Tue, 21 Jul 2020 13:13:54 +1000
-Message-ID: <87r1t5sgp9.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9kcj2WrhzDqMN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 13:30:12 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06L31GZh052509; Mon, 20 Jul 2020 23:30:07 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32d981r983-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 20 Jul 2020 23:30:07 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06L3Ls10020785;
+ Tue, 21 Jul 2020 03:30:05 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06ams.nl.ibm.com with ESMTP id 32brbh3bk9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 21 Jul 2020 03:30:05 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06L3U2Dd49807532
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 21 Jul 2020 03:30:03 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D63F552054;
+ Tue, 21 Jul 2020 03:30:02 +0000 (GMT)
+Received: from in.ibm.com (unknown [9.85.95.253])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id EF2D25204F;
+ Tue, 21 Jul 2020 03:30:01 +0000 (GMT)
+Date: Tue, 21 Jul 2020 08:59:59 +0530
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 0/4] powerpc/mm/radix: Memory unplug fixes
+Message-ID: <20200721032959.GN7902@in.ibm.com>
+References: <20200709131925.922266-1-aneesh.kumar@linux.ibm.com>
+ <87r1tb1rw2.fsf@linux.ibm.com> <87tuy1sksv.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87tuy1sksv.fsf@mpe.ellerman.id.au>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-20_09:2020-07-20,
+ 2020-07-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1015
+ phishscore=0 impostorscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0
+ priorityscore=1501 bulkscore=0 mlxlogscore=999 adultscore=0 suspectscore=1
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007210016
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,59 +91,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Bharata B Rao <bharata@linux.ibm.com>,
- kbuild-all@lists.01.org, kernel test robot <lkp@intel.com>,
- clang-built-linux@googlegroups.com
+Reply-To: bharata@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> a =C3=A9crit=C2=A0:
-...
->>
->> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c=20=20
->> b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> index bba45fc0b7b2..c5bf2ef73c36 100644
->> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
->> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> @@ -492,6 +492,7 @@ static int __init=20=20
->> @@ -532,6 +533,15 @@ static unsigned long radix_memory_block_size(void)
->>  	return mem_block_size;
->>  }
->>
->> +#else   /* CONFIG_MEMORY_HOTPLUG */
->> +
->> +static unsigned long radix_memory_block_size(void)
->> +{
->> +	return 1UL * 1024 * 1024 * 1024;
->
-> Use SZ_1G instead ?
+On Tue, Jul 21, 2020 at 11:45:20AM +1000, Michael Ellerman wrote:
+> Nathan Lynch <nathanl@linux.ibm.com> writes:
+> > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+> >> This is the next version of the fixes for memory unplug on radix.
+> >> The issues and the fix are described in the actual patches.
+> >
+> > I guess this isn't actually causing problems at runtime right now, but I
+> > notice calls to resize_hpt_for_hotplug() from arch_add_memory() and
+> > arch_remove_memory(), which ought to be mmu-agnostic:
+> >
+> > int __ref arch_add_memory(int nid, u64 start, u64 size,
+> > 			  struct mhp_params *params)
+> > {
+> > 	unsigned long start_pfn = start >> PAGE_SHIFT;
+> > 	unsigned long nr_pages = size >> PAGE_SHIFT;
+> > 	int rc;
+> >
+> > 	resize_hpt_for_hotplug(memblock_phys_mem_size());
+> >
+> > 	start = (unsigned long)__va(start);
+> > 	rc = create_section_mapping(start, start + size, nid,
+> > 				    params->pgprot);
+> > ...
+> 
+> Hmm well spotted.
+> 
+> That does return early if the ops are not setup:
+> 
+> int resize_hpt_for_hotplug(unsigned long new_mem_size)
+> {
+> 	unsigned target_hpt_shift;
+> 
+> 	if (!mmu_hash_ops.resize_hpt)
+> 		return 0;
+> 
+> 
+> And:
+> 
+> void __init hpte_init_pseries(void)
+> {
+> 	...
+> 	if (firmware_has_feature(FW_FEATURE_HPT_RESIZE))
+> 		mmu_hash_ops.resize_hpt = pseries_lpar_resize_hpt;
+> 
+> And that comes in via ibm,hypertas-functions:
+> 
+> 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
+> 
+> 
+> But firmware is not necessarily going to add/remove that call based on
+> whether we're using hash/radix.
 
-I've already squashed that in.
+Correct but hpte_init_pseries() will not be called for radix guests.
 
-I'd take a patch to convert all cases though, I see at least:
+> 
+> So I think a follow-up patch is needed to make this more robust.
+> 
+> Aneesh/Bharata what platform did you test this series on? I'm curious
+> how this didn't break.
 
-  arch/powerpc/boot/ep8248e.c:    mem_size *=3D 1024 * 1024;
-  arch/powerpc/boot/ep88xc.c:     mem_size *=3D 1024 * 1024;
-  arch/powerpc/include/asm/kexec.h:#define KEXEC_SOURCE_MEMORY_LIMIT      (=
-2 * 1024 * 1024 * 1024UL - 1)
-  arch/powerpc/include/asm/kexec.h:#define KEXEC_DESTINATION_MEMORY_LIMIT (=
-2 * 1024 * 1024 * 1024UL - 1)
-  arch/powerpc/include/asm/kexec.h:#define KEXEC_CONTROL_MEMORY_LIMIT     (=
-2 * 1024 * 1024 * 1024UL - 1)
-  arch/powerpc/kernel/iommu.c:    if ((tbl->it_size << tbl->it_page_shift) =
->=3D (1UL * 1024 * 1024 * 1024))
-  arch/powerpc/kernel/setup-common.c:                        (unsigned int)=
-(total_memory / (1024 * 1024)));
-  arch/powerpc/mm/book3s64/radix_pgtable.c:               mem_block_size =
-=3D 1UL * 1024 * 1024 * 1024;
-  arch/powerpc/mm/book3s64/radix_pgtable.c:       return 1UL * 1024 * 1024 =
-* 1024;
-  arch/powerpc/mm/ioremap_32.c:   if (p < 16 * 1024 * 1024)
-  arch/powerpc/platforms/powernv/setup.c:         return 256UL * 1024 * 102=
-4;
-  arch/powerpc/platforms/pseries/cmm.c:   signed long min_mem_pages =3D (mi=
-n_mem_mb * 1024 * 1024) / PAGE_SIZE;
+I have tested memory hotplug/unplug for radix guest on zz platform and
+sanity-tested this for hash guest on P8.
 
-cheers
+As noted above, mmu_hash_ops.resize_hpt will not be set for radix
+guest and hence we won't see any breakage.
+
+However a separate patch to fix this will be good.
+
+Regards,
+Bharata.
