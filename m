@@ -2,87 +2,58 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C3DFC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95844C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:56:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E13452072E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:45:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E13452072E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 42A482176B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 04:56:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Udf9255C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42A482176B
+Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9mH90fwLzDqgV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 14:45:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9mWn06xbzDqdv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 14:56:05 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9mDd3RlKzDqgf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 14:42:57 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06L4Wrip011245; Tue, 21 Jul 2020 00:42:51 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32dn6x600c-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 00:42:50 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06L4ftkb021142;
- Tue, 21 Jul 2020 04:42:48 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by ppma06ams.nl.ibm.com with ESMTP id 32brbh3d50-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 04:42:48 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06L4gjVC20185562
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Jul 2020 04:42:45 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E8085205A;
- Tue, 21 Jul 2020 04:42:45 +0000 (GMT)
-Received: from [9.85.116.40] (unknown [9.85.116.40])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id D4B6A5204F;
- Tue, 21 Jul 2020 04:42:43 +0000 (GMT)
-Subject: Re: [PATCH v3 0/4] powerpc/mm/radix: Memory unplug fixes
-To: Michael Ellerman <mpe@ellerman.id.au>, Nathan Lynch <nathanl@linux.ibm.com>
-References: <20200709131925.922266-1-aneesh.kumar@linux.ibm.com>
- <87r1tb1rw2.fsf@linux.ibm.com> <87tuy1sksv.fsf@mpe.ellerman.id.au>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <0f79bf71-132e-6f3b-9b51-fb893b0dd451@linux.ibm.com>
-Date: Tue, 21 Jul 2020 10:12:42 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9mTv1PfpzDqdf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 14:54:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
+ header.s=201707 header.b=Udf9255C; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 4B9mTt2d5Zz9sSJ; Tue, 21 Jul 2020 14:54:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1595307266; bh=RQE08isQf+lBELg3C8LRhn+T91bIrsMyhyCDly9itjg=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Udf9255C4Pb0JsIeovrxWm1+Cgw67ckgCelFZEEI5ONfcB529BVnIiUek2+i2mUcA
+ cN/1kMZosYyV4sEMOztqQwRWGSS/bhlMtc0tqLWRfHeFmRK8Ql+/I2O7IKYfyzFt+3
+ AKRJwhhYdJGxiV7DAi7kE2G41vSv9nto5+xc8i2/meTd3R0EFXIj75Ubt8fp7JCtMw
+ JKJGLs1+StWjkodJ88zF4QQbQCkt8z5uswJz16Zvmwh1mdDkVJmkDQ8vBpX2S3Fclf
+ OdniE7bhslmcJyWXrig9cq2prnoqonFLNnOFzrN5cAkRgYO3eKkAN0IhS0WSgNwDgu
+ 657tg8jJG7ynQ==
+Date: Tue, 21 Jul 2020 13:54:20 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [v3 02/15] KVM: PPC: Book3S HV: Cleanup updates for kvm vcpu MMCR
+Message-ID: <20200721035420.GA3819606@thinks.paulus.ozlabs.org>
+References: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <1594996707-3727-3-git-send-email-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87tuy1sksv.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-21_01:2020-07-21,
- 2020-07-21 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 spamscore=0
- impostorscore=0 mlxscore=0 malwarescore=0 clxscore=1015 bulkscore=0
- priorityscore=1501 lowpriorityscore=0 mlxlogscore=999 adultscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007210031
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1594996707-3727-3-git-send-email-atrajeev@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,79 +65,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Bharata B Rao <bharata@linux.ibm.com>
+Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, svaidyan@in.ibm.com,
+ acme@kernel.org, jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/21/20 7:15 AM, Michael Ellerman wrote:
-> Nathan Lynch <nathanl@linux.ibm.com> writes:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
->>> This is the next version of the fixes for memory unplug on radix.
->>> The issues and the fix are described in the actual patches.
->>
->> I guess this isn't actually causing problems at runtime right now, but I
->> notice calls to resize_hpt_for_hotplug() from arch_add_memory() and
->> arch_remove_memory(), which ought to be mmu-agnostic:
->>
->> int __ref arch_add_memory(int nid, u64 start, u64 size,
->> 			  struct mhp_params *params)
->> {
->> 	unsigned long start_pfn = start >> PAGE_SHIFT;
->> 	unsigned long nr_pages = size >> PAGE_SHIFT;
->> 	int rc;
->>
->> 	resize_hpt_for_hotplug(memblock_phys_mem_size());
->>
->> 	start = (unsigned long)__va(start);
->> 	rc = create_section_mapping(start, start + size, nid,
->> 				    params->pgprot);
->> ...
-> 
-> Hmm well spotted.
-> 
-> That does return early if the ops are not setup:
-> 
-> int resize_hpt_for_hotplug(unsigned long new_mem_size)
-> {
-> 	unsigned target_hpt_shift;
-> 
-> 	if (!mmu_hash_ops.resize_hpt)
-> 		return 0;
-> 
-> 
-> And:
-> 
-> void __init hpte_init_pseries(void)
-> {
-> 	...
-> 	if (firmware_has_feature(FW_FEATURE_HPT_RESIZE))
-> 		mmu_hash_ops.resize_hpt = pseries_lpar_resize_hpt;
-> 
-> And that comes in via ibm,hypertas-functions:
-> 
-> 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
-> 
-> 
-> But firmware is not necessarily going to add/remove that call based on
-> whether we're using hash/radix.
-> 
+On Fri, Jul 17, 2020 at 10:38:14AM -0400, Athira Rajeev wrote:
+> Currently `kvm_vcpu_arch` stores all Monitor Mode Control registers
+> in a flat array in order: mmcr0, mmcr1, mmcra, mmcr2, mmcrs
+> Split this to give mmcra and mmcrs its own entries in vcpu and
+> use a flat array for mmcr0 to mmcr2. This patch implements this
+> cleanup to make code easier to read.
 
+Changing the way KVM stores these values internally is fine, but
+changing the user ABI is not.  This part:
 
-We are good there because hpte_init_pseries is only called for hash 
-translation.
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+> index 264e266..e55d847 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -510,8 +510,8 @@ struct kvm_ppc_cpu_char {
+>  
+>  #define KVM_REG_PPC_MMCR0	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x10)
+>  #define KVM_REG_PPC_MMCR1	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x11)
+> -#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
+> -#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
+> +#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
+> +#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
 
-early_init_mmu()
--> hash__early_init_mmu
-    -> hpte_init_pseries
-       -> mmu_hash_ops.resize_hpt = pseries_lpar_resize_hpt;
+means that existing userspace programs that used to work would now be
+broken.  That is not acceptable (breaking the user ABI is only ever
+acceptable with a very compelling reason).  So NAK to this part of the
+patch.
 
-> So I think a follow-up patch is needed to make this more robust.
-> 
-> Aneesh/Bharata what platform did you test this series on? I'm curious
-> how this didn't break.
-
-All the changes are tested with kvm.
-
--aneesh
-
+Regards,
+Paul.
