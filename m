@@ -6,80 +6,80 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D12C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 23:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A574DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 23:49:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C9E0F20720
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 23:38:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 565AD207BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 23:49:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=dabbelt-com.20150623.gappssmtp.com header.i=@dabbelt-com.20150623.gappssmtp.com header.b="p+44Z+4/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9E0F20720
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=dabbelt-com.20150623.gappssmtp.com header.i=@dabbelt-com.20150623.gappssmtp.com header.b="hsWZwjsr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 565AD207BB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=dabbelt.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBFQN556MzDqn1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 09:38:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBFh02wQQzDqlJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 09:49:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=palmer@dabbelt.com;
+ smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::1042;
+ helo=mail-pj1-x1042.google.com; envelope-from=palmer@dabbelt.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=dabbelt.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=dabbelt-com.20150623.gappssmtp.com
  header.i=@dabbelt-com.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=p+44Z+4/; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ header.s=20150623 header.b=hsWZwjsr; dkim-atps=neutral
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBFNb53LpzDqWy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 09:36:30 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id z5so207481pgb.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 16:36:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBFfB1qL3zDqXW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 09:48:16 +1000 (AEST)
+Received: by mail-pj1-x1042.google.com with SMTP id a9so202262pjd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 16:48:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=dabbelt-com.20150623.gappssmtp.com; s=20150623;
  h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
  :content-transfer-encoding;
- bh=4/y9Kml4kEgPy1nuHtQbnnn9hcon0j83gAhPQ/a7NVI=;
- b=p+44Z+4/ckHHF+GAQ4A2skbeyMPVgmukHh3fOKGwTQemnwSJ6GxWjmD7CZ9Tw+uoJe
- GrUYmrFsqB+Hxkn7XtjCnb3UIrgRDrYn351sxhMdvuu4nXXNBn+qXFhFVl67IbZhW/Uu
- pRFAxMYa06+em/bBZD0yxobDqZsaNeeyw2g4ArOeEsHrhQN0KddMoF7MB2BKEIGtTJcy
- Jn+T+wIhbtgRqr8e1vInERFXLi6qwBfiacu3vAtXQ5F2bwo26NHVG0utrKaT49FR+mls
- iSrY01VlGtHRpaIjgBftwYPk40xsrwfXm20K9WwRb/Y4HrOgsQjLMe7fxj5f3vvq/s3T
- WLag==
+ bh=mDc030Vht0H+5kxn8kLZcM0RglBvmobnh33JIp70Q9A=;
+ b=hsWZwjsrrb6MHnGlDjXciuMZQ0nzpaGX0XqqotTf6FxppNdslwj80bOHq4XiVr8B4N
+ SCpSNd4Uu+fKdrj6GAgEnicqXWWEP9PCWq23ucc9/tt2akFpRFgjuE9SeU+cCHODPhj8
+ maVEeY1DOS1y5XfHe5sHYmNqjl4RoWUBn7w7lB8TeTWwtt4QeijAeuGNPjcLeBnjV19B
+ SmugmuJ8ByDeMpqvSyeew7HlPpyj9My215QEtBoF9dt3tORKxn+X2oVXdd2uNIyHmd9b
+ VDJVMDJNscIIFoT2kCXV0OaSjuh8jGAbeGFch/4XoFGO9VWRYU5PdpQ3sp+SqpvXySKf
+ YI/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
  :mime-version:content-transfer-encoding;
- bh=4/y9Kml4kEgPy1nuHtQbnnn9hcon0j83gAhPQ/a7NVI=;
- b=ahqlyt8khP7vEBukQyzO22Fz87kY0ETJBbWRhYXHLL3zpVvD0jxcLGSZrkfxItjlCR
- SlW1jK3O+ZKFKcii5C/NkzOu+Ye+yquL/q4pU3aJLi0cKCpg0K1kCEqrE0sRqVr/Bcw+
- tD5oQGVh7iM/Ejmhv4u7BiYpENN98XfohY64Td/XBwTFnveKAtZ2Ab7XtEBCgSkoKow1
- +bFlKeCYKJEyaapenxSwS71Io1P/MLn0G1ze8E9IYf7QaA2qGPvJ+ELHCirodKHWeqEl
- yX2MSHKKBURykAmiSxxz0D5TcxU3UdSv9rjoO3Ikeq6IBGZ4Ou2e+fB61wO0+qJo1YJQ
- fTWQ==
-X-Gm-Message-State: AOAM5322szVtZwuSLUv+kct5RzsvIDusmBrhXZnE1K2fqC9kIfwdwRnb
- cXDtU7cnHBS4jCQ1I4uJLb0l9w==
-X-Google-Smtp-Source: ABdhPJzB67n3W2mkqzOSwKaM1AJtP/MeBDuysfieMDV8LWATOje0NdcZ9GK0r2Z3+Gk+qzhNM2jtKw==
-X-Received: by 2002:a62:8782:: with SMTP id
- i124mr26134197pfe.267.1595374587183; 
- Tue, 21 Jul 2020 16:36:27 -0700 (PDT)
+ bh=mDc030Vht0H+5kxn8kLZcM0RglBvmobnh33JIp70Q9A=;
+ b=c4u2s0BpYVYgUWKeWezWT1n+NQ3dprb1RFB/oKPe2Ukc/7GHWHoTZ0xMNTMDs0Pta/
+ Pheyba4t199jsPZLrDfjlIhREMCzhhhzaV0qiQa6QiI+/sdYjMzAgl6ZzAblBk+LsQbm
+ SW4VxvOeT3t+/gllsc/Pf3cveumJPPtajpaAXGP7i0TzwPLYOp3j4ipkva6Ns/heZOPG
+ lOJU6h0wQ8Z13ZwUDE/KMnSzm03haS8pkRfUv66B0WoOpwaX3EyXk6MlQ8pu4j8EScd/
+ Qyh/D3Y6M8nkQVhgMY1z0c3nnmQcfSbN0OIu88mOP41qxQ6FiiPeTonilXsZ2tMWzdFu
+ 2N/Q==
+X-Gm-Message-State: AOAM5317ySC1dzKYKJzhg1cNC00iJ/JL5QiyEwPC5An9Td5/8FbLHBXB
+ Yy7CC5ppe2hfJPebWeztedwgRw==
+X-Google-Smtp-Source: ABdhPJz7GQOPhPQo7WdQAVqmRGBn/kBHYhew0a/7KykfyZ8e5DBJEpqbOEQfucs+jTILpvC6kcl9RQ==
+X-Received: by 2002:a17:90a:cc03:: with SMTP id
+ b3mr6637665pju.80.1595375292546; 
+ Tue, 21 Jul 2020 16:48:12 -0700 (PDT)
 Received: from localhost (76-210-143-223.lightspeed.sntcca.sbcglobal.net.
  [76.210.143.223])
- by smtp.gmail.com with ESMTPSA id d24sm4115944pjx.36.2020.07.21.16.36.26
+ by smtp.gmail.com with ESMTPSA id i66sm20870634pfc.12.2020.07.21.16.48.11
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 21 Jul 2020 16:36:26 -0700 (PDT)
-Date: Tue, 21 Jul 2020 16:36:26 -0700 (PDT)
-X-Google-Original-Date: Tue, 21 Jul 2020 16:36:24 PDT (-0700)
+ Tue, 21 Jul 2020 16:48:11 -0700 (PDT)
+Date: Tue, 21 Jul 2020 16:48:11 -0700 (PDT)
+X-Google-Original-Date: Tue, 21 Jul 2020 16:48:10 PDT (-0700)
 Subject: Re: [PATCH v5 1/4] riscv: Move kernel mapping to vmalloc zone
-In-Reply-To: <54af168083aee9dbda1b531227521a26b77ba2c8.camel@kernel.crashing.org>
+In-Reply-To: <6fbea8347bdb8434d91cf3ec2b95b134bd66cfe3.camel@kernel.crashing.org>
 From: Palmer Dabbelt <palmer@dabbelt.com>
 To: benh@kernel.crashing.org
-Message-ID: <mhng-4b49d09a-0267-4879-849f-30c24f26e2c3@palmerdabbelt-glaptop1>
+Message-ID: <mhng-cd9a74ea-2edf-47e4-aade-b090f1a069f1@palmerdabbelt-glaptop1>
 Mime-Version: 1.0 (MHng)
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
@@ -103,93 +103,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Jul 2020 16:11:02 PDT (-0700), benh@kernel.crashing.org wrote:
-> On Tue, 2020-07-21 at 14:36 -0400, Alex Ghiti wrote:
->> > > I guess I don't understand why this is necessary at all.
->> > > Specifically: why
->> > > can't we just relocate the kernel within the linear map?  That would
->> > > let the
->> > > bootloader put the kernel wherever it wants, modulo the physical
->> > > memory size we
->> > > support.  We'd need to handle the regions that are coupled to the
->> > > kernel's
->> > > execution address, but we could just put them in an explicit memory
->> > > region
->> > > which is what we should probably be doing anyway.
->> >
->> > Virtual relocation in the linear mapping requires to move the kernel
->> > physically too. Zong implemented this physical move in its KASLR RFC
->> > patchset, which is cumbersome since finding an available physical spot
->> > is harder than just selecting a virtual range in the vmalloc range.
->> >
->> > In addition, having the kernel mapping in the linear mapping prevents
->> > the use of hugepage for the linear mapping resulting in performance loss
->> > (at least for the GB that encompasses the kernel).
->> >
->> > Why do you find this "ugly" ? The vmalloc region is just a bunch of
->> > available virtual addresses to whatever purpose we want, and as noted by
->> > Zong, arm64 uses the same scheme.
+On Tue, 21 Jul 2020 16:12:58 PDT (-0700), benh@kernel.crashing.org wrote:
+> On Tue, 2020-07-21 at 12:05 -0700, Palmer Dabbelt wrote:
+>>
+>> * We waste vmalloc space on 32-bit systems, where there isn't a lot of it.
+>> * On 64-bit systems the VA space around the kernel is precious because it's the
+>>   only place we can place text (modules, BPF, whatever).
 >
-> I don't get it :-)
+> Why ? Branch distance limits ? You can't use trampolines ?
+
+Nothing fundamental, it's just that we don't have a large code model in the C
+compiler.  As a result all the global symbols are resolved as 32-bit
+PC-relative accesses.  We could fix this with a fast large code model, but then
+the kernel would need to relax global symbol references in modules and we don't
+even do that for the simple code models we have now.  FWIW, some of the
+proposed large code models are essentially just split-PLT/GOT and therefor
+don't require relaxation, but at that point we're essentially PIC until we
+have more that 2GiB of kernel text -- and even then, we keep all the
+performance issues.
+
+>>  If we start putting
+>>   the kernel in the vmalloc space then we either have to pre-allocate a bunch
+>>   of space around it (essentially making it a fixed mapping anyway) or it
+>>   becomes likely that we won't be able to find space for modules as they're
+>>   loaded into running systems.
 >
-> At least on powerpc we move the kernel in the linear mapping and it
-> works fine with huge pages, what is your problem there ? You rely on
-> punching small-page size holes in there ?
+> I dislike the kernel being in the vmalloc space (see my other email)
+> but I don't understand the specific issue with modules.
 
-That was my original suggestion, and I'm not actually sure it's invalid.  It
-would mean that both the kernel's physical and virtual addresses are set by the
-bootloader, which may or may not be workable if we want to have an sv48+sv39
-kernel.  My initial approach to sv48+sv39 kernels would be to just throw away
-the sv39 memory on sv48 kernels, which would preserve the linear map but mean
-that there is no single physical address that's accessible for both.  That
-would require some coordination between the bootloader and the kernel as to
-where it should be loaded, but maybe there's a better way to design the linear
-map.  Right now we have a bunch of unwritten rules about where things need to
-be loaded, which is a recipe for disaster.
+Essentially what's above, the modules smell the same as the rest of the
+kernel's code and therefor have a similar set of restrictions.  If we build PIC
+modules and have the PLT entries do GOT loads (as do our shared libraries) then
+we could break this restriction, but that comes with some performance
+implications.  Like I said in the other email, I'm less worried about the
+instruction side of things so maybe that's the right way to go.
 
-We could copy the kernel around, but I'm not sure I really like that idea.  We
-do zero the BSS right now, so it's not like we entirely rely on the bootloader
-to set up the kernel image, but with the hart race boot scheme we have right
-now we'd at least need to leave a stub sitting around.  Maybe we just throw
-away SBI v0.1, though, that's why we called it all legacy in the first place.
+>> * Relying on a relocatable kernel for sv48 support introduces a fairly large
+>>   performance hit.
+>
+> Out of curiosity why would relocatable kernels introduce a significant
+> hit ? Where about do you see the overhead coming from ?
 
-My bigger worry is that anything that involves running the kernel at arbitrary
-virtual addresses means we need a PIC kernel, which means every global symbol
-needs an indirection.  That's probably not so bad for shared libraries, but the
-kernel has a lot of global symbols.  PLT references probably aren't so scary,
-as we have an incoherent instruction cache so the virtual function predictor
-isn't that hard to build, but making all global data accesses GOT-relative
-seems like a disaster for performance.  This fixed-VA thing really just exists
-so we don't have to be full-on PIC.
+Our PIC codegen, probably better addressed by my other email and above.
 
-In theory I think we could just get away with pretending that medany is PIC,
-which I believe works as long as the data and text offset stays constant, you
-you don't have any symbols between 2GiB and -2GiB (as those may stay fixed,
-even in medany), and you deal with GP accordingly (which should work itself out
-in the current startup code).  We rely on this for some of the early boot code
-(and will soon for kexec), but that's a very controlled code base and we've
-already had some issues.  I'd be much more comfortable adding an explicit
-semi-PIC code model, as I tend to miss something when doing these sorts of
-things and then we could at least add it to the GCC test runs and guarantee it
-actually works.  Not really sure I want to deal with that, though.  It would,
-however, be the only way to get random virtual addresses during kernel
-execution.
-
-> At least in the old days, there were a number of assumptions that
-> the kernel text/data/bss resides in the linear mapping.
-
-Ya, it terrified me as well.  Alex says arm64 puts the kernel in the vmalloc
-region, so assuming that's the case it must be possible.  I didn't get that
-from reading the arm64 port (I guess it's no secret that pretty much all I do
-is copy their code)
-
-> If you change that you need to ensure that it's still physically
-> contiguous and you'll have to tweak __va and __pa, which might induce
-> extra overhead.
-
-I'm operating under the assumption that we don't want to add an additional load
-to virt2phys conversions.  arm64 bends over backwards to avoid the load, and
-I'm assuming they have a reason for doing so.  Of course, if we're PIC then
-maybe performance just doesn't matter, but I'm not sure I want to just give up.
-Distros will probably build the sv48+sv39 kernels as soon as they show up, even
-if there's no sv48 hardware for a while.
+>
+>> Roughly, my proposal would be to:
+>>
+>> * Leave the 32-bit memory map alone.  On 32-bit systems we can load modules
+>>   anywhere and we only have one VA width, so we're not really solving any
+>>   problems with these changes.
+>> * Staticly allocate a 2GiB portion of the VA space for all our text, as its own
+>>   region.  We'd link/relocate the kernel here instead of around PAGE_OFFSET,
+>>   which would decouple the kernel from the physical memory layout of the system.
+>>   This would have the side effect of sorting out a bunch of bootloader headaches
+>>   that we currently have.
+>> * Sort out how to maintain a linear map as the canonical hole moves around
+>>   between the VA widths without adding a bunch of overhead to the virt2phys and
+>>   friends.  This is probably going to be the trickiest part, but I think if we
+>>   just change the page table code to essentially lie about VAs when an sv39
+>>   system runs an sv48+sv39 kernel we could make it work -- there'd be some
+>>   logical complexity involved, but it would remain fast.
+>>
+>> This doesn't solve the problem of virtually relocatable kernels, but it does
+>> let us decouple that from the sv48 stuff.  It also lets us stop relying on a
+>> fixed physical address the kernel is loaded into, which is another thing I
+>> don't like.
+>>
+>> I know this may be a more complicated approach, but there aren't any sv48
+>> systems around right now so I just don't see the rush to support them,
+>> particularly when there's a cost to what already exists (for those who haven't
+>> been watching, so far all the sv48 patch sets have imposed a significant
+>> performance penalty on all systems).
