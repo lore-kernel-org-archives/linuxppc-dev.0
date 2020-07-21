@@ -2,92 +2,99 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4C42C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:00:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C34BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:03:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72CF320792
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:00:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72CF320792
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EE3D520792
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:03:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE3D520792
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9xxp4VbMzDqGn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 22:00:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9y0n0d9GzDqkb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 22:03:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9xV70Z6DzDq9S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:40:14 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9xsf6XfXzDqlK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:57:10 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06LBYWf7153558; Tue, 21 Jul 2020 07:40:07 -0400
+ 06LBV9uI112011; Tue, 21 Jul 2020 07:56:56 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32dhps6wk3-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32d5k0x2ds-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 07:40:07 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06LBYZWX153972;
- Tue, 21 Jul 2020 07:40:07 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32dhps6whn-1
+ Tue, 21 Jul 2020 07:56:56 -0400
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06LBWB61115046;
+ Tue, 21 Jul 2020 07:56:55 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32d5k0x2da-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 07:40:07 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06LBZwDk031241;
- Tue, 21 Jul 2020 11:40:04 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma02fra.de.ibm.com with ESMTP id 32brq7uwp7-1
+ Tue, 21 Jul 2020 07:56:55 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06LBtgVL008126;
+ Tue, 21 Jul 2020 11:56:54 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 32brbh3sud-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 11:40:04 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06LBcjW023396568
+ Tue, 21 Jul 2020 11:56:53 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 06LBupNK66584962
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Jul 2020 11:38:45 GMT
+ Tue, 21 Jul 2020 11:56:51 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 03E8F42042;
- Tue, 21 Jul 2020 11:38:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id D2A9842045;
+ Tue, 21 Jul 2020 11:56:51 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DB734203F;
- Tue, 21 Jul 2020 11:38:41 +0000 (GMT)
-Received: from srikart450.in.ibm.com (unknown [9.85.93.17])
+ by IMSVA (Postfix) with ESMTP id AF64242042;
+ Tue, 21 Jul 2020 11:56:49 +0000 (GMT)
+Received: from [9.79.210.59] (unknown [9.79.210.59])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 21 Jul 2020 11:38:40 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <michaele@au1.ibm.com>
-Subject: [PATCH v2 03/10] powerpc/smp: Move powerpc_topology above
-Date: Tue, 21 Jul 2020 17:08:07 +0530
-Message-Id: <20200721113814.32284-4-srikar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
-References: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
+ Tue, 21 Jul 2020 11:56:49 +0000 (GMT)
+Subject: Re: [PATCH v2 2/2] selftest/cpuidle: Add support for cpuidle latency
+ measurement
+To: ego@linux.vnet.ibm.com
+References: <20200717091801.29289-1-psampat@linux.ibm.com>
+ <20200717091801.29289-3-psampat@linux.ibm.com>
+ <20200720055242.GB31497@in.ibm.com>
+From: Pratik Sampat <psampat@linux.ibm.com>
+Message-ID: <9465ac64-1f24-fea5-6c57-59cce00a2ba8@linux.ibm.com>
+Date: Tue, 21 Jul 2020 17:26:49 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
+MIME-Version: 1.0
+In-Reply-To: <20200720055242.GB31497@in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-21_05:2020-07-21,
+ definitions=2020-07-21_03:2020-07-21,
  2020-07-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 mlxscore=0
- spamscore=0 lowpriorityscore=0 suspectscore=0 mlxlogscore=999 phishscore=0
- clxscore=1015 impostorscore=0 bulkscore=0 adultscore=0 malwarescore=0
+ bulkscore=0 phishscore=0
+ mlxlogscore=999 suspectscore=1 priorityscore=1501 mlxscore=0 clxscore=1015
+ lowpriorityscore=0 malwarescore=0 impostorscore=0 spamscore=0 adultscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007210082
+ definitions=main-2007210077
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,185 +106,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Jordan Niethe <jniethe5@gmail.com>,
- Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- Valentin Schneider <valentin.schneider@arm.com>,
- Nick Piggin <npiggin@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
+ linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, paulus@samba.org,
+ linux-kselftest@vger.kernel.org, shuah@kernel.org, srivatsa@csail.mit.edu,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Just moving the powerpc_topology description above.
-This will help in using functions in this file and avoid declarations.
+Hi Gautham, Thanks for the review.
 
-No other functional changes
 
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Cc: Michael Ellerman <michaele@au1.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Valentin Schneider <valentin.schneider@arm.com>
-Cc: Nick Piggin <npiggin@au1.ibm.com>
-Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Michael Neuling <mikey@linux.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
-Cc: Jordan Niethe <jniethe5@gmail.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/smp.c | 116 +++++++++++++++++++-------------------
- 1 file changed, 58 insertions(+), 58 deletions(-)
+On 20/07/20 11:22 am, Gautham R Shenoy wrote:
+> Hi Pratik,
+>
+>
+> On Fri, Jul 17, 2020 at 02:48:01PM +0530, Pratik Rajesh Sampat wrote:
+>> This patch adds support to trace IPI based and timer based wakeup
+>> latency from idle states
+>>
+>> Latches onto the test-cpuidle_latency kernel module using the debugfs
+>> interface to send IPIs or schedule a timer based event, which in-turn
+>> populates the debugfs with the latency measurements.
+>>
+>> Currently for the IPI and timer tests; first disable all idle states
+>> and then test for latency measurements incrementally enabling each state
+>>
+>> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+> A few comments below.
+>
+>> ---
+>>   tools/testing/selftests/Makefile           |   1 +
+>>   tools/testing/selftests/cpuidle/Makefile   |   6 +
+>>   tools/testing/selftests/cpuidle/cpuidle.sh | 257 +++++++++++++++++++++
+>>   tools/testing/selftests/cpuidle/settings   |   1 +
+>>   4 files changed, 265 insertions(+)
+>>   create mode 100644 tools/testing/selftests/cpuidle/Makefile
+>>   create mode 100755 tools/testing/selftests/cpuidle/cpuidle.sh
+>>   create mode 100644 tools/testing/selftests/cpuidle/settings
+>>
+> [..skip..]
+>
+>> +
+>> +ins_mod()
+>> +{
+>> +	if [ ! -f "$MODULE" ]; then
+>> +		printf "$MODULE module does not exist. Exitting\n"
+> If the module has been compiled into the kernel (due to a
+> localyesconfig, for instance), then it is unlikely that we will find
+> it in /lib/modules. Perhaps you want to check if the debugfs
+> directories created by the module exist, and if so, print a message
+> saying that the modules is already loaded or some such?
+>
+That's a good idea. I can can grep for this module within /proc/modules
+and not insert it, if it is already there
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 0e0b118d9b6e..1ce95da00cb6 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -818,6 +818,64 @@ static int init_cpu_l1_cache_map(int cpu)
- 	return err;
- }
- 
-+static bool shared_caches;
-+
-+#ifdef CONFIG_SCHED_SMT
-+/* cpumask of CPUs with asymmetric SMT dependency */
-+static int powerpc_smt_flags(void)
-+{
-+	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
-+
-+	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
-+		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
-+		flags |= SD_ASYM_PACKING;
-+	}
-+	return flags;
-+}
-+#endif
-+
-+/*
-+ * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
-+ * This topology makes it *much* cheaper to migrate tasks between adjacent cores
-+ * since the migrated task remains cache hot. We want to take advantage of this
-+ * at the scheduler level so an extra topology level is required.
-+ */
-+static int powerpc_shared_cache_flags(void)
-+{
-+	return SD_SHARE_PKG_RESOURCES;
-+}
-+
-+/*
-+ * We can't just pass cpu_l2_cache_mask() directly because
-+ * returns a non-const pointer and the compiler barfs on that.
-+ */
-+static const struct cpumask *shared_cache_mask(int cpu)
-+{
-+	if (shared_caches)
-+		return cpu_l2_cache_mask(cpu);
-+
-+	if (has_big_cores)
-+		return cpu_smallcore_mask(cpu);
-+
-+	return per_cpu(cpu_sibling_map, cpu);
-+}
-+
-+#ifdef CONFIG_SCHED_SMT
-+static const struct cpumask *smallcore_smt_mask(int cpu)
-+{
-+	return cpu_smallcore_mask(cpu);
-+}
-+#endif
-+
-+static struct sched_domain_topology_level powerpc_topology[] = {
-+#ifdef CONFIG_SCHED_SMT
-+	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
-+#endif
-+	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
-+	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
-+	{ NULL, },
-+};
-+
- static int init_big_cores(void)
- {
- 	int cpu;
-@@ -1249,8 +1307,6 @@ static void add_cpu_to_masks(int cpu)
- 			set_cpus_related(cpu, i, cpu_core_mask);
- }
- 
--static bool shared_caches;
--
- /* Activate a secondary processor. */
- void start_secondary(void *unused)
- {
-@@ -1314,62 +1370,6 @@ int setup_profiling_timer(unsigned int multiplier)
- 	return 0;
- }
- 
--#ifdef CONFIG_SCHED_SMT
--/* cpumask of CPUs with asymmetric SMT dependency */
--static int powerpc_smt_flags(void)
--{
--	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
--
--	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
--		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
--		flags |= SD_ASYM_PACKING;
--	}
--	return flags;
--}
--#endif
--
--/*
-- * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
-- * This topology makes it *much* cheaper to migrate tasks between adjacent cores
-- * since the migrated task remains cache hot. We want to take advantage of this
-- * at the scheduler level so an extra topology level is required.
-- */
--static int powerpc_shared_cache_flags(void)
--{
--	return SD_SHARE_PKG_RESOURCES;
--}
--
--/*
-- * We can't just pass cpu_l2_cache_mask() directly because
-- * returns a non-const pointer and the compiler barfs on that.
-- */
--static const struct cpumask *shared_cache_mask(int cpu)
--{
--	if (shared_caches)
--		return cpu_l2_cache_mask(cpu);
--
--	if (has_big_cores)
--		return cpu_smallcore_mask(cpu);
--
--	return per_cpu(cpu_sibling_map, cpu);
--}
--
--#ifdef CONFIG_SCHED_SMT
--static const struct cpumask *smallcore_smt_mask(int cpu)
--{
--	return cpu_smallcore_mask(cpu);
--}
--#endif
--
--static struct sched_domain_topology_level powerpc_topology[] = {
--#ifdef CONFIG_SCHED_SMT
--	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
--#endif
--	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
--	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
--	{ NULL, },
--};
--
- void __init smp_cpus_done(unsigned int max_cpus)
- {
- 	/*
--- 
-2.17.1
+>> +		exit $ksft_skip
+>> +	fi
+>> +	printf "Inserting $MODULE module\n\n"
+>> +	insmod $MODULE
+>> +	if [ $? != 0 ]; then
+>> +		printf "Insmod $MODULE failed\n"
+>> +		exit $ksft_skip
+>> +	fi
+>> +}
+>> +
+>> +compute_average()
+>> +{
+>> +	arr=("$@")
+>> +	sum=0
+>> +	size=${#arr[@]}
+>> +	for i in "${arr[@]}"
+>> +	do
+>> +		sum=$((sum + i))
+>> +	done
+>> +	avg=$((sum/size))
+> It would be good to assert that "size" isn't 0 here.
+
+Sure
+
+>> +}
+>> +
+>> +# Disable all stop states
+>> +disable_idle()
+>> +{
+>> +	for ((cpu=0; cpu<NUM_CPUS; cpu++))
+>> +	do
+>> +		for ((state=0; state<NUM_STATES; state++))
+>> +		do
+>> +			echo 1 > /sys/devices/system/cpu/cpu$cpu/cpuidle/state$state/disable
+> So, on offlined CPUs, we won't see
+> /sys/devices/system/cpu/cpu$cpu/cpuidle/state$state directory. You
+> should probably perform this operation only on online CPUs.
+
+Right. I should make CPU operations only on online CPUs all over the script
+
+[..snip..]
+
+Thanks
+Pratik
 
