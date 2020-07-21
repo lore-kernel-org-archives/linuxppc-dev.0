@@ -2,96 +2,89 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F03DC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD1ABC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 13:14:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26B152073A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 12:50:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26B152073A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 910D420717
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 13:14:28 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=efficios.com header.i=@efficios.com header.b="TbeYjfKf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 910D420717
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=efficios.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9z3d5R4QzDqHj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 22:50:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9zZp38jVzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 23:14:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=efficios.com (client-ip=167.114.26.124; helo=mail.efficios.com;
+ envelope-from=compudj@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=efficios.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256
+ header.s=default header.b=TbeYjfKf; dkim-atps=neutral
+Received: from mail.efficios.com (mail.efficios.com [167.114.26.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9ywL0y1JzDqjv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 22:44:33 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06LCXIU1141883; Tue, 21 Jul 2020 08:44:25 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32d5h8r6eh-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 08:44:25 -0400
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06LCZPoX149175;
- Tue, 21 Jul 2020 08:44:23 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32d5h8r6dn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 08:44:23 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06LCeSXc023133;
- Tue, 21 Jul 2020 12:44:21 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma02fra.de.ibm.com with ESMTP id 32brq7uywn-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 12:44:21 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06LCh3MT60752264
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Jul 2020 12:43:03 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8FE894204B;
- Tue, 21 Jul 2020 12:43:03 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 105E642047;
- Tue, 21 Jul 2020 12:43:01 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.79.210.59])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 21 Jul 2020 12:43:00 +0000 (GMT)
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org, srivatsa@csail.mit.edu,
- shuah@kernel.org, npiggin@gmail.com, ego@linux.vnet.ibm.com,
- svaidy@linux.ibm.com, pratik.r.sampat@gmail.com, psampat@linux.ibm.com,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v3 0/2] Selftest for cpuidle latency measurement
-Date: Tue, 21 Jul 2020 18:12:58 +0530
-Message-Id: <20200721124300.65615-1-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.25.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9zX34NRyzDqkg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 23:12:02 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id 38C8F2CB608;
+ Tue, 21 Jul 2020 09:11:59 -0400 (EDT)
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10032)
+ with ESMTP id PPeQyMfgGubd; Tue, 21 Jul 2020 09:11:58 -0400 (EDT)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.efficios.com (Postfix) with ESMTP id C150F2CB9E3;
+ Tue, 21 Jul 2020 09:11:58 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.efficios.com C150F2CB9E3
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=default; t=1595337118;
+ bh=0FzZwzLd/Z/vpUIiWCr7Q1hJk/9TD3I9q2HN7VpjQsk=;
+ h=Date:From:To:Message-ID:MIME-Version;
+ b=TbeYjfKfvZxAGqtB11GVb5XqOHAKg2eKsbOGMlSNpgsYi78GStsexknzpopA5gYjd
+ iHW5pJeBlD9K41JNcKHEhCXFtl6TXTOiuks37rMUgNNyxEtV1JiwhdJOZpmN5BwmOJ
+ C1qw7Nz+Z+aXC6F72ruRruWZUTMFaWY8gOg+CohD5g+7k6LkOV5AfuY4EuJgQphMvA
+ qyBDRD77CQ3RGF4P9bdqDFNR240kwOmkxFpNqfXOqyByvwnVDzBnBzJ4/JbyMVAlvx
+ tv+xyVSuXGIKtSIrbcsom5VY1p1AP5DiuSLr1KmKilBpD6G2v84tT/dYzF0TE8mX4p
+ XzC6ra9yQ52zQ==
+X-Virus-Scanned: amavisd-new at efficios.com
+Received: from mail.efficios.com ([127.0.0.1])
+ by localhost (mail03.efficios.com [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id ivaCxDrJH8Q5; Tue, 21 Jul 2020 09:11:58 -0400 (EDT)
+Received: from mail03.efficios.com (mail03.efficios.com [167.114.26.124])
+ by mail.efficios.com (Postfix) with ESMTP id A6DDB2CB7D9;
+ Tue, 21 Jul 2020 09:11:58 -0400 (EDT)
+Date: Tue, 21 Jul 2020 09:11:58 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Message-ID: <470490605.22057.1595337118562.JavaMail.zimbra@efficios.com>
+In-Reply-To: <1595324577.x3bf55tpgu.astroid@bobo.none>
+References: <1594868476.6k5kvx8684.astroid@bobo.none>
+ <1594892300.mxnq3b9a77.astroid@bobo.none>
+ <20200716110038.GA119549@hirez.programming.kicks-ass.net>
+ <1594906688.ikv6r4gznx.astroid@bobo.none>
+ <1314561373.18530.1594993363050.JavaMail.zimbra@efficios.com>
+ <1595213677.kxru89dqy2.astroid@bobo.none>
+ <2055788870.20749.1595263590675.JavaMail.zimbra@efficios.com>
+ <1595324577.x3bf55tpgu.astroid@bobo.none>
+Subject: Re: [RFC PATCH 4/7] x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-21_08:2020-07-21,
- 2020-07-21 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0
- mlxlogscore=724 spamscore=0 adultscore=0 clxscore=1015 mlxscore=0
- priorityscore=1501 bulkscore=0 impostorscore=0 suspectscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007210089
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [167.114.26.124]
+X-Mailer: Zimbra 8.8.15_GA_3955 (ZimbraWebClient - FF78 (Linux)/8.8.15_GA_3953)
+Thread-Topic: x86: use exit_lazy_tlb rather than
+ membarrier_mm_sync_core_before_usermode
+Thread-Index: vi7IW503i62QJHH8I6RRgM2HetIWrA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,123 +96,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-arch <linux-arch@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
+ x86 <x86@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ Andy Lutomirski <luto@amacapital.net>, linux-mm <linux-mm@kvack.org>,
+ Andy Lutomirski <luto@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v2: https://lkml.org/lkml/2020/7/17/369
-Changelog v2-->v3
-Based on comments from Gautham R. Shenoy adding the following in the
-selftest,
-1. Grepping modules to determine if already loaded
-2. Wrapper to enable/disable states
-3. Preventing any operation/test on offlined CPUs 
----
+----- On Jul 21, 2020, at 6:04 AM, Nicholas Piggin npiggin@gmail.com wrote:
 
-The patch series introduces a mechanism to measure wakeup latency for
-IPI and timer based interrupts
-The motivation behind this series is to find significant deviations
-behind advertised latency and resisdency values
+> Excerpts from Mathieu Desnoyers's message of July 21, 2020 2:46 am:
+[...]
+> 
+> Yeah you're probably right in this case I think. Quite likely most kernel
+> tasks that asynchronously write to user memory would at least have some
+> kind of producer-consumer barriers.
+> 
+> But is that restriction of all async modifications documented and enforced
+> anywhere?
+> 
+>>> How about other memory accesses via kthread_use_mm? Presumably there is
+>>> still ordering requirement there for membarrier,
+>> 
+>> Please provide an example case with memory accesses via kthread_use_mm where
+>> ordering matters to support your concern.
+> 
+> I think the concern Andy raised with io_uring was less a specific
+> problem he saw and more a general concern that we have these memory
+> accesses which are not synchronized with membarrier.
+> 
+>>> so I really think
+>>> it's a fragile interface with no real way for the user to know how
+>>> kernel threads may use its mm for any particular reason, so membarrier
+>>> should synchronize all possible kernel users as well.
+>> 
+>> I strongly doubt so, but perhaps something should be clarified in the
+>> documentation
+>> if you have that feeling.
+> 
+> I'd rather go the other way and say if you have reasoning or numbers for
+> why PF_KTHREAD is an important optimisation above rq->curr == rq->idle
+> then we could think about keeping this subtlety with appropriate
+> documentation added, otherwise we can just kill it and remove all doubt.
+> 
+> That being said, the x86 sync core gap that I imagined could be fixed
+> by changing to rq->curr == rq->idle test does not actually exist because
+> the global membarrier does not have a sync core option. So fixing the
+> exit_lazy_tlb points that this series does *should* fix that. So
+> PF_KTHREAD may be less problematic than I thought from implementation
+> point of view, only semantics.
 
-To achieve this, we introduce a kernel module and expose its control
-knobs through the debugfs interface that the selftests can engage with.
+Today, the membarrier global expedited command explicitly skips kernel threads,
+but it happens that membarrier private expedited considers those with the
+same mm as target for the IPI.
 
-The kernel module provides the following interfaces within
-/sys/kernel/debug/latency_test/ for,
-1. IPI test:
-  ipi_cpu_dest   # Destination CPU for the IPI
-  ipi_cpu_src    # Origin of the IPI
-  ipi_latency_ns # Measured latency time in ns
-2. Timeout test:
-  timeout_cpu_src     # CPU on which the timer to be queued
-  timeout_expected_ns # Timer duration
-  timeout_diff_ns     # Difference of actual duration vs expected timer
-To include the module, check option and include as module
-kernel hacking -> Cpuidle latency selftests
+So we already implement a semantic which differs between private and global
+expedited membarriers. This can be explained in part by the fact that
+kthread_use_mm was introduced after 4.16, where the most recent membarrier
+commands where introduced. It seems that the effect on membarrier was not
+considered when kthread_use_mm was introduced.
 
-The selftest inserts the module, disables all the idle states and
-enables them one by one testing the following:
-1. Keeping source CPU constant, iterates through all the CPUS measuring
-   IPI latency for baseline (CPU is busy with
-   "cat /dev/random > /dev/null" workload) and the when the CPU is
-   allowed to be at rest
-2. Iterating through all the CPUs, sending expected timer durations to
-   be equivalent to the residency of the the deepest idle state
-   enabled and extracting the difference in time between the time of
-   wakeup and the expected timer duration
+Looking at membarrier(2) documentation, it states that IPIs are only sent to
+threads belonging to the same process as the calling thread. If my understanding
+of the notion of process is correct, this should rule out sending the IPI to
+kernel threads, given they are not "part" of the same process, only borrowing
+the mm. But I agree that the distinction is moot, and should be clarified.
 
-Usage
------
-Can be used in conjuction to the rest of the selftests.
-Default Output location in: tools/testing/cpuidle/cpuidle.log
+Without a clear use-case to justify adding a constraint on membarrier, I am
+tempted to simply clarify documentation of current membarrier commands,
+stating clearly that they are not guaranteed to affect kernel threads. Then,
+if we have a compelling use-case to implement a different behavior which covers
+kthreads, this could be added consistently across membarrier commands with a
+flag (or by adding new commands).
 
-To run this test specifically:
-$ make -C tools/testing/selftests TARGETS="cpuidle" run_tests
+Does this approach make sense ?
 
-There are a few optinal arguments too that the script can take
-	[-h <help>]
-	[-m <location of the module>]
-	[-o <location of the output>]
+Thanks,
 
-Sample output snippet
----------------------
---IPI Latency Test---
---Baseline IPI Latency measurement: CPU Busy--
-SRC_CPU   DEST_CPU IPI_Latency(ns)
-...
-0            8         1996
-0            9         2125
-0           10         1264
-0           11         1788
-0           12         2045
-Baseline Average IPI latency(ns): 1843
----Enabling state: 5---
-SRC_CPU   DEST_CPU IPI_Latency(ns)
-0            8       621719
-0            9       624752
-0           10       622218
-0           11       623968
-0           12       621303
-Expected IPI latency(ns): 100000
-Observed Average IPI latency(ns): 622792
-
---Timeout Latency Test--
---Baseline Timeout Latency measurement: CPU Busy--
-Wakeup_src Baseline_delay(ns) 
-...
-8            2249
-9            2226
-10           2211
-11           2183
-12           2263
-Baseline Average timeout diff(ns): 2226
----Enabling state: 5---
-8           10749                   
-9           10911                   
-10          10912                   
-11          12100                   
-12          73276                   
-Expected timeout(ns): 10000200
-Observed Average timeout diff(ns): 23589
-
-Pratik Rajesh Sampat (2):
-  cpuidle: Trace IPI based and timer based wakeup latency from idle
-    states
-  selftest/cpuidle: Add support for cpuidle latency measurement
-
- drivers/cpuidle/Makefile                   |   1 +
- drivers/cpuidle/test-cpuidle_latency.c     | 150 ++++++++++
- lib/Kconfig.debug                          |  10 +
- tools/testing/selftests/Makefile           |   1 +
- tools/testing/selftests/cpuidle/Makefile   |   6 +
- tools/testing/selftests/cpuidle/cpuidle.sh | 310 +++++++++++++++++++++
- tools/testing/selftests/cpuidle/settings   |   1 +
- 7 files changed, 479 insertions(+)
- create mode 100644 drivers/cpuidle/test-cpuidle_latency.c
- create mode 100644 tools/testing/selftests/cpuidle/Makefile
- create mode 100755 tools/testing/selftests/cpuidle/cpuidle.sh
- create mode 100644 tools/testing/selftests/cpuidle/settings
+Mathieu
 
 -- 
-2.25.4
-
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
