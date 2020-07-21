@@ -2,98 +2,97 @@ Return-Path: <SRS0=Efpx=BA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A53DC433E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 15:51:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20F65C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 17:28:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 52F862073A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 15:51:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52F862073A
+	by mail.kernel.org (Postfix) with ESMTPS id 92FAB2065D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 17:28:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92FAB2065D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BB33S2SPHzDqMd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 01:51:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BB5D74wG9zDqWg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 03:28:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=psampat@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BB2lv6tlHzDqTp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 01:37:31 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06LFXVec053382; Tue, 21 Jul 2020 11:37:21 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BB59b65WJzDqVv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 03:26:27 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06LH1Ll9096868; Tue, 21 Jul 2020 13:26:23 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vstxj9-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32e1vgp1g2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 11:37:21 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06LFY6c6056198;
- Tue, 21 Jul 2020 11:37:20 -0400
+ Tue, 21 Jul 2020 13:26:23 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06LH2TEk101896;
+ Tue, 21 Jul 2020 13:26:22 -0400
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vstxh8-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32e1vgp1fg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 11:37:20 -0400
+ Tue, 21 Jul 2020 13:26:22 -0400
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06LFLbbI014623;
- Tue, 21 Jul 2020 15:37:18 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03ams.nl.ibm.com with ESMTP id 32brq7m1r9-1
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06LHP8wV023979;
+ Tue, 21 Jul 2020 17:26:21 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03ams.nl.ibm.com with ESMTP id 32brq7m4ch-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 21 Jul 2020 15:37:18 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06LFbFVe17695186
+ Tue, 21 Jul 2020 17:26:20 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06LHQIDa58916972
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 21 Jul 2020 15:37:15 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9304BA4055;
- Tue, 21 Jul 2020 15:37:15 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 99DCDA4040;
- Tue, 21 Jul 2020 15:37:13 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.79.210.59])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 21 Jul 2020 15:37:13 +0000 (GMT)
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, benh@kernel.crashing.org,
- paulus@samba.org, mikey@neuling.org, ego@linux.vnet.ibm.com,
- svaidy@linux.ibm.com, psampat@linux.ibm.com, pratik.r.sampat@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 2/3] powerpc/powernv/idle: Rename pnv_first_spr_loss_level
- variable
-Date: Tue, 21 Jul 2020 21:07:07 +0530
-Message-Id: <20200721153708.89057-3-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200721153708.89057-1-psampat@linux.ibm.com>
-References: <20200721153708.89057-1-psampat@linux.ibm.com>
-MIME-Version: 1.0
+ Tue, 21 Jul 2020 17:26:18 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1380842045;
+ Tue, 21 Jul 2020 17:26:18 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E9DC042041;
+ Tue, 21 Jul 2020 17:26:16 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.80.207.143])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 21 Jul 2020 17:26:16 +0000 (GMT)
+Message-ID: <1595352376.5311.8.camel@linux.ibm.com>
+Subject: Re: [PATCH v6] ima: move APPRAISE_BOOTPARAM dependency on
+ ARCH_POLICY to runtime
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Bruno Meneguele <bmeneg@redhat.com>
+Date: Tue, 21 Jul 2020 13:26:16 -0400
+In-Reply-To: <20200720153841.GG10323@glitch>
+References: <20200713164830.101165-1-bmeneg@redhat.com>
+ <d337cbba-e996-e898-1e75-9f142d480e5e@linux.vnet.ibm.com>
+ <1595257015.5055.8.camel@linux.ibm.com> <20200720153841.GG10323@glitch>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.20.5 (3.20.5-1.fc24) 
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-21_09:2020-07-21,
  2020-07-21 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- impostorscore=0 mlxscore=0 phishscore=0 priorityscore=1501 clxscore=1015
- lowpriorityscore=0 adultscore=0 bulkscore=0 suspectscore=0 spamscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007210111
+ mlxscore=0 lowpriorityscore=0
+ bulkscore=0 priorityscore=1501 mlxlogscore=999 suspectscore=0 adultscore=0
+ malwarescore=0 phishscore=0 clxscore=1015 impostorscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007210114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,94 +104,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-s390@vger.kernel.org, Nayna <nayna@linux.vnet.ibm.com>,
+ erichte@linux.ibm.com, nayna@linux.ibm.com, x86@kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace the variable name from using "pnv_first_spr_loss_level" to
-"deep_spr_loss_state".
+On Mon, 2020-07-20 at 12:38 -0300, Bruno Meneguele wrote:
+> On Mon, Jul 20, 2020 at 10:56:55AM -0400, Mimi Zohar wrote:
+> > On Mon, 2020-07-20 at 10:40 -0400, Nayna wrote:
+> > > On 7/13/20 12:48 PM, Bruno Meneguele wrote:
+> > > > The IMA_APPRAISE_BOOTPARAM config allows enabling different "ima_appraise="
+> > > > modes - log, fix, enforce - at run time, but not when IMA architecture
+> > > > specific policies are enabled.  This prevents properly labeling the
+> > > > filesystem on systems where secure boot is supported, but not enabled on the
+> > > > platform.  Only when secure boot is actually enabled should these IMA
+> > > > appraise modes be disabled.
+> > > >
+> > > > This patch removes the compile time dependency and makes it a runtime
+> > > > decision, based on the secure boot state of that platform.
+> > > >
+> > > > Test results as follows:
+> > > >
+> > > > -> x86-64 with secure boot enabled
+> > > >
+> > > > [    0.015637] Kernel command line: <...> ima_policy=appraise_tcb ima_appraise=fix
+> > > > [    0.015668] ima: Secure boot enabled: ignoring ima_appraise=fix boot parameter option
+> > > >
+> > 
+> > Is it common to have two colons in the same line?  Is the colon being
+> > used as a delimiter when parsing the kernel logs?  Should the second
+> > colon be replaced with a hyphen?  (No need to repost.  I'll fix it
+> > up.)
+> >  
+> 
+> AFAICS it has been used without any limitations, e.g:
+> 
+> PM: hibernation: Registered nosave memory: [mem 0x00000000-0x00000fff]
+> clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 133484873504 ns
+> microcode: CPU0: patch_level=0x08701013
+> Lockdown: modprobe: unsigned module loading is restricted; see man kernel_lockdown.7
+> ...
+> 
+> I'd say we're fine using it.
 
-pnv_first_spr_loss_level is supposed to be the earliest state that
-has OPAL_PM_LOSE_FULL_CONTEXT set, in other places the kernel uses the
-"deep" states as terminology. Hence renaming the variable to be coherent
-to its semantics.
+Ok.  FYI, it's now in next-integrity.
 
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
----
- arch/powerpc/platforms/powernv/idle.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 642abf0b8329..28462d59a8e1 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -48,7 +48,7 @@ static bool default_stop_found;
-  * First stop state levels when SPR and TB loss can occur.
-  */
- static u64 pnv_first_tb_loss_level = MAX_STOP_STATE + 1;
--static u64 pnv_first_spr_loss_level = MAX_STOP_STATE + 1;
-+static u64 deep_spr_loss_state = MAX_STOP_STATE + 1;
- 
- /*
-  * psscr value and mask of the deepest stop idle state.
-@@ -657,7 +657,7 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 		  */
- 		mmcr0		= mfspr(SPRN_MMCR0);
- 	}
--	if ((psscr & PSSCR_RL_MASK) >= pnv_first_spr_loss_level) {
-+	if ((psscr & PSSCR_RL_MASK) >= deep_spr_loss_state) {
- 		sprs.lpcr	= mfspr(SPRN_LPCR);
- 		sprs.hfscr	= mfspr(SPRN_HFSCR);
- 		sprs.fscr	= mfspr(SPRN_FSCR);
-@@ -741,7 +741,7 @@ static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
- 	 * just always test PSSCR for SPR/TB state loss.
- 	 */
- 	pls = (psscr & PSSCR_PLS) >> PSSCR_PLS_SHIFT;
--	if (likely(pls < pnv_first_spr_loss_level)) {
-+	if (likely(pls < deep_spr_loss_state)) {
- 		if (sprs_saved)
- 			atomic_stop_thread_idle();
- 		goto out;
-@@ -1088,7 +1088,7 @@ static void __init pnv_power9_idle_init(void)
- 	 * the deepest loss-less (OPAL_PM_STOP_INST_FAST) stop state.
- 	 */
- 	pnv_first_tb_loss_level = MAX_STOP_STATE + 1;
--	pnv_first_spr_loss_level = MAX_STOP_STATE + 1;
-+	deep_spr_loss_state = MAX_STOP_STATE + 1;
- 	for (i = 0; i < nr_pnv_idle_states; i++) {
- 		int err;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
-@@ -1099,8 +1099,8 @@ static void __init pnv_power9_idle_init(void)
- 			pnv_first_tb_loss_level = psscr_rl;
- 
- 		if ((state->flags & OPAL_PM_LOSE_FULL_CONTEXT) &&
--		     (pnv_first_spr_loss_level > psscr_rl))
--			pnv_first_spr_loss_level = psscr_rl;
-+		     (deep_spr_loss_state > psscr_rl))
-+			deep_spr_loss_state = psscr_rl;
- 
- 		/*
- 		 * The idle code does not deal with TB loss occurring
-@@ -1111,8 +1111,8 @@ static void __init pnv_power9_idle_init(void)
- 		 * compatibility.
- 		 */
- 		if ((state->flags & OPAL_PM_TIMEBASE_STOP) &&
--		     (pnv_first_spr_loss_level > psscr_rl))
--			pnv_first_spr_loss_level = psscr_rl;
-+		     (deep_spr_loss_state > psscr_rl))
-+			deep_spr_loss_state = psscr_rl;
- 
- 		err = validate_psscr_val_mask(&state->psscr_val,
- 					      &state->psscr_mask,
-@@ -1158,7 +1158,7 @@ static void __init pnv_power9_idle_init(void)
- 	}
- 
- 	pr_info("cpuidle-powernv: First stop level that may lose SPRs = 0x%llx\n",
--		pnv_first_spr_loss_level);
-+		deep_spr_loss_state);
- 
- 	pr_info("cpuidle-powernv: First stop level that may lose timebase = 0x%llx\n",
- 		pnv_first_tb_loss_level);
--- 
-2.25.4
-
+Mimi
