@@ -7,60 +7,61 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADBF4C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 11:31:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 484ABC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 11:38:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1409C2080D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 11:31:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DCDD92080D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 11:38:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="l8QwmzmJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1409C2080D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="JyhmLykP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCDD92080D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4B9xJK1BvrzDqgZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 21:31:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4B9xSK0bwmzDq9S
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jul 2020 21:38:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B9xFd3Jh1zDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:29:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B9xQH6bn7zDqSs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:36:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=l8QwmzmJ; 
+ header.a=rsa-sha256 header.s=201909 header.b=JyhmLykP; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4B9xFZ6Yzrz9sPB;
- Tue, 21 Jul 2020 21:29:22 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4B9xQH045Xz9sSJ;
+ Tue, 21 Jul 2020 21:36:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595330964;
- bh=rlN1Cce8b0CQsDc9u2pbHYeec/MUaj2J80Je4YYp3N0=;
+ s=201909; t=1595331415;
+ bh=8cWqEZ7b8BkO4Lc0Yw9kRlVs08QZ7978e9X0CuvOH3I=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=l8QwmzmJ9NMwAkWwccucywdED9lK7jbu31q599RUXtk+Sx07djikGJvct4yzy7F3a
- JBsb3BrMuucwCNOs/qWsMHcnmADr7PenqXQ687uNAIq+qbYHkIw9+Yx7kvYvBqdSRm
- oRQgRehjZEdLw47uK1918mMHD2fmA+yp7Gqj0c2+1U9Ftg0iynmZC0AGgWQdoUJUE/
- P6TXQZJvV3hp9NvqRv2UHr65U/FruUuVNzKBdCzFJvbwLhdih0mv62zZ7kWmwdA3vW
- yLkBNXYnvqG2UiTzVZFj1SJtrVXtRHloTw+sunU30bb5TfmOb+Kcb/yEXsmzKYXJQg
- wwrhXNkr+yV+w==
+ b=JyhmLykPfuVbCmNgLwFSzcomuXhpdEJTpqJ7z3tXJaJxIOnZheJmHY0gNc6ljONpf
+ cWMncIFEKRaAuy9NXF8JOniiQPI/xhDLFO+9Ax0KCPFBLjqRf8NwaexBpxte9A0cuO
+ OXhqY7VsIdhf1+ipTE9Vg2FayfKkcH/5ln1pjPAdm8TudEONBAezMcRR7wxrmuryG4
+ dYAfSi4ZD+YZXmzfcgEPhyhpOGJWHWSv5Kfr+CCW9VTypwW9rTiGimSVyokaM+/onJ
+ 3mYDfMsC8liIOPX0svCn03YVxiDz4aP/76avkJ8BrxbNWSNbcSdXkbp+RS2HdljEsj
+ F1BmP47NUh3kA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
  Jordan Niethe <jniethe5@gmail.com>
-Subject: Re: [PATCH v4 05/10] powerpc/dt_cpu_ftrs: Add feature for 2nd DAWR
-In-Reply-To: <c34b1a66-2db6-c97a-1782-0d473c758502@linux.ibm.com>
+Subject: Re: [PATCH v4 09/10] powerpc/watchpoint: Return available watchpoints
+ dynamically
+In-Reply-To: <ccfcf488-0ec9-1737-8368-a848de1d72d1@linux.ibm.com>
 References: <20200717040958.70561-1-ravi.bangoria@linux.ibm.com>
- <20200717040958.70561-6-ravi.bangoria@linux.ibm.com>
- <CACzsE9oE+OMnWEXvbZZbq35YzpSzCbBHWEJcjtCgkcq-YrABng@mail.gmail.com>
- <c34b1a66-2db6-c97a-1782-0d473c758502@linux.ibm.com>
-Date: Tue, 21 Jul 2020 21:29:21 +1000
-Message-ID: <87mu3trtri.fsf@mpe.ellerman.id.au>
+ <20200717040958.70561-10-ravi.bangoria@linux.ibm.com>
+ <CACzsE9r0acLUkV35mVxy1AEK_xObs0yz+fD6UdbNdc6uz=Buqw@mail.gmail.com>
+ <ccfcf488-0ec9-1737-8368-a848de1d72d1@linux.ibm.com>
+Date: Tue, 21 Jul 2020 21:36:54 +1000
+Message-ID: <87k0yxrtex.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -86,69 +87,61 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Ravi Bangoria <ravi.bangoria@linux.ibm.com> writes:
-> On 7/17/20 11:14 AM, Jordan Niethe wrote:
->> On Fri, Jul 17, 2020 at 2:10 PM Ravi Bangoria
+> On 7/20/20 9:12 AM, Jordan Niethe wrote:
+>> On Fri, Jul 17, 2020 at 2:11 PM Ravi Bangoria
 >> <ravi.bangoria@linux.ibm.com> wrote:
 >>>
->>> Add new device-tree feature for 2nd DAWR. If this feature is present,
->>> 2nd DAWR is supported, otherwise not.
+>>> So far Book3S Powerpc supported only one watchpoint. Power10 is
+>>> introducing 2nd DAWR. Enable 2nd DAWR support for Power10.
+>>> Availability of 2nd DAWR will depend on CPU_FTR_DAWR1.
 >>>
 >>> Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 >>> ---
->>>   arch/powerpc/include/asm/cputable.h | 7 +++++--
->>>   arch/powerpc/kernel/dt_cpu_ftrs.c   | 7 +++++++
->>>   2 files changed, 12 insertions(+), 2 deletions(-)
+>>>   arch/powerpc/include/asm/cputable.h      | 4 +++-
+>>>   arch/powerpc/include/asm/hw_breakpoint.h | 5 +++--
+>>>   2 files changed, 6 insertions(+), 3 deletions(-)
 >>>
 >>> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
->>> index e506d429b1af..3445c86e1f6f 100644
+>>> index 3445c86e1f6f..36a0851a7a9b 100644
 >>> --- a/arch/powerpc/include/asm/cputable.h
 >>> +++ b/arch/powerpc/include/asm/cputable.h
->>> @@ -214,6 +214,7 @@ static inline void cpu_feature_keys_init(void) { }
->>>   #define CPU_FTR_P9_TLBIE_ERAT_BUG      LONG_ASM_CONST(0x0001000000000000)
->>>   #define CPU_FTR_P9_RADIX_PREFETCH_BUG  LONG_ASM_CONST(0x0002000000000000)
->>>   #define CPU_FTR_ARCH_31                        LONG_ASM_CONST(0x0004000000000000)
->>> +#define CPU_FTR_DAWR1                  LONG_ASM_CONST(0x0008000000000000)
->>>
->>>   #ifndef __ASSEMBLY__
->>>
->>> @@ -497,14 +498,16 @@ static inline void cpu_feature_keys_init(void) { }
->>>   #define CPU_FTRS_POSSIBLE      \
->>>              (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
->>>               CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
->>> -            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
->>> +            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
->>> +            CPU_FTR_DAWR1)
->>>   #else
->>>   #define CPU_FTRS_POSSIBLE      \
->>>              (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
->>>               CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
->>>               CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | \
->>>               CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | CPU_FTRS_POWER9 | \
->>> -            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10)
->>> +            CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2 | CPU_FTRS_POWER10 | \
->>> +            CPU_FTR_DAWR1)
+>>> @@ -633,7 +633,9 @@ enum {
+>>>    * Maximum number of hw breakpoint supported on powerpc. Number of
+>>>    * breakpoints supported by actual hw might be less than this.
+>>>    */
+>>> -#define HBP_NUM_MAX    1
+>>> +#define HBP_NUM_MAX    2
+>>> +#define HBP_NUM_ONE    1
+>>> +#define HBP_NUM_TWO    2
 
->> Instead of putting CPU_FTR_DAWR1 into CPU_FTRS_POSSIBLE should it go
->> into CPU_FTRS_POWER10?
->> Then it will be picked up by CPU_FTRS_POSSIBLE.
+>> I wonder if these defines are necessary - has it any advantage over
+>> just using the literal?
 >
-> I remember a discussion about this with Mikey and we decided to do it
-> this way. Obviously, the purpose is to make CPU_FTR_DAWR1 independent of
-> CPU_FTRS_POWER10 because DAWR1 is an optional feature in p10. I fear
-> including CPU_FTR_DAWR1 in CPU_FTRS_POWER10 can make it forcefully enabled
-> even when device-tree property is not present or pa-feature bit it not set,
-> because we do:
+> No, not really. Initially I had something like:
 >
->        {       /* 3.1-compliant processor, i.e. Power10 "architected" mode */
->                .pvr_mask               = 0xffffffff,
->                .pvr_value              = 0x0f000006,
->                .cpu_name               = "POWER10 (architected)",
->                .cpu_features           = CPU_FTRS_POWER10,
+> #define HBP_NUM_MAX    2
+> #define HBP_NUM_P8_P9  1
+> #define HBP_NUM_P10    2
+>
+> But then I thought it's also not right. So I made it _ONE and _TWO.
+> Now the function that decides nr watchpoints dynamically (nr_wp_slots)
+> is in different file, I thought to keep it like this so it would be
+> easier to figure out why _MAX is 2.
 
-The pa-features logic will turn it off if the feature bit is not set.
+I don't think it makes anything clearer.
 
-So you should be able to put it in CPU_FTRS_POWER10.
+I had to stare at it thinking there was some sort of mapping or
+indirection going on, before I realised it's just literally the number
+of breakpoints.
 
-See for example CPU_FTR_NOEXECUTE.
+So please just do:
+
+static inline int nr_wp_slots(void)
+{
+       return cpu_has_feature(CPU_FTR_DAWR1) ? 2 : 1;
+}
+
+If you think HBP_NUM_MAX needs explanation then do that with a comment,
+it can refer to nr_wp_slots() if that's helpful.
 
 cheers
