@@ -2,68 +2,63 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E6AC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 10:40:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC336C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 10:51:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DDD72065E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 10:40:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8D206206F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 10:51:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="fW7DOEJL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DDD72065E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ktpV/MHd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D206206F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBX7D1zd6zDr4D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 20:40:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBXMs2wFMzDr4m
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 20:51:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=wsa@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=ktpV/MHd; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBX5351WMzDqwf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 20:39:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=fW7DOEJL; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BBX5307cTz9sRN;
- Wed, 22 Jul 2020 20:39:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595414343;
- bh=jtBj3K1Yjgzf7uVcLOWUMyl0qabi63I82NgtnW9MR2s=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=fW7DOEJLjm0fCgoqd5G1p9Ml9LTgOwWlJQH8xIUKYlAAXUO+AfP52S3THPvkp/pF1
- cn/rg24bel821tQB5LsXvVeR5X0tl7aiQhK+8a/OAJpbIrr0i0lfOknmc3SBPEHMOZ
- myhA4Z6Z2DX2PiBaHLayV649vNeKBk1zHYshz3dO1WMmn6stFTX66kEA5O0/YDqLNa
- 2EKNUUdk0BvhYpehO+ZGGFP0S/L2d2YldC3j+66milwlUuHWbGkjqAJGP8XIbYdJkH
- G0Gz/Q2nke6qoFhUVZchjdXLT0zAZNyFtOus7xzA2V53+GY3bQj3fAwNmKndgWzVbF
- 7pPijz409EnUg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
- Jordan Niethe <jniethe5@gmail.com>
-Subject: Re: [v3 07/15] powerpc/perf: Add power10_feat to dt_cpu_ftrs
-In-Reply-To: <9A4E06A2-5686-4C85-B2F7-0904F195B58A@linux.vnet.ibm.com>
-References: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1594996707-3727-8-git-send-email-atrajeev@linux.vnet.ibm.com>
- <CACzsE9oBw1ZrJLqOAg1QqPrQgSoVbEdPh_ax7mU_kcWNyfyAcg@mail.gmail.com>
- <9A4E06A2-5686-4C85-B2F7-0904F195B58A@linux.vnet.ibm.com>
-Date: Wed, 22 Jul 2020 20:39:00 +1000
-Message-ID: <87ft9jrfzv.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBXKl1dtbzDr2q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 20:50:03 +1000 (AEST)
+Received: from localhost (p54b33083.dip0.t-ipconnect.de [84.179.48.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id F1277206F5;
+ Wed, 22 Jul 2020 10:49:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1595415000;
+ bh=w2CgJwPey3KVWQwleXtivdygRth+bNEvTOILhdD+/AY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=ktpV/MHdEMtUX7VhR6Q03U9rnmvRjAn/cCUDCOT90hUt/oZIpp6HGi9jifbCoHlxM
+ B3CPB7deqGF5FkbypZhZToKqnJbjQzTMWwl7ewOm6nRUVd9C1xkw+3dynR4Sm63kL0
+ a3CqdUq8T0f4r9LBlZ8KNYxZpCPBj0OuG/z7M8TY=
+Date: Wed, 22 Jul 2020 12:49:58 +0200
+From: Wolfram Sang <wsa@kernel.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH 09/20] Documentation: i2c: eliminate duplicated word
+Message-ID: <20200722104958.GM1030@ninjato>
+References: <20200707180414.10467-1-rdunlap@infradead.org>
+ <20200707180414.10467-10-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="n1iI6MeELQa9IOaF"
+Content-Disposition: inline
+In-Reply-To: <20200707180414.10467-10-rdunlap@infradead.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,145 +70,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, maddy@linux.vnet.ibm.com,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, svaidyan@in.ibm.com,
- acme@kernel.org, jolsa@kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, kgdb-bugreport@lists.sourceforge.net,
+ linux-fpga@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+ dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>,
+ Paul Cercueil <paul@crapouillou.net>, keyrings@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org,
+ Pavel Machek <pavel@ucw.cz>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Mihail Atanassov <mihail.atanassov@arm.com>, linux-leds@vger.kernel.org,
+ linux-s390@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>,
+ linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Masahiro Yamada <masahiroy@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ Halil Pasic <pasic@linux.ibm.com>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ James Wang <james.qian.wang@arm.com>, linux-input@vger.kernel.org,
+ Mali DP Maintainers <malidp@foss.arm.com>,
+ Derek Kiernan <derek.kiernan@xilinx.com>, linux-mips@vger.kernel.org,
+ Dragan Cvetic <dragan.cvetic@xilinx.com>, Wu Hao <hao.wu@intel.com>,
+ Tony Krowiak <akrowiak@linux.ibm.com>, linux-kbuild@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>,
+ Hannes Reinecke <hare@suse.com>, linux-block@vger.kernel.org,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-mm@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.ibm.com>,
+ Jens Axboe <axboe@kernel.dk>, Michal Marek <michal.lkml@markovi.net>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Pierre Morel <pmorel@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Daniel Vetter <daniel@ffwll.ch>, Jason Wessel <jason.wessel@windriver.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, linux-integrity@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>,
+ Dan Murphy <dmurphy@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
->> On 22-Jul-2020, at 10:11 AM, Jordan Niethe <jniethe5@gmail.com> wrote:
->>=20
->> On Sat, Jul 18, 2020 at 1:13 AM Athira Rajeev
->> <atrajeev@linux.vnet.ibm.com <mailto:atrajeev@linux.vnet.ibm.com>> wrote:
->>>=20
->>> From: Madhavan Srinivasan <maddy@linux.ibm.com>
->>>=20
->>> Add power10 feature function to dt_cpu_ftrs.c along
->>> with a power10 specific init() to initialize pmu sprs,
->>> sets the oprofile_cpu_type and cpu_features. This will
->>> enable performance monitoring unit(PMU) for Power10
->>> in CPU features with "performance-monitor-power10".
->>>=20
->>> For PowerISA v3.1, BHRB disable is controlled via Monitor Mode
->>> Control Register A (MMCRA) bit, namely "BHRB Recording Disable
->>> (BHRBRD)". This patch initializes MMCRA BHRBRD to disable BHRB
->>> feature at boot for power10.
->>>=20
->>> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
->>> ---
->>> arch/powerpc/include/asm/reg.h        |  3 +++
->>> arch/powerpc/kernel/cpu_setup_power.S |  8 ++++++++
->>> arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
->>> 3 files changed, 37 insertions(+)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/=
-reg.h
->>> index 21a1b2d..900ada1 100644
->>> --- a/arch/powerpc/include/asm/reg.h
->>> +++ b/arch/powerpc/include/asm/reg.h
->>> @@ -1068,6 +1068,9 @@
->>> #define MMCR0_PMC2_LOADMISSTIME        0x5
->>> #endif
->>>=20
->>> +/* BHRB disable bit for PowerISA v3.10 */
->>> +#define MMCRA_BHRB_DISABLE     0x0000002000000000
->> Shouldn't this go under SPRN_MMCRA with the other MMCRA_*.
->
->
-> Hi Jordan
->
-> Ok, the definition of MMCRA is under #ifdef for 64 bit .  if I move defin=
-ition of MMCRA_BHRB_DISABLE along with other SPR's, I also
-> need to define this for 32-bit to satisfy core-book3s to compile as below:
->
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
-g.h
-> index 900ada10762c..7e271657b412 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -888,6 +888,8 @@
->  #define   MMCRA_SLOT   0x07000000UL /* SLOT bits (37-39) */
->  #define   MMCRA_SLOT_SHIFT     24
->  #define   MMCRA_SAMPLE_ENABLE 0x00000001UL /* enable sampling */
-> +/* BHRB disable bit for PowerISA v3.10 */
-> +#define   MMCRA_BHRB_DISABLE  0x0000002000000000
 
-I changed it to:
+--n1iI6MeELQa9IOaF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-#define   MMCRA_BHRB_DISABLE  0x2000000000UL // BHRB disable bit for ISA v3=
-.1
+On Tue, Jul 07, 2020 at 11:04:03AM -0700, Randy Dunlap wrote:
+> Drop doubled word "new".
+>=20
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 
->>> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kerne=
-l/cpu_setup_power.S
->>> index efdcfa7..b8e0d1e 100644
->>> --- a/arch/powerpc/kernel/cpu_setup_power.S
->>> +++ b/arch/powerpc/kernel/cpu_setup_power.S
->>> @@ -94,6 +94,7 @@ _GLOBAL(__restore_cpu_power8)
->>> _GLOBAL(__setup_cpu_power10)
->>>        mflr    r11
->>>        bl      __init_FSCR_power10
->>> +       bl      __init_PMU_ISA31
->> So we set MMCRA here but then aren't we still going to call __init_PMU
->> which will overwrite that?
->> Would this setting MMCRA also need to be handled in __restore_cpu_power1=
-0?
->
-> Thanks for this nice catch !  When I rebased code initial phase, we didn=
-=E2=80=99t had power10 part filled in.
-> It was a miss from my side in adding PMu init functions and thanks for po=
-inting this out.=20
-> Below patch will call __init_PMU functions in setup and restore. Please c=
-heck if this looks good
+For the record:
 
-Actually those changes should be in a separate patch.
+Acked-by: Wolfram Sang <wsa@kernel.org>
 
-This one is wiring up DT CPU features, the cpu setup routines are not
-used by DT CPU features.
 
-So please send a new patch I can insert into the series that adds the
-cpu_setup_power.S changes.
+--n1iI6MeELQa9IOaF
+Content-Type: application/pgp-signature; name="signature.asc"
 
-cheers
+-----BEGIN PGP SIGNATURE-----
 
-> --
-> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/=
-cpu_setup_power.S
-> index efdcfa714106..e672a6c5fd7c 100644
-> --- a/arch/powerpc/kernel/cpu_setup_power.S
-> +++ b/arch/powerpc/kernel/cpu_setup_power.S
-> @@ -94,6 +94,9 @@ _GLOBAL(__restore_cpu_power8)
->  _GLOBAL(__setup_cpu_power10)
->  	mflr	r11
->  	bl	__init_FSCR_power10
-> +	bl	__init_PMU
-> +	bl	__init_PMU_ISA31
-> +	bl	__init_PMU_HV
->  	b	1f
->=20=20
->  _GLOBAL(__setup_cpu_power9)
-> @@ -124,6 +127,9 @@ _GLOBAL(__setup_cpu_power9)
->  _GLOBAL(__restore_cpu_power10)
->  	mflr	r11
->  	bl	__init_FSCR_power10
-> +	bl	__init_PMU
-> +	bl	__init_PMU_ISA31
-> +	bl	__init_PMU_HV
->  	b	1f
->=20=20
->  _GLOBAL(__restore_cpu_power9)
-> @@ -233,3 +239,10 @@ __init_PMU_ISA207:
->  	li	r5,0
->  	mtspr	SPRN_MMCRS,r5
->  	blr
-> +
-> +__init_PMU_ISA31:
-> +	li	r5,0
-> +	mtspr	SPRN_MMCR3,r5
-> +	LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
-> +	mtspr	SPRN_MMCRA,r5
-> +	blr
->
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl8YGdYACgkQFA3kzBSg
+KbadpA/9EQDFCbpqtn7iQvroXO/jn90XPgO/eYkUVHWLS+Wjvnn5pwwQSX2PDYKm
+dx12lepK1qRqXevubBe+L1iqPn3D0E9fN76wFuduXdKo2yMlq8o1fjkw4YAbSEmm
+oJK0WrVBfSBaCFfGTy7Uh7pc5Tb766msmLYfCC6VY5Rdlr9F9ETmHgI+7S6Lx8BJ
+dXai3pSkOYaYGBajVdqRXRemtrE9x29nMbV8k2vFlELR1sRW8LAu4WOJ3SA9PfcP
+jzPlcM8IV6nv2jVUvg5jpR9KQ3SHBRkKkmUgClWt/ZnxpqAjCziyimemRq6GmhNK
+WIR0JiLChmgtF4XL+vPLBSiBHLKR4RjcpFwhJaAs3xYUymtdag+uTWvy6VfXliRy
+rp1wIFSGP/0XynfajB+xXWjtV2CGKn9nmxwUWzCiz7QAikyI920ciFEGXYfhD/9a
+opU6msSpxF+Oh25LZo2dR5QT5GZx9p1wkRxBBYYIeeboxv9LlMyLMXATDoCBGW/T
+1jwmnIhDOetaTLzs7P2o54/LP32bVBsOfj6mcvZQ5N4ShIVMgHaiXBOUzqike+L2
+EHwIHXjxI7NOeKpR5hXdr4JBNLAfyjtC6P0dCS03r2tNfuEizFlH2y7jDYvAcxKJ
+5BqXSC1DnU7frboGfq/9qLfWIBUaeK34RIU46gmN/knsgV8y9zc=
+=l+uH
+-----END PGP SIGNATURE-----
+
+--n1iI6MeELQa9IOaF--
