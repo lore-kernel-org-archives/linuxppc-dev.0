@@ -6,57 +6,73 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B87D6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 08:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91111C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 08:51:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE24D20714
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 08:29:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3A7C4207DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 08:51:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="IRUmpXyL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE24D20714
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
-Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bAA051jA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A7C4207DD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: mail.kernel.org; spf=tempfail smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBTCQ5p2kzDq9G
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 18:29:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBThq21HmzDqyv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 18:51:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=bAA051jA; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBT981Gf0zDqxs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 18:27:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=IRUmpXyL; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4BBT975QpBz9sSn; Wed, 22 Jul 2020 18:27:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1595406443;
- bh=5oBiL0zY8LaOsvPSs61/dmYNQNxr4DLYffd2QJrYkdY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=IRUmpXyLPrLpGuEquB9LP/N6XzynPVWNVJpk8rC9pjK6LmOlNEZmJePiH30Fo8lSK
- ZQs97rhk0+kG5U/kDHw20xz8XXG4O/+4Su6iBGt+J5sLmp759s8ABWylUQOrHmOHVK
- Pr2lyL8yRb4BfEXPzc+3XHbevxbvfy+gBczz3CVI=
-Date: Wed, 22 Jul 2020 17:51:53 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bharata B Rao <bharata@linux.ibm.com>
-Subject: Re: [PATCH v3 0/4] powerpc/mm/radix: Memory unplug fixes
-Message-ID: <20200722075153.GB5513@umbus.fritz.box>
-References: <20200709131925.922266-1-aneesh.kumar@linux.ibm.com>
- <87r1tb1rw2.fsf@linux.ibm.com> <87tuy1sksv.fsf@mpe.ellerman.id.au>
- <20200721032959.GN7902@in.ibm.com>
- <87ft9lrr55.fsf@mpe.ellerman.id.au>
- <20200722060506.GO7902@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBTfH521LzDqlZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 18:49:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=0MdZWsXfOSzrpphaq5yn3/uApZ2HJH5s2c6LnYTQWjI=; b=bAA051jAuLR40JWxrp848gcYzM
+ ZB6Vh98+ib5oHuDcldB6ngF2/JX5hS7H5GQ43X+C3NxI3dqO4r/uxkXI2BxwHX3XKYwu65Ez9aY3g
+ xVblQT1hnpuOZNZSXDxLrWfs9jx1XfGeqqFQ+wwliWLZsB44Cy/bCc4hiDjeM3kJ4gg3Wg+EpVVP+
+ 7OLxrneq6vb5gxiFOXhm5k4/R34pxD6pLKeT0NDOt6F3fxT3IJEmXXpUj5RTVH6jVtoXzwGDnTqc9
+ bBJu6EBN/TSxP9EuUfKwFNrELuBFPQzsa8RC2aQleD6LFrjDroQpvVw+Bt22AG2b1H0Iy91pPsKOO
+ Tc3ioxTA==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1jyAQp-0004OW-1K; Wed, 22 Jul 2020 08:48:55 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 7DD403006D0;
+ Wed, 22 Jul 2020 10:48:54 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 45D6320140AC8; Wed, 22 Jul 2020 10:48:54 +0200 (CEST)
+Date: Wed, 22 Jul 2020 10:48:54 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 06/10] powerpc/smp: Generalize 2nd sched domain
+Message-ID: <20200722084854.GL10769@hirez.programming.kicks-ass.net>
+References: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
+ <20200721113814.32284-7-srikar@linux.vnet.ibm.com>
+ <20200722074624.GP119549@hirez.programming.kicks-ass.net>
+ <20200722081822.GG9290@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="i9LlY+UWpKt15+FH"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200722060506.GO7902@in.ibm.com>
+In-Reply-To: <20200722081822.GG9290@linux.vnet.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,128 +84,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Nathan Lynch <nathanl@linux.ibm.com>,
+ Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Jordan Niethe <jniethe5@gmail.com>,
+ Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nick Piggin <npiggin@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Jul 22, 2020 at 01:48:22PM +0530, Srikar Dronamraju wrote:
+> * peterz@infradead.org <peterz@infradead.org> [2020-07-22 09:46:24]:
+> 
+> > On Tue, Jul 21, 2020 at 05:08:10PM +0530, Srikar Dronamraju wrote:
+> > > Currently "CACHE" domain happens to be the 2nd sched domain as per
+> > > powerpc_topology. This domain will collapse if cpumask of l2-cache is
+> > > same as SMT domain. However we could generalize this domain such that it
+> > > could mean either be a "CACHE" domain or a "BIGCORE" domain.
+> > 
+> > What's the whole smallcore vs bigcore thing?
+> > 
+> > Would it make sense to have an actual overview of the various topology
+> > layers somewhere? Because I'm getting lost and can't really make sense
+> > of the code due to that.
+> 
+> To quote with an example: using (Power 9)
+> 
+> Power 9 is an SMT 8 core by design. However this 8 thread core can run as 2
+> independent core with threads 0,2,4 and 6 acting like a core, while threads
+> 1,3,5,7 acting as another core.  
+> 
+> The firmware can decide to showcase them as 2 independent small cores or as
+> one big core. However the LLC (i.e last level of cache) is shared between
+> all the threads of the SMT 8 core. Future power chips, LLC might change, it
+> may be expanded to share with another SMT 8 core or it could be made
+> specific to SMT 4 core.
+> 
+> The smt 8 core is also known as fused core/ Big core.
+> The smaller smt 4 core is known as small core.
+> 
+> So on a Power9 Baremetal, the firmware would show up as SMT4 core.
+> and we have a CACHE level at SMT 8. CACHE level would be very very similar
+> to MC domain in X86.
+> 
+> Hope this is clear.
 
---i9LlY+UWpKt15+FH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ooh, that thing. I thought P9 was in actual fact an SMT4 hardware part,
+but to be compatible with P8 it has this fused option where two cores
+act like a single SMT8 part.
 
-On Wed, Jul 22, 2020 at 11:35:06AM +0530, Bharata B Rao wrote:
-> On Tue, Jul 21, 2020 at 10:25:58PM +1000, Michael Ellerman wrote:
-> > Bharata B Rao <bharata@linux.ibm.com> writes:
-> > > On Tue, Jul 21, 2020 at 11:45:20AM +1000, Michael Ellerman wrote:
-> > >> Nathan Lynch <nathanl@linux.ibm.com> writes:
-> > >> > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> > >> >> This is the next version of the fixes for memory unplug on radix.
-> > >> >> The issues and the fix are described in the actual patches.
-> > >> >
-> > >> > I guess this isn't actually causing problems at runtime right now,=
- but I
-> > >> > notice calls to resize_hpt_for_hotplug() from arch_add_memory() and
-> > >> > arch_remove_memory(), which ought to be mmu-agnostic:
-> > >> >
-> > >> > int __ref arch_add_memory(int nid, u64 start, u64 size,
-> > >> > 			  struct mhp_params *params)
-> > >> > {
-> > >> > 	unsigned long start_pfn =3D start >> PAGE_SHIFT;
-> > >> > 	unsigned long nr_pages =3D size >> PAGE_SHIFT;
-> > >> > 	int rc;
-> > >> >
-> > >> > 	resize_hpt_for_hotplug(memblock_phys_mem_size());
-> > >> >
-> > >> > 	start =3D (unsigned long)__va(start);
-> > >> > 	rc =3D create_section_mapping(start, start + size, nid,
-> > >> > 				    params->pgprot);
-> > >> > ...
-> > >>=20
-> > >> Hmm well spotted.
-> > >>=20
-> > >> That does return early if the ops are not setup:
-> > >>=20
-> > >> int resize_hpt_for_hotplug(unsigned long new_mem_size)
-> > >> {
-> > >> 	unsigned target_hpt_shift;
-> > >>=20
-> > >> 	if (!mmu_hash_ops.resize_hpt)
-> > >> 		return 0;
-> > >>=20
-> > >>=20
-> > >> And:
-> > >>=20
-> > >> void __init hpte_init_pseries(void)
-> > >> {
-> > >> 	...
-> > >> 	if (firmware_has_feature(FW_FEATURE_HPT_RESIZE))
-> > >> 		mmu_hash_ops.resize_hpt =3D pseries_lpar_resize_hpt;
-> > >>=20
-> > >> And that comes in via ibm,hypertas-functions:
-> > >>=20
-> > >> 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
-> > >>=20
-> > >>=20
-> > >> But firmware is not necessarily going to add/remove that call based =
-on
-> > >> whether we're using hash/radix.
-> > >
-> > > Correct but hpte_init_pseries() will not be called for radix guests.
-> >=20
-> > Yeah, duh. You'd think the function name would have been a sufficient
-> > clue for me :)
-> >=20
-> > >> So I think a follow-up patch is needed to make this more robust.
-> > >>=20
-> > >> Aneesh/Bharata what platform did you test this series on? I'm curious
-> > >> how this didn't break.
-> > >
-> > > I have tested memory hotplug/unplug for radix guest on zz platform and
-> > > sanity-tested this for hash guest on P8.
-> > >
-> > > As noted above, mmu_hash_ops.resize_hpt will not be set for radix
-> > > guest and hence we won't see any breakage.
-> >=20
-> > OK.
-> >=20
-> > That's probably fine as it is then. Or maybe just a comment in
-> > resize_hpt_for_hotplug() pointing out that resize_hpt will be NULL if
-> > we're using radix.
->=20
-> Or we could move these calls to hpt-only routines like below?
->=20
-> David - Do you remember if there was any particular reason to have
-> these two hpt-resize calls within powerpc-generic memory hotplug code?
+The interleaving enumeration is done due to P7 asymmetric cores,
+resuting in schedulers having the preference to use the lower threads.
 
-I don't remember, sorry.
+Combined that results in a P9-fused configuration using two independent
+full cores when there's only 2 runnable threads.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Which is a subtly different story from yours.
 
---i9LlY+UWpKt15+FH
-Content-Type: application/pgp-signature; name="signature.asc"
+But reading your explanation, it looks like the Linux topology setup
+could actually unravel the fused-faux-SMT8 into two independent SMT4
+parts, negating that firmware option.
 
------BEGIN PGP SIGNATURE-----
+Anyway, a few comments just around there might be helpfull.
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl8X8BYACgkQbDjKyiDZ
-s5JhQxAAmPVnY5hHgvzJE10d8K54XvWiy8uCAFjaKWUb8/dPphgQEBepjWP10ckx
-q1EVNdnRjKrgVgX+duFt9jHbm5SFX6G2RFcSYnrb0t6hPr8v0pOj7v8VUw1QcqSw
-cYgyCq0xFbatw0y39luYMrSpWzuLsXVAT33yi2/jcbwdEA5thvaWovrkpkfU16m/
-7MIYYlyeJaUm7enro5f7o9qfsRYTJ6rUY9RNgHAgvYVo3OB2yuwz9E7wc1DPHcD9
-etuy78Kz3t6xO7/9bDYFu1LzJpIB+LS7wVxmAjCLpfABQlnrVoC2iOiIrx40DYX5
-A2t9TOhEqXQQxvpvc94xYcVu5GU83Jpcl2FbXRTiAd53MqSpMwIQK+66UsEPdWCD
-TELkBEfzIyYGaPJzP3atlJymOeaAX8gfpHi8kPRPyAfIwSIFbA1PWVJ4/sKVrZNG
-rLFpJJI5da5G/TTh9ssqOlPoyWMm8yFep9KR8hM4AjAs6G6dtWqih8/UpcMdxXut
-7PXRgNd9BEwBmYq+/E/hVzKYFMqYO9OHSvqJxqtc6GCnW2vDYkZds/j0vzbM38sd
-eFCVz+UPf+Eqf0gTYCCbzxAlWzwxPM1+knwoj2W2ypwExBK3W+DZ/s+/395VCZY7
-MW4zkaKJf5sHB7BqtVxNUwImu/RETSlHteg70hbw4GGVG/LESpw=
-=4dvk
------END PGP SIGNATURE-----
 
---i9LlY+UWpKt15+FH--
+Thanks!
