@@ -2,27 +2,27 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77BB5C433E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:44:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21AF8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:40:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2211C208E4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:44:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9298F208E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:40:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P7091w6V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2211C208E4
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PhNz3mPU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9298F208E4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBNCd2DZ4zDqD8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 14:44:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBN7L4QJPzDqqW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 14:40:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
  helo=mail-pg1-x542.google.com; envelope-from=oohall@gmail.com;
@@ -31,51 +31,51 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=P7091w6V; dkim-atps=neutral
+ header.s=20161025 header.b=PhNz3mPU; dkim-atps=neutral
 Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
  [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBMqm3wsszDqlW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 14:27:00 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id e8so528913pgc.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:27:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBMqh4B0QzDqgd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 14:26:56 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id s189so507765pgc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:26:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=AB9Ka6+610Yg1PaaEJ5G7LhQ7FHKr2tBgldtgukZ6Bw=;
- b=P7091w6VvAi63JVV9FRSXSZoTflkzSUGl+CVyQEjTva4rWcwFg3L1WYkf5kGtsMXXw
- J4ZNOpgBC1O+dPAru9SOCq/yXadVzCgD0n4EZJVibJk3ZZ+aUhCQ0hk3NsGGjBslb4Vp
- uoul4u5lYW1nrVtkD1XlFfTqgKxAHPP3lVTbfHCsrC9vP5XuOoyFvd0FTAteNEuYULRV
- FABDc+1eyWGgEEYrOXU4cD9fMGZRWMqJJ6thCau0sgvB1jHtKXQxdXVIRoROmXpdeADe
- brhUt8Rzc+/p8aTK4KspnvzmU1U9mAzJi7SEmcMS+eHVBQAiLg7piCCrPPNqezqywBfw
- Cr1g==
+ bh=MhjGcknO9l3C3dTxpOOgwVsJN6afLuH59RwDlcNqnoQ=;
+ b=PhNz3mPU+eXq+LyHjk2vFEiKF/aWBVU92EGw/WJtcUicQxTYllbyKu9nmzN7rwzRYd
+ b6lk6ycpZSSXtxArEpDjQ/qi0SO1KP2+ID3aSGMYFzehzKsYATB+eyjC1Thd/YOOPvID
+ JBj09tdy53ZUlmgHVbYgsWek6wJnkEEGz7m7uNtY3cAXA3S+O4RQ5YjzmqN4FdFRrbBf
+ P4uF48F0LIx0ur8Y/7Wmdrve/CWh067nL/+3BnyW2/pHBsb5jkKAQE38h73cTfTdbaIz
+ PWjLWaxNTgMmSLjRvCw62b3KQFKjKovKx7oQ3+7UH2TyQTBBCJKFnKzBBVG71QsgCvMa
+ xIRg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=AB9Ka6+610Yg1PaaEJ5G7LhQ7FHKr2tBgldtgukZ6Bw=;
- b=msj+F8KiUJZa9bpR1/eEtkTQjl+qc8kglBdM3skvnJ1GGHhKr51vIPEDgKlFTQkaqZ
- QkL0o4erbbYBImiK1tTvgIrnPZscP7dpWBvRbrpbomAFfu7jTJ/aTgekM8kHGHNdKmcW
- QjmewOfNnhN3KR98QIA6H92ZTYeksQ2ZNnnlpYHPb2UMHnD0fvRFZQswTIIetJC9W0wD
- ozgrZHYt8UUqyvbJVYm2La9DpVYPwsclU/8v5AnzEkVARQe4ERq6M5QoMpawLmG1J1Kd
- 4fQoJY9cgZ1iCAk+F56lm2GOrO0lW+u0t1JKLBoPVESVjShsImI7hvgpusz2vr4zjkNZ
- NpwQ==
-X-Gm-Message-State: AOAM532rIbXZa+x7Mv77DP4s9vnW0VFNB4emhqirv9S7VoE7pXxppiBx
- InVpRMJvSZiECd7bRunZ3cOXIYU09FU=
-X-Google-Smtp-Source: ABdhPJzUDP2Of0BzwpnGW24eUDeqJmL2qMwh/iru6fzRFYzDoh55/KvTdI7VgEfKtAQ1iKL3fBdjzw==
-X-Received: by 2002:a63:925a:: with SMTP id s26mr25111355pgn.21.1595392018284; 
- Tue, 21 Jul 2020 21:26:58 -0700 (PDT)
+ bh=MhjGcknO9l3C3dTxpOOgwVsJN6afLuH59RwDlcNqnoQ=;
+ b=rhw5BEvzEpXJFwaSEeSIUOYn3Jfw74DCMNOQsUTwI38ufSptbtNvnO0YUo/iXHqxgn
+ 3cONjZXWL3Of7ArGifeGvMibW+slo9H6uXqpH8cgevtVr/dBeWJzy1M+k2a/ISNJSHII
+ PP7NtJSReiSbtyyENY+W6ZSMqs+ZKfLkhF122OnFDbuDntbB0M06Ji8ptuQUXdjYSp3j
+ FILCONAkfY7Ek9r1ina7B5o3mxfmyPbnKSZ3mtkWqe8MdK1Z+UZ1tnjlte1kuwkdpK3t
+ jGBt5cxM9ASxuP5UIChFxlnnG25NHc0k/F3bQ9vutk5+pU2afw/vPMj/WrBmB058lGJt
+ WGdQ==
+X-Gm-Message-State: AOAM530L2bmZSAMCTkm43vd/bxE5u82RBfmEtT4IXmiKFyL93c2vKJqU
+ RwxLuInuQ2lPqmgMMS2JowrRaIs4/sg=
+X-Google-Smtp-Source: ABdhPJy6BDUzDBVrdetqEEei5aBKdVMkGfn1aaBsESNIQ3NC4fZ+6bEoP9WamWLM1nzpyVW04i8zfQ==
+X-Received: by 2002:aa7:9a92:: with SMTP id w18mr27088890pfi.233.1595392014395; 
+ Tue, 21 Jul 2020 21:26:54 -0700 (PDT)
 Received: from localhost.ibm.com (203-219-159-24.tpgi.com.au. [203.219.159.24])
- by smtp.gmail.com with ESMTPSA id d4sm20583709pgf.9.2020.07.21.21.26.56
+ by smtp.gmail.com with ESMTPSA id d4sm20583709pgf.9.2020.07.21.21.26.52
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 21 Jul 2020 21:26:57 -0700 (PDT)
+ Tue, 21 Jul 2020 21:26:53 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 08/14] powerpc/eeh: Pass eeh_dev to eeh_ops->resume_notify()
-Date: Wed, 22 Jul 2020 14:26:22 +1000
-Message-Id: <20200722042628.1425880-8-oohall@gmail.com>
+Subject: [PATCH v2 06/14] powerpc/eeh: Remove VF config space restoration
+Date: Wed, 22 Jul 2020 14:26:20 +1000
+Message-Id: <20200722042628.1425880-6-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200722042628.1425880-1-oohall@gmail.com>
 References: <20200722042628.1425880-1-oohall@gmail.com>
@@ -92,81 +92,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mechanical conversion of the eeh_ops interfaces to use eeh_dev to reference
-a specific device rather than pci_dn. No functional changes.
+There's a bunch of strange things about this code. First up is that none of
+the fields being written to are functional for a VF. The SR-IOV
+specification lists then as "Reserved, but OS should preserve" so writing
+new values to them doesn't do anything and is clearly wrong from a
+correctness perspective.
+
+However, since VFs are designed to be managed by the OS there is an
+argument to be made that we should be saving and restoring some parts of
+config space. We already sort of do that by saving the first 64 bytes of
+config space in the eeh_dev (see eeh_dev->config_space[]). This is
+inadequate since it doesn't even consider saving and restoring the PCI
+capability structures. However, this is a problem with EEH in general and
+that needs to be fixed for non-VF devices too.
+
+There's no real reason to keep around this around so delete it.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 v2: no changes
 ---
- arch/powerpc/include/asm/eeh.h               | 2 +-
- arch/powerpc/kernel/eeh_driver.c             | 4 ++--
- arch/powerpc/kernel/eeh_sysfs.c              | 2 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c | 4 +---
- 4 files changed, 5 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |  1 -
+ arch/powerpc/kernel/eeh.c                    | 59 --------------------
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 20 ++-----
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 26 +--------
+ 4 files changed, 7 insertions(+), 99 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 70a686d731f6..8045cede0df9 100644
+index d619012281bd..c7d5a234bb51 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -230,7 +230,7 @@ struct eeh_ops {
- 	int (*write_config)(struct pci_dn *pdn, int where, int size, u32 val);
- 	int (*next_error)(struct eeh_pe **pe);
- 	int (*restore_config)(struct eeh_dev *edev);
--	int (*notify_resume)(struct pci_dn *pdn);
-+	int (*notify_resume)(struct eeh_dev *edev);
- };
+@@ -314,7 +314,6 @@ int eeh_pe_reset(struct eeh_pe *pe, int option, bool include_passed);
+ int eeh_pe_configure(struct eeh_pe *pe);
+ int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+ 		      unsigned long addr, unsigned long mask);
+-int eeh_restore_vf_config(struct pci_dn *pdn);
  
- extern int eeh_subsystem_flags;
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index b70b9273f45a..b84d3cb2532e 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -425,8 +425,8 @@ static enum pci_ers_result eeh_report_resume(struct eeh_dev *edev,
- 
- 	pci_uevent_ers(edev->pdev, PCI_ERS_RESULT_RECOVERED);
- #ifdef CONFIG_PCI_IOV
--	if (eeh_ops->notify_resume && eeh_dev_to_pdn(edev))
--		eeh_ops->notify_resume(eeh_dev_to_pdn(edev));
-+	if (eeh_ops->notify_resume)
-+		eeh_ops->notify_resume(edev);
- #endif
- 	return PCI_ERS_RESULT_NONE;
- }
-diff --git a/arch/powerpc/kernel/eeh_sysfs.c b/arch/powerpc/kernel/eeh_sysfs.c
-index 4fb0f1e1017a..429620da73ba 100644
---- a/arch/powerpc/kernel/eeh_sysfs.c
-+++ b/arch/powerpc/kernel/eeh_sysfs.c
-@@ -99,7 +99,7 @@ static ssize_t eeh_notify_resume_store(struct device *dev,
- 	if (!edev || !edev->pe || !eeh_ops->notify_resume)
- 		return -ENODEV;
- 
--	if (eeh_ops->notify_resume(pci_get_pdn(pdev)))
-+	if (eeh_ops->notify_resume(edev))
- 		return -EIO;
- 
- 	return count;
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 39cdf447dfa6..426227ddee32 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -793,10 +793,8 @@ static int pseries_call_allow_unfreeze(struct eeh_dev *edev)
- 	return rc;
+ /**
+  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 859f76020256..a4df6f6de0bd 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -742,65 +742,6 @@ static void eeh_restore_dev_state(struct eeh_dev *edev, void *userdata)
+ 		pci_restore_state(pdev);
  }
  
--static int pseries_notify_resume(struct pci_dn *pdn)
-+static int pseries_notify_resume(struct eeh_dev *edev)
- {
+-int eeh_restore_vf_config(struct pci_dn *pdn)
+-{
 -	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+-	u32 devctl, cmd, cap2, aer_capctl;
+-	int old_mps;
 -
+-	if (edev->pcie_cap) {
+-		/* Restore MPS */
+-		old_mps = (ffs(pdn->mps) - 8) << 5;
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				     2, &devctl);
+-		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
+-		devctl |= old_mps;
+-		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				      2, devctl);
+-
+-		/* Disable Completion Timeout if possible */
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
+-				     4, &cap2);
+-		if (cap2 & PCI_EXP_DEVCAP2_COMP_TMOUT_DIS) {
+-			eeh_ops->read_config(pdn,
+-					     edev->pcie_cap + PCI_EXP_DEVCTL2,
+-					     4, &cap2);
+-			cap2 |= PCI_EXP_DEVCTL2_COMP_TMOUT_DIS;
+-			eeh_ops->write_config(pdn,
+-					      edev->pcie_cap + PCI_EXP_DEVCTL2,
+-					      4, cap2);
+-		}
+-	}
+-
+-	/* Enable SERR and parity checking */
+-	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
+-	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+-	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
+-
+-	/* Enable report various errors */
+-	if (edev->pcie_cap) {
+-		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				     2, &devctl);
+-		devctl &= ~PCI_EXP_DEVCTL_CERE;
+-		devctl |= (PCI_EXP_DEVCTL_NFERE |
+-			   PCI_EXP_DEVCTL_FERE |
+-			   PCI_EXP_DEVCTL_URRE);
+-		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+-				      2, devctl);
+-	}
+-
+-	/* Enable ECRC generation and check */
+-	if (edev->pcie_cap && edev->aer_cap) {
+-		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+-				     4, &aer_capctl);
+-		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+-		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+-				      4, aer_capctl);
+-	}
+-
+-	return 0;
+-}
+-
+ /**
+  * pcibios_set_pcie_reset_state - Set PCI-E reset state
+  * @dev: pci device struct
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index bcd0515d8f79..8f3a7611efc1 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -1629,20 +1629,12 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
  	if (!edev)
  		return -EEXIST;
  
+-	/*
+-	 * We have to restore the PCI config space after reset since the
+-	 * firmware can't see SRIOV VFs.
+-	 *
+-	 * FIXME: The MPS, error routing rules, timeout setting are worthy
+-	 * to be exported by firmware in extendible way.
+-	 */
+-	if (edev->physfn) {
+-		ret = eeh_restore_vf_config(pdn);
+-	} else {
+-		phb = pdn->phb->private_data;
+-		ret = opal_pci_reinit(phb->opal_id,
+-				      OPAL_REINIT_PCI_DEV, config_addr);
+-	}
++	if (edev->physfn)
++		return 0;
++
++	phb = edev->controller->private_data;
++	ret = opal_pci_reinit(phb->opal_id,
++			      OPAL_REINIT_PCI_DEV, edev->bdfn);
+ 
+ 	if (ret) {
+ 		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index bcc72b9a5309..39cdf447dfa6 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -718,30 +718,6 @@ static int pseries_eeh_write_config(struct pci_dn *pdn, int where, int size, u32
+ 	return rtas_write_config(pdn, where, size, val);
+ }
+ 
+-static int pseries_eeh_restore_config(struct pci_dn *pdn)
+-{
+-	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+-	s64 ret = 0;
+-
+-	if (!edev)
+-		return -EEXIST;
+-
+-	/*
+-	 * FIXME: The MPS, error routing rules, timeout setting are worthy
+-	 * to be exported by firmware in extendible way.
+-	 */
+-	if (edev->physfn)
+-		ret = eeh_restore_vf_config(pdn);
+-
+-	if (ret) {
+-		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+-			__func__, edev->pe_config_addr, ret);
+-		return -EIO;
+-	}
+-
+-	return ret;
+-}
+-
+ #ifdef CONFIG_PCI_IOV
+ int pseries_send_allow_unfreeze(struct pci_dn *pdn,
+ 				u16 *vf_pe_array, int cur_vfs)
+@@ -848,7 +824,7 @@ static struct eeh_ops pseries_eeh_ops = {
+ 	.read_config		= pseries_eeh_read_config,
+ 	.write_config		= pseries_eeh_write_config,
+ 	.next_error		= NULL,
+-	.restore_config		= pseries_eeh_restore_config,
++	.restore_config		= NULL, /* NB: configure_bridge() does this */
+ #ifdef CONFIG_PCI_IOV
+ 	.notify_resume		= pseries_notify_resume
+ #endif
 -- 
 2.26.2
 
