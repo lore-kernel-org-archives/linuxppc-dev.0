@@ -2,98 +2,87 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0324FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC6D6C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 07:02:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 214DC20729
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:58:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 214DC20729
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6538020729
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 07:02:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZvtHHsdG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6538020729
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBRC460J8zDqv3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 16:58:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBRHb55Q6zDqQd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 17:02:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
+ helo=mail-pl1-x641.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=ZvtHHsdG; dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBR8n45bmzDqDB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 16:56:57 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06M61omV160858; Wed, 22 Jul 2020 02:56:49 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vrftdq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jul 2020 02:56:49 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06M6tgg1120457;
- Wed, 22 Jul 2020 02:56:49 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vrftdg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jul 2020 02:56:48 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06M6p4pH019269;
- Wed, 22 Jul 2020 06:56:48 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma02wdc.us.ibm.com with ESMTP id 32brq99rj3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jul 2020 06:56:48 +0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06M6uktE64160134
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 22 Jul 2020 06:56:46 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 212097805C;
- Wed, 22 Jul 2020 06:56:46 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4382B7805F;
- Wed, 22 Jul 2020 06:56:45 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.85.82.72])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 22 Jul 2020 06:56:45 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 76D7B2E340E; Wed, 22 Jul 2020 12:26:40 +0530 (IST)
-Date: Wed, 22 Jul 2020 12:26:40 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 06/10] powerpc/smp: Generalize 2nd sched domain
-Message-ID: <20200722065640.GE31038@in.ibm.com>
-References: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
- <20200721113814.32284-7-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBR9W5Fv7zDqvP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 16:57:35 +1000 (AEST)
+Received: by mail-pl1-x641.google.com with SMTP id m16so484025pls.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 23:57:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=ErldX1NwviUCI0Ulhy3AQukqvvEFapOXU0i3IsVVs6w=;
+ b=ZvtHHsdG6OSkQWPE3i6+x2l7GnD+I1JEilUdOG+vD8oPfLY6DIRaZBUkyE8vWw3grS
+ /iILjwJJqP7zm7LjLgRZGMgtahqrk+3kaJWcoSGexSLf0nbQgdZfR2RZwMVa1SkMks5f
+ 86c6pW/HJeWjVZ+XvmaD8/SyjVSf+sCg9pYwU79CTK7kFxhEaIM4Hve+Q99KFDiq69n/
+ tvYetzcqVhRD0nEf7+oG9HmvukoqVymqLFjLSo1dg4CSWSKeD7tVVHzNa8vhlQjm2jCJ
+ 35vJIVlk/0Ixg2qHoliaaauOsEmK0/bJVmvblbHO/cnTUieWSiMc78C5reLA4lGMX6V4
+ 0hNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=ErldX1NwviUCI0Ulhy3AQukqvvEFapOXU0i3IsVVs6w=;
+ b=rLg+GNEyfCc4YYp7U3+Y4908KyR/31HF48dXjKBYWuSTclLzzE+lpZJz96sDSsjcPC
+ bacGxBucqM/J6LMzu/SyhGSMEqSxIjtssjg5o0whIgckXEQMzmXOTR72U7hVD7Ca3Oc+
+ AA9QNWgSBWsolzC76t7QWDS1rkZEcBEvXLLY8D4utqf/FrE4Qh17ppjwy9RBT1XQ9Dgd
+ CT4/trYgMEGFEWrNyQhVyupm4Vx8dUSlH3FtAc2KKjaeEkZ8iK2rt2RnKInyaFuy5dai
+ kdbI7QA9eYv6fqaAmESgjYShlUMpKnnI/mULflWYYkzmyrBIJpScbf/v7q6Y7bxsyrd8
+ XlXw==
+X-Gm-Message-State: AOAM5322AQRKflMsSCmYZ/UNj3h+T9nAD3MmDhQwD8POg/zB+80BrFOF
+ f/L+RHsdO0CySBn5+Aaa/7bJa7raFLU=
+X-Google-Smtp-Source: ABdhPJz/LT6cbxuEeLe+ixYAAzz9SvU+TFUyj8y5OBqyUGEN/C8CnvNfZJSy4d1kScz8LFYqQR3GHQ==
+X-Received: by 2002:a17:90a:a106:: with SMTP id
+ s6mr8513856pjp.53.1595401049805; 
+ Tue, 21 Jul 2020 23:57:29 -0700 (PDT)
+Received: from localhost.ibm.com (203-219-159-24.tpgi.com.au. [203.219.159.24])
+ by smtp.gmail.com with ESMTPSA id c14sm22645104pfj.82.2020.07.21.23.57.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 21 Jul 2020 23:57:29 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 02/16] powerpc/powernv/pci: Always tear down DMA windows on
+ PE release
+Date: Wed, 22 Jul 2020 16:57:01 +1000
+Message-Id: <20200722065715.1432738-2-oohall@gmail.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200722065715.1432738-1-oohall@gmail.com>
+References: <20200722065715.1432738-1-oohall@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200721113814.32284-7-srikar@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-22_02:2020-07-22,
- 2020-07-22 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 suspectscore=0
- mlxlogscore=999 malwarescore=0 priorityscore=1501 adultscore=0 mlxscore=0
- impostorscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007220040
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,143 +94,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: ego@linux.vnet.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Jordan Niethe <jniethe5@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Nick Piggin <npiggin@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Valentin Schneider <valentin.schneider@arm.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Srikar,
+Currently we have these two functions:
 
-On Tue, Jul 21, 2020 at 05:08:10PM +0530, Srikar Dronamraju wrote:
-> Currently "CACHE" domain happens to be the 2nd sched domain as per
-> powerpc_topology. This domain will collapse if cpumask of l2-cache is
-> same as SMT domain. However we could generalize this domain such that it
-> could mean either be a "CACHE" domain or a "BIGCORE" domain.
-> 
-> While setting up the "CACHE" domain, check if shared_cache is already
-> set.
-> 
-> Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-> Cc: LKML <linux-kernel@vger.kernel.org>
-> Cc: Michael Ellerman <michaele@au1.ibm.com>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Valentin Schneider <valentin.schneider@arm.com>
-> Cc: Nick Piggin <npiggin@au1.ibm.com>
-> Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
-> Cc: Nathan Lynch <nathanl@linux.ibm.com>
-> Cc: Michael Neuling <mikey@linux.ibm.com>
-> Cc: Anton Blanchard <anton@au1.ibm.com>
-> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
-> Cc: Jordan Niethe <jniethe5@gmail.com>
-> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-> ---
-> Changelog v1 -> v2:
-> powerpc/smp: Generalize 2nd sched domain
-> 	Moved shared_cache topology fixup to fixup_topology (Gautham)
->
+	pnv_pci_ioda2_release_dma_pe(), and
+	pnv_pci_ioda2_release_pe_dma()
 
-Just one comment below.
+The first is used when tearing down VF PEs and the other is used for normal
+devices. There's very little difference between the two though. The latter
+(non-VF) will skip a call to pnv_pci_ioda2_unset_window() unless
+CONFIG_IOMMU_API=y is set. There's no real point in doing this so fold the
+two together.
 
->  arch/powerpc/kernel/smp.c | 49 ++++++++++++++++++++++++++++-----------
->  1 file changed, 35 insertions(+), 14 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 57468877499a..933ebdf97432 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -85,6 +85,14 @@ EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
->  EXPORT_PER_CPU_SYMBOL(cpu_core_map);
->  EXPORT_SYMBOL_GPL(has_big_cores);
-> 
-> +enum {
-> +#ifdef CONFIG_SCHED_SMT
-> +	smt_idx,
-> +#endif
-> +	bigcore_idx,
-> +	die_idx,
-> +};
-> +
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+v2: no change
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++--------------------
+ 1 file changed, 3 insertions(+), 27 deletions(-)
 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 687919db0347..bfb40607aa0e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1422,26 +1422,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+ 	return -EBUSY;
+ }
+ 
+-static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+-		int num);
+-
+-static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
+-{
+-	struct iommu_table    *tbl;
+-	int64_t               rc;
+-
+-	tbl = pe->table_group.tables[0];
+-	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+-	if (rc)
+-		pe_warn(pe, "OPAL error %lld release DMA window\n", rc);
+-
+-	pnv_pci_ioda2_set_bypass(pe, false);
+-	if (pe->table_group.group) {
+-		iommu_group_put(pe->table_group.group);
+-		BUG_ON(pe->table_group.group);
+-	}
+-	iommu_tce_table_put(tbl);
+-}
++static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe);
+ 
+ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+ {
+@@ -1455,11 +1436,12 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+ 	if (!pdev->is_physfn)
+ 		return;
+ 
++	/* FIXME: Use pnv_ioda_release_pe()? */
+ 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+ 		if (pe->parent_dev != pdev)
+ 			continue;
+ 
+-		pnv_pci_ioda2_release_dma_pe(pdev, pe);
++		pnv_pci_ioda2_release_pe_dma(pe);
+ 
+ 		/* Remove from list */
+ 		mutex_lock(&phb->ioda.pe_list_mutex);
+@@ -2429,7 +2411,6 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+ 	return 0;
+ }
+ 
+-#if defined(CONFIG_IOMMU_API) || defined(CONFIG_PCI_IOV)
+ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+ 		int num)
+ {
+@@ -2453,7 +2434,6 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+ 
+ 	return ret;
+ }
+-#endif
+ 
+ #ifdef CONFIG_IOMMU_API
+ unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+@@ -3334,18 +3314,14 @@ static void pnv_pci_ioda2_release_pe_dma(struct pnv_ioda_pe *pe)
+ {
+ 	struct iommu_table *tbl = pe->table_group.tables[0];
+ 	unsigned int weight = pnv_pci_ioda_pe_dma_weight(pe);
+-#ifdef CONFIG_IOMMU_API
+ 	int64_t rc;
+-#endif
+ 
+ 	if (!weight)
+ 		return;
+ 
+-#ifdef CONFIG_IOMMU_API
+ 	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+ 	if (rc)
+ 		pe_warn(pe, "OPAL error %lld release DMA window\n", rc);
+-#endif
+ 
+ 	pnv_pci_ioda2_set_bypass(pe, false);
+ 	if (pe->table_group.group) {
+-- 
+2.26.2
 
-[..snip..]
-
-> @@ -1339,14 +1345,20 @@ void start_secondary(void *unused)
->  	/* Update topology CPU masks */
->  	add_cpu_to_masks(cpu);
-> 
-> -	if (has_big_cores)
-> -		sibling_mask = cpu_smallcore_mask;
->  	/*
->  	 * Check for any shared caches. Note that this must be done on a
->  	 * per-core basis because one core in the pair might be disabled.
->  	 */
-> -	if (!cpumask_equal(cpu_l2_cache_mask(cpu), sibling_mask(cpu)))
-> -		shared_caches = true;
-> +	if (!shared_caches) {
-> +		struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
-> +		struct cpumask *mask = cpu_l2_cache_mask(cpu);
-> +
-> +		if (has_big_cores)
-> +			sibling_mask = cpu_smallcore_mask;
-> +
-> +		if (cpumask_weight(mask) > cpumask_weight(sibling_mask(cpu)))
-> +			shared_caches = true;
-
-At the risk of repeating my comment to the v1 version of the patch, we
-have shared caches only l2_cache_mask(cpu) is a strict superset of
-sibling_mask(cpu).
-
-"cpumask_weight(mask) > cpumask_weight(sibling_mask(cpu))" does not
-capture this.
-
-Could we please use
-
-      if (!cpumask_equal(sibling_mask(cpu), mask) &&
-      	  cpumask_subset(sibling_mask(cpu), mask) {
-      }
-
-?
-
-
-> +	}
-> 
->  	set_numa_node(numa_cpu_lookup_table[cpu]);
->  	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
-> @@ -1374,10 +1386,19 @@ int setup_profiling_timer(unsigned int multiplier)
-> 
->  static void fixup_topology(void)
->  {
-> +	if (shared_caches) {
-> +		pr_info("Using shared cache scheduler topology\n");
-> +		powerpc_topology[bigcore_idx].mask = shared_cache_mask;
-> +#ifdef CONFIG_SCHED_DEBUG
-> +		powerpc_topology[bigcore_idx].name = "CACHE";
-> +#endif
-> +		powerpc_topology[bigcore_idx].sd_flags = powerpc_shared_cache_flags;
-> +	}
-> +
->  #ifdef CONFIG_SCHED_SMT
->  	if (has_big_cores) {
->  		pr_info("Big cores detected but using small core scheduling\n");
-> -		powerpc_topology[0].mask = smallcore_smt_mask;
-> +		powerpc_topology[smt_idx].mask = smallcore_smt_mask;
->  	}
->  #endif
-
-
-Otherwise the patch looks good to me.
-
---
-Thanks and Regards
-gautham.
