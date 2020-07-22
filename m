@@ -2,79 +2,68 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3679C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 05:01:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F04FDC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:57:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50B7C207BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 05:01:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 98033207BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 04:57:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VtZzRr7+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50B7C207BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="XhBTf2Xl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98033207BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBNb44fmZzDqv9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 15:01:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::344;
- helo=mail-ot1-x344.google.com; envelope-from=jniethe5@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=VtZzRr7+; dkim-atps=neutral
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
- [IPv6:2607:f8b0:4864:20::344])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBNVz4xWszDqv5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 14:57:31 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBN9f4GnTzDqs1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 14:42:30 +1000 (AEST)
-Received: by mail-ot1-x344.google.com with SMTP id t18so863176otq.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2020 21:42:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=GtofqkQ3XIJWTX5BE6tfZb4lMA7KmqIQCzAlx3ABX0M=;
- b=VtZzRr7+vBbhCeoJXyvXwOAsKy4ygVaSH1QnWwOVYpGmgP/DCQOrHkXiKVoYGY5lrI
- 9sNOgw/3D/hgGKZSuyk4RuK6rG/YRe40dmLuz4huuLscaULAkFYKJeyIxzYy2hwxm6BB
- bVkxz7KtKGw/xfXa5Ztq39jXWsJHBjF4GbZFmjbJsSSSJJfYujDKaUHi7dl8hGAnBnr5
- tCD05I743cua1VaCW/k6v38ODJupmAWPbnLL7sux60ZIdgXp5Suy0zAyr6NZJOll8Xy+
- oHE2+4addVJD8Ijrf03ErqRCJyuy/D0R1FShQ5JLqqPr6kxEZIisG/r+c+2Dgkt5hCCn
- 10aQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=GtofqkQ3XIJWTX5BE6tfZb4lMA7KmqIQCzAlx3ABX0M=;
- b=Lds2kHIxiTSTWGaL4FHZyrAAlmJ/OqjYv1R/cZUi2GL0j6tZo/FQmyNK9iB0UQZvIm
- UCNjz/3UVtYvSCCAiaB2cXzMRGM5QJ3t9o7/I6Maisan8G1cXKzA5V6uZt0BEbqMmzxP
- R/dQQT9Fgp6Elbwf5YKIxIG5y+UoYSIRxWgfO44ldzYmZGVmm054KXquP5843sIsvFhP
- t3gzbbLzXCRmuFKTU14z6LuWsrUD6yVQrZHueUFNPdA3d5bf/RQM4qtcPc2evequ/dFw
- kAMClMJ5F1a38Pwj147wRGYzpcN+/jDxKqyAXpzX3XXGQN8c1MsMivZFtdRZNtklSkFO
- rKkQ==
-X-Gm-Message-State: AOAM5322y7sMgFa5c2zGF/mu2llDHml1IqHRQ/inAM7NDvQsDI6iXCJe
- YCuLosgCPJNvcKjnmivmRpuVN/XvrfSGD7yDYeE=
-X-Google-Smtp-Source: ABdhPJyVDBS9hB7vq2K7civKPaRsjw0GL+OvOR5dsO1HwV67oYdMaz75KRUqg6pMAFC5rOCQrnG0Yj39sxLkMsJqxyU=
-X-Received: by 2002:a9d:7f06:: with SMTP id j6mr5928964otq.51.1595392945793;
- Tue, 21 Jul 2020 21:42:25 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBN424fXSzDqW1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 14:37:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=XhBTf2Xl; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BBN4054f5z9sPB;
+ Wed, 22 Jul 2020 14:37:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1595392657;
+ bh=fM9hNVHywyNvJcSx2b2kKXg/Co8o/eplCDBvPFYZHtQ=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=XhBTf2XlQ0iKuM8F4btdqyKRiqoAh5JEXAa7jBHCsbdRy+4eTu6e1q8pe79E6XJki
+ Q/TN5/ydocEu1m4EEoNgKUd9tAmOSQc4PPZwqW8+hv7gqp43NkdJyFTGCbS2Qr3I4c
+ 7EOxyaTD4uD64rfHgdlktQajoGg778+POQBDZx3Kt51EE5WFKL1m8RMWsk2At2aWRv
+ 8zdfQ68VjTdeSRmXrbleJrVQ+nQoCemYNme4b0WsUUz4wdTV7TvQLz0qCn9HjyeI01
+ e32qYRMe6GOq9FEpD1zFcWKMxHXYgkgccgxJRnOxh+2UQQmU65uOxvbzpXLF+CoVgx
+ UF9suj/wvmiYw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [v3 02/15] KVM: PPC: Book3S HV: Cleanup updates for kvm vcpu MMCR
+In-Reply-To: <B83C440A-1AC4-4737-8AB1-EB9A6B8A474B@linux.vnet.ibm.com>
 References: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1594996707-3727-8-git-send-email-atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1594996707-3727-8-git-send-email-atrajeev@linux.vnet.ibm.com>
-From: Jordan Niethe <jniethe5@gmail.com>
-Date: Wed, 22 Jul 2020 14:41:40 +1000
-Message-ID: <CACzsE9oBw1ZrJLqOAg1QqPrQgSoVbEdPh_ax7mU_kcWNyfyAcg@mail.gmail.com>
-Subject: Re: [v3 07/15] powerpc/perf: Add power10_feat to dt_cpu_ftrs
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1594996707-3727-3-git-send-email-atrajeev@linux.vnet.ibm.com>
+ <20200721035420.GA3819606@thinks.paulus.ozlabs.org>
+ <B83C440A-1AC4-4737-8AB1-EB9A6B8A474B@linux.vnet.ibm.com>
+Date: Wed, 22 Jul 2020 14:37:35 +1000
+Message-ID: <87y2ncqi5s.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,122 +75,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, mikey@neuling.org,
+Cc: ego@linux.vnet.ibm.com, Michael Neuling <mikey@neuling.org>,
  maddy@linux.vnet.ibm.com, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  svaidyan@in.ibm.com, acme@kernel.org, jolsa@kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jul 18, 2020 at 1:13 AM Athira Rajeev
-<atrajeev@linux.vnet.ibm.com> wrote:
+Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
+>> On 21-Jul-2020, at 9:24 AM, Paul Mackerras <paulus@ozlabs.org> wrote:
+>> On Fri, Jul 17, 2020 at 10:38:14AM -0400, Athira Rajeev wrote:
+>>> Currently `kvm_vcpu_arch` stores all Monitor Mode Control registers
+>>> in a flat array in order: mmcr0, mmcr1, mmcra, mmcr2, mmcrs
+>>> Split this to give mmcra and mmcrs its own entries in vcpu and
+>>> use a flat array for mmcr0 to mmcr2. This patch implements this
+>>> cleanup to make code easier to read.
+>>=20
+>> Changing the way KVM stores these values internally is fine, but
+>> changing the user ABI is not.  This part:
+>>=20
+>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include=
+/uapi/asm/kvm.h
+>>> index 264e266..e55d847 100644
+>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>> @@ -510,8 +510,8 @@ struct kvm_ppc_cpu_char {
+>>>=20
+>>> #define KVM_REG_PPC_MMCR0	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x10)
+>>> #define KVM_REG_PPC_MMCR1	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x11)
+>>> -#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
+>>> -#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
+>>> +#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
+>>> +#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
+>>=20
+>> means that existing userspace programs that used to work would now be
+>> broken.  That is not acceptable (breaking the user ABI is only ever
+>> acceptable with a very compelling reason).  So NAK to this part of the
+>> patch.
 >
-> From: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Hi Paul
 >
-> Add power10 feature function to dt_cpu_ftrs.c along
-> with a power10 specific init() to initialize pmu sprs,
-> sets the oprofile_cpu_type and cpu_features. This will
-> enable performance monitoring unit(PMU) for Power10
-> in CPU features with "performance-monitor-power10".
+> Thanks for checking the patch. I understood your point on user ABI breaka=
+ge that this particular change can cause.
+> I will retain original KVM_REG_PPC_MMCRA and KVM_REG_PPC_MMCR2 order in `=
+kvm.h`
+> And with that, additionally I will need below change ( on top of current =
+patch ) for my clean up updates for kvm cpu MMCR to work,
+> Because now mmcra and mmcrs will have its own entries in vcpu and is not =
+part of the mmcr[] array
+> Please suggest if this looks good
+
+I did the same patch I think in my testing branch, it's here:
+
+https://github.com/linuxppc/linux/commit/daea78154eff1b7e2f36be05a8f95feb5a=
+588912
+
+
+Can you please check that matches what you sent.
+
+cheers
+
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 3f90eee261fc..b10bb404f0d5 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1679,10 +1679,13 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu =
+*vcpu, u64 id,
+>         case KVM_REG_PPC_UAMOR:
+>                 *val =3D get_reg_val(id, vcpu->arch.uamor);
+>                 break;
+> -       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR2:
+> +       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
+>                 i =3D id - KVM_REG_PPC_MMCR0;
+>                 *val =3D get_reg_val(id, vcpu->arch.mmcr[i]);
+>                 break;
+> +       case KVM_REG_PPC_MMCR2:
+> +               *val =3D get_reg_val(id, vcpu->arch.mmcr[2]);
+> +               break;
+>         case KVM_REG_PPC_MMCRA:
+>                 *val =3D get_reg_val(id, vcpu->arch.mmcra);
+>                 break;
+> @@ -1906,10 +1909,13 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu =
+*vcpu, u64 id,
+>         case KVM_REG_PPC_UAMOR:
+>                 vcpu->arch.uamor =3D set_reg_val(id, *val);
+>                 break;
+> -       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR2:
+> +       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
+>                 i =3D id - KVM_REG_PPC_MMCR0;
+>                 vcpu->arch.mmcr[i] =3D set_reg_val(id, *val);
+>                 break;
+> +       case KVM_REG_PPC_MMCR2:
+> +               vcpu->arch.mmcr[2] =3D set_reg_val(id, *val);
+> +               break;
+>         case KVM_REG_PPC_MMCRA:
+>                 vcpu->arch.mmcra =3D set_reg_val(id, *val);
+>                 break;
+> =E2=80=94
 >
-> For PowerISA v3.1, BHRB disable is controlled via Monitor Mode
-> Control Register A (MMCRA) bit, namely "BHRB Recording Disable
-> (BHRBRD)". This patch initializes MMCRA BHRBRD to disable BHRB
-> feature at boot for power10.
 >
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/reg.h        |  3 +++
->  arch/powerpc/kernel/cpu_setup_power.S |  8 ++++++++
->  arch/powerpc/kernel/dt_cpu_ftrs.c     | 26 ++++++++++++++++++++++++++
->  3 files changed, 37 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 21a1b2d..900ada1 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1068,6 +1068,9 @@
->  #define MMCR0_PMC2_LOADMISSTIME        0x5
->  #endif
->
-> +/* BHRB disable bit for PowerISA v3.10 */
-> +#define MMCRA_BHRB_DISABLE     0x0000002000000000
-Shouldn't this go under SPRN_MMCRA with the other MMCRA_*.
-> +
->  /*
->   * SPRG usage:
->   *
-> diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-> index efdcfa7..b8e0d1e 100644
-> --- a/arch/powerpc/kernel/cpu_setup_power.S
-> +++ b/arch/powerpc/kernel/cpu_setup_power.S
-> @@ -94,6 +94,7 @@ _GLOBAL(__restore_cpu_power8)
->  _GLOBAL(__setup_cpu_power10)
->         mflr    r11
->         bl      __init_FSCR_power10
-> +       bl      __init_PMU_ISA31
-So we set MMCRA here but then aren't we still going to call __init_PMU
-which will overwrite that?
-Would this setting MMCRA also need to be handled in __restore_cpu_power10?
->         b       1f
->
->  _GLOBAL(__setup_cpu_power9)
-> @@ -233,3 +234,10 @@ __init_PMU_ISA207:
->         li      r5,0
->         mtspr   SPRN_MMCRS,r5
->         blr
-> +
-> +__init_PMU_ISA31:
-> +       li      r5,0
-> +       mtspr   SPRN_MMCR3,r5
-> +       LOAD_REG_IMMEDIATE(r5, MMCRA_BHRB_DISABLE)
-> +       mtspr   SPRN_MMCRA,r5
-> +       blr
-> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> index 3a40951..f482286 100644
-> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-> @@ -450,6 +450,31 @@ static int __init feat_enable_pmu_power9(struct dt_cpu_feature *f)
->         return 1;
->  }
->
-> +static void init_pmu_power10(void)
-> +{
-> +       init_pmu_power9();
-> +
-> +       mtspr(SPRN_MMCR3, 0);
-> +       mtspr(SPRN_MMCRA, MMCRA_BHRB_DISABLE);
-> +}
-> +
-> +static int __init feat_enable_pmu_power10(struct dt_cpu_feature *f)
-> +{
-> +       hfscr_pmu_enable();
-> +
-> +       init_pmu_power10();
-> +       init_pmu_registers = init_pmu_power10;
-> +
-> +       cur_cpu_spec->cpu_features |= CPU_FTR_MMCRA;
-> +       cur_cpu_spec->cpu_user_features |= PPC_FEATURE_PSERIES_PERFMON_COMPAT;
-> +
-> +       cur_cpu_spec->num_pmcs          = 6;
-> +       cur_cpu_spec->pmc_type          = PPC_PMC_IBM;
-> +       cur_cpu_spec->oprofile_cpu_type = "ppc64/power10";
-> +
-> +       return 1;
-> +}
-> +
->  static int __init feat_enable_tm(struct dt_cpu_feature *f)
->  {
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> @@ -639,6 +664,7 @@ struct dt_cpu_feature_match {
->         {"pc-relative-addressing", feat_enable, 0},
->         {"machine-check-power9", feat_enable_mce_power9, 0},
->         {"performance-monitor-power9", feat_enable_pmu_power9, 0},
-> +       {"performance-monitor-power10", feat_enable_pmu_power10, 0},
->         {"event-based-branch-v3", feat_enable, 0},
->         {"random-number-generator", feat_enable, 0},
->         {"system-call-vectored", feat_disable, 0},
-> --
-> 1.8.3.1
->
+>>=20
+>> Regards,
+>> Paul.
