@@ -2,60 +2,98 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5026C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 05:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFCC8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:01:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F97120771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 05:55:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="l7d9EYRi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F97120771
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 4CF2720771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:01:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CF2720771
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBPnM5TBjzDqLd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 15:55:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBPwm6ydQzDqK9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 16:01:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBPlL4rZPzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 15:53:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=l7d9EYRi; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4BBPlL3dqtz9sPB; Wed, 22 Jul 2020 15:53:18 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BBPlL2rclz9sRN; Wed, 22 Jul 2020 15:53:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595397198;
- bh=J6Oyelo4ndRmF79lExjeI93zEWZs53TowxpRUWU0e1E=;
- h=From:To:Subject:Date:From;
- b=l7d9EYRi8LYBAEKp7v4jRcrqOBdkfqzMgELLv6jw1hbVTHLa6xHbV8rAmj1SyQiOr
- Li5vTmY6LgRd5u1XHWDHt4nalEUt5/9Mrhnw4O4qM+A1FMAP/HyzAIGdUc92HVZg3g
- o5ZVtC19Xmopt7SCCpVn2HsD9CBMX+XNgZHbwjM21oA9P5e1h3W7DRBoVWxGU42aPh
- yA7qNJDTjev9mDda3KOZSe/MlIPFiKB13POBz31zqZa7CWbJI/yTBbwTChm/7RZu9i
- PZwxT76kJWjo2mO7X3Rj3MkAbC2L+6FwSQ4gLz1t40oPg3L8mQhuTq9EXqQD+ZzJ8E
- S40MYj7WbuwuQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: Add test of memcmp at end of page
-Date: Wed, 22 Jul 2020 15:53:15 +1000
-Message-Id: <20200722055315.962391-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBPtj55K4zDqCg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 15:59:41 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06M5WnEI050937; Wed, 22 Jul 2020 01:59:34 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32dn6ycw4b-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Jul 2020 01:59:34 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06M5YZZL054819;
+ Wed, 22 Jul 2020 01:59:33 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32dn6ycw44-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Jul 2020 01:59:33 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06M5oWBl019999;
+ Wed, 22 Jul 2020 05:59:33 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma02dal.us.ibm.com with ESMTP id 32brq9htwc-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Jul 2020 05:59:32 +0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06M5xRkE39321906
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 22 Jul 2020 05:59:27 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4B1196E04E;
+ Wed, 22 Jul 2020 05:59:30 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AF37F6E050;
+ Wed, 22 Jul 2020 05:59:29 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.82.72])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 22 Jul 2020 05:59:29 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 36EED2E3C48; Wed, 22 Jul 2020 11:29:25 +0530 (IST)
+Date: Wed, 22 Jul 2020 11:29:25 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 04/10] powerpc/smp: Enable small core scheduling sooner
+Message-ID: <20200722055925.GC31038@in.ibm.com>
+References: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
+ <20200721113814.32284-5-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200721113814.32284-5-srikar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-22_02:2020-07-21,
+ 2020-07-22 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 spamscore=0
+ impostorscore=0 mlxscore=0 malwarescore=0 clxscore=1015 bulkscore=0
+ priorityscore=1501 lowpriorityscore=0 mlxlogscore=999 adultscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007220040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,88 +105,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Jordan Niethe <jniethe5@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Nick Piggin <npiggin@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Valentin Schneider <valentin.schneider@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update our memcmp selftest, to test the case where we're comparing up
-to the end of a page and the subsequent page is not mapped. We have to
-make sure we don't read off the end of the page and cause a fault.
+Hello Srikar,
 
-We had a bug there in the past, fixed in commit
-d9470757398a ("powerpc/64: Fix memcmp reading past the end of src/dest").
+On Tue, Jul 21, 2020 at 05:08:08PM +0530, Srikar Dronamraju wrote:
+> Enable small core scheduling as soon as we detect that we are in a
+> system that supports thread group. Doing so would avoid a redundant
+> check.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- .../selftests/powerpc/stringloops/memcmp.c    | 40 ++++++++++---------
- 1 file changed, 22 insertions(+), 18 deletions(-)
+The patch looks good to me. However, I think the commit message still
+reflect the v1 code where we were moving the functionality from
+smp_cpus_done() to init_big_cores().
 
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index b1fa7546957f..e4605ca850dc 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -2,6 +2,7 @@
- #include <malloc.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <sys/mman.h>
- #include <time.h>
- #include "utils.h"
- 
-@@ -13,6 +14,9 @@
- #define LARGE_MAX_OFFSET 32
- #define LARGE_SIZE_START 4096
- 
-+/* This is big enough to fit LARGE_SIZE and works on 4K & 64K kernels */
-+#define MAP_SIZE (64 * 1024)
-+
- #define MAX_OFFSET_DIFF_S1_S2 48
- 
- int vmx_count;
-@@ -68,25 +72,25 @@ static void test_one(char *s1, char *s2, unsigned long max_offset,
- 
- static int testcase(bool islarge)
- {
--	char *s1;
--	char *s2;
--	unsigned long i;
--
--	unsigned long comp_size = (islarge ? LARGE_SIZE : SIZE);
--	unsigned long alloc_size = comp_size + MAX_OFFSET_DIFF_S1_S2;
--	int iterations = islarge ? LARGE_ITERATIONS : ITERATIONS;
--
--	s1 = memalign(128, alloc_size);
--	if (!s1) {
--		perror("memalign");
--		exit(1);
--	}
-+	unsigned long i, comp_size, alloc_size;
-+	char *p, *s1, *s2;
-+	int iterations;
- 
--	s2 = memalign(128, alloc_size);
--	if (!s2) {
--		perror("memalign");
--		exit(1);
--	}
-+	comp_size = (islarge ? LARGE_SIZE : SIZE);
-+	alloc_size = comp_size + MAX_OFFSET_DIFF_S1_S2;
-+	iterations = islarge ? LARGE_ITERATIONS : ITERATIONS;
-+
-+	p = mmap(NULL, 4 * MAP_SIZE, PROT_READ | PROT_WRITE,
-+		 MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-+	FAIL_IF(p == MAP_FAILED);
-+
-+	/* Put s1/s2 at the end of a page */
-+	s1 = p + MAP_SIZE - alloc_size;
-+	s2 = p + 3 * MAP_SIZE - alloc_size;
-+
-+	/* And unmap the subsequent page to force a fault if we overread */
-+	munmap(p + MAP_SIZE, MAP_SIZE);
-+	munmap(p + 3 * MAP_SIZE, MAP_SIZE);
- 
- 	srandom(time(0));
- 
--- 
-2.25.1
+In this we are moving it to a helper function to collate all fixups to
+topology.
 
+> 
+> Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> Cc: LKML <linux-kernel@vger.kernel.org>
+> Cc: Michael Ellerman <michaele@au1.ibm.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Valentin Schneider <valentin.schneider@arm.com>
+> Cc: Nick Piggin <npiggin@au1.ibm.com>
+> Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Cc: Michael Neuling <mikey@linux.ibm.com>
+> Cc: Anton Blanchard <anton@au1.ibm.com>
+> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+> Cc: Jordan Niethe <jniethe5@gmail.com>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+> Changelog v1 -> v2:
+> powerpc/smp: Enable small core scheduling sooner
+> 	Restored the previous info msg (Jordan)
+> 	Moved big core topology fixup to fixup_topology (Gautham)
+> 
+>  arch/powerpc/kernel/smp.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 1ce95da00cb6..72f16dc0cb26 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1370,6 +1370,16 @@ int setup_profiling_timer(unsigned int multiplier)
+>  	return 0;
+>  }
+> 
+> +static void fixup_topology(void)
+> +{
+> +#ifdef CONFIG_SCHED_SMT
+> +	if (has_big_cores) {
+> +		pr_info("Big cores detected but using small core scheduling\n");
+> +		powerpc_topology[0].mask = smallcore_smt_mask;
+> +	}
+> +#endif
+> +}
+> +
+>  void __init smp_cpus_done(unsigned int max_cpus)
+>  {
+>  	/*
+> @@ -1383,12 +1393,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
+> 
+>  	dump_numa_cpu_topology();
+> 
+> -#ifdef CONFIG_SCHED_SMT
+> -	if (has_big_cores) {
+> -		pr_info("Big cores detected but using small core scheduling\n");
+> -		powerpc_topology[0].mask = smallcore_smt_mask;
+> -	}
+> -#endif
+> +	fixup_topology();
+>  	set_sched_topology(powerpc_topology);
+>  }
+> 
+> -- 
+> 2.17.1
+> 
