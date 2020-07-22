@@ -2,82 +2,86 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 949A9C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EF23C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:17:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E54420825
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:14:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 96A8C20825
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:17:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eXn7IUD/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E54420825
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AGQDHPvH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96A8C20825
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBqWC1nCCzDqPg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 08:14:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBqZM19jvzDr5N
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 08:16:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::542;
- helo=mail-ed1-x542.google.com; envelope-from=olteanv@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::642;
+ helo=mail-ej1-x642.google.com; envelope-from=olteanv@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=eXn7IUD/; dkim-atps=neutral
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
- [IPv6:2a00:1450:4864:20::542])
+ header.s=20161025 header.b=AGQDHPvH; dkim-atps=neutral
+Received: from mail-ej1-x642.google.com (mail-ej1-x642.google.com
+ [IPv6:2a00:1450:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBj5F04CgzDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 03:24:44 +1000 (AEST)
-Received: by mail-ed1-x542.google.com with SMTP id b15so2246474edy.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 10:24:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBj5F3gCyzDqTd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 03:24:46 +1000 (AEST)
+Received: by mail-ej1-x642.google.com with SMTP id n22so3083574ejy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 10:24:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=gPP0o2IshuB1LsGL+RlWYagGQFRTxZqJkVHgsKuPywk=;
- b=eXn7IUD/qqGZ665TjtY/1XQa6zE3hdJTIfxcjm9PHJSTXYZx8C6sRqi8KjavPYnP4j
- glhyUS6oA94YrOTN/C75FuWP7eHJF06P90j6gT4U8tHksMu8dYeOaUv4kEQJ2ZjGNrx4
- zmtxNETChqqAejiSizVPikMweJuWEBb8tqO2cjekgH6LP6r/CPW2gDyC8hTXDmPWPcf0
- 3mUGe7ytgBVKEaljkhd3OWBCCQu5vlt0/oKnLKxRrJWaxWJTePwFYAKVzC86eHxajaEt
- 5mwxIjbKDswO3P2a3H4oGhKR+L6iqHEoYdKEd4WHo2iE7wyXLbNoy9Sjv/NfQN+aa/Jb
- XSLA==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=fkjRjgqmL9cSG9e/Flla8rZThIqv1kD45KaUMdt112E=;
+ b=AGQDHPvHM8zufKwGgOsKli2uXLvFTiN2RfHhyglp5Y+ezUK3B4LwfNCm298BkBTCb+
+ AjzP2W77WbuPxgJ72AOeHLIJRhLdfPGA71EZtWztpbKHDtxGr8x2U8dtmXcL0XOmVC0p
+ gpCzzhQXgCbUDiSnuKdCO4XXteBU0ruDrB6kzxPogReG1rYujCFBzQUAynw71CKuCFZu
+ 2GTsFelCVs4biVZ4YPnKl6AlvCOj88y0GImybPcdDDMRylJnbt+9vYDUdkKKcTAokkj5
+ cwcbhnUolcLdoaULWwmnfF+Kk+k4rUT7nnZyQ5nltLeXiC+1fM6D0P7R2yt6wmf1tlud
+ uAjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=gPP0o2IshuB1LsGL+RlWYagGQFRTxZqJkVHgsKuPywk=;
- b=OJNH9WwdwGvSTL2YmzpIgBa7GEbpDE3nVeTDmA3lKhwUuftBij1deMFQahNkw2QtIu
- dWCMjh1vhNpDtLUKVA2KypqfmgSuPPhZ40+yLF1j+n8ibQ27Y2Bw5eHE06o7usxnRjd6
- cD2wS5It3z9P6YkIDeQIaDDrfWDE/e4Ck1giq/sp07Jjjo4JZlaSumTmYdddmo43HzjO
- NypiOl3kZjmdctuohfnKTpLwJ8WZi3xEzBOWehrUqNo8Ngo4AzzRWijDL3abzq4q3DLR
- tmEM3ZxN5wao0Fl8huYNVM+E24xOpnNMsdza37dc+lK0m6nAgHflyUscBbkxLfgT+/bf
- 8a7g==
-X-Gm-Message-State: AOAM531ZKQzqCMC3RFU9lQCEngPaLiQkebuPgoBVB/OIsI6oNWhuiMRA
- VDNDUMMW9DiRq564ANV3kYw=
-X-Google-Smtp-Source: ABdhPJw6qCvxHjC43/yrpWhDOe/AsWnZXiBnfMRI2ghCPn3hOLpRGBpWv3Dxsjl6tQ8CgvCHhpH0Mw==
-X-Received: by 2002:a05:6402:3064:: with SMTP id
- bs4mr517588edb.350.1595438679957; 
- Wed, 22 Jul 2020 10:24:39 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=fkjRjgqmL9cSG9e/Flla8rZThIqv1kD45KaUMdt112E=;
+ b=S8JZQyE+vF1rfgEHLqn5q9z87mRh2jxG8Zuylr5K41dxrAK65QUY1EoeIXshjJ223C
+ 6uyAGBpRC9Tcq0kffcw+l2oAPdfO624SJsKQWhDKqq9c6X2nJgaHOFXUle/CNXborif4
+ 1Inhi9ajVMt1b1x1d2jMO9JKSWAfZ6Vm1J4qM+3Ku3Obx5/kYKHwKEaLYM/Gbf0YzYcf
+ 6KtETJWr1Ltt9LlcyJ7APzRAdZcWo+8Rob1WFilwHpj6/5STdNRZPGvogZKI3sKWoxyx
+ qIvax7bqiLsOmKu51PbD3vuIXYVi0rMTF4VCoXoEH/iMMixfl0L+/g3WQCPBcpHsVRe3
+ ov3A==
+X-Gm-Message-State: AOAM533mZeS4U74XVnlOBD1RL0t5N5h8KBgbrX/SXjRdXckYlHzs75hO
+ +BTa5QZ+uXt8R1d+S0pE1JY=
+X-Google-Smtp-Source: ABdhPJxnnRi1Q6Spyx54hWbixVxvTLOnzK7/JDNXb7ja9hltyn+X7XnRO6znLoGbFJqK6fc2Usydpg==
+X-Received: by 2002:a17:906:430b:: with SMTP id
+ j11mr611733ejm.270.1595438683625; 
+ Wed, 22 Jul 2020 10:24:43 -0700 (PDT)
 Received: from localhost.localdomain ([188.25.219.134])
- by smtp.gmail.com with ESMTPSA id bt26sm311517edb.17.2020.07.22.10.24.38
+ by smtp.gmail.com with ESMTPSA id bt26sm311517edb.17.2020.07.22.10.24.42
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 22 Jul 2020 10:24:39 -0700 (PDT)
+ Wed, 22 Jul 2020 10:24:43 -0700 (PDT)
 From: Vladimir Oltean <olteanv@gmail.com>
 To: robh+dt@kernel.org, shawnguo@kernel.org, mpe@ellerman.id.au,
  devicetree@vger.kernel.org
-Subject: [PATCH devicetree 0/4] Add Seville Ethernet switch to T1040RDB
-Date: Wed, 22 Jul 2020 20:24:18 +0300
-Message-Id: <20200722172422.2590489-1-olteanv@gmail.com>
+Subject: [PATCH devicetree 3/4] powerpc: dts: t1040rdb: put SGMII PHY under
+ &mdio0 label
+Date: Wed, 22 Jul 2020 20:24:21 +0300
+Message-Id: <20200722172422.2590489-4-olteanv@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200722172422.2590489-1-olteanv@gmail.com>
+References: <20200722172422.2590489-1-olteanv@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 23 Jul 2020 08:08:49 +1000
@@ -99,24 +103,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Seville is a DSA switch that is embedded inside the T1040 SoC, and
-supported by the mscc_seville DSA driver. The driver has been accepted
-this release cycle and is currently available in net-next (and
-therefore, in linux-next).
+We're going to add 8 more PHYs in a future patch. It is easier to follow
+the hardware description if we don't need to fish for the path of the
+MDIO controllers inside the SoC and just use the labels.
 
-This series adds this switch to the SoC's dtsi files and to the T1040RDB
-board file.
+Signed-off-by: Vladimir Oltean <olteanv@gmail.com>
+---
+ arch/powerpc/boot/dts/fsl/t1040rdb.dts | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Vladimir Oltean (4):
-  powerpc: dts: t1040: add bindings for Seville Ethernet switch
-  powerpc: dts: t1040: label the 2 MDIO controllers
-  powerpc: dts: t1040rdb: put SGMII PHY under &mdio0 label
-  powerpc: dts: t1040rdb: add ports for Seville Ethernet switch
-
- arch/powerpc/boot/dts/fsl/t1040rdb.dts      | 123 +++++++++++++++++++-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi |  79 ++++++++++++-
- 2 files changed, 194 insertions(+), 8 deletions(-)
-
+diff --git a/arch/powerpc/boot/dts/fsl/t1040rdb.dts b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
+index 65ff34c49025..40d7126dbe90 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
+@@ -59,12 +59,6 @@ ethernet@e4000 {
+ 				phy-handle = <&phy_sgmii_2>;
+ 				phy-connection-type = "sgmii";
+ 			};
+-
+-			mdio@fc000 {
+-				phy_sgmii_2: ethernet-phy@3 {
+-					reg = <0x03>;
+-				};
+-			};
+ 		};
+ 	};
+ 
+@@ -76,3 +70,9 @@ cpld@3,0 {
+ };
+ 
+ #include "t1040si-post.dtsi"
++
++&mdio0 {
++	phy_sgmii_2: ethernet-phy@3 {
++		reg = <0x3>;
++	};
++};
 -- 
 2.25.1
 
