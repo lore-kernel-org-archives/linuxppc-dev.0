@@ -2,77 +2,88 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5764CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 21:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57507C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:10:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD9D92071A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 21:08:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 025BA20825
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 22:10:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=atishpatra.org header.i=@atishpatra.org header.b="DtMjrfPK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD9D92071A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=atishpatra.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DaGkdRNf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 025BA20825
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBp2x3LZGzDr3Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 07:08:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBqQx55C3zDr3p
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 08:10:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=atishpatra.org (client-ip=2a00:1450:4864:20::344;
- helo=mail-wm1-x344.google.com; envelope-from=atishp@atishpatra.org;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::542;
+ helo=mail-ed1-x542.google.com; envelope-from=olteanv@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=atishpatra.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=atishpatra.org header.i=@atishpatra.org header.a=rsa-sha256
- header.s=google header.b=DtMjrfPK; dkim-atps=neutral
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com
- [IPv6:2a00:1450:4864:20::344])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=DaGkdRNf; dkim-atps=neutral
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
+ [IPv6:2a00:1450:4864:20::542])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBp0m1GmdzDqyl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 07:06:11 +1000 (AEST)
-Received: by mail-wm1-x344.google.com with SMTP id c80so3130976wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 14:06:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=atishpatra.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=pUykGa+mtQ5qLEJzpM6lTm4DyeH44yHQyhTxXONta+M=;
- b=DtMjrfPK33UpsHV7ieVtBoXhLIYg/jlJtL/BwT+t06XPoZuxolm3MZwCr//MnlAhv7
- olpqshFL30eLQy1W2/XqwGp6TQ4RerXlU6stdyUroQWPo3+FNPAxh8fnNdtX7F+nvEDT
- VJ2MTsTfnTkK/RixP0LCc4xF2mzNoGq5Ig8To=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBj5F03YrzDqPM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 03:24:44 +1000 (AEST)
+Received: by mail-ed1-x542.google.com with SMTP id dg28so2254043edb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 10:24:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=vHgiL55jxDrujS/wtQnL77G2JrcZ1DngkTtPEjQmevw=;
+ b=DaGkdRNfS8eXOBKB5sp0VfYsh5wlQq7pP2Y+QI84Pxei90Prd/XesQk8y64weQCjFE
+ L86OcBmZoUSZgIa2YE2s+OKBewK5rBIob8PYrvByLTE9XNqc8RLuImeOh84tsK91hpi3
+ i8CV2XUi0ZabD2QljLDMLQVJ3A0pnt+qRjIzv53RRgFbfDOWO4fQpAJ1veUbAA/PttcU
+ DcRUDiUaOESxMwRpXL8NgIwbGJudZJ328hRyy4/awcGF/wyHSPiJ9nSjf068Upy+b8oD
+ YMOHGhrd1G6VRmJHAMmAMZc42+x3O6Kqku58mnjIqCAQvoiUqDX3+yhM4Dyiutqv/OjC
+ 8GVQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=pUykGa+mtQ5qLEJzpM6lTm4DyeH44yHQyhTxXONta+M=;
- b=W9mjUKwof3kS6yZjKzwu0yEnORLukAL1XOYSxil1F8FUrSGctb8rsKz8oO85DqkFD9
- us++W0jeX6darT+5zfVZHIGDwmrSbmbcQ0DnjSISjhQq9kEvQ+nrurAbcvgVCnNbsPiK
- 8zQqjq4oLtRrNcKfxHMZRgXvRudkdJ7B0g2I0Mdxy9bDXPk4x1yB2PBrkmKEdGsJ6UGE
- yM8XM9PXkKuXf7AGcvUB2T2bzzgamNZvynaIPUGbiGM4Ii4FocrUCt05POG3u47r11B1
- kSHcj78OLQtKkSgVH5TmgXhttCtCARuX+cDJi5DrliRVeNxFlJzW0l7Tm1DbgblvbN8q
- +xOw==
-X-Gm-Message-State: AOAM530wpV7hve761noC6rkMdfyontWz6kkzVRtHci+f+3Ddz/bXW1o8
- 5A9q2gw36a1UBfeNSrFAXHxaCRyoHZV3m5aatM5F
-X-Google-Smtp-Source: ABdhPJwhNpZUdU/OnWtik2XTzTS4UMH8jcwWO9Hxmgqgvl3smhQmAYatCRp4hQfaVCyVsPrlT6KIYfciVm1lrAWgeu4=
-X-Received: by 2002:a1c:dc02:: with SMTP id t2mr1223465wmg.55.1595451967050;
- Wed, 22 Jul 2020 14:06:07 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=vHgiL55jxDrujS/wtQnL77G2JrcZ1DngkTtPEjQmevw=;
+ b=Nv4mAtgS5d6SZVD6I/PQaBRvbPRNCw6GIy9Wrloj8PsdmRxPdQrt1Ciz9lIT4WykNI
+ i9Obqp/kLny3Ahf4heeVVTsRfVIC4VeNwCkmfCOlUg/fijaFS+adnIvFKNAm2J5o/EtY
+ 1n/PxhIUi7R9VjM8cbL9Rl00ZNeoF4lxzq/0+PJ3YZk7M4+2SzYpBUtrLNcrPXXNXTGC
+ l1e3kfDD7ImUHb9zLSdgzrNk0ypCtV8N7kEHUC0qtTsRlfJtHf5I1pal3xJRLuk+KtTk
+ rlZ4lcrJ2h9XJMYpO3Zgqf1Nv4B18noB65tXvWe7zWvcyXlPtLZk/KarZ9bLgc2Vq1Ox
+ FfTg==
+X-Gm-Message-State: AOAM5321xRazj9JLc3s5d79heG4g7RE8I7RaG278UtXXbCCAMAg1bZUb
+ 12kESIZVhA1Ejk1Q6++C4uA=
+X-Google-Smtp-Source: ABdhPJyXxT+y27dnP3zqkhp3Z0x2wLeOmgRRK6nopGhYGs2ugqJ+s1/IyCgvhCQI1tHV163CaotnFQ==
+X-Received: by 2002:a50:fe0c:: with SMTP id f12mr496188edt.360.1595438681135; 
+ Wed, 22 Jul 2020 10:24:41 -0700 (PDT)
+Received: from localhost.localdomain ([188.25.219.134])
+ by smtp.gmail.com with ESMTPSA id bt26sm311517edb.17.2020.07.22.10.24.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 22 Jul 2020 10:24:40 -0700 (PDT)
+From: Vladimir Oltean <olteanv@gmail.com>
+To: robh+dt@kernel.org, shawnguo@kernel.org, mpe@ellerman.id.au,
+ devicetree@vger.kernel.org
+Subject: [PATCH devicetree 1/4] powerpc: dts: t1040: add bindings for Seville
+ Ethernet switch
+Date: Wed, 22 Jul 2020 20:24:19 +0300
+Message-Id: <20200722172422.2590489-2-olteanv@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200722172422.2590489-1-olteanv@gmail.com>
+References: <20200722172422.2590489-1-olteanv@gmail.com>
 MIME-Version: 1.0
-References: <CAK8P3a34sT2bQbkZUjaxaShzCkn+s35pXxS0UNhqGFu+t2hZYw@mail.gmail.com>
- <mhng-820ebe55-b4a3-4ab3-b848-6d3551b43091@palmerdabbelt-glaptop1>
- <CAK8P3a2VHXDLK6iba=NxSQ-t=9P7LSwzwx3XrK=N=M+qoX_oeQ@mail.gmail.com>
-In-Reply-To: <CAK8P3a2VHXDLK6iba=NxSQ-t=9P7LSwzwx3XrK=N=M+qoX_oeQ@mail.gmail.com>
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 22 Jul 2020 14:05:55 -0700
-Message-ID: <CAOnJCULmX+vUcpEmBd5w7xjtZSFk=Ju2V=wBJCOXHQ8m9yG9-Q@mail.gmail.com>
-Subject: Re: [PATCH v5 1/4] riscv: Move kernel mapping to vmalloc zone
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 23 Jul 2020 08:08:49 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,67 +95,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Linux-MM <linux-mm@kvack.org>, Anup Patel <Anup.Patel@wdc.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Atish Patra <Atish.Patra@wdc.com>, Palmer Dabbelt <palmer@dabbelt.com>,
- Zong Li <zong.li@sifive.com>, Paul Walmsley <paul.walmsley@sifive.com>,
- Paul Mackerras <paulus@samba.org>,
- linux-riscv <linux-riscv@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: madalin.bucur@oss.nxp.com, linux-kernel@vger.kernel.org,
+ radu-andrei.bulie@nxp.com, fido_max@inbox.ru, paulus@samba.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jul 22, 2020 at 1:23 PM Arnd Bergmann <arnd@arndb.de> wrote:
->
-> On Wed, Jul 22, 2020 at 9:52 PM Palmer Dabbelt <palmer@dabbelt.com> wrote:
-> > On Wed, 22 Jul 2020 02:43:50 PDT (-0700), Arnd Bergmann wrote:
-> > > On Tue, Jul 21, 2020 at 9:06 PM Palmer Dabbelt <palmer@dabbelt.com> wrote:
-> > > The eventual goal is to have a split of 3840MB for either user or linear map
-> > > plus and 256MB for vmalloc, including the kernel. Switching between linear
-> > > and user has a noticeable runtime overhead, but it relaxes both the limits
-> > > for user memory and lowmem, and it provides a somewhat stronger
-> > > address space isolation.
-> >
-> > Ya, I think we decided not to do that, at least for now.  I guess the right
-> > answer there will depend on what 32-bit systems look like, and since we don't
-> > have any I'm inclined to just stick to the fast option.
->
-> Makes sense. Actually on 32-bit Arm we see fewer large-memory
-> configurations in new machines than we had in the past before 64-bit
-> machines were widely available at low cost, so I expect not to see a
-> lot new hardware with more than 1GB of DDR3 (two 256Mbit x16 chips)
-> for cost reasons, and rv32 is likely going to be similar, so you may never
-> really see a need for highmem or the above hack to increase the
-> size of the linear mapping.
->
-> I just noticed that rv32 allows 2GB of lowmem rather than just the usual
-> 768MB or 1GB, at the expense of addressable user memory. This seems
-> like an unusual choice, but I also don't see any reason to change this
-> or make it more flexible unless actual users appear.
->
+Add the description of the embedded L2 switch inside the SoC dtsi file
+for NXP T1040.
 
-I am a bit confused here. As per my understanding, RV32 supports 1GB
-of lowmem only
-as the page offset is set to 0xC0000000. The config option
-MAXPHYSMEM_2GB is misleading
-as RV32 actually allows 1GB of physical memory only. Any memory blocks beyond
-DRAM + 1GB are removed in setup_bootmem. IMHO, The current config
-should clarify that.
+Signed-off-by: Vladimir Oltean <olteanv@gmail.com>
+---
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 75 +++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
 
-Moreover, we should add 2G split under a separate configuration if we
-want to support that.
-
->        Arnd
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
-
-
-
+diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+index 315d0557eefc..4af856dcc6a3 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+@@ -628,6 +628,81 @@ mdio@fd000 {
+ 			status = "disabled";
+ 		};
+ 	};
++
++	seville_switch: ethernet-switch@800000 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "mscc,vsc9953-switch";
++		little-endian;
++		reg = <0x800000 0x290000>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			seville_port0: port@0 {
++				reg = <0>;
++				status = "disabled";
++			};
++
++			seville_port1: port@1 {
++				reg = <1>;
++				status = "disabled";
++			};
++
++			seville_port2: port@2 {
++				reg = <2>;
++				status = "disabled";
++			};
++
++			seville_port3: port@3 {
++				reg = <3>;
++				status = "disabled";
++			};
++
++			seville_port4: port@4 {
++				reg = <4>;
++				status = "disabled";
++			};
++
++			seville_port5: port@5 {
++				reg = <5>;
++				status = "disabled";
++			};
++
++			seville_port6: port@6 {
++				reg = <6>;
++				status = "disabled";
++			};
++
++			seville_port7: port@7 {
++				reg = <7>;
++				status = "disabled";
++			};
++
++			seville_port8: port@8 {
++				reg = <8>;
++				phy-mode = "internal";
++				status = "disabled";
++
++				fixed-link {
++					speed = <2500>;
++					full-duplex;
++				};
++			};
++
++			seville_port9: port@9 {
++				reg = <9>;
++				phy-mode = "internal";
++				status = "disabled";
++
++				fixed-link {
++					speed = <2500>;
++					full-duplex;
++				};
++			};
++		};
++	};
+ };
+ 
+ &qe {
 -- 
-Regards,
-Atish
+2.25.1
+
