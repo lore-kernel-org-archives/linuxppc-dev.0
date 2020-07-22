@@ -2,93 +2,99 @@ Return-Path: <SRS0=YHW0=BB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 283BEC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:05:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD6FAC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:23:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4C7022CB2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:05:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4C7022CB2
+	by mail.kernel.org (Postfix) with ESMTPS id 4B7AC20792
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 06:23:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B7AC20792
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BBQ115C01zDqws
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 16:05:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BBQPn325hzDqwB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jul 2020 16:23:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BBPgk3fNczDqtZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 15:50:10 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06M5Yj5O072650; Wed, 22 Jul 2020 01:50:04 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32e1vrnad9-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BBQMv1P7jzDqv1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 16:21:30 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06M61rdi161127; Wed, 22 Jul 2020 02:21:23 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vrf16h-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jul 2020 01:50:03 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06M5lQhh028381;
- Wed, 22 Jul 2020 05:50:02 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma05fra.de.ibm.com with ESMTP id 32brq82dma-1
+ Wed, 22 Jul 2020 02:21:23 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06M6GvGL012016;
+ Wed, 22 Jul 2020 02:21:23 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32e1vrf16a-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 22 Jul 2020 05:50:02 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06M5mZ5P62390556
+ Wed, 22 Jul 2020 02:21:23 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06M6K4cL030774;
+ Wed, 22 Jul 2020 06:21:22 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma04dal.us.ibm.com with ESMTP id 32d5dq7qcr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 22 Jul 2020 06:21:22 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06M6LKCD33030484
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 22 Jul 2020 05:48:36 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C8EF211C04A;
- Wed, 22 Jul 2020 05:49:59 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 117E511C04C;
- Wed, 22 Jul 2020 05:49:56 +0000 (GMT)
-Received: from [9.85.103.169] (unknown [9.85.103.169])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 22 Jul 2020 05:49:55 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Message-Id: <4E79629C-CB5B-450F-B00B-04267FAF1F13@linux.vnet.ibm.com>
-Content-Type: multipart/alternative;
- boundary="Apple-Mail=_373E7DF6-25B7-4763-98BF-D1995093FADF"
-Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.80.23.2.2\))
-Subject: Re: [v3 02/15] KVM: PPC: Book3S HV: Cleanup updates for kvm vcpu MMCR
-Date: Wed, 22 Jul 2020 11:19:53 +0530
-In-Reply-To: <87y2ncqi5s.fsf@mpe.ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1594996707-3727-1-git-send-email-atrajeev@linux.vnet.ibm.com>
- <1594996707-3727-3-git-send-email-atrajeev@linux.vnet.ibm.com>
- <20200721035420.GA3819606@thinks.paulus.ozlabs.org>
- <B83C440A-1AC4-4737-8AB1-EB9A6B8A474B@linux.vnet.ibm.com>
- <87y2ncqi5s.fsf@mpe.ellerman.id.au>
-X-Mailer: Apple Mail (2.3608.80.23.2.2)
+ Wed, 22 Jul 2020 06:21:20 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E228C6A04F;
+ Wed, 22 Jul 2020 06:21:19 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2FA306A04D;
+ Wed, 22 Jul 2020 06:21:19 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.82.72])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 22 Jul 2020 06:21:19 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id A1BEA2E48D7; Wed, 22 Jul 2020 11:51:14 +0530 (IST)
+Date: Wed, 22 Jul 2020 11:51:14 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 05/10] powerpc/smp: Dont assume l2-cache to be
+ superset of sibling
+Message-ID: <20200722062114.GD31038@in.ibm.com>
+References: <20200721113814.32284-1-srikar@linux.vnet.ibm.com>
+ <20200721113814.32284-6-srikar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200721113814.32284-6-srikar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-22_02:2020-07-22,
  2020-07-22 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxscore=0
- malwarescore=0 mlxlogscore=999 phishscore=0 spamscore=0 impostorscore=0
- lowpriorityscore=0 adultscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007220040
-X-Mailman-Approved-At: Wed, 22 Jul 2020 16:03:31 +1000
+ spamscore=0 suspectscore=0
+ mlxlogscore=999 malwarescore=0 priorityscore=1501 adultscore=0 mlxscore=0
+ impostorscore=0 bulkscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007220040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,386 +106,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, Michael Neuling <mikey@neuling.org>,
- maddy@linux.vnet.ibm.com, kvm@vger.kernel.org, svaidyan@in.ibm.com,
- kvm-ppc@vger.kernel.org, acme@kernel.org, jolsa@kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Reply-To: ego@linux.vnet.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Jordan Niethe <jniethe5@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Nick Piggin <npiggin@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Valentin Schneider <valentin.schneider@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Srikar,
 
---Apple-Mail=_373E7DF6-25B7-4763-98BF-D1995093FADF
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=utf-8
-
-
-
-> On 22-Jul-2020, at 10:07 AM, Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
->=20
-> Athira Rajeev <atrajeev@linux.vnet.ibm.com =
-<mailto:atrajeev@linux.vnet.ibm.com>> writes:
->>> On 21-Jul-2020, at 9:24 AM, Paul Mackerras <paulus@ozlabs.org> =
-wrote:
->>> On Fri, Jul 17, 2020 at 10:38:14AM -0400, Athira Rajeev wrote:
->>>> Currently `kvm_vcpu_arch` stores all Monitor Mode Control registers
->>>> in a flat array in order: mmcr0, mmcr1, mmcra, mmcr2, mmcrs
->>>> Split this to give mmcra and mmcrs its own entries in vcpu and
->>>> use a flat array for mmcr0 to mmcr2. This patch implements this
->>>> cleanup to make code easier to read.
->>>=20
->>> Changing the way KVM stores these values internally is fine, but
->>> changing the user ABI is not.  This part:
->>>=20
->>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h =
-b/arch/powerpc/include/uapi/asm/kvm.h
->>>> index 264e266..e55d847 100644
->>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
->>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
->>>> @@ -510,8 +510,8 @@ struct kvm_ppc_cpu_char {
->>>>=20
->>>> #define KVM_REG_PPC_MMCR0	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x10)
->>>> #define KVM_REG_PPC_MMCR1	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x11)
->>>> -#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
->>>> -#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
->>>> +#define KVM_REG_PPC_MMCR2	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)
->>>> +#define KVM_REG_PPC_MMCRA	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)
->>>=20
->>> means that existing userspace programs that used to work would now =
-be
->>> broken.  That is not acceptable (breaking the user ABI is only ever
->>> acceptable with a very compelling reason).  So NAK to this part of =
-the
->>> patch.
->>=20
->> Hi Paul
->>=20
->> Thanks for checking the patch. I understood your point on user ABI =
-breakage that this particular change can cause.
->> I will retain original KVM_REG_PPC_MMCRA and KVM_REG_PPC_MMCR2 order =
-in `kvm.h`
->> And with that, additionally I will need below change ( on top of =
-current patch ) for my clean up updates for kvm cpu MMCR to work,
->> Because now mmcra and mmcrs will have its own entries in vcpu and is =
-not part of the mmcr[] array
->> Please suggest if this looks good
->=20
-> I did the same patch I think in my testing branch, it's here:
->=20
-> =
-https://github.com/linuxppc/linux/commit/daea78154eff1b7e2f36be05a8f95feb5=
-a588912 =
-<https://github.com/linuxppc/linux/commit/daea78154eff1b7e2f36be05a8f95feb=
-5a588912>
->=20
->=20
-> Can you please check that matches what you sent.
-
-Hi Michael,
-
-Yes, it matches. Thanks for making this change.
-
->=20
-> cheers
->=20
->> diff --git a/arch/powerpc/kvm/book3s_hv.c =
-b/arch/powerpc/kvm/book3s_hv.c
->> index 3f90eee261fc..b10bb404f0d5 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -1679,10 +1679,13 @@ static int kvmppc_get_one_reg_hv(struct =
-kvm_vcpu *vcpu, u64 id,
->>        case KVM_REG_PPC_UAMOR:
->>                *val =3D get_reg_val(id, vcpu->arch.uamor);
->>                break;
->> -       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR2:
->> +       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
->>                i =3D id - KVM_REG_PPC_MMCR0;
->>                *val =3D get_reg_val(id, vcpu->arch.mmcr[i]);
->>                break;
->> +       case KVM_REG_PPC_MMCR2:
->> +               *val =3D get_reg_val(id, vcpu->arch.mmcr[2]);
->> +               break;
->>        case KVM_REG_PPC_MMCRA:
->>                *val =3D get_reg_val(id, vcpu->arch.mmcra);
->>                break;
->> @@ -1906,10 +1909,13 @@ static int kvmppc_set_one_reg_hv(struct =
-kvm_vcpu *vcpu, u64 id,
->>        case KVM_REG_PPC_UAMOR:
->>                vcpu->arch.uamor =3D set_reg_val(id, *val);
->>                break;
->> -       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR2:
->> +       case KVM_REG_PPC_MMCR0 ... KVM_REG_PPC_MMCR1:
->>                i =3D id - KVM_REG_PPC_MMCR0;
->>                vcpu->arch.mmcr[i] =3D set_reg_val(id, *val);
->>                break;
->> +       case KVM_REG_PPC_MMCR2:
->> +               vcpu->arch.mmcr[2] =3D set_reg_val(id, *val);
->> +               break;
->>        case KVM_REG_PPC_MMCRA:
->>                vcpu->arch.mmcra =3D set_reg_val(id, *val);
->>                break;
->> =E2=80=94
->>=20
->>=20
->>>=20
->>> Regards,
->>> Paul.
+On Tue, Jul 21, 2020 at 05:08:09PM +0530, Srikar Dronamraju wrote:
+> Current code assumes that cpumask of cpus sharing a l2-cache mask will
+> always be a superset of cpu_sibling_mask.
+> 
+> Lets stop that assumption. cpu_l2_cache_mask is a superset of
+> cpu_sibling_mask if and only if shared_caches is set.
+> 
+> Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+> Cc: LKML <linux-kernel@vger.kernel.org>
+> Cc: Michael Ellerman <michaele@au1.ibm.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Valentin Schneider <valentin.schneider@arm.com>
+> Cc: Nick Piggin <npiggin@au1.ibm.com>
+> Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Cc: Michael Neuling <mikey@linux.ibm.com>
+> Cc: Anton Blanchard <anton@au1.ibm.com>
+> Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+> Cc: Jordan Niethe <jniethe5@gmail.com>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+> Changelog v1 -> v2:
+> powerpc/smp: Dont assume l2-cache to be superset of sibling
+> 	Set cpumask after verifying l2-cache. (Gautham)
+> 
+>  arch/powerpc/kernel/smp.c | 28 +++++++++++++++-------------
+>  1 file changed, 15 insertions(+), 13 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 72f16dc0cb26..57468877499a 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1196,6 +1196,7 @@ static bool update_mask_by_l2(int cpu, struct cpumask *(*mask_fn)(int))
+>  	if (!l2_cache)
+>  		return false;
+> 
+> +	cpumask_set_cpu(cpu, mask_fn(cpu));
 
 
---Apple-Mail=_373E7DF6-25B7-4763-98BF-D1995093FADF
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=utf-8
+Ok, we need to do this because "cpu" is not yet set in the
+cpu_online_mask. Prior to your patch the "cpu" was getting set in
+cpu_l2_cache_map(cpu) as a side-effect of the code that is removed in
+the patch.
 
-<html><head><meta http-equiv=3D"Content-Type" content=3D"text/html; =
-charset=3Dutf-8"></head><body style=3D"word-wrap: break-word; =
--webkit-nbsp-mode: space; line-break: after-white-space;" class=3D""><br =
-class=3D""><div><br class=3D""><blockquote type=3D"cite" class=3D""><div =
-class=3D"">On 22-Jul-2020, at 10:07 AM, Michael Ellerman &lt;<a =
-href=3D"mailto:mpe@ellerman.id.au" class=3D"">mpe@ellerman.id.au</a>&gt; =
-wrote:</div><br class=3D"Apple-interchange-newline"><div class=3D""><span =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
-display: inline !important;" class=3D"">Athira Rajeev &lt;</span><a =
-href=3D"mailto:atrajeev@linux.vnet.ibm.com" style=3D"font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; orphans: auto; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; widows: auto; word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px;" =
-class=3D"">atrajeev@linux.vnet.ibm.com</a><span style=3D"caret-color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant-caps: normal; font-weight: normal; letter-spacing: =
-normal; text-align: start; text-indent: 0px; text-transform: none; =
-white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">&gt; writes:</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" class=3D"">On=
- 21-Jul-2020, at 9:24 AM, Paul Mackerras &lt;<a =
-href=3D"mailto:paulus@ozlabs.org" class=3D"">paulus@ozlabs.org</a>&gt; =
-wrote:<br class=3D"">On Fri, Jul 17, 2020 at 10:38:14AM -0400, Athira =
-Rajeev wrote:<br class=3D""><blockquote type=3D"cite" class=3D"">Currently=
- `kvm_vcpu_arch` stores all Monitor Mode Control registers<br =
-class=3D"">in a flat array in order: mmcr0, mmcr1, mmcra, mmcr2, =
-mmcrs<br class=3D"">Split this to give mmcra and mmcrs its own entries =
-in vcpu and<br class=3D"">use a flat array for mmcr0 to mmcr2. This =
-patch implements this<br class=3D"">cleanup to make code easier to =
-read.<br class=3D""></blockquote><br class=3D"">Changing the way KVM =
-stores these values internally is fine, but<br class=3D"">changing the =
-user ABI is not. &nbsp;This part:<br class=3D""><br class=3D""><blockquote=
- type=3D"cite" class=3D"">diff --git =
-a/arch/powerpc/include/uapi/asm/kvm.h =
-b/arch/powerpc/include/uapi/asm/kvm.h<br class=3D"">index =
-264e266..e55d847 100644<br class=3D"">--- =
-a/arch/powerpc/include/uapi/asm/kvm.h<br class=3D"">+++ =
-b/arch/powerpc/include/uapi/asm/kvm.h<br class=3D"">@@ -510,8 +510,8 @@ =
-struct kvm_ppc_cpu_char {<br class=3D""><br class=3D"">#define =
-KVM_REG_PPC_MMCR0<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x10)<br =
-class=3D"">#define KVM_REG_PPC_MMCR1<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | =
-0x11)<br class=3D"">-#define KVM_REG_PPC_MMCRA<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x12)<br class=3D"">-#define =
-KVM_REG_PPC_MMCR2<span class=3D"Apple-tab-span" style=3D"white-space: =
-pre;">	</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)<br =
-class=3D"">+#define KVM_REG_PPC_MMCR2<span class=3D"Apple-tab-span" =
-style=3D"white-space: pre;">	</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | =
-0x12)<br class=3D"">+#define KVM_REG_PPC_MMCRA<span =
-class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
-</span>(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0x13)<br =
-class=3D""></blockquote><br class=3D"">means that existing userspace =
-programs that used to work would now be<br class=3D"">broken. &nbsp;That =
-is not acceptable (breaking the user ABI is only ever<br =
-class=3D"">acceptable with a very compelling reason). &nbsp;So NAK to =
-this part of the<br class=3D"">patch.<br class=3D""></blockquote><br =
-class=3D"">Hi Paul<br class=3D""><br class=3D"">Thanks for checking the =
-patch. I understood your point on user ABI breakage that this particular =
-change can cause.<br class=3D"">I will retain original KVM_REG_PPC_MMCRA =
-and KVM_REG_PPC_MMCR2 order in `kvm.h`<br class=3D"">And with that, =
-additionally I will need below change ( on top of current patch ) for my =
-clean up updates for kvm cpu MMCR to work,<br class=3D"">Because now =
-mmcra and mmcrs will have its own entries in vcpu and is not part of the =
-mmcr[] array<br class=3D"">Please suggest if this looks good<br =
-class=3D""></blockquote><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">I did the same patch I think in my testing branch, it's =
-here:</span><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><br style=3D"caret-color: rgb(0, 0, 0); font-family: =
-Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
-normal; font-weight: normal; letter-spacing: normal; text-align: start; =
-text-indent: 0px; text-transform: none; white-space: normal; =
-word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
-none;" class=3D""><a =
-href=3D"https://github.com/linuxppc/linux/commit/daea78154eff1b7e2f36be05a=
-8f95feb5a588912" style=3D"font-family: Helvetica; font-size: 12px; =
-font-style: normal; font-variant-caps: normal; font-weight: normal; =
-letter-spacing: normal; orphans: auto; text-align: start; text-indent: =
-0px; text-transform: none; white-space: normal; widows: auto; =
-word-spacing: 0px; -webkit-text-size-adjust: auto; =
--webkit-text-stroke-width: 0px;" =
-class=3D"">https://github.com/linuxppc/linux/commit/daea78154eff1b7e2f36be=
-05a8f95feb5a588912</a><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">Can you please check that matches what you sent.</span><br =
-style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
-12px; font-style: normal; font-variant-caps: normal; font-weight: =
-normal; letter-spacing: normal; text-align: start; text-indent: 0px; =
-text-transform: none; white-space: normal; word-spacing: 0px; =
--webkit-text-stroke-width: 0px; text-decoration: none;" =
-class=3D""></div></blockquote><div><br class=3D""></div>Hi =
-Michael,</div><div><br class=3D""></div><div>Yes, it matches. Thanks for =
-making this change.</div><div><br class=3D""><blockquote type=3D"cite" =
-class=3D""><div class=3D""><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><span style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none; float: none; display: inline !important;" =
-class=3D"">cheers</span><br style=3D"caret-color: rgb(0, 0, 0); =
-font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><br style=3D"caret-color: rgb(0, 0, =
-0); font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-text-align: start; text-indent: 0px; text-transform: none; white-space: =
-normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D""><blockquote type=3D"cite" =
-style=3D"font-family: Helvetica; font-size: 12px; font-style: normal; =
-font-variant-caps: normal; font-weight: normal; letter-spacing: normal; =
-orphans: auto; text-align: start; text-indent: 0px; text-transform: =
-none; white-space: normal; widows: auto; word-spacing: 0px; =
--webkit-text-size-adjust: auto; -webkit-text-stroke-width: 0px; =
-text-decoration: none;" class=3D"">diff --git =
-a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c<br =
-class=3D"">index 3f90eee261fc..b10bb404f0d5 100644<br class=3D"">--- =
-a/arch/powerpc/kvm/book3s_hv.c<br class=3D"">+++ =
-b/arch/powerpc/kvm/book3s_hv.c<br class=3D"">@@ -1679,10 +1679,13 @@ =
-static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case =
-KVM_REG_PPC_UAMOR:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;*val =3D get_reg_val(id, =
-vcpu-&gt;arch.uamor);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">- =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR0 ... =
-KVM_REG_PPC_MMCR2:<br class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR0 ... =
-KVM_REG_PPC_MMCR1:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;i =3D id - KVM_REG_PPC_MMCR0;<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;*val =3D get_reg_val(id, =
-vcpu-&gt;arch.mmcr[i]);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR2:<br =
-class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;*val =3D get_reg_val(id, vcpu-&gt;arch.mmcr[2]);<br class=3D"">+=
- =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;break;<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case =
-KVM_REG_PPC_MMCRA:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;*val =3D get_reg_val(id, =
-vcpu-&gt;arch.mmcra);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">@@ -1906,10 +1909,13 @@ =
-static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case =
-KVM_REG_PPC_UAMOR:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;vcpu-&gt;arch.uamor =3D set_reg_val(id, =
-*val);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">- =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR0 ... =
-KVM_REG_PPC_MMCR2:<br class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR0 ... =
-KVM_REG_PPC_MMCR1:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;i =3D id - KVM_REG_PPC_MMCR0;<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;vcpu-&gt;arch.mmcr[i] =3D set_reg_val(id, =
-*val);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case KVM_REG_PPC_MMCR2:<br =
-class=3D"">+ =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;vcpu-&gt;arch.mmcr[2] =3D set_reg_val(id, *val);<br class=3D"">+=
- =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;break;<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case =
-KVM_REG_PPC_MMCRA:<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;vcpu-&gt;arch.mmcra =3D set_reg_val(id, =
-*val);<br =
-class=3D"">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br class=3D"">=E2=80=94<br =
-class=3D""><br class=3D""><br class=3D""><blockquote type=3D"cite" =
-class=3D""><br class=3D"">Regards,<br =
-class=3D"">Paul.</blockquote></blockquote></div></blockquote></div><br =
-class=3D""></body></html>=
 
---Apple-Mail=_373E7DF6-25B7-4763-98BF-D1995093FADF--
+>  	for_each_cpu(i, cpu_online_mask) {
+>  		/*
+>  		 * when updating the marks the current CPU has not been marked
+> @@ -1278,29 +1279,30 @@ static void add_cpu_to_masks(int cpu)
+>  	 * add it to it's own thread sibling mask.
+>  	 */
+>  	cpumask_set_cpu(cpu, cpu_sibling_mask(cpu));
+> +	cpumask_set_cpu(cpu, cpu_core_mask(cpu));
+> 
+>  	for (i = first_thread; i < first_thread + threads_per_core; i++)
+>  		if (cpu_online(i))
+>  			set_cpus_related(i, cpu, cpu_sibling_mask);
+> 
+>  	add_cpu_to_smallcore_masks(cpu);
+> -	/*
+> -	 * Copy the thread sibling mask into the cache sibling mask
+> -	 * and mark any CPUs that share an L2 with this CPU.
+> -	 */
+> -	for_each_cpu(i, cpu_sibling_mask(cpu))
+> -		set_cpus_related(cpu, i, cpu_l2_cache_mask);
+>  	update_mask_by_l2(cpu, cpu_l2_cache_mask);
+> 
+> -	/*
+> -	 * Copy the cache sibling mask into core sibling mask and mark
+> -	 * any CPUs on the same chip as this CPU.
+> -	 */
+> -	for_each_cpu(i, cpu_l2_cache_mask(cpu))
+> -		set_cpus_related(cpu, i, cpu_core_mask);
+> +	if (pkg_id == -1) {
 
+I suppose this "if" condition is an optimization, since if pkg_id != -1,
+we anyway set these CPUs in the cpu_core_mask below.
+
+However...
+
+> +		struct cpumask *(*mask)(int) = cpu_sibling_mask;
+> +
+> +		/*
+> +		 * Copy the sibling mask into core sibling mask and
+> +		 * mark any CPUs on the same chip as this CPU.
+> +		 */
+> +		if (shared_caches)
+> +			mask = cpu_l2_cache_mask;
+> +
+> +		for_each_cpu(i, mask(cpu))
+> +			set_cpus_related(cpu, i, cpu_core_mask);
+> 
+> -	if (pkg_id == -1)
+>  		return;
+> +	}
+
+
+... since "cpu" is not yet set in the cpu_online_mask, do we not miss setting
+"cpu" in the cpu_core_mask(cpu) in the for-loop below ?
+
+
+> 
+>  	for_each_cpu(i, cpu_online_mask)
+>  		if (get_physical_package_id(i) == pkg_id)
+
+
+Before this patch it was unconditionally getting set in
+cpu_core_mask(cpu) because of the fact that it was set in
+cpu_l2_cache_mask(cpu) and we were unconditionally setting all the
+CPUs in cpu_l2_cache_mask(cpu) in cpu_core_mask(cpu).
+
+What am I missing ?
+
+> -- 
+> 2.17.1
+>
+
+--
+Thanks and Regards
+gautham.
