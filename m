@@ -2,70 +2,61 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,LONGWORDS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2D0C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:49:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F3FC433E5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 07:31:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE00D206F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:49:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="F8mQFRtw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE00D206F5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0548722CAF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 07:31:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0548722CAF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BC2xG0F7WzDrCS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:49:06 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BC3tP1g6LzDrBZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 17:31:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BC2vT3B7BzDrBr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 16:47:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=F8mQFRtw; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4BC2vT2cF6z9sRf; Thu, 23 Jul 2020 16:47:33 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BC2vR6Pf2z9sRR;
- Thu, 23 Jul 2020 16:47:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595486853;
- bh=iLCp72MN0Bz7Tijm/DlYPrNZEwgqJ+eZi+r993c2Gas=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=F8mQFRtw6PH4Q/+W/cXQHWrXJ7h89YyzJrv4PI1hNeDQOHFhaQ2yxkl5BomVcaRK4
- 0LflFjJsREETVY3Js4225bYdLmOxFtAwYx/GJKne4iL7ZD3gs4/AmvIM9ql69XkCcK
- nplSgPBkAnX59xKMdAz0ISW8AfP6PUsESdLp2ydqZ0wyPV1bhKtIWAdUgQOQjHgbSt
- KW8HE9M/c/PHhsIDgI7CS6PfB5zgUqKgDDGL0dPGHK58AdENvdyR8WN72b0WehGnzb
- f/e+MtcfgzM9Zvqg7SEeFJmwpq4ze7DpzJ+cq0WIkY6Q/1R9fEEftb8wN6WDVwVwyP
- WY84EN3OjGuHA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4 07/12] ppc64/kexec_file: add support to relocate
- purgatory
-In-Reply-To: <2037fa32-28be-5995-1c22-c8b01cafe088@linux.ibm.com>
-References: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
- <159524956457.20855.12480643681198700190.stgit@hbathini.in.ibm.com>
- <871rl4rxao.fsf@mpe.ellerman.id.au>
- <2037fa32-28be-5995-1c22-c8b01cafe088@linux.ibm.com>
-Date: Thu, 23 Jul 2020 16:47:31 +1000
-Message-ID: <87365iram4.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BC3qv6FDCzDrBH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 17:29:29 +1000 (AEST)
+IronPort-SDR: GcSg9QFz0qqXfUW39I5yKf96X5i3uhDyI37TC6Pwu9rBVvtBQtZFuxsxYd2skbkDFgquG3JlwL
+ 0d+nrT1hXBow==
+X-IronPort-AV: E=McAfee;i="6000,8403,9690"; a="137977271"
+X-IronPort-AV: E=Sophos;i="5.75,385,1589266800"; d="scan'208";a="137977271"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2020 00:29:26 -0700
+IronPort-SDR: NzB0zPcm1rw8BjScRlPbtixH+7CFvemMK+zlTASOXgk4mbxbVNdyINeKMObL97AFti7koZ8dh+
+ ukOVLf9okIaQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,385,1589266800"; d="scan'208";a="326941712"
+Received: from lkp-server01.sh.intel.com (HELO 7a9a14fb1d52) ([10.239.97.150])
+ by FMSMGA003.fm.intel.com with ESMTP; 23 Jul 2020 00:29:25 -0700
+Received: from kbuild by 7a9a14fb1d52 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jyVfQ-0000MB-0i; Thu, 23 Jul 2020 07:29:24 +0000
+Date: Thu, 23 Jul 2020 15:28:40 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS c27fe454aff795023d2f3f90f41eb1a3104e614f
+Message-ID: <5f193c28.9G/v5E4ua8CQYQEH%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,70 +68,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, Pingfan Liu <piliu@redhat.com>,
- Kexec-ml <kexec@lists.infradead.org>, Nayna Jain <nayna@linux.ibm.com>,
- Petr Tesarik <ptesarik@suse.cz>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Mimi Zohar <zohar@linux.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Sourabh Jain <sourabhjain@linux.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
- Dave Young <dyoung@redhat.com>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Eric Biederman <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hari Bathini <hbathini@linux.ibm.com> writes:
-> On 22/07/20 9:55 am, Michael Ellerman wrote:
->> Hari Bathini <hbathini@linux.ibm.com> writes:
->>> Right now purgatory implementation is only minimal. But if purgatory
->>> code is to be enhanced to copy memory to the backup region and verify
->>> sha256 digest, relocations may have to be applied to the purgatory.
->>> So, add support to relocate purgatory in kexec_file_load system call
->>> by setting up TOC pointer and applying RELA relocations as needed.
->>>
->>> Reported-by: kernel test robot <lkp@intel.com>
->>> [lkp: In v1, 'struct mem_sym' was declared in parameter list]
->>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
->>> ---
->>>
->>> * Michael, can you share your opinion on the below:
->>>     - https://lore.kernel.org/patchwork/patch/1272027/
->>>     - My intention in cover note.
->> 
->> It seems like a lot of complexity for little benefit.
->> 
->> AFAICS your final purgatory_64.c is only 36 lines, and all it does is a
->> single (open coded) memcpy().
->> 
->> It seems like we could write that in not many more lines of assembler
->> and avoid all this code.
->
-> Hi Michael,
->
-> I am not sure if you would agree with me on this, but I am looking at the
-> purgatory code as work in progress. As mentioned in the cover note, I intend
-> to add log messaging, sha256 verification into purgatory. And also change it
-> to position independent executable after moving common purgatory code (sha256
-> verification) to arch-independent code.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: c27fe454aff795023d2f3f90f41eb1a3104e614f  Automatic merge of 'master', 'next' and 'fixes' (2020-07-21 00:00)
 
-I've never understood the desire to put more logic into purgatory. It's
-the absolute worst place to detect that something's gone wrong, because
-we have no facilities in there to do anything useful. We don't even know
-what platform we're on.
+elapsed time: 3913m
 
-> When I initially took this up, I wanted to add all the above changes too, but
-> cut down on it, in the interest of time, first to get kdump (kexec -s -p)
-> working in v5.9 merge window.
->
-> But as the logic in patches 07/12 & 08/12 has been tested in kexec-tools code
-> a lot of times and there are unlikely to be any changes to them except for
-> __kexec_do_relocs() function (afaics), when -PIE would be used, I submitted them.
-> With patch 09/12, I tried for a change that uses relocations while is minimal
-> for now.
->
-> Would you prefer it to be absolutely minimal by dropping patches 7 & 8 for
-> now and writing the backup data copy code in assembler?
+configs tested: 111
+configs skipped: 2
 
-Yes please.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-cheers
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm                                 defconfig
+sh                          rsk7264_defconfig
+c6x                                 defconfig
+c6x                        evmc6474_defconfig
+arm                         shannon_defconfig
+powerpc                       ppc64_defconfig
+arm                      footbridge_defconfig
+s390                             alldefconfig
+s390                          debug_defconfig
+arm                          pxa3xx_defconfig
+m68k                        m5407c3_defconfig
+sh                          sdk7780_defconfig
+c6x                         dsk6455_defconfig
+arm                           h5000_defconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a001-20200719
+i386                 randconfig-a006-20200719
+i386                 randconfig-a002-20200719
+i386                 randconfig-a005-20200719
+i386                 randconfig-a003-20200719
+i386                 randconfig-a004-20200719
+x86_64               randconfig-a014-20200720
+x86_64               randconfig-a015-20200720
+x86_64               randconfig-a016-20200720
+x86_64               randconfig-a012-20200720
+x86_64               randconfig-a013-20200720
+x86_64               randconfig-a011-20200720
+x86_64               randconfig-a005-20200719
+x86_64               randconfig-a002-20200719
+x86_64               randconfig-a006-20200719
+x86_64               randconfig-a001-20200719
+x86_64               randconfig-a003-20200719
+x86_64               randconfig-a004-20200719
+i386                 randconfig-a015-20200719
+i386                 randconfig-a011-20200719
+i386                 randconfig-a016-20200719
+i386                 randconfig-a012-20200719
+i386                 randconfig-a013-20200719
+i386                 randconfig-a014-20200719
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
