@@ -2,63 +2,98 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BEE2C433E8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:52:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FA3FC433E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:35:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97FFF20771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:52:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97FFF20771
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 7C39E20737
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:35:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RX2R9Pqj";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RX2R9Pqj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C39E20737
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCJKW5dmXzDqVb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 02:52:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCLc50hbLzDqwH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 04:35:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=longman@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=RX2R9Pqj; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=RX2R9Pqj; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [207.211.31.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCJCH1TJ3zDrQR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 02:47:03 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BCJC36yTGzB09bR;
- Thu, 23 Jul 2020 18:46:55 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Jaygyj04Nb8u; Thu, 23 Jul 2020 18:46:55 +0200 (CEST)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BCJC33NBqzB09bN;
- Thu, 23 Jul 2020 18:46:55 +0200 (CEST)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id 3746D72B; Thu, 23 Jul 2020 18:48:14 +0200 (CEST)
-Received: from 37-172-34-2.coucou-networks.fr
- (37-172-34-2.coucou-networks.fr [37.172.34.2]) by messagerie.si.c-s.fr
- (Horde Framework) with HTTP; Thu, 23 Jul 2020 18:48:14 +0200
-Date: Thu, 23 Jul 2020 18:48:14 +0200
-Message-ID: <20200723184814.Horde.pk5BO9iFqyGX5D4TW5wqmg1@messagerie.si.c-s.fr>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/64s: system call support for scv/rfscv
- instructions
-References: <20200611081203.995112-1-npiggin@gmail.com>
- <20200611081203.995112-3-npiggin@gmail.com>
- <871rl2ralk.fsf@mpe.ellerman.id.au>
-In-Reply-To: <871rl2ralk.fsf@mpe.ellerman.id.au>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCLYD70DxzDrQx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 04:32:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1595529163;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=sKozQ0KnMZ6/jFMcku3oZ38jLyvLbmaFhh4u3SNBWFc=;
+ b=RX2R9PqjrX1zilcg/rv5ZtXP9S82wn7dZs+EEA3+C8yM9PChG4fqNRrH2DdGKSd/s8iLFV
+ suVhObAwBv8I3mYu0INs/Awhwig0jXUQzWuFmisJ19h9zqC1EfwguPdZL1HaNdgW8zzpHk
+ 6PJgdd/m/W1AuhSKi8R1ciPY+Cs68pc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1595529163;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=sKozQ0KnMZ6/jFMcku3oZ38jLyvLbmaFhh4u3SNBWFc=;
+ b=RX2R9PqjrX1zilcg/rv5ZtXP9S82wn7dZs+EEA3+C8yM9PChG4fqNRrH2DdGKSd/s8iLFV
+ suVhObAwBv8I3mYu0INs/Awhwig0jXUQzWuFmisJ19h9zqC1EfwguPdZL1HaNdgW8zzpHk
+ 6PJgdd/m/W1AuhSKi8R1ciPY+Cs68pc=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-147-a7YRzGORP6i5sZOBhCiJ6Q-1; Thu, 23 Jul 2020 14:32:40 -0400
+X-MC-Unique: a7YRzGORP6i5sZOBhCiJ6Q-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A8A501005510;
+ Thu, 23 Jul 2020 18:32:38 +0000 (UTC)
+Received: from llong.remote.csb (ovpn-119-128.rdu2.redhat.com [10.10.119.128])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 209FA19D7E;
+ Thu, 23 Jul 2020 18:32:37 +0000 (UTC)
+Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks for
+ SPLPAR
+To: Peter Zijlstra <peterz@infradead.org>
+References: <20200706043540.1563616-1-npiggin@gmail.com>
+ <20200706043540.1563616-6-npiggin@gmail.com>
+ <874kqhvu1v.fsf@mpe.ellerman.id.au>
+ <8265d782-4e50-a9b2-a908-0cb588ffa09c@redhat.com>
+ <20200723140011.GR5523@worktop.programming.kicks-ass.net>
+From: Waiman Long <longman@redhat.com>
+Organization: Red Hat
+Message-ID: <845de183-56f5-2958-3159-faa131d46401@redhat.com>
+Date: Thu, 23 Jul 2020 14:32:36 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20200723140011.GR5523@worktop.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,65 +105,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-api@vger.kernel.org, musl@lists.openwall.com,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- libc-dev@lists.llvm.org
+Cc: linux-arch@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
+ virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
+ Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman <mpe@ellerman.id.au> a =C3=A9crit=C2=A0:
+On 7/23/20 10:00 AM, Peter Zijlstra wrote:
+> On Thu, Jul 09, 2020 at 12:06:13PM -0400, Waiman Long wrote:
+>> We don't really need to do a pv_spinlocks_init() if pv_kick() isn't
+>> supported.
+> Waiman, if you cannot explain how not having kick is a sane thing, what
+> are you saying here?
+>
+The current PPC paravirt spinlock code doesn't do any cpu kick. It does 
+an equivalence of pv_wait by yielding the cpu to the lock holder only. 
+The pv_spinlocks_init() is for setting up the hash table for doing 
+pv_kick. If we don't need to do pv_kick, we don't need the hash table.
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
->> diff --git a/arch/powerpc/include/asm/ppc-opcode.h=20=20
->>=20b/arch/powerpc/include/asm/ppc-opcode.h
->> index 2a39c716c343..b2bdc4de1292 100644
->> --- a/arch/powerpc/include/asm/ppc-opcode.h
->> +++ b/arch/powerpc/include/asm/ppc-opcode.h
->> @@ -257,6 +257,7 @@
->>  #define PPC_INST_MFVSRD			0x7c000066
->>  #define PPC_INST_MTVSRD			0x7c000166
->>  #define PPC_INST_SC			0x44000002
->> +#define PPC_INST_SCV			0x44000001
-> ...
->> @@ -411,6 +412,7 @@
-> ...
->> +#define __PPC_LEV(l)	(((l) & 0x7f) << 5)
->
-> These conflicted and didn't seem to be used so I dropped them.
->
->> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
->> index 5abe98216dc2..161bfccbc309 100644
->> --- a/arch/powerpc/lib/sstep.c
->> +++ b/arch/powerpc/lib/sstep.c
->> @@ -3378,6 +3382,16 @@ int emulate_step(struct pt_regs *regs,=20=20
->>=20struct ppc_inst instr)
->>  		regs->msr =3D MSR_KERNEL;
->>  		return 1;
->>
->> +	case SYSCALL_VECTORED_0:	/* scv 0 */
->> +		regs->gpr[9] =3D regs->gpr[13];
->> +		regs->gpr[10] =3D MSR_KERNEL;
->> +		regs->gpr[11] =3D regs->nip + 4;
->> +		regs->gpr[12] =3D regs->msr & MSR_MASK;
->> +		regs->gpr[13] =3D (unsigned long) get_paca();
->> +		regs->nip =3D (unsigned long) &system_call_vectored_emulate;
->> +		regs->msr =3D MSR_KERNEL;
->> +		return 1;
->> +
->
-> This broke the ppc64e build:
->
->   ld: arch/powerpc/lib/sstep.o:(.toc+0x0): undefined reference to=20=20
->=20`system_call_vectored_emulate'
->   make[1]: *** [/home/michael/linux/Makefile:1139: vmlinux] Error 1
->
-> I wrapped it in #ifdef CONFIG_PPC64_BOOK3S.
+I am not saying that pv_kick is not needed for the PPC environment. I 
+was just trying to adapt the pvqspinlock code to such an environment 
+first. Further investigation on how to implement some kind of pv_kick 
+will be something that we may want to do as a follow on.
 
-You mean CONFIG_PPC_BOOK3S_64 ?
+BTW, do you have any comment on my v2 lock holder cpu info qspinlock 
+patch? I will have to update the patch to fix the reported 0-day test 
+problem, but I want to collect other feedback before sending out v3.
 
-Christophe
->
-> cheers
-
+Cheers,
+Longman
 
