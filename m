@@ -2,23 +2,24 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D876C433E5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 09:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 441F1C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 09:12:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2577222BEF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 09:14:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2577222BEF
+	by mail.kernel.org (Postfix) with ESMTPS id B886522CB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 09:12:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B886522CB3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BC68m2nG7zDqym
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 19:14:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BC66W5TrQzDrHn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 19:12:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
@@ -29,62 +30,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BC5gl0DmpzDrDp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 18:52:34 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BC5gk23pXzDrDp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 18:52:33 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06N8XGhF177802; Thu, 23 Jul 2020 04:52:25 -0400
+ 06N8XoRg067876; Thu, 23 Jul 2020 04:52:23 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32bvqxes5x-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32e1ybycu3-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 23 Jul 2020 04:52:23 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06N8XbF8178769;
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06N8YGXr070194;
  Thu, 23 Jul 2020 04:52:23 -0400
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
  [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32bvqxes50-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32e1ybycta-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 23 Jul 2020 04:52:23 -0400
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06N8qKpU006941;
- Thu, 23 Jul 2020 08:52:20 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03ams.nl.ibm.com with ESMTP id 32brq7nydq-1
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06N8qKV2006946;
+ Thu, 23 Jul 2020 08:52:21 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 32brq7nye4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Thu, 23 Jul 2020 08:52:20 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06N8o6Td31457670
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06N8prl025821630
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Jul 2020 08:50:06 GMT
+ Thu, 23 Jul 2020 08:51:53 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 255D9AE059;
- Thu, 23 Jul 2020 08:51:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C13E0AE056;
+ Thu, 23 Jul 2020 08:51:53 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65A08AE058;
- Thu, 23 Jul 2020 08:51:25 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5788EAE045;
+ Thu, 23 Jul 2020 08:51:50 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.199.56.65])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 23 Jul 2020 08:51:24 +0000 (GMT)
+ Thu, 23 Jul 2020 08:51:49 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 00/10] Coregroup support on Powerpc
-Date: Thu, 23 Jul 2020 14:21:06 +0530
-Message-Id: <20200723085116.4731-1-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v3 06/10] powerpc/smp: Generalize 2nd sched domain
+Date: Thu, 23 Jul 2020 14:21:12 +0530
+Message-Id: <20200723085116.4731-7-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200723085116.4731-1-srikar@linux.vnet.ibm.com>
+References: <20200723085116.4731-1-srikar@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-23_02:2020-07-22,
  2020-07-23 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 spamscore=0
- bulkscore=0 impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
- suspectscore=0 adultscore=0 clxscore=1015 phishscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007230065
+ spamscore=0
+ lowpriorityscore=0 suspectscore=0 bulkscore=0 adultscore=0 clxscore=1015
+ priorityscore=1501 mlxscore=0 mlxlogscore=999 phishscore=0 impostorscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007230065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,216 +100,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Jordan Niethe <jniethe5@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Jordan Niethe <jniethe5@gmail.com>,
+ LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
  Valentin Schneider <valentin.schneider@arm.com>,
- Nick Piggin <npiggin@au1.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changelog v2 -> v3:
-v2: https://lore.kernel.org/linuxppc-dev/20200721113814.32284-1-srikar@linux.vnet.ibm.com/t/#u
+Currently "CACHE" domain happens to be the 2nd sched domain as per
+powerpc_topology. This domain will collapse if cpumask of l2-cache is
+same as SMT domain. However we could generalize this domain such that it
+could mean either be a "CACHE" domain or a "BIGCORE" domain.
 
-powerpc/smp: Cache node for reuse
-	Removed node caching part. Rewrote the Commit msg (Michael Ellerman)
-	Renamed to powerpc/smp: Fix a warning under !NEED_MULTIPLE_NODES
-
-powerpc/smp: Enable small core scheduling sooner
-	Rewrote changelog (Gautham)
-	Renamed to powerpc/smp: Move topology fixups into  a new function
-
-powerpc/smp: Create coregroup domain
-	Add optimization for mask updation under coregroup_support
-
-Changelog v1 -> v2:
-v1: https://lore.kernel.org/linuxppc-dev/20200714043624.5648-1-srikar@linux.vnet.ibm.com/t/#u
-
-powerpc/smp: Merge Power9 topology with Power topology
-	Replaced a reference to cpu_smt_mask with per_cpu(cpu_sibling_map, cpu)
-	since cpu_smt_mask is only defined under CONFIG_SCHED_SMT
-
-powerpc/smp: Enable small core scheduling sooner
-	Restored the previous info msg (Jordan)
-	Moved big core topology fixup to fixup_topology (Gautham)
-
-powerpc/smp: Dont assume l2-cache to be superset of sibling
-	Set cpumask after verifying l2-cache. (Gautham)
-
-powerpc/smp: Generalize 2nd sched domain
-	Moved shared_cache topology fixup to fixup_topology (Gautham)
-
-Powerpc/numa: Detect support for coregroup
-	Explained Coregroup in commit msg (Michael Ellerman)
-
-Powerpc/smp: Create coregroup domain
-	Moved coregroup topology fixup to fixup_topology (Gautham)
-
-powerpc/smp: Implement cpu_to_coregroup_id
-	Move coregroup_enabled before getting associativity (Gautham)
-
-powerpc/smp: Provide an ability to disable coregroup
-	Patch dropped (Michael Ellerman)
-
-Cleanup of existing powerpc topologies and add coregroup support on
-Powerpc. Coregroup is a group of (subset of) cores of a DIE that share
-a resource.
-
-Patch 7 of this patch series: "Powerpc/numa: Detect support for coregroup"
-depends on
-https://lore.kernel.org/linuxppc-dev/20200707140644.7241-1-srikar@linux.vnet.ibm.com/t/#u
-However it should be easy to rebase the patch without the above patch.
-
-This patch series is based on top of current powerpc/next tree + the
-above patch.
-
-On Power 8 Systems
-------------------
-$ tail /proc/cpuinfo
-processor	: 255
-cpu		: POWER8 (architected), altivec supported
-clock		: 3724.000000MHz
-revision	: 2.1 (pvr 004b 0201)
-
-timebase	: 512000000
-platform	: pSeries
-model		: IBM,8408-E8E
-machine		: CHRP IBM,8408-E8E
-MMU		: Hash
-
-Before the patchset
--------------------
-$ cat /proc/sys/kernel/sched_domain/cpu0/domain*/name
-SMT
-DIE
-NUMA
-NUMA
-$ head /proc/schedstat
-version 15
-timestamp 4295534931
-cpu0 0 0 0 0 0 0 41389823338 17682779896 14117
-domain0 00000000,00000000,00000000,00000000,00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,00000000,00000000,00000000,00000000,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain2 00000000,00000000,00000000,00000000,00000000,00000000,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain3 ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cpu1 0 0 0 0 0 0 27087859050 152273672 10396
-domain0 00000000,00000000,00000000,00000000,00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,00000000,00000000,00000000,00000000,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-
-After the patchset
-------------------
-$ cat /proc/sys/kernel/sched_domain/cpu0/domain*/name
-SMT
-DIE
-NUMA
-NUMA
-$ head /proc/schedstat
-version 15
-timestamp 4295534931
-cpu0 0 0 0 0 0 0 41389823338 17682779896 14117
-domain0 00000000,00000000,00000000,00000000,00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,00000000,00000000,00000000,00000000,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain2 00000000,00000000,00000000,00000000,00000000,00000000,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain3 ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cpu1 0 0 0 0 0 0 27087859050 152273672 10396
-domain0 00000000,00000000,00000000,00000000,00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,00000000,00000000,00000000,00000000,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-
-On Power 9 (with device-tree enablement to show coregroups).
-(hunks for mimicing a coregroup was posted at
-https://lore.kernel.org/linuxppc-dev/20200714043624.5648-1-srikar@linux.vnet.ibm.com/t/#m2cb09bb11c7a93257d6123d1d27edb8212f8af21)
------------------------------------------------------------
-$ tail /proc/cpuinfo
-processor	: 127
-cpu		: POWER9 (architected), altivec supported
-clock		: 3000.000000MHz
-revision	: 2.2 (pvr 004e 0202)
-
-timebase	: 512000000
-platform	: pSeries
-model		: IBM,9008-22L
-machine		: CHRP IBM,9008-22L
-MMU		: Hash
-
-Before patchset
---------------
-$ cat /proc/sys/kernel/sched_domain/cpu0/domain*/name
-SMT
-CACHE
-DIE
-NUMA
-
-$ head /proc/schedstat
-version 15
-timestamp 4318242208
-cpu0 0 0 0 0 0 0 28077107004 4773387362 78205
-domain0 00000000,00000000,00000000,00000055 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain2 00000000,00000000,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain3 ffffffff,ffffffff,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cpu1 0 0 0 0 0 0 24177439200 413887604 75393
-domain0 00000000,00000000,00000000,000000aa 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-
-After patchset
---------------
-$ cat /proc/sys/kernel/sched_domain/cpu0/domain*/name
-SMT
-CACHE
-MC
-DIE
-NUMA
-
-$ head /proc/schedstat
-version 15
-timestamp 4318242208
-cpu0 0 0 0 0 0 0 28077107004 4773387362 78205
-domain0 00000000,00000000,00000000,00000055 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain1 00000000,00000000,00000000,000000ff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain2 00000000,00000000,00000000,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain3 00000000,00000000,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-domain4 ffffffff,ffffffff,ffffffff,ffffffff 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cpu1 0 0 0 0 0 0 24177439200 413887604 75393
-domain0 00000000,00000000,00000000,000000aa 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+While setting up the "CACHE" domain, check if shared_cache is already
+set.
 
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Cc: Michael Ellerman <michaele@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Anton Blanchard <anton@ozlabs.org>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Valentin Schneider <valentin.schneider@arm.com>
-Cc: Nick Piggin <npiggin@au1.ibm.com>
-Cc: Oliver OHalloran <oliveroh@au1.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Michael Neuling <mikey@linux.ibm.com>
-Cc: Anton Blanchard <anton@au1.ibm.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
 Cc: Jordan Niethe <jniethe5@gmail.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+Changelog v1 -> v2:
+	Moved shared_cache topology fixup to fixup_topology (Gautham)
 
-Srikar Dronamraju (10):
-  powerpc/smp: Fix a warning under !NEED_MULTIPLE_NODES
-  powerpc/smp: Merge Power9 topology with Power topology
-  powerpc/smp: Move powerpc_topology above
-  powerpc/smp: Move topology fixups into  a new function
-  powerpc/smp: Dont assume l2-cache to be superset of sibling
-  powerpc/smp: Generalize 2nd sched domain
-  powerpc/numa: Detect support for coregroup
-  powerpc/smp: Allocate cpumask only after searching thread group
-  powerpc/smp: Create coregroup domain
-  powerpc/smp: Implement cpu_to_coregroup_id
+ arch/powerpc/kernel/smp.c | 49 ++++++++++++++++++++++++++++-----------
+ 1 file changed, 35 insertions(+), 14 deletions(-)
 
- arch/powerpc/include/asm/smp.h      |   1 +
- arch/powerpc/include/asm/topology.h |  10 ++
- arch/powerpc/kernel/smp.c           | 245 +++++++++++++++++-----------
- arch/powerpc/mm/numa.c              |  59 +++++--
- 4 files changed, 210 insertions(+), 105 deletions(-)
-
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index d997c7411664..6f5877f6496e 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -85,6 +85,14 @@ EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
+ EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+ EXPORT_SYMBOL_GPL(has_big_cores);
+ 
++enum {
++#ifdef CONFIG_SCHED_SMT
++	smt_idx,
++#endif
++	bigcore_idx,
++	die_idx,
++};
++
+ #define MAX_THREAD_LIST_SIZE	8
+ #define THREAD_GROUP_SHARE_L1   1
+ struct thread_groups {
+@@ -851,13 +859,7 @@ static int powerpc_shared_cache_flags(void)
+  */
+ static const struct cpumask *shared_cache_mask(int cpu)
+ {
+-	if (shared_caches)
+-		return cpu_l2_cache_mask(cpu);
+-
+-	if (has_big_cores)
+-		return cpu_smallcore_mask(cpu);
+-
+-	return per_cpu(cpu_sibling_map, cpu);
++	return per_cpu(cpu_l2_cache_map, cpu);
+ }
+ 
+ #ifdef CONFIG_SCHED_SMT
+@@ -867,11 +869,16 @@ static const struct cpumask *smallcore_smt_mask(int cpu)
+ }
+ #endif
+ 
++static const struct cpumask *cpu_bigcore_mask(int cpu)
++{
++	return per_cpu(cpu_sibling_map, cpu);
++}
++
+ static struct sched_domain_topology_level powerpc_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+ 	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+ #endif
+-	{ shared_cache_mask, powerpc_shared_cache_flags, SD_INIT_NAME(CACHE) },
++	{ cpu_bigcore_mask, SD_INIT_NAME(BIGCORE) },
+ 	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+ 	{ NULL, },
+ };
+@@ -1311,7 +1318,6 @@ static void add_cpu_to_masks(int cpu)
+ void start_secondary(void *unused)
+ {
+ 	unsigned int cpu = smp_processor_id();
+-	struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
+ 
+ 	mmgrab(&init_mm);
+ 	current->active_mm = &init_mm;
+@@ -1337,14 +1343,20 @@ void start_secondary(void *unused)
+ 	/* Update topology CPU masks */
+ 	add_cpu_to_masks(cpu);
+ 
+-	if (has_big_cores)
+-		sibling_mask = cpu_smallcore_mask;
+ 	/*
+ 	 * Check for any shared caches. Note that this must be done on a
+ 	 * per-core basis because one core in the pair might be disabled.
+ 	 */
+-	if (!cpumask_equal(cpu_l2_cache_mask(cpu), sibling_mask(cpu)))
+-		shared_caches = true;
++	if (!shared_caches) {
++		struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
++		struct cpumask *mask = cpu_l2_cache_mask(cpu);
++
++		if (has_big_cores)
++			sibling_mask = cpu_smallcore_mask;
++
++		if (cpumask_weight(mask) > cpumask_weight(sibling_mask(cpu)))
++			shared_caches = true;
++	}
+ 
+ 	set_numa_node(numa_cpu_lookup_table[cpu]);
+ 	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
+@@ -1372,10 +1384,19 @@ int setup_profiling_timer(unsigned int multiplier)
+ 
+ static void fixup_topology(void)
+ {
++	if (shared_caches) {
++		pr_info("Using shared cache scheduler topology\n");
++		powerpc_topology[bigcore_idx].mask = shared_cache_mask;
++#ifdef CONFIG_SCHED_DEBUG
++		powerpc_topology[bigcore_idx].name = "CACHE";
++#endif
++		powerpc_topology[bigcore_idx].sd_flags = powerpc_shared_cache_flags;
++	}
++
+ #ifdef CONFIG_SCHED_SMT
+ 	if (has_big_cores) {
+ 		pr_info("Big cores detected but using small core scheduling\n");
+-		powerpc_topology[0].mask = smallcore_smt_mask;
++		powerpc_topology[smt_idx].mask = smallcore_smt_mask;
+ 	}
+ #endif
+ }
 -- 
 2.18.2
 
