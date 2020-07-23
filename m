@@ -2,119 +2,91 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66208C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 05:42:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D293C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 05:48:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1165220771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 05:42:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1CD4C20771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 05:48:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="bImpdVRp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1165220771
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h1NFcx22"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CD4C20771
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BC1Sj11gxzDqsJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 15:42:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BC1bD4sbZzDqTN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 15:48:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oss.nxp.com (client-ip=40.107.2.40;
- helo=eur02-ve1-obe.outbound.protection.outlook.com;
- envelope-from=madalin.bucur@oss.nxp.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=nicoleotsuka@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com
- header.a=rsa-sha256 header.s=selector2-NXP1-onmicrosoft-com header.b=bImpdVRp;
- dkim-atps=neutral
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20040.outbound.protection.outlook.com [40.107.2.40])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=h1NFcx22; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BC1QZ50K5zDqLT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 15:40:54 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=jSmH1szUoLQ4zeuZTaUqMHFI53nELhNVmgERYr3mEuDT52TH8tYnsjnCMP0502IslY/NacXFcx+h+3VA/f17qsOkLoarIAZ190mpl4NeYSz3pKlF/zucEkZK/MHiuzRucoP9q/EsTot2Ty98FQP78KOcONo7YUlBW6GV44qj846lIUBxkwRJnY4FUYceBx+ZQDZM3fqVcOhRqSwI9qFuP9e9xxi/5S4MSoWVecYHCsyeo/R/INAmZHsI38dCTHwh03x2IdgG/KoZRPrGmeJrcPeqx6S6lQGgeEzIRjj9yMsEBE1mM1/Jv3CiLT8Xym7JtZ3yRCNA3aujJokgSGvOIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=eaS/TlDo7cqi4FbDalwnmowouBaF73RbMKLUTJpPgcM=;
- b=RHZyHb8yQTJWZyWE/++6Q/79KwGyostRlDsTFZBXBkLhkPDZtGyMAZX1oIN3uUJ+fSxVHW2xVXhrLgxwl6HaLBW7l73HrRKK1w8HzEQf668r0sbBMJ0hdOXZUkYxBigitA01QQYpfgJm6h6weKbI3zV1OhB8fliejd2Cjhvz9keXpCquNYy/IpICKwyaV1uvQypR4eyQtavuHoTXp5kBlrqRQbftnjjO7lXrQGhisTinHXm8T2t2Uk2Zt+ApydXnXmV5xT4iX4+CTGAZ5ihrLQSJFY1NtCEJ7StbMEgtr7c9g1G6rR5szjyZ84osYo+eG/0dAumDCJYuYc6jzKLA+g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com; 
- s=selector2-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=eaS/TlDo7cqi4FbDalwnmowouBaF73RbMKLUTJpPgcM=;
- b=bImpdVRp/VzcFN4ysZDyAbWMJoYyYtBqk8JvB1X5V26CBHAeo9hKHbkbJTyY1pNrMa9vO6O0FcQqOH5e0G13q3rE97iTZpWzyvfNg2E6FH88q2L4OANMik1ademJaeXgRAWGoIbJX5Sq1M+CA7VhSvLarLtqzulh7TcaJcOb9O8=
-Received: from AM6PR04MB3976.eurprd04.prod.outlook.com (2603:10a6:209:3f::17)
- by AM6PR04MB5079.eurprd04.prod.outlook.com (2603:10a6:20b:4::24) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3216.24; Thu, 23 Jul
- 2020 05:40:48 +0000
-Received: from AM6PR04MB3976.eurprd04.prod.outlook.com
- ([fe80::51e7:c810:fec7:6943]) by AM6PR04MB3976.eurprd04.prod.outlook.com
- ([fe80::51e7:c810:fec7:6943%3]) with mapi id 15.20.3174.030; Thu, 23 Jul 2020
- 05:40:48 +0000
-From: "Madalin Bucur (OSS)" <madalin.bucur@oss.nxp.com>
-To: Vladimir Oltean <olteanv@gmail.com>, "robh+dt@kernel.org"
- <robh+dt@kernel.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>
-Subject: RE: [PATCH devicetree 3/4] powerpc: dts: t1040rdb: put SGMII PHY
- under &mdio0 label
-Thread-Topic: [PATCH devicetree 3/4] powerpc: dts: t1040rdb: put SGMII PHY
- under &mdio0 label
-Thread-Index: AQHWYEz+LgZibInI10i2/O6ewv0daakUplWQ
-Date: Thu, 23 Jul 2020 05:40:48 +0000
-Message-ID: <AM6PR04MB39763CA66048BD4F221D0DE4EC760@AM6PR04MB3976.eurprd04.prod.outlook.com>
-References: <20200722172422.2590489-1-olteanv@gmail.com>
- <20200722172422.2590489-4-olteanv@gmail.com>
-In-Reply-To: <20200722172422.2590489-4-olteanv@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: gmail.com; dkim=none (message not signed)
- header.d=none;gmail.com; dmarc=none action=none header.from=oss.nxp.com;
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [5.14.204.117]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: 30811635-b75a-46a0-1b37-08d82ecaf405
-x-ms-traffictypediagnostic: AM6PR04MB5079:
-x-ms-exchange-sharedmailbox-routingagent-processed: True
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <AM6PR04MB5079AD348F569C950C4E48B8AD760@AM6PR04MB5079.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:8273;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: /Bv17ujXPqbg74Cv8yFInypvDL1dKa09B0vWwYrgJNpBwuDc14pPIeWHnURs+korboP21mBrOgjuxrFxZyiqqMz12riMx/m1/jp1gdUhb4JL7lRw/PQAzcsqPwRINAgUMamZGpeEaZeQW3ifQ/TB7zczvZexmi7o+z0TQeoNKhbdOWeai6FFcTeUOgH9n7VS3hHRhy4FcDyWZ2473qVQnrnyHPR8OA2goMYjJpntLgd/aB/d9mCFuVBliJ2egIm0OIibWkjaKJ80LCDLxAxJHbEQnoOrgZgmSDhiUVBPxfJnzx9UraWv1RCI2bYAH54+
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:AM6PR04MB3976.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFTY:;
- SFS:(4636009)(346002)(376002)(396003)(39860400002)(366004)(136003)(186003)(8936002)(64756008)(66476007)(478600001)(83380400001)(66556008)(2906002)(5660300002)(66446008)(7696005)(7416002)(316002)(33656002)(76116006)(52536014)(8676002)(26005)(110136005)(54906003)(9686003)(86362001)(71200400001)(53546011)(4326008)(6506007)(66946007)(55016002);
- DIR:OUT; SFP:1101; 
-x-ms-exchange-antispam-messagedata: JYal8yjGjhmUpyCL23LXjXcejFQTZ8ako1F/2UL7OOQg/n/HQ2Ew+kIZrKc0/MVxlaw5RSFcDC9XKfxDaCzl4rs6U/2bRo404kTjj+HoXI2r5Oj4++WH94xQdtyH3WnNtUbjS7G99jDnDNHbW6742skjsSM2MfI1kBw9/uFqOCEMH9RdX40JW60hEBY2H0lgkxJisxllhhQxGUneAK7mofLwqPDnz2Oe4gz/NF4KoR+ifqUAysSbbMREgRKQg9sNMGUOmw+kWKak1bL4JtMoxAY7Isi2xrVYj8ohi58kojpQmB4pCK7TQ1UtpQAus3pLSwvnkfCy3ndiP7V9rJg5uvhn10pVtb8gZqT6ttMOseixs+tJDr8YDlExMR2SFCkdbPLRoIuLEKUUskV2oUUHY9kph8L6mQogLDCK3ZrYgZl+D9VTA9m8IauTqDNMyxcgi6uGZM5ox09AWHeCFoQEWOJfa7kPKv5kg1/5EriKLsQ=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BC1YK0x5jzDqQ9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 15:46:44 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id cv18so3844505pjb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2020 22:46:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to
+ :user-agent; bh=4Bsv9nIgqKmSYSIOMPedKdrcSWXd/PYFSO2aIq/191g=;
+ b=h1NFcx22ZnIuEzuWbSbkC3x7IEN9Y2dN6+57CJu8RbnCZqVp91BCoOWxD1R6Zx93Sb
+ lo4nx9IxNGFCzW2Vz6QX3Plltlj4h16/LmJ0YIpIuapYsFxfeqrNXg9VDLvCy2d2UU/J
+ haOQ4c/cYL4G2Y4SES+dw1eVWHBr7SQGOS22NA2U1bvjwxKAggTPT31ZqEZ3WTNy+Z7d
+ PMLE8ufxcP4Y16XHvH3S/qkr0LjvrGNndguO5t1XbH1XujDd0rCNUBn2mcdMWQrhslMf
+ sTP8OF/bVRL/XHpQt9lGLV6hdQRH5BtFSe/3/rFD60TtGwM6GvYDM2P8XIPmb+ZLPh6Y
+ afdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to:user-agent;
+ bh=4Bsv9nIgqKmSYSIOMPedKdrcSWXd/PYFSO2aIq/191g=;
+ b=QuMUDykFlKfpfw+T904E95vYbOeP4YO72UPUrW1HmlNMr0rA5yq/QpMH/1KDC1H4Fx
+ PrGDlpmMyhAEeh9yMX/hNWgAJYscIpszzBh56LvJlztt5chBNyD6MHDH2NrFNQqV8mEc
+ 1MZeuO+3XHTkyhb5Bni/+paTYfmTMtxXMfGLJDWkjSXNeq1bfqjAz5/WLdr7ALMAr9rw
+ xljYONzPfGClw5PlvtzK3JJRcigSBktc7II3QURFryXkFh9eBBH1Rej+6TQWPjbF7ddL
+ cU461m0XqHGVrN7HQNfO1W6Vl9Ru9rI/+duMWhOtvqo7l9LquGwFknvxXBkqiJOWyQip
+ ktjQ==
+X-Gm-Message-State: AOAM533DIDiupAQgvGs4zqDplZlUeZGP6NLn9OF74Gf87qDzTmWnhjmF
+ 2aTPQc3Vaqe+9hsad2yvE+k=
+X-Google-Smtp-Source: ABdhPJyIls34k7x9JFSOkkgOqf1QQEkFiI5YZQPlp/pPPicar1BpkkeJw1obLQi4kxe5E1ASY31oLg==
+X-Received: by 2002:a17:90a:1a02:: with SMTP id
+ 2mr2574014pjk.150.1595483201112; 
+ Wed, 22 Jul 2020 22:46:41 -0700 (PDT)
+Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
+ by smtp.gmail.com with ESMTPSA id u16sm1295001pfn.52.2020.07.22.22.46.39
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 22 Jul 2020 22:46:40 -0700 (PDT)
+Date: Wed, 22 Jul 2020 22:46:07 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Arnaud Ferraris <arnaud.ferraris@collabora.com>
+Subject: Re: [PATCH 0/4] ASoC: fsl_asrc: allow selecting arbitrary clocks
+Message-ID: <20200723054604.GC5476@Asurada-Nvidia>
+References: <20200702142235.235869-1-arnaud.ferraris@collabora.com>
+ <20200702184226.GA23935@Asurada-Nvidia>
+ <abdd7265-43d2-49b5-6afd-70d65baac30e@collabora.com>
 MIME-Version: 1.0
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB3976.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 30811635-b75a-46a0-1b37-08d82ecaf405
-X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Jul 2020 05:40:48.3732 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: /Ov+hqQMBgJgE5yGTDeKqx9QweO+ZPr4vLyDMnKPW9WCiT5K6cPcI7WqIxksXVo8v49Y3q7v1RAyLmj3FhzUlA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB5079
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <abdd7265-43d2-49b5-6afd-70d65baac30e@collabora.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,71 +98,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Madalin Bucur \(OSS\)" <madalin.bucur@oss.nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Radu-andrei Bulie <radu-andrei.bulie@nxp.com>,
- "fido_max@inbox.ru" <fido_max@inbox.ru>, "paulus@samba.org" <paulus@samba.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, linux-kernel@vger.kernel.org,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Mark Brown <broonie@kernel.org>, kernel@collabora.com,
+ Fabio Estevam <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> -----Original Message-----
-> From: Vladimir Oltean <olteanv@gmail.com>
-> Sent: Wednesday, July 22, 2020 8:24 PM
-> To: robh+dt@kernel.org; shawnguo@kernel.org; mpe@ellerman.id.au;
-> devicetree@vger.kernel.org
-> Cc: benh@kernel.crashing.org; paulus@samba.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> netdev@vger.kernel.org; Madalin Bucur (OSS) <madalin.bucur@oss.nxp.com>;
-> Radu-andrei Bulie <radu-andrei.bulie@nxp.com>; fido_max@inbox.ru
-> Subject: [PATCH devicetree 3/4] powerpc: dts: t1040rdb: put SGMII PHY
-> under &mdio0 label
->=20
-> We're going to add 8 more PHYs in a future patch. It is easier to follow
-> the hardware description if we don't need to fish for the path of the
-> MDIO controllers inside the SoC and just use the labels.
->=20
+On Fri, Jul 17, 2020 at 01:16:42PM +0200, Arnaud Ferraris wrote:
+> Hi Nic,
+> 
+> Le 02/07/2020 à 20:42, Nicolin Chen a écrit :
+> > Hi Arnaud,
+> > 
+> > On Thu, Jul 02, 2020 at 04:22:31PM +0200, Arnaud Ferraris wrote:
+> >> The current ASRC driver hardcodes the input and output clocks used for
+> >> sample rate conversions. In order to allow greater flexibility and to
+> >> cover more use cases, it would be preferable to select the clocks using
+> >> device-tree properties.
+> > 
+> > We recent just merged a new change that auto-selecting internal
+> > clocks based on sample rates as the first option -- ideal ratio
+> > mode is the fallback mode now. Please refer to:
+> > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?h=next-20200702&id=d0250cf4f2abfbea64ed247230f08f5ae23979f0
+> 
+> While working on fixing the automatic clock selection (see my v3), I
+> came across another potential issue, which would be better explained
+> with an example:
+>   - Input has sample rate 8kHz and uses clock SSI1 with rate 512kHz
+>   - Output has sample rate 16kHz and uses clock SSI2 with rate 1024kHz
+> 
+> Let's say my v3 patch is merged, then the selected input clock will be
+> SSI1, while the selected output clock will be SSI2. In that case, it's
+> all good, as the driver will calculate the dividers right.
+> 
+> Now, suppose a similar board has the input wired to SSI2 and output to
+> SSI1, meaning we're now in the following case:
+>   - Input has sample rate 8kHz and uses clock SSI2 with rate 512kHz
+>   - Output has sample rate 16kHz and uses clock SSI1 with rate 1024kHz
+> (the same result is achieved during capture with the initial example
+> setup, as input and output properties are then swapped)
+> 
+> In that case, the selected clocks will still be SSI1 for input (just
+> because it appears first in the clock table), and SSI2 for output,
+> meaning the calculated dividers will be:
+>   - input: 512 / 16 => 32 (should be 64)
+>   - output: 1024 / 8 => 128 (should be 64 here too)
 
-Please align to the existing structure, it may be easier to add something
-without paying attention to that but it's better to keep things organized.
-This structure is used across all the device trees of the platforms using
-DPAA, let's not start diverging now.
-
-> Signed-off-by: Vladimir Oltean <olteanv@gmail.com>
-> ---
->  arch/powerpc/boot/dts/fsl/t1040rdb.dts | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-> b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-> index 65ff34c49025..40d7126dbe90 100644
-> --- a/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-> +++ b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-> @@ -59,12 +59,6 @@ ethernet@e4000 {
->  				phy-handle =3D <&phy_sgmii_2>;
->  				phy-connection-type =3D "sgmii";
->  			};
-> -
-> -			mdio@fc000 {
-> -				phy_sgmii_2: ethernet-phy@3 {
-> -					reg =3D <0x03>;
-> -				};
-> -			};
->  		};
->  	};
->=20
-> @@ -76,3 +70,9 @@ cpld@3,0 {
->  };
->=20
->  #include "t1040si-post.dtsi"
-> +
-> +&mdio0 {
-> +	phy_sgmii_2: ethernet-phy@3 {
-> +		reg =3D <0x3>;
-> +	};
-> +};
-> --
-> 2.25.1
-
+I don't get the 32, 128 and 64 parts. Would you please to elaborate
+a bit? What you said sounds to me like the driver calculates wrong
+dividers?
