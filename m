@@ -2,59 +2,67 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9911EC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:28:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E47EEC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:43:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 474BF206E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:28:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1E36C206F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:43:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="QHrs12ks"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 474BF206E3
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="KkEc2t26"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E36C206F5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BC2TX2Vx5zDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:28:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BC2pg2N9GzDrC8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:43:23 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BC2KC3sG1zDq94
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 16:21:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BC2mv4VMnzDrBg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 16:41:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=QHrs12ks; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 4BC2KB5s0qz9sSJ; Thu, 23 Jul 2020 16:21:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1595485278; bh=IFTCm6zcqf516abhJ4Sn7meDBWdJj/FMmew567e6yPo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=QHrs12kseRVGEX+ozdM7Bk6vM8hN0rntxzjRAXDLPJB5+D4I5trx8JLVKEGr+HWlW
- Mj63kCsmYQo/uJVxEQyo6xy71+qys9EPiyUnLS0wybJYnvAxhe3k+ZSJ+U2csi6dEv
- m4p3ywW83Fc4+QdjQ8081sBvInO0dflWfc+rdmby+iEWn07BdpvNwnJNhl+BoXRUko
- PGFpiYQvGK+7m6HjKWHrkG4zVYjQaSTJZBb90cqJYr+EdFmgz1kCMJiQLPN4BTwuys
- wW2IRygLknjUHpNpoWgw1D7M2qtPhMQU14/2XHHACcZE0i5VV9A13lZCYY5BQd0UY8
- 9ybHPfknMp5Lg==
-Date: Thu, 23 Jul 2020 16:19:04 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Tianjia Zhang <tianjia.zhang@linux.alibaba.com>
-Subject: Re: [PATCH v6 3/5] KVM: PPC: clean up redundant kvm_run parameters
- in assembly
-Message-ID: <20200723061904.GC213782@thinks.paulus.ozlabs.org>
-References: <20200623131418.31473-1-tianjia.zhang@linux.alibaba.com>
- <20200623131418.31473-4-tianjia.zhang@linux.alibaba.com>
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=KkEc2t26; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BC2mv0s3Wz9sQt;
+ Thu, 23 Jul 2020 16:41:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1595486511;
+ bh=70ZBEEl//SqmVWbpPoZYFncCaDwRhVg5OotUH4dE1HE=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=KkEc2t26tQXICDUsb/AYFhskSnQQI+E5sMY4MBO77trGDt1HIsQKH60vMymO3/cns
+ 24IRXE7/V4vayG5uRIQqp0TPNqp8V5vohNkwziNcZ/Klb3dY4uZyLw3uy1O2HGCgD1
+ JtIxUpPSYWK0PcHMOAs/k6elUdX6yL0xlpxrzb4erU5/iRlFqalUGYXsNP6oXw1lYr
+ xh+8sC57zm68BPqQiG14Jq3o4VYwCAVPNJS8vAY6XKfyVQaXkJbP3wWz3Uu1YATQSJ
+ s4+777N3vLj8WoasH9St8XyyjyL9xVc666aRxNRLAjsQJ8sC0K8GIYhYN6mAebKaYR
+ TIj/t6IDldBOg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pingfan Liu <kernelfans@gmail.com>
+Subject: Re: [PATCHv3 2/2] powerpc/pseries: update device tree before ejecting
+ hotplug uevents
+In-Reply-To: <CAFgQCTsgX9XWJ476dxT2csTuuhpaO3KSZN-EewZiZ0mBj3N4aQ@mail.gmail.com>
+References: <1595382730-10565-1-git-send-email-kernelfans@gmail.com>
+ <1595382730-10565-2-git-send-email-kernelfans@gmail.com>
+ <87pn8oqh86.fsf@mpe.ellerman.id.au>
+ <CAFgQCTsgX9XWJ476dxT2csTuuhpaO3KSZN-EewZiZ0mBj3N4aQ@mail.gmail.com>
+Date: Thu, 23 Jul 2020 16:41:50 +1000
+Message-ID: <875zaeravl.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200623131418.31473-4-tianjia.zhang@linux.alibaba.com>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,28 +74,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wanpengli@tencent.com, kvm@vger.kernel.org, david@redhat.com,
- heiko.carstens@de.ibm.com, peterx@redhat.com, linux-mips@vger.kernel.org,
- hpa@zytor.com, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org,
- frankja@linux.ibm.com, chenhuacai@gmail.com, maz@kernel.org, joro@8bytes.org,
- x86@kernel.org, borntraeger@de.ibm.com, mingo@redhat.com,
- julien.thierry.kdev@gmail.com, thuth@redhat.com, gor@linux.ibm.com,
- suzuki.poulose@arm.com, kvm-ppc@vger.kernel.org, bp@alien8.de,
- tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, jmattson@google.com,
- tsbogend@alpha.franken.de, cohuck@redhat.com, christoffer.dall@arm.com,
- sean.j.christopherson@intel.com, linux-kernel@vger.kernel.org,
- james.morse@arm.com, pbonzini@redhat.com, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Kexec Mailing List <kexec@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 23, 2020 at 09:14:16PM +0800, Tianjia Zhang wrote:
-> In the current kvm version, 'kvm_run' has been included in the 'kvm_vcpu'
-> structure. For historical reasons, many kvm-related function parameters
-> retain the 'kvm_run' and 'kvm_vcpu' parameters at the same time. This
-> patch does a unified cleanup of these remaining redundant parameters.
+Pingfan Liu <kernelfans@gmail.com> writes:
+> On Wed, Jul 22, 2020 at 12:57 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> Pingfan Liu <kernelfans@gmail.com> writes:
+>> > A bug is observed on pseries by taking the following steps on rhel:
+>>                                                                 ^
+>>                                                                 RHEL
+>>
+>> I assume it happens on mainline too?
+> Yes, it does.
+>>
+> [...]
+>> > diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> > index 1a3ac3b..def8cb3f 100644
+>> > --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> > +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> > @@ -372,6 +372,7 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+>> >       invalidate_lmb_associativity_index(lmb);
+>> >       lmb_clear_nid(lmb);
+>> >       lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+>> > +     drmem_update_dt();
+>>
+>> No error checking?
+> Hmm, here should be a more careful design. Please see the comment at the end.
+>>
+>> >       __remove_memory(nid, base_addr, block_sz);
+>> >
+>> > @@ -607,6 +608,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>> >
+>> >       lmb_set_nid(lmb);
+>> >       lmb->flags |= DRCONF_MEM_ASSIGNED;
+>> > +     drmem_update_dt();
+>>
+>> And here ..
+>> >
+>> >       block_sz = memory_block_size_bytes();
+>> >
+>> > @@ -625,6 +627,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>> >               invalidate_lmb_associativity_index(lmb);
+>> >               lmb_clear_nid(lmb);
+>> >               lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+>> > +             drmem_update_dt();
+>>
+>>
+>> And here ..
+>>
+>> >               __remove_memory(nid, base_addr, block_sz);
+>> >       }
+>> > @@ -877,9 +880,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>> >               break;
+>> >       }
+>> >
+>> > -     if (!rc)
+>> > -             rc = drmem_update_dt();
+>> > -
+>> >       unlock_device_hotplug();
+>> >       return rc;
+>>
+>> Whereas previously we did check it.
+>
+> drmem_update_dt() fails iff allocating memory fail.
 
-Thanks, patch applied to my kvm-ppc-next branch, with fixes.
+That's true currently, but it might change in future.
 
-Paul.
+> And in the failed case, even the original code does not roll back the
+> effect of __add_memory()/__remove_memory().
+
+Yeah hard to know what the desired behaviour is. If something fails we
+at least need to print a message though, not silently swallow it.
+
+> And I plan to do the following in V4: if drmem_update_dt() fails in
+> dlpar_add_lmb(), then bails out immediately.
+
+That sounds reasonable.
+
+cheers
