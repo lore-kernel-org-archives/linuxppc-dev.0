@@ -2,94 +2,89 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C9DC433E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 13:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F824C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 13:34:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 269D520709
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 13:29:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 269D520709
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0FFF720709
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 13:34:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nJOThBN3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FFF720709
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCCqQ742KzDrPG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 23:29:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCCwl4ZghzDr39
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 23:34:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
+ helo=mail-pf1-x443.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=nJOThBN3; dkim-atps=neutral
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCCmz6m0lzDr82
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 23:27:31 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06NCilBt119835; Thu, 23 Jul 2020 09:27:23 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32faj39pyq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Jul 2020 09:27:23 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06NDPvDw097457;
- Thu, 23 Jul 2020 09:27:22 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32faj39py6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Jul 2020 09:27:22 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06NDP43K024175;
- Thu, 23 Jul 2020 13:27:21 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma02wdc.us.ibm.com with ESMTP id 32brq9mj8j-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Jul 2020 13:27:21 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06NDRKwL52363680
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Jul 2020 13:27:20 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 227BA6A04F;
- Thu, 23 Jul 2020 13:27:20 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DBFFE6A04D;
- Thu, 23 Jul 2020 13:27:19 +0000 (GMT)
-Received: from localhost (unknown [9.160.116.141])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 23 Jul 2020 13:27:19 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Pingfan Liu <kernelfans@gmail.com>
-Subject: Re: [PATCHv3 2/2] powerpc/pseries: update device tree before ejecting
- hotplug uevents
-In-Reply-To: <1595382730-10565-2-git-send-email-kernelfans@gmail.com>
-References: <1595382730-10565-1-git-send-email-kernelfans@gmail.com>
- <1595382730-10565-2-git-send-email-kernelfans@gmail.com>
-Date: Thu, 23 Jul 2020 08:27:18 -0500
-Message-ID: <87imee1hvt.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCCrC50WrzDqW5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 23:30:19 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id u185so3033875pfu.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 06:30:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=Td5n8VLQM5VzC3/ySr0x0FkE92YfVlucA4U3oDMBrpc=;
+ b=nJOThBN3e0u2wPmuKSDicZ+MnhpMP1D4iUV1NevDGUNLVV/pnTf9+zsjxy0Qbbio20
+ 0MiiX36MZ0ZC4E71DLYgt/cADBAmI3H4MzayuAZG7DzEI7kaA9e9QwPC8lL1JqZQP+NL
+ 9MGVBFha1s2QXAWnx1C1AGhlwjqS8hcx22i1c5WfIxY0DFbIb6mc4Y32KjmVk6PiLbeG
+ GoPigoJt0ecu9QSJzK2R1EDHjtsTbmfloVX4mn/0GnuomG5yEie0b35EjQ2/6Q5Wp5I4
+ n22LyNjNL9sMD5ZFQyhsBEiiaJmT4JxbN546p048mlxo3r6w7CQPF4aegWwn/eZpecgd
+ nubg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=Td5n8VLQM5VzC3/ySr0x0FkE92YfVlucA4U3oDMBrpc=;
+ b=iNlvSsezMpDbzy/8Z+KBep9NWfCBHx5/QZDEO5p0NQT2ECO10EL0W2bghbEnvvKPGI
+ O+NmsuTKZqfwY9vJPUPrid6FxGEDjdBnrrSIr31Th6X4pzDRBWlz5qLRDkFevEW7VpYp
+ 31FdVUlwd0go5k36qfLyXicyhCe33YwCbCSftmppHvOUcVKtPa9R5Y/JFmLCRS8KYI/l
+ R0iJ1UW4Heu/e+jcBW9gprxxU1zFERB75Cb6td8oMqavdfPcitqRHWL7Is1zMABAB7Xh
+ DsLt2Lncqbv+ViK5d8EDEMrujuw6ORUi9/EOXLvcxpohMtNnewibveIFFCAhtSkWACqz
+ mY2A==
+X-Gm-Message-State: AOAM5311fok3B6RZOA7z+/rxuSHa6T+qF92Ob21iEdJmiA03pFO9KBx7
+ bqtk4uPaMs8BrYjE1c4HLLI=
+X-Google-Smtp-Source: ABdhPJzDRciPPyx06p/TELG6ZbrzJ5oreW4i8vpZMSYQR38q69s9sCgkLuLjxZA90YTp1MLQk8mQMQ==
+X-Received: by 2002:a65:644d:: with SMTP id s13mr4226469pgv.103.1595511015960; 
+ Thu, 23 Jul 2020 06:30:15 -0700 (PDT)
+Received: from localhost (110-174-173-27.tpgi.com.au. [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id u26sm3148320pfn.54.2020.07.23.06.30.14
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 23 Jul 2020 06:30:15 -0700 (PDT)
+Date: Thu, 23 Jul 2020 23:30:09 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 0/6] powerpc: queued spinlocks and rwlocks
+To: Waiman Long <longman@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+References: <20200706043540.1563616-1-npiggin@gmail.com>
+ <24f75d2c-60cd-2766-4aab-1a3b1c80646e@redhat.com>
+ <1594101082.hfq9x5yact.astroid@bobo.none>
+ <20200708084106.GE597537@hirez.programming.kicks-ass.net>
+ <1595327263.lk78cqolxm.astroid@bobo.none>
+ <eaabf501-80fe-dd15-c03c-f75ce4f75877@redhat.com>
+In-Reply-To: <eaabf501-80fe-dd15-c03c-f75ce4f75877@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-23_05:2020-07-23,
- 2020-07-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=7
- phishscore=0 mlxlogscore=999 lowpriorityscore=0 mlxscore=0 clxscore=1011
- spamscore=0 adultscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007230093
+Message-Id: <1595510571.u39qfc8d1o.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,71 +96,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: cheloha@linux.ibm.com, kexec@lists.infradead.org, ldufour@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Hari Bathini <hbathini@linux.ibm.com>
+Cc: linux-arch@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Pingfan Liu <kernelfans@gmail.com> writes:
-> A bug is observed on pseries by taking the following steps on rhel:
-> -1. drmgr -c mem -r -q 5
-> -2. echo c > /proc/sysrq-trigger
->
-> And then, the failure looks like:
-> kdump: saving to /sysroot//var/crash/127.0.0.1-2020-01-16-02:06:14/
-> kdump: saving vmcore-dmesg.txt
-> kdump: saving vmcore-dmesg.txt complete
-> kdump: saving vmcore
->  Checking for memory holes                         : [  0.0 %] /                   Checking for memory holes                         : [100.0 %] |                   Excluding unnecessary pages                       : [100.0 %] \                   Copying data                                      : [  0.3 %] -          eta: 38s[   44.337636] hash-mmu: mm: Hashing failure ! EA=0x7fffba400000 access=0x8000000000000004 current=makedumpfile
-> [   44.337663] hash-mmu:     trap=0x300 vsid=0x13a109c ssize=1 base psize=2 psize 2 pte=0xc000000050000504
-> [   44.337677] hash-mmu: mm: Hashing failure ! EA=0x7fffba400000 access=0x8000000000000004 current=makedumpfile
-> [   44.337692] hash-mmu:     trap=0x300 vsid=0x13a109c ssize=1 base psize=2 psize 2 pte=0xc000000050000504
-> [   44.337708] makedumpfile[469]: unhandled signal 7 at 00007fffba400000 nip 00007fffbbc4d7fc lr 000000011356ca3c code 2
-> [   44.338548] Core dump to |/bin/false pipe failed
-> /lib/kdump-lib-initramfs.sh: line 98:   469 Bus error               $CORE_COLLECTOR /proc/vmcore $_mp/$KDUMP_PATH/$HOST_IP-$DATEDIR/vmcore-incomplete
-> kdump: saving vmcore failed
->
-> * Root cause *
->   After analyzing, it turns out that in the current implementation,
-> when hot-removing lmb, the KOBJ_REMOVE event ejects before the dt updating as
-> the code __remove_memory() comes before drmem_update_dt().
-> So in kdump kernel, when read_from_oldmem() resorts to
-> pSeries_lpar_hpte_insert() to install hpte, but fails with -2 due to
-> non-exist pfn. And finally, low_hash_fault() raise SIGBUS to process, as it
-> can be observed "Bus error"
->
-> From a viewpoint of listener and publisher, the publisher notifies the
-> listener before data is ready.  This introduces a problem where udev
-> launches kexec-tools (due to KOBJ_REMOVE) and loads a stale dt before
-> updating. And in capture kernel, makedumpfile will access the memory based
-> on the stale dt info, and hit a SIGBUS error due to an un-existed lmb.
->
-> * Fix *
->   In order to fix this issue, update dt before __remove_memory(), and
-> accordingly the same rule in hot-add path.
->
-> This will introduce extra dt updating payload for each involved lmb when hotplug.
-> But it should be fine since drmem_update_dt() is memory based operation and
-> hotplug is not a hot path.
+Excerpts from Waiman Long's message of July 22, 2020 12:36 am:
+> On 7/21/20 7:08 AM, Nicholas Piggin wrote:
+>> diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include=
+/asm/qspinlock.h
+>> index b752d34517b3..26d8766a1106 100644
+>> --- a/arch/powerpc/include/asm/qspinlock.h
+>> +++ b/arch/powerpc/include/asm/qspinlock.h
+>> @@ -31,16 +31,57 @@ static inline void queued_spin_unlock(struct qspinlo=
+ck *lock)
+>>  =20
+>>   #else
+>>   extern void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)=
+;
+>> +extern void queued_spin_lock_slowpath_queue(struct qspinlock *lock);
+>>   #endif
+>>  =20
+>>   static __always_inline void queued_spin_lock(struct qspinlock *lock)
+>>   {
+>> -	u32 val =3D 0;
+>> -
+>> -	if (likely(atomic_try_cmpxchg_lock(&lock->val, &val, _Q_LOCKED_VAL)))
+>> +	atomic_t *a =3D &lock->val;
+>> +	u32 val;
+>> +
+>> +again:
+>> +	asm volatile(
+>> +"1:\t"	PPC_LWARX(%0,0,%1,1) "	# queued_spin_lock			\n"
+>> +	: "=3D&r" (val)
+>> +	: "r" (&a->counter)
+>> +	: "memory");
+>> +
+>> +	if (likely(val =3D=3D 0)) {
+>> +		asm_volatile_goto(
+>> +	"	stwcx.	%0,0,%1							\n"
+>> +	"	bne-	%l[again]						\n"
+>> +	"\t"	PPC_ACQUIRE_BARRIER "						\n"
+>> +		:
+>> +		: "r"(_Q_LOCKED_VAL), "r" (&a->counter)
+>> +		: "cr0", "memory"
+>> +		: again );
+>>   		return;
+>> -
+>> -	queued_spin_lock_slowpath(lock, val);
+>> +	}
+>> +
+>> +	if (likely(val =3D=3D _Q_LOCKED_VAL)) {
+>> +		asm_volatile_goto(
+>> +	"	stwcx.	%0,0,%1							\n"
+>> +	"	bne-	%l[again]						\n"
+>> +		:
+>> +		: "r"(_Q_LOCKED_VAL | _Q_PENDING_VAL), "r" (&a->counter)
+>> +		: "cr0", "memory"
+>> +		: again );
+>> +
+>> +		atomic_cond_read_acquire(a, !(VAL & _Q_LOCKED_MASK));
+>> +//		clear_pending_set_locked(lock);
+>> +		WRITE_ONCE(lock->locked_pending, _Q_LOCKED_VAL);
+>> +//		lockevent_inc(lock_pending);
+>> +		return;
+>> +	}
+>> +
+>> +	if (val =3D=3D _Q_PENDING_VAL) {
+>> +		int cnt =3D _Q_PENDING_LOOPS;
+>> +		val =3D atomic_cond_read_relaxed(a,
+>> +					       (VAL !=3D _Q_PENDING_VAL) || !cnt--);
+>> +		if (!(val & ~_Q_LOCKED_MASK))
+>> +			goto again;
+>> +        }
+>> +	queued_spin_lock_slowpath_queue(lock);
+>>   }
+>>   #define queued_spin_lock queued_spin_lock
+>>  =20
+>=20
+> I am fine with the arch code override some part of the generic code.
 
-This is great analysis but the performance implications of the change
-are grave. The add/remove paths here are already O(n) where n is the
-quantity of memory assigned to the LP, this change would make it O(n^2):
+Cool.
 
-dlpar_memory_add_by_count
-  for_each_drmem_lmb             <--
-    dlpar_add_lmb
-      drmem_update_dt(_v1|_v2)
-        for_each_drmem_lmb       <--
+>> diff --git a/kernel/locking/qspinlock.c b/kernel/locking/qspinlock.c
+>> index b9515fcc9b29..ebcc6f5d99d5 100644
+>> --- a/kernel/locking/qspinlock.c
+>> +++ b/kernel/locking/qspinlock.c
+>> @@ -287,10 +287,14 @@ static __always_inline u32  __pv_wait_head_or_lock=
+(struct qspinlock *lock,
+>>  =20
+>>   #ifdef CONFIG_PARAVIRT_SPINLOCKS
+>>   #define queued_spin_lock_slowpath	native_queued_spin_lock_slowpath
+>> +#define queued_spin_lock_slowpath_queue	native_queued_spin_lock_slowpat=
+h_queue
+>>   #endif
+>>  =20
+>>   #endif /* _GEN_PV_LOCK_SLOWPATH */
+>>  =20
+>> +void queued_spin_lock_slowpath_queue(struct qspinlock *lock);
+>> +static void __queued_spin_lock_slowpath_queue(struct qspinlock *lock);
+>> +
+>>   /**
+>>    * queued_spin_lock_slowpath - acquire the queued spinlock
+>>    * @lock: Pointer to queued spinlock structure
+>> @@ -314,12 +318,6 @@ static __always_inline u32  __pv_wait_head_or_lock(=
+struct qspinlock *lock,
+>>    */
+>>   void queued_spin_lock_slowpath(struct qspinlock *lock, u32 val)
+>>   {
+>> -	struct mcs_spinlock *prev, *next, *node;
+>> -	u32 old, tail;
+>> -	int idx;
+>> -
+>> -	BUILD_BUG_ON(CONFIG_NR_CPUS >=3D (1U << _Q_TAIL_CPU_BITS));
+>> -
+>>   	if (pv_enabled())
+>>   		goto pv_queue;
+>>  =20
+>> @@ -397,6 +395,26 @@ void queued_spin_lock_slowpath(struct qspinlock *lo=
+ck, u32 val)
+>>   queue:
+>>   	lockevent_inc(lock_slowpath);
+>>   pv_queue:
+>> +	__queued_spin_lock_slowpath_queue(lock);
+>> +}
+>> +EXPORT_SYMBOL(queued_spin_lock_slowpath);
+>> +
+>> +void queued_spin_lock_slowpath_queue(struct qspinlock *lock)
+>> +{
+>> +	lockevent_inc(lock_slowpath);
+>> +	__queued_spin_lock_slowpath_queue(lock);
+>> +}
+>> +EXPORT_SYMBOL(queued_spin_lock_slowpath_queue);
+>> +
+>> +static void __queued_spin_lock_slowpath_queue(struct qspinlock *lock)
+>> +{
+>> +	struct mcs_spinlock *prev, *next, *node;
+>> +	u32 old, tail;
+>> +	u32 val;
+>> +	int idx;
+>> +
+>> +	BUILD_BUG_ON(CONFIG_NR_CPUS >=3D (1U << _Q_TAIL_CPU_BITS));
+>> +
+>>   	node =3D this_cpu_ptr(&qnodes[0].mcs);
+>>   	idx =3D node->count++;
+>>   	tail =3D encode_tail(smp_processor_id(), idx);
+>> @@ -559,7 +577,6 @@ void queued_spin_lock_slowpath(struct qspinlock *loc=
+k, u32 val)
+>>   	 */
+>>   	__this_cpu_dec(qnodes[0].mcs.count);
+>>   }
+>> -EXPORT_SYMBOL(queued_spin_lock_slowpath);
+>>  =20
+>>   /*
+>>    * Generate the paravirt code for queued_spin_unlock_slowpath().
+>>
+> I would prefer to extract out the pending bit handling code out into a=20
+> separate helper function which can be overridden by the arch code=20
+> instead of breaking the slowpath into 2 pieces.
 
-Memory add/remove isn't a hot path but quadratic runtime complexity
-isn't acceptable. Its current performance is bad enough that I have
-internal bugs open on it.
+You mean have the arch provide a queued_spin_lock_slowpath_pending=20
+function that the slow path calls?
 
-Not to mention we leak memory every time drmem_update_dt is called
-because we can't safely free device tree properties :-(
+I would actually prefer the pending handling can be made inline in
+the queued_spin_lock function, especially with out-of-line locks it=20
+makes sense to put it there.
 
-Also note that this sort of reverts (fixes?) 063b8b1251fd
-("powerpc/pseries/memory-hotplug: Only update DT once per memory DLPAR
-request").
+We could ifdef out queued_spin_lock_slowpath_queue if it's not used,
+then __queued_spin_lock_slowpath_queue would be inlined into the
+caller so there would be no split?
+
+Thanks,
+Nick
