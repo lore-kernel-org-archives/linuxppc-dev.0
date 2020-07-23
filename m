@@ -2,85 +2,61 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E094C433E5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:25:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88B25C433ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:30:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B98B82063A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:25:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B98B82063A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 355402065F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:30:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Qj9Kudv4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 355402065F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCP381Z8czDqwh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 06:25:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCP935jqmzDrHq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 06:30:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=us.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=linuxram@us.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=Qj9Kudv4; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCNgQ49yFzDrS4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:08:18 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06NK3s1x154776; Thu, 23 Jul 2020 16:08:12 -0400
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32fac3dew0-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Jul 2020 16:08:12 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06NK7OXG010037;
- Thu, 23 Jul 2020 20:08:09 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma06fra.de.ibm.com with ESMTP id 32brbgufyy-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 23 Jul 2020 20:08:09 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06NK86xA39911560
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 23 Jul 2020 20:08:06 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A39814C044;
- Thu, 23 Jul 2020 20:08:06 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 833D84C040;
- Thu, 23 Jul 2020 20:08:03 +0000 (GMT)
-Received: from oc0525413822.ibm.com (unknown [9.211.150.76])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 23 Jul 2020 20:08:03 +0000 (GMT)
-From: Ram Pai <linuxram@us.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 7/7] KVM: PPC: Book3S HV: rework secure mem slot dropping
-Date: Thu, 23 Jul 2020 13:07:24 -0700
-Message-Id: <1595534844-16188-8-git-send-email-linuxram@us.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1595534844-16188-1-git-send-email-linuxram@us.ibm.com>
-References: <1595534844-16188-1-git-send-email-linuxram@us.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-23_09:2020-07-23,
- 2020-07-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0
- suspectscore=2 phishscore=0 mlxlogscore=784 priorityscore=1501
- adultscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0 impostorscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007230144
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCNxF1tCQzDqk5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:20:17 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id DEAF12065F;
+ Thu, 23 Jul 2020 20:20:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1595535614;
+ bh=m9fN9R0RLf9EORdUqrD39Ga3LCQrNVMins4vQKdmgkY=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=Qj9Kudv4h9bucJglhlPdbHIU7UvfhGkLfQcS+L02jHfVyGKoUvpucoKbGN9RmmFiX
+ PHcid1k8dmgQdun0E+mvOz2ViY0iel/N2rio1oIfSiBlSkM5n+pQx2f8uQMD/dkG/G
+ gkwjjg1IuWmdeKf0NdnlqV+1SFc1Z59yJxbfscbY=
+Date: Thu, 23 Jul 2020 21:19:59 +0100
+From: Mark Brown <broonie@kernel.org>
+To: perex@perex.cz, nicoleotsuka@gmail.com,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, festevam@gmail.com, Xiubo.Lee@gmail.com,
+ devicetree@vger.kernel.org, tiwai@suse.com, alsa-devel@alsa-project.org,
+ lgirdwood@gmail.com, timur@kernel.org, robh+dt@kernel.org
+In-Reply-To: <1595302910-19688-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1595302910-19688-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl-asoc-card: Support configuring dai fmt from
+ DT
+Message-Id: <159553557415.41908.10792905322230723477.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,127 +68,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ldufour@linux.ibm.com, linuxram@us.ibm.com, cclaudio@linux.ibm.com,
- bharata@linux.ibm.com, sathnaga@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
- sukadev@linux.vnet.ibm.com, bauerman@linux.ibm.com,
- david@gibson.dropbear.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Laurent Dufour <ldufour@linux.ibm.com>
+On Tue, 21 Jul 2020 11:41:49 +0800, Shengjiu Wang wrote:
+> Support same propeties as simple card for configuring fmt
+> from DT.
+> In order to make this change compatible with old DT, these
+> properties are optional.
 
-When a secure memslot is dropped, all the pages backed in the secure
-device (aka really backed by secure memory by the Ultravisor)
-should be paged out to a normal page. Previously, this was
-achieved by triggering the page fault mechanism which is calling
-kvmppc_svm_page_out() on each pages.
+Applied to
 
-This can't work when hot unplugging a memory slot because the memory
-slot is flagged as invalid and gfn_to_pfn() is then not trying to access
-the page, so the page fault mechanism is not triggered.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Since the final goal is to make a call to kvmppc_svm_page_out() it seems
-simpler to call directly instead of triggering such a mechanism. This
-way kvmppc_uvmem_drop_pages() can be called even when hot unplugging a
-memslot.
+Thanks!
 
-Since kvmppc_uvmem_drop_pages() is already holding kvm->arch.uvmem_lock,
-the call to __kvmppc_svm_page_out() is made.  As
-__kvmppc_svm_page_out needs the vma pointer to migrate the pages,
-the VMA is fetched in a lazy way, to not trigger find_vma() all
-the time. In addition, the mmap_sem is held in read mode during
-that time, not in write mode since the virual memory layout is not
-impacted, and kvm->arch.uvmem_lock prevents concurrent operation
-on the secure device.
+[1/2] ASoC: fsl-asoc-card: Support configuring dai fmt from DT
+      commit: 08b54b5e38e67b7e99f71b35cb8841b53e006759
+[2/2] ASoC: bindings: fsl-asoc-card: Support properties for configuring dai fmt
+      commit: ca168352cf94bbbc523794f2a2972adcf84d8639
 
-Cc: Ram Pai <linuxram@us.ibm.com>
-Cc: Bharata B Rao <bharata@linux.ibm.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-	[modified the changelog description]
-Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_uvmem.c | 54 ++++++++++++++++++++++++++------------
- 1 file changed, 37 insertions(+), 17 deletions(-)
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-index c772e92..daffa6e 100644
---- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-+++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-@@ -632,35 +632,55 @@ static inline int kvmppc_svm_page_out(struct vm_area_struct *vma,
-  * fault on them, do fault time migration to replace the device PTEs in
-  * QEMU page table with normal PTEs from newly allocated pages.
-  */
--void kvmppc_uvmem_drop_pages(const struct kvm_memory_slot *free,
-+void kvmppc_uvmem_drop_pages(const struct kvm_memory_slot *slot,
- 			     struct kvm *kvm, bool skip_page_out)
- {
- 	int i;
- 	struct kvmppc_uvmem_page_pvt *pvt;
--	unsigned long pfn, uvmem_pfn;
--	unsigned long gfn = free->base_gfn;
-+	struct page *uvmem_page;
-+	struct vm_area_struct *vma = NULL;
-+	unsigned long uvmem_pfn, gfn;
-+	unsigned long addr, end;
-+
-+	mmap_read_lock(kvm->mm);
-+
-+	addr = slot->userspace_addr;
-+	end = addr + (slot->npages * PAGE_SIZE);
- 
--	for (i = free->npages; i; --i, ++gfn) {
--		struct page *uvmem_page;
-+	gfn = slot->base_gfn;
-+	for (i = slot->npages; i; --i, ++gfn, addr += PAGE_SIZE) {
-+
-+		/* Fetch the VMA if addr is not in the latest fetched one */
-+		if (!vma || (addr < vma->vm_start || addr >= vma->vm_end)) {
-+			vma = find_vma_intersection(kvm->mm, addr, end);
-+			if (!vma ||
-+			    vma->vm_start > addr || vma->vm_end < end) {
-+				pr_err("Can't find VMA for gfn:0x%lx\n", gfn);
-+				break;
-+			}
-+		}
- 
- 		mutex_lock(&kvm->arch.uvmem_lock);
--		if (!kvmppc_gfn_is_uvmem_pfn(gfn, kvm, &uvmem_pfn)) {
-+
-+		if (kvmppc_gfn_is_uvmem_pfn(gfn, kvm, &uvmem_pfn)) {
-+			uvmem_page = pfn_to_page(uvmem_pfn);
-+			pvt = uvmem_page->zone_device_data;
-+			pvt->skip_page_out = skip_page_out;
-+			pvt->remove_gfn = true;
-+
-+			if (__kvmppc_svm_page_out(vma, addr, addr + PAGE_SIZE,
-+						  PAGE_SHIFT, kvm, pvt->gpa))
-+				pr_err("Can't page out gpa:0x%lx addr:0x%lx\n",
-+				       pvt->gpa, addr);
-+		} else {
-+			/* Remove the shared flag if any */
- 			kvmppc_gfn_remove(gfn, kvm);
--			mutex_unlock(&kvm->arch.uvmem_lock);
--			continue;
- 		}
- 
--		uvmem_page = pfn_to_page(uvmem_pfn);
--		pvt = uvmem_page->zone_device_data;
--		pvt->skip_page_out = skip_page_out;
--		pvt->remove_gfn = true;
- 		mutex_unlock(&kvm->arch.uvmem_lock);
--
--		pfn = gfn_to_pfn(kvm, gfn);
--		if (is_error_noslot_pfn(pfn))
--			continue;
--		kvm_release_pfn_clean(pfn);
- 	}
-+
-+	mmap_read_unlock(kvm->mm);
- }
- 
- unsigned long kvmppc_h_svm_init_abort(struct kvm *kvm)
--- 
-1.8.3.1
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
