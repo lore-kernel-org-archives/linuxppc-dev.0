@@ -2,98 +2,63 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FA3FC433E4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE62C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:37:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C39E20737
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:35:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RX2R9Pqj";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="RX2R9Pqj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C39E20737
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1ADF820737
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 18:37:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ADF820737
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCLc50hbLzDqwH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 04:35:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCLfW2M8BzDrSt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 04:37:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=207.211.31.120;
- helo=us-smtp-1.mimecast.com; envelope-from=longman@redhat.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=178.32.97.206; helo=19.mo1.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=RX2R9Pqj; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=RX2R9Pqj; 
- dkim-atps=neutral
-Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
- [207.211.31.120])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 4574 seconds by postgrey-1.36 at bilbo;
+ Fri, 24 Jul 2020 04:34:35 AEST
+Received: from 19.mo1.mail-out.ovh.net (19.mo1.mail-out.ovh.net
+ [178.32.97.206])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCLYD70DxzDrQx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 04:32:46 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1595529163;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=sKozQ0KnMZ6/jFMcku3oZ38jLyvLbmaFhh4u3SNBWFc=;
- b=RX2R9PqjrX1zilcg/rv5ZtXP9S82wn7dZs+EEA3+C8yM9PChG4fqNRrH2DdGKSd/s8iLFV
- suVhObAwBv8I3mYu0INs/Awhwig0jXUQzWuFmisJ19h9zqC1EfwguPdZL1HaNdgW8zzpHk
- 6PJgdd/m/W1AuhSKi8R1ciPY+Cs68pc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1595529163;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=sKozQ0KnMZ6/jFMcku3oZ38jLyvLbmaFhh4u3SNBWFc=;
- b=RX2R9PqjrX1zilcg/rv5ZtXP9S82wn7dZs+EEA3+C8yM9PChG4fqNRrH2DdGKSd/s8iLFV
- suVhObAwBv8I3mYu0INs/Awhwig0jXUQzWuFmisJ19h9zqC1EfwguPdZL1HaNdgW8zzpHk
- 6PJgdd/m/W1AuhSKi8R1ciPY+Cs68pc=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-147-a7YRzGORP6i5sZOBhCiJ6Q-1; Thu, 23 Jul 2020 14:32:40 -0400
-X-MC-Unique: a7YRzGORP6i5sZOBhCiJ6Q-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A8A501005510;
- Thu, 23 Jul 2020 18:32:38 +0000 (UTC)
-Received: from llong.remote.csb (ovpn-119-128.rdu2.redhat.com [10.10.119.128])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 209FA19D7E;
- Thu, 23 Jul 2020 18:32:37 +0000 (UTC)
-Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks for
- SPLPAR
-To: Peter Zijlstra <peterz@infradead.org>
-References: <20200706043540.1563616-1-npiggin@gmail.com>
- <20200706043540.1563616-6-npiggin@gmail.com>
- <874kqhvu1v.fsf@mpe.ellerman.id.au>
- <8265d782-4e50-a9b2-a908-0cb588ffa09c@redhat.com>
- <20200723140011.GR5523@worktop.programming.kicks-ass.net>
-From: Waiman Long <longman@redhat.com>
-Organization: Red Hat
-Message-ID: <845de183-56f5-2958-3159-faa131d46401@redhat.com>
-Date: Thu, 23 Jul 2020 14:32:36 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCLbH5XlXzDqyB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 04:34:33 +1000 (AEST)
+Received: from player726.ha.ovh.net (unknown [10.108.57.76])
+ by mo1.mail-out.ovh.net (Postfix) with ESMTP id 89C251D1E1D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 19:18:15 +0200 (CEST)
+Received: from kaod.org (bad36-1-78-202-132-1.fbx.proxad.net [78.202.132.1])
+ (Authenticated sender: clg@kaod.org)
+ by player726.ha.ovh.net (Postfix) with ESMTPSA id 31C2D148D3F16;
+ Thu, 23 Jul 2020 17:18:06 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-106R00656480056-5979-4c0d-b1fd-dc0742c8c4b8,
+ 0360426414082D1FC3E0C3FF9A362FC9406E86E3) smtp.auth=clg@kaod.org
+Subject: Re: [PATCH v2 0/3] powerpc/pseries: IPI doorbell improvements
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20200630115034.137050-1-npiggin@gmail.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <7ff5bf9e-4a04-a773-86a7-73076936819c@kaod.org>
+Date: Thu, 23 Jul 2020 19:18:05 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+ Thunderbird/68.9.0
 MIME-Version: 1.0
-In-Reply-To: <20200723140011.GR5523@worktop.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20200630115034.137050-1-npiggin@gmail.com>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 14291891945715960791
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrhedugdduudefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefffdvtddugeeifeduuefghfejgfeigeeigeeltedthefgieeiveeuiefhgeefgfenucfkpheptddrtddrtddrtddpjeekrddvtddvrddufedvrddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepphhlrgihvghrjedviedrhhgrrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,36 +70,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
- virtualization@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
- Will Deacon <will@kernel.org>
+Cc: Anton Blanchard <anton@linux.ibm.com>, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/23/20 10:00 AM, Peter Zijlstra wrote:
-> On Thu, Jul 09, 2020 at 12:06:13PM -0400, Waiman Long wrote:
->> We don't really need to do a pv_spinlocks_init() if pv_kick() isn't
->> supported.
-> Waiman, if you cannot explain how not having kick is a sane thing, what
-> are you saying here?
->
-The current PPC paravirt spinlock code doesn't do any cpu kick. It does 
-an equivalence of pv_wait by yielding the cpu to the lock holder only. 
-The pv_spinlocks_init() is for setting up the hash table for doing 
-pv_kick. If we don't need to do pv_kick, we don't need the hash table.
+On 6/30/20 1:50 PM, Nicholas Piggin wrote:
+> Since v1:
+> - Fixed SMP compile error.
+> - Fixed EPAPR / KVM_GUEST breakage.
+> - Expanded patch 3 changelog a bit.
+> 
+> Thanks,
+> Nick
 
-I am not saying that pv_kick is not needed for the PPC environment. I 
-was just trying to adapt the pvqspinlock code to such an environment 
-first. Further investigation on how to implement some kind of pv_kick 
-will be something that we may want to do as a follow on.
+I gave the patchset a try on KVM guests (P9 and P8) and PowerVM LPARs (P9).
 
-BTW, do you have any comment on my v2 lock holder cpu info qspinlock 
-patch? I will have to update the patch to fix the reported 0-day test 
-problem, but I want to collect other feedback before sending out v3.
+Looks good.  
 
-Cheers,
-Longman
+Tested-by: Cédric Le Goater <clg@kaod.org>
+
+Thanks,
+
+C. 
+
+> 
+> Nicholas Piggin (3):
+>   powerpc: inline doorbell sending functions
+>   powerpc/pseries: Use doorbells even if XIVE is available
+>   powerpc/pseries: Add KVM guest doorbell restrictions
+> 
+>  arch/powerpc/include/asm/dbell.h     | 63 ++++++++++++++++++++++++++--
+>  arch/powerpc/include/asm/firmware.h  |  6 +++
+>  arch/powerpc/include/asm/kvm_para.h  | 26 ++----------
+>  arch/powerpc/kernel/Makefile         |  5 +--
+>  arch/powerpc/kernel/dbell.c          | 55 ------------------------
+>  arch/powerpc/kernel/firmware.c       | 19 +++++++++
+>  arch/powerpc/platforms/pseries/smp.c | 62 +++++++++++++++++++--------
+>  7 files changed, 134 insertions(+), 102 deletions(-)
+> 
 
