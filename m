@@ -2,63 +2,68 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF3BC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:50:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C2D0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:49:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E8CFE20709
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:50:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EE00D206F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 06:49:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="HohM+0bP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8CFE20709
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="F8mQFRtw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE00D206F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BC2zB2W8yzDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:50:46 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BC2xG0F7WzDrCS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 16:49:06 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BC2vt2VkqzDrCJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 16:47:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BC2vT3B7BzDrBr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 16:47:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=HohM+0bP; 
+ header.a=rsa-sha256 header.s=201909 header.b=F8mQFRtw; 
  dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4BC2vT2cF6z9sRf; Thu, 23 Jul 2020 16:47:33 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BC2vr4Zfxz9sQt;
- Thu, 23 Jul 2020 16:47:52 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BC2vR6Pf2z9sRR;
+ Thu, 23 Jul 2020 16:47:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595486873;
- bh=OeNPhpHvBcuXZex2aPYrGLTVDAkNiyf0rppWSgiCxS8=;
+ s=201909; t=1595486853;
+ bh=iLCp72MN0Bz7Tijm/DlYPrNZEwgqJ+eZi+r993c2Gas=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=HohM+0bPBvgVW9/HLN4IMf5yi02AnIfVZnPyIdTtAqHC444cFOH1CKBqWpDM7Lwon
- NsM2R52CvAiwEd0oX+42uRFpfb/YABuNwOZBc3DeK4/+VbhCdDG6tHlBPeBneiYZuW
- x/sjp2Pc9GDKywfRjjOwgwst4SPVzzgNXME3MASoNfD6aqfhLT8wAtukHrEuE6y5h5
- 0AOqS5iR7BzgP5uZOc2BfOKaLT4d9hdVadOEuqIlPGilDO/5G5Z+CFWTi+jic2wAc3
- oZ6pwqxKCRUOOvrVii1xzFbG1V85GZ0g85dphJPcJZYxt2e93/P/e/b5BBlJGk5abE
- SUl2R+mpqXtVQ==
+ b=F8mQFRtw6PH4Q/+W/cXQHWrXJ7h89YyzJrv4PI1hNeDQOHFhaQ2yxkl5BomVcaRK4
+ 0LflFjJsREETVY3Js4225bYdLmOxFtAwYx/GJKne4iL7ZD3gs4/AmvIM9ql69XkCcK
+ nplSgPBkAnX59xKMdAz0ISW8AfP6PUsESdLp2ydqZ0wyPV1bhKtIWAdUgQOQjHgbSt
+ KW8HE9M/c/PHhsIDgI7CS6PfB5zgUqKgDDGL0dPGHK58AdENvdyR8WN72b0WehGnzb
+ f/e+MtcfgzM9Zvqg7SEeFJmwpq4ze7DpzJ+cq0WIkY6Q/1R9fEEftb8wN6WDVwVwyP
+ WY84EN3OjGuHA==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/64s: system call support for scv/rfscv
- instructions
-In-Reply-To: <20200611081203.995112-3-npiggin@gmail.com>
-References: <20200611081203.995112-1-npiggin@gmail.com>
- <20200611081203.995112-3-npiggin@gmail.com>
-Date: Thu, 23 Jul 2020 16:47:51 +1000
-Message-ID: <871rl2ralk.fsf@mpe.ellerman.id.au>
+To: Hari Bathini <hbathini@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v4 07/12] ppc64/kexec_file: add support to relocate
+ purgatory
+In-Reply-To: <2037fa32-28be-5995-1c22-c8b01cafe088@linux.ibm.com>
+References: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
+ <159524956457.20855.12480643681198700190.stgit@hbathini.in.ibm.com>
+ <871rl4rxao.fsf@mpe.ellerman.id.au>
+ <2037fa32-28be-5995-1c22-c8b01cafe088@linux.ibm.com>
+Date: Thu, 23 Jul 2020 16:47:31 +1000
+Message-ID: <87365iram4.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,53 +77,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: libc-dev@lists.llvm.org, musl@lists.openwall.com,
- Nicholas Piggin <npiggin@gmail.com>, linux-api@vger.kernel.org
+Cc: kernel test robot <lkp@intel.com>, Pingfan Liu <piliu@redhat.com>,
+ Kexec-ml <kexec@lists.infradead.org>, Nayna Jain <nayna@linux.ibm.com>,
+ Petr Tesarik <ptesarik@suse.cz>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Mimi Zohar <zohar@linux.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Dave Young <dyoung@redhat.com>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ Eric Biederman <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index 2a39c716c343..b2bdc4de1292 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -257,6 +257,7 @@
->  #define PPC_INST_MFVSRD			0x7c000066
->  #define PPC_INST_MTVSRD			0x7c000166
->  #define PPC_INST_SC			0x44000002
-> +#define PPC_INST_SCV			0x44000001
-...
-> @@ -411,6 +412,7 @@
-...
-> +#define __PPC_LEV(l)	(((l) & 0x7f) << 5)
+Hari Bathini <hbathini@linux.ibm.com> writes:
+> On 22/07/20 9:55 am, Michael Ellerman wrote:
+>> Hari Bathini <hbathini@linux.ibm.com> writes:
+>>> Right now purgatory implementation is only minimal. But if purgatory
+>>> code is to be enhanced to copy memory to the backup region and verify
+>>> sha256 digest, relocations may have to be applied to the purgatory.
+>>> So, add support to relocate purgatory in kexec_file_load system call
+>>> by setting up TOC pointer and applying RELA relocations as needed.
+>>>
+>>> Reported-by: kernel test robot <lkp@intel.com>
+>>> [lkp: In v1, 'struct mem_sym' was declared in parameter list]
+>>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+>>> ---
+>>>
+>>> * Michael, can you share your opinion on the below:
+>>>     - https://lore.kernel.org/patchwork/patch/1272027/
+>>>     - My intention in cover note.
+>> 
+>> It seems like a lot of complexity for little benefit.
+>> 
+>> AFAICS your final purgatory_64.c is only 36 lines, and all it does is a
+>> single (open coded) memcpy().
+>> 
+>> It seems like we could write that in not many more lines of assembler
+>> and avoid all this code.
+>
+> Hi Michael,
+>
+> I am not sure if you would agree with me on this, but I am looking at the
+> purgatory code as work in progress. As mentioned in the cover note, I intend
+> to add log messaging, sha256 verification into purgatory. And also change it
+> to position independent executable after moving common purgatory code (sha256
+> verification) to arch-independent code.
 
-These conflicted and didn't seem to be used so I dropped them.
+I've never understood the desire to put more logic into purgatory. It's
+the absolute worst place to detect that something's gone wrong, because
+we have no facilities in there to do anything useful. We don't even know
+what platform we're on.
 
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index 5abe98216dc2..161bfccbc309 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -3378,6 +3382,16 @@ int emulate_step(struct pt_regs *regs, struct ppc_inst instr)
->  		regs->msr = MSR_KERNEL;
->  		return 1;
->  
-> +	case SYSCALL_VECTORED_0:	/* scv 0 */
-> +		regs->gpr[9] = regs->gpr[13];
-> +		regs->gpr[10] = MSR_KERNEL;
-> +		regs->gpr[11] = regs->nip + 4;
-> +		regs->gpr[12] = regs->msr & MSR_MASK;
-> +		regs->gpr[13] = (unsigned long) get_paca();
-> +		regs->nip = (unsigned long) &system_call_vectored_emulate;
-> +		regs->msr = MSR_KERNEL;
-> +		return 1;
-> +
+> When I initially took this up, I wanted to add all the above changes too, but
+> cut down on it, in the interest of time, first to get kdump (kexec -s -p)
+> working in v5.9 merge window.
+>
+> But as the logic in patches 07/12 & 08/12 has been tested in kexec-tools code
+> a lot of times and there are unlikely to be any changes to them except for
+> __kexec_do_relocs() function (afaics), when -PIE would be used, I submitted them.
+> With patch 09/12, I tried for a change that uses relocations while is minimal
+> for now.
+>
+> Would you prefer it to be absolutely minimal by dropping patches 7 & 8 for
+> now and writing the backup data copy code in assembler?
 
-This broke the ppc64e build:
-
-  ld: arch/powerpc/lib/sstep.o:(.toc+0x0): undefined reference to `system_call_vectored_emulate'
-  make[1]: *** [/home/michael/linux/Makefile:1139: vmlinux] Error 1
-
-I wrapped it in #ifdef CONFIG_PPC64_BOOK3S.
+Yes please.
 
 cheers
