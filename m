@@ -2,63 +2,61 @@ Return-Path: <SRS0=Lnkm=BC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE125C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E8B5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:35:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89D662065F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:28:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Sr85O+3y"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89D662065F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 201F82065F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jul 2020 20:35:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 201F82065F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCP6w4qVLzDrdN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 06:28:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCPGH4NTRzDqwl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 06:35:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Sr85O+3y; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCNwr6Sj2zDr3r
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:19:56 +1000 (AEST)
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C3BE720792;
- Thu, 23 Jul 2020 20:19:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1595535594;
- bh=Y7nw8Vj09mHRDx3rm4JyQd5kgvD3ZNpz+G6aAJc4te0=;
- h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=Sr85O+3yxJUO8fWXvZDwDrg8K1cyNWE7lAskp1wdT4mHhoGLrLmHZNdOTjHA2qb70
- Bmr4bN3gKnZ+mTEQomX12S2gdeAHORaIpsJHw9FOC1b1XTnWVb4aq+udfnNCGVXOVV
- RX0wjNh34aSfg7xtVa6mPbGHgNjtv/trfEmXRoQ8=
-Date: Thu, 23 Jul 2020 21:19:39 +0100
-From: Mark Brown <broonie@kernel.org>
-To: perex@perex.cz, nicoleotsuka@gmail.com,
- "Alexander A. Klimov" <grandmaster@al2klimov.de>, festevam@gmail.com,
- Xiubo.Lee@gmail.com, kernel@pengutronix.de, shawnguo@kernel.org,
- tiwai@suse.com, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- linux-imx@nxp.com, lgirdwood@gmail.com, s.hauer@pengutronix.de,
- timur@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20200718111209.11760-1-grandmaster@al2klimov.de>
-References: <20200718111209.11760-1-grandmaster@al2klimov.de>
-Subject: Re: [PATCH] ASoC: fsl: Replace HTTP links with HTTPS ones
-Message-Id: <159553557415.41908.3982034267221660398.b4-ty@kernel.org>
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4BCP9c6QXhzDqlh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:31:00 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 06NKUlRb019444;
+ Thu, 23 Jul 2020 15:30:47 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 06NKUkhI019442;
+ Thu, 23 Jul 2020 15:30:46 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 23 Jul 2020 15:30:46 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: peterz@infradead.org
+Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks for
+ SPLPAR
+Message-ID: <20200723203046.GI32057@gate.crashing.org>
+References: <20200706043540.1563616-1-npiggin@gmail.com>
+ <20200706043540.1563616-6-npiggin@gmail.com>
+ <874kqhvu1v.fsf@mpe.ellerman.id.au>
+ <8265d782-4e50-a9b2-a908-0cb588ffa09c@redhat.com>
+ <20200723140011.GR5523@worktop.programming.kicks-ass.net>
+ <845de183-56f5-2958-3159-faa131d46401@redhat.com>
+ <20200723184759.GS119549@hirez.programming.kicks-ass.net>
+ <6d6279ad-7432-63c1-14c3-18c4cff30bf8@redhat.com>
+ <20200723195855.GU119549@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200723195855.GU119549@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,50 +68,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arch@vger.kernel.org, Will Deacon <will@kernel.org>,
+ Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, virtualization@lists.linux-foundation.org,
+ Ingo Molnar <mingo@redhat.com>, kvm-ppc@vger.kernel.org,
+ Waiman Long <longman@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 18 Jul 2020 13:12:09 +0200, Alexander A. Klimov wrote:
-> Rationale:
-> Reduces attack surface on kernel devs opening the links for MITM
-> as HTTPS traffic is much harder to manipulate.
-> 
-> Deterministic algorithm:
-> For each file:
->   If not .svg:
->     For each line:
->       If doesn't contain `\bxmlns\b`:
->         For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
-> 	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
->             If both the HTTP and HTTPS versions
->             return 200 OK and serve the same content:
->               Replace HTTP with HTTPS.
+On Thu, Jul 23, 2020 at 09:58:55PM +0200, peterz@infradead.org wrote:
+> 	asm ("addb	%[val], %b[var];"
+> 	     "cmovc	%[sat], %[var];"
+> 	     : [var] "+r" (tmp)
+> 	     : [val] "ir" (val), [sat] "r" (sat)
+> 	     );
 
-Applied to
+"var" (operand 0) needs an earlyclobber ("sat" is read after "var" is
+written for the first time).
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-Thanks!
-
-[1/1] ASoC: fsl: Replace HTTP links with HTTPS ones
-      commit: 1ce8f643ed875d754ff09bf2096dfac3b905ab80
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+Segher
