@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9F32C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0000AC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 14:01:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58CDC20656
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:58:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A15562065C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 14:01:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="YX7ZOrIk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58CDC20656
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="V0FxRaGy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A15562065C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCrQ910D9zF0xR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 23:58:25 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCrTY4fD6zF10h
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 00:01:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqWC61yVzF0ff
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:17:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqWC5CJKzF0cd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:17:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=YX7ZOrIk; 
+ header.a=rsa-sha256 header.s=201909 header.b=V0FxRaGy; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4BCqWC0q9Vz9sTC; Fri, 24 Jul 2020 23:17:43 +1000 (AEST)
+ id 4BCqW94J72z9sSt; Fri, 24 Jul 2020 23:17:41 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BCqWB049Kz9sTR; Fri, 24 Jul 2020 23:17:41 +1000 (AEST)
+ id 4BCqW91WDTz9sTF; Fri, 24 Jul 2020 23:17:40 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595596662;
- bh=OHfIfxoamo4EVc/wZe3AT6UNrn7ohW9JeCF/x0D5Xs0=;
+ s=201909; t=1595596661;
+ bh=O+0Z8q0ZL0zShMFabZ0f0pjR0p+WQEFB/w3w7ZcqwT0=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=YX7ZOrIkcT6w0WUvT4MgSERz0wElZZG+A6myB0w2f26ouABhY9lpFD8O04ETLR1ob
- uUobLmGz1PWdn6ukzkZVsRrd0fh1kMk/4RZNUCgyMsZ6VbHQoi666cpOHFzySGc8y+
- lUSOvnW/NpzfGcx1LcItC3F5iwOna8CjZGgE5EAjeoJ7SNKOQ6FRW3EoEtdSkwJ3pR
- 2pfwGFk50FwxIcjdkt6Xr92gXNQZIRJlrTA3ljATGoatEyrOMq/11cAQzEhTu9WYk4
- j97ZqR95ZwubM9RYHnExGRRxSz2jpFAuIEtGRVjdx8kjg2iWrcxKaA8o+atieCKkFh
- RNqlufjBaR7Gg==
+ b=V0FxRaGyJR0Vwh2SrFiaGMVOoUWgHkxDsemWN1WNnyPHzmcB4uGq9J3ctme9/CeSR
+ kdPvyR+IsZbx5oR4eS5CAmLR6+Cb2duhXkeSI0J51ImQnCYCJ+xtu6DM9WPD4L+dU/
+ D8TceSX7be9A5g5+ryaDZjMpDSy0WguV8Y/3GuHlPluErbgxsP7RqxZzJZY5cQ4PzZ
+ AIbGTCsBtC1svo+0hGFqGQ6rc9z904jDltudstuqKIYq5TWseAHYK7kyzrTbwcC4om
+ XaYhmhqR1mqWYs7YPdT2ayikiClv3nIsz2Kk0TiUiK17+ASCnEgoPdTQ8lIZN7P0wj
+ q+hHiDqeG+oEA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/9] powerpc/32s: Remove TAUException wart in traps.c
-Date: Fri, 24 Jul 2020 23:17:25 +1000
-Message-Id: <20200724131728.1643966-6-mpe@ellerman.id.au>
+Subject: [PATCH 5/9] powerpc/32s: Fix CONFIG_BOOK3S_601 uses
+Date: Fri, 24 Jul 2020 23:17:24 +1000
+Message-Id: <20200724131728.1643966-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200724131728.1643966-1-mpe@ellerman.id.au>
 References: <20200724131728.1643966-1-mpe@ellerman.id.au>
@@ -73,68 +73,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All 32 and 64-bit builds that don't have CONFIG_TAU_INT enabled (all
-of them), get a definition of TAUException() in traps.c.
+We have two uses of CONFIG_BOOK3S_601, which doesn't exist. Fix them
+to use CONFIG_PPC_BOOK3S_601 which is the correct symbol.
 
-On 64-bit it's completely useless, and just wastes ~120 bytes of text.
-On 32-bit it allows the kernel to link because head_32.S calls it
-unconditionally.
-
-Instead follow the example of altivec_assist_exception(), and if
-CONFIG_TAU_INT is not enabled just point it at unknown_exception using
-the preprocessor.
-
+Fixes: 12c3f1fd87bf ("powerpc/32s: get rid of CPU_FTR_601 feature")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 
-Can we just remove TAU_INT entirely? It's in zero defconfigs and
-doesn't sound like something anyone really wants to enable:
-
-  However, on some cpus it appears that the TAU interrupt hardware
-  is buggy and can cause a situation which would lead unexplained hard
-  lockups.
-
-  Unless you are extending the TAU driver, or enjoy kernel/hardware
-  debugging, leave this option off.
+I think the bug in get_cycles() at least demonstrates that no one has
+booted a 601 since v5.4. Time to drop 601?
 ---
- arch/powerpc/kernel/head_32.S | 4 ++++
- arch/powerpc/kernel/traps.c   | 8 --------
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/ptrace.h | 2 +-
+ arch/powerpc/include/asm/timex.h  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 705c042309d8..dcfb7dceb6d6 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -671,6 +671,10 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index f194339cef3b..155a197c0aa1 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -243,7 +243,7 @@ static inline void set_trap_norestart(struct pt_regs *regs)
+ }
  
- #ifndef CONFIG_ALTIVEC
- #define altivec_assist_exception	unknown_exception
-+#endif
-+
-+#ifndef CONFIG_TAU_INT
-+#define TAUException	unknown_exception
- #endif
+ #define arch_has_single_step()	(1)
+-#ifndef CONFIG_BOOK3S_601
++#ifndef CONFIG_PPC_BOOK3S_601
+ #define arch_has_block_step()	(true)
+ #else
+ #define arch_has_block_step()	(false)
+diff --git a/arch/powerpc/include/asm/timex.h b/arch/powerpc/include/asm/timex.h
+index d2d2c4bd8435..6047402b0a4d 100644
+--- a/arch/powerpc/include/asm/timex.h
++++ b/arch/powerpc/include/asm/timex.h
+@@ -17,7 +17,7 @@ typedef unsigned long cycles_t;
  
- 	EXCEPTION(0x1300, Trap_13, instruction_breakpoint_exception, EXC_XFER_STD)
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 97413a385720..d1ebe152f210 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -2060,14 +2060,6 @@ void DebugException(struct pt_regs *regs, unsigned long debug_status)
- NOKPROBE_SYMBOL(DebugException);
- #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
- 
--#if !defined(CONFIG_TAU_INT)
--void TAUException(struct pt_regs *regs)
--{
--	printk("TAU trap at PC: %lx, MSR: %lx, vector=%lx    %s\n",
--	       regs->nip, regs->msr, regs->trap, print_tainted());
--}
--#endif /* CONFIG_INT_TAU */
--
- #ifdef CONFIG_ALTIVEC
- void altivec_assist_exception(struct pt_regs *regs)
+ static inline cycles_t get_cycles(void)
  {
+-	if (IS_ENABLED(CONFIG_BOOK3S_601))
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S_601))
+ 		return 0;
+ 
+ 	return mftb();
 -- 
 2.25.1
 
