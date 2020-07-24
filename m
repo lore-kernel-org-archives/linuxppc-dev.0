@@ -2,80 +2,107 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FFB2C433E8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 00:22:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8150AC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 00:31:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E43F7206E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 00:22:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="vha/kLm0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E43F7206E3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id F3B1320888
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 00:31:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3B1320888
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCVJX51ClzDrfy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 10:22:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--morbo.bounces.google.com
- (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com;
- envelope-from=3uygaxwukdawy03n0s00sxq.o0yxuz6911o-pq7xu454.0bxmn4.03s@flex--morbo.bounces.google.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=vha/kLm0; dkim-atps=neutral
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
- [IPv6:2607:f8b0:4864:20::b4a])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCVVr0pgKzDrfy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 10:31:16 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCV9l0GlvzDrdf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 10:16:22 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id n141so8354642yba.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2020 17:16:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=date:message-id:mime-version:subject:from:to:cc;
- bh=xDOq18BI5bjxxCx+oLv8deV3U12/TD8jTJOWQZI9A/0=;
- b=vha/kLm0EwSE9rQde40bTq1hKdK62on3/eSPpb+kodZkHHuCLBJAiesCE7Es1KLnj/
- V0YNXaaQp0phjxUGyDAmegNJurYuDbYVQOevpg0M4DQPzfNSLgf+wr8txaG9bPbEmq7L
- yvFuBUM2bF/bxYC55ySJ6cm0PEx6MfzZzbiRMXz1V10WGG7km5KHQdKInzB8IwMwAm2L
- uTCmnDqgDiUmlzg/RZaP7/y7CVstVgWOKzxlsxObUaZQPMCXyJBL6R5J1c0LNOFa9CS3
- c2SDTdKHInMiA6kkKjKZqoT2TjzIVshH4weK1DDhHA80KZKRGopdLODau+ZctvAmDd26
- YNZw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
- bh=xDOq18BI5bjxxCx+oLv8deV3U12/TD8jTJOWQZI9A/0=;
- b=eU6uinDgJa/fQ8rtRvceWQverG0POgwZtDA/RTihUPUhqjFJryYyiGsSftFt58arU6
- DWZLjgFvhIu8b24ZOxAaZ7gs1NPsf1qXcMxFhdjolISRSEkWBiWa6rIWuV9xSY/KlFva
- TFTrbAbpekQJOWzaNPRMI09AW6k36TxlLBTWkgFreIeriQ3g/TTl7lgap60IcjytSZc3
- mP1mVwlzHojYVoc1u+2tInyBXDVY1R0vf8mA3mdLYs8y1GLlKNtgRlKN6CRyYgZQXLi5
- CMtFsIKoWHSdtFuxJgBZMZj8fUCVu5liAmqMoj8Cjc7jeDH9DcBm06y5zi1GFYH4ARzo
- P5/Q==
-X-Gm-Message-State: AOAM530Mdp4cXl7IVT/crmopiZz2QSxY6/wBIu7qX29VoGfmQJGAupfO
- 725bEL5tHAvYGQzyRSPzoPGyX9+N
-X-Google-Smtp-Source: ABdhPJwdfMgsfDu6ZXkM8HzQ3uRW+I49HBzT5CNSM9cqnDum/LM4JiqKeYmaKSvmjqHIwrlzLvZ4yMjWLg==
-X-Received: by 2002:a25:9843:: with SMTP id k3mr10455799ybo.292.1595549779096; 
- Thu, 23 Jul 2020 17:16:19 -0700 (PDT)
-Date: Thu, 23 Jul 2020 17:16:05 -0700
-Message-Id: <20200724001605.3718561-1-morbo@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.28.0.rc0.105.gf9edc3c819-goog
-Subject: [PATCH v 1/1] powerpc/64s: allow for clang's objdump differences
-From: Bill Wendling <morbo@google.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
- Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 24 Jul 2020 10:20:37 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCVSY4qZWzDrfT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 10:29:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4BCVSY44kwz8t40
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 10:29:17 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4BCVSY3jMKz9sR4; Fri, 24 Jul 2020 10:29:17 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=bauerman@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4BCVSY04JRz9sPB
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Jul 2020 10:29:16 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06O03fUV149644; Thu, 23 Jul 2020 20:29:07 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32facss112-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 23 Jul 2020 20:29:07 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06O04HcY152265;
+ Thu, 23 Jul 2020 20:29:06 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32facss10w-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 23 Jul 2020 20:29:06 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06O0JemK015067;
+ Fri, 24 Jul 2020 00:29:06 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma01wdc.us.ibm.com with ESMTP id 32brq9ge7d-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Fri, 24 Jul 2020 00:29:06 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06O0T5wW52494840
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 24 Jul 2020 00:29:05 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 70272AC05E;
+ Fri, 24 Jul 2020 00:29:05 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0E837AC059;
+ Fri, 24 Jul 2020 00:29:00 +0000 (GMT)
+Received: from morokweng.localdomain (unknown [9.163.53.35])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTPS;
+ Fri, 24 Jul 2020 00:28:59 +0000 (GMT)
+References: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
+ <159524964786.20855.15850644504721928289.stgit@hbathini.in.ibm.com>
+User-agent: mu4e 1.2.0; emacs 26.3
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCH v4 09/12] ppc64/kexec_file: setup backup region for kdump
+ kernel
+In-reply-to: <159524964786.20855.15850644504721928289.stgit@hbathini.in.ibm.com>
+Date: Thu, 23 Jul 2020 21:28:55 -0300
+Message-ID: <874kpx69iw.fsf@morokweng.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-23_09:2020-07-23,
+ 2020-07-23 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ impostorscore=0 mlxscore=0 priorityscore=1501 lowpriorityscore=0
+ spamscore=0 mlxlogscore=999 bulkscore=0 adultscore=0 suspectscore=0
+ clxscore=1015 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007230165
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,48 +114,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Bill Wendling <morbo@google.com>
+Cc: kernel test robot <lkp@intel.com>, Pingfan Liu <piliu@redhat.com>,
+ Nayna Jain <nayna@linux.ibm.com>, Kexec-ml <kexec@lists.infradead.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
+ lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>, Petr Tesarik <ptesarik@suse.cz>,
+ Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>,
+ Vivek Goyal <vgoyal@redhat.com>, Eric Biederman <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Clang's objdump emits slightly different output from GNU's objdump,
-causing a list of warnings to be emitted during relocatable builds.
-E.g., clang's objdump emits this:
 
-   c000000000000004: 2c 00 00 48  b  0xc000000000000030
-   ...
-   c000000000005c6c: 10 00 82 40  bf 2, 0xc000000000005c7c
+Hari Bathini <hbathini@linux.ibm.com> writes:
 
-while GNU objdump emits:
+> Though kdump kernel boots from loaded address, the first 64K bytes
+> of it is copied down to real 0. So, setup a backup region to copy
+> the first 64K bytes of crashed kernel, in purgatory, before booting
+> into kdump kernel. Also, update reserve map with backup region and
+> crashed kernel's memory to avoid kdump kernel from accidentially
+> using that memory.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> [lkp: In v1, purgatory() declaration was missing]
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 
-   c000000000000004: 2c 00 00 48  b    c000000000000030 <__start+0x30>
-   ...
-   c000000000005c6c: 10 00 82 40  bne  c000000000005c7c <masked_interrupt+0x3c>
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
-Adjust llvm-objdump's output to remove the extraneous '0x' and convert
-'bf' and 'bt' to 'bne' and 'beq' resp. to more closely match GNU
-objdump's output.
+Just one minor comment below:
 
-Note that clang's objdump doesn't yet output the relocation symbols on
-PPC.
+> @@ -1047,13 +1120,26 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
+>  			goto out;
+>  		}
+>
+> -		/* Ensure we don't touch crashed kernel's memory */
+> -		ret = fdt_add_mem_rsv(fdt, 0, crashk_res.start);
+> +		/*
+> +		 * Ensure we don't touch crashed kernel's memory except the
+> +		 * first 64K of RAM, which will be backed up.
+> +		 */
+> +		ret = fdt_add_mem_rsv(fdt, BACKUP_SRC_SIZE,
 
-Signed-off-by: Bill Wendling <morbo@google.com>
----
- arch/powerpc/tools/unrel_branch_check.sh | 3 +++
- 1 file changed, 3 insertions(+)
+I know BACKUP_SRC_START is 0, but please forgive my pedantry when I say
+that I think it's clearer if the start address above is changed to
+BACKUP_SRC_START + BACKUP_SRC_SIZE...
 
-diff --git a/arch/powerpc/tools/unrel_branch_check.sh b/arch/powerpc/tools/unrel_branch_check.sh
-index 77114755dc6f..71ce86b68d18 100755
---- a/arch/powerpc/tools/unrel_branch_check.sh
-+++ b/arch/powerpc/tools/unrel_branch_check.sh
-@@ -31,6 +31,9 @@ grep -e "^c[0-9a-f]*:[[:space:]]*\([0-9a-f][0-9a-f][[:space:]]\)\{4\}[[:space:]]
- grep -v '\<__start_initialization_multiplatform>' |
- grep -v -e 'b.\?.\?ctr' |
- grep -v -e 'b.\?.\?lr' |
-+sed 's/\bbt.\?[[:space:]]*[[:digit:]][[:digit:]]*,/beq/' |
-+sed 's/\bbf.\?[[:space:]]*[[:digit:]][[:digit:]]*,/bne/' |
-+sed 's/[[:space:]]0x/ /' |
- sed 's/://' |
- awk '{ print $1 ":" $6 ":0x" $7 ":" $8 " "}'
- )
+> +				      crashk_res.start - BACKUP_SRC_SIZE);
+>  		if (ret) {
+>  			pr_err("Error reserving crash memory: %s\n",
+>  			       fdt_strerror(ret));
+>  			goto out;
+>  		}
+> +
+> +		/* Ensure backup region is not used by kdump/capture kernel */
+> +		ret = fdt_add_mem_rsv(fdt, image->arch.backup_start,
+> +				      BACKUP_SRC_SIZE);
+> +		if (ret) {
+> +			pr_err("Error reserving memory for backup: %s\n",
+> +			       fdt_strerror(ret));
+> +			goto out;
+> +		}
+>  	}
+>
+>  out:
+
+--
+Thiago Jung Bauermann
+IBM Linux Technology Center
