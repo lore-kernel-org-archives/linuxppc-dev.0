@@ -2,85 +2,80 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17F3DC433EA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 07:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C7EEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:16:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1A212068F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 07:58:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1A212068F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F338520674
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:16:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F338520674
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BChR05gpczDvlr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 17:58:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BChr06g9QzF07s
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 18:16:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BChNF74SMzDrgb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 17:56:13 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06O7YZZ0031553; Fri, 24 Jul 2020 03:56:07 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32f23h284q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Jul 2020 03:56:07 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06O7tATP026395;
- Fri, 24 Jul 2020 07:56:06 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma03wdc.us.ibm.com with ESMTP id 32brq9tupj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Jul 2020 07:56:06 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06O7u5ef54133036
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 24 Jul 2020 07:56:05 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8E38AAC062;
- Fri, 24 Jul 2020 07:56:05 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 32583AC05E;
- Fri, 24 Jul 2020 07:56:04 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.55.22])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 24 Jul 2020 07:56:03 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/book3s64/radix: Add kernel command line option to
- disable radix GTSE
-Date: Fri, 24 Jul 2020 13:26:00 +0530
-Message-Id: <20200724075600.317640-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
+ spf=none (no SPF record) smtp.mailfrom=arndb.de
+ (client-ip=212.227.126.135; helo=mout.kundenserver.de;
+ envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BChnk5gT9zDrNk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 18:14:49 +1000 (AEST)
+Received: from mail-qt1-f180.google.com ([209.85.160.180]) by
+ mrelayeu.kundenserver.de (mreue009 [212.227.15.129]) with ESMTPSA (Nemesis)
+ id 1Myb8P-1kkMnZ2z89-00z1Qh for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul
+ 2020 10:14:44 +0200
+Received: by mail-qt1-f180.google.com with SMTP id b25so6346921qto.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 01:14:43 -0700 (PDT)
+X-Gm-Message-State: AOAM530nWv4+7N7Ybb2BebDl56JQgpBFk2HvuMYD5Fw+2Sr18gTjLmLB
+ EYb8kkXExd0LJFVy1n7voDGqQOLQMuZ1PXNJ50g=
+X-Google-Smtp-Source: ABdhPJygisjtG0/T5RZOpGU5w2vxR1Ybi3XIk/oHG1gnkzduo22/qOY0PE84/zvIhSqmrnDmSiaO0gHwgOoBfMX/5hA=
+X-Received: by 2002:ac8:7587:: with SMTP id s7mr8295990qtq.304.1595578483047; 
+ Fri, 24 Jul 2020 01:14:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-24_01:2020-07-24,
- 2020-07-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 mlxlogscore=999
- adultscore=0 lowpriorityscore=0 impostorscore=0 bulkscore=0 phishscore=0
- priorityscore=1501 malwarescore=0 spamscore=0 clxscore=1015 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007240055
+References: <mhng-831c4073-aefa-4aa0-a583-6a17f9aff9b7@palmerdabbelt-glaptop1>
+ <d7e3cbb7-c12a-bce2-f1db-c336d15f74bd@ghiti.fr>
+ <7cb2285e-68ba-6827-5e61-e33a4b65ac03@ghiti.fr>
+ <54af168083aee9dbda1b531227521a26b77ba2c8.camel@kernel.crashing.org>
+ <cade70e2-0179-2650-41c5-036679aaf30c@ghiti.fr>
+ <418d5f3d3f42bbc79c5cf30e18ec89edfe2dbd26.camel@kernel.crashing.org>
+In-Reply-To: <418d5f3d3f42bbc79c5cf30e18ec89edfe2dbd26.camel@kernel.crashing.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 24 Jul 2020 10:14:26 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3dap8tDQVf3B9DdjQm0A_QtCwv3+tW6AUxC1Xq_VoL=A@mail.gmail.com>
+Message-ID: <CAK8P3a3dap8tDQVf3B9DdjQm0A_QtCwv3+tW6AUxC1Xq_VoL=A@mail.gmail.com>
+Subject: Re: [PATCH v5 1/4] riscv: Move kernel mapping to vmalloc zone
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:+9wITevh3p85GTzMrKSyaZtkHw69m24SfgiKosKWUfF3EumwWV0
+ SehbEf029mXlyuBSqX4++EHdVn3jP2g+WPwD0bDSdgNVvidPEbO2GSfLVJ6v7S32jzrdZvy
+ YbLWXyXEoSbumB111E7zQk6sC7ZRnszViujVHHivvg8GPKctoU+aT7SlCFRNVuqagLA6Zh3
+ InOJuJuXKYc5xQTeoQcwQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:8K48o2VU+5U=:DfR00JXyieYiVSxZ29VzR5
+ uiM+Ez4jkLw5yN0rguzQj2X1NUg2Ijo3eNM6bB4VkRSG7qj9FtCw01gIa1HxfeeoyYLA/IXeG
+ Dluhnepy1bEgvkTQJgsmFnCwJsBPCjwrErTq4GfeZoHBHP2ms+0MzSnL1kfjMu0hOoa2Ywp7F
+ YIUp6c5NTVfoYTME+MtwFV7EKPWWGzAFiqFarVheZDIB3rLoeGsgJtzsxVupRQIAZG/hhn8ko
+ eBrJu9TVkyKhnKqUvsbzF8dmGdaUMpsZ6zmbskBbTZmKhoqtK+/KlEzkVhk0W+i3wMRBp3EPc
+ arh0CvnK1lFKZpEY7Tw8H9GQzNBdhxJb85laUSJYGzLve7IOAMM0H4HZGxXiiMLYkvF+Cyghn
+ tqgjQcXY25SCIElNsw1pekwlftZixN3ubCDh8zhRw2WMIO7iTWABSBNp2yWPP5w6sIOPlUDRe
+ NQ3K9YYz26QGWVNJQEGLLHroXOYKk5nCDdfwNoFJ1gFhKnmDPqfmnPjODANUu2dNxsmf+1KTw
+ 2IwD+ZQq4VKOk7jnJP1dFuqVKokwCInCkMAljfIYV9I8JE0JLaiYStjlboB/1mtUu6iiiJhVZ
+ wJQl9E0kTLh/IvFiGL0NUWHrypAeTTjPPumqimeZE+mmhE6y0RU+FTMXsjBLpOqEoVeHBQQmT
+ GpAutoihLYLFp3Ejt4yw/GqtKW03vC1u9prtDojfLXYmUOsPNA+2sSGSBg/KqcMKOqnN7AMPU
+ CT5XVE2xpxrnltffUq6Cba25C2j9dRXQtRPGIx8oQRp55D7SaIC2lfEM7wEDzqYcq74NoSAml
+ Z8gf36q0FRsEYA/e6IVQvRSdbPM+XO98i0I+ilVG5eOUrOiw1gEPc4+K+oTHNrH93dn2Wy4OU
+ 5SF0W23r8GiYVadRtKrFSIlzO+toE1mTIPBEFEj0/OIhGq3VgUop/NRcON7lS9dulmBU2Fvbe
+ YhyBhGT4OXhiLr6w7+w99ZG07KKB8o8Sa4MxpV++jgAIbYiH0QtF6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,138 +87,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Bharata B Rao <bharata@linux.ibm.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>, Alex Ghiti <alex@ghiti.fr>,
+ Atish Patra <Atish.Patra@wdc.com>, Anup Patel <Anup.Patel@wdc.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linux-MM <linux-mm@kvack.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Zong Li <zong.li@sifive.com>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Paul Mackerras <paulus@samba.org>,
+ linux-riscv <linux-riscv@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds a kernel command line option that can be used to disable GTSE support.
-Disabling GTSE implies kernel will make hcalls to invalidate TLB entries.
+On Fri, Jul 24, 2020 at 12:34 AM Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Thu, 2020-07-23 at 01:21 -0400, Alex Ghiti wrote:
+> > > works fine with huge pages, what is your problem there ? You rely on
+> > > punching small-page size holes in there ?
+> > >
+> >
+> > ARCH_HAS_STRICT_KERNEL_RWX prevents the use of a hugepage for the kernel
+> > mapping in the direct mapping as it sets different permissions to
+> > different part of the kernel (data, text..etc).
+>
+> Ah ok, that can be solved in a couple of ways...
+>
+> One is to use the linker script to ensure those sections are linked
+> HUGE_PAGE_SIZE appart and moved appropriately by early boot code. One
+> is to selectively degrade just those huge pages.
+>
+> I'm not familiar with the RiscV MMU (I should probably go have a look)
+> but if it's a classic radix tree with huge pages at PUD/PMD level, then
+> you could just degrade the one(s) that cross those boundaries.
 
-This was done so that we can do VM migration between configs that enable/disable
-GTSE support via hypervisor. To migrate a VM from a system that supports
-GTSE to a system that doesn't, we can boot the guest with radix_gtse=off, thereby
-forcing the guest to use hcalls for TLB invalidates.
+That would work, but if the system can otherwise use 1GB-sized pages,
+that might mean degrading the first gigabyte into a mix of 2MB pages
+and 4KB pages.
 
-The check for hcall availability is done in pSeries_setup_arch so that
-the panic message appears on the console. This should only happen on
-a hypervisor that doesn't force the guest to hash translation even
-though it can't handle the radix GTSE=0 request via CAS. With radix_gtse=off
-if the hypervisor doesn't support hcall_rpt_invalidate hcall it should
-force the LPAR to hash translation.
+If the kernel is in vmalloc space and vmap is able to use 2MB pages
+for contiguous chunks of the mapping, you get a somewhat better
+TLB usage.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- Documentation/admin-guide/kernel-parameters.txt |  3 +++
- arch/powerpc/include/asm/firmware.h             |  4 +++-
- arch/powerpc/kernel/prom_init.c                 | 13 +++++++++----
- arch/powerpc/platforms/pseries/firmware.c       |  1 +
- arch/powerpc/platforms/pseries/setup.c          |  5 +++++
- 5 files changed, 21 insertions(+), 5 deletions(-)
+However, this also means that a writable mapping exists in the
+linear mapping for any executable part of the kernel (.text in
+both vmlinux and modules). Do we have that on other architectures
+as well, or is this something that ought to be prevented with
+STRICT_KERNEL_RWX/STRICT_MODULE_RWX?
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index fb95fad81c79..df20c98a8920 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -896,6 +896,9 @@
- 	disable_radix	[PPC]
- 			Disable RADIX MMU mode on POWER9
- 
-+	radix_gtse=off	[PPC/PSERIES]
-+			Disable RADIX GTSE feature.
-+
- 	disable_tlbie	[PPC]
- 			Disable TLBIE instruction. Currently does not work
- 			with KVM, with HASH MMU, or with coherent accelerators.
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index 6003c2e533a0..aa6a5ef5d483 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -52,6 +52,7 @@
- #define FW_FEATURE_PAPR_SCM 	ASM_CONST(0x0000002000000000)
- #define FW_FEATURE_ULTRAVISOR	ASM_CONST(0x0000004000000000)
- #define FW_FEATURE_STUFF_TCE	ASM_CONST(0x0000008000000000)
-+#define FW_FEATURE_RPT_INVALIDATE ASM_CONST(0x0000010000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -71,7 +72,8 @@ enum {
- 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
- 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
- 		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE |
--		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR,
-+		FW_FEATURE_PAPR_SCM | FW_FEATURE_ULTRAVISOR |
-+		FW_FEATURE_RPT_INVALIDATE,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_ULTRAVISOR,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index cbc605cfdec0..e7e91965fe6c 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -169,6 +169,7 @@ static unsigned long __prombss prom_tce_alloc_end;
- 
- #ifdef CONFIG_PPC_PSERIES
- static bool __prombss prom_radix_disable;
-+static bool __prombss prom_radix_gtse_disable;
- static bool __prombss prom_xive_disable;
- #endif
- 
-@@ -823,6 +824,12 @@ static void __init early_cmdline_parse(void)
- 	if (prom_radix_disable)
- 		prom_debug("Radix disabled from cmdline\n");
- 
-+	opt = prom_strstr(prom_cmd_line, "radix_gtse=off");
-+	if (opt) {
-+		prom_radix_gtse_disable = true;
-+		prom_debug("Radix GTSE disabled from cmdline\n");
-+	}
-+
- 	opt = prom_strstr(prom_cmd_line, "xive=off");
- 	if (opt) {
- 		prom_xive_disable = true;
-@@ -1285,10 +1292,8 @@ static void __init prom_parse_platform_support(u8 index, u8 val,
- 		prom_parse_mmu_model(val & OV5_FEAT(OV5_MMU_SUPPORT), support);
- 		break;
- 	case OV5_INDX(OV5_RADIX_GTSE): /* Radix Extensions */
--		if (val & OV5_FEAT(OV5_RADIX_GTSE)) {
--			prom_debug("Radix - GTSE supported\n");
--			support->radix_gtse = true;
--		}
-+		if (val & OV5_FEAT(OV5_RADIX_GTSE))
-+			support->radix_gtse = !prom_radix_gtse_disable;
- 		break;
- 	case OV5_INDX(OV5_XIVE_SUPPORT): /* Interrupt mode */
- 		prom_parse_xive_model(val & OV5_FEAT(OV5_XIVE_SUPPORT),
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 3e49cc23a97a..4c7b7f5a2ebc 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -65,6 +65,7 @@ hypertas_fw_features_table[] = {
- 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
- 	{FW_FEATURE_BLOCK_REMOVE,	"hcall-block-remove"},
- 	{FW_FEATURE_PAPR_SCM,		"hcall-scm"},
-+	{FW_FEATURE_RPT_INVALIDATE,	"hcall-rpt-invalidate"},
- };
- 
- /* Build up the firmware features bitmask using the contents of
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 2db8469e475f..9e5e098665f7 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -745,6 +745,11 @@ static void __init pSeries_setup_arch(void)
- 	smp_init_pseries();
- 
- 
-+	if (radix_enabled() && !mmu_has_feature(MMU_FTR_GTSE))
-+		if (!firmware_has_feature(FW_FEATURE_RPT_INVALIDATE))
-+			panic("BUG: Radix support requires either GTSE or RPT_INVALIDATE\n");
-+
-+
- 	/* openpic global configuration register (64-bit format). */
- 	/* openpic Interrupt Source Unit pointer (64-bit format). */
- 	/* python0 facility area (mmio) (64-bit format) REAL address. */
--- 
-2.26.2
-
+     Arnd
