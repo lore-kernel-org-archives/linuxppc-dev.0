@@ -6,37 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 490A7C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB122C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:39:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 015CF206D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:36:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 015CF206D8
+	by mail.kernel.org (Postfix) with ESMTPS id 935E6206D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:39:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 935E6206D8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCtbj0yzTzF1QT
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 01:36:49 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCtg52W1FzF13h
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 01:39:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqh00vNSzDrPJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:25:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqh44Wr2zDrdN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:25:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BCqgw1nqLz9sTF; Fri, 24 Jul 2020 23:25:15 +1000 (AEST)
+ id 4BCqh066PPz9sSt; Fri, 24 Jul 2020 23:25:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Santosh Sivaraj <santosh@fossix.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <20200721091915.205006-1-santosh@fossix.org>
-References: <20200721091915.205006-1-santosh@fossix.org>
-Subject: Re: [PATCH trivial] ppc64/mm: remove comment that is no longer valid
-Message-Id: <159559697312.1657499.3263323645214216381.b4-ty@ellerman.id.au>
-Date: Fri, 24 Jul 2020 23:25:15 +1000 (AEST)
+To: npiggin@gmail.com, haren@linux.ibm.com, paulus@samba.org,
+ dave.hansen@linux.intel.com, benh@kernel.crashing.org,
+ YueHaibing <yuehaibing@huawei.com>, mpe@ellerman.id.au
+In-Reply-To: <20200717112714.19304-1-yuehaibing@huawei.com>
+References: <20200715031939.31968-1-yuehaibing@huawei.com>
+ <20200717112714.19304-1-yuehaibing@huawei.com>
+Subject: Re: [PATCH -next] powerpc: Remove unneeded inline functions
+Message-Id: <159559696842.1657499.8881605373645357480.b4-ty@ellerman.id.au>
+Date: Fri, 24 Jul 2020 23:25:20 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,19 +50,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 21 Jul 2020 14:49:15 +0530, Santosh Sivaraj wrote:
-> hash_low_64.S was removed in [1] and since flush_hash_page is not called
-> from any assembly routine.
-> 
-> [1]: commit a43c0eb8364c0 ("powerpc/mm: Convert 4k insert from asm to C")
+On Fri, 17 Jul 2020 19:27:14 +0800, YueHaibing wrote:
+> Both of those functions are only called from 64-bit only code, so the
+> stubs should not be needed at all.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm/hash64: Remove comment that is no longer valid
-      https://git.kernel.org/powerpc/c/69507b984ddce803df81215cc7813825189adafa
+[1/1] powerpc: Remove unneeded inline functions
+      https://git.kernel.org/powerpc/c/a3f3f8aa1f72dafe1450ccf8cbdfb1d12d42853a
 
 cheers
