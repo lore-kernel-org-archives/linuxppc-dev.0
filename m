@@ -2,68 +2,61 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,LONGWORDS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97E47C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 01:28:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75931C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 02:05:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 971A620714
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 01:28:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="XOKW50YA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 971A620714
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	by mail.kernel.org (Postfix) with ESMTPS id 910E92065E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 02:05:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 910E92065E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCWmq0JJ8zDrCt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 11:28:27 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCWjJ3Rc3zDr88
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 11:25:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCXbm4hNXzDrdQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 12:05:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.a=rsa-sha256
- header.s=201811 header.b=XOKW50YA; dkim-atps=neutral
-Received: from neuling.org (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 4BCWjH2XG7z9sPB;
- Fri, 24 Jul 2020 11:25:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1595553924;
- bh=tm/GU39NPJjOhnUmHyDDcZvMhBdG0uDx7EnJQcKGEho=;
- h=Subject:From:To:Date:In-Reply-To:References:From;
- b=XOKW50YAnge0+7ZmdCpLdxd8P+Gx1IVElGxDtqg7n8o2DtROhV6Gd/km0jYnjiC5d
- /guTMY0h5sHwhoVmVXsZFdgGiGM9zm11xlDj4acp0AgSgtthMRCkNppZKXVVdG4iMg
- JERKTsxs0ZF3wBBn9wjRNUEyGlmhJhF0hZCj6qrOhp1HbGf0lwrJ5PKG9bEDe0sM53
- J8o/9EnQDDNAxlM/rMc/M5KUEUi26pwhuMQgxnB2wu4egOTE0sBUQ9/Ml1Zt01Ve3w
- pUVyVFS4/UiiX4lK6r5AKsCnqErfhyLdIIW+MCNbRLYdgaQO1KyqcYNBh6aAUWkz1f
- 3o3gS8l4YgcjA==
-Received: by neuling.org (Postfix, from userid 1000)
- id 3D9482C0404; Fri, 24 Jul 2020 11:25:23 +1000 (AEST)
-Message-ID: <b9507631629bfc1f36893a280b2b83ea484516f9.camel@neuling.org>
-Subject: Re: [PATCH v2 2/3] powerpc/powernv/idle: save-restore DAWR0,DAWRX0
- for P10
-From: Michael Neuling <mikey@neuling.org>
-To: Pratik Rajesh Sampat <psampat@linux.ibm.com>, mpe@ellerman.id.au, 
- benh@kernel.crashing.org, paulus@samba.org, ravi.bangoria@linux.ibm.com, 
- ego@linux.vnet.ibm.com, svaidy@linux.ibm.com, pratik.r.sampat@gmail.com, 
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 24 Jul 2020 11:25:23 +1000
-In-Reply-To: <20200710052207.12003-3-psampat@linux.ibm.com>
-References: <20200710052207.12003-1-psampat@linux.ibm.com>
- <20200710052207.12003-3-psampat@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.36.4 (3.36.4-1.fc32) 
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCXYd3zSmzDqbX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 12:03:46 +1000 (AEST)
+IronPort-SDR: iF902+4H1oApkrgqcdA3ENC2CO1p+yg2HiS+lmOjRt8AvAeTKJ3vDxc3JUcsBHuTrJ1hzMjiFs
+ vrLJZvWVNPcg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9691"; a="138146447"
+X-IronPort-AV: E=Sophos;i="5.75,388,1589266800"; d="scan'208";a="138146447"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Jul 2020 19:03:43 -0700
+IronPort-SDR: gaV/cWVfPYy90h2b8IAV/zZXN9q2DffDWP6QaQyh9APrDA7PjDiBz4fjNvOCUwZieQfjXEbaCN
+ nbUvioJWPqxA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,388,1589266800"; d="scan'208";a="319174591"
+Received: from lkp-server01.sh.intel.com (HELO bd1a4a62506a) ([10.239.97.150])
+ by orsmga008.jf.intel.com with ESMTP; 23 Jul 2020 19:03:40 -0700
+Received: from kbuild by bd1a4a62506a with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jyn3k-0000gX-91; Fri, 24 Jul 2020 02:03:40 +0000
+Date: Fri, 24 Jul 2020 10:03:27 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS d6c13d397d6988ec3e6029cae9e80501364cf9cb
+Message-ID: <5f1a416f.gerEjm1w2rTPaShS%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,61 +68,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-07-10 at 10:52 +0530, Pratik Rajesh Sampat wrote:
-> Additional registers DAWR0, DAWRX0 may be lost on Power 10 for
-> stop levels < 4.
-> Therefore save the values of these SPRs before entering a  "stop"
-> state and restore their values on wakeup.
->=20
-> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/idle.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->=20
-> diff --git a/arch/powerpc/platforms/powernv/idle.c
-> b/arch/powerpc/platforms/powernv/idle.c
-> index 19d94d021357..f2e2a6a4c274 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -600,6 +600,8 @@ struct p9_sprs {
->  	u64 iamr;
->  	u64 amor;
->  	u64 uamor;
-> +	u64 dawr0;
-> +	u64 dawrx0;
->  };
-> =20
->  static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
-> @@ -687,6 +689,10 @@ static unsigned long power9_idle_stop(unsigned long
-> psscr, bool mmu_on)
->  	sprs.iamr	=3D mfspr(SPRN_IAMR);
->  	sprs.amor	=3D mfspr(SPRN_AMOR);
->  	sprs.uamor	=3D mfspr(SPRN_UAMOR);
-> +	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: d6c13d397d6988ec3e6029cae9e80501364cf9cb  Automatic merge of 'master', 'next' and 'fixes' (2020-07-22 23:08)
 
-Can you add a comment here saying even though DAWR0 is ARCH_30, it's only
-required to be saved on 31. Otherwise this looks pretty odd.
+elapsed time: 2204m
 
-> +		sprs.dawr0 =3D mfspr(SPRN_DAWR0);
-> +		sprs.dawrx0 =3D mfspr(SPRN_DAWRX0);
-> +	}
-> =20
->  	srr1 =3D isa300_idle_stop_mayloss(psscr);		/* go idle */
-> =20
-> @@ -710,6 +716,10 @@ static unsigned long power9_idle_stop(unsigned long
-> psscr, bool mmu_on)
->  		mtspr(SPRN_IAMR,	sprs.iamr);
->  		mtspr(SPRN_AMOR,	sprs.amor);
->  		mtspr(SPRN_UAMOR,	sprs.uamor);
-> +		if (cpu_has_feature(CPU_FTR_ARCH_31)) {
-> +			mtspr(SPRN_DAWR0, sprs.dawr0);
-> +			mtspr(SPRN_DAWRX0, sprs.dawrx0);
-> +		}
-> =20
->  		/*
->  		 * Workaround for POWER9 DD2.0, if we lost resources, the ERAT
+configs tested: 74
+configs skipped: 1
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+i386                             allyesconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                                    lkp
+x86_64                              fedora-25
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
