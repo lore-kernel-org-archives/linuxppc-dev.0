@@ -2,68 +2,70 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14E52C433E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36ECCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:31:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFFE3206EB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:29:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFFE3206EB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id D750B2074A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 08:31:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iQgxYosI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D750B2074A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCj6M3KPDzDrRR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 18:29:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCj8T756rzF0BV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 18:31:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=jeyu@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.43; helo=mga05.intel.com;
- envelope-from=jarkko.sakkinen@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=iQgxYosI; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCgyD6sJ5zDsNT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 17:37:07 +1000 (AEST)
-IronPort-SDR: hgLNAhTz9fIB412AVlL3MacOmdQ0ouMvFs/BEHgYGt0AmuGVnD2LiLiheetx42T3Q6JMvgxTEY
- yJ4rQ1FdKZKA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9691"; a="235550133"
-X-IronPort-AV: E=Sophos;i="5.75,389,1589266800"; d="scan'208";a="235550133"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jul 2020 00:37:02 -0700
-IronPort-SDR: TAB03xecSlI4basjrQIy2hbhaeXXyXKAkMJFtaNhpLJDNY3l0q2EBJc0tt5g94JWjrS8//u4J3
- 0Kk+Cc01yUeA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,389,1589266800"; d="scan'208";a="288909362"
-Received: from cbuerkle-mobl1.ger.corp.intel.com (HELO localhost)
- ([10.249.36.184])
- by orsmga006.jf.intel.com with ESMTP; 24 Jul 2020 00:36:23 -0700
-Date: Fri, 24 Jul 2020 10:36:21 +0300
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-To: Ard Biesheuvel <ardb@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BChZx1s2WzDrNn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 18:05:29 +1000 (AEST)
+Received: from linux-8ccs (p57a236d4.dip0.t-ipconnect.de [87.162.54.212])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id CA66B20714;
+ Fri, 24 Jul 2020 08:05:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1595577926;
+ bh=us2W5N9wAnP0SRTf2NETN3sn0PTr7LNBP/LAvhLqDbs=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=iQgxYosIuT/VUzj6+qKIwKf0IR9OKpxSh4OiUa+6rfL2yxtBGsii3LQuRzcoxWYjq
+ WmSWWCQKgrWA4hh7O9H3q9SWSEelUNw0KZuaw9jZ0e757JHdQ1Oqyy6N3x0PqIO0Vu
+ lguPTAYMJfYhShKoQhGPpNT5RzKACvw/rBbeNwqg=
+Date: Fri, 24 Jul 2020 10:05:08 +0200
+From: Jessica Yu <jeyu@kernel.org>
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
 Subject: Re: [PATCH v2 1/3] module: Rename module_alloc() to text_alloc() and
  move to kernel proper
-Message-ID: <20200724073621.GC1872662@linux.intel.com>
+Message-ID: <20200724080508.GA17719@linux-8ccs>
 References: <20200714094625.1443261-1-jarkko.sakkinen@linux.intel.com>
  <20200714094625.1443261-2-jarkko.sakkinen@linux.intel.com>
  <20200716184909.Horde.JVRLLcKix_jhrJfiQYRbbQ1@messagerie.si.c-s.fr>
  <20200723015127.GE45081@linux.intel.com>
  <CAMj1kXGJhqC+asc6JUNeEkRsHYTzNQVe4-65vKqigbW03gO9Jg@mail.gmail.com>
+ <20200724073621.GC1872662@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMj1kXGJhqC+asc6JUNeEkRsHYTzNQVe4-65vKqigbW03gO9Jg@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-X-Mailman-Approved-At: Fri, 24 Jul 2020 18:27:16 +1000
+In-Reply-To: <20200724073621.GC1872662@linux.intel.com>
+X-OS: Linux linux-8ccs 5.5.0-lp150.12.61-default x86_64
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Fri, 24 Jul 2020 18:27:17 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,9 +113,9 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Marco Elver <elver@google.com>, Steven Rostedt <rostedt@goodmis.org>,
  Babu Moger <Babu.Moger@amd.com>, Borislav Petkov <bp@alien8.de>,
  Greentime Hu <green.hu@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
- Guan Xuetao <gxt@pku.edu.cn>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Guan Xuetao <gxt@pku.edu.cn>, Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  "open list:PARISC ARCHITECTURE" <linux-parisc@vger.kernel.org>,
- Jessica Yu <jeyu@kernel.org>,
  "open list:BPF JIT for MIPS 32-BIT AND 64-BIT" <bpf@vger.kernel.org>,
  "David S. Miller" <davem@davemloft.net>,
  Thiago Jung Bauermann <bauerman@linux.ibm.com>,
@@ -123,7 +125,7 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  "open list:SPARC + UltraSPARC sparc/sparc64" <sparclinux@vger.kernel.org>,
  "open list:RISC-V ARCHITECTURE" <linux-riscv@lists.infradead.org>,
  Miroslav Benes <mbenes@suse.cz>, Jiri Olsa <jolsa@redhat.com>,
- Tiezhu Yang <yangtiezhu@loongson.cn>,
+ Ard Biesheuvel <ardb@kernel.org>,
  Vincenzo Frascino <vincenzo.frascino@arm.com>,
  Anders Roxell <anders.roxell@linaro.org>, Sven Schnelle <svens@stackframe.org>,
  "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>,
@@ -141,61 +143,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jul 23, 2020 at 03:42:09PM +0300, Ard Biesheuvel wrote:
-> On Thu, 23 Jul 2020 at 04:52, Jarkko Sakkinen
-> <jarkko.sakkinen@linux.intel.com> wrote:
-> >
-> > On Thu, Jul 16, 2020 at 06:49:09PM +0200, Christophe Leroy wrote:
-> > > Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> a écrit :
-> > >
-> > > > Rename module_alloc() to text_alloc() and module_memfree() to
-> > > > text_memfree(), and move them to kernel/text.c, which is unconditionally
-> > > > compiled to the kernel proper. This allows kprobes, ftrace and bpf to
-> > > > allocate space for executable code without requiring to compile the modules
-> > > > support (CONFIG_MODULES=y) in.
-> > >
-> > > You are not changing enough in powerpc to have this work.
-> > > On powerpc 32 bits (6xx), when STRICT_KERNEL_RWX is selected, the vmalloc
-> > > space is set to NX (no exec) at segment level (ie by 256Mbytes zone) unless
-> > > CONFIG_MODULES is selected.
-> > >
-> > > Christophe
-> >
-> > This has been deduced down to:
-> >
-> > https://lore.kernel.org/lkml/20200717030422.679972-1-jarkko.sakkinen@linux.intel.com/
-> >
-> > I.e. not intruding PPC anymore :-)
-> >
-> 
-> Ok, so after the elaborate discussion we had between Jessica, Russell,
-> Peter, Will, Mark, you and myself, where we pointed out that
-> a) a single text_alloc() abstraction for bpf, kprobes and ftrace does
-> not fit other architectures very well, and
-> b) that module_alloc() is not suitable as a default to base text_alloc() on,
++++ Jarkko Sakkinen [24/07/20 10:36 +0300]:
+>On Thu, Jul 23, 2020 at 03:42:09PM +0300, Ard Biesheuvel wrote:
+>> On Thu, 23 Jul 2020 at 04:52, Jarkko Sakkinen
+>> <jarkko.sakkinen@linux.intel.com> wrote:
+>> >
+>> > On Thu, Jul 16, 2020 at 06:49:09PM +0200, Christophe Leroy wrote:
+>> > > Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> a écrit :
+>> > >
+>> > > > Rename module_alloc() to text_alloc() and module_memfree() to
+>> > > > text_memfree(), and move them to kernel/text.c, which is unconditionally
+>> > > > compiled to the kernel proper. This allows kprobes, ftrace and bpf to
+>> > > > allocate space for executable code without requiring to compile the modules
+>> > > > support (CONFIG_MODULES=y) in.
+>> > >
+>> > > You are not changing enough in powerpc to have this work.
+>> > > On powerpc 32 bits (6xx), when STRICT_KERNEL_RWX is selected, the vmalloc
+>> > > space is set to NX (no exec) at segment level (ie by 256Mbytes zone) unless
+>> > > CONFIG_MODULES is selected.
+>> > >
+>> > > Christophe
+>> >
+>> > This has been deduced down to:
+>> >
+>> > https://lore.kernel.org/lkml/20200717030422.679972-1-jarkko.sakkinen@linux.intel.com/
+>> >
+>> > I.e. not intruding PPC anymore :-)
+>> >
+>>
+>> Ok, so after the elaborate discussion we had between Jessica, Russell,
+>> Peter, Will, Mark, you and myself, where we pointed out that
+>> a) a single text_alloc() abstraction for bpf, kprobes and ftrace does
+>> not fit other architectures very well, and
+>> b) that module_alloc() is not suitable as a default to base text_alloc() on,
+>
+>In the latest iteration (v5) it is conditionally available only if arch
+>defines and fallback has been removed.
+>
+>> you went ahead and implemented that anyway, but only cc'ing Peter,
+>> akpm, Masami and the mm list this time?
+>
+>No problems with that. Actually each patch gets everything that
+>get_maintainer.pl gives with a cc cmd script, not just the ones
+>explicitly listed in the patch.
+>
+>Should I explicitly CC you to the next version? I'm happy to grow
+>the list when requested.
 
-In the latest iteration (v5) it is conditionally available only if arch
-defines and fallback has been removed.
+Yes, please CC everybody that was part of the discussion last time
+especially during v2, and please use a consistent CC list for the
+whole patchset. It is difficult to review when you only receive patch
+1 out of 6 with no mention of text_alloc() anywhere and without being
+CC'd on the cover letter.
 
-> you went ahead and implemented that anyway, but only cc'ing Peter,
-> akpm, Masami and the mm list this time?
-
-No problems with that. Actually each patch gets everything that
-get_maintainer.pl gives with a cc cmd script, not just the ones
-explicitly listed in the patch.
-
-Should I explicitly CC you to the next version? I'm happy to grow
-the list when requested.
-
-> Sorry, but that is not how it works. Once people get pulled into a
-> discussion, you cannot dismiss them or their feedback like that and go
-> off and do your own thing anyway. Generic features like this are
-> tricky to get right, and it will likely take many iterations and input
-> from many different people.
-
-Sure. I'm not expecting this move quickly.
-
-I don't think I've at least purposely done that. As you said it's tricky
-to get this right.
-
-/Jarkko
+Jessica
