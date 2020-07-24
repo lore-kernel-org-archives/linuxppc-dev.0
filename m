@@ -2,112 +2,95 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96C21C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:49:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDBFAC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 16:52:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F902206D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 15:49:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F902206D8
+	by mail.kernel.org (Postfix) with ESMTPS id 42C272067D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 16:52:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42C272067D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCtsj5mvxzF0dd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 01:48:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCrfR6QJNzDrqf
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 00:09:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4BCrfR2ZPsz9CJQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 00:09:03 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4BCrfQ5tTQz9sSy; Sat, 25 Jul 2020 00:09:02 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCwH567gpzF1RL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 02:52:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
+Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4BCrfP717mz9sRN
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Jul 2020 00:09:01 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06OE2bGH148746; Fri, 24 Jul 2020 10:08:54 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCwDc33RTzF1PV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 02:50:24 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06OGXKO9130797; Fri, 24 Jul 2020 12:50:16 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32fact9dnj-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32fux7emdh-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Jul 2020 10:08:54 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06OE3hOd155756;
- Fri, 24 Jul 2020 10:08:53 -0400
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 32fact9dmu-1
+ Fri, 24 Jul 2020 12:50:16 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06OGYbPS135895;
+ Fri, 24 Jul 2020 12:50:15 -0400
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32fux7emct-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Jul 2020 10:08:53 -0400
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06OE4RLf007803;
- Fri, 24 Jul 2020 14:08:51 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma03fra.de.ibm.com with ESMTP id 32brq842dx-1
+ Fri, 24 Jul 2020 12:50:15 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06OGfB1C022449;
+ Fri, 24 Jul 2020 16:50:14 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma03wdc.us.ibm.com with ESMTP id 32brq9wx9y-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 24 Jul 2020 14:08:51 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06OE8muY18022758
+ Fri, 24 Jul 2020 16:50:14 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06OGoDUl23068970
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 24 Jul 2020 14:08:49 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E014E42041;
- Fri, 24 Jul 2020 14:08:48 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 069854203F;
- Fri, 24 Jul 2020 14:08:46 +0000 (GMT)
-Received: from [9.85.127.153] (unknown [9.85.127.153])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 24 Jul 2020 14:08:45 +0000 (GMT)
-Subject: Re: [PATCH v4 06/12] ppc64/kexec_file: restrict memory usage of kdump
- kernel
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <159524918900.20855.17709718993097359220.stgit@hbathini.in.ibm.com>
- <159524954805.20855.1164928096364700614.stgit@hbathini.in.ibm.com>
- <875zad6ajx.fsf@morokweng.localdomain>
-From: Hari Bathini <hbathini@linux.ibm.com>
-Message-ID: <77c606da-8eb2-d831-147b-a204b498c7d7@linux.ibm.com>
-Date: Fri, 24 Jul 2020 19:38:45 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ Fri, 24 Jul 2020 16:50:13 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 816112805E;
+ Fri, 24 Jul 2020 16:50:13 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 474882805C;
+ Fri, 24 Jul 2020 16:50:13 +0000 (GMT)
+Received: from localhost (unknown [9.160.98.15])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 24 Jul 2020 16:50:13 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Pingfan Liu <kernelfans@gmail.com>
+Subject: Re: [PATCHv3 2/2] powerpc/pseries: update device tree before ejecting
+ hotplug uevents
+In-Reply-To: <CAFgQCTu_QO=50v2J0=aY2iV8P-oM82_Kfw9My600ZARUt01grw@mail.gmail.com>
+References: <1595382730-10565-1-git-send-email-kernelfans@gmail.com>
+ <1595382730-10565-2-git-send-email-kernelfans@gmail.com>
+ <87imee1hvt.fsf@linux.ibm.com>
+ <CAFgQCTu_QO=50v2J0=aY2iV8P-oM82_Kfw9My600ZARUt01grw@mail.gmail.com>
+Date: Fri, 24 Jul 2020 11:50:12 -0500
+Message-ID: <87d04k26yj.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <875zad6ajx.fsf@morokweng.localdomain>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-24_04:2020-07-24,
+ definitions=2020-07-24_05:2020-07-24,
  2020-07-24 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- impostorscore=0 mlxscore=0 priorityscore=1501 lowpriorityscore=0
- spamscore=0 mlxlogscore=999 bulkscore=0 adultscore=0 suspectscore=0
- clxscore=1015 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007240105
+ impostorscore=0 adultscore=0
+ malwarescore=0 suspectscore=5 phishscore=0 mlxscore=0 priorityscore=1501
+ lowpriorityscore=0 clxscore=1015 spamscore=0 mlxlogscore=987 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007240128
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,75 +102,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Pingfan Liu <piliu@redhat.com>, Petr Tesarik <ptesarik@suse.cz>,
- Nayna Jain <nayna@linux.ibm.com>, Kexec-ml <kexec@lists.infradead.org>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
- lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>,
- Vivek Goyal <vgoyal@redhat.com>, Eric Biederman <ebiederm@xmission.com>
+Cc: cheloha@linux.ibm.com, Kexec Mailing List <kexec@lists.infradead.org>,
+ ldufour@linux.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 24/07/20 5:36 am, Thiago Jung Bauermann wrote:
-> 
-> Hari Bathini <hbathini@linux.ibm.com> writes:
-> 
->> Kdump kernel, used for capturing the kernel core image, is supposed
->> to use only specific memory regions to avoid corrupting the image to
->> be captured. The regions are crashkernel range - the memory reserved
->> explicitly for kdump kernel, memory used for the tce-table, the OPAL
->> region and RTAS region as applicable. Restrict kdump kernel memory
->> to use only these regions by setting up usable-memory DT property.
->> Also, tell the kdump kernel to run at the loaded address by setting
->> the magic word at 0x5c.
+Pingfan Liu <kernelfans@gmail.com> writes:
+> On Thu, Jul 23, 2020 at 9:27 PM Nathan Lynch <nathanl@linux.ibm.com> wrote:
+>> Pingfan Liu <kernelfans@gmail.com> writes:
+>> > This will introduce extra dt updating payload for each involved lmb when hotplug.
+>> > But it should be fine since drmem_update_dt() is memory based operation and
+>> > hotplug is not a hot path.
 >>
->> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
->> Tested-by: Pingfan Liu <piliu@redhat.com>
->> ---
+>> This is great analysis but the performance implications of the change
+>> are grave. The add/remove paths here are already O(n) where n is the
+>> quantity of memory assigned to the LP, this change would make it O(n^2):
 >>
->> v3 -> v4:
->> * Updated get_node_path() to be an iterative function instead of a
->>   recursive one.
->> * Added comment explaining why low memory is added to kdump kernel's
->>   usable memory ranges though it doesn't fall in crashkernel region.
->> * For correctness, added fdt_add_mem_rsv() for the low memory being
->>   added to kdump kernel's usable memory ranges.
-> 
-> Good idea.
-> 
->> * Fixed prop pointer update in add_usable_mem_property() and changed
->>   duple to tuple as suggested by Thiago.
-> 
-> <snip>
-> 
->> +/**
->> + * get_node_pathlen - Get the full path length of the given node.
->> + * @dn:               Node.
->> + *
->> + * Also, counts '/' at the end of the path.
->> + * For example, /memory@0 will be "/memory@0/\0" => 11 bytes.
-> 
-> Wouldn't this function return 10 in the case of /memory@0?
+>> dlpar_memory_add_by_count
+>>   for_each_drmem_lmb             <--
+>>     dlpar_add_lmb
+>>       drmem_update_dt(_v1|_v2)
+>>         for_each_drmem_lmb       <--
+>>
+>> Memory add/remove isn't a hot path but quadratic runtime complexity
+>> isn't acceptable. Its current performance is bad enough that I have
+> Yes, the quadratic runtime complexity sounds terrible.
+> And I am curious about the bug. Does the system have thousands of lmb?
 
-Actually, it does return 11. +1 while returning is for counting %NUL.
-On top of that we count an extra '/' for root node.. so, it ends up as 11.
-('/'memory@0'/''\0'). Note the extra '/' before '\0'. Let me handle root node
-separately. That should avoid the confusion.
+Yes.
 
->> + *
->> + * Returns the string length of the node's full path.
->> + */
-> 
-> Maybe it's me (by analogy with strlen()), but I would expect "string
-> length" to not include the terminating \0. I suggest renaming the
-> function to something like get_node_path_size() and do s/length/size/ in
-> the comment above if it's supposed to count the terminating \0.
+>> Not to mention we leak memory every time drmem_update_dt is called
+>> because we can't safely free device tree properties :-(
+> Do you know what block us to free it?
 
-Sure, will update the function name.
+It's a longstanding problem. References to device tree properties aren't
+counted or tracked so there's no way to safely free them unless the node
+itself is released. But the ibm,dynamic-reconfiguration-memory node does
+not ever go away and its properties are only subject to updates.
 
-Thanks
-Hari
+Maybe there's a way to address the specific case of
+ibm,dynamic-reconfiguration-memory and the ibm,dynamic-memory(-v2)
+properties, instead of tackling the general problem.
+
+Regardless of all that, the drmem code needs better data structures and
+lookup functions.
