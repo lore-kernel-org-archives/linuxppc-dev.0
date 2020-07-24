@@ -2,85 +2,81 @@ Return-Path: <SRS0=CqhW=BD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9695C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73E65C433E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:18:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60C5F2065F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:20:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CA52B20656
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 13:18:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sqxzgb7o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60C5F2065F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pXLqcyKc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA52B20656
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BCqZg2B2RzDrqc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 23:20:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BCqWs3LnqzF0h1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jul 2020 23:18:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=sqxzgb7o; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+ header.s=20161025 header.b=pXLqcyKc; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqRm6DgrzDrQv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:14:44 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id 72so4409568ple.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:14:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCqRh4fggzDrB5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 23:14:39 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id l63so5179259pge.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2020 06:14:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=2kVR8dpc50ysMIxQqSwuiTqzeI4YP5E2Ddp3+XJfYGg=;
- b=sqxzgb7opVJpqkTP//ZlqsIRD4fKl8hWlOQ1iA3Df02waiSmGM1mmDdm+e8ka1/1mP
- kiWZvwxr98CH6Xr2XdEm7k7js/gVG3Vh4GK3sNC8KQbYQw04wHKaMo4OLwyLZiWOOYaE
- OBrUj4w6MrhBKScRRjr2ldae6JdXochR+jrX+sZVjSyrWj/55KpbagaXgig3t20v7JfP
- jCfA1yGhSsRgL4OMmSn9ze8Lbs6mD6D3431BOObaRSjfHEJWwUww7AmKlvaQBxqIcdCl
- t5C8eKYwa6ZP9jZMNXUzNAuJjWg0TF/fWmiX7cJYXiRGMp3FgXDkFQH4wR7ASXSBOEi/
- t5tQ==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=pNbiY4rCOWfn291u6DvF/2Ahe4KMxxHPAD/LG/AtX8A=;
+ b=pXLqcyKcwadFpxMawcde5uKWsmYRkcG8MkmB7OazkUR1B9BxLPOTtomS0atxp0wsl0
+ 3K/nBNDtdLM3XMKp/+Q2KWPhTzNaLsUfCbkpvUQYl6EOzkHNK4vD7ZfKDhoLzWCd2/se
+ fgoI8WC64Tprw9SX7RVYFGJVh3Fr+l1v+e5gbAofaNSm7BpQNZBwaJXh4KnnE/c7ATBL
+ JP1X36gJgrQMWq1w5fNtffUVAvZelPJ7TC9Q/xuCVhzxxomWZcH5/i0edBgmsWZ5thXx
+ Ig3Akrdt8zubCyDuzbipimtLx+lMYUOnS0mpNIrbb3vf4jg7KTVvtMzq2Quh777Evv+Z
+ RCAw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=2kVR8dpc50ysMIxQqSwuiTqzeI4YP5E2Ddp3+XJfYGg=;
- b=f72kcACErnQ409OTsQjqzvgLpc2ZOt9NbNDBbMKlptpZUHT8XrCQWmumXHBf85hhay
- 7gH6rGaf2QnmkIH6aYaSC0h/qCHDZOx+UNS8xiK99J3cRW7bufl9v+0RLuewwYXyREFM
- msga2a6rAiypNC65+OxzhkQ4MJ5W5xXJvD2wHzTsOja2XAkPoAjMaKO5vsaieXcVhnVW
- Q8NAdav3GgkKsV4Kz4wUDxAHhZtvzkzi/W4XQ1oLorh9UtZ/eXi5n0JMbsyYOIITVo8G
- tQeaWe4XLP5k8lQPvlxOXNlbXi2ZY3IRenRUBBRwcqVTDszFVqr4Qxr0xAJzeI98h+Zy
- iFCw==
-X-Gm-Message-State: AOAM5309uM7ubDzWGx6xKwp1ctCM/EcbZqFBuWxohlHdbwH6zuIIQYO1
- 8onBZLVcOn/5yt29f2wTc7e/TTCZ
-X-Google-Smtp-Source: ABdhPJwZT1wR4LaafRQIYtvkhAEiiC1v3dDk5trVpmTzdqzVW4G7zNyw5wB5pFFpSG/t6k8+IXpsPw==
-X-Received: by 2002:a17:902:a9c1:: with SMTP id
- b1mr8349193plr.234.1595596482001; 
- Fri, 24 Jul 2020 06:14:42 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=pNbiY4rCOWfn291u6DvF/2Ahe4KMxxHPAD/LG/AtX8A=;
+ b=poQatTrwgWe1NvLebrx90V+eVarvQsmsT5FJmX6+bSReyuSDKEuJFosoBooQhC/n14
+ 7PAZ52Wp4unIk01Q34HNcfgsro9aMXBz2lEf+HGx8twf6TSu/MLtZETxhJS7QezMjkhY
+ X7DFKx+WFlIH8UvaJh2RlpmaNhuILnDCtYvkYzPbtxpia1P3R7Xm8jBVJ1WJyC98s/T8
+ JEL4OS9tDL1l0yHAq8ypov+BNwO4bG3xpcBtL1WEuXuR+Qqdj9e53tz9BbO5i1l8Wr+i
+ FXuCygWysQdwS/xq/7xi0Qg/t4NnGsCMWMRIDYawbAREp7pO05T4bu9hz+UvgtRh7m3i
+ terg==
+X-Gm-Message-State: AOAM533rSkTYLeqDzq0aoCszPzh0nqj6xz9wCRDQE7OMuaH//XBOYvZw
+ HbX5ZwL97/S/fDLKeBqi3m3/C42f
+X-Google-Smtp-Source: ABdhPJxTM0xNsmofbW6cID6lTwKMAYAg9GWepJp2u9OgGyKYII7bL4WnhIOmRKega9Bzh5DogPa2Zg==
+X-Received: by 2002:a05:6a00:1586:: with SMTP id
+ u6mr8714565pfk.147.1595596476262; 
+ Fri, 24 Jul 2020 06:14:36 -0700 (PDT)
 Received: from bobo.ibm.com (110-174-173-27.tpgi.com.au. [110.174.173.27])
- by smtp.gmail.com with ESMTPSA id az16sm5871998pjb.7.2020.07.24.06.14.36
+ by smtp.gmail.com with ESMTPSA id az16sm5871998pjb.7.2020.07.24.06.14.30
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 24 Jul 2020 06:14:41 -0700 (PDT)
+ Fri, 24 Jul 2020 06:14:35 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 1/6] powerpc/pseries: move some PAPR paravirt functions to
- their own file
-Date: Fri, 24 Jul 2020 23:14:18 +1000
-Message-Id: <20200724131423.1362108-2-npiggin@gmail.com>
+Subject: [PATCH v4 0/6] powerpc: queued spinlocks and rwlocks
+Date: Fri, 24 Jul 2020 23:14:17 +1000
+Message-Id: <20200724131423.1362108-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20200724131423.1362108-1-npiggin@gmail.com>
-References: <20200724131423.1362108-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -105,173 +101,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These functions will be used by queued spinlock implementation,
-and may be useful elsewhere too, so move them out of spinlock.h.
+Updated with everybody's feedback (thanks all), and more performance
+results.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/paravirt.h | 59 +++++++++++++++++++++++++++++
- arch/powerpc/include/asm/spinlock.h | 24 +-----------
- arch/powerpc/lib/locks.c            | 12 +++---
- 3 files changed, 66 insertions(+), 29 deletions(-)
+What I've found is I might have been measuring the worst load point for
+the paravirt case, and by looking at a range of loads it's clear that
+queued spinlocks are overall better even on PV, doubly so when you look
+at the generally much improved worst case latencies.
+
+I have defaulted it to N even though I'm less concerned about the PV
+numbers now, just because I think it needs more stress testing. But
+it's very nicely selectable so should be low risk to include.
+
+All in all this is a very cool technology and great results especially
+on the big systems but even on smaller ones there are nice gains. Thanks
+Waiman and everyone who developed it.
+
+Thanks,
+Nick
+
+Nicholas Piggin (6):
+  powerpc/pseries: move some PAPR paravirt functions to their own file
+  powerpc: move spinlock implementation to simple_spinlock
+  powerpc/64s: implement queued spinlocks and rwlocks
+  powerpc/pseries: implement paravirt qspinlocks for SPLPAR
+  powerpc/qspinlock: optimised atomic_try_cmpxchg_lock that adds the
+    lock hint
+  powerpc: implement smp_cond_load_relaxed
+
+ arch/powerpc/Kconfig                          |  15 +
+ arch/powerpc/include/asm/Kbuild               |   1 +
+ arch/powerpc/include/asm/atomic.h             |  28 ++
+ arch/powerpc/include/asm/barrier.h            |  14 +
+ arch/powerpc/include/asm/paravirt.h           |  87 +++++
+ arch/powerpc/include/asm/qspinlock.h          |  91 ++++++
+ arch/powerpc/include/asm/qspinlock_paravirt.h |   7 +
+ arch/powerpc/include/asm/simple_spinlock.h    | 288 ++++++++++++++++
+ .../include/asm/simple_spinlock_types.h       |  21 ++
+ arch/powerpc/include/asm/spinlock.h           | 308 +-----------------
+ arch/powerpc/include/asm/spinlock_types.h     |  17 +-
+ arch/powerpc/lib/Makefile                     |   3 +
+ arch/powerpc/lib/locks.c                      |  12 +-
+ arch/powerpc/platforms/pseries/Kconfig        |   9 +-
+ arch/powerpc/platforms/pseries/setup.c        |   4 +-
+ include/asm-generic/qspinlock.h               |   4 +
+ 16 files changed, 588 insertions(+), 321 deletions(-)
  create mode 100644 arch/powerpc/include/asm/paravirt.h
+ create mode 100644 arch/powerpc/include/asm/qspinlock.h
+ create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt.h
+ create mode 100644 arch/powerpc/include/asm/simple_spinlock.h
+ create mode 100644 arch/powerpc/include/asm/simple_spinlock_types.h
 
-diff --git a/arch/powerpc/include/asm/paravirt.h b/arch/powerpc/include/asm/paravirt.h
-new file mode 100644
-index 000000000000..339e8533464b
---- /dev/null
-+++ b/arch/powerpc/include/asm/paravirt.h
-@@ -0,0 +1,59 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+#ifndef _ASM_POWERPC_PARAVIRT_H
-+#define _ASM_POWERPC_PARAVIRT_H
-+
-+#include <linux/jump_label.h>
-+#include <asm/smp.h>
-+#ifdef CONFIG_PPC64
-+#include <asm/paca.h>
-+#include <asm/hvcall.h>
-+#endif
-+
-+#ifdef CONFIG_PPC_SPLPAR
-+DECLARE_STATIC_KEY_FALSE(shared_processor);
-+
-+static inline bool is_shared_processor(void)
-+{
-+	return static_branch_unlikely(&shared_processor);
-+}
-+
-+/* If bit 0 is set, the cpu has been preempted */
-+static inline u32 yield_count_of(int cpu)
-+{
-+	__be32 yield_count = READ_ONCE(lppaca_of(cpu).yield_count);
-+	return be32_to_cpu(yield_count);
-+}
-+
-+static inline void yield_to_preempted(int cpu, u32 yield_count)
-+{
-+	plpar_hcall_norets(H_CONFER, get_hard_smp_processor_id(cpu), yield_count);
-+}
-+#else
-+static inline bool is_shared_processor(void)
-+{
-+	return false;
-+}
-+
-+static inline u32 yield_count_of(int cpu)
-+{
-+	return 0;
-+}
-+
-+extern void ___bad_yield_to_preempted(void);
-+static inline void yield_to_preempted(int cpu, u32 yield_count)
-+{
-+	___bad_yield_to_preempted(); /* This would be a bug */
-+}
-+#endif
-+
-+#define vcpu_is_preempted vcpu_is_preempted
-+static inline bool vcpu_is_preempted(int cpu)
-+{
-+	if (!is_shared_processor())
-+		return false;
-+	if (yield_count_of(cpu) & 1)
-+		return true;
-+	return false;
-+}
-+
-+#endif /* _ASM_POWERPC_PARAVIRT_H */
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 2d620896cdae..79be9bb10bbb 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -15,11 +15,10 @@
-  *
-  * (the type definitions are in asm/spinlock_types.h)
-  */
--#include <linux/jump_label.h>
- #include <linux/irqflags.h>
-+#include <asm/paravirt.h>
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
--#include <asm/hvcall.h>
- #endif
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
-@@ -35,18 +34,6 @@
- #define LOCK_TOKEN	1
- #endif
- 
--#ifdef CONFIG_PPC_PSERIES
--DECLARE_STATIC_KEY_FALSE(shared_processor);
--
--#define vcpu_is_preempted vcpu_is_preempted
--static inline bool vcpu_is_preempted(int cpu)
--{
--	if (!static_branch_unlikely(&shared_processor))
--		return false;
--	return !!(be32_to_cpu(lppaca_of(cpu).yield_count) & 1);
--}
--#endif
--
- static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
- {
- 	return lock.slock == 0;
-@@ -110,15 +97,6 @@ static inline void splpar_spin_yield(arch_spinlock_t *lock) {};
- static inline void splpar_rw_yield(arch_rwlock_t *lock) {};
- #endif
- 
--static inline bool is_shared_processor(void)
--{
--#ifdef CONFIG_PPC_SPLPAR
--	return static_branch_unlikely(&shared_processor);
--#else
--	return false;
--#endif
--}
--
- static inline void spin_yield(arch_spinlock_t *lock)
- {
- 	if (is_shared_processor())
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index 6440d5943c00..04165b7a163f 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -27,14 +27,14 @@ void splpar_spin_yield(arch_spinlock_t *lock)
- 		return;
- 	holder_cpu = lock_value & 0xffff;
- 	BUG_ON(holder_cpu >= NR_CPUS);
--	yield_count = be32_to_cpu(lppaca_of(holder_cpu).yield_count);
-+
-+	yield_count = yield_count_of(holder_cpu);
- 	if ((yield_count & 1) == 0)
- 		return;		/* virtual cpu is currently running */
- 	rmb();
- 	if (lock->slock != lock_value)
- 		return;		/* something has changed */
--	plpar_hcall_norets(H_CONFER,
--		get_hard_smp_processor_id(holder_cpu), yield_count);
-+	yield_to_preempted(holder_cpu, yield_count);
- }
- EXPORT_SYMBOL_GPL(splpar_spin_yield);
- 
-@@ -53,13 +53,13 @@ void splpar_rw_yield(arch_rwlock_t *rw)
- 		return;		/* no write lock at present */
- 	holder_cpu = lock_value & 0xffff;
- 	BUG_ON(holder_cpu >= NR_CPUS);
--	yield_count = be32_to_cpu(lppaca_of(holder_cpu).yield_count);
-+
-+	yield_count = yield_count_of(holder_cpu);
- 	if ((yield_count & 1) == 0)
- 		return;		/* virtual cpu is currently running */
- 	rmb();
- 	if (rw->lock != lock_value)
- 		return;		/* something has changed */
--	plpar_hcall_norets(H_CONFER,
--		get_hard_smp_processor_id(holder_cpu), yield_count);
-+	yield_to_preempted(holder_cpu, yield_count);
- }
- #endif
 -- 
 2.23.0
 
