@@ -2,66 +2,81 @@ Return-Path: <SRS0=T73o=BE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C98F6C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 17:28:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECF62C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 17:38:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DA55206D8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 17:28:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9C9AE206D7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 17:38:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="IYNVHfAH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DA55206D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CXm8k7P2";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CXm8k7P2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C9AE206D7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BDY2Y5NlFzF162
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 03:28:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BDYFN3WkJzF1KZ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 03:38:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=205.139.110.120;
+ helo=us-smtp-1.mimecast.com; envelope-from=longman@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BDY046lzKzF0ZQ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 03:26:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=7SRpwoL15MtwcU8wbHwQcUF2uHBMY5fJRBYQrQ9053Y=; b=IYNVHfAHG5lpuAIueljasDi0oa
- Du5FVq5sa5MBLzFTzDkALOkYTPbrWp+rPmZ49KvQiDoqMERlml1qgQDzXOWd9wJJUAqpv5z/KMH8q
- jEXc7o3zrIfO5GWST7gOXHKqoICiOWrtLHPTp25XxoYQPCKYOo3l8etKJ9b7O7ZMKacWEckk/xv+9
- m7fRAOGPr3/6uLPu135C3GbMy7l3GoowiIKV33kjTJEJ12Ww0hRSIsoue6YoyX1FmOkJt374qooD5
- YAAVcRYciUuV3iaqNnTf0TbSoY9YxM47y4xSiXqeoGXuk530lxCfga9DOXa1LMsJCASUDAFsFtBba
- RlnJdyfg==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=noisy.programming.kicks-ass.net)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jzNwO-0001Ol-2h; Sat, 25 Jul 2020 17:26:33 +0000
-Received: from hirez.programming.kicks-ass.net
- (hirez.programming.kicks-ass.net [192.168.1.225])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=CXm8k7P2; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=CXm8k7P2; 
+ dkim-atps=neutral
+Received: from us-smtp-1.mimecast.com (us-smtp-delivery-1.mimecast.com
+ [205.139.110.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1A0E0301179;
- Sat, 25 Jul 2020 19:26:30 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 4E6062B8AA3CC; Sat, 25 Jul 2020 19:26:30 +0200 (CEST)
-Date: Sat, 25 Jul 2020 19:26:30 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks
- for SPLPAR
-Message-ID: <20200725172630.GF10769@hirez.programming.kicks-ass.net>
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDYCZ5BQpzF0x8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 03:36:41 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1595698598;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=B89z7bSsPBlDl23wp5UaTzRFVbTHuOzryOgcGYTtGpc=;
+ b=CXm8k7P2HvCxE9ebdDM9iILbeHNhJusvX2ESWVm68eZU7TgGSlhsbXRe7R/Mb4kcXG48fo
+ kTJIQWJObO/dNp6EAbDaS+rgpYSzxQW+k+cFLCnmpl/dl/SnUuspQ1T0nCwxZjrCjj/04I
+ qiSBaqNuIhbJxfyFe+o8EZDiM8NAlxM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1595698598;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=B89z7bSsPBlDl23wp5UaTzRFVbTHuOzryOgcGYTtGpc=;
+ b=CXm8k7P2HvCxE9ebdDM9iILbeHNhJusvX2ESWVm68eZU7TgGSlhsbXRe7R/Mb4kcXG48fo
+ kTJIQWJObO/dNp6EAbDaS+rgpYSzxQW+k+cFLCnmpl/dl/SnUuspQ1T0nCwxZjrCjj/04I
+ qiSBaqNuIhbJxfyFe+o8EZDiM8NAlxM=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-490-BmOl6uFZMzCjad-UsEKw1g-1; Sat, 25 Jul 2020 13:36:33 -0400
+X-MC-Unique: BmOl6uFZMzCjad-UsEKw1g-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id D649E18C63C0;
+ Sat, 25 Jul 2020 17:36:31 +0000 (UTC)
+Received: from llong.remote.csb (ovpn-112-134.rdu2.redhat.com [10.10.112.134])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 462B15FC30;
+ Sat, 25 Jul 2020 17:36:30 +0000 (UTC)
+Subject: Re: [PATCH v3 5/6] powerpc/pseries: implement paravirt qspinlocks for
+ SPLPAR
+To: Peter Zijlstra <peterz@infradead.org>
 References: <20200706043540.1563616-1-npiggin@gmail.com>
  <20200706043540.1563616-6-npiggin@gmail.com>
  <874kqhvu1v.fsf@mpe.ellerman.id.au>
@@ -71,10 +86,19 @@ References: <20200706043540.1563616-1-npiggin@gmail.com>
  <20200723184759.GS119549@hirez.programming.kicks-ass.net>
  <20200724081647.GA16642@willie-the-truck>
  <8532332b-85dd-661b-cf72-81a8ceb70747@redhat.com>
+ <20200725172630.GF10769@hirez.programming.kicks-ass.net>
+From: Waiman Long <longman@redhat.com>
+Organization: Red Hat
+Message-ID: <4db0cff6-dabb-2f1b-df66-33ce2082088b@redhat.com>
+Date: Sat, 25 Jul 2020 13:36:29 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8532332b-85dd-661b-cf72-81a8ceb70747@redhat.com>
+In-Reply-To: <20200725172630.GF10769@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,49 +119,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jul 24, 2020 at 03:10:59PM -0400, Waiman Long wrote:
-> On 7/24/20 4:16 AM, Will Deacon wrote:
-> > On Thu, Jul 23, 2020 at 08:47:59PM +0200, peterz@infradead.org wrote:
-> > > On Thu, Jul 23, 2020 at 02:32:36PM -0400, Waiman Long wrote:
-> > > > BTW, do you have any comment on my v2 lock holder cpu info qspinlock patch?
-> > > > I will have to update the patch to fix the reported 0-day test problem, but
-> > > > I want to collect other feedback before sending out v3.
-> > > I want to say I hate it all, it adds instructions to a path we spend an
-> > > aweful lot of time optimizing without really getting anything back for
-> > > it.
-> > > 
-> > > Will, how do you feel about it?
-> > I can see it potentially being useful for debugging, but I hate the
-> > limitation to 256 CPUs. Even arm64 is hitting that now.
-> 
-> After thinking more about that, I think we can use all the remaining bits in
-> the 16-bit locked_pending. Reserving 1 bit for locked and 1 bit for pending,
-> there are 14 bits left. So as long as NR_CPUS < 16k (requirement for 16-bit
-> locked_pending), we can put all possible cpu numbers into the lock. We can
-> also just use smp_processor_id() without additional percpu data.
+On 7/25/20 1:26 PM, Peter Zijlstra wrote:
+> On Fri, Jul 24, 2020 at 03:10:59PM -0400, Waiman Long wrote:
+>> On 7/24/20 4:16 AM, Will Deacon wrote:
+>>> On Thu, Jul 23, 2020 at 08:47:59PM +0200, peterz@infradead.org wrote:
+>>>> On Thu, Jul 23, 2020 at 02:32:36PM -0400, Waiman Long wrote:
+>>>>> BTW, do you have any comment on my v2 lock holder cpu info qspinlock patch?
+>>>>> I will have to update the patch to fix the reported 0-day test problem, but
+>>>>> I want to collect other feedback before sending out v3.
+>>>> I want to say I hate it all, it adds instructions to a path we spend an
+>>>> aweful lot of time optimizing without really getting anything back for
+>>>> it.
+>>>>
+>>>> Will, how do you feel about it?
+>>> I can see it potentially being useful for debugging, but I hate the
+>>> limitation to 256 CPUs. Even arm64 is hitting that now.
+>> After thinking more about that, I think we can use all the remaining bits in
+>> the 16-bit locked_pending. Reserving 1 bit for locked and 1 bit for pending,
+>> there are 14 bits left. So as long as NR_CPUS < 16k (requirement for 16-bit
+>> locked_pending), we can put all possible cpu numbers into the lock. We can
+>> also just use smp_processor_id() without additional percpu data.
+> That sounds horrific, wouldn't that destroy the whole point of using a
+> byte for pending?
+You are right. I realized that later on and had sent a follow-up mail to 
+correct that.
+>>> Also, you're talking ~1% gains here. I think our collective time would
+>>> be better spent off reviewing the CNA series and trying to make it more
+>>> deterministic.
+>> I thought you guys are not interested in CNA. I do want to get CNA merged,
+>> if possible. Let review the current version again and see if there are ways
+>> we can further improve it.
+> It's not a lack of interrest. We were struggling with the fairness
+> issues and the complexity of the thing. I forgot the current state of
+> matters, but at one point UNLOCK was O(n) in waiters, which is, of
+> course, 'unfortunate'.
+>
+> I'll have to look up whatever notes remain, but the basic idea of
+> keeping remote nodes on a secondary list is obviously breaking all sorts
+> of fairness. After that they pile on a bunch of hacks to fix the worst
+> of them, but it feels exactly like that, a bunch of hacks.
+>
+> One of the things I suppose we ought to do is see if some of the ideas
+> of phase-fair locks can be applied to this.
+That could be a possible solution to ensure better fairness.
+>
+> That coupled with a chronic lack of time for anything :-(
+>
+That is always true and I feel this way too:-)
 
-That sounds horrific, wouldn't that destroy the whole point of using a
-byte for pending?
+Cheers,
+Longman
 
-> > Also, you're talking ~1% gains here. I think our collective time would
-> > be better spent off reviewing the CNA series and trying to make it more
-> > deterministic.
-> 
-> I thought you guys are not interested in CNA. I do want to get CNA merged,
-> if possible. Let review the current version again and see if there are ways
-> we can further improve it.
-
-It's not a lack of interrest. We were struggling with the fairness
-issues and the complexity of the thing. I forgot the current state of
-matters, but at one point UNLOCK was O(n) in waiters, which is, of
-course, 'unfortunate'.
-
-I'll have to look up whatever notes remain, but the basic idea of
-keeping remote nodes on a secondary list is obviously breaking all sorts
-of fairness. After that they pile on a bunch of hacks to fix the worst
-of them, but it feels exactly like that, a bunch of hacks.
-
-One of the things I suppose we ought to do is see if some of the ideas
-of phase-fair locks can be applied to this.
-
-That coupled with a chronic lack of time for anything :-(
