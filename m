@@ -5,78 +5,77 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 813A9C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 08:30:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 756CFC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 08:36:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E63772064C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 08:30:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 25460206D7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 08:36:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SroCZnID"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E63772064C
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UlJzYEsI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25460206D7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BDK5c50ZYzDrDp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 18:30:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BDKD606vkzDqgC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jul 2020 18:36:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
- helo=mail-pg1-x541.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::442;
+ helo=mail-pf1-x442.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=SroCZnID; dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ header.s=20161025 header.b=UlJzYEsI; dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BDJjJ1Z6BzF153
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 18:13:08 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id n5so6669329pgf.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 01:13:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDJjQ4J8bzF157
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 18:13:14 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id s26so6504102pfm.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 01:13:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=lJlmXl6pBvTDXsdiFTXja7ULJdkdLlp+lmb/9r1QCLM=;
- b=SroCZnID/IOSheV0n+k2kuW0hoFtqt6MZauFO/LHx/a3GWILkSCKR4VS5gB4eatcbA
- OlRY6wBIAQf9Z8J63a+InCYHskpwrMhKUEhtp+fb1GxjQ3pmq2EBL3R09/7vHcT2ZEgp
- wvqJDjLlP8llRl3AA55EdN41yta5hdK8YzzIcl+zZG+wNbNBfQ7+Iez+ziMs6B5FB5/V
- xRjzaL/NEuXnsbfd1mDWiCNqO43hhtpw5+CuIwAfVU8BQ4xdpaWjwcv1vMCak0aUegOW
- huV1TvP8Cp5qwovXfkBbAcZR1AIxwovqfp+HYuZFwix2wMbuxxsRE5cotRr4S5bYfsP1
- VI9w==
+ bh=Kz+sWFCiw6ZUnAP90a0JiohaJtz7QQMbMbQaLAycNK4=;
+ b=UlJzYEsIdFCoGwDVUbsSUGHO5mXXJBNzLfa2faFPcGXrLB+Tp0daSefgA938xV/Sby
+ b5xvca4M50jp36HIVP8IFZuBvFGlP1cYrFPGQEbk5UqMMJvRa0Rds2rORGdIerevB4GP
+ q3/WzL5aRQ5+wAUnebzvUq0GXXqOihzmM9csI5x+FGV0PTsRro/o+7xTfpx73J4SiFmM
+ DWN0EXNZfkwDRb8m5UFLeD3iyr6GAH9KrwCjEefvzcd29O2z1zvI9gdsTQLhq2R0PMKv
+ iMUNzhoMobMDhxTjtAz6ZGaBtkPtslaMLG5H+Wxn7vwJL/bVotSKQ6UjVJyYuDjtr9MB
+ 39yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=lJlmXl6pBvTDXsdiFTXja7ULJdkdLlp+lmb/9r1QCLM=;
- b=d+2dBySnczFTOHbTAXfEqhBLMJUGat56GXjnTBHcikBO8TGS+i0LoWRu1iqPqpOf65
- /O8pqnKRl55JrWw1FGPn2QAMSLd18QDd1iqcpNkWwhvKh+AVQbn6Q0fxHD77m3QdCOHw
- +Kyk3Kq+q4OONe9nibkj7UTOTcgInW0EXHfGehqdrJ8a46so+lwurPvLwwqYJeeFynkW
- T5bUVjxDYpGj3PvE28XiGYxVQ2tmLnviainvr/nX++NPdZzEwtNQANXsAp0Lmx824EMd
- 2rOvAEDsxSZW9N7KUNdl5GF6op1KENJcNlC4lInnOJn9lSK0SvZ2abIfJT277KjozeZQ
- IOmQ==
-X-Gm-Message-State: AOAM532TGcJsRdwh4hoegQSqDk9zA4TcR2sJmJ6jG+c24mfX94Kjp8CE
- nP/wJMzDcNfnSgxbWQtFgzi1plSHoiU=
-X-Google-Smtp-Source: ABdhPJwijeiBHs2ybvge4Qt0NDiOAdmX1vbPSJqrgknfbA/Bk8qPKSy8RtekzPvnMR5AwnAqz6wbwQ==
-X-Received: by 2002:a62:1494:: with SMTP id 142mr11665103pfu.216.1595664785407; 
- Sat, 25 Jul 2020 01:13:05 -0700 (PDT)
+ bh=Kz+sWFCiw6ZUnAP90a0JiohaJtz7QQMbMbQaLAycNK4=;
+ b=cSXIbMEfccludkXDW7NH7Uy5D2arkzHYifqpIPXgvF2NiQM6PEJ68q3Vrwq9+/p5d9
+ cNJ53v8+9ztMsWtPM0yFay70nqCBk5sMIyEezOCJ0d+iL/2SzLCEu2BSyb5D7P65hupI
+ MQO5kc6t8saL0fQGFaNB+/xeJ7MVN2pUejCngaE6RK4ZC1DctslZLCHY1/dHScoyxO5m
+ 2hEij8ZWSd+4s2I1PHF3S9mUckl2hLPjHqUCyhu4405rC+73/NgHr6Sy30UKbhlYvvUO
+ 96EHaLXDM/zcAQmLCXZeUSK471uLuluETxpC4AH5ATBoH4v1NlsOZErL37Hp61RpdoC1
+ t0ag==
+X-Gm-Message-State: AOAM533vYM/gYrbqSQNCK4D0sYxsGus3t74kO47vrkaDSWOn/V1mgdRN
+ 884XCe0YOQjqOkJvEo+VgUHysN2IuD0=
+X-Google-Smtp-Source: ABdhPJxvwjDfnSmF68xRl0ntO7RYxEAwNoic3RReTctwKdxDMZPdRnzjTQtr20meKe7xHA89qBDdOQ==
+X-Received: by 2002:a65:6250:: with SMTP id q16mr6409049pgv.149.1595664792036; 
+ Sat, 25 Jul 2020 01:13:12 -0700 (PDT)
 Received: from localhost.localdomain ([118.210.60.180])
- by smtp.gmail.com with ESMTPSA id a26sm8647360pgm.20.2020.07.25.01.13.03
+ by smtp.gmail.com with ESMTPSA id a26sm8647360pgm.20.2020.07.25.01.13.10
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sat, 25 Jul 2020 01:13:05 -0700 (PDT)
+ Sat, 25 Jul 2020 01:13:11 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 10/14] powerpc/eeh: Remove spurious use of pci_dn in
- eeh_dump_dev_log
-Date: Sat, 25 Jul 2020 18:12:27 +1000
-Message-Id: <20200725081231.39076-10-oohall@gmail.com>
+Subject: [PATCH v3 13/14] powerpc/eeh: Drop pdn use in eeh_pe_tree_insert()
+Date: Sat, 25 Jul 2020 18:12:30 +1000
+Message-Id: <20200725081231.39076-13-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200725081231.39076-1-oohall@gmail.com>
 References: <20200725081231.39076-1-oohall@gmail.com>
@@ -98,48 +97,81 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Retrieve the domain, bus, device, and function numbers from the edev.
+This is mostly just to make the subsequent diffs less noisy. No functional
+changes.
+
+One thing that needs calling out is the removal of the "config_addr"
+variable and replacing it with edev->bdfn. The contents of edev->bdfn are
+the same, however it's worth pointing out that what RTAS calls a
+"config_addr" isn't the same as the bdfn. The config_addr is supposed to
+be: <bus><devfn><reg> with each field being an 8 bit number. Various parts
+of the EEH code use BDFN and "config_addr" as interchangeable quantities
+even though they aren't really.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-v2: no change
-v3: no change
+v2: no changes
+v3: no changes
 ---
- arch/powerpc/kernel/eeh.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/eeh_pe.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 1a12c8bdf61e..f203ffc5c57d 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -167,23 +167,17 @@ void eeh_show_enabled(void)
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 97bf09db2ecd..898205829a8f 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -366,9 +366,8 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
   */
- static size_t eeh_dump_dev_log(struct eeh_dev *edev, char *buf, size_t len)
+ int eeh_pe_tree_insert(struct eeh_dev *edev)
  {
++	struct pci_controller *hose = edev->controller;
+ 	struct eeh_pe *pe, *parent;
 -	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
- 	u32 cfg;
- 	int cap, i;
- 	int n = 0, l = 0;
- 	char buffer[128];
+-	int config_addr = (pdn->busno << 8) | (pdn->devfn);
  
--	if (!pdn) {
--		pr_warn("EEH: Note: No error log for absent device.\n");
--		return 0;
--	}
--
- 	n += scnprintf(buf+n, len-n, "%04x:%02x:%02x.%01x\n",
--		       pdn->phb->global_number, pdn->busno,
--		       PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+			edev->pe->phb->global_number, edev->bdfn >> 8,
-+			PCI_SLOT(edev->bdfn), PCI_FUNC(edev->bdfn));
- 	pr_warn("EEH: of node=%04x:%02x:%02x.%01x\n",
--		pdn->phb->global_number, pdn->busno,
--		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+		edev->pe->phb->global_number, edev->bdfn >> 8,
-+		PCI_SLOT(edev->bdfn), PCI_FUNC(edev->bdfn));
+ 	/* Check if the PE number is valid */
+ 	if (!eeh_has_flag(EEH_VALID_PE_ZERO) && !edev->pe_config_addr) {
+@@ -382,7 +381,7 @@ int eeh_pe_tree_insert(struct eeh_dev *edev)
+ 	 * PE should be composed of PCI bus and its subordinate
+ 	 * components.
+ 	 */
+-	pe = eeh_pe_get(pdn->phb, edev->pe_config_addr, config_addr);
++	pe = eeh_pe_get(hose, edev->pe_config_addr, edev->bdfn);
+ 	if (pe) {
+ 		if (pe->type & EEH_PE_INVALID) {
+ 			list_add_tail(&edev->entry, &pe->edevs);
+@@ -416,15 +415,15 @@ int eeh_pe_tree_insert(struct eeh_dev *edev)
  
- 	eeh_ops->read_config(edev, PCI_VENDOR_ID, 4, &cfg);
- 	n += scnprintf(buf+n, len-n, "dev/vend:%08x\n", cfg);
+ 	/* Create a new EEH PE */
+ 	if (edev->physfn)
+-		pe = eeh_pe_alloc(pdn->phb, EEH_PE_VF);
++		pe = eeh_pe_alloc(hose, EEH_PE_VF);
+ 	else
+-		pe = eeh_pe_alloc(pdn->phb, EEH_PE_DEVICE);
++		pe = eeh_pe_alloc(hose, EEH_PE_DEVICE);
+ 	if (!pe) {
+ 		pr_err("%s: out of memory!\n", __func__);
+ 		return -ENOMEM;
+ 	}
+ 	pe->addr	= edev->pe_config_addr;
+-	pe->config_addr	= config_addr;
++	pe->config_addr	= edev->bdfn;
+ 
+ 	/*
+ 	 * Put the new EEH PE into hierarchy tree. If the parent
+@@ -434,10 +433,10 @@ int eeh_pe_tree_insert(struct eeh_dev *edev)
+ 	 */
+ 	parent = eeh_pe_get_parent(edev);
+ 	if (!parent) {
+-		parent = eeh_phb_pe_get(pdn->phb);
++		parent = eeh_phb_pe_get(hose);
+ 		if (!parent) {
+ 			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
+-				__func__, pdn->phb->global_number);
++				__func__, hose->global_number);
+ 			edev->pe = NULL;
+ 			kfree(pe);
+ 			return -EEXIST;
 -- 
 2.26.2
 
