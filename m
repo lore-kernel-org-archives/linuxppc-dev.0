@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5063AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86997C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:55:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3FAD2070C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:49:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 34042206D7
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:55:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lp/m3pgb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3FAD2070C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="fQo6zQkS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34042206D7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BDkps1l37zF13G
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 10:49:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BDkyB51vhzDr3t
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 10:55:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=infradead.org
  (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
@@ -30,33 +30,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=lp/m3pgb; 
+ header.s=casper.20170209 header.b=fQo6zQkS; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BDkZP0tTfzDrDN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 10:38:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDkZX0wJWzDqst
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 10:38:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=2T/PUN88Psz81W4kabGMSiLLMlk2kni8wR69pWFEh14=; b=lp/m3pgbKggIHxgb/4vtKt2yHt
- MEz6zLVrdzcqPbuYA/zmfqqG45pME8e4/RfeLeCFZo6ZJZdRdCdE2Gnqp0LUNagVVTyGCL5yTiKNG
- PjMf4/AdxtiaD3mQAFocEREMIF3Ulldosr7AIEHmgmAPeyR+qegZPDoIzNKnospWBj7Wbs/gKDe9R
- DSKMqz8x5X+HP2iKxnGmH2JS3hh392p8n2mnnFM6o6AVfPc2+7rQ8lfqw5y28BjfO8mO0/N60dtqs
- KoCKZhdCRWG8h0tX/pSGa8FVfJ+aVh2UM5DTGe96y3E/DyRVDJBtv+GUycjC73tt5sp6nJTlhhOMd
- Mnr9RAkA==;
+ bh=sH3Q5iTjYfBvYZxROArpXeVz46XzFFrdUeQmFmyUWrU=; b=fQo6zQkS2cVLXjK+Ueg+9onuVe
+ ZcohwyfF+STjTR/8y6CdOYR62bE3i0m4qwLg0SrIYbr66/ypRSKhHs+BBn4EpJ7a7i7Bz5yIn/+Zu
+ T+Jui9Vg+XEjGkeJm+yx/5R15RjsoR2lxbzvewFB/+EAhcy9gjTiZHODwxi/LgtXAwyIzBlMhHYy0
+ 71mi/QgiYnZ0MK997QCKGbKJD6k8201rVYub7n1zcpRalCAunFdfUs5Z/LjH3BURSL0Q4JtDCj721
+ Y/v1szVasSz2e71f28XKeQXepsGlOPJOsejKpt0iLG7qX9htIazsHhd/YrBr6rpLLGYm4tP6CdnhO
+ bx87hjjw==;
 Received: from [2601:1c0:6280:3f0::19c2] (helo=smtpauth.infradead.org)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jzUgC-0003Cq-Aw; Sun, 26 Jul 2020 00:38:16 +0000
+ id 1jzUgQ-0003Cq-07; Sun, 26 Jul 2020 00:38:30 +0000
 From: Randy Dunlap <rdunlap@infradead.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/9] powerpc: book3s: radix-4k.h: delete duplicated word
-Date: Sat, 25 Jul 2020 17:38:02 -0700
-Message-Id: <20200726003809.20454-3-rdunlap@infradead.org>
+Subject: [PATCH 9/9] powerpc: powernv: pci.h: delete duplicated word
+Date: Sat, 25 Jul 2020 17:38:09 -0700
+Message-Id: <20200726003809.20454-10-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200726003809.20454-1-rdunlap@infradead.org>
 References: <20200726003809.20454-1-rdunlap@infradead.org>
@@ -79,7 +79,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the repeated word "per".
+Drop the repeated word "for".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -87,17 +87,17 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/book3s/64/radix-4k.h |    2 +-
+ arch/powerpc/platforms/powernv/pci.h |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200720.orig/arch/powerpc/include/asm/book3s/64/radix-4k.h
-+++ linux-next-20200720/arch/powerpc/include/asm/book3s/64/radix-4k.h
-@@ -11,7 +11,7 @@
- #define RADIX_PGD_INDEX_SIZE  13  // size: 8B << 13 = 64KB, maps 2^13 x 512GB =   4PB
+--- linux-next-20200720.orig/arch/powerpc/platforms/powernv/pci.h
++++ linux-next-20200720/arch/powerpc/platforms/powernv/pci.h
+@@ -87,7 +87,7 @@ struct pnv_ioda_pe {
+ 	bool			tce_bypass_enabled;
+ 	uint64_t		tce_bypass_base;
  
- /*
-- * One fragment per per page
-+ * One fragment per page
-  */
- #define RADIX_PTE_FRAG_SIZE_SHIFT  (RADIX_PTE_INDEX_SIZE + 3)
- #define RADIX_PTE_FRAG_NR	(PAGE_SIZE >> RADIX_PTE_FRAG_SIZE_SHIFT)
+-	/* MSIs. MVE index is identical for for 32 and 64 bit MSI
++	/* MSIs. MVE index is identical for 32 and 64 bit MSI
+ 	 * and -1 if not supported. (It's actually identical to the
+ 	 * PE number)
+ 	 */
