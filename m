@@ -2,65 +2,87 @@ Return-Path: <SRS0=4CH2=BF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00D50C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:54:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1B1AC433E4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 03:55:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C136206D8
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 00:54:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 709FC2053B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 03:55:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="L+jZCHYF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C136206D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m15VKabo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 709FC2053B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BDkwK3V70zF1YF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 10:54:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BDpxb5H54zF0X4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jul 2020 13:55:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
- envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=L+jZCHYF; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=m15VKabo; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BDkZW4YRvzDqRk
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 10:38:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=yXjTR5UJmacFMrqVS6kpsh5Q6lNb8lImeHClMs/Lch8=; b=L+jZCHYFCSMCFqWFGEhcZqS0EI
- 9zhrYTVw5jnQGR83Tz9qNywelGWRiD/73fqlbPOHIDPv7iVOrRy0Y5iSLZRK6Aza5Nezc7nBcH5jl
- 3IA1hfQUPT9H8H5sowsFhVPJ3q4i+SqUozM6cDb2MztNfiX3p1F+8GvZVrw04ABE2Ym7ey+ORFzU+
- IVoqTntEz3P34glWUc1xsiUgIVblHsGSgswcDS59wtis8Ms3AfUC7MZxiG3j9N/pA1zX06MwHhy18
- +Thy280g0GLNdsaZ7iNvKsw37TJ8c7TopsImSxQb9uopEpxlaZRAEqvd318li4MoSnSrqakYMph/1
- 1fZdIf5Q==;
-Received: from [2601:1c0:6280:3f0::19c2] (helo=smtpauth.infradead.org)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1jzUgO-0003Cq-2A; Sun, 26 Jul 2020 00:38:28 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 8/9] powerpc: smu.h: delete duplicated word
-Date: Sat, 25 Jul 2020 17:38:08 -0700
-Message-Id: <20200726003809.20454-9-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200726003809.20454-1-rdunlap@infradead.org>
-References: <20200726003809.20454-1-rdunlap@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDpsq4RnnzF0QP
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2020 13:52:15 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id a9so7321832pjd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2020 20:52:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=SXPByRIVOtgNt4fMOsCOaJfTq9bG9oPqav6sJdrUadY=;
+ b=m15VKaboVQJmAQHrn6KJ1HP3h3LphbkWpyhVro6MPtvNFqzIbC2kAQM5SRy6s7h9Lp
+ QdvumwCny0OLDOCGHq2VrDyN3O98IkKicJUMPf5Z6JesVkztDtmS7UsNXa1poL130I4/
+ DXpBflhsoERwO1KgX33DGrWhU9zBTBVF9UUryxwYDs/PhH9WzUKdt2u9jn0yRIhRaOo/
+ YT9lBTsn5kU/yzBuWjyvWLExHp7u7l/K5O5vsWjeC0QSO6lmHRIkxNLZtoc85Ir57q6O
+ ylfgp0XjnO6bhZh5P7w0CiiTyREINrb612ZrbxBnjBXtK1o8kF5Z2Zn4e1Bjq0IAkTfR
+ tXbw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=SXPByRIVOtgNt4fMOsCOaJfTq9bG9oPqav6sJdrUadY=;
+ b=f61sjt6XBFzKhgB53DROSRK9uADGMdZwUaeL8y7xD35Hnb0rpL7KXLc70MRvbHYU4K
+ 2uPTIR2FKeHs5V92H0ESY8/hMh5CMAoRoH2yzpfl3XFe4VgXzNsA1kJG8kqlt1j4H0gZ
+ w3grzlwxW/UIaTQ4AebUO2TUuuwYMlMsaSVscG6VEFYvzCoZqZyOQopWGg6Y8EUnR1GO
+ evoIBeqEey/JgZBz1Az4MNEZrl/hsefpypBTuhAbcaZ4gZ9tkTfz2ySdgY7ZUsv503Kw
+ 0/JmzBRCAhd+or06UOmsGIHD9l5Syomvghc+J8kvGYl9HLGsaK5ubVj6CAYbibVeizpM
+ dg9Q==
+X-Gm-Message-State: AOAM531z1Gk9GpkYL4doiMvJ7MW6wM3z8HbQUxiAv8soMwEYi73IdYYP
+ JFR8L+lW8y/H3l4RFxsDaKZ6qGaH
+X-Google-Smtp-Source: ABdhPJwEIYxDT5P7kEhC+9qHveHOg/MSxwiF9nsRVj+dQID8OmnH2MVLj85A9WF2p8hTRYlWB2BQUg==
+X-Received: by 2002:a17:902:9f88:: with SMTP id
+ g8mr14192485plq.126.1595735532895; 
+ Sat, 25 Jul 2020 20:52:12 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (110-174-173-27.tpgi.com.au.
+ [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id p1sm3638860pjp.10.2020.07.25.20.52.09
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 25 Jul 2020 20:52:12 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/3] powerpc: inline doorbell sending functions
+Date: Sun, 26 Jul 2020 13:51:53 +1000
+Message-Id: <20200726035155.1424103-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20200726035155.1424103-1-npiggin@gmail.com>
+References: <20200726035155.1424103-1-npiggin@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,31 +95,180 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Anton Blanchard <anton@linux.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drop the repeated word "the".
+These are only called in one place for a given platform, so inline them
+for performance.
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Tested-by: Cédric Le Goater <clg@kaod.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/smu.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/dbell.h | 67 ++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/dbell.c      | 55 --------------------------
+ 2 files changed, 64 insertions(+), 58 deletions(-)
 
---- linux-next-20200720.orig/arch/powerpc/include/asm/smu.h
-+++ linux-next-20200720/arch/powerpc/include/asm/smu.h
-@@ -108,7 +108,7 @@
-  /*
-   * i2c commands
-   *
--  * To issue an i2c command, first is to send a parameter block to the
-+  * To issue an i2c command, first is to send a parameter block to
-   * the SMU. This is a command of type 0x9a with 9 bytes of header
-   * eventually followed by data for a write:
-   *
+diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
+index 4ce6808deed3..1f04f3de96ba 100644
+--- a/arch/powerpc/include/asm/dbell.h
++++ b/arch/powerpc/include/asm/dbell.h
+@@ -13,6 +13,11 @@
+ 
+ #include <asm/ppc-opcode.h>
+ #include <asm/feature-fixups.h>
++#ifdef CONFIG_KVM
++#include <asm/kvm_ppc.h>
++#else
++static inline void kvmppc_set_host_ipi(int cpu) {}
++#endif
+ 
+ #define PPC_DBELL_MSG_BRDCAST	(0x04000000)
+ #define PPC_DBELL_TYPE(x)	(((x) & 0xf) << (63-36))
+@@ -87,9 +92,6 @@ static inline void ppc_msgsync(void)
+ 
+ #endif /* CONFIG_PPC_BOOK3S */
+ 
+-extern void doorbell_global_ipi(int cpu);
+-extern void doorbell_core_ipi(int cpu);
+-extern int doorbell_try_core_ipi(int cpu);
+ extern void doorbell_exception(struct pt_regs *regs);
+ 
+ static inline void ppc_msgsnd(enum ppc_dbell type, u32 flags, u32 tag)
+@@ -100,4 +102,63 @@ static inline void ppc_msgsnd(enum ppc_dbell type, u32 flags, u32 tag)
+ 	_ppc_msgsnd(msg);
+ }
+ 
++#ifdef CONFIG_SMP
++
++/*
++ * Doorbells must only be used if CPU_FTR_DBELL is available.
++ * msgsnd is used in HV, and msgsndp is used in !HV.
++ *
++ * These should be used by platform code that is aware of restrictions.
++ * Other arch code should use ->cause_ipi.
++ *
++ * doorbell_global_ipi() sends a dbell to any target CPU.
++ * Must be used only by architectures that address msgsnd target
++ * by PIR/get_hard_smp_processor_id.
++ */
++static inline void doorbell_global_ipi(int cpu)
++{
++	u32 tag = get_hard_smp_processor_id(cpu);
++
++	kvmppc_set_host_ipi(cpu);
++	/* Order previous accesses vs. msgsnd, which is treated as a store */
++	ppc_msgsnd_sync();
++	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
++}
++
++/*
++ * doorbell_core_ipi() sends a dbell to a target CPU in the same core.
++ * Must be used only by architectures that address msgsnd target
++ * by TIR/cpu_thread_in_core.
++ */
++static inline void doorbell_core_ipi(int cpu)
++{
++	u32 tag = cpu_thread_in_core(cpu);
++
++	kvmppc_set_host_ipi(cpu);
++	/* Order previous accesses vs. msgsnd, which is treated as a store */
++	ppc_msgsnd_sync();
++	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
++}
++
++/*
++ * Attempt to cause a core doorbell if destination is on the same core.
++ * Returns 1 on success, 0 on failure.
++ */
++static inline int doorbell_try_core_ipi(int cpu)
++{
++	int this_cpu = get_cpu();
++	int ret = 0;
++
++	if (cpumask_test_cpu(cpu, cpu_sibling_mask(this_cpu))) {
++		doorbell_core_ipi(cpu);
++		ret = 1;
++	}
++
++	put_cpu();
++
++	return ret;
++}
++
++#endif /* CONFIG_SMP */
++
+ #endif /* _ASM_POWERPC_DBELL_H */
+diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
+index f17ff1200eaa..52680cf07c9d 100644
+--- a/arch/powerpc/kernel/dbell.c
++++ b/arch/powerpc/kernel/dbell.c
+@@ -18,61 +18,6 @@
+ 
+ #ifdef CONFIG_SMP
+ 
+-/*
+- * Doorbells must only be used if CPU_FTR_DBELL is available.
+- * msgsnd is used in HV, and msgsndp is used in !HV.
+- *
+- * These should be used by platform code that is aware of restrictions.
+- * Other arch code should use ->cause_ipi.
+- *
+- * doorbell_global_ipi() sends a dbell to any target CPU.
+- * Must be used only by architectures that address msgsnd target
+- * by PIR/get_hard_smp_processor_id.
+- */
+-void doorbell_global_ipi(int cpu)
+-{
+-	u32 tag = get_hard_smp_processor_id(cpu);
+-
+-	kvmppc_set_host_ipi(cpu);
+-	/* Order previous accesses vs. msgsnd, which is treated as a store */
+-	ppc_msgsnd_sync();
+-	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
+-}
+-
+-/*
+- * doorbell_core_ipi() sends a dbell to a target CPU in the same core.
+- * Must be used only by architectures that address msgsnd target
+- * by TIR/cpu_thread_in_core.
+- */
+-void doorbell_core_ipi(int cpu)
+-{
+-	u32 tag = cpu_thread_in_core(cpu);
+-
+-	kvmppc_set_host_ipi(cpu);
+-	/* Order previous accesses vs. msgsnd, which is treated as a store */
+-	ppc_msgsnd_sync();
+-	ppc_msgsnd(PPC_DBELL_MSGTYPE, 0, tag);
+-}
+-
+-/*
+- * Attempt to cause a core doorbell if destination is on the same core.
+- * Returns 1 on success, 0 on failure.
+- */
+-int doorbell_try_core_ipi(int cpu)
+-{
+-	int this_cpu = get_cpu();
+-	int ret = 0;
+-
+-	if (cpumask_test_cpu(cpu, cpu_sibling_mask(this_cpu))) {
+-		doorbell_core_ipi(cpu);
+-		ret = 1;
+-	}
+-
+-	put_cpu();
+-
+-	return ret;
+-}
+-
+ void doorbell_exception(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+-- 
+2.23.0
+
