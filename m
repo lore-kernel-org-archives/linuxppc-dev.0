@@ -2,61 +2,87 @@ Return-Path: <SRS0=BXao=BG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F055BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 682EEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:07:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A38420714
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:05:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="HpvZNPsk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A38420714
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 1C20420714
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:07:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C20420714
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BFW6M2LfVzF0gF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:05:31 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BFW8N0jDdzDqnK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:07:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BFW4N1TGKzDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:03:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=HpvZNPsk; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4BFW4N09z1z9sPf; Mon, 27 Jul 2020 17:03:48 +1000 (AEST)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BFW4M6Njwz9sRN; Mon, 27 Jul 2020 17:03:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595833427;
- bh=+e33N9pjwOy31NI/YW2FuUMpO+mYa8EuyUkN9D07Z74=;
- h=From:To:Subject:Date:From;
- b=HpvZNPskLYF7kPgWiZaenn0qOvaL+19dSKDuh1qENbBUg8C4ji+yiCRgiA72CN5hN
- U6Wdlc4IzWSjr5cWQSPYoLJM0Oj14xF1v7uvB3jvkmBPD1BdJmzZZM1BIVGt672WSF
- TzKHNNjQZ+m2d2ij2QbAjYMlNatQdaOROHfDKJ+ARLANLxbC6visPRnLFBt9eR+7aO
- ZpS8fuyu5CqpGtdLRf89QOl5c+ffR0qCdFYlZGPMFs4FtiyOEqQRCfk8ojrUvVt7hN
- zzdbSrrmamhIq5fw28HTzRffRP3gfz/H7YyQLKeDtrC8YPMrUXRozZmdrYhqAepmPM
- 40YOrLUhsgGQw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/fadump: Fix build error with CONFIG_PRESERVE_FA_DUMP=y
-Date: Mon, 27 Jul 2020 17:03:41 +1000
-Message-Id: <20200727070341.595634-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.25.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BFW4X64D8zDrBB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:03:56 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 06R71no8002613; Mon, 27 Jul 2020 03:03:48 -0400
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32hrct2wem-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 27 Jul 2020 03:03:47 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06R719qw004264;
+ Mon, 27 Jul 2020 07:03:46 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma04fra.de.ibm.com with ESMTP id 32gcpw95k4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 27 Jul 2020 07:03:46 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06R73h5b41550052
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 27 Jul 2020 07:03:43 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 437D95204E;
+ Mon, 27 Jul 2020 07:03:43 +0000 (GMT)
+Received: from [9.199.35.124] (unknown [9.199.35.124])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4434452057;
+ Mon, 27 Jul 2020 07:03:41 +0000 (GMT)
+Subject: Re: [PATCH V4 0/4] powerpc/perf: Add support for perf extended regs
+ in powerpc
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
+References: <1595774713-1482-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Message-ID: <ff9affcd-aea1-b77c-0d96-245bdb774adb@linux.ibm.com>
+Date: Mon, 27 Jul 2020 12:33:40 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1595774713-1482-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-07-27_04:2020-07-27,
+ 2020-07-27 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 suspectscore=0
+ priorityscore=1501 malwarescore=0 phishscore=0 adultscore=0
+ mlxlogscore=999 mlxscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007270046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,41 +94,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mikey@neuling.org,
+ maddy@linux.vnet.ibm.com, kjain@linux.ibm.com, acme@kernel.org,
+ jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-skiroot_defconfig fails:
 
-arch/powerpc/kernel/fadump.c:48:17: error: ‘cpus_in_fadump’ defined but not used
-   48 | static atomic_t cpus_in_fadump;
 
-Fix it by moving the definition into the #ifdef where it's used.
+On 7/26/20 8:15 PM, Athira Rajeev wrote:
+> Patch set to add support for perf extended register capability in
+> powerpc. The capability flag PERF_PMU_CAP_EXTENDED_REGS, is used to
+> indicate the PMU which support extended registers. The generic code
+> define the mask of extended registers as 0 for non supported architectures.
+> 
+> Patches 1 and 2 are the kernel side changes needed to include
+> base support for extended regs in powerpc and in power10.
+> Patches 3 and 4 are the perf tools side changes needed to support the
+> extended registers.
+> 
+> patch 1/4 defines the PERF_PMU_CAP_EXTENDED_REGS mask to output the
+> values of mmcr0,mmcr1,mmcr2 for POWER9. Defines `PERF_REG_EXTENDED_MASK`
+> at runtime which contains mask value of the supported registers under
+> extended regs.
+> 
+> patch 2/4 adds the extended regs support for power10 and exposes
+> MMCR3, SIER2, SIER3 registers as part of extended regs.
+> 
+> Patch 3/4 and 4/4 adds extended regs to sample_reg_mask in the tool
+> side to use with `-I?` option for power9 and power10 respectively.
+> 
+> Ravi bangoria found an issue with `perf record -I` while testing the
+> changes. The same issue is currently being worked on here:
+> https://lkml.org/lkml/2020/7/19/413 and will be resolved once fix
+> from Jin Yao is merged.
+> 
+> This patch series is based on powerpc/next
 
-Fixes: ba608c4fa12c ("powerpc/fadump: fix race between pstore write and fadump crash trigger")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/fadump.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Apart from the issue with patch #1, the series LGTM..
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 1858896d6809..10ebb4bf71ad 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -45,10 +45,12 @@ static struct fw_dump fw_dump;
- static void __init fadump_reserve_crash_area(u64 base);
- 
- struct kobject *fadump_kobj;
--static atomic_t cpus_in_fadump;
- 
- #ifndef CONFIG_PRESERVE_FA_DUMP
-+
-+static atomic_t cpus_in_fadump;
- static DEFINE_MUTEX(fadump_mutex);
-+
- struct fadump_mrange_info crash_mrange_info = { "crash", NULL, 0, 0, 0, false };
- 
- #define RESERVED_RNGS_SZ	16384 /* 16K - 128 entries */
--- 
-2.25.1
+Reviewed-and-Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 
