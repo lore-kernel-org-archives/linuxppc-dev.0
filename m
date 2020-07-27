@@ -2,87 +2,60 @@ Return-Path: <SRS0=BXao=BG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36B0DC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 11:38:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65973C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 11:51:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 859BE2074F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 11:38:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 859BE2074F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1E4B5206E7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 11:51:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E4B5206E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BFd9C0QzXzF18f
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 21:38:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BFdS82DrgzF1Lf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 21:51:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bharata@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BFd7B4T4rzDrbt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 21:36:38 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06RBW6DR022448; Mon, 27 Jul 2020 07:36:33 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32hvhdjwq6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 07:36:32 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06RBaMxV009550;
- Mon, 27 Jul 2020 11:36:30 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 32gcqgj5rd-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 11:36:30 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06RBaRpC24314164
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Jul 2020 11:36:27 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9E82D4C076;
- Mon, 27 Jul 2020 11:36:27 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B45E94C096;
- Mon, 27 Jul 2020 11:36:26 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.102.0.208])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 27 Jul 2020 11:36:26 +0000 (GMT)
-Date: Mon, 27 Jul 2020 17:06:24 +0530
-From: Bharata B Rao <bharata@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/book3s64/radix: Add kernel command line
- option to disable radix GTSE
-Message-ID: <20200727113624.GA1439452@in.ibm.com>
-References: <20200727085908.420806-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BFdPx5vcDzDrph
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 21:49:23 +1000 (AEST)
+IronPort-SDR: r/bl5uk5TIYV6netEuCLadZjWMXZPkcrjylZsf+08ahmXYH0LcaDQtQM3bJsJhDvLXH3mxS8nW
+ 0reE9vKdHfnA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9694"; a="152251936"
+X-IronPort-AV: E=Sophos;i="5.75,402,1589266800"; d="scan'208";a="152251936"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Jul 2020 04:49:21 -0700
+IronPort-SDR: J2EerY/LQmdnVMR8ix24iK0NrdvDO/hDvCS3aIoW+bjl9HTu7jt8xaFud9VY3Pb8dkxNDJKTNk
+ pUK2iYezk72g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,402,1589266800"; d="scan'208";a="489938780"
+Received: from lkp-server01.sh.intel.com (HELO df0563f96c37) ([10.239.97.150])
+ by fmsmga005.fm.intel.com with ESMTP; 27 Jul 2020 04:49:19 -0700
+Received: from kbuild by df0563f96c37 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1k01d9-0001uZ-2h; Mon, 27 Jul 2020 11:49:19 +0000
+Date: Mon, 27 Jul 2020 19:48:40 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next] BUILD SUCCESS 86052e407e8e1964c81965de25832258875a0e6d
+Message-ID: <5f1ebf18.7Op956VJiIq1Zt3k%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200727085908.420806-1-aneesh.kumar@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-27_07:2020-07-27,
- 2020-07-27 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 malwarescore=0 mlxlogscore=720
- clxscore=1015 mlxscore=0 priorityscore=1501 suspectscore=1 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007270082
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,36 +67,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: bharata@linux.ibm.com
 Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 27, 2020 at 02:29:08PM +0530, Aneesh Kumar K.V wrote:
-> This adds a kernel command line option that can be used to disable GTSE support.
-> Disabling GTSE implies kernel will make hcalls to invalidate TLB entries.
-> 
-> This was done so that we can do VM migration between configs that enable/disable
-> GTSE support via hypervisor. To migrate a VM from a system that supports
-> GTSE to a system that doesn't, we can boot the guest with
-> radix_hcall_invalidate=on, thereby forcing the guest to use hcalls for TLB
-> invalidates.
-> 
-> The check for hcall availability is done in pSeries_setup_arch so that
-> the panic message appears on the console. This should only happen on
-> a hypervisor that doesn't force the guest to hash translation even
-> though it can't handle the radix GTSE=0 request via CAS. With
-> radix_hcall_invalidate=on if the hypervisor doesn't support hcall_rpt_invalidate
-> hcall it should force the LPAR to hash translation.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
+branch HEAD: 86052e407e8e1964c81965de25832258875a0e6d  powerpc/powernv/pci.h: delete duplicated word
 
-Tested
+elapsed time: 1289m
 
-1. radix_hcall_invalidate=on with KVM implementation of H_RPT_INVALIDATE hcall,
-   the tlb flush calls get off-loaded to the hcall.
-2. radix_hcall_invalidate=on w/o H_RPT_INVALIDATE hcall, the guest kernel
-   panics as per design.
+configs tested: 70
+configs skipped: 1
 
-Tested-by: Bharata B Rao <bharata@linux.ibm.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                             allyesconfig
+i386                                defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+m68k                           sun3_defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+xtensa                              defconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a003-20200727
+i386                 randconfig-a005-20200727
+i386                 randconfig-a004-20200727
+i386                 randconfig-a006-20200727
+i386                 randconfig-a002-20200727
+i386                 randconfig-a001-20200727
+x86_64               randconfig-a005-20200727
+x86_64               randconfig-a004-20200727
+x86_64               randconfig-a003-20200727
+x86_64               randconfig-a006-20200727
+x86_64               randconfig-a002-20200727
+x86_64               randconfig-a001-20200727
+i386                 randconfig-a016-20200727
+i386                 randconfig-a013-20200727
+i386                 randconfig-a012-20200727
+i386                 randconfig-a015-20200727
+i386                 randconfig-a011-20200727
+i386                 randconfig-a014-20200727
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+sparc64                             defconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                              defconfig
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
