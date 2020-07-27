@@ -6,38 +6,36 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87C8BC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:52:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE50C433E4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:54:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FD7320672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:52:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FD7320672
+	by mail.kernel.org (Postfix) with ESMTPS id 36AB420672
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:54:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36AB420672
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BFX8F2SCxzDqsL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:52:13 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BFXBY1YrTzDqrW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:54:13 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BFWb40p4lzDqpr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:26:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BFWb62fmjzDqpr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:26:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BFWb25p3jz9sTk; Mon, 27 Jul 2020 17:26:54 +1000 (AEST)
+ id 4BFWb36Z58z9sTg; Mon, 27 Jul 2020 17:26:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mikey@neuling.org,
- mpe@ellerman.id.au
-In-Reply-To: <20200723090813.303838-1-ravi.bangoria@linux.ibm.com>
-References: <20200723090813.303838-1-ravi.bangoria@linux.ibm.com>
-Subject: Re: [PATCH v5 00/10] powerpc/watchpoint: Enable 2nd DAWR on baremetal
- and powervm
-Message-Id: <159583477476.602200.17205445120834427421.b4-ty@ellerman.id.au>
-Date: Mon, 27 Jul 2020 17:26:54 +1000 (AEST)
+To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20200726003809.20454-1-rdunlap@infradead.org>
+References: <20200726003809.20454-1-rdunlap@infradead.org>
+Subject: Re: [PATCH 0/9] powerpc: delete duplicated words
+Message-Id: <159583479016.602200.15928174680101710128.b4-ty@ellerman.id.au>
+Date: Mon, 27 Jul 2020 17:26:55 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,56 +47,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: christophe.leroy@c-s.fr, miltonm@us.ibm.com, rogealve@br.ibm.com,
- peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, oleg@redhat.com, paulus@samba.org, jolsa@kernel.org,
- jniethe5@gmail.com, pedromfc@br.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 23 Jul 2020 14:38:03 +0530, Ravi Bangoria wrote:
-> Last series[1] was to add basic infrastructure support for more than
-> one watchpoint on Book3S powerpc. This series actually enables the 2nd
-> DAWR for baremetal and powervm. Kvm guest is still not supported.
+On Sat, 25 Jul 2020 17:38:00 -0700, Randy Dunlap wrote:
+> Drop duplicated words in arch/powerpc/ header files.
 > 
-> v4: https://lore.kernel.org/r/20200717040958.70561-1-ravi.bangoria@linux.ibm.com
-> 
-> v4->v5:
->  - Using hardcoded values instead of macros HBP_NUM_ONE and HBP_NUM_TWO.
->    Comment above HBP_NUM_MAX changed to explain it's value.
->  - Included CPU_FTR_DAWR1 into CPU_FTRS_POWER10
->  - Using generic function feat_enable() instead of
->    feat_enable_debug_facilities_v31() to enable CPU_FTR_DAWR1.
->  - ISA still includes 512B boundary in match criteria. But that's a
->    documentation mistake. Mentioned about this in the last patch.
->  - Rebased to powerpc/next
->  - Added Jordan's Reviewed-by/Tested-by tags
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[01/10] powerpc/watchpoint: Fix 512 byte boundary limit
-        https://git.kernel.org/powerpc/c/3190ecbfeeb2ab17778887ce3fa964615d6460fd
-[02/10] powerpc/watchpoint: Fix DAWR exception constraint
-        https://git.kernel.org/powerpc/c/f6780ce619f8daa285760302d56e95892087bd1f
-[03/10] powerpc/watchpoint: Fix DAWR exception for CACHEOP
-        https://git.kernel.org/powerpc/c/f3c832f1350bcf1e6906113ee3168066f4235dbe
-[04/10] powerpc/watchpoint: Enable watchpoint functionality on power10 guest
-        https://git.kernel.org/powerpc/c/8f460a8175e6d85537d581734e9fa7ef97036b1a
-[05/10] powerpc/dt_cpu_ftrs: Add feature for 2nd DAWR
-        https://git.kernel.org/powerpc/c/dc1cedca54704d336c333b5398daaf13b23e391b
-[06/10] powerpc/watchpoint: Set CPU_FTR_DAWR1 based on pa-features bit
-        https://git.kernel.org/powerpc/c/8f45ca3f8b87c4810674fbfe65de6d041ee0baee
-[07/10] powerpc/watchpoint: Rename current H_SET_MODE DAWR macro
-        https://git.kernel.org/powerpc/c/6f3fe297f95134e9b2386dae0067bf530e1ddca0
-[08/10] powerpc/watchpoint: Guest support for 2nd DAWR hcall
-        https://git.kernel.org/powerpc/c/03f3e54abd95061ea11bdb4eedbe3cab6553704f
-[09/10] powerpc/watchpoint: Return available watchpoints dynamically
-        https://git.kernel.org/powerpc/c/deb2bd9bcc8428d4b65b6ba640ba8b57c1b20b17
-[10/10] powerpc/watchpoint: Remove 512 byte boundary
-        https://git.kernel.org/powerpc/c/3f31e49dc4588d396023028791e36c23235e1334
+[1/9] powerpc/book3s/mmu-hash.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/10a4a016d6a882ba7601159b0f719330b102c41b
+[2/9] powerpc/book3s/radix-4k.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/92be1fca08eabe8ab083b1dfccd3e932b4fb6f1a
+[3/9] powerpc/cputime.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/dc9bf323d6b8996d22c111add0ac8b0c895dcf52
+[4/9] powerpc/epapr_hcalls.h: delete duplicated words
+      https://git.kernel.org/powerpc/c/8965aa4b684f022c4d0bc6429097ddb38a26eaef
+[5/9] powerpc/hw_breakpoint.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/028cc22d29959b501add32fc62660e5484c8092d
+[6/9] powerpc/ppc_asm.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/db10f5500004268b29e3c5bfd1e44ef53a1e25c9
+[7/9] powerpc/reg.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/850659392abc303d41c3f9217d45ab4fa79d201c
+[8/9] powerpc/smu.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/3b56ed4b461fd92b66f6ea44d81837e12878031f
+[9/9] powerpc/powernv/pci.h: delete duplicated word
+      https://git.kernel.org/powerpc/c/86052e407e8e1964c81965de25832258875a0e6d
 
 cheers
