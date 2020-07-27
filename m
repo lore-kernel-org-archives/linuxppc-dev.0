@@ -6,36 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE50C433E4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A586C433F2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:56:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36AB420672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:54:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36AB420672
+	by mail.kernel.org (Postfix) with ESMTPS id 25F1620738
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:56:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25F1620738
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BFXBY1YrTzDqrW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:54:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BFXDt4m3BzDrTP
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:56:14 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BFWb62fmjzDqpr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BFWb66DDdzDqrM
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:26:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BFWb36Z58z9sTg; Mon, 27 Jul 2020 17:26:55 +1000 (AEST)
+ id 4BFWb52cR4z9sTm; Mon, 27 Jul 2020 17:26:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20200726003809.20454-1-rdunlap@infradead.org>
-References: <20200726003809.20454-1-rdunlap@infradead.org>
-Subject: Re: [PATCH 0/9] powerpc: delete duplicated words
-Message-Id: <159583479016.602200.15928174680101710128.b4-ty@ellerman.id.au>
-Date: Mon, 27 Jul 2020 17:26:55 +1000 (AEST)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+In-Reply-To: <20200724105809.24733-1-srikar@linux.vnet.ibm.com>
+References: <20200724105809.24733-1-srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/numa: Limit possible nodes to within
+ num_possible_nodes
+Message-Id: <159583478336.602200.18251206166089177032.b4-ty@ellerman.id.au>
+Date: Mon, 27 Jul 2020 17:26:56 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,40 +49,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 25 Jul 2020 17:38:00 -0700, Randy Dunlap wrote:
-> Drop duplicated words in arch/powerpc/ header files.
-> 
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
+On Fri, 24 Jul 2020 16:28:09 +0530, Srikar Dronamraju wrote:
+> MAX_NUMNODES is a theoretical maximum number of nodes thats is supported
+> by the kernel. Device tree properties exposes the number of possible
+> nodes on the current platform. The kernel would detected this and would
+> use it for most of its resource allocations.  If the platform now
+> increases the nodes to over what was already exposed, then it may lead
+> to inconsistencies. Hence limit it to the already exposed nodes.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/9] powerpc/book3s/mmu-hash.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/10a4a016d6a882ba7601159b0f719330b102c41b
-[2/9] powerpc/book3s/radix-4k.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/92be1fca08eabe8ab083b1dfccd3e932b4fb6f1a
-[3/9] powerpc/cputime.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/dc9bf323d6b8996d22c111add0ac8b0c895dcf52
-[4/9] powerpc/epapr_hcalls.h: delete duplicated words
-      https://git.kernel.org/powerpc/c/8965aa4b684f022c4d0bc6429097ddb38a26eaef
-[5/9] powerpc/hw_breakpoint.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/028cc22d29959b501add32fc62660e5484c8092d
-[6/9] powerpc/ppc_asm.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/db10f5500004268b29e3c5bfd1e44ef53a1e25c9
-[7/9] powerpc/reg.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/850659392abc303d41c3f9217d45ab4fa79d201c
-[8/9] powerpc/smu.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/3b56ed4b461fd92b66f6ea44d81837e12878031f
-[9/9] powerpc/powernv/pci.h: delete duplicated word
-      https://git.kernel.org/powerpc/c/86052e407e8e1964c81965de25832258875a0e6d
+[1/1] powerpc/numa: Limit possible nodes to within num_possible_nodes
+      https://git.kernel.org/powerpc/c/dbce456280857f329af9069af5e48a9b6ebad146
 
 cheers
