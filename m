@@ -2,87 +2,60 @@ Return-Path: <SRS0=BXao=BG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 682EEC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:07:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62A85C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:19:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C20420714
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:07:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C20420714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CFA0020672
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 07:19:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFA0020672
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BFW8N0jDdzDqnK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:07:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BFWPt1JS7zDqvh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jul 2020 17:18:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BFW4X64D8zDrBB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:03:56 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06R71no8002613; Mon, 27 Jul 2020 03:03:48 -0400
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32hrct2wem-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 03:03:47 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06R719qw004264;
- Mon, 27 Jul 2020 07:03:46 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma04fra.de.ibm.com with ESMTP id 32gcpw95k4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 07:03:46 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06R73h5b41550052
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 27 Jul 2020 07:03:43 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 437D95204E;
- Mon, 27 Jul 2020 07:03:43 +0000 (GMT)
-Received: from [9.199.35.124] (unknown [9.199.35.124])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4434452057;
- Mon, 27 Jul 2020 07:03:41 +0000 (GMT)
-Subject: Re: [PATCH V4 0/4] powerpc/perf: Add support for perf extended regs
- in powerpc
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <1595774713-1482-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Message-ID: <ff9affcd-aea1-b77c-0d96-245bdb774adb@linux.ibm.com>
-Date: Mon, 27 Jul 2020 12:33:40 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BFWM13DHMzDsbF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 17:16:24 +1000 (AEST)
+IronPort-SDR: QMDVTgRvLHyzRq3Kh7PIVeLhZSWnAXYQYnR0uWQEiYUBA/0PfcM4t9q2Vq7MsXEqq2hcTR8tVj
+ izKaBtZKIV0g==
+X-IronPort-AV: E=McAfee;i="6000,8403,9694"; a="148442163"
+X-IronPort-AV: E=Sophos;i="5.75,401,1589266800"; d="scan'208";a="148442163"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Jul 2020 00:16:18 -0700
+IronPort-SDR: bUVRDh5IIeFuQs/ZBlBcG+AJJvLLVLyAj6XvTg2NNshIVGuaREInnx4eijyLsJLzw1mVzIyOPp
+ Kf9KMYTvLIzA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,401,1589266800"; d="scan'208";a="489877047"
+Received: from lkp-server01.sh.intel.com (HELO df0563f96c37) ([10.239.97.150])
+ by fmsmga005.fm.intel.com with ESMTP; 27 Jul 2020 00:16:16 -0700
+Received: from kbuild by df0563f96c37 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1jzxMt-0001qV-CX; Mon, 27 Jul 2020 07:16:15 +0000
+Date: Mon, 27 Jul 2020 15:15:15 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 163c4334d6564fc8cb638d9f816ef5e1db1b8f1d
+Message-ID: <5f1e7f03.d/XKuSLqLmeZAVdI%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-In-Reply-To: <1595774713-1482-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-27_04:2020-07-27,
- 2020-07-27 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 suspectscore=0
- priorityscore=1501 malwarescore=0 phishscore=0 adultscore=0
- mlxlogscore=999 mlxscore=0 spamscore=0 clxscore=1015 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007270046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,45 +67,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, mikey@neuling.org,
- maddy@linux.vnet.ibm.com, kjain@linux.ibm.com, acme@kernel.org,
- jolsa@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 163c4334d6564fc8cb638d9f816ef5e1db1b8f1d  Automatic merge of 'master', 'next' and 'fixes' (2020-07-26 23:57)
 
+elapsed time: 1017m
 
-On 7/26/20 8:15 PM, Athira Rajeev wrote:
-> Patch set to add support for perf extended register capability in
-> powerpc. The capability flag PERF_PMU_CAP_EXTENDED_REGS, is used to
-> indicate the PMU which support extended registers. The generic code
-> define the mask of extended registers as 0 for non supported architectures.
-> 
-> Patches 1 and 2 are the kernel side changes needed to include
-> base support for extended regs in powerpc and in power10.
-> Patches 3 and 4 are the perf tools side changes needed to support the
-> extended registers.
-> 
-> patch 1/4 defines the PERF_PMU_CAP_EXTENDED_REGS mask to output the
-> values of mmcr0,mmcr1,mmcr2 for POWER9. Defines `PERF_REG_EXTENDED_MASK`
-> at runtime which contains mask value of the supported registers under
-> extended regs.
-> 
-> patch 2/4 adds the extended regs support for power10 and exposes
-> MMCR3, SIER2, SIER3 registers as part of extended regs.
-> 
-> Patch 3/4 and 4/4 adds extended regs to sample_reg_mask in the tool
-> side to use with `-I?` option for power9 and power10 respectively.
-> 
-> Ravi bangoria found an issue with `perf record -I` while testing the
-> changes. The same issue is currently being worked on here:
-> https://lkml.org/lkml/2020/7/19/413 and will be resolved once fix
-> from Jin Yao is merged.
-> 
-> This patch series is based on powerpc/next
+configs tested: 58
+configs skipped: 1
 
-Apart from the issue with patch #1, the series LGTM..
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Reviewed-and-Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+arm64                            allyesconfig
+arm64                               defconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                             allyesconfig
+i386                                defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+xtensa                              defconfig
+arc                                 defconfig
+sh                               allmodconfig
+arc                              allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+nios2                               defconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a016-20200727
+i386                 randconfig-a013-20200727
+i386                 randconfig-a012-20200727
+i386                 randconfig-a015-20200727
+i386                 randconfig-a011-20200727
+i386                 randconfig-a014-20200727
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+sparc64                             defconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                              defconfig
 
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
