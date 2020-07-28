@@ -2,25 +2,25 @@ Return-Path: <SRS0=cpv1=BH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB746C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CE98C433E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:19:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42BF020658
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:16:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C36F620658
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:18:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zUj8Ky/I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42BF020658
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="D4u/UIbz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C36F620658
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4fV5s9TzDr1m
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:16:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4hx1BtLzDr34
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:18:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
@@ -28,30 +28,32 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=zUj8Ky/I; dkim-atps=neutral
+ header.s=default header.b=D4u/UIbz; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4YD51vSzDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:12:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4YP4cD8zDr1V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:12:25 +1000 (AEST)
 Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 799682070A;
- Tue, 28 Jul 2020 05:12:04 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5790E22B3F;
+ Tue, 28 Jul 2020 05:12:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1595913133;
- bh=SiunFkOH1KIyW1NC3iO0mc1YnQ8vPMqtL902CN9Sglg=;
- h=From:To:Cc:Subject:Date:From;
- b=zUj8Ky/ISJogZYImW1cerS7gxpsJPyD/s5COPLWHq2m806d7LS+KeFmOjturCkeKD
- HrFFBTdERy4l0XPM2jQi1NdsS/0AEv/DNIDcsxWU/Hw8p6tUQjHHE7reUbZz0w1jhv
- yHsh8/Ni8CjiRR1lxOFECz5g0SlMvzBSWjQUZxXU=
+ s=default; t=1595913143;
+ bh=4WuJOQlNfEjZEgWh7mIgx+GQ0z3C84AGorDeAuZhOK8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=D4u/UIbzLlEIUGvsu7oIEk1r9y1HdyXe4bGFS4uPFFZlE1SvR0Ic/VsazPLkmlfYo
+ MGSySQinsMEKx0a460QO0p336yu3q4NZYJLjS2vVr0K3k0pnoZ2v/GrKkVnCKHf3ZV
+ mwea1G2DA7ZiDVovETmAVBrYbEJIl1dz6OHL4Gts=
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 00/15] memblock: seasonal cleaning^w cleanup
-Date: Tue, 28 Jul 2020 08:11:38 +0300
-Message-Id: <20200728051153.1590-1-rppt@kernel.org>
+Subject: [PATCH 01/15] KVM: PPC: Book3S HV: simplify kvm_cma_reserve()
+Date: Tue, 28 Jul 2020 08:11:39 +0300
+Message-Id: <20200728051153.1590-2-rppt@kernel.org>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200728051153.1590-1-rppt@kernel.org>
+References: <20200728051153.1590-1-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -89,82 +91,50 @@ Sender: "Linuxppc-dev"
 
 From: Mike Rapoport <rppt@linux.ibm.com>
 
-Hi,
+The memory size calculation in kvm_cma_reserve() traverses memblock.memory
+rather than simply call memblock_phys_mem_size(). The comment in that
+function suggests that at some point there should have been call to
+memblock_analyze() before memblock_phys_mem_size() could be used.
+As of now, there is no memblock_analyze() at all and
+memblock_phys_mem_size() can be used as soon as cold-plug memory is
+registerd with memblock.
 
-These patches simplify several uses of memblock iterators and hide some of
-the memblock implementation details from the rest of the system.
+Replace loop over memblock.memory with a call to memblock_phys_mem_size().
 
-The patches are on top of v5.8-rc7 + cherry-pick of "mm/sparse: cleanup the
-code surrounding memory_present()" [1] from mmotm tree.
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv_builtin.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-[1] http://lkml.kernel.org/r/20200712083130.22919-1-rppt@kernel.org 
-
-Mike Rapoport (15):
-  KVM: PPC: Book3S HV: simplify kvm_cma_reserve()
-  dma-contiguous: simplify cma_early_percent_memory()
-  arm, xtensa: simplify initialization of high memory pages
-  arm64: numa: simplify dummy_numa_init()
-  h8300, nds32, openrisc: simplify detection of memory extents
-  powerpc: fadamp: simplify fadump_reserve_crash_area()
-  riscv: drop unneeded node initialization
-  mircoblaze: drop unneeded NUMA and sparsemem initializations
-  memblock: make for_each_memblock_type() iterator private
-  memblock: make memblock_debug and related functionality private
-  memblock: reduce number of parameters in for_each_mem_range()
-  arch, mm: replace for_each_memblock() with for_each_mem_pfn_range()
-  arch, drivers: replace for_each_membock() with for_each_mem_range()
-  x86/numa: remove redundant iteration over memblock.reserved
-  memblock: remove 'type' parameter from for_each_memblock()
-
- .clang-format                            |  1 +
- arch/arm/kernel/setup.c                  | 18 +++++---
- arch/arm/mm/init.c                       | 59 +++++-------------------
- arch/arm/mm/mmu.c                        | 39 ++++++----------
- arch/arm/mm/pmsa-v7.c                    | 20 ++++----
- arch/arm/mm/pmsa-v8.c                    | 17 ++++---
- arch/arm/xen/mm.c                        |  7 +--
- arch/arm64/kernel/machine_kexec_file.c   |  6 +--
- arch/arm64/kernel/setup.c                |  2 +-
- arch/arm64/mm/init.c                     | 11 ++---
- arch/arm64/mm/kasan_init.c               |  8 ++--
- arch/arm64/mm/mmu.c                      | 11 ++---
- arch/arm64/mm/numa.c                     | 15 +++---
- arch/c6x/kernel/setup.c                  |  9 ++--
- arch/h8300/kernel/setup.c                |  8 ++--
- arch/microblaze/mm/init.c                | 24 ++--------
- arch/mips/cavium-octeon/dma-octeon.c     | 12 ++---
- arch/mips/kernel/setup.c                 | 31 ++++++-------
- arch/mips/netlogic/xlp/setup.c           |  2 +-
- arch/nds32/kernel/setup.c                |  8 +---
- arch/openrisc/kernel/setup.c             |  9 +---
- arch/openrisc/mm/init.c                  |  8 ++--
- arch/powerpc/kernel/fadump.c             | 58 ++++++++---------------
- arch/powerpc/kvm/book3s_hv_builtin.c     | 11 +----
- arch/powerpc/mm/book3s64/hash_utils.c    | 16 +++----
- arch/powerpc/mm/book3s64/radix_pgtable.c | 11 ++---
- arch/powerpc/mm/kasan/kasan_init_32.c    |  8 ++--
- arch/powerpc/mm/mem.c                    | 33 +++++++------
- arch/powerpc/mm/numa.c                   |  7 +--
- arch/powerpc/mm/pgtable_32.c             |  8 ++--
- arch/riscv/mm/init.c                     | 33 ++++---------
- arch/riscv/mm/kasan_init.c               | 10 ++--
- arch/s390/kernel/crash_dump.c            |  8 ++--
- arch/s390/kernel/setup.c                 | 31 ++++++++-----
- arch/s390/mm/page-states.c               |  6 +--
- arch/s390/mm/vmem.c                      | 16 ++++---
- arch/sh/mm/init.c                        |  9 ++--
- arch/sparc/mm/init_64.c                  | 12 ++---
- arch/x86/mm/numa.c                       | 26 ++++-------
- arch/xtensa/mm/init.c                    | 55 ++++------------------
- drivers/bus/mvebu-mbus.c                 | 12 ++---
- drivers/s390/char/zcore.c                |  9 ++--
- include/linux/memblock.h                 | 45 +++++++++---------
- kernel/dma/contiguous.c                  | 11 +----
- mm/memblock.c                            | 28 +++++++----
- mm/page_alloc.c                          | 11 ++---
- mm/sparse.c                              | 10 ++--
- 47 files changed, 324 insertions(+), 485 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+index 7cd3cf3d366b..56ab0d28de2a 100644
+--- a/arch/powerpc/kvm/book3s_hv_builtin.c
++++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+@@ -95,22 +95,15 @@ EXPORT_SYMBOL_GPL(kvm_free_hpt_cma);
+ void __init kvm_cma_reserve(void)
+ {
+ 	unsigned long align_size;
+-	struct memblock_region *reg;
+-	phys_addr_t selected_size = 0;
++	phys_addr_t selected_size;
+ 
+ 	/*
+ 	 * We need CMA reservation only when we are in HV mode
+ 	 */
+ 	if (!cpu_has_feature(CPU_FTR_HVMODE))
+ 		return;
+-	/*
+-	 * We cannot use memblock_phys_mem_size() here, because
+-	 * memblock_analyze() has not been called yet.
+-	 */
+-	for_each_memblock(memory, reg)
+-		selected_size += memblock_region_memory_end_pfn(reg) -
+-				 memblock_region_memory_base_pfn(reg);
+ 
++	selected_size = PHYS_PFN(memblock_phys_mem_size());
+ 	selected_size = (selected_size * kvm_cma_resv_ratio / 100) << PAGE_SHIFT;
+ 	if (selected_size) {
+ 		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
 -- 
 2.26.2
 
