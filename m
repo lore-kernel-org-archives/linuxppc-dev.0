@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14D77C433E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99812C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:31:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B661920759
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:27:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0F3AF20759
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:31:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Say3vh4Q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B661920759
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lm11f6W8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0F3AF20759
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4vF0ZVzzDr4R
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4zt3RhzzDr4h
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:31:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
@@ -28,30 +28,29 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Say3vh4Q; dkim-atps=neutral
+ header.s=default header.b=lm11f6W8; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4Z91hBdzDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:13:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4ZY5nm1zDr1F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:13:25 +1000 (AEST)
 Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DF6522250E;
- Tue, 28 Jul 2020 05:12:53 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 8DAC422B4B;
+ Tue, 28 Jul 2020 05:13:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1595913183;
- bh=gzwerAM5mue0P8mAb9RTcMcptKQskdlleSUQBoxuoyQ=;
+ s=default; t=1595913202;
+ bh=VFCNoINiV/6S6XOOU0JrFdtc5FxR22TwcA9ornig1+M=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Say3vh4QamTYtvnYNu+lnlZMJneUQqUnbMTX43a8WoTOrUYvMeKTwUVkw/DEqkPhG
- HnPJWpQTYZNG7fegwc0EKmJMGw2JgZY3KWzFmeYTl228nTa6vRBl5n108KojpP7OBY
- xf3ECXf8bK2qItN0xsPBA+mi/0GEjLhJvgIymxCA=
+ b=lm11f6W8H5Kt1f4GF53UuB9StgNeXXYMOzCHMtSc6ip+HxivUfHkIzQp4H7kbBfiQ
+ R4w5HP/auPjqJ3VOOs7h6yurNCYT5/NX/RKpovw7T59wzfCV3lZd8arOEtF2QHEPMO
+ EVQjpZ2a9wkqFdb/sI6Zv2AmZmV/w/5C6sQ4Yc28=
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 05/15] h8300, nds32,
- openrisc: simplify detection of memory extents
-Date: Tue, 28 Jul 2020 08:11:43 +0300
-Message-Id: <20200728051153.1590-6-rppt@kernel.org>
+Subject: [PATCH 07/15] riscv: drop unneeded node initialization
+Date: Tue, 28 Jul 2020 08:11:45 +0300
+Message-Id: <20200728051153.1590-8-rppt@kernel.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200728051153.1590-1-rppt@kernel.org>
 References: <20200728051153.1590-1-rppt@kernel.org>
@@ -92,84 +91,37 @@ Sender: "Linuxppc-dev"
 
 From: Mike Rapoport <rppt@linux.ibm.com>
 
-Instead of traversing memblock.memory regions to find memory_start and
-memory_end, simply query memblock_{start,end}_of_DRAM().
+RISC-V does not (yet) support NUMA  and for UMA architectures node 0 is
+used implicitly during early memory initialization.
+
+There is no need to call memblock_set_node(), remove this call and the
+surrounding code.
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/h8300/kernel/setup.c    | 8 +++-----
- arch/nds32/kernel/setup.c    | 8 ++------
- arch/openrisc/kernel/setup.c | 9 ++-------
- 3 files changed, 7 insertions(+), 18 deletions(-)
+ arch/riscv/mm/init.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/arch/h8300/kernel/setup.c b/arch/h8300/kernel/setup.c
-index 28ac88358a89..0281f92eea3d 100644
---- a/arch/h8300/kernel/setup.c
-+++ b/arch/h8300/kernel/setup.c
-@@ -74,17 +74,15 @@ static void __init bootmem_init(void)
- 	memory_end = memory_start = 0;
- 
- 	/* Find main memory where is the kernel */
--	for_each_memblock(memory, region) {
--		memory_start = region->base;
--		memory_end = region->base + region->size;
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index 79e9d55bdf1a..7440ba2cdaaa 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -191,15 +191,6 @@ void __init setup_bootmem(void)
+ 	early_init_fdt_scan_reserved_mem();
+ 	memblock_allow_resize();
+ 	memblock_dump_all();
+-
+-	for_each_memblock(memory, reg) {
+-		unsigned long start_pfn = memblock_region_memory_base_pfn(reg);
+-		unsigned long end_pfn = memblock_region_memory_end_pfn(reg);
+-
+-		memblock_set_node(PFN_PHYS(start_pfn),
+-				  PFN_PHYS(end_pfn - start_pfn),
+-				  &memblock.memory, 0);
 -	}
-+	memory_start = memblock_start_of_DRAM();
-+	memory_end = memblock_end_of_DRAM();
+ }
  
- 	if (!memory_end)
- 		panic("No memory!");
- 
- 	/* setup bootmem globals (we use no_bootmem, but mm still depends on this) */
- 	min_low_pfn = PFN_UP(memory_start);
--	max_low_pfn = PFN_DOWN(memblock_end_of_DRAM());
-+	max_low_pfn = PFN_DOWN(memory_end);
- 	max_pfn = max_low_pfn;
- 
- 	memblock_reserve(__pa(_stext), _end - _stext);
-diff --git a/arch/nds32/kernel/setup.c b/arch/nds32/kernel/setup.c
-index a066efbe53c0..c356e484dcab 100644
---- a/arch/nds32/kernel/setup.c
-+++ b/arch/nds32/kernel/setup.c
-@@ -249,12 +249,8 @@ static void __init setup_memory(void)
- 	memory_end = memory_start = 0;
- 
- 	/* Find main memory where is the kernel */
--	for_each_memblock(memory, region) {
--		memory_start = region->base;
--		memory_end = region->base + region->size;
--		pr_info("%s: Memory: 0x%x-0x%x\n", __func__,
--			memory_start, memory_end);
--	}
-+	memory_start = memblock_start_of_DRAM();
-+	memory_end = memblock_end_of_DRAM();
- 
- 	if (!memory_end) {
- 		panic("No memory!");
-diff --git a/arch/openrisc/kernel/setup.c b/arch/openrisc/kernel/setup.c
-index 8aa438e1f51f..c5706153d3b6 100644
---- a/arch/openrisc/kernel/setup.c
-+++ b/arch/openrisc/kernel/setup.c
-@@ -48,17 +48,12 @@ static void __init setup_memory(void)
- 	unsigned long ram_start_pfn;
- 	unsigned long ram_end_pfn;
- 	phys_addr_t memory_start, memory_end;
--	struct memblock_region *region;
- 
- 	memory_end = memory_start = 0;
- 
- 	/* Find main memory where is the kernel, we assume its the only one */
--	for_each_memblock(memory, region) {
--		memory_start = region->base;
--		memory_end = region->base + region->size;
--		printk(KERN_INFO "%s: Memory: 0x%x-0x%x\n", __func__,
--		       memory_start, memory_end);
--	}
-+	memory_start = memblock_start_of_DRAM();
-+	memory_end = memblock_end_of_DRAM();
- 
- 	if (!memory_end) {
- 		panic("No memory!");
+ #ifdef CONFIG_MMU
 -- 
 2.26.2
 
