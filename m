@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18716C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:29:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F08C0C433E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:35:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF01620759
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:29:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9F74520792
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:35:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="YAjIiROU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF01620759
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pe560+Wm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F74520792
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4xJ0KB0zDqxZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:29:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG54P6bwqzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:35:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
@@ -28,29 +28,29 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=YAjIiROU; dkim-atps=neutral
+ header.s=default header.b=pe560+Wm; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4ZM1SHpzDr1G
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:13:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4Zx4nV4zDr1X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:13:45 +1000 (AEST)
 Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B649522B45;
- Tue, 28 Jul 2020 05:13:03 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3889F21883;
+ Tue, 28 Jul 2020 05:13:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1595913193;
- bh=w0NUYCkRPztxWdauIZ7iYp1zOp1jLcG8AD5t4PqIxsg=;
+ s=default; t=1595913222;
+ bh=VR/BXCbAGDXiTc2rrw4BtAkWHkepE699HsOgdQ8rv0s=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=YAjIiROU+83p25BDNEgIN9KISlKJXThut30Rs4cNno1O6shiBCHaHk29LQKLS7Ax5
- Ejyf6BAz+viwYwWWCNj69uR3Ffj9ovcm+78DaXms94OZuxA4yw2XiA7huGDx/Xn9eG
- FxVpJAd03+F3yNWhAm0fZShWCJUQp1/pDjBxfrnc=
+ b=pe560+Wm3RFnEmULaa53wH76qBJxCszvYnNevCYd1rvmCATos0eyeEG3MuKsU+rh7
+ ZASD4r+m+7eL0vyMwJb5sE+ZH1uE1hodcDEHLpAyf64FfWaU40NfwmcAEsw6YVkzSg
+ CxXRY9P9LZrUbR8Rgo3jRZCAkUWh5kJKutjxM4CU=
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 06/15] powerpc: fadamp: simplify fadump_reserve_crash_area()
-Date: Tue, 28 Jul 2020 08:11:44 +0300
-Message-Id: <20200728051153.1590-7-rppt@kernel.org>
+Subject: [PATCH 09/15] memblock: make for_each_memblock_type() iterator private
+Date: Tue, 28 Jul 2020 08:11:47 +0300
+Message-Id: <20200728051153.1590-10-rppt@kernel.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200728051153.1590-1-rppt@kernel.org>
 References: <20200728051153.1590-1-rppt@kernel.org>
@@ -91,49 +91,47 @@ Sender: "Linuxppc-dev"
 
 From: Mike Rapoport <rppt@linux.ibm.com>
 
-fadump_reserve_crash_area() reserves memory from a specified base address
-till the end of the RAM.
-
-Replace iteration through the memblock.memory with a single call to
-memblock_reserve() with appropriate  that will take care of proper memory
-reservation.
+for_each_memblock_type() is not used outside mm/memblock.c, move it there
+from include/linux/memblock.h
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/powerpc/kernel/fadump.c | 20 +-------------------
- 1 file changed, 1 insertion(+), 19 deletions(-)
+ include/linux/memblock.h | 5 -----
+ mm/memblock.c            | 5 +++++
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 78ab9a6ee6ac..2446a61e3c25 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1658,25 +1658,7 @@ int __init fadump_reserve_mem(void)
- /* Preserve everything above the base address */
- static void __init fadump_reserve_crash_area(u64 base)
- {
--	struct memblock_region *reg;
--	u64 mstart, msize;
--
--	for_each_memblock(memory, reg) {
--		mstart = reg->base;
--		msize  = reg->size;
--
--		if ((mstart + msize) < base)
--			continue;
--
--		if (mstart < base) {
--			msize -= (base - mstart);
--			mstart = base;
--		}
--
--		pr_info("Reserving %lluMB of memory at %#016llx for preserving crash data",
--			(msize >> 20), mstart);
--		memblock_reserve(mstart, msize);
--	}
-+	memblock_reserve(base, memblock_end_of_DRAM() - base);
- }
+diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+index 017fae833d4a..220b5f0dad42 100644
+--- a/include/linux/memblock.h
++++ b/include/linux/memblock.h
+@@ -532,11 +532,6 @@ static inline unsigned long memblock_region_reserved_end_pfn(const struct memblo
+ 	     region < (memblock.memblock_type.regions + memblock.memblock_type.cnt);	\
+ 	     region++)
  
- unsigned long __init arch_reserved_kernel_pages(void)
+-#define for_each_memblock_type(i, memblock_type, rgn)			\
+-	for (i = 0, rgn = &memblock_type->regions[0];			\
+-	     i < memblock_type->cnt;					\
+-	     i++, rgn = &memblock_type->regions[i])
+-
+ extern void *alloc_large_system_hash(const char *tablename,
+ 				     unsigned long bucketsize,
+ 				     unsigned long numentries,
+diff --git a/mm/memblock.c b/mm/memblock.c
+index 39aceafc57f6..a5b9b3df81fc 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -129,6 +129,11 @@ struct memblock memblock __initdata_memblock = {
+ 	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
+ };
+ 
++#define for_each_memblock_type(i, memblock_type, rgn)			\
++	for (i = 0, rgn = &memblock_type->regions[0];			\
++	     i < memblock_type->cnt;					\
++	     i++, rgn = &memblock_type->regions[i])
++
+ int memblock_debug __initdata_memblock;
+ static bool system_has_some_mirror __initdata_memblock = false;
+ static int memblock_can_resize __initdata_memblock;
 -- 
 2.26.2
 
