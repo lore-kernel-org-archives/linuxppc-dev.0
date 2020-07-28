@@ -2,66 +2,58 @@ Return-Path: <SRS0=cpv1=BH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6A2FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 03:39:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB746C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:16:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 30853206D4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 03:39:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 42BF020658
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:16:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="pjVPeiiB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30853206D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zUj8Ky/I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42BF020658
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG2VW14DKzDqlZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 13:39:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG4fV5s9TzDr1m
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:16:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=zUj8Ky/I; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG1130JHGzDqt0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 12:32:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=pjVPeiiB; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4BG1123FZFz9sSn; Tue, 28 Jul 2020 12:32:38 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BG1115sGBz9sTj;
- Tue, 28 Jul 2020 12:32:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1595903558;
- bh=GVppKHacNBK9byV2AhBgk8LPoELuuI3KrLw/+QEzQ/Y=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=pjVPeiiBTIagXa4E93EO9ZTHN2JESxXsOXdz5cEZY3SxtPrEkItcko61k/i3vbklZ
- CawiMR+OssdGfPNCK+IbvIsAiMY4fr4Eet+dGsELz/2XviC4InQZlCn7rKEeH0FJE0
- /kptzj1ZdRjUUSHI0cFYR8/1UqEmRiF8qboxXJVaLYKpcqIXcyOVF2D3guVk0S60md
- cjsMTtnvZuZ+rA5gUbJJ3V1bh2hFf+6iIMl0CoXmPmagfMU7Tkaf98lwV4DJ84SfNv
- jUeExm8DqOLXZbGLafozLXfJfaEAtm+phntYLJJscW6Hsmhl3qe3zvzjSonY3805ak
- vpFxI8xE5875A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 4/5] powerpc/mm: Remove custom stack expansion checking
-In-Reply-To: <87tuxtrrvb.fsf@dja-thinkpad.axtens.net>
-References: <20200724092528.1578671-1-mpe@ellerman.id.au>
- <20200724092528.1578671-4-mpe@ellerman.id.au>
- <87tuxtrrvb.fsf@dja-thinkpad.axtens.net>
-Date: Tue, 28 Jul 2020 12:32:33 +1000
-Message-ID: <87eeow74ji.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG4YD51vSzDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:12:16 +1000 (AEST)
+Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 799682070A;
+ Tue, 28 Jul 2020 05:12:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1595913133;
+ bh=SiunFkOH1KIyW1NC3iO0mc1YnQ8vPMqtL902CN9Sglg=;
+ h=From:To:Cc:Subject:Date:From;
+ b=zUj8Ky/ISJogZYImW1cerS7gxpsJPyD/s5COPLWHq2m806d7LS+KeFmOjturCkeKD
+ HrFFBTdERy4l0XPM2jQi1NdsS/0AEv/DNIDcsxWU/Hw8p6tUQjHHE7reUbZz0w1jhv
+ yHsh8/Ni8CjiRR1lxOFECz5g0SlMvzBSWjQUZxXU=
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 00/15] memblock: seasonal cleaning^w cleanup
+Date: Tue, 28 Jul 2020 08:11:38 +0300
+Message-Id: <20200728051153.1590-1-rppt@kernel.org>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,30 +65,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Stafford Horne <shorne@gmail.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Mike Rapoport <rppt@linux.ibm.com>, clang-built-linux@googlegroups.com,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Christoph Hellwig <hch@lst.de>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Daniel Axtens <dja@axtens.net> writes:
-> Hi Michael,
->
-> I tested v1 of this. I ran the test from the bug with a range of stack
-> sizes, in a loop, for several hours and didn't see any crashes/signal
-> delivery failures.
->
-> I retested v2 for a few minutes just to be sure, and I ran stress-ng's
-> stack, stackmmap and bad-altstack stressors to make sure no obvious
-> kernel bugs were exposed. Nothing crashed.
->
-> All tests done on a P8 LE guest under KVM.
->
-> On that basis:
->
-> Tested-by: Daniel Axtens <dja@axtens.net>
+From: Mike Rapoport <rppt@linux.ibm.com>
 
-Thanks.
+Hi,
 
-Always nice to have someone review my patches!
+These patches simplify several uses of memblock iterators and hide some of
+the memblock implementation details from the rest of the system.
 
-cheers
+The patches are on top of v5.8-rc7 + cherry-pick of "mm/sparse: cleanup the
+code surrounding memory_present()" [1] from mmotm tree.
+
+[1] http://lkml.kernel.org/r/20200712083130.22919-1-rppt@kernel.org 
+
+Mike Rapoport (15):
+  KVM: PPC: Book3S HV: simplify kvm_cma_reserve()
+  dma-contiguous: simplify cma_early_percent_memory()
+  arm, xtensa: simplify initialization of high memory pages
+  arm64: numa: simplify dummy_numa_init()
+  h8300, nds32, openrisc: simplify detection of memory extents
+  powerpc: fadamp: simplify fadump_reserve_crash_area()
+  riscv: drop unneeded node initialization
+  mircoblaze: drop unneeded NUMA and sparsemem initializations
+  memblock: make for_each_memblock_type() iterator private
+  memblock: make memblock_debug and related functionality private
+  memblock: reduce number of parameters in for_each_mem_range()
+  arch, mm: replace for_each_memblock() with for_each_mem_pfn_range()
+  arch, drivers: replace for_each_membock() with for_each_mem_range()
+  x86/numa: remove redundant iteration over memblock.reserved
+  memblock: remove 'type' parameter from for_each_memblock()
+
+ .clang-format                            |  1 +
+ arch/arm/kernel/setup.c                  | 18 +++++---
+ arch/arm/mm/init.c                       | 59 +++++-------------------
+ arch/arm/mm/mmu.c                        | 39 ++++++----------
+ arch/arm/mm/pmsa-v7.c                    | 20 ++++----
+ arch/arm/mm/pmsa-v8.c                    | 17 ++++---
+ arch/arm/xen/mm.c                        |  7 +--
+ arch/arm64/kernel/machine_kexec_file.c   |  6 +--
+ arch/arm64/kernel/setup.c                |  2 +-
+ arch/arm64/mm/init.c                     | 11 ++---
+ arch/arm64/mm/kasan_init.c               |  8 ++--
+ arch/arm64/mm/mmu.c                      | 11 ++---
+ arch/arm64/mm/numa.c                     | 15 +++---
+ arch/c6x/kernel/setup.c                  |  9 ++--
+ arch/h8300/kernel/setup.c                |  8 ++--
+ arch/microblaze/mm/init.c                | 24 ++--------
+ arch/mips/cavium-octeon/dma-octeon.c     | 12 ++---
+ arch/mips/kernel/setup.c                 | 31 ++++++-------
+ arch/mips/netlogic/xlp/setup.c           |  2 +-
+ arch/nds32/kernel/setup.c                |  8 +---
+ arch/openrisc/kernel/setup.c             |  9 +---
+ arch/openrisc/mm/init.c                  |  8 ++--
+ arch/powerpc/kernel/fadump.c             | 58 ++++++++---------------
+ arch/powerpc/kvm/book3s_hv_builtin.c     | 11 +----
+ arch/powerpc/mm/book3s64/hash_utils.c    | 16 +++----
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 11 ++---
+ arch/powerpc/mm/kasan/kasan_init_32.c    |  8 ++--
+ arch/powerpc/mm/mem.c                    | 33 +++++++------
+ arch/powerpc/mm/numa.c                   |  7 +--
+ arch/powerpc/mm/pgtable_32.c             |  8 ++--
+ arch/riscv/mm/init.c                     | 33 ++++---------
+ arch/riscv/mm/kasan_init.c               | 10 ++--
+ arch/s390/kernel/crash_dump.c            |  8 ++--
+ arch/s390/kernel/setup.c                 | 31 ++++++++-----
+ arch/s390/mm/page-states.c               |  6 +--
+ arch/s390/mm/vmem.c                      | 16 ++++---
+ arch/sh/mm/init.c                        |  9 ++--
+ arch/sparc/mm/init_64.c                  | 12 ++---
+ arch/x86/mm/numa.c                       | 26 ++++-------
+ arch/xtensa/mm/init.c                    | 55 ++++------------------
+ drivers/bus/mvebu-mbus.c                 | 12 ++---
+ drivers/s390/char/zcore.c                |  9 ++--
+ include/linux/memblock.h                 | 45 +++++++++---------
+ kernel/dma/contiguous.c                  | 11 +----
+ mm/memblock.c                            | 28 +++++++----
+ mm/page_alloc.c                          | 11 ++---
+ mm/sparse.c                              | 10 ++--
+ 47 files changed, 324 insertions(+), 485 deletions(-)
+
+-- 
+2.26.2
+
