@@ -2,108 +2,88 @@ Return-Path: <SRS0=cpv1=BH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B32C2C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 02:39:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA8C9C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 03:38:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17F8420714
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 02:39:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17F8420714
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 36015206D4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 03:38:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LR4TT1gn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36015206D4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG18j6KSLzDr34
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 12:39:17 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG2TN5GLhzDqml
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 13:38:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=LR4TT1gn; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG16Z34XSzDqv6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 12:37:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4BG16Z21XRz8tD8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 12:37:26 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4BG16Z1WnRz9sTk; Tue, 28 Jul 2020 12:37:26 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=bauerman@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4BG16Y5VPVz9sTj
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2020 12:37:25 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06S2WBY0049835; Mon, 27 Jul 2020 22:37:18 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32j2paw380-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 22:37:18 -0400
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06S2Wdbo051238;
- Mon, 27 Jul 2020 22:37:17 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32j2paw37q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 27 Jul 2020 22:37:17 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06S2VPTa015633;
- Tue, 28 Jul 2020 02:37:16 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma03wdc.us.ibm.com with ESMTP id 32gcy5dvn3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 28 Jul 2020 02:37:16 +0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06S2bBv663308088
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 28 Jul 2020 02:37:11 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 25A59BE054;
- Tue, 28 Jul 2020 02:37:15 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A2C3FBE05A;
- Tue, 28 Jul 2020 02:37:11 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.211.132.76])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Tue, 28 Jul 2020 02:37:11 +0000 (GMT)
-References: <159579157320.5790.6748078824637688685.stgit@hbathini>
- <159579235754.5790.5203600072984600891.stgit@hbathini>
-User-agent: mu4e 1.2.0; emacs 26.3
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [RESEND PATCH v5 08/11] ppc64/kexec_file: setup backup region for
- kdump kernel
-In-reply-to: <159579235754.5790.5203600072984600891.stgit@hbathini>
-Date: Mon, 27 Jul 2020 23:37:08 -0300
-Message-ID: <87d04gxt4b.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG2PS3tMpzDqjY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 13:35:22 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id o22so10710333pjw.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2020 20:35:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=WECce0LBXYVjXbrlpo11bHUpze9GJI1lVnSDe0W+y+4=;
+ b=LR4TT1gn/htVF8c/22u1u+36l6MbOY8omKK1QrfKFh7EpljJaFABhwWa9g2ldtcZqp
+ HWOYXXLyiVVdT7tvogFpfVRRJ5NlpM5E/1VlbSLLohpKtL5qu+Eb+GFwFshEelFxMS+4
+ 756Ga65My7y8NdfBf/I+FUmwNY1tMNDdcArxacDOeyD4ipsFlFdBMoHjZabadWx7Cb+G
+ AFIG8FjoYXAjBqVBSu/3Lq30DcpDkkHu29sCZ8oj+ICdNqnoBYxgyyZJPFiR5ClFTrX9
+ qdlvfZMYbV93inruHyenWeSb9Ews0pMS5keHZ17XGcfc6GHkP7AcYQsXFdUkcPG4A1zC
+ TPEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=WECce0LBXYVjXbrlpo11bHUpze9GJI1lVnSDe0W+y+4=;
+ b=px+EWVn0EPk/frLMzWVptRp5A114fKe+bIV5jwW8HBGSY/5SVpxEM0WlSTCMF/190i
+ C+dB6BQNzHtjSwddjs9SYG/a4BxfH0H4/fWAN+vIbJvpyhtngjEE0gbN0A93S2uQcZCK
+ Si62wC80Gz4wZ4N0aIH11Yve56If3xOSsGygQH2Py6YhaFdhpW6vcns2h/P9D6An7Q1d
+ R3ZYPRKzwn6YVMsa6GHjm1x/5U7Ov9whJPPHLK1DEIMf6qIBpalyYnjvb4MWjKIArDcz
+ 8EN0lAxS2BbD9rfg5Ig72XteelvMveAINTvFmdw+o0jdFyo9uC6i2elnKhC2yeKGsdqz
+ 0Y5A==
+X-Gm-Message-State: AOAM53209ohHGkqYhNyK9Z85b9DGHrYmm6b5LAEhdN5jpNk/6LOy4zK1
+ 267iTBASjscF+8NzmfTn2So=
+X-Google-Smtp-Source: ABdhPJzuslCQp+8HbB3cDYhA5hqXaz9y/HEvXL86aufZSOGtcy8wjOcm865BoW4An1+Ax+pq2VZyIg==
+X-Received: by 2002:a17:902:bb83:: with SMTP id
+ m3mr19664485pls.209.1595907319521; 
+ Mon, 27 Jul 2020 20:35:19 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (110-174-173-27.tpgi.com.au.
+ [110.174.173.27])
+ by smtp.gmail.com with ESMTPSA id r4sm998707pji.37.2020.07.27.20.35.15
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 27 Jul 2020 20:35:19 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linux-arch@vger.kernel.org
+Subject: [PATCH 16/24] powerpc: use asm-generic/mmu_context.h for no-op
+ implementations
+Date: Tue, 28 Jul 2020 13:33:57 +1000
+Message-Id: <20200728033405.78469-17-npiggin@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20200728033405.78469-1-npiggin@gmail.com>
+References: <20200728033405.78469-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-27_16:2020-07-27,
- 2020-07-27 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0
- spamscore=0 impostorscore=0 mlxlogscore=751 clxscore=1015
- priorityscore=1501 mlxscore=0 suspectscore=0 lowpriorityscore=0
- phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007280012
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,31 +95,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Pingfan Liu <piliu@redhat.com>, Mimi Zohar <zohar@linux.ibm.com>,
- Nayna Jain <nayna@linux.ibm.com>, Petr Tesarik <ptesarik@suse.cz>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Sourabh Jain <sourabhjain@linux.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Eric Biederman <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>,
- Kexec-ml <kexec@lists.infradead.org>, Vivek Goyal <vgoyal@redhat.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/mmu_context.h | 22 +++++++---------------
+ 1 file changed, 7 insertions(+), 15 deletions(-)
 
-Hari Bathini <hbathini@linux.ibm.com> writes:
-
-> Though kdump kernel boots from loaded address, the first 64KB of it is
-> copied down to real 0. So, setup a backup region and let purgatory
-> copy the first 64KB of crashed kernel into this backup region before
-> booting into kdump kernel. Update reserve map with backup region and
-> crashed kernel's memory to avoid kdump kernel from accidentially using
-> that memory.
->
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-
-Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 1a474f6b1992..242bd987247b 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -14,7 +14,9 @@
+ /*
+  * Most if the context management is out of line
+  */
++#define init_new_context init_new_context
+ extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
++#define destroy_context destroy_context
+ extern void destroy_context(struct mm_struct *mm);
+ #ifdef CONFIG_SPAPR_TCE_IOMMU
+ struct mm_iommu_table_group_mem_t;
+@@ -237,27 +239,15 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ }
+ #define switch_mm_irqs_off switch_mm_irqs_off
+ 
+-
+-#define deactivate_mm(tsk,mm)	do { } while (0)
+-
+-/*
+- * After we have set current->mm to a new value, this activates
+- * the context for the new mm so we see the new mappings.
+- */
+-static inline void activate_mm(struct mm_struct *prev, struct mm_struct *next)
+-{
+-	switch_mm(prev, next, current);
+-}
+-
+-/* We don't currently use enter_lazy_tlb() for anything */
++#ifdef CONFIG_PPC_BOOK3E_64
++#define enter_lazy_tlb enter_lazy_tlb
+ static inline void enter_lazy_tlb(struct mm_struct *mm,
+ 				  struct task_struct *tsk)
+ {
+ 	/* 64-bit Book3E keeps track of current PGD in the PACA */
+-#ifdef CONFIG_PPC_BOOK3E_64
+ 	get_paca()->pgd = NULL;
+-#endif
+ }
++#endif
+ 
+ extern void arch_exit_mmap(struct mm_struct *mm);
+ 
+@@ -300,5 +290,7 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
+ 	return 0;
+ }
+ 
++#include <asm-generic/mmu_context.h>
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
 -- 
-Thiago Jung Bauermann
-IBM Linux Technology Center
+2.23.0
+
