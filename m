@@ -2,57 +2,49 @@ Return-Path: <SRS0=cpv1=BH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77FEBC433E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:56:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E6DBC433E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 06:40:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2578920658
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 05:56:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="LnGgL97V"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2578920658
-Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 87E522065C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 06:40:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87E522065C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BG5X22DlyzDqW9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 15:56:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BG5RS0hCJzDqRK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 15:52:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BG6Vm55zwzDqG6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jul 2020 16:40:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=LnGgL97V; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 4BG5RR6QYSz9sRN; Tue, 28 Jul 2020 15:52:19 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1595915539; bh=hqi9wl0i8BmJzMLB0DK4D3vfsNHrdTqCEVzktLAKVJE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=LnGgL97VFXhcniyw8eWKUYdvBXzGiE0IxO5/P7nQx6kpB5yljADLkSAChAoD3buC0
- sAvCWM2DL8HEEFULd8jpx9TPRScCHZf2EmmnzUwuzTt0XVkRISnEC+knlv8E1gEdIX
- 3w08JRddPWukAyyFvJy3caYhUGbiNTksepXQ8m3VWHfD/YZFoD0u1STjMJKVHiCFXX
- YM9ezRMQScr4R4NV8X+zNPUJo3e6pA1nCxj500Y3aLz3SZSKkLFcD26OS3dyI1DgLq
- s6vS8/f0+jsz8762K53TimpwU8agM9x6xZT++2oi13++uVZ3slZ9EjOI/laemLd8zZ
- FHzh4PJEFkj3w==
-Date: Tue, 28 Jul 2020 15:51:42 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH v6 0/5] Migrate non-migrated pages of a SVM.
-Message-ID: <20200728055142.GB2460422@thinks.paulus.ozlabs.org>
-References: <1595873238-26184-1-git-send-email-linuxram@us.ibm.com>
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BG6S505NzzDr1X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2020 16:37:56 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id EF4D868B05; Tue, 28 Jul 2020 08:37:49 +0200 (CEST)
+Date: Tue, 28 Jul 2020 08:37:49 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH 02/15] dma-contiguous: simplify cma_early_percent_memory()
+Message-ID: <20200728063749.GA21221@lst.de>
+References: <20200728051153.1590-1-rppt@kernel.org>
+ <20200728051153.1590-3-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1595873238-26184-1-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <20200728051153.1590-3-rppt@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,42 +56,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ldufour@linux.ibm.com, cclaudio@linux.ibm.com, kvm-ppc@vger.kernel.org,
- bharata@linux.ibm.com, sathnaga@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- bauerman@linux.ibm.com, david@gibson.dropbear.id.au
+Cc: linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Stafford Horne <shorne@gmail.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Mike Rapoport <rppt@linux.ibm.com>, clang-built-linux@googlegroups.com,
+ Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 27, 2020 at 11:07:13AM -0700, Ram Pai wrote:
-> The time to switch a VM to Secure-VM, increases by the size of the VM.
-> A 100GB VM takes about 7minutes. This is unacceptable.  This linear
-> increase is caused by a suboptimal behavior by the Ultravisor and the
-> Hypervisor.  The Ultravisor unnecessarily migrates all the GFN of the
-> VM from normal-memory to secure-memory. It has to just migrate the
-> necessary and sufficient GFNs.
+On Tue, Jul 28, 2020 at 08:11:40AM +0300, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
 > 
-> However when the optimization is incorporated in the Ultravisor, the
-> Hypervisor starts misbehaving. The Hypervisor has a inbuilt assumption
-> that the Ultravisor will explicitly request to migrate, each and every
-> GFN of the VM. If only necessary and sufficient GFNs are requested for
-> migration, the Hypervisor continues to manage the remaining GFNs as
-> normal GFNs. This leads to memory corruption; manifested
-> consistently when the SVM reboots.
+> The memory size calculation in cma_early_percent_memory() traverses
+> memblock.memory rather than simply call memblock_phys_mem_size(). The
+> comment in that function suggests that at some point there should have been
+> call to memblock_analyze() before memblock_phys_mem_size() could be used.
+> As of now, there is no memblock_analyze() at all and
+> memblock_phys_mem_size() can be used as soon as cold-plug memory is
+> registerd with memblock.
 > 
-> The same is true, when a memory slot is hotplugged into a SVM. The
-> Hypervisor expects the ultravisor to request migration of all GFNs to
-> secure-GFN.  But the hypervisor cannot handle any H_SVM_PAGE_IN
-> requests from the Ultravisor, done in the context of
-> UV_REGISTER_MEM_SLOT ucall.  This problem manifests as random errors
-> in the SVM, when a memory-slot is hotplugged.
+> Replace loop over memblock.memory with a call to memblock_phys_mem_size().
 > 
-> This patch series automatically migrates the non-migrated pages of a
-> SVM, and thus solves the problem.
-> 
-> Testing: Passed rigorous testing using various sized SVMs.
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 
-Thanks, series applied to my kvm-ppc-next branch and pull request sent.
+Looks good:
 
-Paul.
+Reviewed-by: Christoph Hellwig <hch@lst.de>
