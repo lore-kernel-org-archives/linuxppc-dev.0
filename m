@@ -2,107 +2,109 @@ Return-Path: <SRS0=Q9Mk=BI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BC99C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:53:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5156C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:55:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14DC5206D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:53:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14DC5206D4
+	by mail.kernel.org (Postfix) with ESMTPS id 9D7E8206D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:55:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D7E8206D4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BGklv37yZzDqwb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 16:53:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BGkp1357jzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 16:55:37 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BGkd41q7jzDqw0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BGkd4482wzDqw2
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:47:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4BGkd34P6Dz9CYD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:47:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4BGkd43gRCz9CYD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:47:52 +1000 (AEST)
 Received: by ozlabs.org (Postfix)
- id 4BGkd32JGSz9sTZ; Wed, 29 Jul 2020 16:47:51 +1000 (AEST)
+ id 4BGkd42NtQz9sTZ; Wed, 29 Jul 2020 16:47:52 +1000 (AEST)
 Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4BGkd22KF0z9sSy;
- Wed, 29 Jul 2020 16:47:50 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 4BGkd35xP1z9sTk;
+ Wed, 29 Jul 2020 16:47:51 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06T64WLj117379; Wed, 29 Jul 2020 02:47:47 -0400
+ 06T6WjnN140771; Wed, 29 Jul 2020 02:47:49 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32jw71196q-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32jpwdc5uw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 29 Jul 2020 02:47:49 -0400
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06T6Y0Dv144223;
+ Wed, 29 Jul 2020 02:47:48 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32jpwdc5tu-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
  Wed, 29 Jul 2020 02:47:47 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06T6511m119473;
- Wed, 29 Jul 2020 02:47:46 -0400
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
- [169.47.144.27])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32jw711967-1
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06T6Ugl3004588;
+ Wed, 29 Jul 2020 06:47:46 GMT
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27]) by ppma02dal.us.ibm.com with ESMTP id 32gcy4fhd9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Jul 2020 02:47:46 -0400
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
- by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06T6TjHF010667;
- Wed, 29 Jul 2020 06:47:45 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma05wdc.us.ibm.com with ESMTP id 32gcy9qkku-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Jul 2020 06:47:45 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 06T6ljUp55247354
+ Wed, 29 Jul 2020 06:47:46 +0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06T6ljLM44564816
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 29 Jul 2020 06:47:45 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EF943AC05B;
- Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2474DAC059;
- Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+ Wed, 29 Jul 2020 06:47:46 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DFAC7AE05F;
+ Wed, 29 Jul 2020 06:47:45 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 40635AE060;
+ Wed, 29 Jul 2020 06:47:45 +0000 (GMT)
 Received: from sofia.ibm.com (unknown [9.85.85.173])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 29 Jul 2020 06:47:45 +0000 (GMT)
 Received: by sofia.ibm.com (Postfix, from userid 1000)
- id 99BD22E2FF3; Wed, 29 Jul 2020 12:17:39 +0530 (IST)
+ id B7D562E2FF5; Wed, 29 Jul 2020 12:17:39 +0530 (IST)
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@ozlabs.org>,
  Nathan Lynch <nathanl@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/3] cpuidle-pseries: Parse extended CEDE information for
- idle.
-Date: Wed, 29 Jul 2020 12:17:31 +0530
-Message-Id: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v2 3/3] cpuidle-pseries : Fixup exit latency for CEDE(0)
+Date: Wed, 29 Jul 2020 12:17:34 +0530
+Message-Id: <1596005254-25753-4-git-send-email-ego@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-07-29_02:2020-07-28,
+ definitions=2020-07-29_03:2020-07-28,
  2020-07-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0
- spamscore=0 impostorscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
- malwarescore=0 phishscore=0 mlxscore=0 mlxlogscore=999 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2007290041
+ malwarescore=0
+ mlxlogscore=999 mlxscore=0 bulkscore=0 impostorscore=0 spamscore=0
+ adultscore=0 suspectscore=0 clxscore=1015 phishscore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007290043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,79 +124,54 @@ Sender: "Linuxppc-dev"
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi,
+We are currently assuming that CEDE(0) has exit latency 10us, since
+there is no way for us to query from the platform.  However, if the
+wakeup latency of an Extended CEDE state is smaller than 10us, then we
+can be sure that the exit latency of CEDE(0) cannot be more than that.
+that.
 
-This is a v2 of the patch series to parse the extended CEDE
-information in the pseries-cpuidle driver.
+In this patch, we fix the exit latency of CEDE(0) if we discover an
+Extended CEDE state with wakeup latency smaller than 10us.
 
-The v1 of this patchset can be found here :
-https://lore.kernel.org/linuxppc-dev/1594120299-31389-1-git-send-email-ego@linux.vnet.ibm.com/
+Benchmark results:
 
-The change from v1 --> v2 :
-
- * Dropped Patches 4 and 5 which would expose extended idle-states,
-   that wakeup on external interrupts, to cpuidle framework.  These
-   were RFC patches in v1. Dropped them because currently the only
-   extended CEDE state that wakesup on external interrupts is CEDE(1)
-   which adds no signifcant value over CEDE(0).
-   
- * Rebased the patches onto powerpc/merge.
- 
- * No changes in code for Patches 1-3.
-
-Motivation:
-===========
-On pseries Dedicated Linux LPARs, apart from the polling snooze idle
-state, we currently have the CEDE idle state which cedes the CPU to
-the hypervisor with latency-hint = 0.
-
-However, the PowerVM hypervisor supports additional extended CEDE
-states, which can be queried through the "ibm,get-systems-parameter"
-rtas-call with the CEDE_LATENCY_TOKEN. The hypervisor maps these
-extended CEDE states to appropriate platform idle-states in order to
-provide energy-savings as well as shifting power to the active
-units. On existing pseries LPARs today we have extended CEDE with
-latency-hints {1,2} supported.
-
-The patches in this patchset, adds code to parse the CEDE latency
-records provided by the hypervisor. We use this information to
-determine the wakeup latency of the regular CEDE (which we have been
-so far hardcoding to 10us while experimentally it is much lesser ~
-1us), by looking at the wakeup latency provided by the hypervisor for
-Extended CEDE states. Since the platform currently advertises Extended
-CEDE 1 to have wakeup latency of 2us, we can be sure that the wakeup
-latency of the regular CEDE is no more than this.
-
-With Patches 1-3, we see an improvement in the single-threaded
-performance on ebizzy.
-
+ebizzy:
 2 ebizzy threads bound to the same big-core. 25% improvement in the
-avg records/s (higher the better) with patches 1-3.
-x without_patches
-* with_patches
+avg records/s with patch.
+x without_patch
++ with_patch
     N           Min           Max        Median           Avg        Stddev
 x  10       2491089       5834307       5398375       4244335     1596244.9
-*  10       2893813       5834474       5832448     5327281.3     1055941.4
++  10       2893813       5834474       5832448     5327281.3     1055941.4
 
-We do not observe any major regression in either the context_switch2
-benchmark or the schbench benchmark
+context_switch2 :
+There is no major regression observed with this patch as seen from the
+context_switch2 benchmark.
 
 context_switch2 across CPU0 CPU1 (Both belong to same big-core, but different
 small cores). We observe a minor 0.14% regression in the number of
 context-switches (higher is better).
 x without_patch
-* with_patch
++ with_patch
     N           Min           Max        Median           Avg        Stddev
 x 500        348872        362236        354712     354745.69      2711.827
-* 500        349422        361452        353942      354215.4     2576.9258
++ 500        349422        361452        353942      354215.4     2576.9258
+Difference at 99.0% confidence
+    -530.288 +/- 430.963
+    -0.149484% +/- 0.121485%
+    (Student's t, pooled s = 2645.24)
 
 context_switch2 across CPU0 CPU8 (Different big-cores). We observe a 0.37%
 improvement in the number of context-switches (higher is better).
 x without_patch
-* with_patch
++ with_patch
     N           Min           Max        Median           Avg        Stddev
 x 500        287956        294940        288896     288977.23     646.59295
-* 500        288300        294646        289582     290064.76     1161.9992
++ 500        288300        294646        289582     290064.76     1161.9992
+Difference at 99.0% confidence
+    1087.53 +/- 153.194
+    0.376337% +/- 0.0530125%
+    (Student's t, pooled s = 940.299)
 
 schbench:
 No major difference could be seen until the 99.9th percentile.
@@ -221,14 +198,61 @@ Latency percentiles (usec)
 	99.9th: 15664
 	min=0, max=29812
 
-Gautham R. Shenoy (3):
-  cpuidle-pseries: Set the latency-hint before entering CEDE
-  cpuidle-pseries: Add function to parse extended CEDE records
-  cpuidle-pseries : Fixup exit latency for CEDE(0)
+Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 34 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
 
- drivers/cpuidle/cpuidle-pseries.c | 167 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 165 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index b1dc24d..0b2f115 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -334,12 +334,42 @@ static int pseries_cpuidle_driver_init(void)
+ static int add_pseries_idle_states(void)
+ {
+ 	int nr_states = 2; /* By default we have snooze, CEDE */
++	int i;
++	u64 min_latency_us = dedicated_states[1].exit_latency; /* CEDE latency */
+ 
+ 	if (parse_cede_parameters())
+ 		return nr_states;
+ 
+-	pr_info("cpuidle : Skipping the %d Extended CEDE idle states\n",
+-		nr_xcede_records);
++	for (i = 0; i < nr_xcede_records; i++) {
++		u64 latency_tb = xcede_records[i].wakeup_latency_tb_ticks;
++		u64 latency_us = tb_to_ns(latency_tb) / NSEC_PER_USEC;
++
++		if (latency_us < min_latency_us)
++			min_latency_us = latency_us;
++	}
++
++	/*
++	 * We are currently assuming that CEDE(0) has exit latency
++	 * 10us, since there is no way for us to query from the
++	 * platform.
++	 *
++	 * However, if the wakeup latency of an Extended CEDE state is
++	 * smaller than 10us, then we can be sure that CEDE(0)
++	 * requires no more than that.
++	 *
++	 * Perform the fix-up.
++	 */
++	if (min_latency_us < dedicated_states[1].exit_latency) {
++		u64 cede0_latency = min_latency_us - 1;
++
++		if (cede0_latency <= 0)
++			cede0_latency = min_latency_us;
++
++		dedicated_states[1].exit_latency = cede0_latency;
++		dedicated_states[1].target_residency = 10 * (cede0_latency);
++		pr_info("cpuidle : Fixed up CEDE exit latency to %llu us\n",
++			cede0_latency);
++	}
+ 
+ 	return nr_states;
+ }
 -- 
 1.9.4
 
