@@ -2,86 +2,104 @@ Return-Path: <SRS0=Q9Mk=BI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8B15C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07BA1C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:49:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AF4A2076E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:23:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AF4A2076E
+	by mail.kernel.org (Postfix) with ESMTPS id 7A62120786
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 06:49:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A62120786
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BGk4L5LcKzDqxL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 16:22:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BGkg65BP5zDqxZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jul 2020 16:49:38 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BGkd26RCDzDqw0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:47:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4BGkd24wRbz8tF4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:47:50 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4BGkd23NYtz9sTX; Wed, 29 Jul 2020 16:47:50 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ego@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BGk216qbLzDqvV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2020 16:20:57 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 4BGkd20NJ7z9sSd;
+ Wed, 29 Jul 2020 16:47:49 +1000 (AEST)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 06T62BJk021360; Wed, 29 Jul 2020 02:20:43 -0400
+ 06T6WBgB109475; Wed, 29 Jul 2020 02:47:48 -0400
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1me30v-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1meruj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Jul 2020 02:20:42 -0400
+ Wed, 29 Jul 2020 02:47:48 -0400
 Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06T629Hs021130;
- Wed, 29 Jul 2020 02:20:42 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1me302-1
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06T6f9a3135796;
+ Wed, 29 Jul 2020 02:47:47 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1meru6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Jul 2020 02:20:42 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06T69pK2007761;
- Wed, 29 Jul 2020 06:14:00 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03ams.nl.ibm.com with ESMTP id 32gcpx4p8x-1
+ Wed, 29 Jul 2020 02:47:47 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06T6UML0029829;
+ Wed, 29 Jul 2020 06:47:46 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma04dal.us.ibm.com with ESMTP id 32gcq1fjea-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 29 Jul 2020 06:14:00 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 06T6CXTA56754548
+ Wed, 29 Jul 2020 06:47:46 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 06T6ljTL1245830
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 29 Jul 2020 06:12:33 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A6FC4AE051;
- Wed, 29 Jul 2020 06:13:58 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5EBF6AE04D;
- Wed, 29 Jul 2020 06:13:56 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Wed, 29 Jul 2020 06:13:56 +0000 (GMT)
-Date: Wed, 29 Jul 2020 11:43:55 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Valentin Schneider <valentin.schneider@arm.com>
-Subject: Re: [PATCH v4 09/10] Powerpc/smp: Create coregroup domain
-Message-ID: <20200729061355.GA14603@linux.vnet.ibm.com>
-References: <20200727053230.19753-1-srikar@linux.vnet.ibm.com>
- <20200727053230.19753-10-srikar@linux.vnet.ibm.com>
- <jhjr1sviswg.mognet@arm.com>
+ Wed, 29 Jul 2020 06:47:45 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 743307805E;
+ Wed, 29 Jul 2020 06:47:45 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BC01878060;
+ Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.85.173])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id A8AAC2E2FF4; Wed, 29 Jul 2020 12:17:39 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, Anton Blanchard <anton@ozlabs.org>,
+ Nathan Lynch <nathanl@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/3] cpuidle-pseries: Add function to parse extended CEDE
+ records
+Date: Wed, 29 Jul 2020 12:17:33 +0530
+Message-Id: <1596005254-25753-3-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <jhjr1sviswg.mognet@arm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-07-29_02:2020-07-28,
@@ -91,7 +109,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501 phishscore=0 mlxlogscore=999 bulkscore=0
  impostorscore=0 suspectscore=0 lowpriorityscore=0 mlxscore=0 spamscore=0
  adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007290038
+ engine=8.12.0-2006250000 definitions=main-2007290041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,99 +121,203 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
- Jordan Niethe <jniethe5@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Cc: linuxppc-dev@ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Valentin Schneider <valentin.schneider@arm.com> [2020-07-28 16:03:11]:
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi Valentin,
+Currently we use CEDE with latency-hint 0 as the only other idle state
+on a dedicated LPAR apart from the polling "snooze" state.
 
-Thanks for looking into the patches.
+The platform might support additional extended CEDE idle states, which
+can be discovered through the "ibm,get-system-parameter" rtas-call
+made with CEDE_LATENCY_TOKEN.
 
-> On 27/07/20 06:32, Srikar Dronamraju wrote:
-> > Add percpu coregroup maps and masks to create coregroup domain.
-> > If a coregroup doesn't exist, the coregroup domain will be degenerated
-> > in favour of SMT/CACHE domain.
-> >
-> 
-> So there's at least one arm64 platform out there with the same "pairs of
-> cores share L2" thing (Ampere eMAG), and that lives quite happily with the
-> default scheduler topology (SMT/MC/DIE). Each pair of core gets its MC
-> domain, and the whole system is covered by DIE.
-> 
-> Now arguably it's not a perfect representation; DIE doesn't have
-> SD_SHARE_PKG_RESOURCES so the highest level sd_llc can point to is MC. That
-> will impact all callsites using cpus_share_cache(): in the eMAG case, only
-> pairs of cores will be seen as sharing cache, even though *all* cores share
-> the same L3.
-> 
+This patch adds a function to obtain information about the extended
+CEDE idle states from the platform and parse the contents to populate
+an array of extended CEDE states. These idle states thus discovered
+will be added to the cpuidle framework in the next patch.
 
-Okay, Its good to know that we have a chip which is similar to P9 in
-topology.
+dmesg on a POWER9 LPAR, demonstrating the output of parsing the
+extended CEDE latency parameters.
 
-> I'm trying to paint a picture of what the P9 topology looks like (the one
-> you showcase in your cover letter) to see if there are any similarities;
-> from what I gather in [1], wikichips and your cover letter, with P9 you can
-> have something like this in a single DIE (somewhat unsure about L3 setup;
-> it looks to be distributed?)
-> 
->      +---------------------------------------------------------------------+
->      |                                  L3                                 |
->      +---------------+-+---------------+-+---------------+-+---------------+
->      |       L2      | |       L2      | |       L2      | |       L2      |
->      +------+-+------+ +------+-+------+ +------+-+------+ +------+-+------+
->      |  L1  | |  L1  | |  L1  | |  L1  | |  L1  | |  L1  | |  L1  | |  L1  |
->      +------+ +------+ +------+ +------+ +------+ +------+ +------+ +------+
->      |4 CPUs| |4 CPUs| |4 CPUs| |4 CPUs| |4 CPUs| |4 CPUs| |4 CPUs| |4 CPUs|
->      +------+ +------+ +------+ +------+ +------+ +------+ +------+ +------+
-> 
-> Which would lead to (ignoring the whole SMT CPU numbering shenanigans)
-> 
-> NUMA     [                                                   ...
-> DIE      [                                             ]
-> MC       [         ] [         ] [         ] [         ]
-> BIGCORE  [         ] [         ] [         ] [         ]
-> SMT      [   ] [   ] [   ] [   ] [   ] [   ] [   ] [   ]
->          00-03 04-07 08-11 12-15 16-19 20-23 24-27 28-31  <other node here>
-> 
+[    5.913180] xcede : xcede_record_size = 10
+[    5.913183] xcede : Record 0 : hint = 1, latency =0x400 tb-ticks, Wake-on-irq = 1
+[    5.913188] xcede : Record 1 : hint = 2, latency =0x3e8000 tb-ticks, Wake-on-irq = 0
+[    5.913193] cpuidle : Skipping the 2 Extended CEDE idle states
 
-What you have summed up is perfectly what a P9 topology looks like. I dont
-think I could have explained it better than this.
+Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 129 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 127 insertions(+), 2 deletions(-)
 
-> This however has MC == BIGCORE; what makes it you can have different spans
-> for these two domains? If it's not too much to ask, I'd love to have a P9
-> topology diagram.
-> 
-> [1]: 20200722081822.GG9290@linux.vnet.ibm.com
-
-At this time the current topology would be good enough i.e BIGCORE would
-always be equal to a MC. However in future we could have chips that can have
-lesser/larger number of CPUs in llc than in a BIGCORE or we could have
-granular or split L3 caches within a DIE. In such a case BIGCORE != MC.
-
-Also in the current P9 itself, two neighbouring core-pairs form a quad.
-Cache latency within a quad is better than a latency to a distant core-pair.
-Cache latency within a core pair is way better than latency within a quad.
-So if we have only 4 threads running on a DIE all of them accessing the same
-cache-lines, then we could probably benefit if all the tasks were to run
-within the quad aka MC/Coregroup.
-
-I have found some benchmarks which are latency sensitive to benefit by
-having a grouping a quad level (using kernel hacks and not backed by
-firmware changes). Gautham also found similar results in his experiments
-but he only used binding within the stock kernel.
-
-I am not setting SD_SHARE_PKG_RESOURCES in MC/Coregroup sd_flags as in MC
-domain need not be LLC domain for Power.
-
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index 88e71c3..b1dc24d 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -21,6 +21,7 @@
+ #include <asm/runlatch.h>
+ #include <asm/idle.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/rtas.h>
+ 
+ static struct cpuidle_driver pseries_idle_driver = {
+ 	.name             = "pseries_idle",
+@@ -86,9 +87,120 @@ static void check_and_cede_processor(void)
+ 	}
+ }
+ 
+-#define NR_CEDE_STATES		1  /* CEDE with latency-hint 0 */
++struct xcede_latency_records {
++	u8  latency_hint;
++	u64 wakeup_latency_tb_ticks;
++	u8  responsive_to_irqs;
++};
++
++/*
++ * XCEDE : Extended CEDE states discovered through the
++ *         "ibm,get-systems-parameter" rtas-call with the token
++ *         CEDE_LATENCY_TOKEN
++ */
++#define MAX_XCEDE_STATES		4
++#define	XCEDE_LATENCY_RECORD_SIZE	10
++#define XCEDE_LATENCY_PARAM_MAX_LENGTH	(2 + 2 + \
++					(MAX_XCEDE_STATES * XCEDE_LATENCY_RECORD_SIZE))
++
++#define CEDE_LATENCY_TOKEN		45
++
++#define NR_CEDE_STATES		(MAX_XCEDE_STATES + 1) /* CEDE with latency-hint 0 */
+ #define NR_DEDICATED_STATES	(NR_CEDE_STATES + 1) /* Includes snooze */
+ 
++struct xcede_latency_records xcede_records[MAX_XCEDE_STATES];
++unsigned int nr_xcede_records;
++char xcede_parameters[XCEDE_LATENCY_PARAM_MAX_LENGTH];
++
++static int parse_cede_parameters(void)
++{
++	int ret = -1, i;
++	u16 payload_length;
++	u8 xcede_record_size;
++	u32 total_xcede_records_size;
++	char *payload;
++
++	memset(xcede_parameters, 0, XCEDE_LATENCY_PARAM_MAX_LENGTH);
++
++	ret = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
++			NULL, CEDE_LATENCY_TOKEN, __pa(xcede_parameters),
++			XCEDE_LATENCY_PARAM_MAX_LENGTH);
++
++	if (ret) {
++		pr_err("xcede: Error parsing CEDE_LATENCY_TOKEN\n");
++		return ret;
++	}
++
++	payload_length = be16_to_cpu(*(__be16 *)(&xcede_parameters[0]));
++	payload = &xcede_parameters[2];
++
++	/*
++	 * If the platform supports the cede latency settings
++	 * information system parameter it must provide the following
++	 * information in the NULL terminated parameter string:
++	 *
++	 * a. The first byte is the length “N” of each cede
++	 *    latency setting record minus one (zero indicates a length
++	 *    of 1 byte).
++	 *
++	 * b. For each supported cede latency setting a cede latency
++	 *    setting record consisting of the first “N” bytes as per
++	 *    the following table.
++	 *
++	 *	-----------------------------
++	 *	| Field           | Field  |
++	 *	| Name            | Length |
++	 *	-----------------------------
++	 *	| Cede Latency    | 1 Byte |
++	 *	| Specifier Value |        |
++	 *	-----------------------------
++	 *	| Maximum wakeup  |        |
++	 *	| latency in      | 8 Bytes|
++	 *	| tb-ticks        |        |
++	 *	-----------------------------
++	 *	| Responsive to   |        |
++	 *	| external        | 1 Byte |
++	 *	| interrupts      |        |
++	 *	-----------------------------
++	 *
++	 * This version has cede latency record size = 10.
++	 */
++	xcede_record_size = (u8)payload[0] + 1;
++
++	if (xcede_record_size != XCEDE_LATENCY_RECORD_SIZE) {
++		pr_err("xcede : Expected record-size %d. Observed size %d.\n",
++		       XCEDE_LATENCY_RECORD_SIZE, xcede_record_size);
++		return -EINVAL;
++	}
++
++	pr_info("xcede : xcede_record_size = %d\n", xcede_record_size);
++
++	/*
++	 * Since the payload_length includes the last NULL byte and
++	 * the xcede_record_size, the remaining bytes correspond to
++	 * array of all cede_latency settings.
++	 */
++	total_xcede_records_size = payload_length - 2;
++	nr_xcede_records = total_xcede_records_size / xcede_record_size;
++
++	payload++;
++	for (i = 0; i < nr_xcede_records; i++) {
++		struct xcede_latency_records *record = &xcede_records[i];
++
++		record->latency_hint = (u8)payload[0];
++		record->wakeup_latency_tb_ticks  =
++			be64_to_cpu(*(__be64 *)(&payload[1]));
++		record->responsive_to_irqs = (u8)payload[9];
++		payload += xcede_record_size;
++		pr_info("xcede : Record %d : hint = %u, latency =0x%llx tb-ticks, Wake-on-irq = %u\n",
++			i, record->latency_hint,
++			record->wakeup_latency_tb_ticks,
++			record->responsive_to_irqs);
++	}
++
++	return 0;
++}
++
+ u8 cede_latency_hint[NR_DEDICATED_STATES];
+ static int dedicated_cede_loop(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+@@ -219,6 +331,19 @@ static int pseries_cpuidle_driver_init(void)
+ 	return 0;
+ }
+ 
++static int add_pseries_idle_states(void)
++{
++	int nr_states = 2; /* By default we have snooze, CEDE */
++
++	if (parse_cede_parameters())
++		return nr_states;
++
++	pr_info("cpuidle : Skipping the %d Extended CEDE idle states\n",
++		nr_xcede_records);
++
++	return nr_states;
++}
++
+ /*
+  * pseries_idle_probe()
+  * Choose state table for shared versus dedicated partition
+@@ -241,7 +366,7 @@ static int pseries_idle_probe(void)
+ 			max_idle_state = ARRAY_SIZE(shared_states);
+ 		} else {
+ 			cpuidle_state_table = dedicated_states;
+-			max_idle_state = ARRAY_SIZE(dedicated_states);
++			max_idle_state = add_pseries_idle_states();
+ 		}
+ 	} else
+ 		return -ENODEV;
 -- 
-Thanks and Regards
-Srikar Dronamraju
+1.9.4
+
