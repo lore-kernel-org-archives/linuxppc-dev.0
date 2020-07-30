@@ -2,51 +2,79 @@ Return-Path: <SRS0=fR6Q=BJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E88C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 13:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2C55C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 13:44:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE7F120829
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 13:42:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE7F120829
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 15E8A20829
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 13:44:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AsKazd2i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15E8A20829
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BHWmV6XW9zDqKg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 23:42:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BHWqP72QczDr6y
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jul 2020 23:44:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
- helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=kernelfans@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gondor.apana.org.au
-Received: from fornost.hmeau.com (unknown [216.24.177.18])
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=AsKazd2i; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BHVhM6DkqzDr0C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2020 22:53:21 +1000 (AEST)
-Received: from gwarestrin.arnor.me.apana.org.au ([192.168.0.7])
- by fornost.hmeau.com with smtp (Exim 4.92 #5 (Debian))
- id 1k183P-0006Z9-Of; Thu, 30 Jul 2020 22:53:00 +1000
-Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
- Thu, 30 Jul 2020 22:52:59 +1000
-Date: Thu, 30 Jul 2020 22:52:59 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] soc: fsl: Remove bogus packed attributes from qman.h
-Message-ID: <20200730125259.GA8948@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BHWb33kJtzDr7g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2020 23:33:50 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id g19so1560830plq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2020 06:33:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=8oppU/bcgKSzNokcs/2JASOd9ZMzMREFaO3W+avaPsE=;
+ b=AsKazd2iY/WrWAw6zfzJKcXV1+73/WRol8adO5cGz7WsOQq7y9XQJtyAyNofJ4Mvoy
+ a/wOCF6WkGJaoUi/VokrlXE9WqprXQE+Tiv70RNh5mHokEVD2fjmishIjanI4OCN7hMr
+ K/7gnO3dh+/FBTXupVuv471bYtuf8MsLa4+c8s5arcSzq/pVO6QCFVDGxIxW1kFMvSnt
+ IjcCKAbk8eQInQeOOOXG55a+RwW8aBhISM72RnhWZGLnlWYsNfsIMTBQU0BBvX6xYj5O
+ 7h6KouHAgGz3Z4KjEg7ZhIbFmt2QYW3SECwJoy2k7qEaSVBfu9r9bjGLilqxAjn6fVnD
+ nlFQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=8oppU/bcgKSzNokcs/2JASOd9ZMzMREFaO3W+avaPsE=;
+ b=PIxGFxpwfZEylHvS5tWFgHvIo9DnltIt7JPRBXQZ8lnq/0xfoMn6lzo+7HbkTANB5V
+ hRmo0pe2xLOAkQWDbx+PaE/7HzbK/FJBMbQZsfOXJXTzmi4IftqRRwmfNUz3vnJ5J9Fq
+ Edc4yntPxLebDGrhZFosgizypBct+gi5OstRgJpo/7LJrf4PegaMH3qEkIQjOPZDsOIF
+ TQ+Bly5sLELkP+ykaQRk80jEWEaZ+3fYe3Jdm8opj47w+JMNfFKMN1juNLrhT4ie4jJR
+ c1GIJii0nkm/w7XsMFehKzegTCIPDZlRITcyIeqZvKjwSCos7pl+tpYZ8FO04PXbqI00
+ 3DRw==
+X-Gm-Message-State: AOAM532/ewT7JaMbaR37a6sBqt2PleaMubC8KBLO3xRQ3dNT+f/csHsq
+ u++KcVzTTQ1+5ZYJIWlbFFUkrGM=
+X-Google-Smtp-Source: ABdhPJzXeoWmA8FqYnUyDHt1H+1i1lT4NG5VEGYB3aayjeqQWbIR2j1I9eog3zPHNJleVGEQz0K1xw==
+X-Received: by 2002:a63:ab4f:: with SMTP id k15mr35374114pgp.247.1596116026949; 
+ Thu, 30 Jul 2020 06:33:46 -0700 (PDT)
+Received: from mylaptop.redhat.com ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id f89sm5981313pjg.5.2020.07.30.06.33.43
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 30 Jul 2020 06:33:45 -0700 (PDT)
+From: Pingfan Liu <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCHv4 1/2] powerpc/pseries: group lmb operation and memblock's
+Date: Thu, 30 Jul 2020 21:33:24 +0800
+Message-Id: <1596116005-27511-1-git-send-email-kernelfans@gmail.com>
+X-Mailer: git-send-email 2.7.5
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,41 +86,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, kexec@lists.infradead.org,
+ Pingfan Liu <kernelfans@gmail.com>, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are two __packed attributes in qman.h that are both unnecessary
-and causing compiler warnings because they're conflicting with
-explicit alignment requirements set on members within the structure.
+This patch prepares for the incoming patch which swaps the order of
+KOBJ_ADD/REMOVE uevent and dt's updating.
 
-This patch removes them both.
+The dt updating should come after lmb operations, and before
+__remove_memory()/__add_memory().  Accordingly, grouping all lmb operations
+before the memblock's.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: kexec@lists.infradead.org
+To: linuxppc-dev@lists.ozlabs.org
+---
+v3 -> v4: improve commit log
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 26 ++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
 
-diff --git a/include/soc/fsl/qman.h b/include/soc/fsl/qman.h
-index cfe00e08e85b..d81ff185dc0b 100644
---- a/include/soc/fsl/qman.h
-+++ b/include/soc/fsl/qman.h
-@@ -256,7 +256,7 @@ struct qm_dqrr_entry {
- 	__be32 context_b;
- 	struct qm_fd fd;
- 	u8 __reserved4[32];
--} __packed;
-+};
- #define QM_DQRR_VERB_VBIT		0x80
- #define QM_DQRR_VERB_MASK		0x7f	/* where the verb contains; */
- #define QM_DQRR_VERB_FRAME_DEQUEUE	0x60	/* "this format" */
-@@ -289,7 +289,7 @@ union qm_mr_entry {
- 		__be32 tag;
- 		struct qm_fd fd;
- 		u8 __reserved1[32];
--	} __packed ern;
-+	} ern;
- 	struct {
- 		u8 verb;
- 		u8 fqs;		/* Frame Queue Status */
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 5d545b7..1a3ac3b 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -355,7 +355,8 @@ static int dlpar_add_lmb(struct drmem_lmb *);
+ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ {
+ 	unsigned long block_sz;
+-	int rc;
++	phys_addr_t base_addr;
++	int rc, nid;
+ 
+ 	if (!lmb_is_removable(lmb))
+ 		return -EINVAL;
+@@ -364,17 +365,19 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+ 	if (rc)
+ 		return rc;
+ 
++	base_addr = lmb->base_addr;
++	nid = lmb->nid;
+ 	block_sz = pseries_memory_block_size();
+ 
+-	__remove_memory(lmb->nid, lmb->base_addr, block_sz);
+-
+-	/* Update memory regions for memory remove */
+-	memblock_remove(lmb->base_addr, block_sz);
+-
+ 	invalidate_lmb_associativity_index(lmb);
+ 	lmb_clear_nid(lmb);
+ 	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+ 
++	__remove_memory(nid, base_addr, block_sz);
++
++	/* Update memory regions for memory remove */
++	memblock_remove(base_addr, block_sz);
++
+ 	return 0;
+ }
+ 
+@@ -603,6 +606,8 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ 	}
+ 
+ 	lmb_set_nid(lmb);
++	lmb->flags |= DRCONF_MEM_ASSIGNED;
++
+ 	block_sz = memory_block_size_bytes();
+ 
+ 	/* Add the memory */
+@@ -614,11 +619,14 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+ 
+ 	rc = dlpar_online_lmb(lmb);
+ 	if (rc) {
+-		__remove_memory(lmb->nid, lmb->base_addr, block_sz);
++		int nid = lmb->nid;
++		phys_addr_t base_addr = lmb->base_addr;
++
+ 		invalidate_lmb_associativity_index(lmb);
+ 		lmb_clear_nid(lmb);
+-	} else {
+-		lmb->flags |= DRCONF_MEM_ASSIGNED;
++		lmb->flags &= ~DRCONF_MEM_ASSIGNED;
++
++		__remove_memory(nid, base_addr, block_sz);
+ 	}
+ 
+ 	return rc;
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.7.5
+
