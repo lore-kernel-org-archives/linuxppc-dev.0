@@ -2,61 +2,69 @@ Return-Path: <SRS0=XZtv=BK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90940C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 13:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C30EC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 13:19:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0022B206FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 13:07:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3F1DE2076B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 13:19:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Fr3Qm6GQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0022B206FA
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="UXi89WeI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F1DE2076B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BJ6yN4HWdzDqh3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 23:07:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BJ7Cc0rkSzDqdp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jul 2020 23:19:08 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BJ6vj4pcKzDqZH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2020 23:05:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BJ78s45NrzDqd9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2020 23:16:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=Fr3Qm6GQ; 
+ header.a=rsa-sha256 header.s=201909 header.b=UXi89WeI; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BJ6vj08n9z9sRK;
- Fri, 31 Jul 2020 23:05:20 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BJ78s28Hpz9sRN;
+ Fri, 31 Jul 2020 23:16:45 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1596200721;
- bh=cbtTbd1X6hBlPoUNAtbkqigXBbk7tL0v47li4l8IVdE=;
- h=From:To:Cc:Subject:Date:From;
- b=Fr3Qm6GQQJ1J3shWk88eS0fZB/kc9TrHoHWosbI75b1CN1r000P8/cUbaEzsA3BAU
- OVugrPXng0kMPpgJxb+XL9hbHrAZkbTk4GP81j2WoPkYg/y7A6kHRnUS2aU30SEAWd
- RkmZGOxlevkoizt9uFo4WwFNCg+EOIkfHy7ZRdgwwJX4KoPo9AzX6vNyWYKNJRVHe6
- 0fZiFMyc4eM4smghkw15REEm8/tL0Fmos9bVqKGSLQyWL4W2oupKDd+CX8WxPaXXL/
- YPaNiu9DtdF4Cb2KQvdn39qm2HXyj9Y36+YZgEfZeLThR+phB9+gSJcbYiWgyBS3Co
- nRJOcIY0l2pJQ==
+ s=201909; t=1596201405;
+ bh=1JbEFZUUsHvWdZwnibgE6UHCnlPslOOz7UrpISJ3wsU=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=UXi89WeIk9sIfFGoPTwobFpIVZFYZrSo+Q5qUcyGUOY03RQPOjQhZsr5tFcwl5mH5
+ UjTMJW9n85y6QIwSqCnWqZtcQ5x8b5B+6yRBO4FL8XCB5W0YBM3oRBVGv7gUckhkWD
+ PdqyLP/iXr2sTsv0vQV7y/g6PiXcbEiKi7JOeGPSsSXHDE+h/RUDR5kp2HHnw3/Wme
+ TO0jXo6RvVGihBTnQecPZd32WzauaxZq5xlGQ/93MwtXL+rS+9G+h4XBp1GxLN44I0
+ Bie7F7xScLa4SL2tv1GWjRB7fYhZXQIwwZLMh1YC5Yy70ioKUsCMguZW5s0S1LbtMG
+ iBsS2BnaGYNzA==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.8-8 tag
-Date: Fri, 31 Jul 2020 23:05:17 +1000
-Message-ID: <87ime34yya.fsf@mpe.ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>,
+ Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: explicitly reschedule during drmem_lmb
+ list traversal
+In-Reply-To: <875za511z6.fsf@linux.ibm.com>
+References: <20200728173741.717372-1-nathanl@linux.ibm.com>
+ <bd9225f2-40c9-0460-ba45-c29c920b5f91@linux.ibm.com>
+ <878sf31m8k.fsf@linux.ibm.com> <87lfj16cql.fsf@mpe.ellerman.id.au>
+ <875za511z6.fsf@linux.ibm.com>
+Date: Fri, 31 Jul 2020 23:16:44 +1000
+Message-ID: <87ft974yf7.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,64 +76,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
+Cc: tyreld@linux.ibm.com, cheloha@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>> Laurent Dufour <ldufour@linux.ibm.com> writes:
+>>>> Le 28/07/2020 =C3=A0 19:37, Nathan Lynch a =C3=A9crit=C2=A0:
+>>>>> The drmem lmb list can have hundreds of thousands of entries, and
+>>>>> unfortunately lookups take the form of linear searches. As long as
+>>>>> this is the case, traversals have the potential to monopolize the CPU
+>>>>> and provoke lockup reports, workqueue stalls, and the like unless
+>>>>> they explicitly yield.
+>>>>>=20
+>>>>> Rather than placing cond_resched() calls within various
+>>>>> for_each_drmem_lmb() loop blocks in the code, put it in the iteration
+>>>>> expression of the loop macro itself so users can't omit it.
+>>>>
+>>>> Is that not too much to call cond_resched() on every LMB?
+>>>>
+>>>> Could that be less frequent, every 10, or 100, I don't really know ?
+>>>
+>>> Everything done within for_each_drmem_lmb is relatively heavyweight
+>>> already. E.g. calling dlpar_remove_lmb()/dlpar_add_lmb() can take dozens
+>>> of milliseconds. I don't think cond_resched() is an expensive check in
+>>> this context.
+>>
+>> Hmm, mostly.
+>>
+>> But there are quite a few cases like drmem_update_dt_v1():
+>>
+>> 	for_each_drmem_lmb(lmb) {
+>> 		dr_cell->base_addr =3D cpu_to_be64(lmb->base_addr);
+>> 		dr_cell->drc_index =3D cpu_to_be32(lmb->drc_index);
+>> 		dr_cell->aa_index =3D cpu_to_be32(lmb->aa_index);
+>> 		dr_cell->flags =3D cpu_to_be32(drmem_lmb_flags(lmb));
+>>
+>> 		dr_cell++;
+>> 	}
+>>
+>> Which will compile to a pretty tight loop at the moment.
+>>
+>> Or drmem_update_dt_v2() which has two loops over all lmbs.
+>>
+>> And although the actual TIF check is cheap the function call to do it is
+>> not free.
+>>
+>> So I worry this is going to make some of those long loops take even
+>> longer.
+>
+> That's fair, and I was wrong - some of the loop bodies are relatively
+> simple, not doing allocations or taking locks, etc.
+>
+> One way to deal is to keep for_each_drmem_lmb() as-is and add a new
+> iterator that can reschedule, e.g. for_each_drmem_lmb_slow().
 
-Hi Linus,
+If we did that, how many call-sites would need converting?
+Is it ~2 or ~20 or ~200?
 
-Please pull one more powerpc fix for 5.8:
+> On the other hand... it's probably not too strong to say that the
+> drmem/hotplug code is in crisis with respect to correctness and
+> algorithmic complexity, so those are my overriding concerns right
+> now. Yes, this change will pessimize loops that are reinitializing the
+> entire drmem_lmb array on every DLPAR operation, but:
+>
+> 1. it doesn't make any user of for_each_drmem_lmb() less correct;
+> 2. why is this code doing that in the first place, other than to
+>    accommodate a poor data structure choice?
+>
+> The duration of the system calls where this code runs are measured in
+> minutes or hours on large configurations because of all the behaviors
+> that are at best O(n) with the amount of memory assigned to the
+> partition. For simplicity's sake I'd rather defer lower-level
+> performance considerations like this until the drmem data structures'
+> awful lookup properties are fixed -- hopefully in the 5.10 timeframe.
 
-The following changes since commit f0479c4bcbd92d1a457d4a43bcab79f29d11334a:
+Yeah fair enough.
 
-  selftests/powerpc: Use proper error code to check fault address (2020-07-15 23:10:17 +1000)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.8-8
-
-for you to fetch changes up to 909adfc66b9a1db21b5e8733e9ebfa6cd5135d74:
-
-  powerpc/64s/hash: Fix hash_preload running with interrupts enabled (2020-07-27 17:02:09 +1000)
-
-- ------------------------------------------------------------------
-powerpc fixes for 5.8 #8
-
-Fix a bug introduced by the changes we made to lockless page table walking this
-cycle. When using the hash MMU, and perf with callchain recording, we can
-deadlock if the PMI interrupts a hash fault, and the callchain recording then
-takes a hash fault on the same page.
-
-Thanks to:
-  Nicholas Piggin, Aneesh Kumar K.V, Anton Blanchard, Athira Rajeev.
-
-- ------------------------------------------------------------------
-Nicholas Piggin (1):
-      powerpc/64s/hash: Fix hash_preload running with interrupts enabled
-
-
- arch/powerpc/kernel/exceptions-64s.S  | 14 ++++++++---
- arch/powerpc/mm/book3s64/hash_utils.c | 25 ++++++++++++++++++++
- arch/powerpc/perf/core-book3s.c       |  6 +++++
- 3 files changed, 42 insertions(+), 3 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl8kFsQACgkQUevqPMjh
-pYAkbg/9HzJB8KbjAVJpoXHOf9+aHylhZKU2pcVtdoYE07VV6JabWnlI5flvTSEY
-3Dvr3h/X0k2Z3n52+s1kYlW27ErU+o9Hbz1j4O41Ardiy14GmQ02FSi5iXjhKxuk
-AjX2MN76n1Te+1ee2Ib/Ubu8KOrbxLIya223tJ0TNu7RWuYVaCO/lNXPPTwm2JWI
-s9lryRAHNc4qkPMytsWi/gzNml3IP6cqnGVt1H5fmnOwQXUYbSjdmhBa7AwjCsA1
-xJBMkxBxWOnUSknRCxaCCUTQ3sD+sJMzp6verlwEIb+HRh08iJyVzuWCpT9m0ZOG
-5F3CvhIxwLatDsJ9N5EeGI2V4qBstBlHEUJJAjkwKgZxzmEm7j9H+ItAc421eo2A
-t/SYJTK4JltllCDyB22jCxdEgJh+opv8rki7U+INI01I8gHzqsr/0CHleGtMN5Cq
-fUBf25LOMUCpjeAO207j4DzeY6rTXz9H07XWrR4su//4S9bNkYUYpFfeE/3Kwwdq
-vZCxjm+fxxLPyAW+E2D2EGsyzIJootrAzly5T7gun8qwgCSgoCxI+YV9/DLmYaGf
-OjcG6+X58sfn1FTc8cD6udKCIMKh0JmSccZRqw1Ijp4EiGMnDZUbP9jg/aSciD8a
-+oco9QGvvxYQTMut4XUkXtqqZqaTISgWFD/QB9f4KGJ1Rs8tW5Y=
-=oaTB
------END PGP SIGNATURE-----
+cheers
