@@ -4,39 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24BA4C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 14:13:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57438C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 14:16:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1C17206DA
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 14:13:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1C17206DA
+	by mail.kernel.org (Postfix) with ESMTPS id 107B5206DA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 14:16:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 107B5206DA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BKNK95BLPzDqQh
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 00:13:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BKNNl3y9RzDqKL
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 00:16:23 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BKMTC67RyzDqKb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BKMTC5hJszDqKN
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Aug 2020 23:35:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BKMTC14kXz9sTH; Sun,  2 Aug 2020 23:35:10 +1000 (AEST)
+ id 4BKMTB0P16z9sTp; Sun,  2 Aug 2020 23:35:09 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Vladis Dronov <vdronov@redhat.com>
-In-Reply-To: <20200729133741.62789-1-vdronov@redhat.com>
-References: <20200729133741.62789-1-vdronov@redhat.com>
-Subject: Re: [PATCH] powerpc: fix function annotations to avoid section
- mismatch warnings with gcc-10
-Message-Id: <159637523829.42190.11957533441290690592.b4-ty@ellerman.id.au>
-Date: Sun,  2 Aug 2020 23:35:10 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ linux-nvdimm@lists.01.org
+In-Reply-To: <20200731064153.182203-1-vaibhav@linux.ibm.com>
+References: <20200731064153.182203-1-vaibhav@linux.ibm.com>
+Subject: Re: [PATCH v4 0/2] powerpc/papr_scm: add support for reporting NVDIMM
+ 'life_used_percentage' metric
+Message-Id: <159637524118.42190.10318141751963824378.b4-ty@ellerman.id.au>
+Date: Sun,  2 Aug 2020 23:35:09 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,29 +49,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Jul 2020 15:37:41 +0200, Vladis Dronov wrote:
-> Certain warnings are emitted for powerpc code when building with a gcc-10
-> toolset:
+On Fri, 31 Jul 2020 12:11:51 +0530, Vaibhav Jain wrote:
+> Changes since v3[1]:
 > 
->     WARNING: modpost: vmlinux.o(.text.unlikely+0x377c): Section mismatch in
->     reference from the function remove_pmd_table() to the function
->     .meminit.text:split_kernel_mapping()
->     The function remove_pmd_table() references
->     the function __meminit split_kernel_mapping().
->     This is often because remove_pmd_table lacks a __meminit
->     annotation or the annotation of split_kernel_mapping is wrong.
+> * Fixed a rebase issue pointed out by Aneesh in first patch in the series.
 > 
-> [...]
+> [1] https://lore.kernel.org/linux-nvdimm/20200730121303.134230-1-vaibhav@linux.ibm.com
 
 Applied to powerpc/next.
 
-[1/1] powerpc: fix function annotations to avoid section mismatch warnings with gcc-10
-      https://git.kernel.org/powerpc/c/aff779515a070df7e23da9e86f1096f7d10d647e
+[1/2] powerpc/papr_scm: Fetch nvdimm performance stats from PHYP
+      https://git.kernel.org/powerpc/c/2d02bf835e5731de632c8a13567905fa7c0da01c
+[2/2] powerpc/papr_scm: Add support for fetching nvdimm 'fuel-gauge' metric
+      https://git.kernel.org/powerpc/c/af0870c4e75655b1931d0a5ffde2f448a2794362
 
 cheers
