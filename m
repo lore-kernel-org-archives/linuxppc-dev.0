@@ -2,48 +2,86 @@ Return-Path: <SRS0=CfD8=BM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9ED6C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 17:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BA3FC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 18:03:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A58620738
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 17:34:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A58620738
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=1wt.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 7AFBD20738
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Aug 2020 18:03:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uknpQ4DM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AFBD20738
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BKSnM20FvzDqSW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 03:34:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=1wt.eu
- (client-ip=62.212.114.60; helo=1wt.eu; envelope-from=w@1wt.eu;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BKTQw11zWzDqMb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 04:03:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::643;
+ helo=mail-ej1-x643.google.com; envelope-from=mingo.kernel.org@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=1wt.eu
-X-Greylist: delayed 719 seconds by postgrey-1.36 at bilbo;
- Mon, 03 Aug 2020 03:32:30 AEST
-Received: from 1wt.eu (wtarreau.pck.nerim.net [62.212.114.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BKSl21xbJzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2020 03:32:29 +1000 (AEST)
-Received: (from willy@localhost)
- by pcw.home.local (8.15.2/8.15.2/Submit) id 072HKJqe027023;
- Sun, 2 Aug 2020 19:20:19 +0200
-Date: Sun, 2 Aug 2020 19:20:19 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: powerpc: build failures in Linus' tree
-Message-ID: <20200802172019.GB26677@1wt.eu>
-References: <20200802204842.36bca162@canb.auug.org.au>
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=uknpQ4DM; dkim-atps=neutral
+Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com
+ [IPv6:2a00:1450:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BKTNN4JwWzDqDr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2020 04:01:24 +1000 (AEST)
+Received: by mail-ej1-x643.google.com with SMTP id l4so36261010ejd.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Aug 2020 11:01:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=cWqP425OZ00Oz4x2XaCg5sL4Bi3BuFHBZ9fhbstEoPo=;
+ b=uknpQ4DMxgwRI+7RXzKKaxSHSsHT4JX+qN+G3Zw62I+z7K+v0oM82e+YsM5L2ibFwZ
+ ZtPLnfzJt8IFqkH991n5kK4zcZ2/fsZTMmLNrFK7hPe3auCniFr0qepP8+PKlvq/+X4Y
+ 6FOXivLK6+BH8tYzSACnWRFDv80Xb8yKxgJKQm36t4gslbAugHoQp37YMrGD2IIEXvEW
+ lHLgWw9HHo88+yhhI1SsXvM9DHpmveOnmArUrLkNHDmUxgOR5yVJEiJKHqYfS7BI8LbU
+ 2xANFxjuEWzWjHDwLiCM886yebnNr5jnEbr0RMGk15mMx04KzIUKhAfWZe7dw+zaroY/
+ roWA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+ :references:mime-version:content-disposition:in-reply-to;
+ bh=cWqP425OZ00Oz4x2XaCg5sL4Bi3BuFHBZ9fhbstEoPo=;
+ b=Wdn6N8LbZBiHmicPjA82cy5H2jTVzyDhLD5UDL5s5r44R/WciRkg12qV+oNBK0P5R2
+ tUtSpVxMLSbcIkN8YQpDIAf5qASvcWHVmH0rWhqb1vqba1+TLYpajykpLwttJOyBEowT
+ PlWQUqgcomcGFkpO1mIvhg4FkIK3e8sEvhBIIhguekI+eSsorZJ8LZ0FwbouUdtsUv5X
+ /XWvPi8/0PcvbLjYPQf+he6CeVTZJuDFHLlr/s8Foj1AVr43+sW7oAcon5m/Bepkocus
+ AlQDsmYJBLl49kaBdGSi5+LsX4OcLSEiiy0eBmZGIWzLUA4DNfID+bRC4v0J7xiKrb7A
+ C/4Q==
+X-Gm-Message-State: AOAM533CozxeoXPRkOAXGmGeS4Opl21hQsq8LTUDtTjVEoJyihv0nGFL
+ TywefxI1r6fRJqhQBFO0u20=
+X-Google-Smtp-Source: ABdhPJzKJVSrfGoQ7+sK5UMaqi5wNpNE5CXoSPOw/FVAw4VikTzayUXH2AGSuVR6AmkbWWniCTFE/A==
+X-Received: by 2002:a17:906:c187:: with SMTP id
+ g7mr13929214ejz.108.1596391275076; 
+ Sun, 02 Aug 2020 11:01:15 -0700 (PDT)
+Received: from gmail.com (54033286.catv.pool.telekom.hu. [84.3.50.134])
+ by smtp.gmail.com with ESMTPSA id t19sm14191760edw.63.2020.08.02.11.01.12
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 02 Aug 2020 11:01:13 -0700 (PDT)
+Date: Sun, 2 Aug 2020 20:01:10 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v2 13/17] x86/setup: simplify initrd relocation and
+ reservation
+Message-ID: <20200802180110.GA86614@gmail.com>
+References: <20200802163601.8189-1-rppt@kernel.org>
+ <20200802163601.8189-14-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200802204842.36bca162@canb.auug.org.au>
-User-Agent: Mutt/1.6.1 (2016-04-27)
+In-Reply-To: <20200802163601.8189-14-rppt@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,39 +93,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ Emil Renner Berthing <kernel@esmil.dk>, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Baoquan He <bhe@redhat.com>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
+ clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ Stafford Horne <shorne@gmail.com>, Hari Bathini <hbathini@linux.ibm.com>,
+ Michal Simek <monstr@monstr.eu>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Palmer Dabbelt <palmer@dabbelt.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Aug 02, 2020 at 08:48:42PM +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> We are getting build failures in some PowerPC configs for Linus' tree.
-> See e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/14306515/
-> 
-> In file included from /kisskb/src/arch/powerpc/include/asm/paca.h:18,
->                  from /kisskb/src/arch/powerpc/include/asm/percpu.h:13,
->                  from /kisskb/src/include/linux/random.h:14,
->                  from /kisskb/src/include/linux/net.h:18,
->                  from /kisskb/src/net/ipv6/ip6_fib.c:20:
-> /kisskb/src/arch/powerpc/include/asm/mmu.h:139:22: error: unknown type name 'next_tlbcam_idx'
->   139 | DECLARE_PER_CPU(int, next_tlbcam_idx);
-> 
-> I assume this is caused by commit
-> 
->   1c9df907da83 ("random: fix circular include dependency on arm64 after addition of percpu.h")
-> 
-> But I can't see how, sorry.
 
-So there, asm/mmu.h includes asm/percpu.h, which includes asm/paca.h, which
-includes asm/mmu.h.
+* Mike Rapoport <rppt@kernel.org> wrote:
 
-I suspect that we can remove asm/paca.h from asm/percpu.h as it *seems*
-to be only used by the #define __my_cpu_offset but I don't know if anything
-will break further, especially if this __my_cpu_offset is used anywhere
-without this paca definition.
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> Currently, initrd image is reserved very early during setup and then it
+> might be relocated and re-reserved after the initial physical memory
+> mapping is created. The "late" reservation of memblock verifies that mapped
+> memory size exceeds the size of initrd, the checks whether the relocation
+> required and, if yes, relocates inirtd to a new memory allocated from
+> memblock and frees the old location.
+> 
+> The check for memory size is excessive as memblock allocation will anyway
+> fail if there is not enough memory. Besides, there is no point to allocate
+> memory from memblock using memblock_find_in_range() + memblock_reserve()
+> when there exists memblock_phys_alloc_range() with required functionality.
+> 
+> Remove the redundant check and simplify memblock allocation.
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 
-Willy
+Assuming there's no hidden dependency here breaking something:
+
+  Acked-by: Ingo Molnar <mingo@kernel.org>
+
+Thanks,
+
+	Ingo
