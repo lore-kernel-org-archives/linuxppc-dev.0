@@ -2,56 +2,61 @@ Return-Path: <SRS0=LND+=BN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1877AC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 03:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31957C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 03:27:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C7232206F6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 03:24:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7232206F6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id DC10C206F6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 03:27:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC10C206F6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BKjtF1Nx8zDqSp
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 13:24:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BKjxB1MnPzDqT2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Aug 2020 13:27:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BKjqt1kZFzDqSJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2020 13:22:32 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 840432000E8;
- Mon,  3 Aug 2020 05:22:29 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 189D82000F7;
- Mon,  3 Aug 2020 05:22:25 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0A4ED402DE;
- Mon,  3 Aug 2020 05:22:18 +0200 (CEST)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_sai: Clean code for synchronize mode
-Date: Mon,  3 Aug 2020 11:17:54 +0800
-Message-Id: <1596424674-32127-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BKjtP3H1yzDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2020 13:24:44 +1000 (AEST)
+IronPort-SDR: dCZCC05pw83oUufBBLx133wuciaMzd6DppAikOo4jwcngYwihe2hhej3QFEeePbd1fodSSuI6y
+ E9QH/zVZMdDA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9701"; a="151244114"
+X-IronPort-AV: E=Sophos;i="5.75,428,1589266800"; d="scan'208";a="151244114"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2020 20:24:40 -0700
+IronPort-SDR: lTNqx1Aq3sVm13Qe2ACmjt8Z3eFlLXw48AyQcRB7b2FW+pWv/4n4UtBZzVTei1CRD2y2oXcY0N
+ LzPaXXnX3NDA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,428,1589266800"; d="scan'208";a="492187860"
+Received: from lkp-server01.sh.intel.com (HELO e21119890065) ([10.239.97.150])
+ by fmsmga005.fm.intel.com with ESMTP; 02 Aug 2020 20:24:39 -0700
+Received: from kbuild by e21119890065 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1k2R5a-0001os-Qn; Mon, 03 Aug 2020 03:24:38 +0000
+Date: Mon, 03 Aug 2020 11:24:02 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 7f7917ae4d306a72ef9f6265028d8d203702f0b8
+Message-ID: <5f278352.bFEHoHbsn104skCX%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,69 +68,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-TX synchronous with RX: The RMR is no need to be changed when
-Tx is enabled, the other configuration in hw_params() is enough for
-clock generation. The TCSR.TE is no need to enabled when only RX
-is enabled.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 7f7917ae4d306a72ef9f6265028d8d203702f0b8  selftests/powerpc: Skip vmx/vsx tests on older CPUs
 
-RX synchronous with TX: The TMR is no need to be changed when
-Rx is enabled, the other configuration in hw_params() is enough for
-clock generation. The RCSR.RE is no need to enabled when only TX
-is enabled.
+elapsed time: 799m
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+configs tested: 106
+configs skipped: 12
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                      chrp32_defconfig
+arm                          pxa910_defconfig
+sh                        sh7757lcr_defconfig
+sh                           se7780_defconfig
+arc                 nsimosci_hs_smp_defconfig
+arm                  colibri_pxa300_defconfig
+arm                          gemini_defconfig
+c6x                        evmc6678_defconfig
+arm                        multi_v5_defconfig
+m68k                        m5272c3_defconfig
+mips                           gcw0_defconfig
+arm                      pxa255-idp_defconfig
+arm                        mini2440_defconfig
+powerpc                    adder875_defconfig
+powerpc                          g5_defconfig
+sh                   rts7751r2dplus_defconfig
+s390                                defconfig
+arm                      jornada720_defconfig
+sh                      rts7751r2d1_defconfig
+nios2                         3c120_defconfig
+c6x                        evmc6457_defconfig
+h8300                               defconfig
+arm                            zeus_defconfig
+c6x                         dsk6455_defconfig
+m68k                                defconfig
+nds32                            alldefconfig
+arc                         haps_hs_defconfig
+arm                          exynos_defconfig
+mips                      pistachio_defconfig
+arm                     am200epdkit_defconfig
+arm                         lpc32xx_defconfig
+alpha                            allyesconfig
+mips                          ath25_defconfig
+mips                      maltaaprp_defconfig
+powerpc                    amigaone_defconfig
+arm                         nhk8815_defconfig
+arc                    vdk_hs38_smp_defconfig
+arm                   milbeaut_m10v_defconfig
+c6x                        evmc6472_defconfig
+mips                          ath79_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                       ppc64_defconfig
+mips                  mips_paravirt_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a004-20200802
+i386                 randconfig-a005-20200802
+i386                 randconfig-a001-20200802
+i386                 randconfig-a002-20200802
+i386                 randconfig-a003-20200802
+i386                 randconfig-a006-20200802
+x86_64               randconfig-a006-20200802
+x86_64               randconfig-a001-20200802
+x86_64               randconfig-a004-20200802
+x86_64               randconfig-a003-20200802
+x86_64               randconfig-a002-20200802
+x86_64               randconfig-a005-20200802
+i386                 randconfig-a011-20200802
+i386                 randconfig-a012-20200802
+i386                 randconfig-a015-20200802
+i386                 randconfig-a014-20200802
+i386                 randconfig-a013-20200802
+i386                 randconfig-a016-20200802
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- sound/soc/fsl/fsl_sai.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index cdff739924e2..a210c9836a9a 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -482,8 +482,6 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 			regmap_update_bits(sai->regmap, FSL_SAI_TCR5(ofs),
- 				FSL_SAI_CR5_WNW_MASK | FSL_SAI_CR5_W0W_MASK |
- 				FSL_SAI_CR5_FBT_MASK, val_cr5);
--			regmap_write(sai->regmap, FSL_SAI_TMR,
--				~0UL - ((1 << channels) - 1));
- 		} else if (!sai->synchronous[RX] && sai->synchronous[TX] && tx) {
- 			regmap_update_bits(sai->regmap, FSL_SAI_RCR4(ofs),
- 				FSL_SAI_CR4_SYWD_MASK | FSL_SAI_CR4_FRSZ_MASK,
-@@ -491,8 +489,6 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 			regmap_update_bits(sai->regmap, FSL_SAI_RCR5(ofs),
- 				FSL_SAI_CR5_WNW_MASK | FSL_SAI_CR5_W0W_MASK |
- 				FSL_SAI_CR5_FBT_MASK, val_cr5);
--			regmap_write(sai->regmap, FSL_SAI_RMR,
--				~0UL - ((1 << channels) - 1));
- 		}
- 	}
- 
-@@ -553,11 +549,18 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
- 				   FSL_SAI_CSR_FRDE, FSL_SAI_CSR_FRDE);
- 
--		regmap_update_bits(sai->regmap, FSL_SAI_RCSR(ofs),
--				   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
--		regmap_update_bits(sai->regmap, FSL_SAI_TCSR(ofs),
-+		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
- 				   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
- 
-+		/* Enable opposite direction when necessarily */
-+		if (!sai->synchronous[TX] && sai->synchronous[RX] && !tx) {
-+			regmap_update_bits(sai->regmap, FSL_SAI_xCSR((!tx), ofs),
-+					   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
-+		} else if (!sai->synchronous[RX] && sai->synchronous[TX] && tx) {
-+			regmap_update_bits(sai->regmap, FSL_SAI_xCSR((!tx), ofs),
-+					   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
-+		}
-+
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
- 				   FSL_SAI_CSR_xIE_MASK, FSL_SAI_FLAGS);
- 		break;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
