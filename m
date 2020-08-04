@@ -2,80 +2,64 @@ Return-Path: <SRS0=OkVA=BO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1008C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 13:37:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE368C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 13:39:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 493942073E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 13:37:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9F1892073E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 13:39:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iIcb534I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 493942073E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="dZztpu/E"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F1892073E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BLbQx6pGbzDqSP
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 23:37:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::12a;
- helo=mail-il1-x12a.google.com; envelope-from=kernelfans@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=iIcb534I; dkim-atps=neutral
-Received: from mail-il1-x12a.google.com (mail-il1-x12a.google.com
- [IPv6:2607:f8b0:4864:20::12a])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BLbTW5DrVzDqc2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 23:39:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BLbLs52vszDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 23:33:56 +1000 (AEST)
-Received: by mail-il1-x12a.google.com with SMTP id c16so22355451ils.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2020 06:33:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=xhClNq/HCpBReOShm+4lUZuMrYELtFHHHjv0pGdQMRM=;
- b=iIcb534IqNJBFEMOF1kGXzLFTz4dxADZjibG2aHxkVMkgyrkeFyk5ZMTBDi8kxZqfx
- DTqX8NijQiecdB1kyfFjUUUXqUxUT5Fyzf9boGfCjFuRzZ6wcn/0r+kbC2HNiQvCAvuj
- GDyy/h8z1246DwlJcBRE4bFrEftOO702jfV954R+3DWlaLJaRSfpgWfR8XfOB7GkDTGm
- HbsgMqwynXzxU1jTymKThZ12lKShZBf9QxAHRTlfp67Po4FA30ECFXhk+3/jA2iYymTd
- qF01K2vYhNvCjnXMBPNjTus8q9o3ZYvDFdbNW1R3gE1PozftTUuAV/jVdHpGysZfsBBe
- Xtqg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=xhClNq/HCpBReOShm+4lUZuMrYELtFHHHjv0pGdQMRM=;
- b=bFbmsrF6oUZGT+tkccFLoWqC+jcBTzRuxMFf4KyfTQtjQuh6xTlmAHLDrqhvrOsJxK
- VD2pssm/DJt8GqzMVivXqP7rq/9jThcZA2NT562+0FCp8Ja+PkBueiBtAOGIKMV5ODMr
- eHRhjJ3UFTz/30Kaq5MVGpB988RhExwQU1xkKSmvzIkn5ME5M9ZHnEC0pgPspCSRtPOW
- dJlqlIuvQ/bSH+WM1ihdUfv09MyNHEHCZ49kQ4X42wCAMZ35nHp1NwO4RzEulxrCkZOg
- usgS7FrLUrdAhYQES1SDPH/ni5Fk2V1cS/tp/R6Xa21EmwPVbxAu0Bh+C0+zRcCH7rHY
- V/QA==
-X-Gm-Message-State: AOAM530BEf+eNelgG+clul3W0iR5LPZa2tFCyztqcFVUNqF2Zl+gu0vb
- kFsMt4IhCytUHVFL/JsuLwcGW06YhHcQkg22tg==
-X-Google-Smtp-Source: ABdhPJwfP/rdGT43T5vsBM32yQb752R74rbUuWewCoTKACJMnJwoLKMAJ4CMjfZZ7O13ofKd20OCZNsR+N0Mza2x91c=
-X-Received: by 2002:a05:6e02:1002:: with SMTP id
- n2mr4667029ilj.117.1596548030311; 
- Tue, 04 Aug 2020 06:33:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BLbNY0YgfzDqVN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 23:35:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=dZztpu/E; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BLbNM3dGzz9sTK;
+ Tue,  4 Aug 2020 23:35:15 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1596548115;
+ bh=JaGiTjL11VXw6s5vCa+krpoX0kAtWTLuTx4q2RQUDOg=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=dZztpu/E7QMgTUczLMOVpSvH02ai/ngbz2JswJxxeu8acVFoF1wvct/nmaAOBFl5n
+ WbuX7uLi8duzVDVOKTvhJdBDau6p3wtvsTrYYznQIt8j4ILE0edPqj2WOR9HG+sa5d
+ dGgzmWZXQ3GxTS7SysmiPIzNu3xSPhnfsQX1/Vkh7DI44xkCGAqylF1nKyGyjW7/pr
+ EyalBEQzn5/UPc+O5707JRN0QXZYFPYxyC4mCKkgBz7YKxsB4h/hiWvBwtLxjxC9HA
+ GLvajWPVp8rOJZ2+XzJZGhAtI5HIUQjdm21AqRHu/mj+zZWPIp5oLh+NdEL8vk401C
+ EKYD1N2k/CqhA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Roth <mdroth@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries/hotplug-cpu: increase wait time for vCPU
+ death
+In-Reply-To: <20200804032937.7235-1-mdroth@linux.vnet.ibm.com>
+References: <20200804032937.7235-1-mdroth@linux.vnet.ibm.com>
+Date: Tue, 04 Aug 2020 23:35:10 +1000
+Message-ID: <873652zg8h.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <1596116005-27511-1-git-send-email-kernelfans@gmail.com>
- <ee585548-aefc-ff3f-6a79-e616b9e04f12@linux.ibm.com>
-In-Reply-To: <ee585548-aefc-ff3f-6a79-e616b9e04f12@linux.ibm.com>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Tue, 4 Aug 2020 21:33:39 +0800
-Message-ID: <CAFgQCTt=qjaYtOUvt7sy1PiSo1sDdGn9Dktyu9O26QXagvbNFQ@mail.gmail.com>
-Subject: Re: [PATCHv4 1/2] powerpc/pseries: group lmb operation and memblock's
-To: Laurent Dufour <ldufour@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,36 +71,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Kexec Mailing List <kexec@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Hari Bathini <hbathini@linux.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Cedric Le Goater <clg@kaod.org>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>, Greg Kurz <groug@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 3, 2020 at 9:52 PM Laurent Dufour <ldufour@linux.ibm.com> wrote:
->
-> > @@ -603,6 +606,8 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
-> >         }
-> >
-> >         lmb_set_nid(lmb);
-> > +       lmb->flags |= DRCONF_MEM_ASSIGNED;
-> > +
-> >         block_sz = memory_block_size_bytes();
-> >
-> >         /* Add the memory */
->
-> Since the lmb->flags is now set earlier, you should unset it in the case the
-> call to __add_memory() fails, something like:
->
-> @@ -614,6 +614,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
->         rc = __add_memory(lmb->nid, lmb->base_addr, block_sz);
->         if (rc) {
->                 invalidate_lmb_associativity_index(lmb);
-> +               lmb->flags &= ~DRCONF_MEM_ASSIGNED;
-You are right. I will fix it in V5.
+Hi Mike,
 
-Thanks,
-Pingfan
+There is a bit of history to this code, but not in a good way :)
+
+Michael Roth <mdroth@linux.vnet.ibm.com> writes:
+> For a power9 KVM guest with XIVE enabled, running a test loop
+> where we hotplug 384 vcpus and then unplug them, the following traces
+> can be seen (generally within a few loops) either from the unplugged
+> vcpu:
+>
+>   [ 1767.353447] cpu 65 (hwid 65) Ready to die...
+>   [ 1767.952096] Querying DEAD? cpu 66 (66) shows 2
+>   [ 1767.952311] list_del corruption. next->prev should be c00a000002470208, but was c00a000002470048
+...
+>
+> At that point the worker thread assumes the unplugged CPU is in some
+> unknown/dead state and procedes with the cleanup, causing the race with
+> the XIVE cleanup code executed by the unplugged CPU.
+>
+> Fix this by inserting an msleep() after each RTAS call to avoid
+
+We previously had an msleep(), but it was removed:
+
+  b906cfa397fd ("powerpc/pseries: Fix cpu hotplug")
+
+> pseries_cpu_die() returning prematurely, and double the number of
+> attempts so we wait at least a total of 5 seconds. While this isn't an
+> ideal solution, it is similar to how we dealt with a similar issue for
+> cede_offline mode in the past (940ce422a3).
+
+Thiago tried to fix this previously but there was a bit of discussion
+that didn't quite resolve:
+
+  https://lore.kernel.org/linuxppc-dev/20190423223914.3882-1-bauerman@linux.ibm.com/
+
+
+Spinning forever seems like a bad idea, but as has been demonstrated at
+least twice now, continuing when we don't know the state of the other
+CPU can lead to straight up crashes.
+
+So I think I'm persuaded that it's preferable to have the kernel stuck
+spinning rather than oopsing.
+
+I'm 50/50 on whether we should have a cond_resched() in the loop. My
+first instinct is no, if we're stuck here for 20s a stack trace would be
+good. But then we will probably hit that on some big and/or heavily
+loaded machine.
+
+So possibly we should call cond_resched() but have some custom logic in
+the loop to print a warning if we are stuck for more than some
+sufficiently long amount of time.
+
+
+> Fixes: eac1e731b59ee ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
+> Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=1856588
+
+This is not public.
+
+I tend to trim Bugzilla links from the change log, because I'm not
+convinced they will last forever, but it is good to have them in the
+mail archive.
+
+cheers
+
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Cedric Le Goater <clg@kaod.org>
+> Cc: Greg Kurz <groug@kaod.org>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Signed-off-by: Michael Roth <mdroth@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index c6e0d8abf75e..3cb172758052 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -111,13 +111,12 @@ static void pseries_cpu_die(unsigned int cpu)
+>  	int cpu_status = 1;
+>  	unsigned int pcpu = get_hard_smp_processor_id(cpu);
+>  
+> -	for (tries = 0; tries < 25; tries++) {
+> +	for (tries = 0; tries < 50; tries++) {
+>  		cpu_status = smp_query_cpu_stopped(pcpu);
+>  		if (cpu_status == QCSS_STOPPED ||
+>  		    cpu_status == QCSS_HARDWARE_ERROR)
+>  			break;
+> -		cpu_relax();
+> -
+> +		msleep(100);
+>  	}
+>  
+>  	if (cpu_status != 0) {
+> -- 
+> 2.17.1
