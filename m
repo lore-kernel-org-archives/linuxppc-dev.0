@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B22CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A27AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:51:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A80B920738
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:49:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A80B920738
+	by mail.kernel.org (Postfix) with ESMTPS id 5B0AF2086A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:51:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B0AF2086A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BLY2h4pj9zDqRj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 21:49:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BLY4p2hflzDqXG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 21:51:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,41 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BLY0V55rXzDqWS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 21:47:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BLY0W17cdzDqWb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 21:47:54 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BLY0N1ngVz9tyRl;
- Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BLY0Q1j6jz9tyRn;
+ Tue,  4 Aug 2020 13:47:50 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id idJxBgUphmTq; Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
+ with ESMTP id ZUpdccML6s5T; Tue,  4 Aug 2020 13:47:50 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BLY0N0l4wz9tyRh;
- Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BLY0Q0rTCz9tyRh;
+ Tue,  4 Aug 2020 13:47:50 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2460D8B7B6;
- Tue,  4 Aug 2020 13:47:49 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7F8E08B7A5;
+ Tue,  4 Aug 2020 13:47:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id x9HR1xclwqLA; Tue,  4 Aug 2020 13:47:49 +0200 (CEST)
+ with ESMTP id F1AAcO6T5Y4S; Tue,  4 Aug 2020 13:47:51 +0200 (CEST)
 Received: from po16052vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E97B48B7A5;
- Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F347E8B7B9;
+ Tue,  4 Aug 2020 13:47:50 +0200 (CEST)
 Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id D827665BBB; Tue,  4 Aug 2020 11:47:48 +0000 (UTC)
-Message-Id: <288845ddd80bb0ae636bb013d4b0fa803fad1056.1596541334.git.christophe.leroy@csgroup.eu>
+ id E464865BBB; Tue,  4 Aug 2020 11:47:50 +0000 (UTC)
+Message-Id: <459ef960fb08d51962b9dba4dfba247f102d149d.1596541334.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1596541334.git.christophe.leroy@csgroup.eu>
 References: <cover.1596541334.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v9 1/5] powerpc/processor: Move cpu_relax() into
- asm/vdso/processor.h
+Subject: [PATCH v9 3/5] powerpc/vdso: Save and restore TOC pointer on PPC64
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  nathanl@linux.ibm.com, anton@ozlabs.org
-Date: Tue,  4 Aug 2020 11:47:48 +0000 (UTC)
+Date: Tue,  4 Aug 2020 11:47:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,94 +80,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-cpu_relax() need to be in asm/vdso/processor.h to be used by
-the C VDSO generic library.
+On PPC64, the TOC pointer needs to be saved and restored.
 
-Move it there.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v9: New.
+
+I'm not sure this is really needed, I can't see the VDSO C code doing
+anything with r2, at least on ppc64_defconfig.
+
+So I let you decide whether you take it or not.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v9: Forgot to remove cpu_relax() from processor.h in v8
----
- arch/powerpc/include/asm/processor.h      | 13 ++-----------
- arch/powerpc/include/asm/vdso/processor.h | 23 +++++++++++++++++++++++
- 2 files changed, 25 insertions(+), 11 deletions(-)
- create mode 100644 arch/powerpc/include/asm/vdso/processor.h
+ arch/powerpc/include/asm/vdso/gettimeofday.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ed0d633ab5aa..c1ba9c8d9b90 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -6,6 +6,8 @@
-  * Copyright (C) 2001 PPC 64 Team, IBM Corp
-  */
- 
-+#include <vdso/processor.h>
-+
- #include <asm/reg.h>
- 
- #ifdef CONFIG_VSX
-@@ -63,14 +65,6 @@ extern int _chrp_type;
- 
- #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
- 
--/* Macros for adjusting thread priority (hardware multi-threading) */
--#define HMT_very_low()   asm volatile("or 31,31,31   # very low priority")
--#define HMT_low()	 asm volatile("or 1,1,1	     # low priority")
--#define HMT_medium_low() asm volatile("or 6,6,6      # medium low priority")
--#define HMT_medium()	 asm volatile("or 2,2,2	     # medium priority")
--#define HMT_medium_high() asm volatile("or 5,5,5      # medium high priority")
--#define HMT_high()	 asm volatile("or 3,3,3	     # high priority")
--
- #ifdef __KERNEL__
- 
- #ifdef CONFIG_PPC64
-@@ -350,7 +344,6 @@ static inline unsigned long __pack_fe01(unsigned int fpmode)
- }
- 
- #ifdef CONFIG_PPC64
--#define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
- 
- #define spin_begin()	HMT_low()
- 
-@@ -369,8 +362,6 @@ do {								\
- 	}							\
- } while (0)
- 
--#else
--#define cpu_relax()	barrier()
- #endif
- 
- /* Check that a certain kernel stack pointer is valid in task_struct p */
-diff --git a/arch/powerpc/include/asm/vdso/processor.h b/arch/powerpc/include/asm/vdso/processor.h
-new file mode 100644
-index 000000000000..39b9beace9ca
---- /dev/null
-+++ b/arch/powerpc/include/asm/vdso/processor.h
-@@ -0,0 +1,23 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __ASM_VDSO_PROCESSOR_H
-+#define __ASM_VDSO_PROCESSOR_H
-+
-+#ifndef __ASSEMBLY__
-+
-+/* Macros for adjusting thread priority (hardware multi-threading) */
-+#define HMT_very_low()		asm volatile("or 31, 31, 31	# very low priority")
-+#define HMT_low()		asm volatile("or 1, 1, 1	# low priority")
-+#define HMT_medium_low()	asm volatile("or 6, 6, 6	# medium low priority")
-+#define HMT_medium()		asm volatile("or 2, 2, 2	# medium priority")
-+#define HMT_medium_high()	asm volatile("or 5, 5, 5	# medium high priority")
-+#define HMT_high()		asm volatile("or 3, 3, 3	# high priority")
-+
+diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h b/arch/powerpc/include/asm/vdso/gettimeofday.h
+index 0b6fa245d54e..fa774086173b 100644
+--- a/arch/powerpc/include/asm/vdso/gettimeofday.h
++++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
+@@ -13,10 +13,16 @@
+ 	PPC_STLU	r1, -STACK_FRAME_OVERHEAD(r1)
+   .cfi_register lr, r0
+ 	PPC_STL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
 +#ifdef CONFIG_PPC64
-+#define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
-+#else
-+#define cpu_relax()	barrier()
++	PPC_STL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
 +#endif
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* __ASM_VDSO_PROCESSOR_H */
+ 	get_datapage	r5, r0
+ 	addi		r5, r5, VDSO_DATA_OFFSET
+ 	bl		\funct
+ 	PPC_LL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_LL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	cmpwi		r3, 0
+ 	mtlr		r0
+   .cfi_restore lr
+@@ -36,10 +42,16 @@
+ 	PPC_STLU	r1, -STACK_FRAME_OVERHEAD(r1)
+   .cfi_register lr, r0
+ 	PPC_STL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_STL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	get_datapage	r4, r0
+ 	addi		r4, r4, VDSO_DATA_OFFSET
+ 	bl		\funct
+ 	PPC_LL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_LL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	crclr		so
+ 	mtlr		r0
+   .cfi_restore lr
 -- 
 2.25.0
 
