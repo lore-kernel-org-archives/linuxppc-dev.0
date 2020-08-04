@@ -2,24 +2,24 @@ Return-Path: <SRS0=OkVA=BO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85883C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:19:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B22CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:49:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37C922075A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:19:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C922075A
+	by mail.kernel.org (Postfix) with ESMTPS id A80B920738
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 11:49:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A80B920738
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BLXMp4mfGzDqZN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 21:19:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BLY2h4pj9zDqRj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 21:49:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,48 +28,41 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BLXKT5glPzDqB0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 21:17:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BLY0V55rXzDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 21:47:53 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BLXKN1PPKz9vBn9;
- Tue,  4 Aug 2020 13:17:28 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BLY0N1ngVz9tyRl;
+ Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id zMYuJVQuLEKi; Tue,  4 Aug 2020 13:17:28 +0200 (CEST)
+ with ESMTP id idJxBgUphmTq; Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BLXKN03S5z9vBn7;
- Tue,  4 Aug 2020 13:17:28 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BLY0N0l4wz9tyRh;
+ Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 179D98B79F;
- Tue,  4 Aug 2020 13:17:29 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2460D8B7B6;
+ Tue,  4 Aug 2020 13:47:49 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id adi4vrWPJNgU; Tue,  4 Aug 2020 13:17:28 +0200 (CEST)
+ with ESMTP id x9HR1xclwqLA; Tue,  4 Aug 2020 13:47:49 +0200 (CEST)
 Received: from po16052vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.103])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A1FCC8B767;
- Tue,  4 Aug 2020 13:17:28 +0200 (CEST)
-Subject: Re: [PATCH v8 2/8] powerpc/vdso: Remove __kernel_datapage_offset and
- simplify __get_datapage()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, nathanl@linux.ibm.com
-References: <cover.1588079622.git.christophe.leroy@c-s.fr>
- <0d2201efe3c7727f2acc718aefd7c5bb22c66c57.1588079622.git.christophe.leroy@c-s.fr>
- <87wo34tbas.fsf@mpe.ellerman.id.au>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E97B48B7A5;
+ Tue,  4 Aug 2020 13:47:48 +0200 (CEST)
+Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id D827665BBB; Tue,  4 Aug 2020 11:47:48 +0000 (UTC)
+Message-Id: <288845ddd80bb0ae636bb013d4b0fa803fad1056.1596541334.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1596541334.git.christophe.leroy@csgroup.eu>
+References: <cover.1596541334.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <2f9b7d02-9e2f-4724-2608-c5573f6507a2@csgroup.eu>
-Date: Tue, 4 Aug 2020 11:17:26 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
-MIME-Version: 1.0
-In-Reply-To: <87wo34tbas.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v9 1/5] powerpc/processor: Move cpu_relax() into
+ asm/vdso/processor.h
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ nathanl@linux.ibm.com, anton@ozlabs.org
+Date: Tue,  4 Aug 2020 11:47:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,128 +81,94 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+cpu_relax() need to be in asm/vdso/processor.h to be used by
+the C VDSO generic library.
 
+Move it there.
 
-On 07/16/2020 02:59 AM, Michael Ellerman wrote:
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> The VDSO datapage and the text pages are always located immediately
->> next to each other, so it can be hardcoded without an indirection
->> through __kernel_datapage_offset
->>
->> In order to ease things, move the data page in front like other
->> arches, that way there is no need to know the size of the library
->> to locate the data page.
->>
->> Before:
->> clock-getres-realtime-coarse:    vdso: 714 nsec/call
->> clock-gettime-realtime-coarse:    vdso: 792 nsec/call
->> clock-gettime-realtime:    vdso: 1243 nsec/call
->>
->> After:
->> clock-getres-realtime-coarse:    vdso: 699 nsec/call
->> clock-gettime-realtime-coarse:    vdso: 784 nsec/call
->> clock-gettime-realtime:    vdso: 1231 nsec/call
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> v7:
->> - Moved the removal of the tmp param of __get_datapage()
->> in a subsequent patch
->> - Included the addition of the offset param to __get_datapage()
->> in the further preparatory patch
->> ---
->>   arch/powerpc/include/asm/vdso_datapage.h |  8 ++--
->>   arch/powerpc/kernel/vdso.c               | 53 ++++--------------------
->>   arch/powerpc/kernel/vdso32/datapage.S    |  3 --
->>   arch/powerpc/kernel/vdso32/vdso32.lds.S  |  7 +---
->>   arch/powerpc/kernel/vdso64/datapage.S    |  3 --
->>   arch/powerpc/kernel/vdso64/vdso64.lds.S  |  7 +---
->>   6 files changed, 16 insertions(+), 65 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
->> index b9ef6cf50ea5..11886467dfdf 100644
->> --- a/arch/powerpc/include/asm/vdso_datapage.h
->> +++ b/arch/powerpc/include/asm/vdso_datapage.h
->> @@ -118,10 +118,12 @@ extern struct vdso_data *vdso_data;
->>   
->>   .macro get_datapage ptr, tmp
->>   	bcl	20, 31, .+4
->> +999:
->>   	mflr	\ptr
->> -	addi	\ptr, \ptr, (__kernel_datapage_offset - (.-4))@l
->> -	lwz	\tmp, 0(\ptr)
->> -	add	\ptr, \tmp, \ptr
->> +#if CONFIG_PPC_PAGE_SHIFT > 14
->> +	addis	\ptr, \ptr, (_vdso_datapage - 999b)@ha
->> +#endif
->> +	addi	\ptr, \ptr, (_vdso_datapage - 999b)@l
->>   .endm
->>   
->>   #endif /* __ASSEMBLY__ */
->> diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
->> index f38f26e844b6..d33fa22ddbed 100644
->> --- a/arch/powerpc/kernel/vdso.c
->> +++ b/arch/powerpc/kernel/vdso.c
->> @@ -190,7 +190,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
->>   	 * install_special_mapping or the perf counter mmap tracking code
->>   	 * will fail to recognise it as a vDSO (since arch_vma_name fails).
->>   	 */
->> -	current->mm->context.vdso_base = vdso_base;
->> +	current->mm->context.vdso_base = vdso_base + PAGE_SIZE;
-> 
-> I merged this but then realised it breaks the display of the vdso in /proc/self/maps.
-> 
-> ie. the vdso vma gets no name:
-> 
->    # cat /proc/self/maps
->    110f90000-110fa0000 r-xp 00000000 08:03 17021844                         /usr/bin/cat
->    110fa0000-110fb0000 r--p 00000000 08:03 17021844                         /usr/bin/cat
->    110fb0000-110fc0000 rw-p 00010000 08:03 17021844                         /usr/bin/cat
->    126000000-126030000 rw-p 00000000 00:00 0                                [heap]
->    7fffa8790000-7fffa87d0000 rw-p 00000000 00:00 0
->    7fffa87d0000-7fffa8830000 r--p 00000000 08:03 17521786                   /usr/lib/locale/en_AU.utf8/LC_CTYPE
->    7fffa8830000-7fffa8840000 r--p 00000000 08:03 16958337                   /usr/lib/locale/en_AU.utf8/LC_NUMERIC
->    7fffa8840000-7fffa8850000 r--p 00000000 08:03 8501358                    /usr/lib/locale/en_AU.utf8/LC_TIME
->    7fffa8850000-7fffa8ad0000 r--p 00000000 08:03 16870886                   /usr/lib/locale/en_AU.utf8/LC_COLLATE
->    7fffa8ad0000-7fffa8ae0000 r--p 00000000 08:03 8509433                    /usr/lib/locale/en_AU.utf8/LC_MONETARY
->    7fffa8ae0000-7fffa8af0000 r--p 00000000 08:03 25383753                   /usr/lib/locale/en_AU.utf8/LC_MESSAGES/SYS_LC_MESSAGES
->    7fffa8af0000-7fffa8b00000 r--p 00000000 08:03 17521790                   /usr/lib/locale/en_AU.utf8/LC_PAPER
->    7fffa8b00000-7fffa8b10000 r--p 00000000 08:03 8501354                    /usr/lib/locale/en_AU.utf8/LC_NAME
->    7fffa8b10000-7fffa8b20000 r--p 00000000 08:03 8509431                    /usr/lib/locale/en_AU.utf8/LC_ADDRESS
->    7fffa8b20000-7fffa8b30000 r--p 00000000 08:03 8509434                    /usr/lib/locale/en_AU.utf8/LC_TELEPHONE
->    7fffa8b30000-7fffa8b40000 r--p 00000000 08:03 17521787                   /usr/lib/locale/en_AU.utf8/LC_MEASUREMENT
->    7fffa8b40000-7fffa8b50000 r--s 00000000 08:03 25623315                   /usr/lib64/gconv/gconv-modules.cache
->    7fffa8b50000-7fffa8d40000 r-xp 00000000 08:03 25383789                   /usr/lib64/libc-2.30.so
->    7fffa8d40000-7fffa8d50000 r--p 001e0000 08:03 25383789                   /usr/lib64/libc-2.30.so
->    7fffa8d50000-7fffa8d60000 rw-p 001f0000 08:03 25383789                   /usr/lib64/libc-2.30.so
->    7fffa8d60000-7fffa8d70000 r--p 00000000 08:03 8509432                    /usr/lib/locale/en_AU.utf8/LC_IDENTIFICATION
->    7fffa8d70000-7fffa8d90000 r-xp 00000000 00:00 0						<--- missing
->    7fffa8d90000-7fffa8dc0000 r-xp 00000000 08:03 25383781                   /usr/lib64/ld-2.30.so
->    7fffa8dc0000-7fffa8dd0000 r--p 00020000 08:03 25383781                   /usr/lib64/ld-2.30.so
->    7fffa8dd0000-7fffa8de0000 rw-p 00030000 08:03 25383781                   /usr/lib64/ld-2.30.so
->    7fffc31c0000-7fffc31f0000 rw-p 00000000 00:00 0                          [stack]
-> 
-> 
-> And it's also going to break the logic in arch_unmap() to detect if
-> we're unmapping (part of) the VDSO. And it will break arch_remap() too.
-> 
-> And the logic to recognise the signal trampoline in
-> arch/powerpc/perf/callchain_*.c as well.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v9: Forgot to remove cpu_relax() from processor.h in v8
+---
+ arch/powerpc/include/asm/processor.h      | 13 ++-----------
+ arch/powerpc/include/asm/vdso/processor.h | 23 +++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 11 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/vdso/processor.h
 
-I don't think it breaks that one, because ->vdsobase is still the start 
-of text.
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index ed0d633ab5aa..c1ba9c8d9b90 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -6,6 +6,8 @@
+  * Copyright (C) 2001 PPC 64 Team, IBM Corp
+  */
+ 
++#include <vdso/processor.h>
++
+ #include <asm/reg.h>
+ 
+ #ifdef CONFIG_VSX
+@@ -63,14 +65,6 @@ extern int _chrp_type;
+ 
+ #endif /* defined(__KERNEL__) && defined(CONFIG_PPC32) */
+ 
+-/* Macros for adjusting thread priority (hardware multi-threading) */
+-#define HMT_very_low()   asm volatile("or 31,31,31   # very low priority")
+-#define HMT_low()	 asm volatile("or 1,1,1	     # low priority")
+-#define HMT_medium_low() asm volatile("or 6,6,6      # medium low priority")
+-#define HMT_medium()	 asm volatile("or 2,2,2	     # medium priority")
+-#define HMT_medium_high() asm volatile("or 5,5,5      # medium high priority")
+-#define HMT_high()	 asm volatile("or 3,3,3	     # high priority")
+-
+ #ifdef __KERNEL__
+ 
+ #ifdef CONFIG_PPC64
+@@ -350,7 +344,6 @@ static inline unsigned long __pack_fe01(unsigned int fpmode)
+ }
+ 
+ #ifdef CONFIG_PPC64
+-#define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
+ 
+ #define spin_begin()	HMT_low()
+ 
+@@ -369,8 +362,6 @@ do {								\
+ 	}							\
+ } while (0)
+ 
+-#else
+-#define cpu_relax()	barrier()
+ #endif
+ 
+ /* Check that a certain kernel stack pointer is valid in task_struct p */
+diff --git a/arch/powerpc/include/asm/vdso/processor.h b/arch/powerpc/include/asm/vdso/processor.h
+new file mode 100644
+index 000000000000..39b9beace9ca
+--- /dev/null
++++ b/arch/powerpc/include/asm/vdso/processor.h
+@@ -0,0 +1,23 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef __ASM_VDSO_PROCESSOR_H
++#define __ASM_VDSO_PROCESSOR_H
++
++#ifndef __ASSEMBLY__
++
++/* Macros for adjusting thread priority (hardware multi-threading) */
++#define HMT_very_low()		asm volatile("or 31, 31, 31	# very low priority")
++#define HMT_low()		asm volatile("or 1, 1, 1	# low priority")
++#define HMT_medium_low()	asm volatile("or 6, 6, 6	# medium low priority")
++#define HMT_medium()		asm volatile("or 2, 2, 2	# medium priority")
++#define HMT_medium_high()	asm volatile("or 5, 5, 5	# medium high priority")
++#define HMT_high()		asm volatile("or 3, 3, 3	# high priority")
++
++#ifdef CONFIG_PPC64
++#define cpu_relax()	do { HMT_low(); HMT_medium(); barrier(); } while (0)
++#else
++#define cpu_relax()	barrier()
++#endif
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __ASM_VDSO_PROCESSOR_H */
+-- 
+2.25.0
 
-> 
-> So I'm going to rebase and drop this for now.
-> 
-> Basically we have a bunch of places that assume that vdso_base is == the
-> start of the VDSO vma, and also that the code starts there. So that will
-> need some work to tease out all those assumptions and make them work
-> with this change.
-
-Ok, one day I need to look at it in more details and see how other 
-architectures handle it etc ...
-
-As the benefit is only 2 CPU cycles, I'll drop it for now.
-
-Christophe
