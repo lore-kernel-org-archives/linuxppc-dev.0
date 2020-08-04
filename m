@@ -2,83 +2,86 @@ Return-Path: <SRS0=OkVA=BO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7969FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 00:56:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5153C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 00:58:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 571DC20781
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 00:56:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B09B4206DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 00:58:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sTGpNFnA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 571DC20781
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lmg5KNBh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B09B4206DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BLGY50dNZzDqSt
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 10:56:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BLGbP46yVzDqTN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 10:58:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035;
- helo=mail-pj1-x1035.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=sTGpNFnA; dkim-atps=neutral
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com
- [IPv6:2607:f8b0:4864:20::1035])
+ header.s=20161025 header.b=lmg5KNBh; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BLGVb0RXxzDqKJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BLGVb03FtzDqCx
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 10:54:28 +1000 (AEST)
-Received: by mail-pj1-x1035.google.com with SMTP id ep8so1071273pjb.3
+Received: by mail-pl1-x642.google.com with SMTP id bh1so8829661plb.12
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2020 17:54:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=wxahb65GNWj1R6uBOeojTKDh3TsLZY6fIM/W/sfGG3U=;
- b=sTGpNFnA99HTL5yhxxk8w7LGhqQdzd8mE375c5DkkoQb+MikviqGbzOAl/YgqjAFHu
- mP+a3uwVa85Izz4SfjoC+CTJHuDP6e5Jb7iZO5UltqG7WAfg5g4jfY6qY8y7qcGH1xNu
- 1fyhOINhEVAL6Z2rHjNWK0LfoSOk+/0ykdFK8zKW8pR/Q6RLsySJ8M5fzd2Ti/3lbTAb
- HLBQfcfYE5wZASOXABthX7BTwuI9Ndi5d7Dsgc0YvLJn3ce82lx+XS1p4Dv1NsGdmqDZ
- v/pIUNUn0dJqn81Yxr9gZ6E6GnP6hZz7imLI2dXm10PcOxvWGUgV1EQFp1YJYQk1cAjU
- Uz7A==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=rhRszzNffNS2N5YEjFrKjiwUkb5NorLpAyngZmSaRIE=;
+ b=lmg5KNBh0sEd71gQqlpGgtBMnnYEiMVnMLre46MeOTJAAeNa6jm0FoKGiI9xR+sQ9f
+ wgI13puTCApFRpSNMQ3QcTnfERWe9G8SCJ7NdSZ2LY2XwsnpUNJ4AsOxs1tMcq/in8xz
+ GJiplZlO33GJtchWVj+IfkKyVYEBhPBAXUesnKyfV7E2DvCrBfjOUGPNbRz5s14TXabu
+ Pe3fmqXaaKj8ZTeG9mNzSoaw/junOXqDtW8gioRYFaarBXQ3FYTom5UoYqtKQfnhiRS/
+ WNnuYgOLwywxAGJFpO0ucrmyVOHqJOMuNzmk8ftveU+JeSWtvYOCjplKAYQUTsbcGjvK
+ EG2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=wxahb65GNWj1R6uBOeojTKDh3TsLZY6fIM/W/sfGG3U=;
- b=e0I2iB9ZddIWMBLjQG6oHjXqByLcqy8c1ANun3rhbri757F8U/RdlaCuOuKUKBoSnX
- tPz7IdVVoSMlgwSzskZwtgbc2FE/cS4jFjKHuPqRdNehe4iLy5cFuBUcBomheBV5LDvf
- ydu25MNFJ9qS3z+++n9gNgONmZk58eR/xqObNs3CAKY64AXAnT6cKwR5fYiGsAdyE2pu
- EBXNUsK9JKLER7G304pyXJaikJzhoEI+S9PkN8+Icm0ulRo6BLB0oK2PbAOe8gni1tzB
- YVZfHfOHnD1gySsNGBo5ttZhW6ze8uVPe4zqsly/4TC/AT+dtBZgm+gQcSf2DzCPL94D
- 6T1Q==
-X-Gm-Message-State: AOAM530dVKVuK+iA/i93kMIzlfcTekGGGKiKR6+FbPDfhvbyTFKzT8+7
- txPRn//YqlN7OCfH7IDGhLX0YMsr
-X-Google-Smtp-Source: ABdhPJx7S0vH5FJYpwNQb0dBfxfEZH0owhZk8MayfUkvbT40uKo+UHjervsbTH/tnldk2/c7W4IIKw==
-X-Received: by 2002:a17:902:b282:: with SMTP id
- u2mr16338319plr.225.1596502463366; 
- Mon, 03 Aug 2020 17:54:23 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=rhRszzNffNS2N5YEjFrKjiwUkb5NorLpAyngZmSaRIE=;
+ b=Is3eBA9v3khrDuLsnv9cPB4WCYH0qJQtJzrs2wX63GacyZDDmI8FpVElSWBAzK9z4i
+ /dYT4X4dtsCpn6Lt2umNkI+ZbLlJtsjzu6vxNHcBznjag1uNSRpDlmv7/J83P469I5P9
+ 5nzNIqRI73W82xKlZv5n2Tzch6SHNwCSkF/pqTGamxnwGa6qctDHRh19XgyoTkwNvJJt
+ UU5Ar/E7+TvotfH/40fQ761Ott0qhVQ9LuuIkdhndMvby/9aB4/0Sjs60se6l5bTaCeK
+ zqvWpI45ERzJ51Rn8w8UTqDMzThTFA9swBhNYNI/CilUR7PuBdfR3GjSxCeNmKsv6C5n
+ kexg==
+X-Gm-Message-State: AOAM530oFgs9daqefWAziiYTgLL2ViJch1j1Xxsm6wuaJaxS8FrpwR6K
+ 0fIca4nS3wicAsCOh6dIJB5Zgsj3
+X-Google-Smtp-Source: ABdhPJzc0yGnjAhydhNSkwHHPPaiFkGtOTMzRtfNgLKHEzp8TJohmcUSLqMPUhvxZSUUmazfKqxmBw==
+X-Received: by 2002:a17:902:b603:: with SMTP id
+ b3mr17300055pls.285.1596502466261; 
+ Mon, 03 Aug 2020 17:54:26 -0700 (PDT)
 Received: from localhost.ibm.com ([120.17.110.210])
- by smtp.gmail.com with ESMTPSA id 80sm10381327pfy.147.2020.08.03.17.54.21
- for <linuxppc-dev@lists.ozlabs.org>
+ by smtp.gmail.com with ESMTPSA id 80sm10381327pfy.147.2020.08.03.17.54.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 03 Aug 2020 17:54:22 -0700 (PDT)
+ Mon, 03 Aug 2020 17:54:25 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Clean up W=1 for the powernv platform
-Date: Tue,  4 Aug 2020 10:54:04 +1000
-Message-Id: <20200804005410.146094-1-oohall@gmail.com>
+Subject: [PATCH 1/6] powerpc/powernv/smp: Fix spurious DBG() warning
+Date: Tue,  4 Aug 2020 10:54:05 +1000
+Message-Id: <20200804005410.146094-2-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200804005410.146094-1-oohall@gmail.com>
+References: <20200804005410.146094-1-oohall@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -91,12 +94,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fixes the (mostly) suprious errors we get when building powernv with
-W=1. More work is required to build all of powerpc with W=1, let alone
-W=2.
+When building with W=1 we get the following warning:
 
+ arch/powerpc/platforms/powernv/smp.c: In function ‘pnv_smp_cpu_kill_self’:
+ arch/powerpc/platforms/powernv/smp.c:276:16: error: suggest braces around
+ 	empty body in an ‘if’ statement [-Werror=empty-body]
+   276 |      cpu, srr1);
+       |                ^
+ cc1: all warnings being treated as errors
+
+The full context is this block:
+
+ if (srr1 && !generic_check_cpu_restart(cpu))
+ 	DBG("CPU%d Unexpected exit while offline srr1=%lx!\n",
+ 			cpu, srr1);
+
+When building with DEBUG undefined DBG() expands to nothing and GCC emits
+the warning due to the lack of braces around an empty statement.
+
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+We could add the braces too. That might even be better since it's a multi-line
+if block even though it's only a single statement.
+---
+ arch/powerpc/platforms/powernv/smp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index b2ba3e95bda7..bbf361f23ae8 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -43,7 +43,7 @@
+ #include <asm/udbg.h>
+ #define DBG(fmt...) udbg_printf(fmt)
+ #else
+-#define DBG(fmt...)
++#define DBG(fmt...) do { } while (0)
+ #endif
+ 
+ static void pnv_smp_setup_cpu(int cpu)
+-- 
+2.26.2
 
