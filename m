@@ -2,66 +2,85 @@ Return-Path: <SRS0=OkVA=BO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CE17C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 12:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65975C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 12:12:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4CA3E208A9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 12:07:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="BPNz5d1y"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CA3E208A9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 220CF2177B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 12:12:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 220CF2177B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BLYR74RBkzDqW9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 22:07:31 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BLYY119PxzDqcK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Aug 2020 22:12:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BLYNN54JWzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 22:05:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=BPNz5d1y; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BLYNN2SfJz9sRR;
- Tue,  4 Aug 2020 22:05:08 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1596542708;
- bh=1MF/jt6DZ8jX8GtkU3/r7cAlonLgGWKigIbr23K62NQ=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=BPNz5d1yd9gtXyR3PpyVOFEp/hjWUrH1ybCz6i0i9/0H+48CVdphP0lKo9OewOllz
- I1kpwSMT8r1BURXKMhYbkRMe8QmgGEAK08PjF74Q6Y6zdfE8jKBVBz0FF6SSxYenq9
- fV762p+op1kxve6pyVtio8LLTT+IZbJzgfKXiUkBB3+617LNYsPC6MCXpNQKsRlKTE
- +bmVFNfP7ajFZdgfrY+sTxH0PBvChD58B9LdX40cP5Qrge25c2bCIFGW3aUiAAxa62
- Iu19uSRlKWUXdW0DURah/NUHtU6G73hKLmDeGSyk6iwpEQfJbaAimFg8faZjYSxL2x
- 9aJQFXsDcDDiQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joel Stanley <joel@jms.id.au>, Oliver O'Halloran <oohall@gmail.com>
-Subject: Re: [PATCH 1/6] powerpc/powernv/smp: Fix spurious DBG() warning
-In-Reply-To: <CACPK8XfoZ8+SUG6cuWuEJqdTfmxePsBGFGgqyrPvmn1WyRVyjA@mail.gmail.com>
-References: <20200804005410.146094-1-oohall@gmail.com>
- <20200804005410.146094-2-oohall@gmail.com>
- <CACPK8XfoZ8+SUG6cuWuEJqdTfmxePsBGFGgqyrPvmn1WyRVyjA@mail.gmail.com>
-Date: Tue, 04 Aug 2020 22:05:07 +1000
-Message-ID: <87a6zazkek.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BLYVc6pB1zDqMd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2020 22:10:32 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 074C5Bs1186779; Tue, 4 Aug 2020 08:10:16 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32q1uph5td-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 Aug 2020 08:10:15 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 074CADsb015506;
+ Tue, 4 Aug 2020 12:10:13 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma03ams.nl.ibm.com with ESMTP id 32n01839f5-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 04 Aug 2020 12:10:13 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 074CAAVA19792202
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 4 Aug 2020 12:10:11 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D1F5652054;
+ Tue,  4 Aug 2020 12:10:10 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 6EA9052051;
+ Tue,  4 Aug 2020 12:10:08 +0000 (GMT)
+Date: Tue, 4 Aug 2020 17:40:07 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: peterz@infradead.org
+Subject: Re: [PATCH 1/2] sched/topology: Allow archs to override cpu_smt_mask
+Message-ID: <20200804121007.GJ24375@linux.vnet.ibm.com>
+References: <20200804033307.76111-1-srikar@linux.vnet.ibm.com>
+ <20200804104520.GB2657@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20200804104520.GB2657@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-04_04:2020-08-03,
+ 2020-08-04 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0
+ impostorscore=0 adultscore=0 bulkscore=0 phishscore=0 mlxscore=0
+ spamscore=0 clxscore=1015 lowpriorityscore=0 priorityscore=1501
+ mlxlogscore=999 suspectscore=1 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2008040090
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,64 +92,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>, Rik van Riel <riel@surriel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Mel Gorman <mgorman@techsingularity.net>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Joel Stanley <joel@jms.id.au> writes:
-> On Tue, 4 Aug 2020 at 00:57, Oliver O'Halloran <oohall@gmail.com> wrote:
->>
->> When building with W=3D1 we get the following warning:
->>
->>  arch/powerpc/platforms/powernv/smp.c: In function =E2=80=98pnv_smp_cpu_=
-kill_self=E2=80=99:
->>  arch/powerpc/platforms/powernv/smp.c:276:16: error: suggest braces arou=
-nd
->>         empty body in an =E2=80=98if=E2=80=99 statement [-Werror=3Dempty=
--body]
->>    276 |      cpu, srr1);
->>        |                ^
->>  cc1: all warnings being treated as errors
->>
->> The full context is this block:
->>
->>  if (srr1 && !generic_check_cpu_restart(cpu))
->>         DBG("CPU%d Unexpected exit while offline srr1=3D%lx!\n",
->>                         cpu, srr1);
->>
->> When building with DEBUG undefined DBG() expands to nothing and GCC emits
->> the warning due to the lack of braces around an empty statement.
->>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> ---
->> We could add the braces too. That might even be better since it's a mult=
-i-line
->> if block even though it's only a single statement.
->
-> Or you could put it all on one line, now that our 120 line overlords
-> have taken over.
+* peterz@infradead.org <peterz@infradead.org> [2020-08-04 12:45:20]:
 
-Yeah I think that one may as well be one line.
+> On Tue, Aug 04, 2020 at 09:03:06AM +0530, Srikar Dronamraju wrote:
+> > cpu_smt_mask tracks topology_sibling_cpumask. This would be good for
+> > most architectures. One of the users of cpu_smt_mask(), would be to
+> > identify idle-cores. On Power9, a pair of cores can be presented by the
+> > firmware as a big-core for backward compatibility reasons.
+> > 
+> > In order to maintain userspace backward compatibility with previous
+> > versions of processor, (since Power8 had SMT8 cores), Power9 onwards there
+> > is option to the firmware to advertise a pair of SMT4 cores as a fused
+> > cores (referred to as the big_core mode in the Linux Kernel). On Power9
+> > this pair shares the L2 cache as well. However, from the scheduler's point
+> > of view, a core should be determined by SMT4. The load-balancer already
+> > does this. Hence allow PowerPc architecture to override the default
+> > cpu_smt_mask() to point to the SMT4 cores in a big_core mode.
+> 
+> I'm utterly confused.
+> 
+> Why can't you set your regular siblings mask to the smt4 thing? Who
+> cares about the compat stuff, I thought that was an LPAR/AIX thing.
 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
->
-> Messy:
->
-> $ git grep "define DBG(" arch/powerpc/ |grep -v print
-> arch/powerpc/kernel/crash_dump.c:#define DBG(fmt...)
-> arch/powerpc/kernel/iommu.c:#define DBG(...)
-> arch/powerpc/kernel/legacy_serial.c:#define DBG(fmt...) do { } while(0)
-> arch/powerpc/kernel/prom.c:#define DBG(fmt...)
-..
+There are no technical challenges to set the sibling mask to SMT4.
+This is for Linux running on PowerVM. When these Power9 boxes are sold /
+marketed as X core boxes (where X stand for SMT8 cores).  Since on PowerVM
+world, everything is in SMT8 mode, the device tree properties still mark
+the system to be running on 8 thread core. There are a number of utilities
+like ppc64_cpu that directly read from device-tree. They would get core
+count and thread count which is SMT8 based.
 
-Yeah, gross old cruft.
+If the sibling_mask is set to small core, then same user when looking at
+output from lscpu and other utilities that look at sysfs will start seeing
+2x number of cores to what he had provisioned and what the utilities from
+the device-tree show. This can gets users confused.
 
-The vast majority of those should just be replaced with pr_devel()
-and/or pr_debug().
+So to keep the device-tree properties, utilities depending on device-tree,
+sysfs and utilities depending on sysfs on the same page, userspace are only
+exposed as SMT8.
 
-The pnv_smp_cpu_kill_self() case is one where we probably do want to
-stick with udbg_printf(), because I don't think it's kosher to call
-printk() from an offline CPU.
-
-cheers
+-- 
+Thanks and Regards
+Srikar Dronamraju
