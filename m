@@ -2,80 +2,94 @@ Return-Path: <SRS0=7j3x=BP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2B88C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 17:15:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAAE8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 18:10:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A9C52177B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 17:15:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5507B2084D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 18:10:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oziJJooK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A9C52177B
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hWqfthpN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5507B2084D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMJD15khCzDqDl
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 03:15:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMKRt0vLczDqhF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 04:10:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::244;
- helo=mail-lj1-x244.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f43;
+ helo=mail-qv1-xf43.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=oziJJooK; dkim-atps=neutral
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
- [IPv6:2a00:1450:4864:20::244])
+ header.s=20161025 header.b=hWqfthpN; dkim-atps=neutral
+Received: from mail-qv1-xf43.google.com (mail-qv1-xf43.google.com
+ [IPv6:2607:f8b0:4864:20::f43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMJ7k5gB7zDqbB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 03:11:46 +1000 (AEST)
-Received: by mail-lj1-x244.google.com with SMTP id h19so48562642ljg.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2020 10:11:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMKPd4CY6zDqfc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 04:08:53 +1000 (AEST)
+Received: by mail-qv1-xf43.google.com with SMTP id r19so12660658qvw.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2020 11:08:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=wXACrCF85ppHwQuHqdOjCkc1N78NkRlSijLNjTow210=;
- b=oziJJooKYyQ5sG761r04I5LKIuXOAb4zkqQY0rWC/xo2s+cTYTs9U7RyQWnqJ5pq1v
- Nbi4cMvrIp/CIcHu8pIr+eoqlm0BvwqSZf/j11GWMus1IVdOI8eFA+JP3OpxAqxrqH8K
- 4U3LrHkbnbOlDfybyMuly/WmuqEo0ptHsHBq2XUlda4WU2cHiLw7ZD+AnmV8uuOJ/jgu
- 3gjhgLG0ATcZI4I3fwTk7ZEPoMTcfQVSsz4xqNOlCB6RK7j7M3zBxlIMpYdsF8DV3rrq
- yNVU9YFhsTtYiIivGSgzfm9XcHZ9fq/Ugzzwuzkf0diKBR/hJ5MKs2YpE9NsOoFGUM2c
- kG+Q==
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :organization:user-agent:mime-version:content-transfer-encoding;
+ bh=TKYRPGPLHCWrMIu7pyuuJy9bkPwY7mqum0/IqDLNX9Q=;
+ b=hWqfthpN1kxgRdozFdigqWZhlrxM3Bq1/DKEB+wrmgW9FCiv+nTg28h85JfxbOgHfC
+ v0ucln+sfvTxDLrxy1ePEG/JlHAlg1qJw55Ug67MVO3aRIoUii7J+1tSAQN6cpRwMvv1
+ mEJ4tOMcLyuUYE73d7ak3ql37HdoU+Mum9Kt7dcX3CgEj7aa8qPDzxVVvkz0IxiTM0PU
+ mRW58XLvYxRYNaw/w8nqo5r8IcG/uXrQHK9FdTkt8tzAIcI+etjkH2HpNR5u1yDxrQCb
+ xk1OdDdHDJa6fVPvt1+f/tHKyZwxgAj0iYv17wCws+h54H8NqPoazwhYXap/HQVax9IN
+ vBhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=wXACrCF85ppHwQuHqdOjCkc1N78NkRlSijLNjTow210=;
- b=Mi8eWkIMDcvxWbtv19gIj+sYekKIgTKeo8YFvuJRLLcowgYBkZ+MY7iXtCVaCI4ba+
- T3/ek2ooFaQbbYFY3YJaVaAoHXk4s2wb8OJCsQGq2W2uG6jaKxJMjk8m1j7MEcrlbBrk
- JU8/9SJeU73BTgrSfvlFZ7+PfUb+VupUck1Kti0TQ14lfilK/QPCnpAwpJUhIlb4zu2f
- ITf6ZKJmulSpVp2XhFgBglE5z3Qz+2GBNpzdjdDZmj/DOPxCnv0UPczeSIYfu2FU09Rg
- 2AaPecYaoEtKpxGsap1XPf1UfOfjItnEcAVj6Gb1O3+3tkvbP12ikkk7PjjYIS43K0VK
- OXvw==
-X-Gm-Message-State: AOAM532BKlKB1VDd2lWbS09+CgIxscOD/hVOKFeWr/YcwMDoKP1iEWjJ
- 2wlJlI1HrJSuOGVWkBgeysUx6yfNWjj4HO9KxQI=
-X-Google-Smtp-Source: ABdhPJwaicIhf8YdyAekvXwX7eOOzcHPiY2LvmIo6u440HJ6sOevFi0lA9FP0nbD1iVE8pjbKUmnQK8GBjMj1kpsXT0=
-X-Received: by 2002:a2e:b814:: with SMTP id u20mr1829339ljo.202.1596647501750; 
- Wed, 05 Aug 2020 10:11:41 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200802163601.8189-1-rppt@kernel.org>
- <20200802163601.8189-17-rppt@kernel.org>
-In-Reply-To: <20200802163601.8189-17-rppt@kernel.org>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Wed, 5 Aug 2020 19:11:30 +0200
-Message-ID: <CANiq72k-hZwbnttADQhi3+NrHkLDVe95jxLAPvLbvSOW41+HaQ@mail.gmail.com>
-Subject: Re: [PATCH v2 16/17] memblock: implement
- for_each_reserved_mem_region() using __next_mem_region()
-To: Mike Rapoport <rppt@kernel.org>
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:organization:user-agent:mime-version
+ :content-transfer-encoding;
+ bh=TKYRPGPLHCWrMIu7pyuuJy9bkPwY7mqum0/IqDLNX9Q=;
+ b=C/L4jzkkp+mQ2RZmabPzqrZBbpexQG5flUun1dFkOSdUbeI3BpwG3Rfmyhu3XD+wvK
+ pqhaikh4lxRjV/8K8wKFfzv4WxvEo4b7V2jfqN7zPRLj0vxIHODQzvC81G8sTWxwVswe
+ HMQJPKJbfNkHCwM8MDb9t4KBOhWh/g+8+deStFA3/9K5xsxDUmbVwLJgn6LaPRhNfJZv
+ zwRQKMY8Xp9qM/CyRiDfJ8ZSl/4dapePjh/MexgHEAxI4oiQ/K1lzhuH6LIZlrmVEY+t
+ hqjU++o2f/SjFCtEyvWpeNgt4MjcvCKwgxpJI6aW3WZhVwixMVA8ukVL+KNaPve0qsGr
+ Bg3Q==
+X-Gm-Message-State: AOAM532FfY8Cr7trc88d9/Oemf4VMQKSVc6P14tSEa7tWYZU5jeLDY+f
+ Lz0KAII36SuVsSdllHPM0Jo=
+X-Google-Smtp-Source: ABdhPJw0E/iVtQf8MQPZ3yxGZTwFzEI5nzK94oaCcxa5kXq+Gaoi4HeL8nChAJTI+0bZaA1JiLqI+Q==
+X-Received: by 2002:ad4:446d:: with SMTP id s13mr4966591qvt.183.1596650929271; 
+ Wed, 05 Aug 2020 11:08:49 -0700 (PDT)
+Received: from LeoBras (179-125-154-168.dynamic.desktop.com.br.
+ [179.125.154.168])
+ by smtp.gmail.com with ESMTPSA id c33sm2744722qtk.40.2020.08.05.11.08.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 05 Aug 2020 11:08:48 -0700 (PDT)
+Message-ID: <e60591c023173ac04057293962c498a09acc1fc1.camel@gmail.com>
+Subject: Re: [PATCH v5 0/4] Allow bigger 64bit window by removing default
+ DMA window
+From: Leonardo Bras <leobras.c@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alexey
+ Kardashevskiy <aik@ozlabs.ru>, Thiago Jung Bauermann
+ <bauerman@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>, Brian King
+ <brking@linux.vnet.ibm.com>, Murilo Fossa Vicentini <muvic@linux.ibm.com>,
+ David Dai <zdai@linux.vnet.ibm.com>
+Date: Wed, 05 Aug 2020 15:08:42 -0300
+In-Reply-To: <20200805030455.123024-1-leobras.c@gmail.com>
+References: <20200805030455.123024-1-leobras.c@gmail.com>
+Organization: IBM
 Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,41 +101,12 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Emil Renner Berthing <kernel@esmil.dk>, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- linux-arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Baoquan He <bhe@redhat.com>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- clang-built-linux <clang-built-linux@googlegroups.com>,
- Ingo Molnar <mingo@redhat.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Stafford Horne <shorne@gmail.com>, Hari Bathini <hbathini@linux.ibm.com>,
- Michal Simek <monstr@monstr.eu>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Linux-MM <linux-mm@kvack.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- iommu@lists.linux-foundation.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Aug 2, 2020 at 6:40 PM Mike Rapoport <rppt@kernel.org> wrote:
->
->  .clang-format                    |  2 +-
+Travis reported successful compilation with mpe/merge:
 
-The .clang-format bit:
+https://travis-ci.org/github/LeoBras/linux-ppc/builds/715028857
 
-Acked-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-
-Cheers,
-Miguel
