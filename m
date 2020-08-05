@@ -2,89 +2,65 @@ Return-Path: <SRS0=7j3x=BP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AACBDC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 06:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AF42C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 07:11:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20FE622B45
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 06:57:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eB7I0ztJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20FE622B45
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B4FC721744
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 07:11:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4FC721744
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BM2VX5X0fzDqkd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 16:57:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BM2qK6jKWzDqcq
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 17:11:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1042;
- helo=mail-pj1-x1042.google.com; envelope-from=nicoleotsuka@gmail.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=eB7I0ztJ; dkim-atps=neutral
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
- [IPv6:2607:f8b0:4864:20::1042])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BM2Sg0tm0zDqZk
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2020 16:55:30 +1000 (AEST)
-Received: by mail-pj1-x1042.google.com with SMTP id t6so3785101pjr.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2020 23:55:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=SGZKUpYTKCkpMjR2/gp6H6g/7u9i9ZZGE+6qybYiQ1Y=;
- b=eB7I0ztJTU4WSthYXqaqoUu5nSugYMxc2h5yrlbERDylgNa5sZlC76hDkZJW/uGdnY
- ryKSBxW9gyHVLeTlXc6NsDiakiPlYlrOyMvJ/xlp1jS23dc0hXzSpa4Cl8FGA2UIilYA
- xGMU+MW5UDmVHJoqO/4M1gy3YcmzlczR8Qs7pwBwCQYHulXFSBfKNUF6DAjG7tHwurKS
- 7hWQMmdU4QDHD8vWyntNOXjcA3mFqaj6QqyYjBEkYf1TZi4lLIy+F25pU0WA1Rj6B2y7
- ueSqb9UzN5PuY4e2y/IURP+J0HzudC0TfY1mYMtZYIEsE+gjxsAiOLOeySmE5XCqXHBz
- MfGA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=SGZKUpYTKCkpMjR2/gp6H6g/7u9i9ZZGE+6qybYiQ1Y=;
- b=rATqZxV2Cdrd9UfTQeg8hVKEktWbUMyAu4ToxTmUnfMUmZ0terImIrnPMjuZ9XUNep
- Dr+8v86Rsj2eMJNSKzFDdy/4Zo31s1y8ASnaYi2B/ukFLBFNiQEl6ECSFk/gcKyJ6Dzs
- tE2Hz1oTXCvn/KL7NkqNX15/6dylL/IRtxVObL9Njkn7Tokv1u1c5PRk7zAqkvhdjSzb
- 4+vfL+CeifGSesYNbeyKdH/QMNFmRM0o5B1P2htQYvH7K0L1DWy4AH6Wv61m8SYIsucM
- ePeT4pk8eQ21TXJUpeOdHpAB4gm5MEEJOb6yGXyzXJ9T+dnxT+P4xOlTXGoTbPGdlsAX
- EqYA==
-X-Gm-Message-State: AOAM531sqFWCe+o7RtQ4L0bBpDA/KWQKkIcWK3eepg+lS+xf5H3n/Fc7
- WlsxnErYk8jiJbFPO7Prwww=
-X-Google-Smtp-Source: ABdhPJx4V/D/s9pzIYwlx+8snhleVdhwnfP6tP4uC6/N2c5q73hqwxsDv7A3bUhT6kOfk3YclbwQTg==
-X-Received: by 2002:a17:90a:c58b:: with SMTP id
- l11mr1847841pjt.195.1596610526653; 
- Tue, 04 Aug 2020 23:55:26 -0700 (PDT)
-Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
- by smtp.gmail.com with ESMTPSA id h5sm1835143pfq.146.2020.08.04.23.55.25
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 04 Aug 2020 23:55:26 -0700 (PDT)
-Date: Tue, 4 Aug 2020 23:55:12 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v3 3/3] ASoC: fsl_sai: Replace synchronous check with
- fsl_sai_dir_is_synced
-Message-ID: <20200805065511.GA1131@Asurada-Nvidia>
-References: <20200805063413.4610-1-shengjiu.wang@nxp.com>
- <20200805063413.4610-4-shengjiu.wang@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200805063413.4610-4-shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BM2mn70cjzDqTZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2020 17:09:27 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4BM2mg4dB7z9vD3m;
+ Wed,  5 Aug 2020 09:09:23 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id C6ZTSBY6xrEi; Wed,  5 Aug 2020 09:09:23 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BM2mg3ZlMz9vD3j;
+ Wed,  5 Aug 2020 09:09:23 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B8FEC8B7E1;
+ Wed,  5 Aug 2020 09:09:24 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id rx_hIlBOx_ZP; Wed,  5 Aug 2020 09:09:24 +0200 (CEST)
+Received: from po16052vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7FC388B75F;
+ Wed,  5 Aug 2020 09:09:24 +0200 (CEST)
+Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5A37E65BBD; Wed,  5 Aug 2020 07:09:24 +0000 (UTC)
+Message-Id: <fbcca4cf3f73a059a6954b39fb5499bee5a0be60.1596611196.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1596611196.git.christophe.leroy@csgroup.eu>
+References: <cover.1596611196.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v10 3/5] powerpc/vdso: Save and restore TOC pointer on PPC64
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ nathanl@linux.ibm.com, anton@ozlabs.org
+Date: Wed,  5 Aug 2020 07:09:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,21 +72,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
- perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
+ luto@kernel.org, tglx@linutronix.de, vincenzo.frascino@arm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 05, 2020 at 02:34:13PM +0800, Shengjiu Wang wrote:
-> As new function fsl_sai_dir_is_synced is included for checking if
-> stream is synced by the opposite stream, then replace the existing
-> synchronous checking with this new function.
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+On PPC64, the TOC pointer needs to be saved and restored.
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v9: New.
 
-Nice, thanks!
+I'm not sure this is really needed, I can't see the VDSO C code doing
+anything with r2, at least on ppc64_defconfig.
+
+So I let you decide whether you take it or not.
+---
+ arch/powerpc/include/asm/vdso/gettimeofday.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h b/arch/powerpc/include/asm/vdso/gettimeofday.h
+index e2c462796a22..8ed4329c9fb8 100644
+--- a/arch/powerpc/include/asm/vdso/gettimeofday.h
++++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
+@@ -19,10 +19,16 @@
+   .cfi_register lr, r0
+ 	PPC_STLU	r1, -STACK_FRAME_OVERHEAD(r1)
+ 	PPC_STL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_STL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	get_datapage	r5, r0
+ 	addi		r5, r5, VDSO_DATA_OFFSET
+ 	bl		\funct
+ 	PPC_LL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_LL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	cmpwi		r3, 0
+ 	mtlr		r0
+   .cfi_restore lr
+@@ -42,10 +48,16 @@
+   .cfi_register lr, r0
+ 	PPC_STLU	r1, -STACK_FRAME_OVERHEAD(r1)
+ 	PPC_STL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_STL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	get_datapage	r4, r0
+ 	addi		r4, r4, VDSO_DATA_OFFSET
+ 	bl		\funct
+ 	PPC_LL		r0, STACK_FRAME_OVERHEAD + PPC_LR_STKOFF(r1)
++#ifdef CONFIG_PPC64
++	PPC_LL		r2, STACK_FRAME_OVERHEAD + STK_GOT(r1)
++#endif
+ 	crclr		so
+ 	mtlr		r0
+   .cfi_restore lr
+-- 
+2.25.0
+
