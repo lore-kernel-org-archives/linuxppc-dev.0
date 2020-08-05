@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE793C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 15:29:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4467BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 15:31:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDFDA2333F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 15:29:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDFDA2333F
+	by mail.kernel.org (Postfix) with ESMTPS id E4CD82333F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 15:31:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4CD82333F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMFt34RVYzDqfD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 01:29:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMFwG28PrzDqXt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 01:31:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,36 +28,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMFqY36DBzDqch
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMFqY4R6bzDqd2
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 01:27:34 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BMFqN1M0jz9vD3y;
- Wed,  5 Aug 2020 17:27:28 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BMFqM2bGYz9vD3q;
+ Wed,  5 Aug 2020 17:27:27 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id FrQjfHC17EgI; Wed,  5 Aug 2020 17:27:28 +0200 (CEST)
+ with ESMTP id L2uasisRzKAF; Wed,  5 Aug 2020 17:27:27 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BMFqN0Yv4z9vD3n;
- Wed,  5 Aug 2020 17:27:28 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BMFqM116rz9vD3n;
+ Wed,  5 Aug 2020 17:27:27 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3BC418B7ED;
- Wed,  5 Aug 2020 17:27:30 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 44D088B7ED;
+ Wed,  5 Aug 2020 17:27:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1ILtOrr_uo5w; Wed,  5 Aug 2020 17:27:30 +0200 (CEST)
+ with ESMTP id aH2Oy26jO9oh; Wed,  5 Aug 2020 17:27:29 +0200 (CEST)
 Received: from po16052vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F2CCD8B7EC;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FBF08B7EC;
  Wed,  5 Aug 2020 17:27:29 +0200 (CEST)
 Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C654A65BC2; Wed,  5 Aug 2020 15:27:29 +0000 (UTC)
-Message-Id: <6eddca2d5611fd57312a88eae31278c87a8fc99d.1596641224.git.christophe.leroy@csgroup.eu>
+ id B76FC65BC2; Wed,  5 Aug 2020 15:27:28 +0000 (UTC)
+Message-Id: <07884ed033c31e074747b7eb8eaa329d15db07ec.1596641219.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc/kasan: Fix KASAN_SHADOW_START on BOOK3S_32
+Subject: [PATCH] powerpc/32s: Fix is_module_segment() when MODULES_VADDR is
+ defined
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  5 Aug 2020 15:27:29 +0000 (UTC)
+Date: Wed,  5 Aug 2020 15:27:28 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,44 +75,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On BOOK3S_32, when we have modules and strict kernel RWX, modules
-are not in vmalloc space but in a dedicated segment that is
-below PAGE_OFFSET.
-
-So KASAN_SHADOW_START must take it into account.
-
-MODULES_VADDR can't be used because it is not defined yet
-in kasan.h
+When MODULES_VADDR is defined, is_module_segment() shall check the
+address against it instead of checking agains VMALLOC_START.
 
 Fixes: 6ca055322da8 ("powerpc/32s: Use dedicated segment for modules with STRICT_KERNEL_RWX")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/kasan.h | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/book3s32/mmu.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index d635b96c7ea6..7355ed05e65e 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -15,11 +15,18 @@
- #ifndef __ASSEMBLY__
- 
- #include <asm/page.h>
-+#include <linux/sizes.h>
- 
- #define KASAN_SHADOW_SCALE_SHIFT	3
- 
-+#if defined(CONFIG_PPC_BOOK3S_32) && defined(CONFIG_MODULES) && defined(CONFIG_STRICT_KERNEL_RWX)
-+#define KASAN_KERN_START	ALIGN_DOWN(PAGE_OFFSET - SZ_256M, SZ_256M)
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index c0162911f6cb..82ae9e06a773 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -191,10 +191,17 @@ static bool is_module_segment(unsigned long addr)
+ {
+ 	if (!IS_ENABLED(CONFIG_MODULES))
+ 		return false;
++#ifdef MODULES_VADDR
++	if (addr < ALIGN_DOWN(MODULES_VADDR, SZ_256M))
++		return false;
++	if (addr >= ALIGN(MODULES_END, SZ_256M))
++		return false;
 +#else
-+#define KASAN_KERN_START	PAGE_OFFSET
+ 	if (addr < ALIGN_DOWN(VMALLOC_START, SZ_256M))
+ 		return false;
+ 	if (addr >= ALIGN(VMALLOC_END, SZ_256M))
+ 		return false;
 +#endif
-+
- #define KASAN_SHADOW_START	(KASAN_SHADOW_OFFSET + \
--				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
-+				 (KASAN_KERN_START >> KASAN_SHADOW_SCALE_SHIFT))
- 
- #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
+ 	return true;
+ }
  
 -- 
 2.25.0
