@@ -7,44 +7,44 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CDCBC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 11:03:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6185EC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 11:05:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDE9A22CF7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 11:03:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDE9A22CF7
+	by mail.kernel.org (Postfix) with ESMTPS id 2004E22D01
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 11:05:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2004E22D01
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BM7yr1jbqzDqjv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 21:03:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BM80m3kTzzDqlp
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 21:05:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.helo=elvis.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de;
  envelope-from=tsbogend@alpha.franken.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=alpha.franken.de
 Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BM7wt43HvzDqKl
+ by lists.ozlabs.org (Postfix) with ESMTP id 4BM7wt46K9zDqLn
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2020 21:01:48 +1000 (AEST)
 Received: from uucp (helo=alpha)
  by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
- id 1k3HAl-0001HW-00; Wed, 05 Aug 2020 13:01:27 +0200
+ id 1k3HAl-0001HW-01; Wed, 05 Aug 2020 13:01:27 +0200
 Received: by alpha.franken.de (Postfix, from userid 1000)
- id 27D27C0BF1; Wed,  5 Aug 2020 12:58:44 +0200 (CEST)
-Date: Wed, 5 Aug 2020 12:58:44 +0200
+ id 899DDC0C25; Wed,  5 Aug 2020 13:00:35 +0200 (CEST)
+Date: Wed, 5 Aug 2020 13:00:35 +0200
 From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v2 17/17] memblock: use separate iterators for memory and
- reserved regions
-Message-ID: <20200805105844.GA11658@alpha.franken.de>
+Subject: Re: [PATCH v2 12/17] arch, drivers: replace for_each_membock() with
+ for_each_mem_range()
+Message-ID: <20200805110035.GB11658@alpha.franken.de>
 References: <20200802163601.8189-1-rppt@kernel.org>
- <20200802163601.8189-18-rppt@kernel.org>
+ <20200802163601.8189-13-rppt@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200802163601.8189-18-rppt@kernel.org>
+In-Reply-To: <20200802163601.8189-13-rppt@kernel.org>
 User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -83,19 +83,25 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Aug 02, 2020 at 07:36:01PM +0300, Mike Rapoport wrote:
+On Sun, Aug 02, 2020 at 07:35:56PM +0300, Mike Rapoport wrote:
 > From: Mike Rapoport <rppt@linux.ibm.com>
 > 
-> for_each_memblock() is used to iterate over memblock.memory in
-> a few places that use data from memblock_region rather than the memory
-> ranges.
+> There are several occurrences of the following pattern:
 > 
-> Introduce separate for_each_mem_region() and for_each_reserved_mem_region()
-> to improve encapsulation of memblock internals from its users.
+> 	for_each_memblock(memory, reg) {
+> 		start = __pfn_to_phys(memblock_region_memory_base_pfn(reg);
+> 		end = __pfn_to_phys(memblock_region_memory_end_pfn(reg));
+> 
+> 		/* do something with start and end */
+> 	}
+> 
+> Using for_each_mem_range() iterator is more appropriate in such cases and
+> allows simpler and cleaner code.
 > 
 > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 > ---
->  arch/mips/netlogic/xlp/setup.c |  2 +-
+>  arch/mips/cavium-octeon/dma-octeon.c     | 12 +++---
+>  arch/mips/kernel/setup.c                 | 31 +++++++--------
 
 Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
