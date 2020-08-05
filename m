@@ -2,90 +2,53 @@ Return-Path: <SRS0=7j3x=BP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 626A6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 09:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17CD4C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 10:45:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13C3E2075A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 09:33:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aUOxTUPp";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="aUOxTUPp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13C3E2075A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8EC4D2173E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 10:45:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EC4D2173E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BM5zD1Y0rzDqhF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 19:33:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=redhat.com (client-ip=205.139.110.61;
- helo=us-smtp-delivery-1.mimecast.com; envelope-from=bhe@redhat.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BM7Yz2wqlzDqf9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Aug 2020 20:45:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=aUOxTUPp; 
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=aUOxTUPp; 
- dkim-atps=neutral
-Received: from us-smtp-delivery-1.mimecast.com (us-smtp-1.mimecast.com
- [205.139.110.61])
+ spf=none (no SPF record) smtp.mailfrom=canonical.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=canonical.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BM5v16HmnzDqf9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2020 19:30:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1596619802;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=KGrNYVry5FOInRW/Xy0yFMiPNeyHmg20qhVD8oGfJJ4=;
- b=aUOxTUPpBPd48TQUNVSosUBrx0RpYWwrCSGKn8GWTGhB28sC3H1gVhK3g5jDWcq7hb1KLW
- HZC/Y/5rDZbbpdfxZ99aYgN5c7MepdlUlLdBcuzSbWncjo6uHbrkf+n4c9F1jMaqB2oSnv
- k3iBr7h6S4pqZcnEQhPLETOc35VuQnc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1596619802;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=KGrNYVry5FOInRW/Xy0yFMiPNeyHmg20qhVD8oGfJJ4=;
- b=aUOxTUPpBPd48TQUNVSosUBrx0RpYWwrCSGKn8GWTGhB28sC3H1gVhK3g5jDWcq7hb1KLW
- HZC/Y/5rDZbbpdfxZ99aYgN5c7MepdlUlLdBcuzSbWncjo6uHbrkf+n4c9F1jMaqB2oSnv
- k3iBr7h6S4pqZcnEQhPLETOc35VuQnc=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-470-ZnwKN9E9NxSzYumJ2rNNrw-1; Wed, 05 Aug 2020 05:29:58 -0400
-X-MC-Unique: ZnwKN9E9NxSzYumJ2rNNrw-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 24BE680183C;
- Wed,  5 Aug 2020 09:29:53 +0000 (UTC)
-Received: from localhost (ovpn-12-71.pek2.redhat.com [10.72.12.71])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 068AF726A5;
- Wed,  5 Aug 2020 09:29:51 +0000 (UTC)
-Date: Wed, 5 Aug 2020 17:29:48 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v2 17/17] memblock: use separate iterators for memory and
- reserved regions
-Message-ID: <20200805092948.GX10792@MiWiFi-R3L-srv>
-References: <20200802163601.8189-1-rppt@kernel.org>
- <20200802163601.8189-18-rppt@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BM7X03QjczDqdL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2020 20:43:43 +1000 (AEST)
+Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
+ by youngberry.canonical.com with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
+ (envelope-from <colin.king@canonical.com>)
+ id 1k3GtV-0004yR-8Y; Wed, 05 Aug 2020 10:43:37 +0000
+From: Colin King <colin.king@canonical.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wolfram Sang <wsa@kernel.org>, colin.king@canonical.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] macintosh: windfarm: fix spelling mistake "detatch" ->
+ "detach"
+Date: Wed,  5 Aug 2020 11:43:37 +0100
+Message-Id: <20200805104337.16104-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200802163601.8189-18-rppt@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,73 +60,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Emil Renner Berthing <kernel@esmil.dk>, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- Will Deacon <will@kernel.org>, Stafford Horne <shorne@gmail.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- clang-built-linux@googlegroups.com, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>,
- Michal Simek <monstr@monstr.eu>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Palmer Dabbelt <palmer@dabbelt.com>,
- Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08/02/20 at 07:36pm, Mike Rapoport wrote:
-> From: Mike Rapoport <rppt@linux.ibm.com>
-> 
-> for_each_memblock() is used to iterate over memblock.memory in
-> a few places that use data from memblock_region rather than the memory
-> ranges.
-> 
-> Introduce separate for_each_mem_region() and for_each_reserved_mem_region()
-> to improve encapsulation of memblock internals from its users.
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> ---
->  .clang-format                  |  3 ++-
->  arch/arm64/kernel/setup.c      |  2 +-
->  arch/arm64/mm/numa.c           |  2 +-
->  arch/mips/netlogic/xlp/setup.c |  2 +-
->  arch/x86/mm/numa.c             |  2 +-
->  include/linux/memblock.h       | 19 ++++++++++++++++---
->  mm/memblock.c                  |  4 ++--
->  mm/page_alloc.c                |  8 ++++----
->  8 files changed, 28 insertions(+), 14 deletions(-)
-> 
-...
+From: Colin Ian King <colin.king@canonical.com>
 
-> diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-> index 9e51b3fd4134..a6970e058bd7 100644
-> --- a/include/linux/memblock.h
-> +++ b/include/linux/memblock.h
-> @@ -522,9 +522,22 @@ static inline unsigned long memblock_region_reserved_end_pfn(const struct memblo
->  	return PFN_UP(reg->base + reg->size);
->  }
->  
-> -#define for_each_memblock(memblock_type, region)					\
-> -	for (region = memblock.memblock_type.regions;					\
-> -	     region < (memblock.memblock_type.regions + memblock.memblock_type.cnt);	\
-> +/**
-> + * for_each_mem_region - itereate over registered memory regions
-                                          ~~~~~~~~~~~~~~~~~
+There are spelling mistakes in DBG messages. Fix them.
 
-Wonder why emphasize 'registered' memory.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/macintosh/windfarm_lm75_sensor.c | 2 +-
+ drivers/macintosh/windfarm_lm87_sensor.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Other than this confusion to me, this patch looks good.
-
-Reviewed-by: Baoquan He <bhe@redhat.com>
+diff --git a/drivers/macintosh/windfarm_lm75_sensor.c b/drivers/macintosh/windfarm_lm75_sensor.c
+index 1e5fa09845e7..a88f73af4d5e 100644
+--- a/drivers/macintosh/windfarm_lm75_sensor.c
++++ b/drivers/macintosh/windfarm_lm75_sensor.c
+@@ -152,7 +152,7 @@ static int wf_lm75_remove(struct i2c_client *client)
+ {
+ 	struct wf_lm75_sensor *lm = i2c_get_clientdata(client);
+ 
+-	DBG("wf_lm75: i2c detatch called for %s\n", lm->sens.name);
++	DBG("wf_lm75: i2c detach called for %s\n", lm->sens.name);
+ 
+ 	/* Mark client detached */
+ 	lm->i2c = NULL;
+diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
+index d011899c0a8a..de8ef76a0ac8 100644
+--- a/drivers/macintosh/windfarm_lm87_sensor.c
++++ b/drivers/macintosh/windfarm_lm87_sensor.c
+@@ -149,7 +149,7 @@ static int wf_lm87_remove(struct i2c_client *client)
+ {
+ 	struct wf_lm87_sensor *lm = i2c_get_clientdata(client);
+ 
+-	DBG("wf_lm87: i2c detatch called for %s\n", lm->sens.name);
++	DBG("wf_lm87: i2c detach called for %s\n", lm->sens.name);
+ 
+ 	/* Mark client detached */
+ 	lm->i2c = NULL;
+-- 
+2.27.0
 
