@@ -2,70 +2,84 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE6F5C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76903C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:54:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8D97922D05
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:49:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Ns3KKIZD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D97922D05
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2A1C822CF7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:54:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A1C822CF7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMjdM1FC2zDqn5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 19:20:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+51efaf08c314c7af39ff+6192+infradead.org+hch@casper.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMhCY0G7SzDqkJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 18:16:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=Ns3KKIZD; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMjb50WgxzDqlh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 19:18:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=LGsolx+q4+pRQwaFegj0pZt825v+uaehpXLibfoN7qg=; b=Ns3KKIZDE6iGgMooNVVQ63I1br
- CvPi4fQkVVaIqdaadNEcdq5e/qP0sFb+t7e7CxNw088wxUDhKLm0p07hCuJGdrAGGqArmBx3z+bcJ
- XAvI8FNyeJOKqNSXUOHdyXSYxUg6XuIVnKb6IMunukKE/jeTy9iKElJdtoyUUk6W3Kaj1ukYnZE9M
- UMqYPPJHj4IxUeNE6DnokltXo2FBVwg0LhQRzaOHrAkSzlN8ICB9ytGWeBT56i8nx35AsTjrmPfCe
- eN2klwLsvDa2jdXush1PsPISlab9rjivhBUdiBnclY6XsfOdaYiIMuAamMjrQkst0K9boxWwrfnlm
- a57pVYTg==;
-Received: from hch by casper.infradead.org with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1k3c2A-0000FS-J5; Thu, 06 Aug 2020 09:17:58 +0000
-Date: Thu, 6 Aug 2020 10:17:58 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3 3/3] powerpc/uaccess: simplify the get_fs() set_fs()
- logic
-Message-ID: <20200806091758.GA653@infradead.org>
-References: <a6e62627d25fb7ae9b91d8bf553e707689e37498.1596702117.git.christophe.leroy@csgroup.eu>
- <cf39cb8e42cffe323393b8cecdc59a7230298eab.1596702117.git.christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMh9J6xSnzDqkB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 18:14:28 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07682CJZ175703; Thu, 6 Aug 2020 04:14:22 -0400
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32r46g5rbh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Aug 2020 04:14:22 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07685hrl026037;
+ Thu, 6 Aug 2020 08:14:21 GMT
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26]) by ppma03wdc.us.ibm.com with ESMTP id 32n019frwh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 06 Aug 2020 08:14:21 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 0768EJoI39059788
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 6 Aug 2020 08:14:19 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 52A25AC059;
+ Thu,  6 Aug 2020 08:14:19 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 26EEBAC05B;
+ Thu,  6 Aug 2020 08:14:18 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.71.228])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu,  6 Aug 2020 08:14:17 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/book3s64/radix: Make radix_mem_block_size 64bit
+Date: Thu,  6 Aug 2020 13:44:15 +0530
+Message-Id: <20200806081415.208546-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cf39cb8e42cffe323393b8cecdc59a7230298eab.1596702117.git.christophe.leroy@csgroup.eu>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-06_05:2020-08-06,
+ 2020-08-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0
+ mlxlogscore=999 impostorscore=0 adultscore=0 mlxscore=0 clxscore=1015
+ bulkscore=0 spamscore=0 suspectscore=0 priorityscore=1501
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2008060051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,15 +91,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Do you urgently need this?  My plan for 5.10 is to rebased and submit
-the remaining bits of this branch:
+Similar to commit: 89c140bbaeee ("pseries: Fix 64 bit logical memory block panic")
+make sure we update different variables tracking lmb_size are updated
+to be 64 bit.
 
-    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/set_fs-removal
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h | 2 +-
+ arch/powerpc/include/asm/drmem.h         | 2 +-
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-which will kill off set_fs/get_fs entirely.
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 55442d45c597..1a0c9d09950f 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -85,7 +85,7 @@ extern unsigned int mmu_base_pid;
+ /*
+  * memory block size used with radix translation.
+  */
+-extern unsigned int __ro_after_init radix_mem_block_size;
++extern unsigned long __ro_after_init radix_mem_block_size;
+ 
+ #define PRTB_SIZE_SHIFT	(mmu_pid_bits + 4)
+ #define PRTB_ENTRIES	(1ul << mmu_pid_bits)
+diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
+index 17ccc6474ab6..07c158c5f939 100644
+--- a/arch/powerpc/include/asm/drmem.h
++++ b/arch/powerpc/include/asm/drmem.h
+@@ -21,7 +21,7 @@ struct drmem_lmb {
+ struct drmem_lmb_info {
+ 	struct drmem_lmb        *lmbs;
+ 	int                     n_lmbs;
+-	u32                     lmb_size;
++	u64                     lmb_size;
+ };
+ 
+ extern struct drmem_lmb_info *drmem_info;
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 28c784976bed..ca76d9d6372a 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -34,7 +34,7 @@
+ 
+ unsigned int mmu_pid_bits;
+ unsigned int mmu_base_pid;
+-unsigned int radix_mem_block_size __ro_after_init;
++unsigned long radix_mem_block_size __ro_after_init;
+ 
+ static __ref void *early_alloc_pgtable(unsigned long size, int nid,
+ 			unsigned long region_start, unsigned long region_end)
+-- 
+2.26.2
+
