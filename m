@@ -2,60 +2,78 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01DC3C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C43DC433E4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1280122CF7
+	by mail.kernel.org (Postfix) with ESMTPS id 179E322D03
 	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1280122CF7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dpiWAUFO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 179E322D03
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMZy86LmXzDqkT
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 14:19:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMj5z4hQkzDqPC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 18:56:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=merlin.20170209 header.b=dpiWAUFO; 
+ dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMZt775HhzDqGl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 14:15:53 +1000 (AEST)
-IronPort-SDR: V8Ii5eYamlLM+yRgZRu8WjNu7LGb/nIQ9Pep7qEi703SwYnr8ZqKIbF15TaIR2o2X+aBtUURHt
- 4keVb0w6ksNw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9704"; a="153854343"
-X-IronPort-AV: E=Sophos;i="5.75,440,1589266800"; d="scan'208";a="153854343"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Aug 2020 21:15:50 -0700
-IronPort-SDR: qo7UoLZOt3Q6fMO1FwiFxTW3V/KNNmAyFtbWmpZBHPiLQGd7uIdC0vpAhnaRy0iHe/EhAqNRsE
- 2DagC5C7UwJg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,440,1589266800"; d="scan'208";a="293178899"
-Received: from lkp-server02.sh.intel.com (HELO 37a337f97289) ([10.239.97.151])
- by orsmga006.jf.intel.com with ESMTP; 05 Aug 2020 21:15:48 -0700
-Received: from kbuild by 37a337f97289 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1k3XJk-00015h-6g; Thu, 06 Aug 2020 04:15:48 +0000
-Date: Thu, 06 Aug 2020 12:14:53 +0800
-From: kernel test robot <lkp@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMj3r2JTjzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 18:54:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=sjPmb+gKsoTr4gKJxpXZXAXQKQybWUTDRfPhRmtRJlU=; b=dpiWAUFOI4iJE6fUsW+QV7ZkXa
+ 3x7q97QuD47tPatxuiiBA1P/Eep1oUtAWOT92PyLEhU6C9/Z8UitQ402UZeE9c1UKKNrbO5irRBp0
+ Enx+csJ8wy5fBJqVwlsjoFybJ8npL89aW15HpTNnOQRTZ0rJsPu6MFixyeZTzcMqofbz63Jpsr5jv
+ z/Gwf9hhnmiqm/9Iy4467sJv4j45XA0HNJ3V0XZBKVgjjIhgPzqlxkamOQptyfSZAhwtMuhwtN58h
+ fhGPSupzZpnZyFtJRTZvDL9DzOO7Qq1oA0bF2ubMk956U/AUoeo2im/KJzY2iGpRzF9Mou7o4LY2a
+ zB6S1g8w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=noisy.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1k3bfV-00041J-VU; Thu, 06 Aug 2020 08:54:34 +0000
+Received: from hirez.programming.kicks-ass.net
+ (hirez.programming.kicks-ass.net [192.168.1.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 8F0F2304D28;
+ Thu,  6 Aug 2020 10:54:29 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 5274C220F91BB; Thu,  6 Aug 2020 10:54:29 +0200 (CEST)
+Date: Thu, 6 Aug 2020 10:54:29 +0200
+From: peterz@infradead.org
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 3cd2184115b85cc8242fec3d42529cd112962984
-Message-ID: <5f2b83bd.Ojq0U83pZup1RRcg%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+Subject: Re: [PATCH 1/2] sched/topology: Allow archs to override cpu_smt_mask
+Message-ID: <20200806085429.GX2674@hirez.programming.kicks-ass.net>
+References: <20200804033307.76111-1-srikar@linux.vnet.ibm.com>
+ <20200804104520.GB2657@hirez.programming.kicks-ass.net>
+ <20200804121007.GJ24375@linux.vnet.ibm.com>
+ <20200804124755.GJ2674@hirez.programming.kicks-ass.net>
+ <87ft90z6dy.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <87ft90z6dy.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,114 +85,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Rik van Riel <riel@surriel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Valentin Schneider <valentin.schneider@arm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Mel Gorman <mgorman@techsingularity.net>,
+ Ingo Molnar <mingo@kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 3cd2184115b85cc8242fec3d42529cd112962984  Automatic merge of 'master', 'next' and 'fixes' (2020-08-05 22:24)
+On Thu, Aug 06, 2020 at 03:32:25PM +1000, Michael Ellerman wrote:
 
-elapsed time: 844m
+> That brings with it a bunch of problems, such as existing software that
+> has been developed/configured for Power8 and expects to see SMT8.
+> 
+> We also allow LPARs to be live migrated from Power8 to Power9 (and back), so
+> maintaining the illusion of SMT8 is considered a requirement to make that work.
 
-configs tested: 91
-configs skipped: 6
+So how does that work if the kernel booted on P9 and demuxed the SMT8
+into 2xSMT4? If you migrate that state onto a P8 with actual SMT8 you're
+toast again.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+> Yeah I agree the naming is confusing.
+> 
+> Let's call them "SMT4 cores" and "SMT8 cores"?
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-sh                          polaris_defconfig
-mips                  mips_paravirt_defconfig
-microblaze                      mmu_defconfig
-mips                 pnx8335_stb225_defconfig
-arm                       aspeed_g5_defconfig
-mips                      bmips_stb_defconfig
-sh                   sh7770_generic_defconfig
-m68k                       m5249evb_defconfig
-alpha                               defconfig
-sh                        dreamcast_defconfig
-m68k                             alldefconfig
-arm                     am200epdkit_defconfig
-arm                         nhk8815_defconfig
-powerpc                     mpc5200_defconfig
-mips                         tb0219_defconfig
-powerpc                      ppc6xx_defconfig
-arm                       imx_v4_v5_defconfig
-arm                     eseries_pxa_defconfig
-arm                            pleb_defconfig
-arm                        keystone_defconfig
-arm                          collie_defconfig
-arc                        vdk_hs38_defconfig
-arm                      tct_hammer_defconfig
-mips                     loongson1b_defconfig
-powerpc                       ppc64_defconfig
-arm                             ezx_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-i386                 randconfig-a005-20200805
-i386                 randconfig-a004-20200805
-i386                 randconfig-a001-20200805
-i386                 randconfig-a003-20200805
-i386                 randconfig-a002-20200805
-i386                 randconfig-a006-20200805
-x86_64               randconfig-a013-20200805
-x86_64               randconfig-a011-20200805
-x86_64               randconfig-a012-20200805
-x86_64               randconfig-a016-20200805
-x86_64               randconfig-a015-20200805
-x86_64               randconfig-a014-20200805
-i386                 randconfig-a011-20200805
-i386                 randconfig-a012-20200805
-i386                 randconfig-a013-20200805
-i386                 randconfig-a014-20200805
-i386                 randconfig-a015-20200805
-i386                 randconfig-a016-20200805
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Works for me, thanks!
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> The problem is we are already lying to userspace, because firmware lies to us.
+> 
+> ie. the firmware on these systems shows us an SMT8 core, and so current kernels
+> show SMT8 to userspace. I don't think we can realistically change that fact now,
+> as these systems are already out in the field.
+> 
+> What this patch tries to do is undo some of the mess, and at least give the
+> scheduler the right information.
+
+What a mess... I think it depends on what you do with that P9 to P8
+migration case. Does it make sense to have a "p8_compat" boot arg for
+the case where you want LPAR migration back onto P8 systems -- in which
+case it simply takes the firmware's word as gospel and doesn't untangle
+things, because it can actually land on a P8.
