@@ -2,55 +2,60 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1726C433E0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01DC3C433E1
 	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12B2022D02
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12B2022D02
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1280122CF7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1280122CF7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMgY10XjVzDqC5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 17:46:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMZy86LmXzDqkT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 14:19:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMgVp1LQzzDqhT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 17:44:33 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7FCC41A08EB;
- Thu,  6 Aug 2020 09:44:29 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CB7F81A0901;
- Thu,  6 Aug 2020 09:44:24 +0200 (CEST)
-Received: from 10.192.242.69 (shlinux2.ap.freescale.net [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id D574D402D0;
- Thu,  6 Aug 2020 09:44:18 +0200 (CEST)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl-asoc-card: Get "extal" clock rate by clk_get_rate
-Date: Thu,  6 Aug 2020 15:39:45 +0800
-Message-Id: <1596699585-27429-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMZt775HhzDqGl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 14:15:53 +1000 (AEST)
+IronPort-SDR: V8Ii5eYamlLM+yRgZRu8WjNu7LGb/nIQ9Pep7qEi703SwYnr8ZqKIbF15TaIR2o2X+aBtUURHt
+ 4keVb0w6ksNw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9704"; a="153854343"
+X-IronPort-AV: E=Sophos;i="5.75,440,1589266800"; d="scan'208";a="153854343"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Aug 2020 21:15:50 -0700
+IronPort-SDR: qo7UoLZOt3Q6fMO1FwiFxTW3V/KNNmAyFtbWmpZBHPiLQGd7uIdC0vpAhnaRy0iHe/EhAqNRsE
+ 2DagC5C7UwJg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,440,1589266800"; d="scan'208";a="293178899"
+Received: from lkp-server02.sh.intel.com (HELO 37a337f97289) ([10.239.97.151])
+ by orsmga006.jf.intel.com with ESMTP; 05 Aug 2020 21:15:48 -0700
+Received: from kbuild by 37a337f97289 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1k3XJk-00015h-6g; Thu, 06 Aug 2020 04:15:48 +0000
+Date: Thu, 06 Aug 2020 12:14:53 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 3cd2184115b85cc8242fec3d42529cd112962984
+Message-ID: <5f2b83bd.Ojq0U83pZup1RRcg%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,38 +67,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On some platform(.e.g. i.MX8QM MEK), the "extal" clock is different
-with the mclk of codec, then the clock rate is also different.
-So it is better to get clock rate of "extal" rate by clk_get_rate,
-don't reuse the clock rate of mclk.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 3cd2184115b85cc8242fec3d42529cd112962984  Automatic merge of 'master', 'next' and 'fixes' (2020-08-05 22:24)
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+elapsed time: 844m
+
+configs tested: 91
+configs skipped: 6
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+sh                          polaris_defconfig
+mips                  mips_paravirt_defconfig
+microblaze                      mmu_defconfig
+mips                 pnx8335_stb225_defconfig
+arm                       aspeed_g5_defconfig
+mips                      bmips_stb_defconfig
+sh                   sh7770_generic_defconfig
+m68k                       m5249evb_defconfig
+alpha                               defconfig
+sh                        dreamcast_defconfig
+m68k                             alldefconfig
+arm                     am200epdkit_defconfig
+arm                         nhk8815_defconfig
+powerpc                     mpc5200_defconfig
+mips                         tb0219_defconfig
+powerpc                      ppc6xx_defconfig
+arm                       imx_v4_v5_defconfig
+arm                     eseries_pxa_defconfig
+arm                            pleb_defconfig
+arm                        keystone_defconfig
+arm                          collie_defconfig
+arc                        vdk_hs38_defconfig
+arm                      tct_hammer_defconfig
+mips                     loongson1b_defconfig
+powerpc                       ppc64_defconfig
+arm                             ezx_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+i386                 randconfig-a005-20200805
+i386                 randconfig-a004-20200805
+i386                 randconfig-a001-20200805
+i386                 randconfig-a003-20200805
+i386                 randconfig-a002-20200805
+i386                 randconfig-a006-20200805
+x86_64               randconfig-a013-20200805
+x86_64               randconfig-a011-20200805
+x86_64               randconfig-a012-20200805
+x86_64               randconfig-a016-20200805
+x86_64               randconfig-a015-20200805
+x86_64               randconfig-a014-20200805
+i386                 randconfig-a011-20200805
+i386                 randconfig-a012-20200805
+i386                 randconfig-a013-20200805
+i386                 randconfig-a014-20200805
+i386                 randconfig-a015-20200805
+i386                 randconfig-a016-20200805
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
 ---
- sound/soc/fsl/fsl-asoc-card.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 52adedc03245..2c92a5efad61 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -696,6 +696,13 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 			goto asrc_fail;
- 		}
- 	} else if (of_node_name_eq(cpu_np, "esai")) {
-+		struct clk *esai_clk = clk_get(&cpu_pdev->dev, "extal");
-+
-+		if (!IS_ERR(esai_clk)) {
-+			priv->cpu_priv.sysclk_freq[TX] = clk_get_rate(esai_clk);
-+			priv->cpu_priv.sysclk_freq[RX] = clk_get_rate(esai_clk);
-+			clk_put(esai_clk);
-+		}
- 		priv->cpu_priv.sysclk_id[1] = ESAI_HCKT_EXTAL;
- 		priv->cpu_priv.sysclk_id[0] = ESAI_HCKR_EXTAL;
- 	} else if (of_node_name_eq(cpu_np, "sai")) {
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
