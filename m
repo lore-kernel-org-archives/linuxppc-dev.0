@@ -2,88 +2,64 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43315C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 12:51:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFAF2C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 12:54:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1A1F923117
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 12:51:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A1F923117
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 66AC423117
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 12:54:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="FTKNqPDO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66AC423117
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMpJt56qwzDqq0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 22:51:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMpMr3vQ9zDqpq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 22:54:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=FTKNqPDO; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMnzg1yjbzDqD7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 22:36:31 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 076CZ9ec194013; Thu, 6 Aug 2020 08:36:26 -0400
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
- [169.63.121.186])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32qu0w5p77-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 Aug 2020 08:36:26 -0400
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
- by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 076CZgXn023159;
- Thu, 6 Aug 2020 12:36:25 GMT
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by ppma03wdc.us.ibm.com with ESMTP id 32n019hckp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 06 Aug 2020 12:36:25 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 076CaOww46072230
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 6 Aug 2020 12:36:24 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E7DB8C605B;
- Thu,  6 Aug 2020 12:36:23 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C9ADFC6055;
- Thu,  6 Aug 2020 12:36:21 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.71.228])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu,  6 Aug 2020 12:36:21 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [RFC PATCH 3/3] powerpc/lmb-size: Use addr #size-cells value when
- fetching lmb-size
-Date: Thu,  6 Aug 2020 18:06:04 +0530
-Message-Id: <20200806123604.248361-3-aneesh.kumar@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200806123604.248361-1-aneesh.kumar@linux.ibm.com>
-References: <20200806123604.248361-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMp185pGRzDqnB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 22:37:48 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0563C22DBF;
+ Thu,  6 Aug 2020 12:37:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1596717466;
+ bh=jL9tYWE9iw+uSM7TMvqp3lXSaJ38TCtcHbCBzrH9URk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=FTKNqPDOSoDVsrkVCQRBkhh82E5jMj1JeoqvMgmSvt/r52lW6IP0hCZe5xb6yX1XW
+ Fc8UcvHlqyqILzqf79rqJaDtp8Yb62k7F06R3KpYF6ZDrdDO38gupAtHWt5GOOVQgy
+ nVmjkYs7ZtApS1RJ24E/VGn1ob8gmyOC0Nm9rgi4=
+Date: Thu, 6 Aug 2020 13:37:22 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl-asoc-card: Get "extal" clock rate by
+ clk_get_rate
+Message-ID: <20200806123721.GC6442@sirena.org.uk>
+References: <1596699585-27429-1-git-send-email-shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-06_06:2020-08-06,
- 2020-08-06 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 malwarescore=0
- clxscore=1015 impostorscore=0 lowpriorityscore=0 suspectscore=0
- phishscore=0 mlxscore=0 bulkscore=0 priorityscore=1501 spamscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008060091
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="kVXhAStRUZ/+rrGn"
+Content-Disposition: inline
+In-Reply-To: <1596699585-27429-1-git-send-email-shengjiu.wang@nxp.com>
+X-Cookie: Hedonist for hire... no job too easy!
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,74 +71,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Hari Bathini <hbathini@linux.ibm.com>
+Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
+ perex@perex.cz, nicoleotsuka@gmail.com, festevam@gmail.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make it consistent with other usages.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/book3s64/radix_pgtable.c        |  7 ++++---
- arch/powerpc/platforms/pseries/hotplug-memory.c | 10 ++++++----
- 2 files changed, 10 insertions(+), 7 deletions(-)
+--kVXhAStRUZ/+rrGn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index ca76d9d6372a..a48e6618a27b 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -497,7 +497,7 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
- 					  depth, void *data)
- {
- 	unsigned long *mem_block_size = (unsigned long *)data;
--	const __be64 *prop;
-+	const __be32 *prop;
- 	int len;
- 
- 	if (depth != 1)
-@@ -507,13 +507,14 @@ static int __init probe_memory_block_size(unsigned long node, const char *uname,
- 		return 0;
- 
- 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
--	if (!prop || len < sizeof(__be64))
-+
-+	if (!prop || len < dt_root_size_cells * sizeof(__be32))
- 		/*
- 		 * Nothing in the device tree
- 		 */
- 		*mem_block_size = MIN_MEMORY_BLOCK_SIZE;
- 	else
--		*mem_block_size = be64_to_cpup(prop);
-+		*mem_block_size = of_read_number(prop, dt_root_size_cells);
- 	return 1;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 5d545b78111f..aba23ef8dfdd 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -30,12 +30,14 @@ unsigned long pseries_memory_block_size(void)
- 
- 	np = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (np) {
--		const __be64 *size;
-+		int len;
-+		const __be32 *prop;
- 
--		size = of_get_property(np, "ibm,lmb-size", NULL);
--		if (size)
--			memblock_size = be64_to_cpup(size);
-+		prop = of_get_property(np, "ibm,lmb-size", &len);
-+		if (prop && len >= mem_size_cells * sizeof(__be32))
-+			memblock_size = of_read_number(prop, mem_size_cells);
- 		of_node_put(np);
-+
- 	} else  if (machine_is(pseries)) {
- 		/* This fallback really only applies to pseries */
- 		unsigned int memzero_size = 0;
--- 
-2.26.2
+On Thu, Aug 06, 2020 at 03:39:45PM +0800, Shengjiu Wang wrote:
 
+>  	} else if (of_node_name_eq(cpu_np, "esai")) {
+> +		struct clk *esai_clk = clk_get(&cpu_pdev->dev, "extal");
+> +
+> +		if (!IS_ERR(esai_clk)) {
+> +			priv->cpu_priv.sysclk_freq[TX] = clk_get_rate(esai_clk);
+> +			priv->cpu_priv.sysclk_freq[RX] = clk_get_rate(esai_clk);
+> +			clk_put(esai_clk);
+> +		}
+
+This should handle probe deferral.  Also if this clock is in use
+shouldn't we be enabling it?  It looks like it's intended to be a
+crystal so it's probably forced on all the time but sometimes there's
+power control for crystals, or perhaps someone might do something
+unusual with the hardware.
+
+--kVXhAStRUZ/+rrGn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl8r+YEACgkQJNaLcl1U
+h9AgUQf/RsD8CeWYDbaeEKFdJGHhIhdtwKO8qRAL1Z0U+AS4lEQwWdvppChPN90d
+SjiFV8GtE1TIQ3IrzShwKjq4ZU1Kg8qWKcuqnTiqjQDoMJ11Fj6bWXqdwPSGioZ1
+3mKOsJKQihgFHiXY+Xm1R3VuwpJiq19qSM94KYTy+K4p1NcS9Usdr5da5007rE/d
+2RiyA2UvQjMtbCgOU8ZhM2XCRzwBUyFSGgmHvifONQIX0Sacr85m5SxW7teUVz36
+5//kIoJlF/aOpi0dvugXYBPu1Ic8TVAAYWsIxVthtSvmV2dwKlorbO2X/VCJjbgS
+V3SZRTvuY8ZlZdkOdxOSlCA8DNgtTA==
+=nUjz
+-----END PGP SIGNATURE-----
+
+--kVXhAStRUZ/+rrGn--
