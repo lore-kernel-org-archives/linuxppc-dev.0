@@ -2,72 +2,70 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 982A2C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:44:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE6F5C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:49:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE21522D00
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:44:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE21522D00
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8D97922D05
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:49:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Ns3KKIZD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D97922D05
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMcwc3hgJzDqlJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 15:48:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMjdM1FC2zDqn5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 19:20:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+51efaf08c314c7af39ff+6192+infradead.org+hch@casper.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=Ns3KKIZD; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMctj4HgLzDqW5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 15:46:34 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BMctW4D6qz9tytV;
- Thu,  6 Aug 2020 07:46:27 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Cn2j-KJGPYQE; Thu,  6 Aug 2020 07:46:27 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BMctW21YWz9tysQ;
- Thu,  6 Aug 2020 07:46:27 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 50E668B770;
- Thu,  6 Aug 2020 07:46:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 9Cs47VjaX3ER; Thu,  6 Aug 2020 07:46:28 +0200 (CEST)
-Received: from po16052vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.102])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E77838B75E;
- Thu,  6 Aug 2020 07:46:27 +0200 (CEST)
-Subject: Re: [PATCH v10 2/5] powerpc/vdso: Prepare for switching VDSO to
- generic C implementation.
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <cover.1596611196.git.christophe.leroy@csgroup.eu>
- <348528c33cd4007f3fee7fe643ef160843d09a6c.1596611196.git.christophe.leroy@csgroup.eu>
- <20200805140307.GO6753@gate.crashing.org>
- <3db2a590-b842-83db-ed2b-f3ee62595f18@csgroup.eu>
- <20200805184054.GQ6753@gate.crashing.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <24b9a5ea-f860-3b38-aee8-4d5676453d50@csgroup.eu>
-Date: Thu, 6 Aug 2020 05:46:18 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMjb50WgxzDqlh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 19:18:25 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description;
+ bh=LGsolx+q4+pRQwaFegj0pZt825v+uaehpXLibfoN7qg=; b=Ns3KKIZDE6iGgMooNVVQ63I1br
+ CvPi4fQkVVaIqdaadNEcdq5e/qP0sFb+t7e7CxNw088wxUDhKLm0p07hCuJGdrAGGqArmBx3z+bcJ
+ XAvI8FNyeJOKqNSXUOHdyXSYxUg6XuIVnKb6IMunukKE/jeTy9iKElJdtoyUUk6W3Kaj1ukYnZE9M
+ UMqYPPJHj4IxUeNE6DnokltXo2FBVwg0LhQRzaOHrAkSzlN8ICB9ytGWeBT56i8nx35AsTjrmPfCe
+ eN2klwLsvDa2jdXush1PsPISlab9rjivhBUdiBnclY6XsfOdaYiIMuAamMjrQkst0K9boxWwrfnlm
+ a57pVYTg==;
+Received: from hch by casper.infradead.org with local (Exim 4.92.3 #3 (Red Hat
+ Linux)) id 1k3c2A-0000FS-J5; Thu, 06 Aug 2020 09:17:58 +0000
+Date: Thu, 6 Aug 2020 10:17:58 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v3 3/3] powerpc/uaccess: simplify the get_fs() set_fs()
+ logic
+Message-ID: <20200806091758.GA653@infradead.org>
+References: <a6e62627d25fb7ae9b91d8bf553e707689e37498.1596702117.git.christophe.leroy@csgroup.eu>
+ <cf39cb8e42cffe323393b8cecdc59a7230298eab.1596702117.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-In-Reply-To: <20200805184054.GQ6753@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cf39cb8e42cffe323393b8cecdc59a7230298eab.1596702117.git.christophe.leroy@csgroup.eu>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,80 +77,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linux-arch@vger.kernel.org,
- vincenzo.frascino@arm.com, arnd@arndb.de, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, luto@kernel.org, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Do you urgently need this?  My plan for 5.10 is to rebased and submit
+the remaining bits of this branch:
 
-On 08/05/2020 06:40 PM, Segher Boessenkool wrote:
-> Hi!
-> 
-> On Wed, Aug 05, 2020 at 04:40:16PM +0000, Christophe Leroy wrote:
->>> It cannot optimise it because it does not know shift < 32.  The code
->>> below is incorrect for shift equal to 32, fwiw.
->>
->> Is there a way to tell it ?
-> 
-> Sure, for example the &31 should work (but it doesn't, with the GCC
-> version you used -- which version is that?)
+    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/set_fs-removal
 
-GCC 10.1
-
-> 
->>> What does the compiler do for just
->>>
->>> static __always_inline u64 vdso_shift_ns(u64 ns, unsigned long shift)
->>> 	return ns >> (shift & 31);
->>> }
->>>
->>
->> Worse:
-> 
-> I cannot make heads or tails of all that branch spaghetti, sorry.
-> 
->>   73c:	55 8c 06 fe 	clrlwi  r12,r12,27
->>   740:	7f c8 f0 14 	addc    r30,r8,r30
->>   744:	7c c6 4a 14 	add     r6,r6,r9
->>   748:	7c c6 e1 14 	adde    r6,r6,r28
->>   74c:	34 6c ff e0 	addic.  r3,r12,-32
->>   750:	41 80 00 70 	blt     7c0 <__c_kernel_clock_gettime+0x114>
-> 
-> This branch is always true.  Hrm.
-
-As a standalone function:
-
-With your suggestion:
-
-000006ac <vdso_shift_ns>:
-  6ac:	54 a5 06 fe 	clrlwi  r5,r5,27
-  6b0:	35 25 ff e0 	addic.  r9,r5,-32
-  6b4:	41 80 00 10 	blt     6c4 <vdso_shift_ns+0x18>
-  6b8:	7c 64 4c 30 	srw     r4,r3,r9
-  6bc:	38 60 00 00 	li      r3,0
-  6c0:	4e 80 00 20 	blr
-  6c4:	54 69 08 3c 	rlwinm  r9,r3,1,0,30
-  6c8:	21 45 00 1f 	subfic  r10,r5,31
-  6cc:	7c 84 2c 30 	srw     r4,r4,r5
-  6d0:	7d 29 50 30 	slw     r9,r9,r10
-  6d4:	7c 63 2c 30 	srw     r3,r3,r5
-  6d8:	7d 24 23 78 	or      r4,r9,r4
-  6dc:	4e 80 00 20 	blr
-
-
-With the version as is in my series:
-
-000006ac <vdso_shift_ns>:
-  6ac:	21 25 00 20 	subfic  r9,r5,32
-  6b0:	7c 69 48 30 	slw     r9,r3,r9
-  6b4:	7c 84 2c 30 	srw     r4,r4,r5
-  6b8:	7d 24 23 78 	or      r4,r9,r4
-  6bc:	7c 63 2c 30 	srw     r3,r3,r5
-  6c0:	4e 80 00 20 	blr
-
-
-Christophe
+which will kill off set_fs/get_fs entirely.
