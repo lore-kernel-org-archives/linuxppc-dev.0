@@ -2,83 +2,88 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52141C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 03:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED3ABC433E8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:04:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F39F220792
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 03:26:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="L4XB6nyS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F39F220792
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 44DBD204FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:04:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44DBD204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMYnK55fJzDqcG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 13:26:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMlXd34hlzDq9y
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 20:46:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=axtens.net (client-ip=2607:f8b0:4864:20::444;
- helo=mail-pf1-x444.google.com; envelope-from=dja@axtens.net;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.a=rsa-sha256
- header.s=google header.b=L4XB6nyS; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMYkv3ht1zDqX1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 13:24:38 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id z188so16321445pfc.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2020 20:24:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=49z1+LbfP1EHSHgEOp6zvM41RF4pfO5OwrTaUPLGq48=;
- b=L4XB6nySvLkVi+tDRz+aVFN9lE8H84VaWRQI9BAqRXXdak9thdwmJjjjTgNzlDvW4J
- gMpjXWFmtTYc3PQ4pGwSnkXYbIxaLIfk1P5EvL88W+s2VQfm5bPTlD6QGSkV2KBpHbFV
- ixZWucTBUr7LvmVibQM4DI6H+LTBXuSNATnCs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=49z1+LbfP1EHSHgEOp6zvM41RF4pfO5OwrTaUPLGq48=;
- b=KCK8YbbYKdDXTh/a2rKVsmYziaML+XP308UV4ngZPKYsVWpeZyHHUWlcJWwlPBer3D
- HBpSkI91jcSzSGgHHrgbpnQYPdLUJh9SLZP0sBfIFKBr0ObEU9S2hMvBnUBdHuZ4plXx
- jvxabAibfT5AuwnwAbw+iQi/nsjm8Ubxw2ChbyirroYInLAhnsDiR3nUa/S5Z9POAhMA
- B/SOd0iag5p11tLCgmJAOmrKZOvIRljMNoYnfzxnFLhqBzUdVqR1iVEnC4Od4901rHba
- cSTYehZIz0Qv+AfCw6xsbEzy8FEHpJnTY2IorvRHukgu8TVPsE4+TTdern7zQqb9TSgP
- 0v3Q==
-X-Gm-Message-State: AOAM532QvKkj2pYiYKIL5c75PbZzgPE2rd5eOmIMuubfoOb6Shw/AVHb
- mjVzvijjFkT+wEdREkKX4QGQZA==
-X-Google-Smtp-Source: ABdhPJxSs9CpbLd302YKlzGAw+TbSuhCbGjVK9m95qyXcoDgClcDijTfJJJP6G/XTsFMO3IjQGldVg==
-X-Received: by 2002:a63:b90a:: with SMTP id z10mr5385445pge.277.1596684275018; 
- Wed, 05 Aug 2020 20:24:35 -0700 (PDT)
-Received: from localhost
- (2001-44b8-111e-5c00-b446-662a-483a-dcf2.static.ipv6.internode.on.net.
- [2001:44b8:111e:5c00:b446:662a:483a:dcf2])
- by smtp.gmail.com with ESMTPSA id e65sm5382429pfe.91.2020.08.05.20.24.34
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 05 Aug 2020 20:24:34 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: "Christopher M. Riedl" <cmr@informatik.wtf>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/5] powerpc/lib: Initialize a temporary mm for code
- patching
-In-Reply-To: <20200709040316.12789-3-cmr@informatik.wtf>
-References: <20200709040316.12789-1-cmr@informatik.wtf>
- <20200709040316.12789-3-cmr@informatik.wtf>
-Date: Thu, 06 Aug 2020 13:24:31 +1000
-Message-ID: <87lfiso3rk.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMlVP6ZjBzDqml
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 20:44:29 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 076AWOQJ021911
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2020 06:44:26 -0400
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32r91bbaxd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2020 06:44:26 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 076AiCCG015894
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2020 10:44:25 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma01wdc.us.ibm.com with ESMTP id 32n018gn2s-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2020 10:44:25 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 076AiPWd38338816
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 6 Aug 2020 10:44:25 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 24B93AC059;
+ Thu,  6 Aug 2020 10:44:25 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D0DBFAC05B;
+ Thu,  6 Aug 2020 10:44:23 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.85.71.228])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu,  6 Aug 2020 10:44:23 +0000 (GMT)
+X-Mailer: emacs 27.0.91 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 1/2] powerpc/numa: Introduce logical numa id
+In-Reply-To: <20200804072507.GI24375@linux.vnet.ibm.com>
+References: <20200731111916.243569-1-aneesh.kumar@linux.ibm.com>
+ <20200801052059.GA24375@linux.vnet.ibm.com> <87h7tl162y.fsf@linux.ibm.com>
+ <20200804072507.GI24375@linux.vnet.ibm.com>
+Date: Thu, 06 Aug 2020 16:14:21 +0530
+Message-ID: <87bljoqcje.fsf@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-06_06:2020-08-06,
+ 2020-08-06 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ bulkscore=0 impostorscore=0 mlxscore=0 malwarescore=0 clxscore=1015
+ priorityscore=1501 mlxlogscore=999 spamscore=0 suspectscore=0 phishscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2008060071
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,129 +95,201 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-hardening@lists.openwall.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Christopher M. Riedl" <cmr@informatik.wtf> writes:
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
 
-> When code patching a STRICT_KERNEL_RWX kernel the page containing the
-> address to be patched is temporarily mapped with permissive memory
-> protections. Currently, a per-cpu vmalloc patch area is used for this
-> purpose. While the patch area is per-cpu, the temporary page mapping is
-> inserted into the kernel page tables for the duration of the patching.
-> The mapping is exposed to CPUs other than the patching CPU - this is
-> undesirable from a hardening perspective.
+> * Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> [2020-08-02 19:51:41]:
+>> Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+>> > * Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> [2020-07-31 16:49:14]:
+>> >
+>> >
+>> > If its just to eliminate node 0, then we have 2 other probably better
+>> > solutions.
+>> > 1. Dont mark node 0 as spl (currently still in mm-tree and a result in
+>> > linux-next)
+>> > 2. powerpc specific: explicitly clear node 0 during numa bringup.
+>> >
+>> 
+>> 
+>> I am not sure I consider them better. But yes, those patches are good
+>> and also resolves the node 0 initialization when the firmware didn't
+>> indicate the presence of such a node.
+>> 
+>> This patch in addition make sure that we get the same topolgy report
+>> across reboot on a virtualized partitions as longs as the cpu/memory
+>> ratio per powervm domains remain the same. This should also help to
+>> avoid confusion after an LPM migration once we start applying topology
+>> updates. 
+>> 
 >
-> Use the `poking_init` init hook to prepare a temporary mm and patching
-> address. Initialize the temporary mm by copying the init mm. Choose a
-> randomized patching address inside the temporary mm userspace address
-> portion. The next patch uses the temporary mm and patching address for
-> code patching.
+> What do we mean by cpu/memory ratio. The topology across reboot would have
+> changed only if PowerVM would have allocated resources differently by
+> scrambling/unscrambling. We are no more processing topology updates at
+> runtime. As far as I know, after LPM, the source topology is maintained.
+
+A LPAR running with one numa node and 10GB of memory on PowerVM domain
+10 will report node 10 and 10GB memory in the current scheme. After LPM
+migration or a CEC shutdown/reboot if the domain from which the resource
+allocated becomes 11, then the LPAR will report node 11 and 10GB memory.
+
+Having a logical node number means in the both the above cases we report
+node 0, 10GB memory. 
+
+
 >
-> Based on x86 implementation:
+>> >> This can  be resolved by mapping the firmware provided group id to a logical Linux
+>> >> NUMA id. In this patch, we do this only for pseries platforms considering the
+>> >
+>> > On PowerVM, as you would know the nid is already a logical or a flattened
+>> > chip-id and not the actual hardware chip-id.
+>> 
+>> Yes. But then they are derived based on PowerVM resources AKA domains.
+>> Now based on the available resource on a system, we could end up with
+>> different node numbers with same toplogy across reboots. Making it
+>> logical at OS level prevent that. 
 >
-> commit 4fc19708b165
-> ("x86/alternatives: Initialize temporary mm for patching")
+> The above statement kind of gives an impression, that topology changes
+> across every reboot.  We only end up with different node numbers if and only
+> if the underlying topology has changed and that case is very rare. Or am I
+> missing something?
+
+IIUC it also depends on availability of resources within the
+domain at the time of LPAR start.
+
 >
-> Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
-> ---
->  arch/powerpc/lib/code-patching.c | 33 ++++++++++++++++++++++++++++++++
->  1 file changed, 33 insertions(+)
+>> 
+>> >> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> >> index e437a9ac4956..6c659aada55b 100644
+>> >> --- a/arch/powerpc/mm/numa.c
+>> >> +++ b/arch/powerpc/mm/numa.c
+>> >> @@ -221,25 +221,51 @@ static void initialize_distance_lookup_table(int nid,
+>> >>  	}
+>> >>  }
+>> >> 
+>> >> +static u32 nid_map[MAX_NUMNODES] = {[0 ... MAX_NUMNODES - 1] =  NUMA_NO_NODE};
+>> >> +
+>> >> +int firmware_group_id_to_nid(int firmware_gid)
+>> >> +{
+>> >> +	static int last_nid = 0;
+>> >> +
+>> >> +	/*
+>> >> +	 * For PowerNV we don't change the node id. This helps to avoid
+>> >> +	 * confusion w.r.t the expected node ids. On pseries, node numbers
+>> >> +	 * are virtualized. Hence do logical node id for pseries.
+>> >> +	 */
+>> >> +	if (!firmware_has_feature(FW_FEATURE_LPAR))
+>> >> +		return firmware_gid;
+>> >> +
+>> >> +	if (firmware_gid ==  -1)
+>> >> +		return NUMA_NO_NODE;
+>> >> +
+>> >> +	if (nid_map[firmware_gid] == NUMA_NO_NODE)
+>> >> +		nid_map[firmware_gid] = last_nid++;
+>> >
+>> > How do we ensure 2 simultaneous firmware_group_id_to_nid() calls dont end up
+>> > at this place in parallel?
+>> 
+>> Do we have a code path where we do that? All the node id init should
+>> happen early and there should not be two cpus doing node init at the
+>> same time. I might be mistaken. Can you point to the code path where you
+>> expect this to be called in parallel?
+>> 
 >
-> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-> index 0a051dfeb177..8ae1a9e5fe6e 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -11,6 +11,8 @@
->  #include <linux/cpuhotplug.h>
->  #include <linux/slab.h>
->  #include <linux/uaccess.h>
-> +#include <linux/sched/task.h>
-> +#include <linux/random.h>
->  
->  #include <asm/tlbflush.h>
->  #include <asm/page.h>
-> @@ -44,6 +46,37 @@ int raw_patch_instruction(struct ppc_inst *addr, struct ppc_inst instr)
->  }
->  
->  #ifdef CONFIG_STRICT_KERNEL_RWX
-> +
-> +static struct mm_struct *patching_mm __ro_after_init;
-> +static unsigned long patching_addr __ro_after_init;
-> +
-> +void __init poking_init(void)
-> +{
-> +	spinlock_t *ptl; /* for protecting pte table */
-> +	pte_t *ptep;
-> +
-> +	/*
-> +	 * Some parts of the kernel (static keys for example) depend on
-> +	 * successful code patching. Code patching under STRICT_KERNEL_RWX
-> +	 * requires this setup - otherwise we cannot patch at all. We use
-> +	 * BUG_ON() here and later since an early failure is preferred to
-> +	 * buggy behavior and/or strange crashes later.
-> +	 */
-> +	patching_mm = copy_init_mm();
-> +	BUG_ON(!patching_mm);
-> +
-> +	/*
-> +	 * In hash we cannot go above DEFAULT_MAP_WINDOW easily.
-> +	 * XXX: Do we want additional bits of entropy for radix?
-> +	 */
-> +	patching_addr = (get_random_long() & PAGE_MASK) %
-> +		(DEFAULT_MAP_WINDOW - PAGE_SIZE);
+> associativity_to_nid gets called the first time a cpu is being made present
+> from offline. So it need not be in boot path. We may to verify if cpu
+> hotplug, dlpar, operations are synchronized. For example a memory hotadd and
+> cpu hotplug are they synchronized? I am not sure if they are synchronized at
+> this time.
 
-It took me a while to understand this calculation. I see that it's
-calculating a base address for a page in which to do patching. It does
-the following:
+But you don't online cpu or memory to a non existent node post boot
+right?. If the node is existent we have already initialized the nid_map.
 
- - get a random long
+However i am not sure whether we do a parallel initialization of devices. ie,
+of_device_add getting called in parallel. if it can then we need the
+below?
 
- - mask with PAGE_MASK so as to get a page aligned value
+@@ -226,6 +226,7 @@ static u32 nid_map[MAX_NUMNODES] = {[0 ... MAX_NUMNODES - 1] =  NUMA_NO_NODE};
+ int firmware_group_id_to_nid(int firmware_gid)
+ {
+        static int last_nid = 0;
++       static DEFINE_SPINLOCK(node_id_lock);
+ 
+        /*
+         * For PowerNV we don't change the node id. This helps to avoid
+@@ -238,8 +239,13 @@ int firmware_group_id_to_nid(int firmware_gid)
+        if (firmware_gid ==  -1)
+                return NUMA_NO_NODE;
+ 
+-       if (nid_map[firmware_gid] == NUMA_NO_NODE)
+-               nid_map[firmware_gid] = last_nid++;
++       if (nid_map[firmware_gid] == NUMA_NO_NODE) {
++               spin_lock(&node_id_lock);
++               /*  recheck with lock held */
++               if (nid_map[firmware_gid] == NUMA_NO_NODE)
++                       nid_map[firmware_gid] = last_nid++;
++               spin_unlock(&node_id_lock);
++       }
+ 
+        return nid_map[firmware_gid];
+ }
 
- - make sure that the base address is at least one PAGE_SIZE below
-   DEFAULT_MAP_WINDOW so we have a clear page between the base and
-   DEFAULT_MAP_WINDOW.
 
-On 64-bit Book3S with 64K pages, that works out to be
 
-PAGE_SIZE = 0x0000 0000 0001 0000
-PAGE_MASK = 0xFFFF FFFF FFFF 0000
+>
+>> >
+>> >> +
+>> >> +	return nid_map[firmware_gid];
+>> >> +}
+>> >> +
+>> >>  /* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
+>> >>   * info is found.
+>> >>   */
+>> >>  static int associativity_to_nid(const __be32 *associativity)
+>> >>  {
+>> >>  	int nid = NUMA_NO_NODE;
+>> >> +	int firmware_gid = -1;
+>> >> 
+>> >>  	if (!numa_enabled)
+>> >>  		goto out;
+>> >> 
+>> >>  	if (of_read_number(associativity, 1) >= min_common_depth)
+>> >> -		nid = of_read_number(&associativity[min_common_depth], 1);
+>> >> +		firmware_gid = of_read_number(&associativity[min_common_depth], 1);
+>> >> 
+>> >>  	/* POWER4 LPAR uses 0xffff as invalid node */
+>> >> -	if (nid == 0xffff || nid >= MAX_NUMNODES)
+>> >> -		nid = NUMA_NO_NODE;
+>> >> +	if (firmware_gid == 0xffff || firmware_gid >= MAX_NUMNODES)
+>> >> +		firmware_gid = -1;
+>> >
+>> > Lets assume two or more invocations of associativity_to_nid for the same
+>> > associativity, end up with -1, In each case aren't giving different
+>> > nids?
+>> 
+>> 
+>> I didn't quiet get the comment here. But I assume you are indicating the
+>> same one you mentioned above?
+>> 
+>
+> No its not related to the above comment.
+> We are incrementing the nid_map table for every unique firmware_gid or for
+> every -1 (aka invalid associativities). If there are sufficiently large
+> number of associativities that end up returning invalid associativities,
+> then don't we quickly overflow the nid_map table? Not only about the
+> overflow but a 8 node machine may soon look like a 80 node machine.
 
-DEFAULT_MAP_WINDOW = DEFAULT_MAP_WINDOW_USER64 = TASK_SIZE_128TB
-                   = 0x0000_8000_0000_0000
+Not sure I follow. What does a large number of associativies imply? Are
+you looking at ibm,associativity-lookup-arrays that got entries which
+are invalid? Even there we are not parsing the full array, we lookup
+only a specific firmware_gid (in case of lookup-arrays we use aa_index
+value from drmem_lmb).
 
-DEFAULT_MAP_WINDOW - PAGE_SIZE = 0x0000 7FFF FFFF 0000
+I will also add a las_nid > MAX_NUMNODES check in
+firmware_group_id_to_nid() to handle the case where we find more numa
+nodes than MAX_NUMANODES in device tree.
 
-It took a while (and a conversation with my wife who studied pure
-maths!) but I am convinced that the modulo preserves the page-alignement
-of the patching address.
-
-One thing I did realise is that patching_addr can be zero at the end of
-this process. That seems dubious and slightly error-prone to me - is
-the patching process robust to that or should we exclude it?
-
-Anyway, if I have the maths right, that there are 0x7fffffff or ~2
-billion possible locations for the patching page, which is just shy of
-31 bits of entropy.
-
-I think this compares pretty favourably to most (K)ASLR implementations?
-
-What's the range if built with 4k pages?
-
-Kind regards,
-Daniel
-
-> +
-> +	ptep = get_locked_pte(patching_mm, patching_addr, &ptl);
-> +	BUG_ON(!ptep);
-> +	pte_unmap_unlock(ptep, ptl);
-> +}
-> +
->  static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
->  
->  static int text_area_cpu_up(unsigned int cpu)
-> -- 
-> 2.27.0
+-aneesh
