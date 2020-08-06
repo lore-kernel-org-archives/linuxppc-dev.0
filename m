@@ -2,63 +2,55 @@ Return-Path: <SRS0=any3=BQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8704DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1726C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B5A20204FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:19:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5A20204FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 12B2022D02
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 11:24:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12B2022D02
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BMj162B0BzDqnR
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 18:52:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BMgY10XjVzDqC5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Aug 2020 17:46:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BMhyp6f4yzDqcQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 18:50:24 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BMhyg3Nfcz9v0TG;
- Thu,  6 Aug 2020 10:50:19 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id VhIF0KbsPeBM; Thu,  6 Aug 2020 10:50:19 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BMhyg2Wcfz9v0St;
- Thu,  6 Aug 2020 10:50:19 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B26658B7FA;
- Thu,  6 Aug 2020 10:50:20 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id o0efautfMvDK; Thu,  6 Aug 2020 10:50:20 +0200 (CEST)
-Received: from po16052vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.102])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 89F438B75E;
- Thu,  6 Aug 2020 10:50:20 +0200 (CEST)
-Received: by po16052vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 765F965BC9; Thu,  6 Aug 2020 08:50:20 +0000 (UTC)
-Message-Id: <04169f40c09682ce5747518268ca84285bc17fbc.1596703345.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc/signal: Move and simplify get_clean_sp()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu,  6 Aug 2020 08:50:20 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BMgVp1LQzzDqhT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2020 17:44:33 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7FCC41A08EB;
+ Thu,  6 Aug 2020 09:44:29 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CB7F81A0901;
+ Thu,  6 Aug 2020 09:44:24 +0200 (CEST)
+Received: from 10.192.242.69 (shlinux2.ap.freescale.net [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id D574D402D0;
+ Thu,  6 Aug 2020 09:44:18 +0200 (CEST)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl-asoc-card: Get "extal" clock rate by clk_get_rate
+Date: Thu,  6 Aug 2020 15:39:45 +0800
+Message-Id: <1596699585-27429-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,65 +62,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-get_clean_sp() is only used in kernel/signal.c . Move it there.
+On some platform(.e.g. i.MX8QM MEK), the "extal" clock is different
+with the mclk of codec, then the clock rate is also different.
+So it is better to get clock rate of "extal" rate by clk_get_rate,
+don't reuse the clock rate of mclk.
 
-And GCC is smart enough to reduce the function when on PPC32, no
-need of a special PPC32 simple version.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/include/asm/processor.h | 14 --------------
- arch/powerpc/kernel/signal.c         |  7 +++++++
- 2 files changed, 7 insertions(+), 14 deletions(-)
+ sound/soc/fsl/fsl-asoc-card.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ed0d633ab5aa..5c20b6d509ae 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -404,20 +404,6 @@ static inline void prefetchw(const void *x)
- 
- #define HAVE_ARCH_PICK_MMAP_LAYOUT
- 
--#ifdef CONFIG_PPC64
--static inline unsigned long get_clean_sp(unsigned long sp, int is_32)
--{
--	if (is_32)
--		return sp & 0x0ffffffffUL;
--	return sp;
--}
--#else
--static inline unsigned long get_clean_sp(unsigned long sp, int is_32)
--{
--	return sp;
--}
--#endif
--
- /* asm stubs */
- extern unsigned long isa300_idle_stop_noloss(unsigned long psscr_val);
- extern unsigned long isa300_idle_stop_mayloss(unsigned long psscr_val);
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index d15a98c758b8..bd0ba7c5e2cf 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -171,6 +171,13 @@ inline unsigned long copy_ckfpr_from_user(struct task_struct *task,
- 
- int show_unhandled_signals = 1;
- 
-+static unsigned long get_clean_sp(unsigned long sp, int is_32)
-+{
-+	if (is_32)
-+		return sp & 0x0ffffffffUL;
-+	return sp;
-+}
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 52adedc03245..2c92a5efad61 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -696,6 +696,13 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 			goto asrc_fail;
+ 		}
+ 	} else if (of_node_name_eq(cpu_np, "esai")) {
++		struct clk *esai_clk = clk_get(&cpu_pdev->dev, "extal");
 +
- /*
-  * Allocate space for the signal frame
-  */
++		if (!IS_ERR(esai_clk)) {
++			priv->cpu_priv.sysclk_freq[TX] = clk_get_rate(esai_clk);
++			priv->cpu_priv.sysclk_freq[RX] = clk_get_rate(esai_clk);
++			clk_put(esai_clk);
++		}
+ 		priv->cpu_priv.sysclk_id[1] = ESAI_HCKT_EXTAL;
+ 		priv->cpu_priv.sysclk_id[0] = ESAI_HCKR_EXTAL;
+ 	} else if (of_node_name_eq(cpu_np, "sai")) {
 -- 
-2.25.0
+2.27.0
 
