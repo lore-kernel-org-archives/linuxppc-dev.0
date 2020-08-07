@@ -2,63 +2,91 @@ Return-Path: <SRS0=e617=BS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71D7DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03406C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:56:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AE88214F1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:55:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AE88214F1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sk2.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6410F214F1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:56:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="Px5eUgng"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6410F214F1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BNkKG5q7PzDqvP
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 10:54:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org
- (client-ip=46.105.56.78; helo=9.mo69.mail-out.ovh.net;
- envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sk2.org
-X-Greylist: delayed 5350 seconds by postgrey-1.36 at bilbo;
- Sat, 08 Aug 2020 02:57:03 AEST
-Received: from 9.mo69.mail-out.ovh.net (9.mo69.mail-out.ovh.net [46.105.56.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BNkMS40zVzDqYh
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 10:56:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::243;
+ helo=mail-lj1-x243.google.com; envelope-from=torvalds@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.a=rsa-sha256 header.s=google header.b=Px5eUgng; 
+ dkim-atps=neutral
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com
+ [IPv6:2a00:1450:4864:20::243])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BNWjq6yzfzDq61
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2020 02:57:01 +1000 (AEST)
-Received: from player691.ha.ovh.net (unknown [10.110.115.91])
- by mo69.mail-out.ovh.net (Postfix) with ESMTP id C3D71999A6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2020 17:27:42 +0200 (CEST)
-Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
- (Authenticated sender: steve@sk2.org)
- by player691.ha.ovh.net (Postfix) with ESMTPSA id C355E152D3C08;
- Fri,  7 Aug 2020 15:27:32 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass
- (GARM-100R003698b6a68-6b76-4ff7-aa52-ad9ed4f119b7,
- B1FDDFD4E508142116FDFB9194C63E8FBE397CFD) smtp.auth=steve@sk2.org
-From: Stephen Kitt <steve@sk2.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] arch/powerpc: use simple i2c probe function
-Date: Fri,  7 Aug 2020 17:27:13 +0200
-Message-Id: <20200807152713.381588-1-steve@sk2.org>
-X-Mailer: git-send-email 2.25.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BNXq56VqXzDqjh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2020 03:46:41 +1000 (AEST)
+Received: by mail-lj1-x243.google.com with SMTP id v9so3073244ljk.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2020 10:46:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=ISeZX+jH/ohq0nP1GZmaFw4IOOa4bJcc6+eX97ifabc=;
+ b=Px5eUgng4iJHCoqB/ur25kv5nuKVYdjFZLHwpX5V0XLN9ZaIyhCcZvEXxC96rfU4co
+ SKCsuFWKSTdYy9elmaLHMmYgUXIpyS8Blh9LPN51runcTrPMl53xXmf1wZsg9WVvbaXt
+ x2cBK1dRVsf3Fi5oq25T+4aFVr0+UpOmHUBKw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=ISeZX+jH/ohq0nP1GZmaFw4IOOa4bJcc6+eX97ifabc=;
+ b=nHSEcaLrZFedfsM9rQA8L/RNT+754HVTJJ9PqDYWfAfg7xy1kd3X61AJp3NCT0H0qg
+ HOP5AbNFjumuQ+WG/RowpYw5DyRstl+SSRPHp5BVyWQvEW/BfzJUUq7BrlL95EKULqtU
+ kIr8ujQDImI3JjMsCHq+m/rxgPneBl7g7Dy1qNcb51YtPPhUj6pOs+gRSAt2C8YVwGxa
+ v2oLNmytsQjv20nlG8CvnKLT4EqyLqFSXMxHKu8Fio6OHOHy2IFue0Dvn0PpKWnfNg8C
+ vDAxTJxIHF9sX1is3N+jIAPz55c5lM6UbmyfnNDYqdJ+czIOqjL51lMUjLKLRHsvDprn
+ XRHQ==
+X-Gm-Message-State: AOAM532e7Ea9eMelfe79zJAfNfYwwgWchOHC7TtvvPUF0j/0JtcpAtvp
+ DsBQbOs2odyhVuImJWSuoKCyskuGUEC2JA==
+X-Google-Smtp-Source: ABdhPJyI1ZT9sRHv9VZWNa2rKX65wc24ppK3pHM+XY7/qySLdYNCWwZMaGZJvtFOHCQ3kCYtomnuNg==
+X-Received: by 2002:a2e:b4e5:: with SMTP id s5mr6442324ljm.153.1596822396163; 
+ Fri, 07 Aug 2020 10:46:36 -0700 (PDT)
+Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com.
+ [209.85.167.41])
+ by smtp.gmail.com with ESMTPSA id l26sm4481178lfj.22.2020.08.07.10.46.31
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 07 Aug 2020 10:46:35 -0700 (PDT)
+Received: by mail-lf1-f41.google.com with SMTP id b30so1403125lfj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Aug 2020 10:46:31 -0700 (PDT)
+X-Received: by 2002:a05:651c:503:: with SMTP id
+ o3mr4669045ljp.312.1596822389653; 
+ Fri, 07 Aug 2020 10:46:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 8281275292837105073
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrkedvgdekhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgggfestdekredtredttdenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepteegudfgleekieekteeggeetveefueefteeugfduieeitdfhhedtfeefkedvfeefnecukfhppedtrddtrddtrddtpdekvddrieehrddvhedrvddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrheiledurdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
-X-Mailman-Approved-At: Sat, 08 Aug 2020 10:06:31 +1000
+References: <87h7tey4xq.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87h7tey4xq.fsf@mpe.ellerman.id.au>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 7 Aug 2020 10:46:13 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wif9A9Y1i1xbie5Qsr7e-YoTpv9O_YSF8NCHWksDPEa2Q@mail.gmail.com>
+Message-ID: <CAHk-=wif9A9Y1i1xbie5Qsr7e-YoTpv9O_YSF8NCHWksDPEa2Q@mail.gmail.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.9-1 tag
+To: Michael Ellerman <mpe@ellerman.id.au>, Al Viro <viro@zeniv.linux.org.uk>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Sat, 08 Aug 2020 10:06:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,69 +98,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Kitt <steve@sk2.org>, linux-i2c@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
+ desnesn@linux.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ ego@linux.vnet.ibm.com, aik@ozlabs.ru, jniethe5@gmail.com,
+ bin.meng@windriver.com, psampat@linux.ibm.com, bala24@linux.ibm.com,
+ msuchanek@suse.de, sathnaga@linux.vnet.ibm.com,
+ Oliver O'Halloran <oohall@gmail.com>, fthain@telegraphics.com.au,
+ Christoph Hellwig <hch@lst.de>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, equinox@diac24.net,
+ leobras.c@gmail.com, santosh@fossix.org, maddy@linux.ibm.com,
+ Nayna Jain <nayna@linux.ibm.com>, YueHaibing <yuehaibing@huawei.com>,
+ mahesh@linux.ibm.com, Peter Zijlstra <peterz@infradead.org>,
+ anju@linux.vnet.ibm.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ weiyongjun1@huawei.com, alastair@d-silva.org, harish@linux.ibm.com,
+ Waiman Long <longman@redhat.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, dyoung@redhat.com,
+ vdronov@redhat.com, nathanl@linux.ibm.com, miltonm@us.ibm.com,
+ palmerdabbelt@google.com, ajd@linux.ibm.com, Arnd Bergmann <arnd@arndb.de>,
+ lirongqing@baidu.com, sandipan@linux.ibm.com, kjain@linux.ibm.com,
+ muriloo@linux.ibm.com, Nick Piggin <npiggin@gmail.com>,
+ Nathan Chancellor <natechancellor@gmail.com>, Joe Perches <joe@perches.com>,
+ chris.packham@alliedtelesis.co.nz, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ felix@linux.ibm.com, hbathini@linux.ibm.com,
+ Christophe Leroy <christophe.leroy@c-s.fr>, atrajeev@linux.vnet.ibm.com,
+ wenxiong@linux.vnet.ibm.com, sbobroff@linux.ibm.com,
+ Randy Dunlap <rdunlap@infradead.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, sourabhjain@linux.ibm.com,
+ bharata@linux.ibm.com, Tejun Heo <tj@kernel.org>, miaoqinglang@huawei.com,
+ Jeremy Kerr <jk@ozlabs.org>, grandmaster@al2klimov.de, fbarrat@linux.ibm.com,
+ huntbag@linux.vnet.ibm.com, kaloz@openwrt.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The i2c probe functions here don't use the id information provided in
-their second argument, so the single-parameter i2c probe function
-("probe_new") can be used instead.
+On Fri, Aug 7, 2020 at 6:14 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Just one minor conflict, in a comment in drivers/misc/ocxl/config.c.
 
-This avoids scanning the identifier tables during probes.
+Well, this morning I merged the ptrace ->regset_get() updates from Al,
+and that brought in a different conflict.
 
-Signed-off-by: Stephen Kitt <steve@sk2.org>
----
- arch/powerpc/platforms/44x/ppc476.c            | 5 ++---
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c | 4 ++--
- 2 files changed, 4 insertions(+), 5 deletions(-)
+I _think_ I resolved it correctly, but while the new model is fairly
+readable, the old one sure wasn't, and who knows how messed up my
+attempt to sort it out was. I don't know the pkey details on powerpc..
 
-diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
-index cba83eee685c..07f7e3ce67b5 100644
---- a/arch/powerpc/platforms/44x/ppc476.c
-+++ b/arch/powerpc/platforms/44x/ppc476.c
-@@ -86,8 +86,7 @@ static void __noreturn avr_reset_system(char *cmd)
- 	avr_halt_system(AVR_PWRCTL_RESET);
- }
- 
--static int avr_probe(struct i2c_client *client,
--			    const struct i2c_device_id *id)
-+static int avr_probe(struct i2c_client *client)
- {
- 	avr_i2c_client = client;
- 	ppc_md.restart = avr_reset_system;
-@@ -104,7 +103,7 @@ static struct i2c_driver avr_driver = {
- 	.driver = {
- 		.name = "akebono-avr",
- 	},
--	.probe = avr_probe,
-+	.probe_new = avr_probe,
- 	.id_table = avr_id,
- };
- 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index 0967bdfb1691..409481016928 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -142,7 +142,7 @@ static int mcu_gpiochip_remove(struct mcu *mcu)
- 	return 0;
- }
- 
--static int mcu_probe(struct i2c_client *client, const struct i2c_device_id *id)
-+static int mcu_probe(struct i2c_client *client)
- {
- 	struct mcu *mcu;
- 	int ret;
-@@ -221,7 +221,7 @@ static struct i2c_driver mcu_driver = {
- 		.name = "mcu-mpc8349emitx",
- 		.of_match_table = mcu_of_match_table,
- 	},
--	.probe = mcu_probe,
-+	.probe_new = mcu_probe,
- 	.remove	= mcu_remove,
- 	.id_table = mcu_ids,
- };
--- 
-2.25.4
+So I'd appreciate it if both Al and Aneesh Kumar would check that what
+I did to pkey_get() in arch/powerpc/kernel/ptrace/ptrace-view.c makes
+sense and works..
 
+Side note - it might have been cleaner to just make it do
+
+        membuf_store(&to, target->thread.amr);
+        membuf_store(&to, target->thread.iamr);
+        return membuf_store(&to, default_uamor);
+
+instead of doing that membuf_write() for the first two ones and then
+the membuf_store() for the uamor field, but I did what I did to keep
+the logic as close to what it used to be as possible.
+
+If I messed up, I apologize.
+
+And if you agree that making it three membuf_store() instead of that
+odd "depend on the exact order of the thread struct and pick two
+consecutive values", I'll leave that to you as a separate cleanup.
+
+                   Linus
