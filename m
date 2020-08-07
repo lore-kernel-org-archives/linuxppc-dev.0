@@ -2,71 +2,67 @@ Return-Path: <SRS0=e617=BS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F274C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 01:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE973C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 01:04:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 851AF20866
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 01:03:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6AC0B20866
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 01:04:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=mm-sol.com header.i=@mm-sol.com header.b="TZTULKRv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 851AF20866
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=mm-sol.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="COUM3KPG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AC0B20866
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BNkVW6RpDzDqPT
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 11:02:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mm-sol.com (client-ip=37.157.136.199; helo=extserv.mm-sol.com;
- envelope-from=svarbanov@mm-sol.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=mm-sol.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=mm-sol.com header.i=@mm-sol.com header.a=rsa-sha256
- header.s=201706 header.b=TZTULKRv; dkim-atps=neutral
-Received: from extserv.mm-sol.com (ns.mm-sol.com [37.157.136.199])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BNkXY6HckzDqd0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 11:04:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BNgWQ43RHzDqlV
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2020 08:48:32 +1000 (AEST)
-Received: from [192.168.1.100] (unknown [195.24.90.54])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by extserv.mm-sol.com (Postfix) with ESMTPSA id AEA50D02B;
- Fri,  7 Aug 2020 20:59:09 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mm-sol.com; s=201706;
- t=1596823150; bh=01HxtO8TjyfJb6k7J+gRA2TnNfEUBHAPhEjgIcuz/u0=;
- h=Subject:To:Cc:From:Date:From;
- b=TZTULKRv65g757g49+c8p7aM+O5iyuEpRaLPDmBHhSkHxNabM2L5i5kHksE2vJpS+
- tJGzy8V3xpxuF3TVXvPFqiwuM8QwRu2+YDUKV3ldo/yWku8Aop2iTuAkw88XBkrE34
- lNVudBFm8xuuiGNDqah5SHeuCyubS+/bZL3d19dgPUxcp+APNEE0rZ+FtMUPLNvfUJ
- 4m+VQeWLF57npkWczWZ6nl0+Tyh/ETqCEZQABIGJsqiTOSox47SZsbLmH/YRAk6IcL
- h0/d4nZMkSGeNEaQEX8qTeZ5Hn7ZEzoK9lVUllrDIKvkx5wy0g87CDC9no5PWqz3WW
- zobGk1feb4Juw==
-Subject: Re: [PATCH 21/22] crypto: qce - add check for xts input length equal
- to zero
-To: Andrei Botila <andrei.botila@oss.nxp.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-References: <20200807162010.18979-1-andrei.botila@oss.nxp.com>
- <20200807162010.18979-22-andrei.botila@oss.nxp.com>
-From: Stanimir Varbanov <svarbanov@mm-sol.com>
-Message-ID: <ecf46ef2-3ef5-7ce1-ebd7-09774df67a47@mm-sol.com>
-Date: Fri, 7 Aug 2020 20:59:04 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BNhNn234NzDqkR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2020 09:27:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=COUM3KPG; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BNhNX0MTvz9sRN;
+ Sat,  8 Aug 2020 09:27:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1596842872;
+ bh=sbxkF+VKFF/wO9VEM5oBYdUK08TAotAXJlTLlkjIyjY=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=COUM3KPGhHElW8wRaPjf8ITC5/NSOFIkknz5YnX0JINvQmYOGRSI/uzGzq7ro5P2w
+ T86B2S/FZXWhBO68L9PIdGWh2OloqUxd3MRtnNqHBrX+zBjxU/vIWNV/YanQfT5fPk
+ myKzGDsh5ay5lglhAILiykyJ2fJMfmNsf9qsfS+8/+ZoPJeNvYl+ho3RSy6Be/7gWF
+ RTPN6kaJ78qUG3CDx7gqchnOVI3QwZEY4FJ8oDCzZ0c/2jyWne5UbKUAS0AIzxHe8U
+ X2CQ76Z+4RZjRWXfSDTbHxJa/ZPKwfxX/+akoFXVfrN7R570jC6Vw6a8VhS7eO8G5y
+ yoQlb+HBwfHdw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.9-1 tag
+In-Reply-To: <CAHk-=wif9A9Y1i1xbie5Qsr7e-YoTpv9O_YSF8NCHWksDPEa2Q@mail.gmail.com>
+References: <87h7tey4xq.fsf@mpe.ellerman.id.au>
+ <CAHk-=wif9A9Y1i1xbie5Qsr7e-YoTpv9O_YSF8NCHWksDPEa2Q@mail.gmail.com>
+Date: Sat, 08 Aug 2020 09:27:36 +1000
+Message-ID: <87eeoixcif.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20200807162010.18979-22-andrei.botila@oss.nxp.com>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Sat, 08 Aug 2020 10:06:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,48 +75,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Andrei Botila <andrei.botila@nxp.com>,
- x86@kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@axis.com,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
+ desnesn@linux.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ ego@linux.vnet.ibm.com, aik@ozlabs.ru, jniethe5@gmail.com,
+ bin.meng@windriver.com, psampat@linux.ibm.com, bala24@linux.ibm.com,
+ msuchanek@suse.de, sathnaga@linux.vnet.ibm.com,
+ Oliver O'Halloran <oohall@gmail.com>, fthain@telegraphics.com.au,
+ Christoph Hellwig <hch@lst.de>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, equinox@diac24.net,
+ leobras.c@gmail.com, santosh@fossix.org, maddy@linux.ibm.com,
+ Nayna Jain <nayna@linux.ibm.com>, YueHaibing <yuehaibing@huawei.com>,
+ mahesh@linux.ibm.com, Peter Zijlstra <peterz@infradead.org>,
+ anju@linux.vnet.ibm.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ weiyongjun1@huawei.com, alastair@d-silva.org, harish@linux.ibm.com,
+ Waiman Long <longman@redhat.com>, "Naveen N.
+ Rao" <naveen.n.rao@linux.vnet.ibm.com>, dyoung@redhat.com, vdronov@redhat.com,
+ nathanl@linux.ibm.com, miltonm@us.ibm.com, palmerdabbelt@google.com,
+ ajd@linux.ibm.com, Arnd Bergmann <arnd@arndb.de>, lirongqing@baidu.com,
+ sandipan@linux.ibm.com, kjain@linux.ibm.com, muriloo@linux.ibm.com,
+ Nick Piggin <npiggin@gmail.com>, Nathan Chancellor <natechancellor@gmail.com>,
+ Joe Perches <joe@perches.com>, chris.packham@alliedtelesis.co.nz,
+ Vaibhav Jain <vaibhav@linux.ibm.com>, felix@linux.ibm.com,
+ hbathini@linux.ibm.com, Christophe Leroy <christophe.leroy@c-s.fr>,
+ atrajeev@linux.vnet.ibm.com, wenxiong@linux.vnet.ibm.com,
+ sbobroff@linux.ibm.com, Randy Dunlap <rdunlap@infradead.org>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, sourabhjain@linux.ibm.com,
+ bharata@linux.ibm.com, Tejun Heo <tj@kernel.org>, miaoqinglang@huawei.com,
+ Jeremy Kerr <jk@ozlabs.org>, grandmaster@al2klimov.de, fbarrat@linux.ibm.com,
+ huntbag@linux.vnet.ibm.com, kaloz@openwrt.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>, Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+> On Fri, Aug 7, 2020 at 6:14 AM Michael Ellerman <mpe@ellerman.id.au> wrot=
+e:
+>>
+>> Just one minor conflict, in a comment in drivers/misc/ocxl/config.c.
+>
+> Well, this morning I merged the ptrace ->regset_get() updates from Al,
+> and that brought in a different conflict.
 
-Thanks for the patch!
+Ah fooey.
 
-On 8/7/20 7:20 PM, Andrei Botila wrote:
-> From: Andrei Botila <andrei.botila@nxp.com>
-> 
-> Standardize the way input lengths equal to 0 are handled in all skcipher
-> algorithms. All the algorithms return 0 for input lengths equal to zero.
-> 
-> Signed-off-by: Andrei Botila <andrei.botila@nxp.com>
-> ---
->  drivers/crypto/qce/skcipher.c | 3 +++
->  1 file changed, 3 insertions(+)
+> I _think_ I resolved it correctly, but while the new model is fairly
+> readable, the old one sure wasn't, and who knows how messed up my
+> attempt to sort it out was. I don't know the pkey details on powerpc..
 
-Reviewed-by: Stanimir Varbanov <svarbanov@mm-sol.com>
+The old API was horrible, nice to see it gone.
 
-> 
-> diff --git a/drivers/crypto/qce/skcipher.c b/drivers/crypto/qce/skcipher.c
-> index 5630c5addd28..887fd4dc9b43 100644
-> --- a/drivers/crypto/qce/skcipher.c
-> +++ b/drivers/crypto/qce/skcipher.c
-> @@ -223,6 +223,9 @@ static int qce_skcipher_crypt(struct skcipher_request *req, int encrypt)
->  	int keylen;
->  	int ret;
->  
-> +	if (!req->cryptlen && IS_XTS(rctx->flags))
-> +		return 0;
-> +
->  	rctx->flags = tmpl->alg_flags;
->  	rctx->flags |= encrypt ? QCE_ENCRYPT : QCE_DECRYPT;
->  	keylen = IS_XTS(rctx->flags) ? ctx->enc_keylen >> 1 : ctx->enc_keylen;
-> 
+> So I'd appreciate it if both Al and Aneesh Kumar would check that what
+> I did to pkey_get() in arch/powerpc/kernel/ptrace/ptrace-view.c makes
+> sense and works..
 
--- 
-regards,
-Stan
+It looks right to me, except it doesn't build due to ret now being unused:
+
+  /linux/arch/powerpc/kernel/ptrace/ptrace-view.c: In function =E2=80=98pke=
+y_get=E2=80=99:
+  /linux/arch/powerpc/kernel/ptrace/ptrace-view.c:473:6: error: unused vari=
+able =E2=80=98ret=E2=80=99 [-Werror=3Dunused-variable]
+    473 |  int ret;
+
+
+Patch below, do you mind taking it directly?
+
+With that fixed our pkey selftests pass and show the expected values in
+those regs.
+
+> Side note - it might have been cleaner to just make it do
+>
+>         membuf_store(&to, target->thread.amr);
+>         membuf_store(&to, target->thread.iamr);
+>         return membuf_store(&to, default_uamor);
+>
+> instead of doing that membuf_write() for the first two ones and then
+> the membuf_store() for the uamor field, but I did what I did to keep
+> the logic as close to what it used to be as possible.
+
+Yep fair enough.
+
+> If I messed up, I apologize.
+>
+> And if you agree that making it three membuf_store() instead of that
+> odd "depend on the exact order of the thread struct and pick two
+> consecutive values", I'll leave that to you as a separate cleanup.
+
+Will do.
+
+cheers
+
+
+From a280ae69f248a0f87b36170a94c5665ef5353f51 Mon Sep 17 00:00:00 2001
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Sat, 8 Aug 2020 09:12:03 +1000
+Subject: [PATCH] powerpc/ptrace: Fix build error in pkey_get()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=3DUTF-8
+Content-Transfer-Encoding: 8bit
+
+The merge resolution in commit 25d8d4eecace left ret no longer used,
+leading to:
+
+  /linux/arch/powerpc/kernel/ptrace/ptrace-view.c: In function =E2=80=98pke=
+y_get=E2=80=99:
+  /linux/arch/powerpc/kernel/ptrace/ptrace-view.c:473:6: error: unused vari=
+able =E2=80=98ret=E2=80=99
+    473 |  int ret;
+
+Fix it by removing ret.
+
+Fixes: 25d8d4eecace ("Merge tag 'powerpc-5.9-1' of git://git.kernel.org/pub=
+/scm/linux/kernel/git/powerpc/linux")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/ptrace/ptrace-view.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ptrace/ptrace-view.c b/arch/powerpc/kernel=
+/ptrace/ptrace-view.c
+index 19823a250aa0..7e6478e7ed07 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace-view.c
++++ b/arch/powerpc/kernel/ptrace/ptrace-view.c
+@@ -470,8 +470,6 @@ static int pkey_active(struct task_struct *target, cons=
+t struct user_regset *reg
+ static int pkey_get(struct task_struct *target, const struct user_regset *=
+regset,
+ 		    struct membuf to)
+ {
+-	int ret;
+-
+ 	BUILD_BUG_ON(TSO(amr) + sizeof(unsigned long) !=3D TSO(iamr));
+=20
+ 	if (!arch_pkeys_enabled())
+--=20
+2.25.1
+
