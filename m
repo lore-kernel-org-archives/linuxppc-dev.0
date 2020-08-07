@@ -2,54 +2,77 @@ Return-Path: <SRS0=mIln=BR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0895C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2020 14:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22263C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2020 14:53:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E1B720866
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2020 14:18:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E1B720866
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1CC8A22CA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Aug 2020 14:53:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="WcOsVmOV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CC8A22CA1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BNSC64K9DzDqCW
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:18:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BNSyt3XvtzDqvD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 00:53:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
- envelope-from=chenzefeng2@huawei.com; receiver=<UNKNOWN>)
+ smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.163;
+ helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=WcOsVmOV; 
+ dkim-atps=neutral
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.163])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BNMG34wmtzDqdl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2020 20:35:52 +1000 (AEST)
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 4114BBCFA8119EC0047F;
- Fri,  7 Aug 2020 18:20:04 +0800 (CST)
-Received: from linux_supse12sp4_workstation.huawei.com (10.67.189.177) by
- DGGEMS406-HUB.china.huawei.com (10.3.19.206) with Microsoft SMTP Server id
- 14.3.487.0; Fri, 7 Aug 2020 18:19:56 +0800
-From: chenzefeng <chenzefeng2@huawei.com>
-To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <christophe.leroy@c-s.fr>, <tglx@linutronix.de>, <chenzefeng2@huawei.com>,
- <bigeasy@linutronix.de>, <npiggin@gmail.com>
-Subject: [PATCH] powerpc:entry_32: correct the path and function name in the
- comment
-Date: Fri, 7 Aug 2020 18:19:56 +0800
-Message-ID: <20200807101956.67454-1-chenzefeng2@huawei.com>
-X-Mailer: git-send-email 2.12.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BNSsN18yTzDqHV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2020 00:48:22 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1596811697;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=Date:Message-ID:Subject:From:To:X-RZG-CLASS-ID:X-RZG-AUTH:From:
+ Subject:Sender;
+ bh=etPxG83tkMXiJ/hnA1T72V+lMvSf2k090VPDeSw1U3I=;
+ b=WcOsVmOVSkRsdAvy/k0CN0SUFrJ5er5BvOFvs2dn40pzHj8cVINRdAld6e9adZXrTl
+ /IvE0na37KeXveo1on6Cj8v49n3kn1j1D4kjjN+RHNCNz6CRGlDQlqVwOeOq0WEBwl2y
+ jNwmUPHOlwsOBZbz8fBlDLnWYIJENWXkzjRo7+kMt0U2XMl7G6Mpgp0TbEhAK7SJT4e9
+ akBlJ4vj8iiM2xsbx2ei6YyjxAjhjSolmVO/lNn0SbAPEhQT78CdSRM1LCu6OAi/35F+
+ K22uWUXKhVne93yfAUl86tQ4YJcwHXwtzDutJa9Y5bfRm1ezH6/qBdP1u8lt5iCEiYxe
+ K8JA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBJSrwuuqxvPhSI1Vi9hdbute3wuvmUTfEdg9AyQ=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:89c0:ebfc:15f9:f3ba:c3bc:6875]
+ by smtp.strato.de (RZmta 46.10.5 AUTH)
+ with ESMTPSA id 60686ew77EjEQ1K
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Fri, 7 Aug 2020 16:45:14 +0200 (CEST)
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, keescook@chromium.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, Darren Stevens <darren@stevens-zone.net>,
+ mad skateman <madskateman@gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: [Latest Git kernel/Linux-next kernel] Xorg doesn't start after the
+ seccomp updates v5.9-rc1
+Message-ID: <67cd9693-10bc-5aa5-0898-ff2ac1f9c725@xenosoft.de>
+Date: Fri, 7 Aug 2020 16:45:14 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.67.189.177]
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Sat, 08 Aug 2020 00:07:55 +1000
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,37 +84,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- zengweilin@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update the comment for file's directory and function name changed.
+Hello,
 
-Fixes: facd04a904ff ("powerpc: convert to copy_thread_tls")
-Fixes: 14cf11af6cf6 ("powerpc: Merge enough to start building in arch/powerpc.")
+Xorg doesn't start with the latest Git kernel anymore on some Linux 
+distributions after the seccomp updates v5.9-rc1 [1]. For example on 
+Fienix (Debian Sid PowerPC 32-bit) and on ubuntu MATE 16.04.6 (PowerPC 
+32-bit). I tested these distributions on the A-EON AmigaOne X1000 [2], 
+A-EON AmigaOne X5000 [3], and in a virtual e5500 QEMU machine with a 
+virtio_gpu.
 
-Signed-off-by: chenzefeng <chenzefeng2@huawei.com>
+Error messages:
+
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Connection refused
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Transport endpoint is not connected
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Transport endpoint is not connected
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Transport endpoint is not connected
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Transport endpoint is not connected
+systemd-journald[2238]: Failed to send WATCHDOG-1 notification message: 
+Transport endpoint is not connected
+
 ---
- arch/powerpc/kernel/entry_32.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 8420abd4ea1c..9937593d3a33 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -696,8 +696,8 @@ handle_dabr_fault:
-  * to the "_switch" path.  If you change this , you'll have to
-  * change the fork code also.
-  *
-- * The code which creates the new task context is in 'copy_thread'
-- * in arch/ppc/kernel/process.c
-+ * The code which creates the new task context is in 'copy_thread_tls'
-+ * in arch/powerpc/kernel/process.c
-  */
- _GLOBAL(_switch)
- 	stwu	r1,-INT_FRAME_SIZE(r1)
--- 
-2.12.3
+But Xorg works on Ubuntu 10.04.4 (PowerPC 32-bit), openSUSE Tumbleweed 
+20190722 PPC64 and on Fedora 27 PPC64 with the latest Git kernel.
+
+I bisected today [4].
+
+Result: net/scm: Regularize compat handling of scm_detach_fds() 
+(c0029de50982c1fb215330a5f9d433cec0cfd8cc) [5] is the first bad commit.
+
+This commit has been merged with the seccomp updates v5.9-rc1 on 
+2020-08-04 14:11:08 -0700 [1]. Since these updates, Xorg doesn't start 
+anymore on some Linux distributions.
+
+Unfortunately I wasn't able to revert the first bad commit. The first 
+bad commit depends on many other commits, which unfortunately I don't 
+know. I tried to remove the modifications of the files from the first 
+bad commit but without any success. There are just too many dependencies.
+
+Additionally I compiled a linux-next kernel because of the issue with 
+the lastest Git kernel. Unfortunately this kernel doesn't boot. It can't 
+initialize the graphics card.
+
+Could you please test Xorg with the latest Git kernel on some Linux 
+distributions?
+
+Thanks,
+Christian
+
+
+[1] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9ecc6ea491f0c0531ad81ef9466284df260b2227
+[2] https://en.wikipedia.org/wiki/AmigaOne_X1000
+[3] http://wiki.amiga.org/index.php?title=X5000
+[4] https://forum.hyperion-entertainment.com/viewtopic.php?p=51317#p51317
+[5] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c0029de50982c1fb215330a5f9d433cec0cfd8cc
+
 
