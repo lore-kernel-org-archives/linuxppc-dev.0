@@ -2,23 +2,23 @@ Return-Path: <SRS0=N30B=BT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF65C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 23:00:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B306C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 23:17:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45F98206A2
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 23:00:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45F98206A2
+	by mail.kernel.org (Postfix) with ESMTPS id 8181C206D8
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 23:17:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8181C206D8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BPvhm3kTBzDqPM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 09:00:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BPw3T2bjkzDqPl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 09:17:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -27,21 +27,21 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BPvfR0shszDqL0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 08:58:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4BPw1k5RWhzDqLF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 09:15:38 +1000 (AEST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 07F1129B87;
- Sun,  9 Aug 2020 18:58:44 -0400 (EDT)
-Date: Mon, 10 Aug 2020 08:58:43 +1000 (AEST)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 9F8A729B87;
+ Sun,  9 Aug 2020 19:15:28 -0400 (EDT)
+Date: Mon, 10 Aug 2020 09:15:18 +1000 (AEST)
 From: Finn Thain <fthain@telegraphics.com.au>
 To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 2/9] macintosh/via-macii: Poll the device most likely to
- respond
-In-Reply-To: <20200809185541.GA133779@roeck-us.net>
-Message-ID: <alpine.LNX.2.23.453.2008100844450.8@nippy.intranet>
+Subject: Re: [PATCH 1/9] macintosh/via-macii: Access autopoll_devs when inside
+ lock
+In-Reply-To: <20200809190138.GA133890@roeck-us.net>
+Message-ID: <alpine.LNX.2.23.453.2008100859330.8@nippy.intranet>
 References: <cover.1593318192.git.fthain@telegraphics.com.au>
- <5836f80886ebcfbe5be5fb7e0dc49feed6469712.1593318192.git.fthain@telegraphics.com.au>
- <20200809185541.GA133779@roeck-us.net>
+ <5952dd8a9bc9de90f1acc4790c51dd42b4c98065.1593318192.git.fthain@telegraphics.com.au>
+ <20200809190138.GA133890@roeck-us.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -68,36 +68,29 @@ On Sun, 9 Aug 2020, Guenter Roeck wrote:
 > Hi,
 > 
 > On Sun, Jun 28, 2020 at 02:23:12PM +1000, Finn Thain wrote:
-> > Poll the most recently polled device by default, rather than the lowest
-> > device address that happens to be enabled in autopoll_devs. This improves
-> > input latency. Re-use macii_queue_poll() rather than duplicate that logic.
-> > This eliminates a static struct and function.
+> > The interrupt handler should be excluded when accessing the 
+> > autopoll_devs variable.
 > > 
-> > Fixes: d95fd5fce88f0 ("m68k: Mac II ADB fixes") # v5.0+
-> > Tested-by: Stan Johnson <userm57@yahoo.com>
-> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 > 
-> With this patch applied, the qemu "q800" emulation no longer works and 
-> is stuck in early boot. Any idea why that might be the case, and/or how 
-> to debug it ?
+> I am quite baffled by this patch. Other than adding an unnecessary lock 
+> / unlock sequence,
+
+The new lock/unlock sequence means that the expression (autopoll_devs && 
+!current_req) can be understood to be atomic. That makes it easier for me 
+to follow (being that both variables are shared state).
+
+> accessing a variable (which is derived from another variable) from 
+> inside or outside a lock does not make a difference. If autopoll_devs = 
+> devs & 0xfffe is 0 inside the lock, it will just as much be 0 outside 
+> the lock, and vice versa.
+> 
+> Can you explain this in some more detail ? Not that is matters much 
+> since the change already made it into mainline, but I would like to 
+> understand what if anything I am missing here.
 > 
 
-The problem you're seeing was mentioned in the cover letter,
-https://lore.kernel.org/linux-m68k/cover.1593318192.git.fthain@telegraphics.com.au/
-
-Since this series was merged, Linus' tree is no longer compatible with 
-long-standing QEMU bugs.
-
-The best way to fix this is to upgrade QEMU (latest is 5.1.0-rc3). Or use 
-the serial console instead of the framebuffer console.
-
-I regret the inconvenience but the alternative was worse: adding code to 
-Linux to get compatibility with QEMU bugs (which were added to QEMU due to 
-Linux bugs).
-
-My main concern is correct operation on actual hardware, as always. But 
-some QEMU developers are working on support for operating systems besides 
-Linux.
-
-Therefore, I believe that both QEMU and Linux should aim for compatibility 
-with actual hardware and not bug compatibility with each other.
+I think the new code is more readable and is obviously free of race 
+conditions. It's not obvious to me why the old code was free of race 
+conditions but if you can easily establish that by inspection then you are 
+a better auditor than I am. Regardless, I'll stick with "Keep It Simple, 
+Stupid".
