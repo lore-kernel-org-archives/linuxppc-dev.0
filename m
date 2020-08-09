@@ -1,63 +1,64 @@
-Return-Path: <SRS0=e617=BS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=N30B=BT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A285C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 19:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD406C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 08:59:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA3A520678
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Aug 2020 19:46:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3A520678
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 334A3206C0
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 08:59:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="W9eyRp8w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 334A3206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BPCRC53zgzDqg7
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 05:46:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BPY1X6x1YzDqX9
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Aug 2020 18:59:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BPCM630LMzDqf9
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2020 05:43:11 +1000 (AEST)
-IronPort-SDR: g80Rmd9xoSTwIDnDzbH7GKV3ur1vtucZqDHHcxApBU3AIy/GnpREpe8Qa4NU6sySewVoTKM9wO
- QMsyRY6F+psA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9707"; a="171388710"
-X-IronPort-AV: E=Sophos;i="5.75,450,1589266800"; d="scan'208";a="171388710"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Aug 2020 12:43:07 -0700
-IronPort-SDR: hcwqlKkxOWdh/NI/alqHbIDDqacy2uEz/On1FiT/kHB4+MTTS/bwzA3uMkdI2mlAZ91/r8q1Q2
- 86vVtPHW6Y2A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,450,1589266800"; d="scan'208";a="438234193"
-Received: from lkp-server02.sh.intel.com (HELO 65e25449d42f) ([10.239.97.151])
- by orsmga004.jf.intel.com with ESMTP; 08 Aug 2020 12:43:06 -0700
-Received: from kbuild by 65e25449d42f with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1k4UkD-0000Gx-NY; Sat, 08 Aug 2020 19:43:05 +0000
-Date: Sun, 09 Aug 2020 03:42:30 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- 6fe62ce0c24b06da0b9a8706851e3aaf152fbd72
-Message-ID: <5f2f0026.sfgCHj5Dd3TomB2C%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BPXzZ0LzPzDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2020 18:57:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=W9eyRp8w; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BPXzX25j8z9sTN;
+ Sun,  9 Aug 2020 18:57:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1596963449;
+ bh=Wl+ZEPR2nqFKgj/Exq090s6aHL4BBMpUzG1yyNaV4Jk=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=W9eyRp8wR0z6syshAQ+U6lJ8V/+YzTV1SXnc7LrpSwJ3X2e203IswQFFgAYq0n5Py
+ LaEM8EV+Js5zOGD1xzmDYEBrvzb0i8CxeJ+EoDsLdw1WWyVh9Kr1vYDNr8cl7g/jUx
+ p1YVZgTLAXWFykvQj0T1lp3BVtpUSFAfl7Vsht222ZWD0iuYAVd+25GRax8HhdBf+c
+ 4eKGQ9m8sFRlBuGOaEmIi4gJLLik5hOFj8+mIUF3kBmEP2+KxhGXRHtvxdCdTb7Rv9
+ SyL+ukbSy4cd+O414vfaFrpUzT8N+sXjdFSbbLIkb09vxHZgeUboMn/qsvE7FzWzaV
+ zSY0PjkoKodmA==
+Date: Sun, 9 Aug 2020 18:57:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: linux-next: manual merge of the set_fs tree with the powerpc tree
+Message-ID: <20200809185726.5d8e5f55@canb.auug.org.au>
+In-Reply-To: <20200717190931.701ddf08@canb.auug.org.au>
+References: <20200717190931.701ddf08@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/h4YwlFL/8NIBi9n_EmMIqX8";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,123 +70,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
-branch HEAD: 6fe62ce0c24b06da0b9a8706851e3aaf152fbd72  powerpc/smp: Rename ppc_md.cpu_die(void) to ppc_md.cpu_offline_self()
+--Sig_/h4YwlFL/8NIBi9n_EmMIqX8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-elapsed time: 1799m
+Hi all,
 
-configs tested: 100
-configs skipped: 3
+On Fri, 17 Jul 2020 19:09:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>=20
+> Today's linux-next merge of the set_fs tree got a conflict in:
+>=20
+>   arch/powerpc/mm/numa.c
+>=20
+> between commit:
+>=20
+>   c30f931e891e ("powerpc/numa: remove ability to enable topology updates")
+>=20
+> from the powerpc tree and commit:
+>=20
+>   16a04bde8169 ("proc: switch over direct seq_read method calls to seq_re=
+ad_iter")
+>=20
+> from the set_fs tree.
+>=20
+> I fixed it up (the former removed the code updated by the latter, so I
+> just did that) and can carry the fix as necessary. This is now fixed as
+> far as linux-next is concerned, but any non trivial conflicts should be
+> mentioned to your upstream maintainer when your tree is submitted for
+> merging.  You may also want to consider cooperating with the maintainer
+> of the conflicting tree to minimise any particularly complex conflicts.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+This is now a conflict between the set_fs tree and Linus' tree.
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                  mpc885_ads_defconfig
-arm                       imx_v6_v7_defconfig
-parisc                generic-32bit_defconfig
-microblaze                    nommu_defconfig
-i386                             allyesconfig
-sh                           se7206_defconfig
-arm                         lpc32xx_defconfig
-arm                          ixp4xx_defconfig
-m68k                         apollo_defconfig
-mips                          malta_defconfig
-mips                    maltaup_xpa_defconfig
-arm                          exynos_defconfig
-powerpc                      chrp32_defconfig
-mips                           ip28_defconfig
-powerpc64                           defconfig
-arm                         mv78xx0_defconfig
-sh                     sh7710voipgw_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a006-20200808
-x86_64               randconfig-a001-20200808
-x86_64               randconfig-a002-20200808
-x86_64               randconfig-a003-20200808
-x86_64               randconfig-a005-20200808
-x86_64               randconfig-a004-20200808
-i386                 randconfig-a005-20200807
-i386                 randconfig-a004-20200807
-i386                 randconfig-a001-20200807
-i386                 randconfig-a002-20200807
-i386                 randconfig-a003-20200807
-i386                 randconfig-a006-20200807
-i386                 randconfig-a004-20200808
-i386                 randconfig-a005-20200808
-i386                 randconfig-a001-20200808
-i386                 randconfig-a003-20200808
-i386                 randconfig-a002-20200808
-i386                 randconfig-a006-20200808
-x86_64               randconfig-a013-20200807
-x86_64               randconfig-a011-20200807
-x86_64               randconfig-a012-20200807
-x86_64               randconfig-a016-20200807
-x86_64               randconfig-a015-20200807
-x86_64               randconfig-a014-20200807
-i386                 randconfig-a011-20200807
-i386                 randconfig-a012-20200807
-i386                 randconfig-a013-20200807
-i386                 randconfig-a015-20200807
-i386                 randconfig-a014-20200807
-i386                 randconfig-a016-20200807
-i386                 randconfig-a011-20200808
-i386                 randconfig-a014-20200808
-i386                 randconfig-a015-20200808
-i386                 randconfig-a013-20200808
-i386                 randconfig-a012-20200808
-i386                 randconfig-a016-20200808
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+--=20
+Cheers,
+Stephen Rothwell
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+--Sig_/h4YwlFL/8NIBi9n_EmMIqX8
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl8vunYACgkQAVBC80lX
+0GyH2ggAgjqRQHzD2II/rJWPv7LgkrI6+O9t2qfbxLWMqOmzYHR1cV/VoW7fXEUJ
+UOCJwNWGVmS12DYKt4UBudW0bOuZmLTqK09qmifOEbbOYTofa4475Gecq+j7YWxH
+aI/s5VwrJdmW13K7+eaBzne1s5oRfVkQ4WDg9nUYd7NAwwOMYHYxQosuvGfaKmR0
+PSgwUCYtPjgLW69Ttr5Np3pZ+3/C/txSOhxX/pmLVBtNUcJamOKFVULEzhJDG2na
+lhy+QkLQ+Xn83AAgQo1qxAX3E3rUnPe7xk08SgOq6/SMxXzaqKG49Ge+2MpvOg2l
+6T0JQn0uGQrMBH9ajfjRBvgjrJSvyA==
+=9uU4
+-----END PGP SIGNATURE-----
+
+--Sig_/h4YwlFL/8NIBi9n_EmMIqX8--
