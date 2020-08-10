@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0A1BC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:35:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3D0FC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:37:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 91AE920774
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:35:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5DDE02073A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:37:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="VkzXa55o"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91AE920774
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="HVaYtJp7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DDE02073A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ76K5CvzzDqGC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 17:35:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ78j5jWjzDqPv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 17:37:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
@@ -30,66 +30,67 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VkzXa55o; dkim-atps=neutral
+ header.s=pp1 header.b=HVaYtJp7; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ6lz0lVxzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 17:19:26 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ6mJ0crFzDqN1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 17:19:43 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07A73H6A176532; Mon, 10 Aug 2020 03:19:18 -0400
+ 07A72rNX166489; Mon, 10 Aug 2020 03:19:13 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=R4cXQesq5YrQSp8j2SK9ClMXcspoeGwGaqpBIKTSWI4=;
- b=VkzXa55ojE1+myVpSG3XY2Ohtx5SP9jaQ3SscXfClIknNOaFLDxpSfQ/Xs5cCsBfMCzM
- 1sCNLrKKMxUsPFM0ohnjQMcKTdz2KSXHo0W3j9gOz8UBQBcu30bqD8bgtqQrg6bRVdbx
- QgRfrmpar6E+LttQWJgSGQ5KG1DPCFPcm3XPLNLaFp7/APUbzf5urvAbcNRuoaool14N
- KrPEmV7aGeVGn88cXQYcjqlOPhKB1pvG0EwUKsuC12ZWcOffljQ/1fpS7FkfJFRzw7r2
- V3khBh3F0p6YI4Z85OXEAKnUEJmF/MTrEwt4XcuY5rlWXZK5/kFrEbWirytEf35t4EOd 3w== 
+ bh=bO38AhYObfOxbkuaRZ7kFzmal6AP5QigZ+A4uVDnKQk=;
+ b=HVaYtJp7OwSG/k3CVIKBZVySijJb92Dav9GKBk2/LUQPlYalG9GsVLUsD3ehA+xjifE8
+ pG7X911tLoTEol/yaJgpiDPUi2h/23rn9CM8EHg5pRIuMs1GOPuqKGamNP5eXVzpOxpe
+ HErAu9KcnYkL0L3Wb17QWZWkHjE9+48qcYgMC4UID60hMArYe+0Mc2oU6KNtt6S0lXjQ
+ n5uvm4smBXeOnUOf4LcBlJ+56AIpE6TTH8MOd7UsGDC9QD/P0fNpGYCwf8kfkN4akeeh
+ w34gzF1rYYmu77z3lxIcxM9Zu/548M8fzHQV81hDd13q4/n2pO8WyK6JabeVieXSvdyX qg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32srj6aw6j-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32src1379v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:19:18 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07A784TA005807;
- Mon, 10 Aug 2020 03:19:18 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32srj6aw5j-1
+ Mon, 10 Aug 2020 03:19:13 -0400
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07A73TLL168868;
+ Mon, 10 Aug 2020 03:19:12 -0400
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32src1378g-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:19:18 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07A7GEf5019372;
- Mon, 10 Aug 2020 07:19:15 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 32skp81ynx-1
+ Mon, 10 Aug 2020 03:19:12 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07A7InJn018811;
+ Mon, 10 Aug 2020 07:19:10 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06fra.de.ibm.com with ESMTP id 32skah17wk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 07:19:15 +0000
+ Mon, 10 Aug 2020 07:19:09 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 07A7Hjhn63767016
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07A7J78k32768466
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 10 Aug 2020 07:17:45 GMT
+ Mon, 10 Aug 2020 07:19:07 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ED23B11C052;
- Mon, 10 Aug 2020 07:19:12 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 0877C11C05B;
+ Mon, 10 Aug 2020 07:19:07 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5197B11C050;
- Mon, 10 Aug 2020 07:19:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 53E0C11C04C;
+ Mon, 10 Aug 2020 07:19:04 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.102.18.208])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 10 Aug 2020 07:19:10 +0000 (GMT)
+ Mon, 10 Aug 2020 07:19:04 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 10/10] powerpc/smp: Implement cpu_to_coregroup_id
-Date: Mon, 10 Aug 2020 12:48:34 +0530
-Message-Id: <20200810071834.92514-11-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v5 08/10] powerpc/smp: Allocate cpumask only after searching
+ thread group
+Date: Mon, 10 Aug 2020 12:48:32 +0530
+Message-Id: <20200810071834.92514-9-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
 References: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
@@ -100,10 +101,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-10_02:2020-08-06,
  2020-08-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 phishscore=0
- impostorscore=0 mlxlogscore=849 priorityscore=1501 lowpriorityscore=0
- bulkscore=0 malwarescore=0 adultscore=0 suspectscore=0 clxscore=1015
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ bulkscore=0 adultscore=0
+ mlxscore=0 impostorscore=0 mlxlogscore=999 clxscore=1015
+ priorityscore=1501 malwarescore=0 lowpriorityscore=0 phishscore=0
+ spamscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2008100048
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -128,19 +129,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Lookup the coregroup id from the associativity array.
+If allocated earlier and the search fails, then cpu_l1_cache_map cpumask
+is unnecessarily cleared. However cpu_l1_cache_map can be allocated /
+cleared after we search thread group.
 
-If unable to detect the coregroup id, fallback on the core id.
-This way, ensure sched_domain degenerates and an extra sched domain is
-not created.
-
-Ideally this function should have been implemented in
-arch/powerpc/kernel/smp.c. However if its implemented in mm/numa.c, we
-don't need to find the primary domain again.
-
-If the device-tree mentions more than one coregroup, then kernel
-implements only the last or the smallest coregroup, which currently
-corresponds to the penultimate domain in the device-tree.
+Please note CONFIG_CPUMASK_OFFSTACK is not set on Powerpc. Hence cpumask
+allocated by zalloc_cpumask_var_node is never freed.
 
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
@@ -159,42 +153,37 @@ Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
 Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
-Changelog v1 -> v2:
-	Move coregroup_enabled before getting associativity (Gautham)
+Changelog v4 ->v5:
+	Updated commit msg on why cpumask need not be freed.
+						(Michael Ellerman)
 
- arch/powerpc/mm/numa.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/powerpc/kernel/smp.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 0d57779e7942..8b3b3ec7fcc4 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1218,6 +1218,26 @@ int find_and_online_cpu_nid(int cpu)
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 7403fdcf3821..0536ac06876b 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -789,10 +789,6 @@ static int init_cpu_l1_cache_map(int cpu)
+ 	if (err)
+ 		goto out;
  
- int cpu_to_coregroup_id(int cpu)
- {
-+	__be32 associativity[VPHN_ASSOC_BUFSIZE] = {0};
-+	int index;
+-	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
+-				GFP_KERNEL,
+-				cpu_to_node(cpu));
+-
+ 	cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
+ 
+ 	if (unlikely(cpu_group_start == -1)) {
+@@ -801,6 +797,9 @@ static int init_cpu_l1_cache_map(int cpu)
+ 		goto out;
+ 	}
+ 
++	zalloc_cpumask_var_node(&per_cpu(cpu_l1_cache_map, cpu),
++				GFP_KERNEL, cpu_to_node(cpu));
 +
-+	if (cpu < 0 || cpu > nr_cpu_ids)
-+		return -1;
-+
-+	if (!coregroup_enabled)
-+		goto out;
-+
-+	if (!firmware_has_feature(FW_FEATURE_VPHN))
-+		goto out;
-+
-+	if (vphn_get_associativity(cpu, associativity))
-+		goto out;
-+
-+	index = of_read_number(associativity, 1);
-+	if (index > min_common_depth + 1)
-+		return of_read_number(&associativity[index - 1], 1);
-+
-+out:
- 	return cpu_to_core_id(cpu);
- }
+ 	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+ 		int i_group_start = get_cpu_thread_group_start(i, &tg);
  
 -- 
 2.18.2
