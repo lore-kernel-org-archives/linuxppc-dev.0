@@ -4,49 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A98CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 13:29:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA1CCC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 13:48:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D58422075F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 13:29:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D58422075F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3114220734
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 13:48:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3114220734
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQGzQ11H4zDqRt
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 23:29:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQHNz5xWyzDqJ3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 23:48:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=l9c7=bu=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQGx22ChgzDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 23:27:49 +1000 (AEST)
-Received: from oasis.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AFD6F20748;
- Mon, 10 Aug 2020 13:27:45 +0000 (UTC)
-Date: Mon, 10 Aug 2020 09:27:43 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH] recordmcount: Fix build failure on non arm64
-Message-ID: <20200810092743.21115164@oasis.local.home>
-In-Reply-To: <20200810121855.GD9480@gaia>
-References: <5ca1be21fa6ebf73203b45fd9aadd2bafb5e6b15.1597049145.git.christophe.leroy@csgroup.eu>
- <20200810091730.GA3099@ltoracle> <20200810121855.GD9480@gaia>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18;
+ helo=fornost.hmeau.com; envelope-from=herbert@gondor.apana.org.au;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+Received: from fornost.hmeau.com (unknown [216.24.177.18])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQHKw4hMDzDqRk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 23:45:54 +1000 (AEST)
+Received: from gwarestrin.arnor.me.apana.org.au ([192.168.0.7])
+ by fornost.hmeau.com with smtp (Exim 4.92 #5 (Debian))
+ id 1k586m-00026P-C0; Mon, 10 Aug 2020 23:45:01 +1000
+Received: by gwarestrin.arnor.me.apana.org.au (sSMTP sendmail emulation);
+ Mon, 10 Aug 2020 23:45:00 +1000
+Date: Mon, 10 Aug 2020 23:45:00 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Van Leeuwen, Pascal" <pvanleeuwen@rambus.com>
+Subject: Re: [PATCH 19/22] crypto: inside-secure - add check for xts input
+ length equal to zero
+Message-ID: <20200810134500.GA22914@gondor.apana.org.au>
+References: <20200807162010.18979-1-andrei.botila@oss.nxp.com>
+ <20200807162010.18979-20-andrei.botila@oss.nxp.com>
+ <CY4PR0401MB36528610C3ABF802F8CBF35FC3440@CY4PR0401MB3652.namprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CY4PR0401MB36528610C3ABF802F8CBF35FC3440@CY4PR0401MB3652.namprd04.prod.outlook.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,23 +61,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org,
- Gregory Herrero <gregory.herrero@oracle.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Andrei Botila <andrei.botila@oss.nxp.com>,
+ Andrei Botila <andrei.botila@nxp.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Antoine Tenart <antoine.tenart@bootlin.com>, "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@axis.com" <linux-arm-kernel@axis.com>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 10 Aug 2020 13:18:55 +0100
-Catalin Marinas <catalin.marinas@arm.com> wrote:
+On Mon, Aug 10, 2020 at 10:20:20AM +0000, Van Leeuwen, Pascal wrote:
+>
+> With all due respect, but this makes no sense.
 
-> > Oops, thanks for fixing this.
-> > 
-> > Acked-by: Gregory Herrero <gregory.herrero@oracle.com>  
-> 
-> Thanks. I'll queue it via the arm64 tree (as I did with the previous
-> fix) but I'll wait a bit for Steve to ack it.
+I agree.  This is a lot of churn for no gain.
 
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-
--- Steve
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
