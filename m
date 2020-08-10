@@ -2,110 +2,87 @@ Return-Path: <SRS0=LYYN=BU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C221C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:41:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CF9FC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 08:02:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE57420678
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:41:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7C8AB2073A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 08:02:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Krf1qfJ9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE57420678
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p6MuEI+X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C8AB2073A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ7FD6SdvzDqGW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 17:41:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ7jn40jlzDqPk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 18:02:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1041;
+ helo=mail-pj1-x1041.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Krf1qfJ9; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=p6MuEI+X; dkim-atps=neutral
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
+ [IPv6:2607:f8b0:4864:20::1041])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ78J6Tz8zDqSF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 17:37:04 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07A7aspq096541; Mon, 10 Aug 2020 03:36:55 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=qMHGl+1t4gMfa2qMarGYbBHG6334xaEDPdjFO253suY=;
- b=Krf1qfJ9I2CaPj+doPp4MVODycGA52WR10Ymh6f9HHZtf3YCO+k9a/nmRBBhA45fRkf9
- VjaOpYGSv6l7IpFymfppth92RsZx8KO4URFqPtjn/cDeTQ95Z2EPcgynlHl26EteNMTu
- Pai+CjOgIkoLKgwIEqZFGCV8wzpTw7v0+a+tNnL6bcVBfVpLvf2w/JNT9ThL4UI2oSU4
- EGLqVzXdMBxh+uC6NPs1mlefwLv8bxA3PxCTwDkY2Ne+vdglleoFw58UmKFeejrDSGVA
- 44t9dofTYau2Svy20RFvXdJq4Qgv+3Mb5Hzbp2v7Jw3jzoxxPZghLL7auVj4SV3Pboo6 /w== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32sr7h9sr9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:36:54 -0400
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07A7RlMp058579;
- Mon, 10 Aug 2020 03:27:47 -0400
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32sr7h9qun-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:25:17 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07A7H9F0017736;
- Mon, 10 Aug 2020 07:18:52 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma06fra.de.ibm.com with ESMTP id 32skah17wa-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 07:18:51 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07A7Im4t27460080
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 10 Aug 2020 07:18:49 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CFA1511C05B;
- Mon, 10 Aug 2020 07:18:48 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 25B8311C052;
- Mon, 10 Aug 2020 07:18:46 +0000 (GMT)
-Received: from srikart450.in.ibm.com (unknown [9.102.18.208])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 10 Aug 2020 07:18:45 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 02/10] powerpc/smp: Merge Power9 topology with Power
- topology
-Date: Mon, 10 Aug 2020 12:48:26 +0530
-Message-Id: <20200810071834.92514-3-srikar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
-References: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ7gH1X90zDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 18:00:26 +1000 (AEST)
+Received: by mail-pj1-x1041.google.com with SMTP id t6so4517987pjr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 01:00:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=Zdq88gHxCb3jvrnqaljepUUsgAroF2d/K4zFPmR3yOk=;
+ b=p6MuEI+XHuECK8OwzYOsOSGvE6HobWjnUYA/dLBvje7ek7CK2RJtTUwabVNR/CPshY
+ alZdJZzx3Vum+SuA9bURQqqGZx8Zy8cQapS2hwbPXpmX9dJzmusmKy+1hRZrBty+HaWl
+ r1vReZxNdXS2Y2f3U/kqS/I/+q4FXU/3kI9ad6rC5ljw085nCdc7Bz006PvJKbuidbND
+ EjQdEVy66f3CuLilBwm+6pDuyytmwrt75zsB9pfBt6tV4KagZBBnO0k1LD8/2YOoww8/
+ jj2GOO3ipclZ4+AKuCb5VBhDNM0ksSe0kiUwx9m0Ji+oGK5QJMUgZgDmvoHvGaSxX8Kd
+ wXsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=Zdq88gHxCb3jvrnqaljepUUsgAroF2d/K4zFPmR3yOk=;
+ b=QHPFfJawDuyrtrRfSKuC+ho49k7GdGnr0izH/WJYK2MF6yT8Ljt9fLh7P7o7fWjVyt
+ x3quD9AJhKkdJ/jmkhel/Dd2s6k7G5cLjtXJWFWT4zxBTpgFXqAejqerREcycQr6ApHG
+ O9Ac0ms8j2/sN4DI17fmeQvda2CLANTJG3y8at4cYZSkBF2XRr/zmRVZS1Tu1zQ3kylp
+ Q+Q73O77naTq4a8xo524qRxJcGPBlTWZIKqn+K2Y+gskviZfLbKMWJm3s9iwfBscbO3H
+ QNsrDVWY33fC5zpYwpbZ7lhsjmR+IoBjM1MpOrcTnvgZ3K7mTmI9d5/pB0Z81kqT91Xt
+ 3l1g==
+X-Gm-Message-State: AOAM531Va3loMucNwtCUcKLHDDonqf6pq7h3YHYZXd6pgNnGXRD6hn8d
+ Db0aP3PGvp3RBKrLxDB8LTA=
+X-Google-Smtp-Source: ABdhPJz5gK1nHWJYyHM/CxrATPUeMggaRaBYXWAmyQyHAsKFcQ7z9aOcwMDd5eU2YSfcwWQ8LhWD7g==
+X-Received: by 2002:a17:90b:255:: with SMTP id
+ fz21mr25805953pjb.50.1597046423161; 
+ Mon, 10 Aug 2020 01:00:23 -0700 (PDT)
+Received: from Asurada-Nvidia (searspoint.nvidia.com. [216.228.112.21])
+ by smtp.gmail.com with ESMTPSA id f18sm17456266pgv.84.2020.08.10.01.00.22
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 10 Aug 2020 01:00:23 -0700 (PDT)
+Date: Mon, 10 Aug 2020 01:00:18 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add -EPROBE_DEFER check for regmap init
+Message-ID: <20200810080018.GA13408@Asurada-Nvidia>
+References: <1596791682-4311-1-git-send-email-shengjiu.wang@nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-10_02:2020-08-06,
- 2020-08-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0
- adultscore=0 impostorscore=0 clxscore=1015 lowpriorityscore=0
- suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0 mlxlogscore=999
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008100048
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1596791682-4311-1-git-send-email-shengjiu.wang@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,107 +94,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Jordan Niethe <jniethe5@gmail.com>,
- LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Valentin Schneider <valentin.schneider@arm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Cc: alsa-devel@alsa-project.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, tiwai@suse.com, lgirdwood@gmail.com,
+ perex@perex.cz, broonie@kernel.org, festevam@gmail.com,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A new sched_domain_topology_level was added just for Power9. However the
-same can be achieved by merging powerpc_topology with power9_topology
-and makes the code more simpler especially when adding a new sched
-domain.
+On Fri, Aug 07, 2020 at 05:14:42PM +0800, Shengjiu Wang wrote:
+> Regmap initialization may return -EPROBE_DEFER for clock
+> may not be ready, so check -EPROBE_DEFER error type before
+> start another Regmap initialization.
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> ---
+>  sound/soc/fsl/fsl_sai.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index a22562f2df47..eb933fe9b6d1 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -927,7 +927,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
+>  			"bus", base, &fsl_sai_regmap_config);
+>  
+>  	/* Compatible with old DTB cases */
+> -	if (IS_ERR(sai->regmap))
+> +	if (IS_ERR(sai->regmap) && PTR_ERR(sai->regmap) != -EPROBE_DEFER)
+>  		sai->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
+>  				"sai", base, &fsl_sai_regmap_config);
+>  	if (IS_ERR(sai->regmap)) {
 
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Anton Blanchard <anton@ozlabs.org>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Valentin Schneider <valentin.schneider@arm.com>
-Cc: Jordan Niethe <jniethe5@gmail.com>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
----
-Changelog v1 -> v2:
-	Replaced a reference to cpu_smt_mask with per_cpu(cpu_sibling_map, cpu)
-	since cpu_smt_mask is only defined under CONFIG_SCHED_SMT
-
- arch/powerpc/kernel/smp.c | 25 +++----------------------
- 1 file changed, 3 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index edf94ca64eea..08da765b91f1 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1313,7 +1313,7 @@ int setup_profiling_timer(unsigned int multiplier)
- }
- 
- #ifdef CONFIG_SCHED_SMT
--/* cpumask of CPUs with asymetric SMT dependancy */
-+/* cpumask of CPUs with asymmetric SMT dependency */
- static int powerpc_smt_flags(void)
- {
- 	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
-@@ -1326,14 +1326,6 @@ static int powerpc_smt_flags(void)
- }
- #endif
- 
--static struct sched_domain_topology_level powerpc_topology[] = {
--#ifdef CONFIG_SCHED_SMT
--	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
--#endif
--	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
--	{ NULL, },
--};
--
- /*
-  * P9 has a slightly odd architecture where pairs of cores share an L2 cache.
-  * This topology makes it *much* cheaper to migrate tasks between adjacent cores
-@@ -1361,7 +1353,7 @@ static const struct cpumask *smallcore_smt_mask(int cpu)
- }
- #endif
- 
--static struct sched_domain_topology_level power9_topology[] = {
-+static struct sched_domain_topology_level powerpc_topology[] = {
- #ifdef CONFIG_SCHED_SMT
- 	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
- #endif
-@@ -1386,21 +1378,10 @@ void __init smp_cpus_done(unsigned int max_cpus)
- #ifdef CONFIG_SCHED_SMT
- 	if (has_big_cores) {
- 		pr_info("Big cores detected but using small core scheduling\n");
--		power9_topology[0].mask = smallcore_smt_mask;
- 		powerpc_topology[0].mask = smallcore_smt_mask;
- 	}
- #endif
--	/*
--	 * If any CPU detects that it's sharing a cache with another CPU then
--	 * use the deeper topology that is aware of this sharing.
--	 */
--	if (shared_caches) {
--		pr_info("Using shared cache scheduler topology\n");
--		set_sched_topology(power9_topology);
--	} else {
--		pr_info("Using standard scheduler topology\n");
--		set_sched_topology(powerpc_topology);
--	}
-+	set_sched_topology(powerpc_topology);
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
--- 
-2.18.2
-
+In that case, might need a !EPROBE_DEFER check for this
+fallback devm_regmap_init_mmio_clk at "sai" clock too?
