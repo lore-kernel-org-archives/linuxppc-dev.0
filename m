@@ -7,89 +7,89 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11FF7C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:29:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A60C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:31:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B2DC62073E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:29:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A40FC2073A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 07:31:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="H7bwpans"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2DC62073E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="M8rU9dVt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A40FC2073A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ6z64qh7zDqCW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 17:29:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQ71h74nQzDqPS
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Aug 2020 17:31:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=H7bwpans; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=M8rU9dVt; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ6lr00LlzDqNR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 17:19:19 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07A73N0l196195; Mon, 10 Aug 2020 03:19:06 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQ6lr534KzDqNC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2020 17:19:20 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07A75L2o041877; Mon, 10 Aug 2020 03:19:09 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=7UTETwyFm7KGZrmv+lVcWIti+O4pQ926ZhBvhr3W6Mc=;
- b=H7bwpansGCM71shNYtVGltcIZyovdl9CelXNwwr9m5IpQDOw3AZVTLxcvSZ170fpUDuY
- M4YtUvvgm1GIYgoy/KWS21tWty413Qbf6q8KgpwjAg8a5RVu0QxhUqosHfVpdwX0uD4c
- d8iKm0wZTcQLDMJoUt2ElcCjYq7sOMifq8jKPvMCwZFWN0oICOKpDypVEsmfnxuBBbJZ
- xpcZ2JOzOaCdTOZVMxlGCgYifkSop4gaPhLBnehSvtj3RrxqndOPVP7iFBQkUQvHy85E
- 15IhqJO5xPvvpdSb7YvdfmlKRg7/DlnijJt8ZzSBByAwoHQ9bQfsi6Mt0PNrW3ScKWDb TA== 
+ bh=EABG8Gu6w1DW2OlVB0Kw6GlIxF3JELepaysVn8EfUZ4=;
+ b=M8rU9dVt6q7KMOLvAZwci69wYPYjnA7uE5GPtmNeBKt8MNhOll23dOZlRmNCub+uezU9
+ Fkavw4XUPafHCqf4nkW0X7BzgxFe8zOXmggoHxtNcc0izo2wmwDu+/GS8xrkIqOPC7lW
+ /gs7X1RF0qsks9UDu6xx2A99F/z8vy5dFxzENrdiUHLYYlsrlYonGZykVN0wFJFpZrVU
+ ctVOakvxopAmYBEYJG8OuKGGs+smDWfx7DBk8MZMSH/cQzk27iK75B2BxkGF/MYuTnMN
+ 8C55hv28MskJE6zLuG9C98NAWlQyKE0mRd2euD6ja+DjdqSxJJcWesLQZ8bHw1qRicvg kQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32sr4qus41-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32sr7mtgtx-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:19:06 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07A74drN005371;
- Mon, 10 Aug 2020 03:19:06 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32sr4qus2s-1
+ Mon, 10 Aug 2020 03:19:09 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07A78L26052167;
+ Mon, 10 Aug 2020 03:19:09 -0400
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 32sr7mtgt6-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 03:19:05 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07A7GDpg003619;
- Mon, 10 Aug 2020 07:19:04 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma02fra.de.ibm.com with ESMTP id 32skp7s7ne-1
+ Mon, 10 Aug 2020 03:19:08 -0400
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+ by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07A7GC67028365;
+ Mon, 10 Aug 2020 07:19:07 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma05fra.de.ibm.com with ESMTP id 32skp817h2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 10 Aug 2020 07:19:03 +0000
+ Mon, 10 Aug 2020 07:19:06 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07A7J1MZ24576434
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 07A7J4kc65405356
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 10 Aug 2020 07:19:01 GMT
+ Mon, 10 Aug 2020 07:19:04 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0C65911C05B;
+ by IMSVA (Postfix) with ESMTP id 08F8C11C04C;
+ Mon, 10 Aug 2020 07:19:04 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 55E0011C04A;
  Mon, 10 Aug 2020 07:19:01 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5485711C052;
- Mon, 10 Aug 2020 07:18:58 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.102.18.208])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 10 Aug 2020 07:18:58 +0000 (GMT)
+ Mon, 10 Aug 2020 07:19:01 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5 06/10] powerpc/smp: Optimize start_secondary
-Date: Mon, 10 Aug 2020 12:48:30 +0530
-Message-Id: <20200810071834.92514-7-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v5 07/10] powerpc/numa: Detect support for coregroup
+Date: Mon, 10 Aug 2020 12:48:31 +0530
+Message-Id: <20200810071834.92514-8-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
 References: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
@@ -100,11 +100,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-10_02:2020-08-06,
  2020-08-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 spamscore=0
- clxscore=1015 malwarescore=0 lowpriorityscore=0 adultscore=0
- priorityscore=1501 mlxscore=0 suspectscore=0 impostorscore=0
- mlxlogscore=999 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2006250000 definitions=main-2008100048
+ adultscore=0 impostorscore=0
+ phishscore=0 mlxlogscore=999 suspectscore=0 spamscore=0 bulkscore=0
+ lowpriorityscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2008100046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,12 +128,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In start_secondary, even if shared_cache was already set, system does a
-redundant match for cpumask. This redundant check can be removed by
-checking if shared_cache is already set.
+Add support for grouping cores based on the device-tree classification.
+- The last domain in the associativity domains always refers to the
+core.
+- If primary reference domain happens to be the penultimate domain in
+the associativity domains device-tree property, then there are no
+coregroups. However if its not a penultimate domain, then there are
+coregroups. There can be more than one coregroup. For now we would be
+interested in the last or the smallest coregroups, i.e one sub-group
+per DIE.
 
-While here, localize the sibling_mask variable to within the if
-condition.
+Currently there are no firmwares that are exposing this grouping. Hence
+allow the basis for grouping to be abstract.  Once the firmware starts
+using this grouping, code would be added to detect the type of grouping
+and adjust the sd domain flags accordingly.
 
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
@@ -149,65 +157,104 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Valentin Schneider <valentin.schneider@arm.com>
 Cc: Jordan Niethe <jniethe5@gmail.com>
 Cc: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
-Changelog v4 ->v5:
-	Retain cache domain, no need for generalization
-		 (Michael Ellerman, Peter Zijlstra,
-		 Valentin Schneider, Gautham R. Shenoy)
+Changelog v4->v5:
+	Updated commit msg with current abstract nature of the coregroups
+						(Michael Ellerman)
 
 Changelog v1 -> v2:
-	Moved shared_cache topology fixup to fixup_topology (Gautham)
+	Explained Coregroup in commit msg (Michael Ellerman)
 
- arch/powerpc/kernel/smp.c | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/smp.h |  1 +
+ arch/powerpc/kernel/smp.c      |  1 +
+ arch/powerpc/mm/numa.c         | 34 +++++++++++++++++++++-------------
+ 3 files changed, 23 insertions(+), 13 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 49a25e2400f2..5bdc17a7049f 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -28,6 +28,7 @@
+ extern int boot_cpuid;
+ extern int spinning_secondaries;
+ extern u32 *cpu_to_phys_id;
++extern bool coregroup_enabled;
+ 
+ extern void cpu_die(void);
+ extern int cpu_to_chip_id(int cpu);
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 0c960ce3be42..91cf5d05e7ec 100644
+index 91cf5d05e7ec..7403fdcf3821 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -851,7 +851,7 @@ static int powerpc_shared_cache_flags(void)
-  */
- static const struct cpumask *shared_cache_mask(int cpu)
+@@ -74,6 +74,7 @@ static DEFINE_PER_CPU(int, cpu_state) = { 0 };
+ 
+ struct task_struct *secondary_current;
+ bool has_big_cores;
++bool coregroup_enabled;
+ 
+ DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
+ DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 2298899a0f0a..51cb672f113b 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -886,7 +886,9 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ static void __init find_possible_nodes(void)
  {
--	return cpu_l2_cache_mask(cpu);
-+	return per_cpu(cpu_l2_cache_map, cpu);
+ 	struct device_node *rtas;
+-	u32 numnodes, i;
++	const __be32 *domains;
++	int prop_length, max_nodes;
++	u32 i;
+ 
+ 	if (!numa_enabled)
+ 		return;
+@@ -895,25 +897,31 @@ static void __init find_possible_nodes(void)
+ 	if (!rtas)
+ 		return;
+ 
+-	if (of_property_read_u32_index(rtas, "ibm,current-associativity-domains",
+-				min_common_depth, &numnodes)) {
+-		/*
+-		 * ibm,current-associativity-domains is a fairly recent
+-		 * property. If it doesn't exist, then fallback on
+-		 * ibm,max-associativity-domains. Current denotes what the
+-		 * platform can support compared to max which denotes what the
+-		 * Hypervisor can support.
+-		 */
+-		if (of_property_read_u32_index(rtas, "ibm,max-associativity-domains",
+-				min_common_depth, &numnodes))
++	/*
++	 * ibm,current-associativity-domains is a fairly recent property. If
++	 * it doesn't exist, then fallback on ibm,max-associativity-domains.
++	 * Current denotes what the platform can support compared to max
++	 * which denotes what the Hypervisor can support.
++	 */
++	domains = of_get_property(rtas, "ibm,current-associativity-domains",
++					&prop_length);
++	if (!domains) {
++		domains = of_get_property(rtas, "ibm,max-associativity-domains",
++					&prop_length);
++		if (!domains)
+ 			goto out;
+ 	}
+ 
+-	for (i = 0; i < numnodes; i++) {
++	max_nodes = of_read_number(&domains[min_common_depth], 1);
++	for (i = 0; i < max_nodes; i++) {
+ 		if (!node_possible(i))
+ 			node_set(i, node_possible_map);
+ 	}
+ 
++	prop_length /= sizeof(int);
++	if (prop_length > min_common_depth + 2)
++		coregroup_enabled = 1;
++
+ out:
+ 	of_node_put(rtas);
  }
- 
- #ifdef CONFIG_SCHED_SMT
-@@ -1305,7 +1305,6 @@ static void add_cpu_to_masks(int cpu)
- void start_secondary(void *unused)
- {
- 	unsigned int cpu = smp_processor_id();
--	struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
- 
- 	mmgrab(&init_mm);
- 	current->active_mm = &init_mm;
-@@ -1331,14 +1330,20 @@ void start_secondary(void *unused)
- 	/* Update topology CPU masks */
- 	add_cpu_to_masks(cpu);
- 
--	if (has_big_cores)
--		sibling_mask = cpu_smallcore_mask;
- 	/*
- 	 * Check for any shared caches. Note that this must be done on a
- 	 * per-core basis because one core in the pair might be disabled.
- 	 */
--	if (!cpumask_equal(cpu_l2_cache_mask(cpu), sibling_mask(cpu)))
--		shared_caches = true;
-+	if (!shared_caches) {
-+		struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
-+		struct cpumask *mask = cpu_l2_cache_mask(cpu);
-+
-+		if (has_big_cores)
-+			sibling_mask = cpu_smallcore_mask;
-+
-+		if (cpumask_weight(mask) > cpumask_weight(sibling_mask(cpu)))
-+			shared_caches = true;
-+	}
- 
- 	set_numa_node(numa_cpu_lookup_table[cpu]);
- 	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
 -- 
 2.18.2
 
