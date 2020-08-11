@@ -2,69 +2,61 @@ Return-Path: <SRS0=HEEy=BV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E449C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 13:52:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3623C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:11:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05983204FD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 13:52:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05983204FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id BD0DC2076C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:11:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="RS7wIc6e"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD0DC2076C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQvRR0NS6zDqPR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 23:52:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQvrn6vVYzDqMt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 00:11:21 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQvL85HcGzDqG8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2020 23:48:14 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BQvKy5jqDz9vCqH;
- Tue, 11 Aug 2020 15:48:06 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id T6AfGy8k89Hu; Tue, 11 Aug 2020 15:48:06 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BQvKy4SfWz9vCqD;
- Tue, 11 Aug 2020 15:48:06 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3FD6A8BB86;
- Tue, 11 Aug 2020 15:48:08 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id K8SJqBJ0A9aJ; Tue, 11 Aug 2020 15:48:08 +0200 (CEST)
-Received: from [172.25.230.100] (po15451.idsi0.si.c-s.fr [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DD8758BB80;
- Tue, 11 Aug 2020 15:48:07 +0200 (CEST)
-Subject: Re: [RFC PATCH v1] power: don't manage floating point regs when no FPU
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <95c00a811897f6d9176d30bf2ac92dab8c9c8e95.1596816789.git.christophe.leroy@csgroup.eu>
- <87o8nh9yjd.fsf@mpe.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <9edf75a2-103d-ea01-2f53-dbb467047d13@csgroup.eu>
-Date: Tue, 11 Aug 2020 15:48:07 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQvjH5sWlzDqKL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 00:04:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.a=rsa-sha256 header.s=201702 header.b=RS7wIc6e; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BQvjF21WQz9sTr;
+ Wed, 12 Aug 2020 00:04:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1597154689;
+ bh=hhQGWNZC4SROishmbkcAwtkGkjYy/VFeAK9d6mFBlwY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=RS7wIc6eShMc/Wmt8z+8pE6hySzPKgv7xUwK2W5yTS6Ac1LvOIJ8NV0nUYxB+Yjq9
+ mSXmuEdOS5meYwt5lwV1QBF+l7GJDA3J5L+BD05bvfMT/3FuTJRtjrWh0P2wosGpJT
+ mqEtQhLsNviCkUstlC7qcfOLdC9oRP4Kf+sQ8d8OY9khYeLqB/H9QOM3lGxAPkxkie
+ H2l08qExHn+yyJaR5pe5nzkaa3h6urqUdqvQjBcilwMMtwKS1DTUIXf4oI5Zt6U0bS
+ xP0D0ev/R5WQS1iXEAXRsnnPSm0iQ1hlBvdlF4mjxPOugX3tVhrCFvQqV/R4gV5D9J
+ LPRfDUec6OgrQ==
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 0/7] powerpc: unrel_branch_check.sh: make it suck less
+Date: Wed, 12 Aug 2020 00:04:27 +1000
+Message-Id: <20200811140435.20957-1-sfr@canb.auug.org.au>
+X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
-In-Reply-To: <87o8nh9yjd.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,35 +69,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Linux PowerPC List <linuxppc-dev@lists.ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Michael Ellerman: "who wants to make
+arch/powerpc/tools/unrel_branch_check.sh suck less"
 
+This series is based off the current powerpc/next branch and keeps the
+same functionaity as the original except that it suppresses some error
+messages for early failures that still cause this script to succeed
+(as it always did).
 
-Le 11/08/2020 à 14:07, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->> There is no point in copying floating point regs when there
->> is no FPU and MATH_EMULATION is not selected.
-> 
-> Yeah I guess you're right. I've never touched a system with neither, but
-> if such a thing exists then it does seem silly to copy regs around that
-> can't be used.
+I did this as a series so that people can see the (mostly obvious)
+transofrmations at each step.   As a single patch, it basically replaces
+the whole file.
 
-Yes that exists, because glibc implements floating point emulation and 
-it is definitely more efficient to rely of glibc emulation than kernel one.
+Hopefully this fulfills your definition of "sucks less" :-)
 
->>   10 files changed, 44 insertions(+), 1 deletion(-)
-> 
-> In general this looks fine.
-> 
-> It's a bit #ifdef heavy. Maybe some of those can be cleaned up a bit
-> with some wrapper inlines?
-> 
+ arch/powerpc/tools/unrel_branch_check.sh | 88 ++++++++++++++++----------------
+ 1 file changed, 43 insertions(+), 45 deletions(-)
 
-Yes I'll try and respin, as part of a series I'm preparing to switch the 
-32 bits signal code to using user_access_begin() logic and 
-unsafe_put_user() and friends to reduce KUAP unlock/lock.
+Cc: Nicholas Piggin <npiggin@gmail.com>
+-- 
+Cheers,
+Stephen Rothwell
 
-Christophe
