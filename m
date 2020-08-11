@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A55C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F311C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A09622078E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:28:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 98F9A204FD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Aug 2020 14:32:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="kSTtjXO3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A09622078E
+	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="FRFFB5+H"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98F9A204FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BQwDL55ZPzDqSG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 00:28:18 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BQwKT0RvvzDqCK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 00:32:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BQvjh2hXZzDqMm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 00:05:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BQvjj5D7bzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 00:05:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.a=rsa-sha256 header.s=201702 header.b=kSTtjXO3; 
+ header.a=rsa-sha256 header.s=201702 header.b=FRFFB5+H; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BQvjc1fHYz9sTd;
- Wed, 12 Aug 2020 00:05:08 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BQvjf6Ncmz9sTq;
+ Wed, 12 Aug 2020 00:05:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1597154708;
- bh=Uc1DFmj6GDVlR0S2M6HTMamhLfv5jYMemm15PEIauk8=;
+ s=201702; t=1597154711;
+ bh=IWg9J4dzmIU629G1TFBY3rxGgkOp982GZz/P7rTZ6/4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=kSTtjXO3FoiKxtQvLOkHcYdNtiIS6prr+GFclsMrf79a6P5W0OeeULiGKlaod5GA8
- 7li3Po61vMaKyhNmI4RzJUju3982Fx8zQI/JtQLTo3tRsPY0wKvKZvGHuJEk8PyobC
- RJ4X/asVsvByoHtZNhh6XnfGKwazPHQxKah9VOHDCq7ZWfEERn3ha9RCvZDJTTPsiD
- XszFnAzRhuOb0H2tBy7NYWd4tGs+fsUPaN3UzM23VrHXYNhXZQwV5BqxDgQDrpN6cq
- vqn589SAuUDVuagY7XG6KU2Z/ZhGgj1b/HjDBqlsxT8Bgc3HEmFHngntoYKfphtu3s
- fl9oQXmo6m9Vg==
+ b=FRFFB5+HkSbwW+C4hJBgR8dQnrx0LAa9pXRkAFx+T+m8clXSojPEV727BYjf+3AKz
+ zo2OedWLIO45SPtrRp+KJwTOyOt0XYAOa0nnKiS0/wutooQBbSjlrvDeWGUmhrm8Rp
+ pvRoxmL8bZju2wEVhHN4MpJzuGJikgjeFw150hxHEZ+vQX8XjoHw7bMk4lb/rspJTi
+ /BfJIMByfuZEuqvd30HLc+ClCCETHJz23/HgAxgcggoLu67TzOI+iFXImmzJvT51uz
+ 4eNXdVvsnyfSDHluRdQij1kOQX8p/Z5RQbaSQOSHrBQyAHFpVfJ7o/5HiIaoub4Ejj
+ q6A3ENvRMxNdg==
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 5/7] powerpc: unrel_branch_check.sh: simplify and tidy up the
- final loop
-Date: Wed, 12 Aug 2020 00:04:32 +1000
-Message-Id: <20200811140435.20957-6-sfr@canb.auug.org.au>
+Subject: [PATCH 6/7] powerpc: unrel_branch_check.sh: fix up the file header
+Date: Wed, 12 Aug 2020 00:04:33 +1000
+Message-Id: <20200811140435.20957-7-sfr@canb.auug.org.au>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200811140435.20957-1-sfr@canb.auug.org.au>
 References: <20200811140435.20957-1-sfr@canb.auug.org.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,56 +81,34 @@ Sender: "Linuxppc-dev"
 Cc: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/tools/unrel_branch_check.sh | 26 +++++++++---------------
- 1 file changed, 10 insertions(+), 16 deletions(-)
+ arch/powerpc/tools/unrel_branch_check.sh | 15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/tools/unrel_branch_check.sh b/arch/powerpc/tools/unrel_branch_check.sh
-index dc82289b2252..54ebd05615d4 100755
+index 54ebd05615d4..4489f16a443c 100755
 --- a/arch/powerpc/tools/unrel_branch_check.sh
 +++ b/arch/powerpc/tools/unrel_branch_check.sh
-@@ -25,7 +25,6 @@ $objdump -R -d --start-address="$kstart" --stop-address="$kend" "$vmlinux" |
- awk '$2 == "<__end_interrupts>:" { print $1 }'
- )
- 
--BRANCHES=$(
- $objdump -R -D --no-show-raw-insn --start-address="$kstart" --stop-address="$end_intr" "$vmlinux" |
- sed -E -n '
- # match lines that start with a kernel address
-@@ -45,24 +44,19 @@ sed -E -n '
- 	# strip out condition registers
- 	s/:0xcr[0-7],/:0x/
- 	p
--}'
--)
+@@ -1,16 +1,9 @@
+ #!/bin/bash
+-# Copyright © 2016 IBM Corporation
++# SPDX-License-Identifier: GPL-2.0+
++# Copyright © 2016,2020 IBM Corporation
+ #
+-# This program is free software; you can redistribute it and/or
+-# modify it under the terms of the GNU General Public License
+-# as published by the Free Software Foundation; either version
+-# 2 of the License, or (at your option) any later version.
+-#
+-# This script checks the relocations of a vmlinux for "suspicious"
+-# branches from unrelocated code (head_64.S code).
 -
--for tuple in $BRANCHES; do
--	from=$(echo "$tuple" | cut -d':' -f1)
--	branch=$(echo "$tuple" | cut -d':' -f2)
--	to=$(echo "$tuple" | cut -d':' -f3)
--	sym=$(echo "$tuple" | cut -d':' -f4)
-+}' | {
+-# Turn this on if you want more debug output:
+-# set -x
++# This script checks the unrelocated code of a vmlinux for "suspicious"
++# branches to relocated code (head_64.S code).
  
-+all_good=true
-+while IFS=: read -r from branch to sym; do
- 	if (( to > end_intr )); then
--		if [ -z "$bad_branches" ]; then
--			echo "WARNING: Unrelocated relative branches"
--			bad_branches="yes"
-+		if $all_good; then
-+			printf '%s\n' 'WARNING: Unrelocated relative branches'
-+			all_good=false
- 		fi
--		echo "$from $branch-> $to $sym"
-+		printf '%s %s-> %s %s\n' "$from" "$branch" "$to" "$sym"
- 	fi
- done
- 
--if [ -z "$bad_branches" ]; then
--	exit 0
--fi
-+$all_good
-+
-+}
+ # Have Kbuild supply the path to objdump so we handle cross compilation.
+ objdump="$1"
 -- 
 2.28.0
 
