@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35BBBC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCF3EC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:37:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E1BC7207F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:35:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1BC7207F7
+	by mail.kernel.org (Postfix) with ESMTPS id 98387207F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:37:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98387207F7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTg70R4LzDqd9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:34:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTkL1fZTzDqfB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:37:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1p53LczDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1q4WMFzDqZR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:07 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1b6XdKzB09ZX;
- Wed, 12 Aug 2020 14:05:55 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRT1l1ycHzB09Zg;
+ Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3bThxa13uU0W; Wed, 12 Aug 2020 14:05:55 +0200 (CEST)
+ with ESMTP id OJbrP9l1vozO; Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1b5WN3zB09ZQ;
- Wed, 12 Aug 2020 14:05:55 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1l0t0bzB09Zf;
+ Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1942F8B7FC;
- Wed, 12 Aug 2020 14:05:57 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4B53C8B828;
+ Wed, 12 Aug 2020 14:06:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id xzd7l7rl01GH; Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
+ with ESMTP id nf98ln0ZK9eP; Wed, 12 Aug 2020 14:06:04 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BC8BD8B82D;
- Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E7A308B7FC;
+ Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9E79165C34; Wed, 12 Aug 2020 12:05:56 +0000 (UTC)
-Message-Id: <14a991041930a47bae7ffc6fc5f56117bf3e6e18.1597233555.git.christophe.leroy@csgroup.eu>
+ id CA6F465C34; Wed, 12 Aug 2020 12:06:03 +0000 (UTC)
+Message-Id: <6257c01d5d6ac6da85de023a5b223ccf5021437b.1597233555.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 05/19] powerpc/signal: Don't manage floating point regs
- when no FPU
+Subject: [RFC PATCH v1 12/19] powerpc/signal32: Regroup copies in
+ save_user_regs() and save_tm_user_regs()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:05:56 +0000 (UTC)
+Date: Wed, 12 Aug 2020 12:06:03 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,265 +77,278 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no point in copying floating point regs when there
-is no FPU and MATH_EMULATION is not selected.
+Reorder actions in save_user_regs() and save_tm_user_regs() to
+regroup copies together in order to switch to user_access_begin()
+logic in a later patch.
 
-Create a new CONFIG_PPC_FPU_REGS bool that is selected by
-CONFIG_MATH_EMULATION and CONFIG_PPC_FPU, and use it to
-opt out everything related to fp_state in thread_struct.
-
-The asm const used only by fpu.S are opted out with CONFIG_PPC_FPU
-as fpu.S build is conditionnal to CONFIG_PPC_FPU.
-
-The following app spends approx 8.1 seconds system time on
-an 8xx without the patch, and 7.0 seconds with the patch.
-
-	void sigusr1(int sig) { }
-
-	int main(int argc, char **argv)
-	{
-		int i = 100000;
-
-		signal(SIGUSR1, sigusr1);
-		for (;i--;)
-			raise(SIGUSR1);
-		exit(0);
-	}
+In save_tm_user_regs(), first perform copies to frame, then
+perform copies to tm_frame.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig                     |  1 +
- arch/powerpc/include/asm/processor.h     |  2 ++
- arch/powerpc/kernel/asm-offsets.c        |  2 ++
- arch/powerpc/kernel/process.c            |  4 ++++
- arch/powerpc/kernel/ptrace/Makefile      |  4 ++--
- arch/powerpc/kernel/ptrace/ptrace-decl.h | 14 ++++++++++++++
- arch/powerpc/kernel/ptrace/ptrace-view.c |  2 ++
- arch/powerpc/kernel/signal.h             | 14 +++++++++++++-
- arch/powerpc/kernel/signal_32.c          |  4 ++++
- arch/powerpc/kernel/traps.c              |  2 ++
- arch/powerpc/platforms/Kconfig.cputype   |  4 ++++
- 11 files changed, 50 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/signal_32.c | 153 +++++++++++++++++++-------------
+ 1 file changed, 91 insertions(+), 62 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1f48bbfb3ce9..a2611880b904 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -416,6 +416,7 @@ config HUGETLB_PAGE_SIZE_VARIABLE
- config MATH_EMULATION
- 	bool "Math emulation"
- 	depends on 4xx || PPC_8xx || PPC_MPC832x || BOOKE
-+	select PPC_FPU_REGS
- 	help
- 	  Some PowerPC chips designed for embedded applications do not have
- 	  a floating-point unit and therefore do not implement the
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index ed0d633ab5aa..e20b0c5abe62 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -175,8 +175,10 @@ struct thread_struct {
- #endif
- 	/* Debug Registers */
- 	struct debug_reg debug;
-+#ifdef CONFIG_PPC_FPU_REGS
- 	struct thread_fp_state	fp_state;
- 	struct thread_fp_state	*fp_save_area;
-+#endif
- 	int		fpexc_mode;	/* floating-point exception mode */
- 	unsigned int	align_ctl;	/* alignment handling control */
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8711c2164b45..6cb36c341c70 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -110,9 +110,11 @@ int main(void)
- #ifdef CONFIG_BOOKE
- 	OFFSET(THREAD_NORMSAVES, thread_struct, normsave[0]);
- #endif
-+#ifdef CONFIG_PPC_FPU
- 	OFFSET(THREAD_FPEXC_MODE, thread_struct, fpexc_mode);
- 	OFFSET(THREAD_FPSTATE, thread_struct, fp_state.fpr);
- 	OFFSET(THREAD_FPSAVEAREA, thread_struct, fp_save_area);
-+#endif
- 	OFFSET(FPSTATE_FPSCR, thread_fp_state, fpscr);
- 	OFFSET(THREAD_LOAD_FP, thread_struct, load_fp);
- #ifdef CONFIG_ALTIVEC
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 016bd831908e..7e0082ac0a39 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1694,7 +1694,9 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 		p->thread.ptrace_bps[i] = NULL;
- #endif
- 
-+#ifdef CONFIG_PPC_FPU_REGS
- 	p->thread.fp_save_area = NULL;
-+#endif
- #ifdef CONFIG_ALTIVEC
- 	p->thread.vr_save_area = NULL;
- #endif
-@@ -1821,8 +1823,10 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- #endif
- 	current->thread.load_slb = 0;
- 	current->thread.load_fp = 0;
-+#ifdef CONFIG_PPC_FPU_REGS
- 	memset(&current->thread.fp_state, 0, sizeof(current->thread.fp_state));
- 	current->thread.fp_save_area = NULL;
-+#endif
- #ifdef CONFIG_ALTIVEC
- 	memset(&current->thread.vr_state, 0, sizeof(current->thread.vr_state));
- 	current->thread.vr_state.vscr.u[3] = 0x00010000; /* Java mode disabled */
-diff --git a/arch/powerpc/kernel/ptrace/Makefile b/arch/powerpc/kernel/ptrace/Makefile
-index 77abd1a5a508..8ebc11d1168d 100644
---- a/arch/powerpc/kernel/ptrace/Makefile
-+++ b/arch/powerpc/kernel/ptrace/Makefile
-@@ -6,11 +6,11 @@
- CFLAGS_ptrace-view.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
- 
- obj-y				+= ptrace.o ptrace-view.o
--obj-y				+= ptrace-fpu.o
-+obj-$(CONFIG_PPC_FPU_REGS)	+= ptrace-fpu.o
- obj-$(CONFIG_COMPAT)		+= ptrace32.o
- obj-$(CONFIG_VSX)		+= ptrace-vsx.o
- ifneq ($(CONFIG_VSX),y)
--obj-y				+= ptrace-novsx.o
-+obj-$(CONFIG_PPC_FPU_REGS)	+= ptrace-novsx.o
- endif
- obj-$(CONFIG_ALTIVEC)		+= ptrace-altivec.o
- obj-$(CONFIG_SPE)		+= ptrace-spe.o
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-index eafe5f0f6289..3487f2c9735c 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
-+++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -165,8 +165,22 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data);
- extern const struct user_regset_view user_ppc_native_view;
- 
- /* ptrace-fpu */
-+#ifdef CONFIG_PPC_FPU_REGS
- int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data);
- int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data);
-+#else
-+static inline int
-+ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
-+{
-+	return -EIO;
-+}
-+
-+static inline int
-+ptrace_put_fpr(struct task_struct *child, int index, unsigned long data)
-+{
-+	return -EIO;
-+}
-+#endif
- 
- /* ptrace-(no)adv */
- void ppc_gethwdinfo(struct ppc_debug_info *dbginfo);
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-view.c b/arch/powerpc/kernel/ptrace/ptrace-view.c
-index 7e6478e7ed07..f1df8c62baf1 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-view.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-view.c
-@@ -520,11 +520,13 @@ static const struct user_regset native_regsets[] = {
- 		.size = sizeof(long), .align = sizeof(long),
- 		.regset_get = gpr_get, .set = gpr_set
- 	},
-+#ifdef CONFIG_PPC_FPU_REGS
- 	[REGSET_FPR] = {
- 		.core_note_type = NT_PRFPREG, .n = ELF_NFPREG,
- 		.size = sizeof(double), .align = sizeof(double),
- 		.regset_get = fpr_get, .set = fpr_set
- 	},
-+#endif
- #ifdef CONFIG_ALTIVEC
- 	[REGSET_VMX] = {
- 		.core_note_type = NT_PPC_VMX, .n = 34,
-diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index 4626d39cc0f0..6c2a33ab042c 100644
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -34,7 +34,7 @@ unsigned long copy_fpr_to_user(void __user *to, struct task_struct *task);
- unsigned long copy_ckfpr_to_user(void __user *to, struct task_struct *task);
- unsigned long copy_fpr_from_user(struct task_struct *task, void __user *from);
- unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
--#else
-+#elif defined(CONFIG_PPC_FPU_REGS)
- static inline unsigned long
- copy_fpr_to_user(void __user *to, struct task_struct *task)
- {
-@@ -63,6 +63,18 @@ copy_ckfpr_from_user(struct task_struct *task, void __user *from)
- 				ELF_NFPREG * sizeof(double));
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+#else
-+static inline unsigned long
-+copy_fpr_to_user(void __user *to, struct task_struct *task)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned long
-+copy_fpr_from_user(struct task_struct *task, void __user *from)
-+{
-+	return 0;
-+}
- #endif
- 
- #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 96950f189b5a..7b291707eb31 100644
+index 495bee1b713d..2c3d5d4400ec 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -814,7 +814,9 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	}
- 	regs->link = tramp;
+@@ -243,6 +243,20 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
  
-+#ifdef CONFIG_PPC_FPU_REGS
- 	tsk->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
-+#endif
- 
- 	/* create a stack frame for the caller of the handler */
- 	newsp = ((unsigned long)rt_sf) - (__SIGNAL_FRAMESIZE + 16);
-@@ -1271,7 +1273,9 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
- 	regs->link = tramp;
- 
-+#ifdef CONFIG_PPC_FPU_REGS
- 	tsk->thread.fp_state.fpscr = 0;	/* turn off all fp exceptions */
-+#endif
- 
- 	/* create a stack frame for the caller of the handler */
- 	newsp = ((unsigned long)frame) - __SIGNAL_FRAMESIZE;
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d1ebe152f210..5c68f0de905c 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1194,7 +1194,9 @@ static void parse_fpe(struct pt_regs *regs)
- 
+ 	/* Make sure floating point registers are stored in regs */
  	flush_fp_to_thread(current);
- 
-+#ifdef CONFIG_PPC_FPU_REGS
- 	code = __parse_fpscr(current->thread.fp_state.fpscr);
++#ifdef CONFIG_ALTIVEC
++	if (current->thread.used_vr)
++		flush_altivec_to_thread(current);
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.vrsave = mfspr(SPRN_VRSAVE);
++#endif
++#ifdef CONFIG_VSX
++	if (current->thread.used_vsr && ctx_has_vsx_region)
++		flush_vsx_to_thread(current);
++#endif
++#ifdef CONFIG_SPE
++	if (current->thread.used_spe)
++		flush_spe_to_thread(current);
 +#endif
  
- 	_exception(SIGFPE, regs, code, regs->nip);
- }
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 87737ec86d39..40ffcdba42b8 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -225,9 +225,13 @@ config PPC_E500MC
- 	  such as e5500/e6500), and must be disabled for running on
- 	  e500v1 or e500v2.
+ 	/* save general registers */
+ 	if (save_general_regs(regs, frame))
+@@ -251,7 +265,6 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ #ifdef CONFIG_ALTIVEC
+ 	/* save altivec registers */
+ 	if (current->thread.used_vr) {
+-		flush_altivec_to_thread(current);
+ 		if (__copy_to_user(&frame->mc_vregs, &current->thread.vr_state,
+ 				   ELF_NVRREG * sizeof(vector128)))
+ 			return 1;
+@@ -267,8 +280,6 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ 	 * most significant bits of that same vector. --BenH
+ 	 * Note that the current VRSAVE value is in the SPR at this point.
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		current->thread.vrsave = mfspr(SPRN_VRSAVE);
+ 	if (__put_user(current->thread.vrsave, (u32 __user *)&frame->mc_vregs[32]))
+ 		return 1;
+ #endif /* CONFIG_ALTIVEC */
+@@ -288,7 +299,6 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ 	 * contains valid data
+ 	 */
+ 	if (current->thread.used_vsr && ctx_has_vsx_region) {
+-		flush_vsx_to_thread(current);
+ 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
+ 			return 1;
+ 		msr |= MSR_VSX;
+@@ -297,7 +307,6 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+ #ifdef CONFIG_SPE
+ 	/* save spe registers */
+ 	if (current->thread.used_spe) {
+-		flush_spe_to_thread(current);
+ 		if (__copy_to_user(&frame->mc_vregs, current->thread.evr,
+ 				   ELF_NEVRREG * sizeof(u32)))
+ 			return 1;
+@@ -314,20 +323,22 @@ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
  
-+config PPC_FPU_REGS
-+	bool
+ 	if (__put_user(msr, &frame->mc_gregs[PT_MSR]))
+ 		return 1;
+-	/* We need to write 0 the MSR top 32 bits in the tm frame so that we
+-	 * can check it on the restore to see if TM is active
+-	 */
+-	if (tm_frame && __put_user(0, &tm_frame->mc_gregs[PT_MSR]))
+-		return 1;
+ 
+ 	if (sigret) {
+ 		/* Set up the sigreturn trampoline: li 0,sigret; sc */
+ 		if (__put_user(PPC_INST_ADDI + sigret, &frame->tramp[0])
+ 		    || __put_user(PPC_INST_SC, &frame->tramp[1]))
+ 			return 1;
++	}
++	if (sigret)
+ 		flush_icache_range((unsigned long) &frame->tramp[0],
+ 				   (unsigned long) &frame->tramp[2]);
+-	}
 +
- config PPC_FPU
- 	bool
- 	default y if PPC64
-+	select PPC_FPU_REGS
++	/* We need to write 0 the MSR top 32 bits in the tm frame so that we
++	 * can check it on the restore to see if TM is active
++	 */
++	if (tm_frame && __put_user(0, &tm_frame->mc_gregs[PT_MSR]))
++		return 1;
  
- config FSL_EMB_PERFMON
- 	bool "Freescale Embedded Perfmon"
+ 	return 0;
+ }
+@@ -349,18 +360,16 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ {
+ 	WARN_ON(tm_suspend_disabled);
+ 
+-	/* Save both sets of general registers */
+-	if (save_general_regs(&current->thread.ckpt_regs, frame)
+-	    || save_general_regs(regs, tm_frame))
+-		return 1;
++#ifdef CONFIG_ALTIVEC
++	if (cpu_has_feature(CPU_FTR_ALTIVEC))
++		current->thread.ckvrsave = mfspr(SPRN_VRSAVE);
++#endif
++#ifdef CONFIG_SPE
++	if (current->thread.used_spe)
++		flush_spe_to_thread(current);
++#endif
+ 
+-	/* Stash the top half of the 64bit MSR into the 32bit MSR word
+-	 * of the transactional mcontext.  This way we have a backward-compatible
+-	 * MSR in the 'normal' (checkpointed) mcontext and additionally one can
+-	 * also look at what type of transaction (T or S) was active at the
+-	 * time of the signal.
+-	 */
+-	if (__put_user((msr >> 32), &tm_frame->mc_gregs[PT_MSR]))
++	if (save_general_regs(&current->thread.ckpt_regs, frame))
+ 		return 1;
+ 
+ #ifdef CONFIG_ALTIVEC
+@@ -369,17 +378,6 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 		if (__copy_to_user(&frame->mc_vregs, &current->thread.ckvr_state,
+ 				   ELF_NVRREG * sizeof(vector128)))
+ 			return 1;
+-		if (msr & MSR_VEC) {
+-			if (__copy_to_user(&tm_frame->mc_vregs,
+-					   &current->thread.vr_state,
+-					   ELF_NVRREG * sizeof(vector128)))
+-				return 1;
+-		} else {
+-			if (__copy_to_user(&tm_frame->mc_vregs,
+-					   &current->thread.ckvr_state,
+-					   ELF_NVRREG * sizeof(vector128)))
+-				return 1;
+-		}
+ 
+ 		/* set MSR_VEC in the saved MSR value to indicate that
+ 		 * frame->mc_vregs contains valid data
+@@ -392,32 +390,13 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	 * significant bits of a vector, we "cheat" and stuff VRSAVE in the
+ 	 * most significant bits of that same vector. --BenH
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		current->thread.ckvrsave = mfspr(SPRN_VRSAVE);
+ 	if (__put_user(current->thread.ckvrsave,
+ 		       (u32 __user *)&frame->mc_vregs[32]))
+ 		return 1;
+-	if (msr & MSR_VEC) {
+-		if (__put_user(current->thread.vrsave,
+-			       (u32 __user *)&tm_frame->mc_vregs[32]))
+-			return 1;
+-	} else {
+-		if (__put_user(current->thread.ckvrsave,
+-			       (u32 __user *)&tm_frame->mc_vregs[32]))
+-			return 1;
+-	}
+ #endif /* CONFIG_ALTIVEC */
+ 
+ 	if (copy_ckfpr_to_user(&frame->mc_fregs, current))
+ 		return 1;
+-	if (msr & MSR_FP) {
+-		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
+-			return 1;
+-	} else {
+-		if (copy_ckfpr_to_user(&tm_frame->mc_fregs, current))
+-			return 1;
+-	}
+-
+ #ifdef CONFIG_VSX
+ 	/*
+ 	 * Copy VSR 0-31 upper half from thread_struct to local
+@@ -428,15 +407,6 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	if (current->thread.used_vsr) {
+ 		if (copy_ckvsx_to_user(&frame->mc_vsregs, current))
+ 			return 1;
+-		if (msr & MSR_VSX) {
+-			if (copy_vsx_to_user(&tm_frame->mc_vsregs,
+-						      current))
+-				return 1;
+-		} else {
+-			if (copy_ckvsx_to_user(&tm_frame->mc_vsregs, current))
+-				return 1;
+-		}
+-
+ 		msr |= MSR_VSX;
+ 	}
+ #endif /* CONFIG_VSX */
+@@ -445,7 +415,6 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	 * simply the same as in save_user_regs().
+ 	 */
+ 	if (current->thread.used_spe) {
+-		flush_spe_to_thread(current);
+ 		if (__copy_to_user(&frame->mc_vregs, current->thread.evr,
+ 				   ELF_NEVRREG * sizeof(u32)))
+ 			return 1;
+@@ -466,9 +435,69 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 		if (__put_user(PPC_INST_ADDI + sigret, &frame->tramp[0])
+ 		    || __put_user(PPC_INST_SC, &frame->tramp[1]))
+ 			return 1;
++	}
++	if (sigret)
+ 		flush_icache_range((unsigned long) &frame->tramp[0],
+ 				   (unsigned long) &frame->tramp[2]);
++
++	if (save_general_regs(regs, tm_frame))
++		return 1;
++
++	/* Stash the top half of the 64bit MSR into the 32bit MSR word
++	 * of the transactional mcontext.  This way we have a backward-compatible
++	 * MSR in the 'normal' (checkpointed) mcontext and additionally one can
++	 * also look at what type of transaction (T or S) was active at the
++	 * time of the signal.
++	 */
++	if (__put_user((msr >> 32), &tm_frame->mc_gregs[PT_MSR]))
++		return 1;
++
++#ifdef CONFIG_ALTIVEC
++	if (current->thread.used_vr) {
++		if (msr & MSR_VEC) {
++			if (__copy_to_user(&tm_frame->mc_vregs,
++					   &current->thread.vr_state,
++					   ELF_NVRREG * sizeof(vector128)))
++				return 1;
++		} else {
++			if (__copy_to_user(&tm_frame->mc_vregs,
++					   &current->thread.ckvr_state,
++					   ELF_NVRREG * sizeof(vector128)))
++				return 1;
++		}
++	}
++
++	if (msr & MSR_VEC) {
++		if (__put_user(current->thread.vrsave,
++			       (u32 __user *)&tm_frame->mc_vregs[32]))
++			return 1;
++	} else {
++		if (__put_user(current->thread.ckvrsave,
++			       (u32 __user *)&tm_frame->mc_vregs[32]))
++			return 1;
+ 	}
++#endif /* CONFIG_ALTIVEC */
++
++	if (msr & MSR_FP) {
++		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
++			return 1;
++	} else {
++		if (copy_ckfpr_to_user(&tm_frame->mc_fregs, current))
++			return 1;
++	}
++
++#ifdef CONFIG_VSX
++	if (current->thread.used_vsr) {
++		if (msr & MSR_VSX) {
++			if (copy_vsx_to_user(&tm_frame->mc_vsregs,
++						      current))
++				return 1;
++		} else {
++			if (copy_ckvsx_to_user(&tm_frame->mc_vsregs, current))
++				return 1;
++		}
++	}
++#endif /* CONFIG_VSX */
+ 
+ 	return 0;
+ }
 -- 
 2.25.0
 
