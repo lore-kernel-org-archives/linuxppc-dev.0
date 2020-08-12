@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7880FC433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 635C2C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:32:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 31141207DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:29:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 31141207DA
+	by mail.kernel.org (Postfix) with ESMTPS id 1ABE3207F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:32:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ABE3207F7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTXm6SNtzDqXV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:29:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTbq3SSlzDqdr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:32:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1q0c22zDqZV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1q0cHYzDqZb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:05 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1g6RtZzB09Zc;
- Wed, 12 Aug 2020 14:05:59 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRT1j2VKqzB09Zd;
+ Wed, 12 Aug 2020 14:06:01 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id RnYOaMbukcmD; Wed, 12 Aug 2020 14:05:59 +0200 (CEST)
+ with ESMTP id lFYajNwLs3_W; Wed, 12 Aug 2020 14:06:01 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1g5f6bzB09ZZ;
- Wed, 12 Aug 2020 14:05:59 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 23CD58B826;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1j1Z6LzB09ZZ;
  Wed, 12 Aug 2020 14:06:01 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 92BBD8B826;
+ Wed, 12 Aug 2020 14:06:02 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id CFVyk9b9WH2r; Wed, 12 Aug 2020 14:06:01 +0200 (CEST)
+ with ESMTP id CblZYUPfLMKZ; Wed, 12 Aug 2020 14:06:02 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D4B598B7FC;
- Wed, 12 Aug 2020 14:06:00 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DC8F48B7FC;
+ Wed, 12 Aug 2020 14:06:01 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B6B7365C34; Wed, 12 Aug 2020 12:06:00 +0000 (UTC)
-Message-Id: <80617809ab5d23c6ac4863cc1964cca4bfe49f4f.1597233555.git.christophe.leroy@csgroup.eu>
+ id BD21565C34; Wed, 12 Aug 2020 12:06:01 +0000 (UTC)
+Message-Id: <6e3aa188066eb94473aa26754de280ffec7500ae.1597233555.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 09/19] powerpc/signal: Call get_tm_stackpointer() from
- get_sigframe()
+Subject: [RFC PATCH v1 10/19] powerpc/signal: Refactor bad frame logging
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:06:00 +0000 (UTC)
+Date: Wed, 12 Aug 2020 12:06:01 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,107 +76,164 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of calling get_tm_stackpointer() from the caller, call it
-directly from get_sigframe(). This avoids a double call and
-allows get_tm_stackpointer() to become static and be inlined
-into get_sigframe() by GCC.
+The logging of bad frame appears half a dozen of times
+and is pretty similar.
+
+Create signal_fault() fonction to perform that logging.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal.c    | 9 ++++++---
- arch/powerpc/kernel/signal.h    | 6 ++----
- arch/powerpc/kernel/signal_32.c | 4 ++--
- arch/powerpc/kernel/signal_64.c | 2 +-
- 4 files changed, 11 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/signal.c    | 11 +++++++++++
+ arch/powerpc/kernel/signal.h    |  3 +++
+ arch/powerpc/kernel/signal_32.c | 35 +++++----------------------------
+ arch/powerpc/kernel/signal_64.c | 15 ++------------
+ 4 files changed, 21 insertions(+), 43 deletions(-)
 
 diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index a295d482adec..5edded5c5d20 100644
+index 5edded5c5d20..53b4987a45b5 100644
 --- a/arch/powerpc/kernel/signal.c
 +++ b/arch/powerpc/kernel/signal.c
-@@ -144,10 +144,13 @@ int show_unhandled_signals = 1;
- /*
-  * Allocate space for the signal frame
-  */
--void __user *get_sigframe(struct ksignal *ksig, unsigned long sp,
--			   size_t frame_size, int is_32)
-+static unsigned long get_tm_stackpointer(struct task_struct *tsk);
-+
-+void __user *get_sigframe(struct ksignal *ksig, struct task_struct *tsk,
-+			  size_t frame_size, int is_32)
- {
-         unsigned long oldsp, newsp;
-+	unsigned long sp = get_tm_stackpointer(tsk);
- 
-         /* Default to using normal stack */
- 	if (is_32)
-@@ -304,7 +307,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
- 	user_enter();
+@@ -355,3 +355,14 @@ static unsigned long get_tm_stackpointer(struct task_struct *tsk)
+ #endif
+ 	return ret;
  }
- 
--unsigned long get_tm_stackpointer(struct task_struct *tsk)
-+static unsigned long get_tm_stackpointer(struct task_struct *tsk)
- {
- 	/* When in an active transaction that takes a signal, we need to be
- 	 * careful with the stack.  It's possible that the stack has moved back
++
++static const char fmt32[] = KERN_INFO "%s[%d]: bad frame in %s: %p nip %08lx lr %08lx\n";
++static const char fmt64[] = KERN_INFO "%s[%d]: bad frame in %s: %p nip %016lx lr %016lx\n";
++
++void signal_fault(struct task_struct *tsk, struct pt_regs *regs,
++		  const char *where, void __user *ptr)
++{
++	if (show_unhandled_signals)
++		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32, tsk->comm,
++				    task_pid_nr(tsk), where, ptr, regs->nip, regs->link);
++}
 diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index 6c2a33ab042c..fb98731348c3 100644
+index fb98731348c3..f610cfafa478 100644
 --- a/arch/powerpc/kernel/signal.h
 +++ b/arch/powerpc/kernel/signal.h
-@@ -10,8 +10,8 @@
- #ifndef _POWERPC_ARCH_SIGNAL_H
- #define _POWERPC_ARCH_SIGNAL_H
+@@ -93,4 +93,7 @@ static inline int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
  
--extern void __user *get_sigframe(struct ksignal *ksig, unsigned long sp,
--				  size_t frame_size, int is_32);
-+void __user *get_sigframe(struct ksignal *ksig, struct task_struct *tsk,
-+			  size_t frame_size, int is_32);
+ #endif /* !defined(CONFIG_PPC64) */
  
- extern int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 			   struct task_struct *tsk);
-@@ -19,8 +19,6 @@ extern int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- extern int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 			      struct task_struct *tsk);
- 
--extern unsigned long get_tm_stackpointer(struct task_struct *tsk);
--
- #ifdef CONFIG_VSX
- extern unsigned long copy_vsx_to_user(void __user *to,
- 				      struct task_struct *task);
++void signal_fault(struct task_struct *tsk, struct pt_regs *regs,
++		  const char *where, void __user *ptr);
++
+ #endif  /* _POWERPC_ARCH_SIGNAL_H */
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 5a838188a181..3356f6aba4ae 100644
+index 3356f6aba4ae..d1087dd87174 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -768,7 +768,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+@@ -837,12 +837,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	return 0;
  
- 	/* Set up Signal Frame */
- 	/* Put a Real Time Context onto stack */
--	rt_sf = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*rt_sf), 1);
-+	rt_sf = get_sigframe(ksig, tsk, sizeof(*rt_sf), 1);
- 	addr = rt_sf;
- 	if (!access_ok(rt_sf, sizeof(*rt_sf)))
- 		goto badframe;
-@@ -1230,7 +1230,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	BUG_ON(tsk != current);
+ badframe:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(KERN_INFO
+-				   "%s[%d]: bad frame in handle_rt_signal32: "
+-				   "%p nip %08lx lr %08lx\n",
+-				   tsk->comm, tsk->pid,
+-				   addr, regs->nip, regs->link);
++	signal_fault(tsk, regs, "handle_rt_signal32", addr);
  
- 	/* Set up Signal Frame */
--	frame = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*frame), 1);
-+	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
- 	if (!access_ok(frame, sizeof(*frame)))
- 		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
+ 	return 1;
+ }
+@@ -1094,12 +1089,7 @@ SYSCALL_DEFINE0(rt_sigreturn)
+ 	return 0;
+ 
+  bad:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(KERN_INFO
+-				   "%s[%d]: bad frame in sys_rt_sigreturn: "
+-				   "%p nip %08lx lr %08lx\n",
+-				   current->comm, current->pid,
+-				   rt_sf, regs->nip, regs->link);
++	signal_fault(current, regs, "sys_rt_sigreturn", rt_sf);
+ 
+ 	force_sig(SIGSEGV);
+ 	return 0;
+@@ -1183,12 +1173,7 @@ SYSCALL_DEFINE3(debug_setcontext, struct ucontext __user *, ctx,
+ 	 * We kill the task with a SIGSEGV in this situation.
+ 	 */
+ 	if (do_setcontext(ctx, regs, 1)) {
+-		if (show_unhandled_signals)
+-			printk_ratelimited(KERN_INFO "%s[%d]: bad frame in "
+-					   "sys_debug_setcontext: %p nip %08lx "
+-					   "lr %08lx\n",
+-					   current->comm, current->pid,
+-					   ctx, regs->nip, regs->link);
++		signal_fault(current, regs, "sys_debug_setcontext", ctx);
+ 
+ 		force_sig(SIGSEGV);
+ 		goto out;
+@@ -1291,12 +1276,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	return 0;
+ 
+ badframe:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(KERN_INFO
+-				   "%s[%d]: bad frame in handle_signal32: "
+-				   "%p nip %08lx lr %08lx\n",
+-				   tsk->comm, tsk->pid,
+-				   frame, regs->nip, regs->link);
++	signal_fault(tsk, regs, "handle_signal32", frame);
+ 
+ 	return 1;
+ }
+@@ -1367,12 +1347,7 @@ SYSCALL_DEFINE0(sigreturn)
+ 	return 0;
+ 
+ badframe:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(KERN_INFO
+-				   "%s[%d]: bad frame in sys_sigreturn: "
+-				   "%p nip %08lx lr %08lx\n",
+-				   current->comm, current->pid,
+-				   addr, regs->nip, regs->link);
++	signal_fault(current, regs, "sys_sigreturn", addr);
+ 
+ 	force_sig(SIGSEGV);
+ 	return 0;
 diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index ec259a0efe24..92d152c1155c 100644
+index 92d152c1155c..a10b0bb14131 100644
 --- a/arch/powerpc/kernel/signal_64.c
 +++ b/arch/powerpc/kernel/signal_64.c
-@@ -824,7 +824,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+@@ -66,11 +66,6 @@ struct rt_sigframe {
+ 	char abigap[USER_REDZONE_SIZE];
+ } __attribute__ ((aligned (16)));
  
- 	BUG_ON(tsk != current);
+-static const char fmt32[] = KERN_INFO \
+-	"%s[%d]: bad frame in %s: %08lx nip %08lx lr %08lx\n";
+-static const char fmt64[] = KERN_INFO \
+-	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
+-
+ /*
+  * This computes a quad word aligned pointer inside the vmx_reserve array
+  * element. For historical reasons sigcontext might not be quad word aligned,
+@@ -801,10 +796,7 @@ SYSCALL_DEFINE0(rt_sigreturn)
+ 	return 0;
  
--	frame = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*frame), 0);
-+	frame = get_sigframe(ksig, tsk, sizeof(*frame), 0);
- 	if (!access_ok(frame, sizeof(*frame)))
- 		goto badframe;
+ badframe:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+-				   current->comm, current->pid, "rt_sigreturn",
+-				   (long)uc, regs->nip, regs->link);
++	signal_fault(current, regs, "rt_sigreturn", uc);
  
+ 	force_sig(SIGSEGV);
+ 	return 0;
+@@ -913,10 +905,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	return 0;
+ 
+ badframe:
+-	if (show_unhandled_signals)
+-		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+-				   tsk->comm, tsk->pid, "setup_rt_frame",
+-				   (long)frame, regs->nip, regs->link);
++	signal_fault(current, regs, "handle_rt_signal64", frame);
+ 
+ 	return 1;
+ }
 -- 
 2.25.0
 
