@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21A55C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A2E2C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:48:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 87ADD2080C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:45:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87ADD2080C
+	by mail.kernel.org (Postfix) with ESMTPS id CB6F42065C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:48:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB6F42065C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTtg581wzDqV8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:44:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTyy6CdHzDqMd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:48:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1t2Pb2zDqZl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1v49MgzDqZl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:11 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1p0cFzzB09Zk;
- Wed, 12 Aug 2020 14:06:06 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRT1q04XWzB09Zl;
+ Wed, 12 Aug 2020 14:06:07 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id k15iqKqwlVLT; Wed, 12 Aug 2020 14:06:06 +0200 (CEST)
+ with ESMTP id Vo5GMqA0xuhj; Wed, 12 Aug 2020 14:06:06 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1n6y18zB09Zf;
- Wed, 12 Aug 2020 14:06:05 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1p5ScdzB09Zf;
+ Wed, 12 Aug 2020 14:06:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 529CC8B828;
- Wed, 12 Aug 2020 14:06:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 29AB48B826;
+ Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id H8M1a8aIIpFr; Wed, 12 Aug 2020 14:06:07 +0200 (CEST)
+ with ESMTP id FzGH8EXJSKW8; Wed, 12 Aug 2020 14:06:03 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E6118B7FC;
- Wed, 12 Aug 2020 14:06:07 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E290E8B7FC;
+ Wed, 12 Aug 2020 14:06:02 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EA3E365C34; Wed, 12 Aug 2020 12:06:06 +0000 (UTC)
-Message-Id: <fc36912524b7960933e86625746970a5c2426dcf.1597233555.git.christophe.leroy@csgroup.eu>
+ id C432065C34; Wed, 12 Aug 2020 12:06:02 +0000 (UTC)
+Message-Id: <3e2f2862e422c89739dedf2b9e9e0eedc04beb6d.1597233555.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 15/19] powerpc/signal32: Switch handle_signal32() to
- user_access_begin() logic
+Subject: [RFC PATCH v1 11/19] powerpc/signal32: Simplify logging in
+ handle_rt_signal32()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:06:06 +0000 (UTC)
+Date: Wed, 12 Aug 2020 12:06:02 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,57 +77,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+If something is bad in the frame, there is no point in
+knowing which part of the frame exactly is wrong as it
+got allocated as a single block.
+
+Always print the root address of the frame in case on
+failed user access, just like handle_signal32().
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal_32.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/signal_32.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 0d076c2a9f6c..4ea83578ba9d 100644
+index d1087dd87174..495bee1b713d 100644
 --- a/arch/powerpc/kernel/signal_32.c
 +++ b/arch/powerpc/kernel/signal_32.c
-@@ -1241,23 +1241,23 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
+@@ -754,7 +754,6 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	struct rt_sigframe __user *rt_sf;
+ 	struct mcontext __user *frame;
+ 	struct mcontext __user *tm_frame = NULL;
+-	void __user *addr;
+ 	unsigned long newsp = 0;
+ 	int sigret;
+ 	unsigned long tramp;
+@@ -769,7 +768,6 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
--	if (!access_ok(frame, sizeof(*frame)))
-+	if (!user_write_access_begin(frame, sizeof(*frame)))
+ 	/* Put a Real Time Context onto stack */
+ 	rt_sf = get_sigframe(ksig, tsk, sizeof(*rt_sf), 1);
+-	addr = rt_sf;
+ 	if (!access_ok(rt_sf, sizeof(*rt_sf)))
  		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
  
- #if _NSIG != 64
- #error "Please adjust handle_signal()"
- #endif
--	if (__put_user(to_user_ptr(ksig->ka.sa.sa_handler), &sc->handler)
--	    || __put_user(oldset->sig[0], &sc->oldmask)
-+	unsafe_put_user(to_user_ptr(ksig->ka.sa.sa_handler), &sc->handler, failed);
-+	unsafe_put_user(oldset->sig[0], &sc->oldmask, failed);
- #ifdef CONFIG_PPC64
--	    || __put_user((oldset->sig[0] >> 32), &sc->_unused[3])
-+	unsafe_put_user((oldset->sig[0] >> 32), &sc->_unused[3], failed);
- #else
--	    || __put_user(oldset->sig[1], &sc->_unused[3])
-+	unsafe_put_user(oldset->sig[1], &sc->_unused[3], failed);
- #endif
--	    || __put_user(to_user_ptr(&frame->mctx), &sc->regs)
--	    || __put_user(ksig->sig, &sc->signal))
--		goto badframe;
-+	unsafe_put_user(to_user_ptr(&frame->mctx), &sc->regs, failed);
-+	unsafe_put_user(ksig->sig, &sc->signal, failed);
-+	user_write_access_end();
+@@ -784,7 +782,6 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  
- 	if (vdso32_sigtramp && tsk->mm->context.vdso_base) {
+ 	/* Save user registers on the stack */
+ 	frame = &rt_sf->uc.uc_mcontext;
+-	addr = frame;
+ 	if (vdso32_rt_sigtramp && tsk->mm->context.vdso_base) {
  		sigret = 0;
-@@ -1300,6 +1300,9 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	regs->msr &= ~MSR_LE;
+ 		tramp = tsk->mm->context.vdso_base + vdso32_rt_sigtramp;
+@@ -820,7 +817,6 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 
+ 	/* create a stack frame for the caller of the handler */
+ 	newsp = ((unsigned long)rt_sf) - (__SIGNAL_FRAMESIZE + 16);
+-	addr = (void __user *)regs->gpr[1];
+ 	if (put_user(regs->gpr[1], (u32 __user *)newsp))
+ 		goto badframe;
+ 
+@@ -837,7 +833,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  	return 0;
  
-+failed:
-+	user_write_access_end();
-+
  badframe:
- 	signal_fault(tsk, regs, "handle_signal32", frame);
+-	signal_fault(tsk, regs, "handle_rt_signal32", addr);
++	signal_fault(tsk, regs, "handle_rt_signal32", rt_sf);
  
+ 	return 1;
+ }
 -- 
 2.25.0
 
