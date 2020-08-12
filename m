@@ -2,109 +2,111 @@ Return-Path: <SRS0=klx1=BW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C2C9C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 07:08:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19CD8C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 07:38:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA3062053B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 07:08:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7999F2065C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 07:38:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="f0rbBm9B"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA3062053B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="It3aLsnc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7999F2065C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRLQp1RSqzDqXl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 17:08:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRM5771PzzDqZ1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 17:38:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=f0rbBm9B; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=It3aLsnc; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRKt54NPkzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 16:43:56 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRM2p0GLPzDqSD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 17:36:33 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07C6WjJ1170814; Wed, 12 Aug 2020 02:43:41 -0400
+ 07C7Wxt2087479; Wed, 12 Aug 2020 03:36:24 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=41NMuwmiUwCh/DJ0c8voSQKonpg6IHjOFHHggpKMA/s=;
- b=f0rbBm9BvMWLUmht2o9tbJy5qT8Tzb+rwhziZBIw4agMLbwlnvefoB0yZor31cGa8fwQ
- y9yvZilDokhjowDH0P/Azi1NxkcpPpL6BIwcbU6Y/JUDmomKDJ+5KoE8Fhud9NiOrdqe
- bnpk93nVGzMMcN1gZuAngh/9rIIh+fWrLay9pngAXFaGfCMy5qMq9CV8a8aJSHPVj/3L
- 1HBZlBzk9c6my/p08b/P1pYxV0VCYdyVeUTzcZoGe4QnK+g61NbKvAQsipf/tCp14qNC
- nq56SNoCTawSxXugB93EiwtzINQWnMjLn6aHn2OCMA0wzXi0djL3YmRLXCLP8gKrepQ7 wg== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32t93s0fnu-1
+ h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=En13wJ6AHK/KKkSNmX+M3/+YBNiqcwfYH5rEj6UFq0k=;
+ b=It3aLsnc/EZ8g9j/n3XzpRW5zNBuFk9MsHEGfhn+7B8a2pc0s8eLNLnm7iAmQQ1I0onD
+ cM2cKY0w2oKVjTkwx+C4i2jZ+NJqCcRbAHZpfkjmpqO9GbaAOMt1XR9x6VCvPyyZdlW3
+ 5Iyqcr2ntoCoUmgTlHM6pSGxp7nROYfBhzZL301jzAb5Fmw+4aPVIxaldOFhVJEj7Fmr
+ 2uQsFYkSZ9u/TTUuc2jRDxbnQ9WSSKwMCHi/vXiugIs6noQagiHFDd3tO/6hS07EUVRP
+ 8kzflrxZEEfDwsj5ZE4zsWkH1Ujv6PUwZvx4Sx9WO3mDI9ucmTFR4JI1Gwqq+41bEesz pw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32v7nyxbqv-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 Aug 2020 02:43:41 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07C6VWix013455;
- Wed, 12 Aug 2020 06:43:34 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma06ams.nl.ibm.com with ESMTP id 32skahc3sn-1
+ Wed, 12 Aug 2020 03:36:24 -0400
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07C7X0wv087615;
+ Wed, 12 Aug 2020 03:36:23 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32v7nyxbqa-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 12 Aug 2020 06:43:34 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07C6hWgr25624866
+ Wed, 12 Aug 2020 03:36:23 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07C7QNsR015815;
+ Wed, 12 Aug 2020 07:36:21 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 32skp8458v-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 12 Aug 2020 07:36:21 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 07C7aIVW64094680
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 12 Aug 2020 06:43:32 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB775A4040;
- Wed, 12 Aug 2020 06:43:31 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DA032A4053;
- Wed, 12 Aug 2020 06:43:30 +0000 (GMT)
-Received: from [9.85.71.109] (unknown [9.85.71.109])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 12 Aug 2020 06:43:30 +0000 (GMT)
-Subject: Re: [PATCH 02/16] debug_vm_pgtable/ppc64: Avoid setting top bits in
- radom value
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20200812063358.369514-1-aneesh.kumar@linux.ibm.com>
- <20200812063358.369514-2-aneesh.kumar@linux.ibm.com>
- <24b1e523-e87e-161b-3dc9-60bd11c8f461@csgroup.eu>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Message-ID: <d196a2e1-3d6a-6c6b-fc6d-8cc32095b269@linux.ibm.com>
-Date: Wed, 12 Aug 2020 12:13:29 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ Wed, 12 Aug 2020 07:36:18 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C19D6AE051;
+ Wed, 12 Aug 2020 07:36:18 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6D95FAE059;
+ Wed, 12 Aug 2020 07:36:15 +0000 (GMT)
+Received: from vajain21-in-ibm-com (unknown [9.199.60.7])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Wed, 12 Aug 2020 07:36:15 +0000 (GMT)
+Received: by vajain21-in-ibm-com (sSMTP sendmail emulation);
+ Wed, 12 Aug 2020 13:06:14 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-nvdimm@lists.01.org
+Subject: Re: [PATCH] powerpc/papr_scm: Make access mode of 'perf_stats'
+ attribute file to '0400'
+In-Reply-To: <87wo26abmf.fsf@mpe.ellerman.id.au>
+References: <20200807123146.11037-1-vaibhav@linux.ibm.com>
+ <87wo26abmf.fsf@mpe.ellerman.id.au>
+Date: Wed, 12 Aug 2020 13:06:14 +0530
+Message-ID: <87k0y4xqmp.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <24b1e523-e87e-161b-3dc9-60bd11c8f461@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-11_19:2020-08-11,
  2020-08-11 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 spamscore=0
- malwarescore=0 adultscore=0 mlxscore=0 bulkscore=0 clxscore=1015
- lowpriorityscore=0 mlxlogscore=980 impostorscore=0 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008120047
+ malwarescore=0 phishscore=0
+ clxscore=1011 adultscore=0 mlxlogscore=999 lowpriorityscore=0
+ suspectscore=1 mlxscore=0 priorityscore=1501 impostorscore=0 bulkscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2008120054
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,52 +118,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Santosh Sivaraj <santosh@fossix.org>, Oliver O'Halloran <oohall@gmail.com>,
+ Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/12/20 12:10 PM, Christophe Leroy wrote:
-> 
-> 
-> Le 12/08/2020 à 08:33, Aneesh Kumar K.V a écrit :
->> ppc64 use bit 62 to indicate a pte entry (_PAGE_PTE). Avoid setting 
->> that bit in
->> random value.
+Hi Mpe,
+
+Thanks for reviewing this patch. My responses below:
+
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+> Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+>> The newly introduced 'perf_stats' attribute uses the default access
+>> mode of 0444 letting non-root users access performance stats of an
+>> nvdimm and potentially force the kernel into issuing large number of
+>> expensive HCALLs. Since the information exposed by this attribute
+>> cannot be cached hence its better to ward of access to this attribute
+>> from non-root users.
 >>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->>   mm/debug_vm_pgtable.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
->> index 086309fb9b6f..4c32063a8acf 100644
->> --- a/mm/debug_vm_pgtable.c
->> +++ b/mm/debug_vm_pgtable.c
->> @@ -45,9 +45,12 @@
->>    * pxx_clear() because of how dynamic page table folding works on 
->> s390. So
->>    * while loading up the entries do not change the lower 4 bits. It 
->> does not
->>    * have affect any other platform.
->> + *
->> + * Also avoid the 62nd bit on ppc64 that is used to mark a pte entry.
->>    */
->>   #define S390_MASK_BITS    4
->> -#define RANDOM_ORVALUE    GENMASK(BITS_PER_LONG - 1, S390_MASK_BITS)
->> +#define PPC_MASK_BITS    2
->> +#define RANDOM_ORVALUE    GENMASK(BITS_PER_LONG - 1 - PPC_MASK_BITS, 
->> S390_MASK_BITS)
-> 
-> Do you mean:
-> 
-> #define RANDOM_ORVALUE    GENMASK(BITS_PER_LONG - 1, PPC_MASK_BITS | 
-> S390_MASK_BITS)
+>> Hence this patch updates the access-mode of 'perf_stats' sysfs
+>> attribute file to 0400 to make it only readable to root-users.
+>
+> Or should we ratelimit it?
+Ideal consumers of this data will be users with CAP_PERFMON or
+CAP_SYS_ADMIN. Also they need up-to-date values for these performance stats
+as these values can be time sensitive.
+
+So rate limiting may not be a complete solution since a user running
+'perf' might be throttled by another user who is simply reading the
+sysfs file contents.
+
+So instead of setting attribute mode to 0400, will add a check for
+'perfmon_capable()' in perf_stats_show() denying read access to users
+without CAP_PERFMON or CAP_SYS_ADMIN.
 
 
-IIUC GENMASK(hi, low) generate a mask from hi to low bits. Since i want 
-to avoid bit 62, I am forcing it to generate bits from (61, 4)
+> Fixes: ??
+Right. I will add this in v2.
 
+>
+>> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+>
+> cheers
+>
 
--aneesh
+-- 
+Cheers
+~ Vaibhav
