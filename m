@@ -2,55 +2,64 @@ Return-Path: <SRS0=klx1=BW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5A11C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 11:52:09 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F16C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:09:57 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 621942065C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 11:52:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 621942065C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B9962207F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:09:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9962207F7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRSjg13vszDqcY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 21:52:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRT6B3P8TzDqZT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:09:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BRSgP4KBbzDqSR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 21:50:07 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 89B07D6E;
- Wed, 12 Aug 2020 04:50:04 -0700 (PDT)
-Received: from [10.163.66.87] (unknown [10.163.66.87])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CF8783F70D;
- Wed, 12 Aug 2020 04:50:02 -0700 (PDT)
-Subject: Re: [PATCH 07/16] debug_vm_pgtable/THP: Mark the pte entry huge
- before using set_pud_at
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20200812063358.369514-1-aneesh.kumar@linux.ibm.com>
- <20200812063358.369514-7-aneesh.kumar@linux.ibm.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <d847f62f-b6e1-b173-51cb-dd86ccc6f6cc@arm.com>
-Date: Wed, 12 Aug 2020 17:19:34 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
-MIME-Version: 1.0
-In-Reply-To: <20200812063358.369514-7-aneesh.kumar@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1g5KHmzDqZT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:05:58 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4BRT1Y5Cg6zB09ZV;
+ Wed, 12 Aug 2020 14:05:53 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id VB1jfKqmJQO8; Wed, 12 Aug 2020 14:05:53 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1Y4JJ7zB09ZQ;
+ Wed, 12 Aug 2020 14:05:53 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E57E08B826;
+ Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id MxtnbaLnGTzM; Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AECB08B7FC;
+ Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 907A365C34; Wed, 12 Aug 2020 12:05:54 +0000 (UTC)
+Message-Id: <17430b14a0b2a9da8fc24dfaeca79aec0180df5c.1597233555.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
+References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v1 03/19] powerpc/ptrace: Consolidate reg index calculation
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ ldv@altlinux.org, viro@zeniv.linux.org.uk
+Date: Wed, 12 Aug 2020 12:05:54 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,68 +71,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Today we have:
 
+	#ifdef CONFIG_PPC32
+		index = addr >> 2;
+		if ((addr & 3) || child->thread.regs == NULL)
+	#else
+		index = addr >> 3;
+		if ((addr & 7))
+	#endif
 
-On 08/12/2020 12:03 PM, Aneesh Kumar K.V wrote:
-> kernel expect entries to be marked huge before we use set_pud_at().
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  mm/debug_vm_pgtable.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
-> index b6aca2526e01..cd609a212dd4 100644
-> --- a/mm/debug_vm_pgtable.c
-> +++ b/mm/debug_vm_pgtable.c
-> @@ -265,7 +265,7 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
->  				      unsigned long pfn, unsigned long vaddr,
->  				      pgprot_t prot)
->  {
-> -	pud_t pud = pfn_pud(pfn, prot);
-> +	pud_t pud;
->  
->  	if (!has_transparent_hugepage())
->  		return;
-> @@ -274,25 +274,28 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
->  	/* Align the address wrt HPAGE_PUD_SIZE */
->  	vaddr = (vaddr & HPAGE_PUD_MASK) + HPAGE_PUD_SIZE;
->  
-> +	pud = pud_mkhuge(pfn_pud(pfn, prot));
->  	set_pud_at(mm, vaddr, pudp, pud);
->  	pudp_set_wrprotect(mm, vaddr, pudp);
->  	pud = READ_ONCE(*pudp);
->  	WARN_ON(pud_write(pud));
->  
->  #ifndef __PAGETABLE_PMD_FOLDED
-> -	pud = pfn_pud(pfn, prot);
-> +
-> +	pud = pud_mkhuge(pfn_pud(pfn, prot));
->  	set_pud_at(mm, vaddr, pudp, pud);
->  	pudp_huge_get_and_clear(mm, vaddr, pudp);
->  	pud = READ_ONCE(*pudp);
->  	WARN_ON(!pud_none(pud));
->  
-> -	pud = pfn_pud(pfn, prot);
-> +	pud = pud_mkhuge(pfn_pud(pfn, prot));
->  	set_pud_at(mm, vaddr, pudp, pud);
->  	pudp_huge_get_and_clear_full(mm, vaddr, pudp, 1);
->  	pud = READ_ONCE(*pudp);
->  	WARN_ON(!pud_none(pud));
->  #endif /* __PAGETABLE_PMD_FOLDED */
-> -	pud = pfn_pud(pfn, prot);
-> +
-> +	pud = pud_mkhuge(pfn_pud(pfn, prot));
->  	pud = pud_wrprotect(pud);
->  	pud = pud_mkclean(pud);
->  	set_pud_at(mm, vaddr, pudp, pud);
-> 
+sizeof(long) has value 4 for PPC32 and value 8 for PPC64.
 
-Looks very similar to the previous patch, hence please fold it back.
-Seems fair enough that pxx_set_at() expects given entry to be huge.
-But would need to run them across enabled platforms to be sure.
+Dividing by 4 is equivalent to >> 2 and dividing by 8 is equivalent
+to >> 3.
+
+And 3 and 7 are respectively (sizeof(long) - 1).
+
+Use sizeof(long) to get rid of the #ifdef CONFIG_PPC32 and consolidate
+the calculation and checking.
+
+thread.regs have to be not NULL on both PPC32 and PPC64 so adding
+that test on PPC64 is harmless.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/ptrace/ptrace.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index f6e51be47c6e..0b4645a7a1b4 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -55,14 +55,8 @@ long arch_ptrace(struct task_struct *child, long request,
+ 
+ 		ret = -EIO;
+ 		/* convert to index and check */
+-#ifdef CONFIG_PPC32
+-		index = addr >> 2;
+-		if ((addr & 3) || (index > PT_FPSCR)
+-		    || (child->thread.regs == NULL))
+-#else
+-		index = addr >> 3;
+-		if ((addr & 7) || (index > PT_FPSCR))
+-#endif
++		index = addr / sizeof(long);
++		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR) || !child->thread.regs)
+ 			break;
+ 
+ 		CHECK_FULL_REGS(child->thread.regs);
+@@ -90,14 +84,8 @@ long arch_ptrace(struct task_struct *child, long request,
+ 
+ 		ret = -EIO;
+ 		/* convert to index and check */
+-#ifdef CONFIG_PPC32
+-		index = addr >> 2;
+-		if ((addr & 3) || (index > PT_FPSCR)
+-		    || (child->thread.regs == NULL))
+-#else
+-		index = addr >> 3;
+-		if ((addr & 7) || (index > PT_FPSCR))
+-#endif
++		index = addr / sizeof(long);
++		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR) || !child->thread.regs)
+ 			break;
+ 
+ 		CHECK_FULL_REGS(child->thread.regs);
+-- 
+2.25.0
+
