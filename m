@@ -2,23 +2,23 @@ Return-Path: <SRS0=klx1=BW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38038C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B7B8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:14:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5761207F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:12:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5761207F7
+	by mail.kernel.org (Postfix) with ESMTPS id 3572B207F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:14:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3572B207F7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRT8y17kqzDqRG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:12:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTCt5CRRzDqKZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:14:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1g5HlNzDqZS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:05:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1g5GFbzDqZR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:05:56 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1Z5LjtzB09ZW;
- Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRT1V4tXSzB09ZR;
+ Wed, 12 Aug 2020 14:05:50 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cPcwPcRbBfl1; Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+ with ESMTP id Il1RUyWvlQLG; Wed, 12 Aug 2020 14:05:50 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1Z4R4LzB09ZQ;
- Wed, 12 Aug 2020 14:05:54 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1V3xygzB09ZQ;
+ Wed, 12 Aug 2020 14:05:50 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B3998B828;
- Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E5BB58B826;
+ Wed, 12 Aug 2020 14:05:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id rf84xCHalPt4; Wed, 12 Aug 2020 14:05:55 +0200 (CEST)
+ with ESMTP id m3Yep6ZUFDWt; Wed, 12 Aug 2020 14:05:51 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B6E1F8B7FC;
- Wed, 12 Aug 2020 14:05:55 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B06B18B7FC;
+ Wed, 12 Aug 2020 14:05:51 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 9853F65C34; Wed, 12 Aug 2020 12:05:55 +0000 (UTC)
-Message-Id: <a76ace7f5867a0c6e5c940b53d02024d4e9f79aa.1597233555.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
-References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
+ id 74A6A65C34; Wed, 12 Aug 2020 12:05:51 +0000 (UTC)
+Message-Id: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 04/19] powerpc/ptrace: Create ptrace_get_fpr() and
- ptrace_put_fpr()
+Subject: [RFC PATCH v1 00/19] powerpc: Switch signal 32 to using
+ user_access_begin() and friends
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:05:55 +0000 (UTC)
+Date: Wed, 12 Aug 2020 12:05:51 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,158 +75,64 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On the same model as ptrace_get_reg() and ptrace_put_reg(),
-create ptrace_get_fpr() and ptrace_put_fpr() to get/set
-the floating points registers.
+This series replaces copies to users by unsafe_put_user() and friends
+with user_write_access_begin() dance in signal32.
 
-We move the boundary checkings in them.
+The advantages are:
+- No KUAP unlock/lock at every copy
+- More readable code.
+- Better generated code.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/ptrace/Makefile      |  1 +
- arch/powerpc/kernel/ptrace/ptrace-decl.h |  4 +++
- arch/powerpc/kernel/ptrace/ptrace-fpu.c  | 40 ++++++++++++++++++++++++
- arch/powerpc/kernel/ptrace/ptrace.c      | 38 +++++++---------------
- 4 files changed, 56 insertions(+), 27 deletions(-)
+Copying Al Viro who did it on x86 and may have suggestions,
+and Dmitry V. Levin who introduced put_compat_sigset()
+
+Christophe Leroy (19):
+  powerpc/signal: Move inline functions in signal.h
+  powerpc/ptrace: Move declaration of ptrace_get_reg() and
+    ptrace_set_reg()
+  powerpc/ptrace: Consolidate reg index calculation
+  powerpc/ptrace: Create ptrace_get_fpr() and ptrace_put_fpr()
+  powerpc/signal: Don't manage floating point regs when no FPU
+  powerpc/32s: Allow deselecting CONFIG_PPC_FPU on mpc832x
+  powerpc/signal: Move access_ok() out of get_sigframe()
+  powerpc/signal: Remove get_clean_sp()
+  powerpc/signal: Call get_tm_stackpointer() from get_sigframe()
+  powerpc/signal: Refactor bad frame logging
+  powerpc/signal32: Simplify logging in handle_rt_signal32()
+  powerpc/signal32: Regroup copies in save_user_regs() and
+    save_tm_user_regs()
+  powerpc/signal32: Create 'unsafe' versions of
+    copy_[ck][fpr/vsx]_to_user()
+  powerpc/signal32: Switch save_user_regs() and save_tm_user_regs() to
+    user_access_begin() logic
+  powerpc/signal32: Switch handle_signal32() to user_access_begin()
+    logic
+  powerpc/signal32: Switch handle_rt_signal32() to user_access_begin()
+    logic
+  signal: Add unsafe_put_compat_sigset()
+  powerpc/signal32: Add and use unsafe_put_sigset_t()
+  powerpc/signal32: Switch swap_context() to user_access_begin() logic
+
+ arch/powerpc/Kconfig                     |   1 +
+ arch/powerpc/include/asm/processor.h     |  16 +-
+ arch/powerpc/include/asm/ptrace.h        |   6 -
+ arch/powerpc/kernel/asm-offsets.c        |   2 +
+ arch/powerpc/kernel/process.c            |   4 +
+ arch/powerpc/kernel/ptrace/Makefile      |   3 +-
+ arch/powerpc/kernel/ptrace/ptrace-decl.h |  21 ++
+ arch/powerpc/kernel/ptrace/ptrace-fpu.c  |  40 +++
+ arch/powerpc/kernel/ptrace/ptrace-view.c |   2 +
+ arch/powerpc/kernel/ptrace/ptrace.c      |  54 +---
+ arch/powerpc/kernel/signal.c             |  59 ++--
+ arch/powerpc/kernel/signal.h             | 109 ++++++-
+ arch/powerpc/kernel/signal_32.c          | 386 ++++++++++++-----------
+ arch/powerpc/kernel/signal_64.c          |  19 +-
+ arch/powerpc/kernel/traps.c              |   2 +
+ arch/powerpc/platforms/Kconfig.cputype   |  15 +-
+ include/linux/compat.h                   |  32 ++
+ 17 files changed, 462 insertions(+), 309 deletions(-)
  create mode 100644 arch/powerpc/kernel/ptrace/ptrace-fpu.c
 
-diff --git a/arch/powerpc/kernel/ptrace/Makefile b/arch/powerpc/kernel/ptrace/Makefile
-index c2f2402ebc8c..77abd1a5a508 100644
---- a/arch/powerpc/kernel/ptrace/Makefile
-+++ b/arch/powerpc/kernel/ptrace/Makefile
-@@ -6,6 +6,7 @@
- CFLAGS_ptrace-view.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
- 
- obj-y				+= ptrace.o ptrace-view.o
-+obj-y				+= ptrace-fpu.o
- obj-$(CONFIG_COMPAT)		+= ptrace32.o
- obj-$(CONFIG_VSX)		+= ptrace-vsx.o
- ifneq ($(CONFIG_VSX),y)
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-index 2ddc68412fa8..eafe5f0f6289 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
-+++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -164,6 +164,10 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data);
- 
- extern const struct user_regset_view user_ppc_native_view;
- 
-+/* ptrace-fpu */
-+int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data);
-+int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data);
-+
- /* ptrace-(no)adv */
- void ppc_gethwdinfo(struct ppc_debug_info *dbginfo);
- int ptrace_get_debugreg(struct task_struct *child, unsigned long addr,
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-fpu.c b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-new file mode 100644
-index 000000000000..8301cb52dd99
---- /dev/null
-+++ b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-@@ -0,0 +1,40 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <linux/regset.h>
-+
-+#include <asm/switch_to.h>
-+
-+#include "ptrace-decl.h"
-+
-+int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
-+{
-+	unsigned int fpidx = index - PT_FPR0;
-+
-+	if (index > PT_FPSCR)
-+		return -EIO;
-+
-+	flush_fp_to_thread(child);
-+	if (fpidx < (PT_FPSCR - PT_FPR0))
-+		memcpy(data, &child->thread.TS_FPR(fpidx), sizeof(long));
-+	else
-+		*data = child->thread.fp_state.fpscr;
-+
-+	return 0;
-+}
-+
-+int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data)
-+{
-+	unsigned int fpidx = index - PT_FPR0;
-+
-+	if (index > PT_FPSCR)
-+		return -EIO;
-+
-+	flush_fp_to_thread(child);
-+	if (fpidx < (PT_FPSCR - PT_FPR0))
-+		memcpy(&child->thread.TS_FPR(fpidx), &data, sizeof(long));
-+	else
-+		child->thread.fp_state.fpscr = data;
-+
-+	return 0;
-+}
-+
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 0b4645a7a1b4..3d44b73adb83 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -56,24 +56,17 @@ long arch_ptrace(struct task_struct *child, long request,
- 		ret = -EIO;
- 		/* convert to index and check */
- 		index = addr / sizeof(long);
--		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR) || !child->thread.regs)
-+		if ((addr & (sizeof(long) - 1)) || !child->thread.regs)
- 			break;
- 
- 		CHECK_FULL_REGS(child->thread.regs);
--		if (index < PT_FPR0) {
-+		if (index < PT_FPR0)
- 			ret = ptrace_get_reg(child, (int) index, &tmp);
--			if (ret)
--				break;
--		} else {
--			unsigned int fpidx = index - PT_FPR0;
--
--			flush_fp_to_thread(child);
--			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&tmp, &child->thread.TS_FPR(fpidx),
--				       sizeof(long));
--			else
--				tmp = child->thread.fp_state.fpscr;
--		}
-+		else
-+			ret = ptrace_get_fpr(child, index, &tmp);
-+
-+		if (ret)
-+			break;
- 		ret = put_user(tmp, datalp);
- 		break;
- 	}
-@@ -85,23 +78,14 @@ long arch_ptrace(struct task_struct *child, long request,
- 		ret = -EIO;
- 		/* convert to index and check */
- 		index = addr / sizeof(long);
--		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR) || !child->thread.regs)
-+		if ((addr & (sizeof(long) - 1)) || !child->thread.regs)
- 			break;
- 
- 		CHECK_FULL_REGS(child->thread.regs);
--		if (index < PT_FPR0) {
-+		if (index < PT_FPR0)
- 			ret = ptrace_put_reg(child, index, data);
--		} else {
--			unsigned int fpidx = index - PT_FPR0;
--
--			flush_fp_to_thread(child);
--			if (fpidx < (PT_FPSCR - PT_FPR0))
--				memcpy(&child->thread.TS_FPR(fpidx), &data,
--				       sizeof(long));
--			else
--				child->thread.fp_state.fpscr = data;
--			ret = 0;
--		}
-+		else
-+			ret = ptrace_put_fpr(child, index, data);
- 		break;
- 	}
- 
 -- 
 2.25.0
 
