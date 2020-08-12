@@ -2,55 +2,92 @@ Return-Path: <SRS0=klx1=BW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8811BC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 19:39:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF95BC433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:44:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 443A4206DA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 19:39:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 443A4206DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0535620774
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:43:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Yu1KnMKD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0535620774
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRg5072svzDqR5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 05:39:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRl9n35hyzDqYY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 08:43:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::643;
+ helo=mail-ej1-x643.google.com; envelope-from=chunkeey@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BRg2k6DxszDqcH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2020 05:37:34 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 07CJbC2A023840;
- Wed, 12 Aug 2020 14:37:12 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 07CJbCVe023839;
- Wed, 12 Aug 2020 14:37:12 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Wed, 12 Aug 2020 14:37:12 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v3 2/2] powerpc/uaccess: Add pre-update addressing to
- __get_user_asm() and __put_user_asm()
-Message-ID: <20200812193712.GV6753@gate.crashing.org>
-References: <c27bc4e598daf3bbb225de7a1f5c52121cf1e279.1597235091.git.christophe.leroy@csgroup.eu>
- <13041c7df39e89ddf574ea0cdc6dedfdd9734140.1597235091.git.christophe.leroy@csgroup.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <13041c7df39e89ddf574ea0cdc6dedfdd9734140.1597235091.git.christophe.leroy@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Yu1KnMKD; dkim-atps=neutral
+Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com
+ [IPv6:2a00:1450:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRl7Z27f0zDqcH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2020 08:41:58 +1000 (AEST)
+Received: by mail-ej1-x643.google.com with SMTP id jp10so4060964ejb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 15:41:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=iLL08hgLAFRN8+eH2wuHu3yL9yIs9VbXLvMOd1ENnDY=;
+ b=Yu1KnMKDNs41+PuZXc+eohQwNmsLOZitHTGqrj+WW3jS91ifqrFl1kUGA9YEbBAOBP
+ 9SYA7kOO10GA5Cmz28sRueZ6DlTRJnB3rDi5EE8apk73ROmH2xFUMRN08ZjQKnKx5kxK
+ 9ZnEcV9qFuqL7mWirT6Mffx3cRgXXzT9wIoNOfEY2PJPdIS3aYhYxrioKo69EcxFfg5m
+ snfcQLslNgc0bFOob1eKVNBeml8wWlqyYPX1fQtzqwcnIJYmz7iA1e1bN3LBh2LJRY6e
+ OwzzWu9KDaWGSROQJGnQvH/7WlriowO3d8EEntNN1RbjhCLUehhmJHDBBNGjvZaDGzj1
+ HmYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=iLL08hgLAFRN8+eH2wuHu3yL9yIs9VbXLvMOd1ENnDY=;
+ b=CbuESaaUcEL5C6n8sosKrvmo91Hw4sN/e44YnQ4KohsCZ/pgUdBIBulD8UW1sYVzBz
+ l3YLr4yO/ibJvFnBbgPa9y+lIp2oy7exJzT5+WXxOBIr9psRfnc5x5BfRewRxUcvwyQa
+ WMPDQeO+GTsZxEoERuZJgf8+8fOEIWeVvqEE5cGKWmlZu8MAg0KyLquz4uQ1n2Iav1w+
+ wacX+41Wu/louhlL1YegDqXe0KXn1AeCSCLuHQXmOQGMXHcNmAiG8P2vKKsnNwmKsJGX
+ N1qvzGQnCHzOMaTbPRiDEsHazAFrt+k3Npj1swBRy0nILtrU/Ijk5Ooztcv/47QQ9Njt
+ E22A==
+X-Gm-Message-State: AOAM533IzgwLbtwjIMVSzQkk+lQoyyBdRYnsnnq+mF9GRe1GGpstMZFO
+ gmgKwMD51GGCGHfrArLaRnU87UIz
+X-Google-Smtp-Source: ABdhPJw70cQL9RwRdb0TjJA0U9Ge9uW6IgVQB+I5l2aZxt517RQCeRpFBcC0jPTZcKVMjXPxhy9U2g==
+X-Received: by 2002:a17:906:600f:: with SMTP id
+ o15mr2109973ejj.41.1597272114959; 
+ Wed, 12 Aug 2020 15:41:54 -0700 (PDT)
+Received: from debian64.daheim (pd9e293b6.dip0.t-ipconnect.de.
+ [217.226.147.182])
+ by smtp.gmail.com with ESMTPSA id r3sm2416655ejy.95.2020.08.12.15.41.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 12 Aug 2020 15:41:54 -0700 (PDT)
+Received: from chuck by debian64.daheim with local (Exim 4.94)
+ (envelope-from <chunkeey@gmail.com>)
+ id 1k5zRR-005oDV-Sc; Thu, 13 Aug 2020 00:41:53 +0200
+From: Christian Lamparter <chunkeey@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	devicetree@vger.kernel.org
+Subject: [RFC PATCH v1 2/4] powerpc: apm82181: add WD MyBook Live NAS
+Date: Thu, 13 Aug 2020 00:41:51 +0200
+Message-Id: <08dd11e8ce996a0df27dca3a9316bfc4ede0d0d0.1597271958.git.chunkeey@gmail.com>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <15a94dddc15d29bac02439beb77fd066771c747a.1597271958.git.chunkeey@gmail.com>
+References: <cover.1597271958.git.chunkeey@gmail.com>
+ <15a94dddc15d29bac02439beb77fd066771c747a.1597271958.git.chunkeey@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,20 +99,249 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, Rob Herring <robh+dt@kernel.org>,
+ Chris Blake <chrisrblake93@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 12, 2020 at 12:25:17PM +0000, Christophe Leroy wrote:
-> Enable pre-update addressing mode in __get_user_asm() and __put_user_asm()
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
-> v3: new, splited out from patch 1.
+This patch adds the device-tree definitions for
+Western Digital MyBook Live NAS devices.
 
-It still looks fine to me, you can keep my Reviewed-by: :-)
+Technically, this devicetree file is shared by two, very
+similar devices.
 
+There's the My Book Live and the My Book Live Duo. WD's uboot
+on the device will enable/disable the nodes for the device.
 
-Segher
+Ready to go images and install instruction can be found @OpenWrt.org
+
+Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+---
+ arch/powerpc/boot/dts/wd-mybooklive.dts    | 199 +++++++++++++++++++++
+ arch/powerpc/platforms/44x/ppc44x_simple.c |   3 +-
+ 2 files changed, 201 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/boot/dts/wd-mybooklive.dts
+
+diff --git a/arch/powerpc/boot/dts/wd-mybooklive.dts b/arch/powerpc/boot/dts/wd-mybooklive.dts
+new file mode 100644
+index 000000000000..0871cc17bc9d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/wd-mybooklive.dts
+@@ -0,0 +1,199 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ * (c) Copyright 2010 Western Digital Technologies, Inc. All Rights Reserved.
++ */
++
++/dts-v1/;
++
++#include "apm82181.dtsi"
++
++/ {
++	compatible = "wd,mybooklive";
++	model = "MyBook Live";
++
++	aliases {
++		serial0 = &UART0;
++	};
++};
++
++&POB0 {
++	ebc {
++		nor_flash@0,0 {
++			status = "okay";
++			compatible = "amd,s29gl512n", "jedec-probe", "cfi-flash", "mtd-rom";
++			bank-width = <1>;
++			reg = <0x00000000 0x00000000 0x00080000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				/* Part of bootrom - Don't use it without a jump */
++				label = "free";
++				reg = <0x00000000 0x0001e000>;
++			};
++
++			partition@1e000 {
++				label = "env";
++				reg = <0x0001e000 0x00002000>;
++			};
++
++			partition@20000 {
++				label = "uboot";
++				reg = <0x00020000 0x00050000>;
++			};
++		};
++	};
++
++	GPIO1: gpio@e0000000 {
++		compatible = "wd,mbl-gpio";
++		reg-names = "dat";
++		reg = <0xe0000000 0x1>;
++		#gpio-cells = <2>;
++		gpio-controller;
++
++		enable-button {
++			/* Defined in u-boot as: NOT_NOR
++			 * "enables features other than NOR
++			 * specifically, the buffer at CS2"
++			 * (button).
++			 *
++			 * Note: This option is disabled as
++			 * it prevents the system from being
++			 * rebooted successfully.
++			 */
++
++			gpio-hog;
++			line-name = "Enable Reset Button, disable NOR";
++			gpios = <1 GPIO_ACTIVE_HIGH>;
++			output-low;
++		};
++	};
++
++	GPIO2: gpio@e0100000 {
++		compatible = "wd,mbl-gpio";
++		reg-names = "dat";
++		reg = <0xe0100000 0x1>;
++		#gpio-cells = <2>;
++		gpio-controller;
++		no-output;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		failsafe: power-red {
++			label = "mbl:red:power";
++			gpios = <&GPIO1 4 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "panic";
++		};
++
++		status: power-green {
++			label = "mbl:green:power";
++			gpios = <&GPIO1 5 GPIO_ACTIVE_HIGH>;
++		};
++
++		power-blue {
++			label = "mbl:blue:power";
++			gpios = <&GPIO1 6 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "disk-activity";
++		};
++	};
++
++	keys {
++		compatible = "gpio-keys-polled";
++		poll-interval = <60>;	/* 3 * 20 = 60ms */
++		autorepeat;
++
++		reset-button {
++			label = "Reset button";
++			linux,code = <KEY_RESTART>;
++			gpios = <&GPIO2 2 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	usbpwr: usb-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "Power USB Core";
++		gpios = <&GPIO1 2 GPIO_ACTIVE_LOW>;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++	};
++
++	sata1pwr: sata1-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "Power Drive Port 1";
++		gpios = <&GPIO1 3 GPIO_ACTIVE_LOW>;
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++		regulator-always-on; /* needed to read OS from HDD */
++	};
++
++	sata0pwr: sata0-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "Power Drive Port 0";
++		gpios = <&GPIO1 7 GPIO_ACTIVE_LOW>;
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++		regulator-always-on; /* needed to read OS from HDD */
++	};
++};
++
++&EMAC0 {
++	status = "okay";
++
++	phy-map = <0x2>;
++	phy-address = <0x1>;
++	phy-handle = <&phy>;
++
++	mdio {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reset-gpios = <&GPIO1 0 GPIO_ACTIVE_LOW>;
++
++		phy: phy@1 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <1>;
++		};
++	};
++};
++
++&CRYPTO {
++	status = "okay";
++};
++
++&PKA {
++	status = "okay";
++};
++
++&TRNG {
++	status = "okay";
++};
++
++&SATA0 {
++	status = "okay";
++
++	drive0: sata-port@0 {
++		reg = <0>;
++		#thermal-sensor-cells = <0>;
++	};
++};
++
++&SATA1 {
++	status = "okay";
++
++	drive1: sata-port@0 {
++		reg = <0>;
++		#thermal-sensor-cells = <0>;
++	};
++};
++
++&UART0 {
++	status = "okay";
++};
++
++&USBOTG0 {
++	status = "okay";
++	dr_mode = "host";
++	vbus-supply = <&usbpwr>;
++};
+diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
+index 3dbd8ddd734a..1122702c804a 100644
+--- a/arch/powerpc/platforms/44x/ppc44x_simple.c
++++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
+@@ -59,7 +59,8 @@ static char *board[] __initdata = {
+ 	"amcc,sequoia",
+ 	"amcc,taishan",
+ 	"amcc,yosemite",
+-	"mosaixtech,icon"
++	"mosaixtech,icon",
++	"wd,mybooklive",
+ };
+ 
+ static int __init ppc44x_probe(void)
+-- 
+2.28.0
+
