@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96C52C433E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 261C0C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:27:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 421432245C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:24:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 421432245C
+	by mail.kernel.org (Postfix) with ESMTPS id 6B791207DA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 12:27:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B791207DA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTQw1sL7zDqc6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:24:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRTVK4xP9zDqdL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 22:27:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1l349wzDqZS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1q0c6JzDqZX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:04 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1d6nT2zB09ZQ;
- Wed, 12 Aug 2020 14:05:57 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRT1c6Qb1zB09ZY;
+ Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Mb4FY47BJ_UM; Wed, 12 Aug 2020 14:05:57 +0200 (CEST)
+ with ESMTP id heUzEzYIYrOR; Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1d62CPzB09Zb;
- Wed, 12 Aug 2020 14:05:57 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1c5dT5zB09ZQ;
+ Wed, 12 Aug 2020 14:05:56 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A6098B7FC;
- Wed, 12 Aug 2020 14:05:59 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 373D58B826;
+ Wed, 12 Aug 2020 14:05:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NTMMr_RJzyJo; Wed, 12 Aug 2020 14:05:59 +0200 (CEST)
+ with ESMTP id 8SwpSyskm4Ce; Wed, 12 Aug 2020 14:05:58 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CAB3F8B826;
- Wed, 12 Aug 2020 14:05:58 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CADF88B7FC;
+ Wed, 12 Aug 2020 14:05:57 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id AACDB65C34; Wed, 12 Aug 2020 12:05:58 +0000 (UTC)
-Message-Id: <c9e470b3623902193f0549e7f6aa437194e45e86.1597233555.git.christophe.leroy@csgroup.eu>
+ id A51FB65C34; Wed, 12 Aug 2020 12:05:57 +0000 (UTC)
+Message-Id: <09ebaef69b332f205fc7a71fead88aed7eac1f92.1597233555.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 07/19] powerpc/signal: Move access_ok() out of
- get_sigframe()
+Subject: [RFC PATCH v1 06/19] powerpc/32s: Allow deselecting CONFIG_PPC_FPU on
+ mpc832x
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:05:58 +0000 (UTC)
+Date: Wed, 12 Aug 2020 12:05:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,66 +77,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This access_ok() will soon be performed by user_access_begin().
-So move it out of get_sigframe()
+The e300c2 core which is embedded in mpc832x CPU doesn't have
+an FPU.
+
+Make it possible to not select CONFIG_PPC_FPU when building a
+kernel dedicated to that target.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal.c    | 4 ----
- arch/powerpc/kernel/signal_32.c | 4 ++--
- arch/powerpc/kernel/signal_64.c | 2 +-
- 3 files changed, 3 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index 3b56db02b762..1be5fd01f866 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -154,10 +154,6 @@ void __user *get_sigframe(struct ksignal *ksig, unsigned long sp,
- 	oldsp = sigsp(oldsp, ksig);
- 	newsp = (oldsp - frame_size) & ~0xFUL;
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 40ffcdba42b8..d4fd109f177e 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -32,7 +32,7 @@ choice
+ config PPC_BOOK3S_6xx
+ 	bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx except 601"
+ 	select PPC_BOOK3S_32
+-	select PPC_FPU
++	imply PPC_FPU
+ 	select PPC_HAVE_PMU_SUPPORT
+ 	select PPC_HAVE_KUEP
+ 	select PPC_HAVE_KUAP
+@@ -229,9 +229,16 @@ config PPC_FPU_REGS
+ 	bool
  
--	/* Check access */
--	if (!access_ok((void __user *)newsp, oldsp - newsp))
--		return NULL;
--
-         return (void __user *)newsp;
- }
+ config PPC_FPU
+-	bool
++	bool "Support for Floating Point Unit (FPU)" if PPC_MPC832x
+ 	default y if PPC64
+ 	select PPC_FPU_REGS
++	help
++	  This must be enabled to support the Floating Point Unit
++	  Most 6xx have an FPU but e300c2 core (mpc832x) don't have
++	  an FPU, so when building an embedded kernel for that target
++	  you can disable FPU support.
++
++	  If unsure say Y.
  
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 7b291707eb31..5a838188a181 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -770,7 +770,7 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	/* Put a Real Time Context onto stack */
- 	rt_sf = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*rt_sf), 1);
- 	addr = rt_sf;
--	if (unlikely(rt_sf == NULL))
-+	if (!access_ok(rt_sf, sizeof(*rt_sf)))
- 		goto badframe;
- 
- 	/* Put the siginfo & fill in most of the ucontext */
-@@ -1231,7 +1231,7 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- 
- 	/* Set up Signal Frame */
- 	frame = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*frame), 1);
--	if (unlikely(frame == NULL))
-+	if (!access_ok(frame, sizeof(*frame)))
- 		goto badframe;
- 	sc = (struct sigcontext __user *) &frame->sctx;
- 
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index bfc939360bad..ec259a0efe24 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -825,7 +825,7 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 	BUG_ON(tsk != current);
- 
- 	frame = get_sigframe(ksig, get_tm_stackpointer(tsk), sizeof(*frame), 0);
--	if (unlikely(frame == NULL))
-+	if (!access_ok(frame, sizeof(*frame)))
- 		goto badframe;
- 
- 	err |= __put_user(&frame->info, &frame->pinfo);
+ config FSL_EMB_PERFMON
+ 	bool "Freescale Embedded Perfmon"
 -- 
 2.25.0
 
