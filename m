@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FFEEC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 13:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69277C433E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 13:09:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0866C20774
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 13:03:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0866C20774
+	by mail.kernel.org (Postfix) with ESMTPS id 21A3B20639
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 13:09:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21A3B20639
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRVJ43CYQzDqd2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 23:03:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRVQb0JJ7zDqV4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Aug 2020 23:09:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,40 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRT1y0KttzDqZR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:06:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRTS2072nzDqcm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2020 22:25:21 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BRT1s1nSGzB09Zt;
- Wed, 12 Aug 2020 14:06:09 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BRTRx1gnyzB09Zb;
+ Wed, 12 Aug 2020 14:25:17 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QCWa6f7c4hKp; Wed, 12 Aug 2020 14:06:09 +0200 (CEST)
+ with ESMTP id UlvtX8EgB1-Z; Wed, 12 Aug 2020 14:25:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BRT1s0p0czB09Zf;
- Wed, 12 Aug 2020 14:06:09 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BRTRx0nZWzB09ZY;
+ Wed, 12 Aug 2020 14:25:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5D7F58B826;
- Wed, 12 Aug 2020 14:06:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6445D8B826;
+ Wed, 12 Aug 2020 14:25:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pwBk8hGIuTTj; Wed, 12 Aug 2020 14:06:10 +0200 (CEST)
+ with ESMTP id hFml_FvOlAVn; Wed, 12 Aug 2020 14:25:18 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2849C8B7FC;
- Wed, 12 Aug 2020 14:06:10 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 19DD78B7FC;
+ Wed, 12 Aug 2020 14:25:18 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 0B57265C34; Wed, 12 Aug 2020 12:06:10 +0000 (UTC)
-Message-Id: <4ea86b6d9f4e3ba0126f9961b98407549d7f0294.1597233555.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1597233555.git.christophe.leroy@csgroup.eu>
-References: <cover.1597233555.git.christophe.leroy@csgroup.eu>
+ id BD14565C3B; Wed, 12 Aug 2020 12:25:17 +0000 (UTC)
+Message-Id: <13041c7df39e89ddf574ea0cdc6dedfdd9734140.1597235091.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <c27bc4e598daf3bbb225de7a1f5c52121cf1e279.1597235091.git.christophe.leroy@csgroup.eu>
+References: <c27bc4e598daf3bbb225de7a1f5c52121cf1e279.1597235091.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [RFC PATCH v1 18/19] powerpc/signal32: Add and use
- unsafe_put_sigset_t()
+Subject: [PATCH v3 2/2] powerpc/uaccess: Add pre-update addressing to
+ __get_user_asm() and __put_user_asm()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- ldv@altlinux.org, viro@zeniv.linux.org.uk
-Date: Wed, 12 Aug 2020 12:06:10 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 12 Aug 2020 12:25:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,67 +76,55 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-put_sigset_t() calls copy_to_user() for copying two words.
-
-Because INLINE_COPY_TO_USER is not defined on powerpc,
-copy_to_user() doesn't get optimised and falls back to
-copy_tofrom_user() with the relevant glue. This is terribly
-inefficient for copying two words.
-
-By switching to unsafe_put_user(), we end up with something as
-simple as:
-
- 3cc:   81 3d 00 00     lwz     r9,0(r29)
- 3d0:   91 26 00 b4     stw     r9,180(r6)
- 3d4:   81 3d 00 04     lwz     r9,4(r29)
- 3d8:   91 26 00 b8     stw     r9,184(r6)
+Enable pre-update addressing mode in __get_user_asm() and __put_user_asm()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal_32.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+v3: new, splited out from patch 1.
+---
+ arch/powerpc/include/asm/uaccess.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index d03ba3d8eb68..6cbff0293ff4 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -87,6 +87,8 @@ static inline int put_sigset_t(compat_sigset_t __user *uset, sigset_t *set)
- 	return put_compat_sigset(uset, set, sizeof(*uset));
- }
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index c546fb36043d..eadb25f4cc9f 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -159,7 +159,7 @@ extern long __put_user_bad(void);
+  */
+ #define __put_user_asm(x, addr, err, op)			\
+ 	__asm__ __volatile__(					\
+-		"1:	" op "%X2 %1,%2	# put_user\n"		\
++		"1:	" op "%U2%X2 %1,%2	# put_user\n"	\
+ 		"2:\n"						\
+ 		".section .fixup,\"ax\"\n"			\
+ 		"3:	li %0,%3\n"				\
+@@ -167,7 +167,7 @@ extern long __put_user_bad(void);
+ 		".previous\n"					\
+ 		EX_TABLE(1b, 3b)				\
+ 		: "=r" (err)					\
+-		: "r" (x), "m" (*addr), "i" (-EFAULT), "0" (err))
++		: "r" (x), "m<>" (*addr), "i" (-EFAULT), "0" (err))
  
-+#define unsafe_put_sigset_t	unsafe_put_compat_sigset
-+
- static inline int get_sigset_t(sigset_t *set,
- 			       const compat_sigset_t __user *uset)
- {
-@@ -143,6 +145,13 @@ static inline int put_sigset_t(sigset_t __user *uset, sigset_t *set)
- 	return copy_to_user(uset, set, sizeof(*uset));
- }
+ #ifdef __powerpc64__
+ #define __put_user_asm2(x, ptr, retval)				\
+@@ -317,7 +317,7 @@ extern long __get_user_bad(void);
  
-+#define unsafe_put_sigset_t(uset, set, label) do { 			\
-+	sigset_t __user *__us = uset	;				\
-+	const sigset_t *__s = set;					\
-+									\
-+	unsafe_copy_to_user(__us, __s, sizeof(*__us), label);		\
-+} while (0)
-+
- static inline int get_sigset_t(sigset_t *set, const sigset_t __user *uset)
- {
- 	return copy_from_user(set, uset, sizeof(*uset));
-@@ -820,10 +829,11 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	{
- 		unsafe_put_user(0, &rt_sf->uc.uc_link, failed);
- 	}
-+
-+	unsafe_put_sigset_t(&rt_sf->uc.uc_sigmask, oldset, failed);
-+
- 	user_write_access_end();
+ #define __get_user_asm(x, addr, err, op)		\
+ 	__asm__ __volatile__(				\
+-		"1:	"op"%X2 %1, %2	# get_user\n"	\
++		"1:	"op"%U2%X2 %1, %2	# get_user\n"	\
+ 		"2:\n"					\
+ 		".section .fixup,\"ax\"\n"		\
+ 		"3:	li %0,%3\n"			\
+@@ -326,7 +326,7 @@ extern long __get_user_bad(void);
+ 		".previous\n"				\
+ 		EX_TABLE(1b, 3b)			\
+ 		: "=r" (err), "=r" (x)			\
+-		: "m" (*addr), "i" (-EFAULT), "0" (err))
++		: "m<>" (*addr), "i" (-EFAULT), "0" (err))
  
--	if (put_sigset_t(&rt_sf->uc.uc_sigmask, oldset))
--		goto badframe;
- 	if (copy_siginfo_to_user(&rt_sf->info, &ksig->info))
- 		goto badframe;
- 
+ #ifdef __powerpc64__
+ #define __get_user_asm2(x, addr, err)			\
 -- 
 2.25.0
 
