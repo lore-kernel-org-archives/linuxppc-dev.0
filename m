@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D538AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 01:39:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FD00C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 01:42:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63A2E20771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 01:39:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 034F420771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 01:42:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="qjX031hh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63A2E20771
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="rqM/nTad"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 034F420771
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BRq4s3jTCzDqZH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 11:39:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BRq7R5cNhzDqYJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Aug 2020 11:42:11 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BRpyx4sBFzDqWx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2020 11:34:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BRpyy1g5FzDqWh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2020 11:34:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=qjX031hh; 
+ header.a=rsa-sha256 header.s=201909 header.b=rqM/nTad; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4BRpyx48ZBz9sTT; Thu, 13 Aug 2020 11:34:49 +1000 (AEST)
+ id 4BRpyy0lG9z9sRK; Thu, 13 Aug 2020 11:34:50 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BRpyx3Twxz9sTX; Thu, 13 Aug 2020 11:34:49 +1000 (AEST)
+ id 4BRpyy04Nwz9sTT; Thu, 13 Aug 2020 11:34:49 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1597282489;
- bh=2DnB/T1B0Oft3uTgbEqnQ8C6NSNgM8LJFmObC3+A/eE=;
+ s=201909; t=1597282490;
+ bh=oFS+mVwByErZd5inMdhUb7SDf2DIfRsrQcO5gwLyvY8=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=qjX031hhrXGLQFAt9vNnQev4KbjcUd8qYwKyLQrJxvGVjeMVvF+Ls8zj7EvkZisx4
- kVSpGrdA0PUVFjIhJ8RH9uycNP+1zbZpLUcIhikhXp61Tet0Or1GH8q+tigz7+FFoC
- to4fkLqGaNdngtpfSrAsgeJhZA5226a0VcqHoOsDq9BJ5852wDvJynxusrOmq0QyKK
- DygJMf0FhNIajiHOENC4MZgacP+7fSS4e5cY1uwxl/5Xnffy6sLlchb9vtlrFayJ17
- vKirzvmPbP70s9YM6ZsT20LRHV9usFUOchHrBUq3+hAOfssx9vZkf7sUodrIn0iWCC
- kgADvFZ/HIYyw==
+ b=rqM/nTadR+Gz5MulUcc/iBM/NRRXxgtsD8GhGSPwSsdn7+yXgB/kndo3dn7fJl+je
+ B7F4JICAhSwP7vR/zuHJeEDhoI9urz+eaNpVTgKLV+xN/TaAUJSFiaXWKboukqKbBo
+ jIFC5VPMJveEYMSXp49iVgKusduK1EMdEPekXWOZhDywhJqx/5nnZuRJtFPshpCgT5
+ Q/r0Xl/kCBhSWG2IMjryCbAzqJ5lEKoyq/H/JSK1kdqkSC15TE0Hm5za0MUWfe0gHL
+ sFEcUKFM00kDEBPdkdoclfOwiR38rFEXua8oNhZF+NiBTbbekkFbLk+aA3wL4PzxUW
+ dD1o1HG8r8Zdg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] selftests/powerpc: Don't use setaffinity in tm-tmspr
-Date: Thu, 13 Aug 2020 11:34:44 +1000
-Message-Id: <20200813013445.686464-2-mpe@ellerman.id.au>
+Subject: [PATCH 3/3] selftests/powerpc: Run tm-tmspr test for longer
+Date: Thu, 13 Aug 2020 11:34:45 +1000
+Message-Id: <20200813013445.686464-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200813013445.686464-1-mpe@ellerman.id.au>
 References: <20200813013445.686464-1-mpe@ellerman.id.au>
@@ -73,38 +73,34 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This test tries to set affinity to CPUs that don't exist, especially
-if the set of online CPUs doesn't start at 0.
+This test creates some threads, which write to TM SPRs, and then makes
+sure the registers maintain the correct values across context switches
+and contention with other threads.
 
-But there's no real reason for it to use setaffinity in the first
-place, it's just trying to create lots of threads to cause contention.
-So drop the setaffinity entirely.
+But currently the test finishes almost instantaneously, which reduces
+the chance of it hitting an interesting condition.
+
+So increase the number of loops, so it runs a bit longer, though still
+less than 2s on a Power8.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/tm/tm-tmspr.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ tools/testing/selftests/powerpc/tm/tm-tmspr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-index 17becf3dcee4..2ff329e2fca9 100644
+index 2ff329e2fca9..794d574db784 100644
 --- a/tools/testing/selftests/powerpc/tm/tm-tmspr.c
 +++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-@@ -38,14 +38,8 @@ int	passed = 1;
+@@ -33,7 +33,7 @@
+ #include "utils.h"
+ #include "tm.h"
+ 
+-int	num_loops	= 10000;
++int	num_loops	= 1000000;
+ int	passed = 1;
  
  void tfiar_tfhar(void *in)
- {
--	int i, cpu;
- 	unsigned long tfhar, tfhar_rd, tfiar, tfiar_rd;
--	cpu_set_t cpuset;
--
--	CPU_ZERO(&cpuset);
--	cpu = (unsigned long)in >> 1;
--	CPU_SET(cpu, &cpuset);
--	sched_setaffinity(0, sizeof(cpuset), &cpuset);
-+	int i;
- 
- 	/* TFIAR: Last bit has to be high so userspace can read register */
- 	tfiar = ((unsigned long)in) + 1;
 -- 
 2.25.1
 
