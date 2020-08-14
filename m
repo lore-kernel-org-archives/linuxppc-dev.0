@@ -2,65 +2,84 @@ Return-Path: <SRS0=ETne=BY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A29E1C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 13:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74097C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 13:29:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D7F820866
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 13:16:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="KPM90R4M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D7F820866
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2094620866
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 13:29:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2094620866
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BSkVM75hqzDqfX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 23:16:43 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BSkmY3kfDzDqc7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Aug 2020 23:29:01 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BSkQk5RsmzDqh3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2020 23:13:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=KPM90R4M; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BSkQk0rwKz9sTH;
- Fri, 14 Aug 2020 23:13:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1597410814;
- bh=l2FbenAMKVjMAVcoLFTwflI2LhsdwmWtUuHyxCio1WU=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=KPM90R4MMSJhhOCKn2bYca1bAfFpBj6aQodZfVKWXtdHY2PqnXOUJcS10UGZqepUd
- c76m7m92I5CHPTkKIb0pVjqu7zPTzSE2LySOCygljsOPMjvVct42Uv9sOLbNXHXu8M
- VvemUk1a7Z/mwgq/QktxYq5+6/SJW4x0gQ/AT3hRNQuyEb0zcOY5RgVb0H/wR8E0gg
- DsL+Wi5PUjbLEi759wR8GB6ODwx6mNMbDQ2mg2aMDv69APqgOXkPJCSivOM17L7u+Y
- S9CaXIz07Yc4rs72g6pVR4CLzsD2DIlDjNigfUnuhk3rEp6Tn6gGtYNwyGhYmTMLaX
- zr1+p3dUlw2cQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balamuruhan S <bala24@linux.ibm.com>
-Subject: Re: [PATCH] kernel/watchdog: fix warning -Wunused-variable for
- watchdog_allowed_mask in ppc64
-In-Reply-To: <20200814043951.199192-1-bala24@linux.ibm.com>
-References: <20200814043951.199192-1-bala24@linux.ibm.com>
-Date: Fri, 14 Aug 2020 23:13:33 +1000
-Message-ID: <87a6yx9xqa.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BSkjq21syzDqc7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2020 23:26:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4BSkjq09PNz8tQ0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2020 23:26:39 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4BSkjp6qj5z9sTX; Fri, 14 Aug 2020 23:26:38 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4BSkjn3hfpz9sTH
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2020 23:26:32 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4BSkjc05l4z9vD3B;
+ Fri, 14 Aug 2020 15:26:28 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id d6dKnB4fLuEc; Fri, 14 Aug 2020 15:26:27 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BSkjb68Qsz9vD2x;
+ Fri, 14 Aug 2020 15:26:27 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6ADC68B797;
+ Fri, 14 Aug 2020 15:26:29 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id gZ2orR0_hfoa; Fri, 14 Aug 2020 15:26:29 +0200 (CEST)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 173A88B767;
+ Fri, 14 Aug 2020 15:26:29 +0200 (CEST)
+Subject: Re: [PATCH 2/4] powerpc: Introduce asm-prototypes.h
+To: Michael Ellerman <mpe@ellerman.id.au>, Daniel Axtens <dja@axtens.net>,
+ linuxppc-dev@ozlabs.org
+References: <1463534212-4879-1-git-send-email-dja@axtens.net>
+ <1463534212-4879-2-git-send-email-dja@axtens.net>
+ <b50b9bdd-b731-44ed-435b-e3e4b179a89a@csgroup.eu>
+ <87d03t9y66.fsf@mpe.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <a94a5094-9f47-08ef-31b7-c9653ffbbdcc@csgroup.eu>
+Date: Fri, 14 Aug 2020 13:26:20 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <87d03t9y66.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,42 +91,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, sandipan@linux.ibm.com,
- Balamuruhan S <bala24@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Balamuruhan S <bala24@linux.ibm.com> writes:
-> In ppc64 config if `CONFIG_SOFTLOCKUP_DETECTOR` is not set then it
-> warns for unused declaration of `watchdog_allowed_mask` while building,
-> move the declaration inside ifdef later in the code.
->
-> ```
-> kernel/watchdog.c:47:23: warning: =E2=80=98watchdog_allowed_mask=E2=80=99=
- defined but not used [-Wunused-variable]
->  static struct cpumask watchdog_allowed_mask __read_mostly;
-> ```
->
-> Signed-off-by: Balamuruhan S <bala24@linux.ibm.com>
-> ---
->  kernel/watchdog.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-I don't maintain that file.
-
-Please resend and Cc it to:
-
-$ ./scripts/get_maintainer.pl -f kernel/watchdog.c
-tglx@linutronix.de
-peterz@infradead.org
-Jisheng.Zhang@synaptics.com
-rdna@fb.com
-viro@zeniv.linux.org.uk
-gpiccoli@canonical.com
-pmladek@suse.com
-linux-kernel@vger.kernel.org
 
 
-cheers
+On 08/14/2020 01:04 PM, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>> Le 18/05/2016 à 03:16, Daniel Axtens a écrit :
+>>> Sparse picked up a number of functions that are implemented in C and
+>>> then only referred to in asm code.
+>>>
+>>> This introduces asm-prototypes.h, which provides a place for
+>>> prototypes of these functions.
+>>
+>> It looks like this is a mis-use of asm-prototypes.h
+>>
+>> On other architectures, asm-prototypes.h is there to allow MODVERSION to
+>> sent versions for exported assembly functions (I checked history of that
+>> file in x86 and arm64).
+> 
+> Look closer :)
+> 
+> 42f5b4cacd78 ("powerpc: Introduce asm-prototypes.h") (Jun 2016)
+> 334bb7738764 ("x86/kbuild: enable modversions for symbols exported from asm") (Dec 2016)
+> c3296a1391cb ("arm64: add <asm/asm-prototypes.h>") (Dec 2018)
+
+Aren't you all sitting at the same place in the middle of Pacific Ocean, 
+far far away from Paris ? :)
+
+Looking closer I see: mdr: (Ok, that's Nov 2016 but ...)
+
+commit 4efca4ed05cbdfd13ec3e8cb623fb77d6e4ab187
+Author: Nicholas Piggin <npiggin@gmail.com>
+Date:   Tue Nov 1 12:46:19 2016 +1100
+
+     kbuild: modversions for EXPORT_SYMBOL() for asm
+
+     Allow architectures to create asm/asm-prototypes.h file that
+     provides C prototypes for exported asm functions, which enables
+     proper CRC versions to be generated for them.
+
+     Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+     Signed-off-by: Michal Marek <mmarek@suse.com>
+
+
+
+
+> 
+>> It looks like you have used it on the other way round, you have declared
+>> in it C functions used by ASM functions, whereas it is supposed to be
+>> dedicated to declaring exported ASM functions used by C functions.
+> 
+> But yes, it's since been co-opted for the modversions stuff.
+> 
+> I guess the contents should be split out into appropriate headers
+> depending on what the prototypes are for.
+> 
+
+
+Christophe
