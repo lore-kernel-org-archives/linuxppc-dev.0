@@ -2,96 +2,57 @@ Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7B5C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 01:00:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3BE5C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 03:07:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E75B8206F4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 01:00:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Wldr7sxA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E75B8206F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6581F2087D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 03:07:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6581F2087D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=informatik.wtf
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVG1V0NM2zDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:00:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVJqm0KNyzDqP2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 13:07:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ smtp.mailfrom=informatik.wtf (client-ip=131.153.2.45;
+ helo=h4.fbrelay.privateemail.com; envelope-from=cmr@informatik.wtf;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=Wldr7sxA; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=informatik.wtf
+Received: from h4.fbrelay.privateemail.com (h4.fbrelay.privateemail.com
+ [131.153.2.45])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVFx01yPNzDqP3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 10:56:36 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07H0XTWK048877; Sun, 16 Aug 2020 20:56:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=QNTE70ImkAcuOTj81J/CO55MAbHdnXmC0GxgSn+KnwM=;
- b=Wldr7sxA+1d31iLcW7qg9PB2tXWvepFiVJirJfXE++LHI4Zb1S/c0X0A1cgL+5xhtBJS
- +EguGAGr+GhGUNizKe/2MavtM3k1KMSif2crDvd1lDKHGLred1o7jQF776u+T7laAxo0
- aIE1ZhCkiAVrsfvpb8o3+EO6YZYcLdWF8D/Pxr9/dMBYWTIoBHaxHLAtRmuMqey4y1/G
- csbnXDOqXUPbHwm0Y551lwu55FTM+Ter3ubYdRKRzDvL2eRuzn5q0ws5ZATEeZTFLc8A
- X3DGub91/bCkYzb3t+gVGfdwlcb6S5mGeRv/LWyY4cQlCQhB7f7KQ4PiinmrUKKCVgcy eA== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32y80gyx2k-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 16 Aug 2020 20:56:29 -0400
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
- by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07H0oj8V008321;
- Mon, 17 Aug 2020 00:56:27 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma04fra.de.ibm.com with ESMTP id 32x7b7h0n2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Aug 2020 00:56:26 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 07H0uOX961407738
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Aug 2020 00:56:24 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 26B9E52052;
- Mon, 17 Aug 2020 00:56:24 +0000 (GMT)
-Received: from localhost.in.ibm.com (unknown [9.85.91.31])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 174D95204E;
- Mon, 17 Aug 2020 00:56:22 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH 1/2] powerpc/kernel/cputable: cleanup the function declarations
-Date: Mon, 17 Aug 2020 06:26:17 +0530
-Message-Id: <20200817005618.3305028-1-maddy@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-16_12:2020-08-14,
- 2020-08-16 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=809 phishscore=0
- adultscore=0 clxscore=1015 spamscore=0 impostorscore=0 lowpriorityscore=0
- suspectscore=1 mlxscore=0 priorityscore=1501 bulkscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2008170003
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVJnV716VzDqNn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 13:05:18 +1000 (AEST)
+Received: from MTA-07-4.privateemail.com (mta-07.privateemail.com
+ [198.54.127.57])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by h3.fbrelay.privateemail.com (Postfix) with ESMTPS id 763CA80070
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2020 23:05:14 -0400 (EDT)
+Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
+ by MTA-07.privateemail.com (Postfix) with ESMTP id 3BB166004B;
+ Sun, 16 Aug 2020 23:04:59 -0400 (EDT)
+Received: from localhost (unknown [10.20.151.214])
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id E3F9560049;
+ Mon, 17 Aug 2020 03:04:58 +0000 (UTC)
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH v2 2/5] powerpc/lib: Initialize a temporary mm for code
+ patching
+From: "Christopher M. Riedl" <cmr@informatik.wtf>
+To: "Daniel Axtens" <dja@axtens.net>, <linuxppc-dev@lists.ozlabs.org>
+Date: Sun, 16 Aug 2020 21:21:02 -0500
+Message-Id: <C4YWVI0APTMX.XJ5Z6LWTLBO6@geist>
+In-Reply-To: <87lfiso3rk.fsf@dja-thinkpad.axtens.net>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,104 +64,160 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kernel-hardening@lists.openwall.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__machine_check_early_realmode_p*() are currently declared
-as extern in cputable.c and because of this when compiled
-with "C=1" (which enables semantic checker) produces these
-warnings.
+On Thu Aug 6, 2020 at 8:24 AM CDT, Daniel Axtens wrote:
+> "Christopher M. Riedl" <cmr@informatik.wtf> writes:
+>
+> > When code patching a STRICT_KERNEL_RWX kernel the page containing the
+> > address to be patched is temporarily mapped with permissive memory
+> > protections. Currently, a per-cpu vmalloc patch area is used for this
+> > purpose. While the patch area is per-cpu, the temporary page mapping is
+> > inserted into the kernel page tables for the duration of the patching.
+> > The mapping is exposed to CPUs other than the patching CPU - this is
+> > undesirable from a hardening perspective.
+> >
+> > Use the `poking_init` init hook to prepare a temporary mm and patching
+> > address. Initialize the temporary mm by copying the init mm. Choose a
+> > randomized patching address inside the temporary mm userspace address
+> > portion. The next patch uses the temporary mm and patching address for
+> > code patching.
+> >
+> > Based on x86 implementation:
+> >
+> > commit 4fc19708b165
+> > ("x86/alternatives: Initialize temporary mm for patching")
+> >
+> > Signed-off-by: Christopher M. Riedl <cmr@informatik.wtf>
+> > ---
+> >  arch/powerpc/lib/code-patching.c | 33 ++++++++++++++++++++++++++++++++
+> >  1 file changed, 33 insertions(+)
+> >
+> > diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-p=
+atching.c
+> > index 0a051dfeb177..8ae1a9e5fe6e 100644
+> > --- a/arch/powerpc/lib/code-patching.c
+> > +++ b/arch/powerpc/lib/code-patching.c
+> > @@ -11,6 +11,8 @@
+> >  #include <linux/cpuhotplug.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/uaccess.h>
+> > +#include <linux/sched/task.h>
+> > +#include <linux/random.h>
+> > =20
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/page.h>
+> > @@ -44,6 +46,37 @@ int raw_patch_instruction(struct ppc_inst *addr, str=
+uct ppc_inst instr)
+> >  }
+> > =20
+> >  #ifdef CONFIG_STRICT_KERNEL_RWX
+> > +
+> > +static struct mm_struct *patching_mm __ro_after_init;
+> > +static unsigned long patching_addr __ro_after_init;
+> > +
+> > +void __init poking_init(void)
+> > +{
+> > +	spinlock_t *ptl; /* for protecting pte table */
+> > +	pte_t *ptep;
+> > +
+> > +	/*
+> > +	 * Some parts of the kernel (static keys for example) depend on
+> > +	 * successful code patching. Code patching under STRICT_KERNEL_RWX
+> > +	 * requires this setup - otherwise we cannot patch at all. We use
+> > +	 * BUG_ON() here and later since an early failure is preferred to
+> > +	 * buggy behavior and/or strange crashes later.
+> > +	 */
+> > +	patching_mm =3D copy_init_mm();
+> > +	BUG_ON(!patching_mm);
+> > +
+> > +	/*
+> > +	 * In hash we cannot go above DEFAULT_MAP_WINDOW easily.
+> > +	 * XXX: Do we want additional bits of entropy for radix?
+> > +	 */
+> > +	patching_addr =3D (get_random_long() & PAGE_MASK) %
+> > +		(DEFAULT_MAP_WINDOW - PAGE_SIZE);
+>
+> It took me a while to understand this calculation. I see that it's
+> calculating a base address for a page in which to do patching. It does
+> the following:
 
-  CHECK   arch/powerpc/kernel/mce_power.c
-arch/powerpc/kernel/mce_power.c:709:6: warning: symbol '__machine_check_early_realmode_p7' was not declared. Should it be static?
-arch/powerpc/kernel/mce_power.c:717:6: warning: symbol '__machine_check_early_realmode_p8' was not declared. Should it be static?
-arch/powerpc/kernel/mce_power.c:722:6: warning: symbol '__machine_check_early_realmode_p9' was not declared. Should it be static?
-arch/powerpc/kernel/mce_power.c:740:6: warning: symbol '__machine_check_early_realmode_p10' was not declared. Should it be static?
+I will add a comment explaining the calulcation in the next spin.
 
-Patch here moves the declaration to asm/mce.h
-and includes the same in cputable.c
+>
+> - get a random long
+>
+> - mask with PAGE_MASK so as to get a page aligned value
+>
+> - make sure that the base address is at least one PAGE_SIZE below
+> DEFAULT_MAP_WINDOW so we have a clear page between the base and
+> DEFAULT_MAP_WINDOW.
+>
+> On 64-bit Book3S with 64K pages, that works out to be
+>
+> PAGE_SIZE =3D 0x0000 0000 0001 0000
+> PAGE_MASK =3D 0xFFFF FFFF FFFF 0000
+>
+> DEFAULT_MAP_WINDOW =3D DEFAULT_MAP_WINDOW_USER64 =3D TASK_SIZE_128TB
+> =3D 0x0000_8000_0000_0000
+>
+> DEFAULT_MAP_WINDOW - PAGE_SIZE =3D 0x0000 7FFF FFFF 0000
+>
+> It took a while (and a conversation with my wife who studied pure
+> maths!) but I am convinced that the modulo preserves the page-alignement
+> of the patching address.
 
-Fixes: ae744f3432d3 ("powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power8")
-Fixes: 7b9f71f974a1 ("powerpc/64s: POWER9 machine check handler")
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
- arch/powerpc/include/asm/cputable.h | 5 +++++
- arch/powerpc/include/asm/mce.h      | 7 +++++++
- arch/powerpc/kernel/cputable.c      | 3 ---
- arch/powerpc/kernel/dt_cpu_ftrs.c   | 4 ----
- 4 files changed, 12 insertions(+), 7 deletions(-)
+I am glad a proper mathematician agrees because my maths are decidedly
+unpure :)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index fdddb822d564b..e005b45810232 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -9,6 +9,11 @@
- 
- #ifndef __ASSEMBLY__
- 
-+/*
-+ * Added to include __machine_check_early_realmode_* functions
-+ */
-+#include <asm/mce.h>
-+
- /* This structure can grow, it's real size is used by head.S code
-  * via the mkdefs mechanism.
-  */
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index adf2cda67f9a4..89aa8248a57dd 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -210,6 +210,9 @@ struct mce_error_info {
- #define MCE_EVENT_RELEASE	true
- #define MCE_EVENT_DONTRELEASE	false
- 
-+struct pt_regs;
-+struct notifier_block;
-+
- extern void save_mce_event(struct pt_regs *regs, long handled,
- 			   struct mce_error_info *mce_err, uint64_t nip,
- 			   uint64_t addr, uint64_t phys_addr);
-@@ -225,5 +228,9 @@ int mce_register_notifier(struct notifier_block *nb);
- int mce_unregister_notifier(struct notifier_block *nb);
- #ifdef CONFIG_PPC_BOOK3S_64
- void flush_and_reload_slb(void);
-+long __machine_check_early_realmode_p7(struct pt_regs *regs);
-+long __machine_check_early_realmode_p8(struct pt_regs *regs);
-+long __machine_check_early_realmode_p9(struct pt_regs *regs);
-+long __machine_check_early_realmode_p10(struct pt_regs *regs);
- #endif /* CONFIG_PPC_BOOK3S_64 */
- #endif /* __ASM_PPC64_MCE_H__ */
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 3d406a9626e86..4ca9cf556be92 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -72,9 +72,6 @@ extern void __setup_cpu_power9(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power9(void);
- extern void __setup_cpu_power10(unsigned long offset, struct cpu_spec* spec);
- extern void __restore_cpu_power10(void);
--extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
--extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
--extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
- #endif /* CONFIG_PPC64 */
- #if defined(CONFIG_E500)
- extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index 6f8c0c6b937a1..8dc46f38680b2 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -64,10 +64,6 @@ struct dt_cpu_feature {
-  * Set up the base CPU
-  */
- 
--extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
--extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
--extern long __machine_check_early_realmode_p10(struct pt_regs *regs);
--
- static int hv_mode;
- 
- static struct {
--- 
-2.26.2
+>
+> One thing I did realise is that patching_addr can be zero at the end of
+> this process. That seems dubious and slightly error-prone to me - is
+> the patching process robust to that or should we exclude it?
+
+Good catch! I will fix this in the next spin.
+
+>
+> Anyway, if I have the maths right, that there are 0x7fffffff or ~2
+> billion possible locations for the patching page, which is just shy of
+> 31 bits of entropy.
+>
+> I think this compares pretty favourably to most (K)ASLR implementations?
+
+I will stress that I am not an expert here, but it looks like this does
+compares favorably against other 64b ASLR [0].
+
+[0]: https://www.cs.ucdavis.edu/~peisert/research/2017-SecDev-AnalysisASLR.=
+pdf
+
+>
+> What's the range if built with 4k pages?
+
+Using the formula from my series coverletter, we should expect 34 bits
+of entropy since DEFAULT_MAP_WINDOW_USER64 is 64TB for 4K pages:
+
+	bits of entropy =3D log2(DEFAULT_MAP_WINDOW_USER64 / PAGE_SIZE)
+
+	PAGE_SIZE=3D4K, DEFAULT_MAP_WINDOW_USER64=3D64TB
+	bits of entropy =3D log2(64TB / 4K)
+	bits of entropy =3D 34
+
+>
+> Kind regards,
+> Daniel
+>
+> > +
+> > +	ptep =3D get_locked_pte(patching_mm, patching_addr, &ptl);
+> > +	BUG_ON(!ptep);
+> > +	pte_unmap_unlock(ptep, ptl);
+> > +}
+> > +
+> >  static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
+> > =20
+> >  static int text_area_cpu_up(unsigned int cpu)
+> > --=20
+> > 2.27.0
 
