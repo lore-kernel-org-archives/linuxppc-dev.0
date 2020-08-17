@@ -2,101 +2,86 @@ Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAB4AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:02:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7563C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:25:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C4A020738
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:02:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2F4CC2072E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:25:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="n80BAZ2j"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C4A020738
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WmbN/sEc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F4CC2072E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVWN00YzTzDqW6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 21:02:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVWv214tFzDqWh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 21:25:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::642;
+ helo=mail-pl1-x642.google.com; envelope-from=allen.cryptic@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=n80BAZ2j; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=WmbN/sEc; dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVWKH4yZzzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 21:00:03 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07HAC90Z162685; Mon, 17 Aug 2020 06:59:57 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=SMFzGlkvGUomhZqEZhXBCoWUEI0g8f7afW8n/5s9q/0=;
- b=n80BAZ2jRzAeXt/9Tkb5AgCqnhU7lJ4NoaULytLIE8VfuCeADAJ6Wz18uX975SUw54YO
- 3ioEbn7przm51PL4MiMclYTLAq1eNBUixq1pJir5xha+q2XtcEMZcMZXN0K9uALeI0AG
- TO8u5oCq7LD09N8I6Xdu6EImhOQ/OHorwOvpbraheMUkfxkYabjT0E2JmAFp9PGHpUC9
- ToCIhd8vtgpuEVQcYzt//jqXh1QnKf7JV5+QjA6N4naOMuH3CbR6T9gTKxg7LBcqXrIa
- dD/SabeNYNNVQ/ntQWyKqO3OGV79z7RpVh7fHEHN02An3sWSojz1vC9gJI3JvG/KqhxU FA== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32y64df2u5-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Aug 2020 06:59:57 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07HAt9PV032632;
- Mon, 17 Aug 2020 10:59:54 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma05fra.de.ibm.com with ESMTP id 32x7b81aa6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Aug 2020 10:59:54 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07HAxpk38520056
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Aug 2020 10:59:52 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CE268A4040;
- Mon, 17 Aug 2020 10:59:51 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D2A8CA4059;
- Mon, 17 Aug 2020 10:59:50 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Mon, 17 Aug 2020 10:59:50 +0000 (GMT)
-Date: Mon, 17 Aug 2020 16:29:50 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2 1/3] powerpc/numa: Introduce logical numa id
-Message-ID: <20200817105950.GA31352@linux.vnet.ibm.com>
-References: <20200817103238.158133-1-aneesh.kumar@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20200817103238.158133-1-aneesh.kumar@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-17_02:2020-08-17,
- 2020-08-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015
- lowpriorityscore=0 mlxlogscore=955 mlxscore=0 phishscore=0 bulkscore=0
- spamscore=0 suspectscore=0 impostorscore=0 adultscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2008170075
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVSXX0fndzDqNC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 18:54:35 +1000 (AEST)
+Received: by mail-pl1-x642.google.com with SMTP id y10so5606714plr.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 01:54:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=nOJuhLui4k7rvz/wos+0nsCIYbwj7zan4woC4Ksv4tU=;
+ b=WmbN/sEcHhuhCQ5aYnsNMtgOfzo7imWBnx5Crm1NhU5y5BmwSjvzdXxZ0ifIsV6mAX
+ QJRV2IIBMTTzUUwaWwLo5sD9jQdAcitrBnSJo4h101GQpXbNMyYwA+rnuXyFPVMc2jeL
+ xMnCTpldluKCOE5Wplbkyky5t1Rm0K12cZUvsQgL0pUhiOvYdw2SvvzBMgm7xXSbyHGu
+ XwGTxij5YikrfxMI6lMJNzz+0rcD3uzIiI8UqxO1+n8TgCMG7RyupeLeeZCnYT5zm6wj
+ KjUOtzdKJd18oBZVvIeFaFe54yfZAi1zwvKAFB9C+7oL3N7c+hvUqBr0YZ3NkrIreJ6M
+ +cMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=nOJuhLui4k7rvz/wos+0nsCIYbwj7zan4woC4Ksv4tU=;
+ b=Yabgg5w9sQPWY4jkzUFzWwD9EjdzYY+NnDwi3gTz1D0ZBFtuyQ3mix/lh9tDM7/YrX
+ 1NqXmJZEoUCPT9305GIBKENkfMTOinfNRg4dOKLwdQc7IktwZErwaw3v4AXMj3ZbUKzN
+ 95JyrwCJLqg7ZhtNvDFyPDmu+btXtodqm7pJzWCfz2VbDJIJYIjZsi0y4gP79RXBteIa
+ Ti/HOyj1Qs0padxd7DYofKXaGIgoaCO4ryHPpFA4SN30H3t7EOUHcUYCyHQlmx11ZqI2
+ tA3Oo6jJ5HR1HWcZWas45848UEIU43mNiMXUwdxIJ3pCRBpDltRS/kaO9ECSexVC7p1u
+ yjfQ==
+X-Gm-Message-State: AOAM530w2I7Z/Z7kpf/+0lRzRUzHXHDJyb8LT/jW9dej2g/PSIMZVpj3
+ QP1+VcocuwM20GM+Thyx1ks=
+X-Google-Smtp-Source: ABdhPJw0P1ye0j2Opb2/IQN8p1LCLJGojSk4DSVYAKSXBrIS17h5vBynZuXvCPJffCyh7ajJeAgK/g==
+X-Received: by 2002:a17:90b:f09:: with SMTP id
+ br9mr11691708pjb.11.1597654472576; 
+ Mon, 17 Aug 2020 01:54:32 -0700 (PDT)
+Received: from localhost.localdomain ([49.207.202.98])
+ by smtp.gmail.com with ESMTPSA id x12sm18236990pff.48.2020.08.17.01.54.26
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 17 Aug 2020 01:54:32 -0700 (PDT)
+From: Allen Pais <allen.cryptic@gmail.com>
+To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com,
+ sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
+Subject: [PATCH 1/8] scsi: aic94xx: convert tasklets to use new
+ tasklet_setup() API
+Date: Mon, 17 Aug 2020 14:24:02 +0530
+Message-Id: <20200817085409.25268-2-allen.cryptic@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
+X-Mailman-Approved-At: Mon, 17 Aug 2020 21:23:56 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,42 +93,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: keescook@chromium.org, linux-scsi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>,
+ target-devel@vger.kernel.org, Romain Perier <romain.perier@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, megaraidlinux.pdl@broadcom.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> [2020-08-17 16:02:36]:
+From: Allen Pais <allen.lkml@gmail.com>
 
-> We use ibm,associativity and ibm,associativity-lookup-arrays to derive the numa
-> node numbers. These device tree properties are firmware indicated grouping of
-> resources based on their hierarchy in the platform. These numbers (group id) are
-> not sequential and hypervisor/firmware can follow different numbering schemes.
-> For ex: on powernv platforms, we group them in the below order.
-> 
->  *     - CCM node ID
->  *     - HW card ID
->  *     - HW module ID
->  *     - Chip ID
->  *     - Core ID
-> 
-> Based on ibm,associativity-reference-points we use one of the above group ids as
-> Linux NUMA node id. (On PowerNV platform Chip ID is used). This results
-> in Linux reporting non-linear NUMA node id and which also results in Linux
-> reporting empty node 0 NUMA nodes.
-> 
-> This can  be resolved by mapping the firmware provided group id to a logical Linux
-> NUMA id. In this patch, we do this only for pseries platforms considering the
-> firmware group id is a virtualized entity and users would not have drawn any
-> conclusion based on the Linux Numa Node id.
-> 
-> On PowerNV platform since we have historically mapped Chip ID as Linux NUMA node
-> id, we keep the existing Linux NUMA node id numbering.
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-I still dont understand how you are going to handle numa distances.
-With your patch, have you tried dlpar add/remove on a sparsely noded machine?
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/scsi/aic94xx/aic94xx_hwi.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/scsi/aic94xx/aic94xx_hwi.c b/drivers/scsi/aic94xx/aic94xx_hwi.c
+index 9256ab7b2522..1e4d32246cb9 100644
+--- a/drivers/scsi/aic94xx/aic94xx_hwi.c
++++ b/drivers/scsi/aic94xx/aic94xx_hwi.c
+@@ -248,7 +248,7 @@ static void asd_get_max_scb_ddb(struct asd_ha_struct *asd_ha)
+ 
+ /* ---------- Done List initialization ---------- */
+ 
+-static void asd_dl_tasklet_handler(unsigned long);
++static void asd_dl_tasklet_handler(struct tasklet_struct *t);
+ 
+ static int asd_init_dl(struct asd_ha_struct *asd_ha)
+ {
+@@ -261,8 +261,7 @@ static int asd_init_dl(struct asd_ha_struct *asd_ha)
+ 	asd_ha->seq.dl = asd_ha->seq.actual_dl->vaddr;
+ 	asd_ha->seq.dl_toggle = ASD_DEF_DL_TOGGLE;
+ 	asd_ha->seq.dl_next = 0;
+-	tasklet_init(&asd_ha->seq.dl_tasklet, asd_dl_tasklet_handler,
+-		     (unsigned long) asd_ha);
++	tasklet_setup(&asd_ha->seq.dl_tasklet, asd_dl_tasklet_handler);
+ 
+ 	return 0;
+ }
+@@ -711,9 +710,9 @@ static void asd_chip_reset(struct asd_ha_struct *asd_ha)
+ 
+ /* ---------- Done List Routines ---------- */
+ 
+-static void asd_dl_tasklet_handler(unsigned long data)
++static void asd_dl_tasklet_handler(struct tasklet_struct *t)
+ {
+-	struct asd_ha_struct *asd_ha = (struct asd_ha_struct *) data;
++	struct asd_ha_struct *asd_ha = from_tasklet(asd_ha, t, seq.dl_tasklet);
+ 	struct asd_seq_data *seq = &asd_ha->seq;
+ 	unsigned long flags;
+ 
 -- 
-Thanks and Regards
-Srikar Dronamraju
+2.17.1
+
