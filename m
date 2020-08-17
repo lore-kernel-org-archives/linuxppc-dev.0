@@ -1,91 +1,100 @@
-Return-Path: <SRS0=FPMu=B2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB65C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2020 21:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8564CC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 00:58:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50E862078D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Aug 2020 21:11:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 67BB72075D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 00:58:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="uU1tMVL6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50E862078D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alliedtelesis.co.nz
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="EGQK01H4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67BB72075D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BV8xG1QCVzDqQg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 07:11:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVFyv1rTxzDqQx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 10:58:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=alliedtelesis.co.nz (client-ip=2001:df5:b000:5::4;
- helo=gate2.alliedtelesis.co.nz;
- envelope-from=chris.packham@alliedtelesis.co.nz; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=alliedtelesis.co.nz
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
- header.a=rsa-sha256 header.s=mail181024 header.b=uU1tMVL6; 
- dkim-atps=neutral
-Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
- [IPv6:2001:df5:b000:5::4])
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=EGQK01H4; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BV8tw6HRVzDqF5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 07:09:28 +1000 (AEST)
-Received: from mmarshal3.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 33B35806B6;
- Mon, 17 Aug 2020 09:09:23 +1200 (NZST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
- s=mail181024; t=1597612163;
- bh=mFh2MNlRiVsvA4vpdlLMxIHHKZs332vJXnDrU4WRgPc=;
- h=From:To:CC:Subject:Date:References:In-Reply-To;
- b=uU1tMVL6vPeJYj6afY9bVlD3f2R4n+4Yqx3qDuItye/YUjJQGETnIFcl1K15VPDtC
- pKPfYysQ8aRp5uXUBn1uFMynpiNHbIqJX32DTy9iCyqzxnXCcopqHsW9xAhqTrequ+
- iCK9G/IAvK08NZHGw7VfxXntDSAzCQyW+E7pgNetdW3n72+vYTkY6nEnj/8Tfxj0sk
- tYlX3ucjHInpTEYszujFbGqqUOng7TxgKzK2lK6nIJPNRVqW0O5rh7UiXOzILiP+71
- T5TlrX9SZtD2VBr/b0hQ6KGuAKVLjEvRFshfrMICWYBh967vqdDEm3teRajJoYb7Pf
- Ae6A28TwX4Xew==
-Received: from svr-chch-ex1.atlnz.lc (Not Verified[10.32.16.77]) by
- mmarshal3.atlnz.lc with Trustwave SEG (v7, 5, 8, 10121)
- id <B5f39a0810000>; Mon, 17 Aug 2020 09:09:21 +1200
-Received: from svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8:409d:36f5:8899:92e8)
- by svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8:409d:36f5:8899:92e8) with
- Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 17 Aug 2020 09:09:22 +1200
-Received: from svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8]) by
- svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8%12]) with mapi id
- 15.00.1497.006; Mon, 17 Aug 2020 09:09:22 +1200
-From: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
-To: Heiner Kallweit <hkallweit1@gmail.com>, "broonie@kernel.org"
- <broonie@kernel.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "tiago.brusamarello@datacom.ind.br"
- <tiago.brusamarello@datacom.ind.br>
-Subject: Re: fsl_espi errors on v5.7.15
-Thread-Topic: fsl_espi errors on v5.7.15
-Thread-Index: AQHWceVnik7XsBYbp0S+yHVGh1hdQak2WMaAgAQdSwA=
-Date: Sun, 16 Aug 2020 21:09:22 +0000
-Message-ID: <3c72eec1-41ba-7389-eceb-3de80065555a@alliedtelesis.co.nz>
-References: <3f48e5fb-33c9-8046-0f80-236eed163c16@alliedtelesis.co.nz>
- <c43a23bd-33ec-4ef2-2ca5-730342248db3@gmail.com>
-In-Reply-To: <c43a23bd-33ec-4ef2-2ca5-730342248db3@gmail.com>
-Accept-Language: en-NZ, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.32.1.11]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <C94EA88EC8E86544A72DF85805F89839@atlnz.lc>
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVFx10My0zDqP4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 10:56:36 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07GNWYWw136672; Sun, 16 Aug 2020 20:56:33 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=l4PXOLl4Ara4Jpn/8lc/6fgLc6xC/AXpOMwdxuOe8CI=;
+ b=EGQK01H4mwrY113SoCoclJE1XP9CBwWRrR7Zk+1DRDh/8/36E7RNHfVG+At/+jdhIhVW
+ PV31ezVY+n2IsvieM30hPfrAY///chAEEUnwWJpTe+sBLgolEKzI3qcMy/PPpjecVwWl
+ Wc5yMRhc3pDwoVRomFGn7DqVCacuM/Amj7s/vq5hj5hlvwC8LEaMEy30mMKpAJoMgaC6
+ VJgnJlVqdHCmCw1oBvpxLXaUgJfk26bO58Q/xbc01rEQgYNDvl3prFgAg47DHcrWDnGj
+ n67dJ7v7m01SzAbtKw2ESD4fgyRZjELTTvN7p7pnuhQa7DxVxkBDiEbyceKPmZ8exgyU 8Q== 
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.72])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32y85xysvy-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Sun, 16 Aug 2020 20:56:32 -0400
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+ by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07H0pIkn014997;
+ Mon, 17 Aug 2020 00:56:30 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06fra.de.ibm.com with ESMTP id 32x6ygs0u8-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Aug 2020 00:56:30 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07H0uR8d28770710
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 17 Aug 2020 00:56:27 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B53D452051;
+ Mon, 17 Aug 2020 00:56:27 +0000 (GMT)
+Received: from localhost.in.ibm.com (unknown [9.85.91.31])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id A5D215204F;
+ Mon, 17 Aug 2020 00:56:26 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 2/2] powerpc: Add POWER10 raw mode cputable entry
+Date: Mon, 17 Aug 2020 06:26:18 +0530
+Message-Id: <20200817005618.3305028-2-maddy@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200817005618.3305028-1-maddy@linux.ibm.com>
+References: <20200817005618.3305028-1-maddy@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-16_12:2020-08-14,
+ 2020-08-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 bulkscore=0
+ phishscore=0 adultscore=0 spamscore=0 priorityscore=1501 mlxscore=0
+ suspectscore=1 lowpriorityscore=0 impostorscore=0 mlxlogscore=975
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2008160192
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,58 +106,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQpPbiAxNC8wOC8yMCA2OjE5IHBtLCBIZWluZXIgS2FsbHdlaXQgd3JvdGU6DQo+IE9uIDE0LjA4
-LjIwMjAgMDQ6NDgsIENocmlzIFBhY2toYW0gd3JvdGU6DQo+PiBIaSwNCj4+DQo+PiBJJ20gc2Vl
-aW5nIGEgcHJvYmxlbSB3aXRoIGFjY2Vzc2luZyBzcGktbm9yIGFmdGVyIHVwZ3JhZGluZyBhIFQy
-MDgxDQo+PiBiYXNlZCBzeXN0ZW0gdG8gbGludXggdjUuNy4xNQ0KPj4NCj4+IEZvciB0aGlzIGJv
-YXJkIHUtYm9vdCBhbmQgdGhlIHUtYm9vdCBlbnZpcm9ubWVudCBsaXZlIG9uIHNwaS1ub3IuDQo+
-Pg0KPj4gV2hlbiBJIHVzZSBmd19zZXRlbnYgZnJvbSB1c2Vyc3BhY2UgSSBnZXQgdGhlIGZvbGxv
-d2luZyBrZXJuZWwgbG9ncw0KPj4NCj4+ICMgZndfc2V0ZW52IGZvbz0xDQo+PiBmc2xfZXNwaSBm
-ZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBm
-c2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBz
-ZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RP
-TiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1
-dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2Zl
-ciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3Bp
-OiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUx
-MTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xf
-ZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQh
-DQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBp
-c24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBT
-UElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBk
-b25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBU
-cmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNwaSBmZmUxMTAw
-MDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+PiBmc2xfZXNw
-aSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQhDQo+
-PiBmc2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBUcmFuc2ZlciBkb25lIGJ1dCByeC90eCBmaWZvJ3Mg
-YXJlbid0IGVtcHR5IQ0KPj4gZnNsX2VzcGkgZmZlMTEwMDAwLnNwaTogU1BJRV9SWENOVCA9IDEs
-IFNQSUVfVFhDTlQgPSAzMg0KPj4gZnNsX2VzcGkgZmZlMTEwMDAwLnNwaTogVHJhbnNmZXIgZG9u
-ZSBidXQgcngvdHggZmlmbydzIGFyZW4ndCBlbXB0eSENCj4+IGZzbF9lc3BpIGZmZTExMDAwMC5z
-cGk6IFNQSUVfUlhDTlQgPSAxLCBTUElFX1RYQ05UID0gMzINCj4+IGZzbF9lc3BpIGZmZTExMDAw
-MC5zcGk6IFRyYW5zZmVyIGRvbmUgYnV0IHJ4L3R4IGZpZm8ncyBhcmVuJ3QgZW1wdHkhDQo+PiBm
-c2xfZXNwaSBmZmUxMTAwMDAuc3BpOiBTUElFX1JYQ05UID0gMSwgU1BJRV9UWENOVCA9IDMyDQo+
-PiAuLi4NCj4+DQo+IFRoaXMgZXJyb3IgcmVwb3J0aW5nIGRvZXNuJ3QgZXhpc3QgeWV0IGluIDQu
-NC4gU28geW91IG1heSBoYXZlIGFuIGlzc3VlDQo+IHVuZGVyIDQuNCB0b28sIGl0J3MganVzdCBu
-b3QgcmVwb3J0ZWQuDQo+IERpZCB5b3UgdmVyaWZ5IHRoYXQgdW5kZXIgNC40IGZ3X3NldGVudiBh
-Y3R1YWxseSBoYXMgYW4gZWZmZWN0Pw0KSnVzdCBkb3VibGUgY2hlY2tlZCBhbmQgeWVzIHVuZGVy
-IDQuNCB0aGUgc2V0dGluZyBkb2VzIGdldCBzYXZlZC4NCj4+IElmIEkgcnVuIGZ3X3ByaW50ZW52
-IChiZWZvcmUgZ2V0dGluZyBpdCBpbnRvIGEgYmFkIHN0YXRlKSBpdCBpcyBhYmxlIHRvDQo+PiBk
-aXNwbGF5IHRoZSBjb250ZW50IG9mIHRoZSBib2FyZHMgdS1ib290IGVudmlyb25tZW50Lg0KPj4N
-Cj4gVGhpcyBtaWdodCBpbmRpY2F0ZSBhbiBpc3N1ZSB3aXRoIHNwaSBiZWluZyBsb2NrZWQuIEkn
-dmUgc2VlbiByZWxhdGVkDQo+IHF1ZXN0aW9ucywganVzdCB1c2UgdGhlIHNlYXJjaCBlbmdpbmUg
-b2YgeW91ciBjaG9pY2UgYW5kIGNoZWNrIGZvcg0KPiBmd19zZXRlbnYgYW5kIGxvY2tlZC4NCkkn
-bSBydW5uaW5nIGEgdmVyc2lvbiBvZiBmd19zZXRlbnYgd2hpY2ggaW5jbHVkZXMgDQpodHRwczov
-L2dpdGxhYi5kZW54LmRlL3UtYm9vdC91LWJvb3QvLS9jb21taXQvZGI4MjAxNTkgc28gaXQgc2hv
-dWxkbid0IA0KYmUgbG9ja2luZyB0aGluZ3MgdW5uZWNlc3NhcmlseS4NCj4+IElmIGJlZW4gdW5z
-dWNjZXNzZnVsIGluIHByb2R1Y2luZyBhIHNldHVwIGZvciBiaXNlY3RpbmcgdGhlIGlzc3VlLiBJ
-IGRvDQo+PiBrbm93IHRoZSBpc3N1ZSBkb2Vzbid0IG9jY3VyIG9uIHRoZSBvbGQgNC40LnggYmFz
-ZWQga2VybmVsIGJ1dCB0aGF0J3MNCj4+IHByb2JhYmx5IG5vdCBtdWNoIGhlbHAuDQo+Pg0KPj4g
-QW55IHBvaW50ZXJzIG9uIHdoYXQgdGhlIGlzc3VlIChhbmQvb3Igc29sdXRpb24pIG1pZ2h0IGJl
-Lg0KPj4NCj4+IFRoYW5rcywNCj4+IENocmlzDQo+Pg0KPiBIZWluZXI=
+Add a raw mode cputable entry for POWER10. Copies most of the fields
+from commit a3ea40d5c736 ("powerpc: Add POWER10 architected mode")
+except for oprofile_cpu_type, machine_check_early, pvr_mask and pvr_mask
+fields. On bare metal systems we use DT CPU features, which doesn't need a
+cputable entry. But in VMs we still rely on the raw cputable entry to
+set the correct values for the PMU related fields.
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---
+ arch/powerpc/kernel/cputable.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 4ca9cf556be92..2aa89c6b28967 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -539,6 +539,25 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check_early	= __machine_check_early_realmode_p9,
+ 		.platform		= "power9",
+ 	},
++	{	/* Power10 */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x00800000,
++		.cpu_name		= "POWER10 (raw)",
++		.cpu_features		= CPU_FTRS_POWER10,
++		.cpu_user_features	= COMMON_USER_POWER10,
++		.cpu_user_features2	= COMMON_USER2_POWER10,
++		.mmu_features		= MMU_FTRS_POWER10,
++		.icache_bsize		= 128,
++		.dcache_bsize		= 128,
++		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
++		.oprofile_cpu_type	= "ppc64/power10",
++		.oprofile_type		= PPC_OPROFILE_INVALID,
++		.cpu_setup		= __setup_cpu_power10,
++		.cpu_restore		= __restore_cpu_power10,
++		.machine_check_early	= __machine_check_early_realmode_p10,
++		.platform		= "power10",
++	},
+ 	{	/* Cell Broadband Engine */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x00700000,
+-- 
+2.26.2
+
