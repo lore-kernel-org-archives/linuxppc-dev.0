@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B73F2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 05:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73A12C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 05:52:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B36120772
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 05:50:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B36120772
+	by mail.kernel.org (Postfix) with ESMTPS id 2E741206DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 05:52:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E741206DA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVNSc36ZSzDqNs
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 15:50:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVNVb1xNLzDqRC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 15:52:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,38 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVNMr2HwDzDqN5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 15:46:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVNMr2C2XzDqLC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 15:46:45 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BVNMg4Yg9z9tytp;
- Mon, 17 Aug 2020 07:46:39 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BVNMb4NNFz9tytm;
+ Mon, 17 Aug 2020 07:46:35 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id vtjVRr15GY8P; Mon, 17 Aug 2020 07:46:39 +0200 (CEST)
+ with ESMTP id BF9zu5YcO0s8; Mon, 17 Aug 2020 07:46:35 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BVNMg3d2Zz9tytn;
- Mon, 17 Aug 2020 07:46:39 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BVNMb30Ryz9tytl;
+ Mon, 17 Aug 2020 07:46:35 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 477298B772;
- Mon, 17 Aug 2020 07:46:44 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3DA2C8B772;
+ Mon, 17 Aug 2020 07:46:40 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id pLXIvOJRt5b4; Mon, 17 Aug 2020 07:46:44 +0200 (CEST)
+ with ESMTP id H2O5bNNzOIr4; Mon, 17 Aug 2020 07:46:40 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.230.104])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 298EB8B75B;
- Mon, 17 Aug 2020 07:46:44 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F1498B75B;
+ Mon, 17 Aug 2020 07:46:40 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 26C8565CDD; Mon, 17 Aug 2020 05:46:44 +0000 (UTC)
-Message-Id: <2d89732a9062b2cf2651728804e4b8f6c9b9358e.1597643164.git.christophe.leroy@csgroup.eu>
+ id 0451D65CDD; Mon, 17 Aug 2020 05:46:39 +0000 (UTC)
+Message-Id: <9d11143d4e27ba8274369a926968756917584868.1597643153.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1] powerpc/process: Replace #ifdef CONFIG_KALLSYMS by
- IS_ENABLED()
+Subject: [PATCH v1] powerpc/process: Remove unnecessary #ifdef
+ CONFIG_FUNCTION_GRAPH_TRACER
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 17 Aug 2020 05:46:44 +0000 (UTC)
+Date: Mon, 17 Aug 2020 05:46:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,39 +75,44 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The #ifdef CONFIG_KALLSYMS encloses some printk which can
-compile in all cases.
+ftrace_graph_ret_addr() is always defined and returns 'ip' when
+CONFIG_FUNCTION GRAPH_TRACER is not set.
 
-Replace by IS_ENABLED().
+So the #ifdef is not needed, remove it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/process.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/process.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 087711aa0126..987bc8e73d5e 100644
+index ffbe79960c73..e86e28c28259 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -1469,14 +1469,14 @@ void show_regs(struct pt_regs * regs)
- 			break;
- 	}
- 	pr_cont("\n");
--#ifdef CONFIG_KALLSYMS
- 	/*
- 	 * Lookup NIP late so we have the best change of getting the
- 	 * above info out without failing
- 	 */
--	printk("NIP ["REG"] %pS\n", regs->nip, (void *)regs->nip);
--	printk("LR ["REG"] %pS\n", regs->link, (void *)regs->link);
+@@ -2096,10 +2096,8 @@ void show_stack(struct task_struct *tsk, unsigned long *stack,
+ 	unsigned long sp, ip, lr, newsp;
+ 	int count = 0;
+ 	int firstframe = 1;
+-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 	unsigned long ret_addr;
+ 	int ftrace_idx = 0;
 -#endif
-+	if (IS_ENABLED(CONFIG_KALLSYMS)) {
-+		printk("NIP ["REG"] %pS\n", regs->nip, (void *)regs->nip);
-+		printk("LR ["REG"] %pS\n", regs->link, (void *)regs->link);
-+	}
- 	show_stack(current, (unsigned long *) regs->gpr[1], KERN_DEFAULT);
- 	if (!user_mode(regs))
- 		show_instructions(regs);
+ 
+ 	if (tsk == NULL)
+ 		tsk = current;
+@@ -2127,12 +2125,10 @@ void show_stack(struct task_struct *tsk, unsigned long *stack,
+ 		if (!firstframe || ip != lr) {
+ 			printk("%s["REG"] ["REG"] %pS",
+ 				loglvl, sp, ip, (void *)ip);
+-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 			ret_addr = ftrace_graph_ret_addr(current,
+ 						&ftrace_idx, ip, stack);
+ 			if (ret_addr != ip)
+ 				pr_cont(" (%pS)", (void *)ret_addr);
+-#endif
+ 			if (firstframe)
+ 				pr_cont(" (unreliable)");
+ 			pr_cont("\n");
 -- 
 2.25.0
 
