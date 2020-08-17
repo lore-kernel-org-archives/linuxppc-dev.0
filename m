@@ -1,4 +1,4 @@
-Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=LqqS=B4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
@@ -8,69 +8,70 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CA64C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 23:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC0ABC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 00:01:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3721C2075E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 23:59:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 637A2206FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 00:01:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ip5e87uT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3721C2075E
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IiQth7+0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 637A2206FA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVrc75r9ZzDqX0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 09:59:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVrfk2t2SzDqYS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 10:01:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::842;
- helo=mail-qt1-x842.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::742;
+ helo=mail-qk1-x742.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ip5e87uT; dkim-atps=neutral
-Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com
- [IPv6:2607:f8b0:4864:20::842])
+ header.s=20161025 header.b=IiQth7+0; dkim-atps=neutral
+Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
+ [IPv6:2607:f8b0:4864:20::742])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVrCj4qmczDqVp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 09:41:21 +1000 (AEST)
-Received: by mail-qt1-x842.google.com with SMTP id x12so13873728qtp.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 16:41:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVrCn0DLszDqVx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 09:41:25 +1000 (AEST)
+Received: by mail-qk1-x742.google.com with SMTP id j187so16656015qke.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 16:41:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Bt5dSumf7fQqfy+NC/7uAZCPhM5E07Z6kjHuc5sIsVM=;
- b=ip5e87uTCRBONfOGHdHJtLQ4xjOlyN0lrHW1cGtFqHdIZUQW/Fl3+AHcHqlpqsBqgg
- Vc7pmOXKlkYbDxbblBhqmMk8qFXDv1c/uOrwlTK114uijA+T+K9RnFe7/lZnB+kDziSL
- 4NMRSHzhYMQA2Z5f0aUaDtZkVXQcdWUPa7dVtmEC80wk1J3YFeLBLAPmPPqYvtaNbsr4
- hYxnDD8avYh+Uu/foj5JecanBFWC9CvOERDc1CbFaYKt13by3/7iFjUxNjE9M5OI9HVq
- 2jhDMnnDwms3cWsrJafiAvhfz3TVE9Kf9bqvB7AgHj6W4DzvkjwgF0yC6A0EyfRfTnz5
- 1GuQ==
+ bh=y7/RxrEgFbiJeIJ6odgzjv0QMFDSvXInIkcTRZMw0eA=;
+ b=IiQth7+0e0kRkPXTuZa3ekMLeZ9wkT9s3Y+ETQFOXeUnYOuhb72kf9D0pkNi/MxoLv
+ y0fF0bfFWEckv1n1Sw1dBF2Vo5kwVhU8rMuQ01UAMhYYLzt+NzzqSB5QEu4/hwayw9Av
+ zB5PCYtduyvUIau6q2mGsAyIAboxD2LdWU2C9KCxddPBcQtiYo0Z+G/cJSqIEmR+YmkT
+ /dDMr61Bpazjzj29QTR+S0sTPiH/U+Cg1J2USuYEeF3KFJ0xXvB1wnLK+vsX0wioIF7j
+ mhhuxf5PPc6D5sk+e/E36iKhKOEYANPapwK2KXySAGcN7UZfSxl+dDuxC62sje3dLaLZ
+ Eulw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Bt5dSumf7fQqfy+NC/7uAZCPhM5E07Z6kjHuc5sIsVM=;
- b=eCPplzmEOSNUq1+wSGbl3PI6hn7KPWofbWwtYnFh+kiNneT2x9wWJBeVrNo3Caewfm
- j32E4JEnCqagI5DSBO0mg5ospjgUP0MJAlWflzxxZvhmdk89iLGVDtB7ClMeXY1CtpDb
- EVxOY9vi2Drjq38jaPeiqjKleOD1rzMaEYTIj1YIyWKnZRHpN8AMxHPx1UyZS+r/BSCq
- fI3e1FSWn46IjMt7yBollMpHkfKyjYIpm2FLAMNp+s5idSnYOro2oymMNxNnrtQks3Y9
- 2ILf1m3Lg1k8iP+suQbpjlOkhTLYaogyZeA3vg5jpL6mMuXMa6y7qHaaT+TeYf0kD+34
- VpnA==
-X-Gm-Message-State: AOAM532N9wWmNOVqkmNbkbRqG3ZebYtX3KvA2LOcf5DcAZ2BpkLxJWXs
- KqhqTtoMuWPNQDeb4TKt3sc=
-X-Google-Smtp-Source: ABdhPJyd4qd5FkMrNMA213v9PdS2NirSn8aLvUjDAn2RrBNdJZtZSITLsm0p33/sSCZ9Y+3mArw5Hg==
-X-Received: by 2002:ac8:478e:: with SMTP id k14mr15701534qtq.21.1597707677040; 
- Mon, 17 Aug 2020 16:41:17 -0700 (PDT)
+ bh=y7/RxrEgFbiJeIJ6odgzjv0QMFDSvXInIkcTRZMw0eA=;
+ b=kosPmL4gbLjlckTxXVnYhnSUDQWXnXPjwI+4nZUGYWZiv5UJXIlXoM9hv6oDTpbi0v
+ PvpaJpXMwCAMr+3cXR1iBBtqYKp/oXF7slkBrXCRoL8Z99nWRXwMN+RL3XF6aIv0CHST
+ w2o+AW8IxPNdV4YbIPEyeVLEATKDp8m0P5p0sl0H/rFKTVFIZNaA1FJlLXJC3SP2BkCw
+ u2EUpx8tYI7vBqeo5h+Of4EKMeXSROdv5nzKRsxX1y4eypfefhxqwNQrhbNS3wmtkrGw
+ JU+iwyGcAMnna3N4d5jzMay6Kquuvrpa8iAkwHhMUT45TE21b6rwDbUf+HoHIZjsPh/q
+ a9Pw==
+X-Gm-Message-State: AOAM533YRnY3g4q2n0Rn1zOUew2L6qCfHfPdD1Xix95t4XUU+vwR4nKg
+ zMyOWQ82uKArqTjhdTj+p3A=
+X-Google-Smtp-Source: ABdhPJw1kObRxpNNPRo2Qby2q/D7S9MPv9OG18YyKtca1zlLVXdtJqtPEqBmEvx+aezgJrJhNuF5zA==
+X-Received: by 2002:a37:a293:: with SMTP id
+ l141mr15380301qke.222.1597707682020; 
+ Mon, 17 Aug 2020 16:41:22 -0700 (PDT)
 Received: from LeoBras.ibmuc.com ([177.35.193.93])
- by smtp.gmail.com with ESMTPSA id w58sm22342868qth.95.2020.08.17.16.41.12
+ by smtp.gmail.com with ESMTPSA id w58sm22342868qth.95.2020.08.17.16.41.17
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 17 Aug 2020 16:41:16 -0700 (PDT)
+ Mon, 17 Aug 2020 16:41:21 -0700 (PDT)
 From: Leonardo Bras <leobras.c@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -81,9 +82,10 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Ram Pai <linuxram@us.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
  Murilo Fossa Vicentini <muvic@linux.ibm.com>,
  David Dai <zdai@linux.vnet.ibm.com>
-Subject: [PATCH v1 06/10] powerpc/pseries/iommu: Add ddw_list_add() helper
-Date: Mon, 17 Aug 2020 20:40:29 -0300
-Message-Id: <20200817234033.442511-7-leobras.c@gmail.com>
+Subject: [PATCH v1 07/10] powerpc/pseries/iommu: Allow DDW windows starting at
+ 0x00
+Date: Mon, 17 Aug 2020 20:40:30 -0300
+Message-Id: <20200817234033.442511-8-leobras.c@gmail.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200817234033.442511-1-leobras.c@gmail.com>
 References: <20200817234033.442511-1-leobras.c@gmail.com>
@@ -105,99 +107,128 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are two functions adding DDW to the direct_window_list in a
-similar way, so create a ddw_list_add() to avoid duplicity and
-simplify those functions.
+enable_ddw() currently returns the address of the DMA window, which is
+considered invalid if has the value 0x00.
 
-Also, on enable_ddw(), add list_del() on out_free_window to allow
-removing the window from list if any error occurs.
+Also, it only considers valid an address returned from find_existing_ddw
+if it's not 0x00.
+
+Changing this behavior makes sense, given the users of enable_ddw() only
+need to know if direct mapping is possible. It can also allow a DMA window
+starting at 0x00 to be used.
+
+This will be helpful for using a DDW with indirect mapping, as the window
+address will be different than 0x00, but it will not map the whole
+partition.
 
 Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 42 ++++++++++++++++----------
- 1 file changed, 26 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 30 ++++++++++++--------------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 39617ce0ec83..fcdefcc0f365 100644
+index fcdefcc0f365..4031127c9537 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -872,6 +872,24 @@ static u64 find_existing_ddw(struct device_node *pdn)
- 	return dma_addr;
+@@ -852,24 +852,25 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+ 			np, ret);
  }
  
-+static struct direct_window *ddw_list_add(struct device_node *pdn,
-+					  const struct dynamic_dma_window_prop *dma64)
-+{
-+	struct direct_window *window;
-+
-+	window = kzalloc(sizeof(*window), GFP_KERNEL);
-+	if (!window)
-+		return NULL;
-+
-+	window->device = pdn;
-+	window->prop = dma64;
-+	spin_lock(&direct_window_list_lock);
-+	list_add(&window->list, &direct_window_list);
-+	spin_unlock(&direct_window_list_lock);
-+
-+	return window;
-+}
-+
- static int find_existing_ddw_windows(void)
+-static u64 find_existing_ddw(struct device_node *pdn)
++static bool find_existing_ddw(struct device_node *pdn, u64 *dma_addr)
  {
- 	int len;
-@@ -887,18 +905,11 @@ static int find_existing_ddw_windows(void)
- 		if (!direct64)
- 			continue;
+ 	struct direct_window *window;
+ 	const struct dynamic_dma_window_prop *direct64;
+-	u64 dma_addr = 0;
++	bool found = false;
  
--		window = kzalloc(sizeof(*window), GFP_KERNEL);
--		if (!window || len < sizeof(struct dynamic_dma_window_prop)) {
-+		window = ddw_list_add(pdn, direct64);
-+		if (!window || len < sizeof(*direct64)) {
- 			kfree(window);
- 			remove_ddw(pdn, true);
--			continue;
+ 	spin_lock(&direct_window_list_lock);
+ 	/* check if we already created a window and dupe that config if so */
+ 	list_for_each_entry(window, &direct_window_list, list) {
+ 		if (window->device == pdn) {
+ 			direct64 = window->prop;
+-			dma_addr = be64_to_cpu(direct64->dma_base);
++			*dma_addr = be64_to_cpu(direct64->dma_base);
++			found = true;
+ 			break;
  		}
--
--		window->device = pdn;
--		window->prop = direct64;
--		spin_lock(&direct_window_list_lock);
--		list_add(&window->list, &direct_window_list);
--		spin_unlock(&direct_window_list_lock);
  	}
+ 	spin_unlock(&direct_window_list_lock);
  
- 	return 0;
-@@ -1261,7 +1272,8 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
- 	dev_dbg(&dev->dev, "created tce table LIOBN 0x%x for %pOF\n",
- 		  create.liobn, dn);
+-	return dma_addr;
++	return found;
+ }
  
--	window = kzalloc(sizeof(*window), GFP_KERNEL);
-+	/* Add new window to existing DDW list */
-+	window = ddw_list_add(pdn, ddwprop);
- 	if (!window)
- 		goto out_clear_window;
+ static struct direct_window *ddw_list_add(struct device_node *pdn,
+@@ -1131,15 +1132,15 @@ static void reset_dma_window(struct pci_dev *dev, struct device_node *par_dn)
+  * pdn: the parent pe node with the ibm,dma_window property
+  * Future: also check if we can remap the base window for our base page size
+  *
+- * returns the dma offset for use by the direct mapped DMA code.
++ * returns true if can map all pages (direct mapping), false otherwise..
+  */
+-static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
++static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ {
+ 	int len, ret;
+ 	struct ddw_query_response query;
+ 	struct ddw_create_response create;
+ 	int page_shift;
+-	u64 dma_addr, max_addr;
++	u64 max_addr;
+ 	struct device_node *dn;
+ 	u32 ddw_avail[DDW_APPLICABLE_SIZE];
+ 	struct direct_window *window;
+@@ -1150,8 +1151,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
  
-@@ -1280,16 +1292,14 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	mutex_lock(&direct_window_init_mutex);
+ 
+-	dma_addr = find_existing_ddw(pdn);
+-	if (dma_addr != 0)
++	if (find_existing_ddw(pdn, &dev->dev.archdata.dma_offset))
+ 		goto out_unlock;
+ 
+ 	/*
+@@ -1292,7 +1292,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
  		goto out_free_window;
  	}
  
--	window->device = pdn;
--	window->prop = ddwprop;
--	spin_lock(&direct_window_list_lock);
--	list_add(&window->list, &direct_window_list);
--	spin_unlock(&direct_window_list_lock);
--
- 	dma_addr = be64_to_cpu(ddwprop->dma_base);
+-	dma_addr = be64_to_cpu(ddwprop->dma_base);
++	dev->dev.archdata.dma_offset = be64_to_cpu(ddwprop->dma_base);
  	goto out_unlock;
  
  out_free_window:
-+	spin_lock(&direct_window_list_lock);
-+	list_del(&window->list);
-+	spin_unlock(&direct_window_list_lock);
-+
- 	kfree(window);
+@@ -1309,6 +1309,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	kfree(win64->name);
+ 	kfree(win64->value);
+ 	kfree(win64);
++	win64 = NULL;
  
- out_clear_window:
+ out_failed:
+ 	if (default_win_removed)
+@@ -1322,7 +1323,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 
+ out_unlock:
+ 	mutex_unlock(&direct_window_init_mutex);
+-	return dma_addr;
++	return win64;
+ }
+ 
+ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+@@ -1401,11 +1402,8 @@ static bool iommu_bypass_supported_pSeriesLP(struct pci_dev *pdev, u64 dma_mask)
+ 			break;
+ 	}
+ 
+-	if (pdn && PCI_DN(pdn)) {
+-		pdev->dev.archdata.dma_offset = enable_ddw(pdev, pdn);
+-		if (pdev->dev.archdata.dma_offset)
+-			return true;
+-	}
++	if (pdn && PCI_DN(pdn))
++		return enable_ddw(pdev, pdn);
+ 
+ 	return false;
+ }
 -- 
 2.25.4
 
