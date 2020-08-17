@@ -2,64 +2,99 @@ Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D42B7C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 06:05:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85AE6C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 06:07:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 843D820758
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 06:05:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 843D820758
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id E036220758
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 06:07:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="WdTCvXh9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E036220758
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVNnk6ygrzDqR3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 16:05:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVNr06N98zDqRG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 16:07:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=WdTCvXh9; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVNPH1RdzzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 15:48:03 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BVNP51ZDlz9tytp;
- Mon, 17 Aug 2020 07:47:53 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QRHWJm_0Kott; Mon, 17 Aug 2020 07:47:53 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BVNP50bKHz9tytl;
- Mon, 17 Aug 2020 07:47:53 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DACB58B772;
- Mon, 17 Aug 2020 07:47:57 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 6QK3ZqyPopiP; Mon, 17 Aug 2020 07:47:57 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.104])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A4F488B75B;
- Mon, 17 Aug 2020 07:47:57 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 68B3465CDD; Mon, 17 Aug 2020 05:47:57 +0000 (UTC)
-Message-Id: <698df8387555765b70ea42e4a7fa48141c309c1f.1597643221.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <0eb61cf0dc66d781d47deb2228498cd61d03a754.1597643221.git.christophe.leroy@csgroup.eu>
-References: <0eb61cf0dc66d781d47deb2228498cd61d03a754.1597643221.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 3/4] powerpc/process: Remove useless #ifdef CONFIG_SPE
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 17 Aug 2020 05:47:57 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVNdQ6VMTzDqRS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 15:58:34 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07H5XEfQ021062; Mon, 17 Aug 2020 01:58:29 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=0JyaojSeidFgW91+4LumV4mANqPiYUwOp/oCjQ1e5X4=;
+ b=WdTCvXh9NVztTa7dfcoSd/Kfxy3mc/qrSvyoBpq3bqqt8811uYaQwb62HvI85/9IUq6f
+ jk62G6mozd1biZds3cVmhMfBxspfFwlovXwwftmcvq1iS7gVB0vi8OiCLKcL6rjB0lpw
+ OAT1Z0NP3epeb4zFg0AUWCFes1SUqxhzUev2Nj8PvGTtOykt6kic5vZOXdGmCWbM+wfa
+ NhokrOFb+NmZyMxT6h46g8RW7eJdDIBdvkbv6UT/1KVFWkKxevpE2LKP3DRWeUcYj4EA
+ rvEqGlVNF21ZCDUF/3pdmvTJFMhjDDSDXokaHyOy6VNzn36ROpfO1DSBs/xmrxgSggu2 tg== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32y3ss21m4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Aug 2020 01:58:28 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07H5pnE6032707;
+ Mon, 17 Aug 2020 05:53:09 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma06ams.nl.ibm.com with ESMTP id 32x6ygsv7r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 17 Aug 2020 05:53:09 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07H5r7S427918766
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 17 Aug 2020 05:53:07 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E29B911C066;
+ Mon, 17 Aug 2020 05:53:06 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3B8B711C05E;
+ Mon, 17 Aug 2020 05:53:04 +0000 (GMT)
+Received: from srikart450.in.ibm.com (unknown [9.85.121.222])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 17 Aug 2020 05:53:03 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3] powerpc/numa: Restrict possible nodes based on platform
+Date: Mon, 17 Aug 2020 11:22:57 +0530
+Message-Id: <20200817055257.110873-1-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.26.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-17_01:2020-08-17,
+ 2020-08-17 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0
+ mlxscore=0 bulkscore=0 suspectscore=0 mlxlogscore=999 lowpriorityscore=0
+ priorityscore=1501 spamscore=0 clxscore=1015 impostorscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2008170040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,145 +106,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Bharata B Rao <bharata@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-cpu_has_feature(CPU_FTR_SPE) returns false when CONFIG_SPE is
-not set.
+As per draft LoPAPR (Revision 2.9_pre7), section B.5.3 "Run Time Abstaction
+Services (RTAS) Node at
+https://openpowerfoundation.org/wp-content/uploads/2020/07/LoPAR-20200611.pdf,
+there are 2 device tree property ibm,max-associativity-domains (which
+defines the maximum number of domains that the firmware i.e PowerVM can
+support) and ibm,current-associativity-domains (which defines the maximum
+number of domains that the platform can support). Value of
+ibm,max-associativity-domains property is always greater than or equal to
+ibm,current-associativity-domains property. If the said property is not
+available, use ibm,max-associativity-domain as fallback. In this yet to be
+released LoPAPR, ibm,current-associativity-domains is mentioned in page 833
+/ B.5.3 which is covered under under "Appendix B. System Binding" section
 
-There is no need to enclose the test in an #ifdef CONFIG_SPE.
-Remove it.
+Currently Powerpc uses ibm,max-associativity-domains property while
+setting the possible number of nodes. This is currently set at 32.
+However the possible number of nodes for a platform may be significantly
+less. Hence set the possible number of nodes based on
+ibm,current-associativity-domains property.
 
-CPU_FTR_SPE only exists on 32 bits. Define it as 0 on 64 bits.
+Nathan Lynch had raised a valid concern that post LPM, a user could DLPAR
+add processors and memory after LPM with "new" associativity properties.
+https://lore.kernel.org/linuxppc-dev/871rljfet9.fsf@linux.ibm.com/t/#u
 
-We have a couple of places like:
+He also pointed out that ibm,max-associativity-domains has the same contents
+on all currently available PowerVM systems, unlike
+ibm,current-associativity-domains and hence may be better able to handle the
+new numa associativity properties.
 
- #ifdef CONFIG_SPE
-	if (cpu_has_feature(CPU_FTR_SPE)) {
-		do_something_that_requires_CONFIG_SPE
-	} else {
-		return -EINVAL;
-	}
- #else
-	return -EINVAL;
- #endif
+However with the recent commit dbce45628085 ("powerpc/numa: Limit possible
+nodes to within num_possible_nodes"), all new numa  associativity properties
+are capped to initially set nr_node_ids. Hence this commit should be safe
+with any new dlpar add post LPM.
 
-Replace them by a cleaner version:
+$ lsprop /proc/device-tree/rtas/ibm,*associ*-domains
+/proc/device-tree/rtas/ibm,current-associativity-domains
+		 00000005 00000001 00000002 00000002 00000002 00000010
+/proc/device-tree/rtas/ibm,max-associativity-domains
+		 00000005 00000001 00000008 00000020 00000020 00000100
 
-	if (cpu_has_feature(CPU_FTR_SPE)) {
- #ifdef CONFIG_SPE
-		do_something_that_requires_CONFIG_SPE
- #endif
-	} else {
-		return -EINVAL;
-	}
+$ cat /sys/devices/system/node/possible ##Before patch
+0-31
 
-When CONFIG_SPE is not set, this resolves to an unconditional
-return of -EINVAL
+$ cat /sys/devices/system/node/possible ##After patch
+0-1
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Note the maximum nodes this platform can support is only 2 but the
+possible nodes is set to 32.
+
+This is important because lot of kernel and user space code allocate
+structures for all possible nodes leading to a lot of memory that is
+allocated but not used.
+
+I ran a simple experiment to create and destroy 100 memory cgroups on
+boot on a 8 node machine (Power8 Alpine).
+
+Before patch
+free -k at boot
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     4106816   518820608       22272      570752   516606720
+Swap:       4194240           0     4194240
+
+free -k after creating 100 memory cgroups
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     4628416   518246464       22336      623296   516058688
+Swap:       4194240           0     4194240
+
+free -k after destroying 100 memory cgroups
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     4697408   518173760       22400      627008   515987904
+Swap:       4194240           0     4194240
+
+After patch
+free -k at boot
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     3969472   518933888       22272      594816   516731776
+Swap:       4194240           0     4194240
+
+free -k after creating 100 memory cgroups
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     4181888   518676096       22208      640192   516496448
+Swap:       4194240           0     4194240
+
+free -k after destroying 100 memory cgroups
+              total        used        free      shared  buff/cache   available
+Mem:      523498176     4232320   518619904       22272      645952   516443264
+Swap:       4194240           0     4194240
+
+Observations:
+Fixed kernel takes 137344 kb (4106816-3969472) less to boot.
+Fixed kernel takes 309184 kb (4628416-4181888-137344) less to create 100 memcgs.
+
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Anton Blanchard <anton@ozlabs.org>
+Cc: Bharata B Rao <bharata@linux.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/cputable.h |  1 +
- arch/powerpc/kernel/process.c       | 21 +++++++--------------
- 2 files changed, 8 insertions(+), 14 deletions(-)
+Changelog v2->v3:
+v2: https://lore.kernel.org/linuxppc-dev/20200707140644.7241-1-srikar@linux.vnet.ibm.com/t/#u
+Updated commit msg to mention LoPAPR reference section  and url details
+					(Michael Ellerman)
+Updated commit msg to discuss about possible new numa associativity properties.
+					(Nathan Lynch)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index fdddb822d564..cc21dbcc6794 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -165,6 +165,7 @@ static inline void cpu_feature_keys_init(void) { }
- #else	/* CONFIG_PPC32 */
- /* Define these to 0 for the sake of tests in common code */
- #define CPU_FTR_PPC_LE			(0)
-+#define CPU_FTR_SPE			(0)
- #endif
+Changelog v1->v2:
+v1: https://lore.kernel.org/linuxppc-dev/20200706064002.14848-1-srikar@linux.vnet.ibm.com/t/#u
+Fallback to ibm,max-associativity-domains if ibm,current-associativity
+is not available. Suggested by Tyrel Datwyler.
+
+ arch/powerpc/mm/numa.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 9fcf2d195830..fc7b0505bdd8 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -896,10 +896,19 @@ static void __init find_possible_nodes(void)
+ 	if (!rtas)
+ 		return;
  
- /*
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 360415689f8a..7090c99a60d9 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -413,10 +413,8 @@ static int __init init_msr_all_available(void)
- 		msr_all_available |= MSR_VEC;
- 	if (cpu_has_feature(CPU_FTR_VSX))
- 		msr_all_available |= MSR_VSX;
--#ifdef CONFIG_SPE
- 	if (cpu_has_feature(CPU_FTR_SPE))
- 		msr_all_available |= MSR_SPE;
--#endif
- 
- 	return 0;
- }
-@@ -446,10 +444,8 @@ void giveup_all(struct task_struct *tsk)
- #endif
- 	if (usermsr & MSR_VEC)
- 		__giveup_altivec(tsk);
--#ifdef CONFIG_SPE
- 	if (usermsr & MSR_SPE)
- 		__giveup_spe(tsk);
--#endif
- 
- 	msr_check_and_clear(msr_all_available);
- }
-@@ -1843,7 +1839,6 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
- 	 * fpexc_mode.  fpexc_mode is also used for setting FP exception
- 	 * mode (asyn, precise, disabled) for 'Classic' FP. */
- 	if (val & PR_FP_EXC_SW_ENABLE) {
--#ifdef CONFIG_SPE
- 		if (cpu_has_feature(CPU_FTR_SPE)) {
- 			/*
- 			 * When the sticky exception bits are set
-@@ -1857,16 +1852,15 @@ int set_fpexc_mode(struct task_struct *tsk, unsigned int val)
- 			 * anyway to restore the prctl settings from
- 			 * the saved environment.
- 			 */
-+#ifdef CONFIG_SPE
- 			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			tsk->thread.fpexc_mode = val &
- 				(PR_FP_EXC_SW_ENABLE | PR_FP_ALL_EXCEPT);
-+#endif
- 			return 0;
- 		} else {
- 			return -EINVAL;
- 		}
--#else
--		return -EINVAL;
--#endif
- 	}
- 
- 	/* on a CONFIG_SPE this does not hurt us.  The bits that
-@@ -1887,8 +1881,7 @@ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
- {
- 	unsigned int val;
- 
--	if (tsk->thread.fpexc_mode & PR_FP_EXC_SW_ENABLE)
--#ifdef CONFIG_SPE
-+	if (tsk->thread.fpexc_mode & PR_FP_EXC_SW_ENABLE) {
- 		if (cpu_has_feature(CPU_FTR_SPE)) {
- 			/*
- 			 * When the sticky exception bits are set
-@@ -1902,15 +1895,15 @@ int get_fpexc_mode(struct task_struct *tsk, unsigned long adr)
- 			 * anyway to restore the prctl settings from
- 			 * the saved environment.
- 			 */
-+#ifdef CONFIG_SPE
- 			tsk->thread.spefscr_last = mfspr(SPRN_SPEFSCR);
- 			val = tsk->thread.fpexc_mode;
-+#endif
- 		} else
- 			return -EINVAL;
--#else
--		return -EINVAL;
--#endif
--	else
-+	} else {
- 		val = __unpack_fe01(tsk->thread.fpexc_mode);
+-	if (of_property_read_u32_index(rtas,
+-				"ibm,max-associativity-domains",
++	if (of_property_read_u32_index(rtas, "ibm,current-associativity-domains",
++				min_common_depth, &numnodes)) {
++		/*
++		 * ibm,current-associativity-domains is a fairly recent
++		 * property. If it doesn't exist, then fallback on
++		 * ibm,max-associativity-domains. Current denotes what the
++		 * platform can support compared to max which denotes what the
++		 * Hypervisor can support.
++		 */
++		if (of_property_read_u32_index(rtas, "ibm,max-associativity-domains",
+ 				min_common_depth, &numnodes))
+-		goto out;
++			goto out;
 +	}
- 	return put_user(val, (unsigned int __user *) adr);
- }
  
+ 	for (i = 0; i < numnodes; i++) {
+ 		if (!node_possible(i))
 -- 
-2.25.0
+2.18.2
 
