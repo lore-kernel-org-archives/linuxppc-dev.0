@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8564CC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 00:58:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F7B5C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 01:00:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 67BB72075D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 00:58:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E75B8206F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 01:00:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="EGQK01H4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67BB72075D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Wldr7sxA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E75B8206F4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVFyv1rTxzDqQx
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 10:58:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVG1V0NM2zDqQ5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:00:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
@@ -30,59 +30,56 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=EGQK01H4; dkim-atps=neutral
+ header.s=pp1 header.b=Wldr7sxA; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVFx10My0zDqP4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVFx01yPNzDqP3
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 10:56:36 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07GNWYWw136672; Sun, 16 Aug 2020 20:56:33 -0400
+ 07H0XTWK048877; Sun, 16 Aug 2020 20:56:29 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=l4PXOLl4Ara4Jpn/8lc/6fgLc6xC/AXpOMwdxuOe8CI=;
- b=EGQK01H4mwrY113SoCoclJE1XP9CBwWRrR7Zk+1DRDh/8/36E7RNHfVG+At/+jdhIhVW
- PV31ezVY+n2IsvieM30hPfrAY///chAEEUnwWJpTe+sBLgolEKzI3qcMy/PPpjecVwWl
- Wc5yMRhc3pDwoVRomFGn7DqVCacuM/Amj7s/vq5hj5hlvwC8LEaMEy30mMKpAJoMgaC6
- VJgnJlVqdHCmCw1oBvpxLXaUgJfk26bO58Q/xbc01rEQgYNDvl3prFgAg47DHcrWDnGj
- n67dJ7v7m01SzAbtKw2ESD4fgyRZjELTTvN7p7pnuhQa7DxVxkBDiEbyceKPmZ8exgyU 8Q== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 32y85xysvy-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=QNTE70ImkAcuOTj81J/CO55MAbHdnXmC0GxgSn+KnwM=;
+ b=Wldr7sxA+1d31iLcW7qg9PB2tXWvepFiVJirJfXE++LHI4Zb1S/c0X0A1cgL+5xhtBJS
+ +EguGAGr+GhGUNizKe/2MavtM3k1KMSif2crDvd1lDKHGLred1o7jQF776u+T7laAxo0
+ aIE1ZhCkiAVrsfvpb8o3+EO6YZYcLdWF8D/Pxr9/dMBYWTIoBHaxHLAtRmuMqey4y1/G
+ csbnXDOqXUPbHwm0Y551lwu55FTM+Ter3ubYdRKRzDvL2eRuzn5q0ws5ZATEeZTFLc8A
+ X3DGub91/bCkYzb3t+gVGfdwlcb6S5mGeRv/LWyY4cQlCQhB7f7KQ4PiinmrUKKCVgcy eA== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 32y80gyx2k-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Sun, 16 Aug 2020 20:56:32 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07H0pIkn014997;
- Mon, 17 Aug 2020 00:56:30 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06fra.de.ibm.com with ESMTP id 32x6ygs0u8-1
+ Sun, 16 Aug 2020 20:56:29 -0400
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+ by ppma04fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07H0oj8V008321;
+ Mon, 17 Aug 2020 00:56:27 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma04fra.de.ibm.com with ESMTP id 32x7b7h0n2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 17 Aug 2020 00:56:30 +0000
+ Mon, 17 Aug 2020 00:56:26 +0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07H0uR8d28770710
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 07H0uOX961407738
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 17 Aug 2020 00:56:27 GMT
+ Mon, 17 Aug 2020 00:56:24 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B53D452051;
- Mon, 17 Aug 2020 00:56:27 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 26B9E52052;
+ Mon, 17 Aug 2020 00:56:24 +0000 (GMT)
 Received: from localhost.in.ibm.com (unknown [9.85.91.31])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id A5D215204F;
- Mon, 17 Aug 2020 00:56:26 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 174D95204E;
+ Mon, 17 Aug 2020 00:56:22 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 2/2] powerpc: Add POWER10 raw mode cputable entry
-Date: Mon, 17 Aug 2020 06:26:18 +0530
-Message-Id: <20200817005618.3305028-2-maddy@linux.ibm.com>
+Subject: [PATCH 1/2] powerpc/kernel/cputable: cleanup the function declarations
+Date: Mon, 17 Aug 2020 06:26:17 +0530
+Message-Id: <20200817005618.3305028-1-maddy@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200817005618.3305028-1-maddy@linux.ibm.com>
-References: <20200817005618.3305028-1-maddy@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -90,11 +87,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-16_12:2020-08-14,
  2020-08-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 bulkscore=0
- phishscore=0 adultscore=0 spamscore=0 priorityscore=1501 mlxscore=0
- suspectscore=1 lowpriorityscore=0 impostorscore=0 mlxlogscore=975
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008160192
+ mlxlogscore=809 phishscore=0
+ adultscore=0 clxscore=1015 spamscore=0 impostorscore=0 lowpriorityscore=0
+ suspectscore=1 mlxscore=0 priorityscore=1501 bulkscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2008170003
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,48 +108,99 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a raw mode cputable entry for POWER10. Copies most of the fields
-from commit a3ea40d5c736 ("powerpc: Add POWER10 architected mode")
-except for oprofile_cpu_type, machine_check_early, pvr_mask and pvr_mask
-fields. On bare metal systems we use DT CPU features, which doesn't need a
-cputable entry. But in VMs we still rely on the raw cputable entry to
-set the correct values for the PMU related fields.
+__machine_check_early_realmode_p*() are currently declared
+as extern in cputable.c and because of this when compiled
+with "C=1" (which enables semantic checker) produces these
+warnings.
 
+  CHECK   arch/powerpc/kernel/mce_power.c
+arch/powerpc/kernel/mce_power.c:709:6: warning: symbol '__machine_check_early_realmode_p7' was not declared. Should it be static?
+arch/powerpc/kernel/mce_power.c:717:6: warning: symbol '__machine_check_early_realmode_p8' was not declared. Should it be static?
+arch/powerpc/kernel/mce_power.c:722:6: warning: symbol '__machine_check_early_realmode_p9' was not declared. Should it be static?
+arch/powerpc/kernel/mce_power.c:740:6: warning: symbol '__machine_check_early_realmode_p10' was not declared. Should it be static?
+
+Patch here moves the declaration to asm/mce.h
+and includes the same in cputable.c
+
+Fixes: ae744f3432d3 ("powerpc/book3s: Flush SLB/TLBs if we get SLB/TLB machine check errors on power8")
+Fixes: 7b9f71f974a1 ("powerpc/64s: POWER9 machine check handler")
 Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 ---
- arch/powerpc/kernel/cputable.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/include/asm/cputable.h | 5 +++++
+ arch/powerpc/include/asm/mce.h      | 7 +++++++
+ arch/powerpc/kernel/cputable.c      | 3 ---
+ arch/powerpc/kernel/dt_cpu_ftrs.c   | 4 ----
+ 4 files changed, 12 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index fdddb822d564b..e005b45810232 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -9,6 +9,11 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++/*
++ * Added to include __machine_check_early_realmode_* functions
++ */
++#include <asm/mce.h>
++
+ /* This structure can grow, it's real size is used by head.S code
+  * via the mkdefs mechanism.
+  */
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index adf2cda67f9a4..89aa8248a57dd 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -210,6 +210,9 @@ struct mce_error_info {
+ #define MCE_EVENT_RELEASE	true
+ #define MCE_EVENT_DONTRELEASE	false
+ 
++struct pt_regs;
++struct notifier_block;
++
+ extern void save_mce_event(struct pt_regs *regs, long handled,
+ 			   struct mce_error_info *mce_err, uint64_t nip,
+ 			   uint64_t addr, uint64_t phys_addr);
+@@ -225,5 +228,9 @@ int mce_register_notifier(struct notifier_block *nb);
+ int mce_unregister_notifier(struct notifier_block *nb);
+ #ifdef CONFIG_PPC_BOOK3S_64
+ void flush_and_reload_slb(void);
++long __machine_check_early_realmode_p7(struct pt_regs *regs);
++long __machine_check_early_realmode_p8(struct pt_regs *regs);
++long __machine_check_early_realmode_p9(struct pt_regs *regs);
++long __machine_check_early_realmode_p10(struct pt_regs *regs);
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ #endif /* __ASM_PPC64_MCE_H__ */
 diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 4ca9cf556be92..2aa89c6b28967 100644
+index 3d406a9626e86..4ca9cf556be92 100644
 --- a/arch/powerpc/kernel/cputable.c
 +++ b/arch/powerpc/kernel/cputable.c
-@@ -539,6 +539,25 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check_early	= __machine_check_early_realmode_p9,
- 		.platform		= "power9",
- 	},
-+	{	/* Power10 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x00800000,
-+		.cpu_name		= "POWER10 (raw)",
-+		.cpu_features		= CPU_FTRS_POWER10,
-+		.cpu_user_features	= COMMON_USER_POWER10,
-+		.cpu_user_features2	= COMMON_USER2_POWER10,
-+		.mmu_features		= MMU_FTRS_POWER10,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.num_pmcs		= 6,
-+		.pmc_type		= PPC_PMC_IBM,
-+		.oprofile_cpu_type	= "ppc64/power10",
-+		.oprofile_type		= PPC_OPROFILE_INVALID,
-+		.cpu_setup		= __setup_cpu_power10,
-+		.cpu_restore		= __restore_cpu_power10,
-+		.machine_check_early	= __machine_check_early_realmode_p10,
-+		.platform		= "power10",
-+	},
- 	{	/* Cell Broadband Engine */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x00700000,
+@@ -72,9 +72,6 @@ extern void __setup_cpu_power9(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_power9(void);
+ extern void __setup_cpu_power10(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_power10(void);
+-extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
+ #endif /* CONFIG_PPC64 */
+ #if defined(CONFIG_E500)
+ extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 6f8c0c6b937a1..8dc46f38680b2 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -64,10 +64,6 @@ struct dt_cpu_feature {
+  * Set up the base CPU
+  */
+ 
+-extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p10(struct pt_regs *regs);
+-
+ static int hv_mode;
+ 
+ static struct {
 -- 
 2.26.2
 
