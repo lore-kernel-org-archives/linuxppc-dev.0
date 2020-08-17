@@ -2,80 +2,85 @@ Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3219AC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06BA6C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:29:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF1B720789
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:27:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6FB9A20789
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 11:29:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NYaF30VK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF1B720789
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cl8bVgyV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FB9A20789
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVWxT5yblzDqW8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 21:27:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVWzm2XBFzDqMx
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 21:29:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
- helo=mail-pl1-x644.google.com; envelope-from=allen.cryptic@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=allen.cryptic@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=NYaF30VK; dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+ header.s=20161025 header.b=cl8bVgyV; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVSXW3fJczDqST
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 18:54:28 +1000 (AEST)
-Received: by mail-pl1-x644.google.com with SMTP id r4so7172969pls.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 01:54:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVSXc3Px3zDqBl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 18:54:40 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id h12so7790951pgm.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 01:54:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=bnxXioh0yiQPsqDGs/WZdNyR4Y3nWYKtRgZSCeqOcrI=;
- b=NYaF30VKVufBHJunHpkSU90tB2On6qnirFVgvJbSy7BWgd5aHOmWhSNBusUaftjnzF
- IipaRvhNq/zWrI5KO0/2RSyvHozU28KuvPD+9TBIC9XXndXQkk+eE1bklOXbLGGsh0k3
- X40M2APBFkjc+hTd7qumcLuP7LNbWLM6Pzm7fUdYliDR6j2ThyvyhdPEB69vaWzmnHMu
- Ww6ExG+c5u10qzr8aepJlYsLL7p8O4Wg+9maVodhR5rFuTgnl36RWHqxjiejnsDvSpsh
- ArHH0BIStZoxkcd2Qyqr0qxUW0I3bhfY6IWcvZjJk6jjwaacny6Rq9KTn7l7oM8WeO/M
- lywQ==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=6trBPHS9S/UpnG7t9zPTQG9eTrRzdIZ0hGY6nWo8pT0=;
+ b=cl8bVgyVtDdOuybu7ntzDzVYdGgYTFj4kXvX/Q/SW7SNmWNG4ijca7Pi51LL43Gy/c
+ fGmqeOrUZHiD3EXKBc/QB0aYtBdni4rBXpzCBtH6DHxHnP0p4hcHbp54foY8Sf9y5bq1
+ 3Jr8lSpeanDwpaxSHPeZ2vU/UrVw8OrgNvdEWSjKhiCQibLJLVl+qpOUY/i3UM8ISxRa
+ VrzoCdHHjq1gC10tv6f4hGmwJF3QrZga15f8nH30xEgER7SLCE804KzeVHXGJMwIM4vn
+ YEHygXBdktDk+IzpzxcEfWqY0x8wg0pO/uAHTO90jm8c860oZFr6aXzGTj603h7Tb52o
+ BUiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=bnxXioh0yiQPsqDGs/WZdNyR4Y3nWYKtRgZSCeqOcrI=;
- b=LK8iojrLQBCzU+owBD8n9IIIzTYyIAlfwoY/LAacZXGKJZJwGNj/vAzmYljqo+Jpcr
- lgFGcHATaryiz3IyvK0cfeMxVrL2JUDT62CPYRcJrsF23/gEG+SzuRvvOn3ugZ7m6dBt
- C4vvhGAoUtjNlH3wJ5R7EyIXfYBm6q9O44avxqZoVL6q8CnSF3N7aJ/pNlS+6U7Wgh3v
- zBsR08ADDk+s6qKhcKPrAgtJ6g4QxysfpPK9aTgZunZ0Iv5zlOZs1hBOFxH8KW6850tY
- N19H/ViTBdokP3A1GID8aeL7u1gwAw/fueD68rUXVU0LFABMy2k808tA75FgwZs0+/VV
- bGZQ==
-X-Gm-Message-State: AOAM531ORmXlBtvN/LvLNu8ScNiV6CpMBJagISLAL0dNUV1Bm/lB9QwO
- VQIYnCfE4m57uRWsqiJncD0=
-X-Google-Smtp-Source: ABdhPJwcyGHQv4SvYAxbBC+SLIY12gRvJ0Zhc1zsyNnZoGYYOxMVvqk79RQml5YrTXuVqckLJjf7QA==
-X-Received: by 2002:a17:90a:eb0f:: with SMTP id
- j15mr11147246pjz.26.1597654466055; 
- Mon, 17 Aug 2020 01:54:26 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=6trBPHS9S/UpnG7t9zPTQG9eTrRzdIZ0hGY6nWo8pT0=;
+ b=UYMQaouFtzcIWxEyUMFdO1tMvHDEVLOFwwyRQSXqCqWanwL8wVnzd+AeUPdOix3IZW
+ W7MSMYfJKXSr50OW48ik11QjZT6Irdu90NvkBForOMOu5bj72FBRvxzTgYWQrQOWuadB
+ hIWqomDap3cGtQ1PbkNaqGQjKPbcEgAcQUYOXTJ4r4q9v7I0d/3SJkRyWByLS3HphqT/
+ h6joY6RZ9pUjBHEnIngjnMd8x9YJHuh5aEe1JktAmvdbDLBxIW4LH0N6dtG0AjHT6VK8
+ eufV9gicCgcz5ZHTbDu9gqKZDh3ZmtnM0yEoYRPxGbEC4mOLgN13cR0hHkfZGTCCk0kN
+ jQLg==
+X-Gm-Message-State: AOAM532/d3+C0IUMHk5B4z01wefWhwG+H0F28K09f/LMdF+oZhbog4bz
+ BWHLjfkSY3D1XIMMUER4HPw7X5jl7vmJrg==
+X-Google-Smtp-Source: ABdhPJwjAV9PFZKFZKeGA8kArDIlyD0PRcA0bJOuTXRTyct2hX3bCII6uKRIp7rPH/jH1Bjpszui/A==
+X-Received: by 2002:a62:52d6:: with SMTP id
+ g205mr10856808pfb.144.1597654477011; 
+ Mon, 17 Aug 2020 01:54:37 -0700 (PDT)
 Received: from localhost.localdomain ([49.207.202.98])
- by smtp.gmail.com with ESMTPSA id x12sm18236990pff.48.2020.08.17.01.54.21
+ by smtp.gmail.com with ESMTPSA id x12sm18236990pff.48.2020.08.17.01.54.32
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 17 Aug 2020 01:54:25 -0700 (PDT)
+ Mon, 17 Aug 2020 01:54:36 -0700 (PDT)
 From: Allen Pais <allen.cryptic@gmail.com>
 To: jejb@linux.ibm.com, martin.petersen@oracle.com, kashyap.desai@broadcom.com,
  sumit.saxena@broadcom.com, shivasharan.srikanteshwara@broadcom.com
-Subject: [PATCH 0/8] scsi: convert tasklets to use new tasklet_setup()
-Date: Mon, 17 Aug 2020 14:24:01 +0530
-Message-Id: <20200817085409.25268-1-allen.cryptic@gmail.com>
+Subject: [PATCH 2/8] scsi: esas2r: convert tasklets to use new tasklet_setup()
+ API
+Date: Mon, 17 Aug 2020 14:24:03 +0530
+Message-Id: <20200817085409.25268-3-allen.cryptic@gmail.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200817085409.25268-1-allen.cryptic@gmail.com>
+References: <20200817085409.25268-1-allen.cryptic@gmail.com>
 X-Mailman-Approved-At: Mon, 17 Aug 2020 21:23:56 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -90,49 +95,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: keescook@chromium.org, linux-scsi@vger.kernel.org,
  linux-kernel@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>,
- target-devel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- megaraidlinux.pdl@broadcom.com
+ target-devel@vger.kernel.org, Romain Perier <romain.perier@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, megaraidlinux.pdl@broadcom.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Allen Pais <allen.lkml@gmail.com>
 
-Commit 12cc923f1ccc ("tasklet: Introduce new initialization API")'
-introduced a new tasklet initialization API. This series converts 
-all the scsi drivers to use the new tasklet_setup() API
+In preparation for unconditionally passing the
+struct tasklet_struct pointer to all tasklet
+callbacks, switch to using the new tasklet_setup()
+and from_tasklet() to pass the tasklet pointer explicitly.
 
-Allen Pais (8):
-  scsi: aic94xx: convert tasklets to use new tasklet_setup() API
-  scsi: esas2r: convert tasklets to use new tasklet_setup() API
-  scsi: ibmvscsi: convert tasklets to use new tasklet_setup() API
-  scsi: isci: convert tasklets to use new tasklet_setup() API
-  scsi: megaraid: convert tasklets to use new tasklet_setup() API
-  scsi: mvsas: convert tasklets to use new tasklet_setup() API
-  scsi: pm8001: convert tasklets to use new tasklet_setup() API
-  scsi: pmcraid: convert tasklets to use new tasklet_setup() API
+Signed-off-by: Romain Perier <romain.perier@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/scsi/esas2r/esas2r.h      | 2 +-
+ drivers/scsi/esas2r/esas2r_init.c | 4 +---
+ drivers/scsi/esas2r/esas2r_main.c | 4 ++--
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
- drivers/scsi/aic94xx/aic94xx_hwi.c          |  9 ++--
- drivers/scsi/esas2r/esas2r.h                |  2 +-
- drivers/scsi/esas2r/esas2r_init.c           |  4 +-
- drivers/scsi/esas2r/esas2r_main.c           |  4 +-
- drivers/scsi/ibmvscsi/ibmvfc.c              |  6 +--
- drivers/scsi/ibmvscsi/ibmvscsi.c            |  8 +--
- drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c    |  7 ++-
- drivers/scsi/isci/host.c                    |  4 +-
- drivers/scsi/isci/host.h                    |  2 +-
- drivers/scsi/isci/init.c                    |  3 +-
- drivers/scsi/megaraid/megaraid_mbox.c       |  9 ++--
- drivers/scsi/megaraid/megaraid_sas.h        |  2 +-
- drivers/scsi/megaraid/megaraid_sas_base.c   | 16 +++---
- drivers/scsi/megaraid/megaraid_sas_fusion.c | 14 +++---
- drivers/scsi/mvsas/mv_init.c                |  8 +--
- drivers/scsi/pm8001/pm8001_init.c           | 55 ++++++++++++---------
- drivers/scsi/pm8001/pm8001_sas.h            |  6 ++-
- drivers/scsi/pmcraid.c                      | 29 +++++------
- drivers/scsi/pmcraid.h                      |  9 +++-
- 19 files changed, 104 insertions(+), 93 deletions(-)
-
+diff --git a/drivers/scsi/esas2r/esas2r.h b/drivers/scsi/esas2r/esas2r.h
+index e30d2f1f5368..b99434e24868 100644
+--- a/drivers/scsi/esas2r/esas2r.h
++++ b/drivers/scsi/esas2r/esas2r.h
+@@ -992,7 +992,7 @@ int esas2r_write_vda(struct esas2r_adapter *a, const char *buf, long off,
+ int esas2r_read_fs(struct esas2r_adapter *a, char *buf, long off, int count);
+ int esas2r_write_fs(struct esas2r_adapter *a, const char *buf, long off,
+ 		    int count);
+-void esas2r_adapter_tasklet(unsigned long context);
++void esas2r_adapter_tasklet(struct tasklet_struct *t);
+ irqreturn_t esas2r_interrupt(int irq, void *dev_id);
+ irqreturn_t esas2r_msi_interrupt(int irq, void *dev_id);
+ void esas2r_kickoff_timer(struct esas2r_adapter *a);
+diff --git a/drivers/scsi/esas2r/esas2r_init.c b/drivers/scsi/esas2r/esas2r_init.c
+index eb7d139ffc00..55387c14fb8d 100644
+--- a/drivers/scsi/esas2r/esas2r_init.c
++++ b/drivers/scsi/esas2r/esas2r_init.c
+@@ -401,9 +401,7 @@ int esas2r_init_adapter(struct Scsi_Host *host, struct pci_dev *pcid,
+ 		return 0;
+ 	}
+ 
+-	tasklet_init(&a->tasklet,
+-		     esas2r_adapter_tasklet,
+-		     (unsigned long)a);
++	tasklet_setup(&a->tasklet, esas2r_adapter_tasklet);
+ 
+ 	/*
+ 	 * Disable chip interrupts to prevent spurious interrupts
+diff --git a/drivers/scsi/esas2r/esas2r_main.c b/drivers/scsi/esas2r/esas2r_main.c
+index 7b49e2e9fcde..7ffa9406ab4d 100644
+--- a/drivers/scsi/esas2r/esas2r_main.c
++++ b/drivers/scsi/esas2r/esas2r_main.c
+@@ -1546,9 +1546,9 @@ void esas2r_complete_request_cb(struct esas2r_adapter *a,
+ }
+ 
+ /* Run tasklet to handle stuff outside of interrupt context. */
+-void esas2r_adapter_tasklet(unsigned long context)
++void esas2r_adapter_tasklet(struct tasklet_struct *t)
+ {
+-	struct esas2r_adapter *a = (struct esas2r_adapter *)context;
++	struct esas2r_adapter *a = from_tasklet(a, t, tasklet);
+ 
+ 	if (unlikely(test_bit(AF2_TIMER_TICK, &a->flags2))) {
+ 		clear_bit(AF2_TIMER_TICK, &a->flags2);
 -- 
 2.17.1
 
