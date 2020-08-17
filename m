@@ -2,26 +2,26 @@ Return-Path: <SRS0=WC9B=B3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,TVD_SUBJ_WIPE_DEBT,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1988DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 07:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38309C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 07:48:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE34A2072D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 07:46:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D6D9D2072D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 07:48:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ZssG71vQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE34A2072D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NaImMJ3i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6D9D2072D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVR2L3lsTzDqQy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 17:46:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVR4X5LG7zDqLs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Aug 2020 17:48:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,38 +31,36 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=ZssG71vQ; 
+ header.s=casper.20170209 header.b=NaImMJ3i; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVQjq1hqxzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 17:32:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVQjl1lvmzDqN2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2020 17:32:27 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=/MO4DTudRyJml2PEcTkiDQoSZEGIOk2ndLlyDYzXwmU=; b=ZssG71vQjYRFDhpof6qnVhvxXc
- AfSPOcgNiyBuI49fEkrSSOCjIZaGxwQr2zh7PqtQ6o2w6gJR7T7cS1xEiCpPab6q12KN9khedu6BL
- VE4KJBH9pOSO3RMEJYs6W0G937PDS/nNFKX79Bx1KVqVyZAwB1CDwzgbwMgwFUydRB/ck3iWvXw4E
- 8+wuqx5KSULMpp2TXJK5rH19yGFic/x5/xyUlTabeL6bl93mNoxYR122NnFpyPlRGSg27P0U3ghIZ
- V/xDASLpyC5vYqEcza8LLKSl+PWiNCUObwy1ABxGG2i403F6Gdnxh6tMX7nfw1C/JuW0EQD/HBzCo
- mtDcQ1eg==;
+ Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+ Content-Description:In-Reply-To:References;
+ bh=OPJcXMqpysBuqDGOTGaYk1epWV2KcEsfmdZAVSvmYqU=; b=NaImMJ3i2Uk22oxf8yKOBOEZHz
+ 4ZW+M65EJDfIjwkIsQcQebMiAsuAI4XOwCL1zSV2MvjYuAwcdRyvhuYqdQt5MXDmUnc8eJ5ylhH7T
+ BGEzpwqYG/B8LWEkKZisZa8LemWQFt1VVQw7fLnS3WDE2WesZe+YogShzLVxHfU3/GnL5eiljRyTP
+ KhV/i3ahgENq2QTAYk+JreMRiY7QeCxZKrjWnFxghtJFoHgj95bsqjqDhSDiwRhUhiGo6RcXXrgJf
+ H8IqTDUygHhgQRZRKAQIk9QmcACRpU1gPJC9aJNgHDCD92ocjGquN1mUT7Cdod2vK37kEu9fKQ3r4
+ yvnEyHMw==;
 Received: from [2001:4bb8:188:3918:4550:cdf7:3d45:afb9] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1k7Zd3-0000wS-2Y; Mon, 17 Aug 2020 07:32:25 +0000
+ id 1k7Zcr-0000uo-6f; Mon, 17 Aug 2020 07:32:15 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
  x86@kernel.org
-Subject: [PATCH 07/11] x86: move PAGE_OFFSET, TASK_SIZE & friends to page_{32,
- 64}_types.h
-Date: Mon, 17 Aug 2020 09:32:08 +0200
-Message-Id: <20200817073212.830069-8-hch@lst.de>
+Subject: remove the last set_fs() in common code,
+ and remove it for x86 and powerpc
+Date: Mon, 17 Aug 2020 09:32:01 +0200
+Message-Id: <20200817073212.830069-1-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200817073212.830069-1-hch@lst.de>
-References: <20200817073212.830069-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -85,155 +83,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At least for 64-bit this moves them closer to some of the defines
-they are based on, and it prepares for using the TASK_SIZE_MAX
-definition from assembly.
+Hi all,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/x86/include/asm/page_32_types.h | 11 +++++++
- arch/x86/include/asm/page_64_types.h | 38 +++++++++++++++++++++
- arch/x86/include/asm/processor.h     | 49 ----------------------------
- 3 files changed, 49 insertions(+), 49 deletions(-)
+this series removes the last set_fs() used to force a kernel address
+space for the uaccess code in the kernel read/write/splice code, and then
+stops implementing the address space overrides entirely for x86 and
+powerpc.
 
-diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
-index 565ad755c785e2..26236925fb2c36 100644
---- a/arch/x86/include/asm/page_32_types.h
-+++ b/arch/x86/include/asm/page_32_types.h
-@@ -41,6 +41,17 @@
- #define __VIRTUAL_MASK_SHIFT	32
- #endif	/* CONFIG_X86_PAE */
- 
-+/*
-+ * User space process size: 3GB (default).
-+ */
-+#define IA32_PAGE_OFFSET	PAGE_OFFSET
-+#define TASK_SIZE		PAGE_OFFSET
-+#define TASK_SIZE_LOW		TASK_SIZE
-+#define TASK_SIZE_MAX		TASK_SIZE
-+#define DEFAULT_MAP_WINDOW	TASK_SIZE
-+#define STACK_TOP		TASK_SIZE
-+#define STACK_TOP_MAX		STACK_TOP
-+
- /*
-  * Kernel image size is limited to 512 MB (see in arch/x86/kernel/head_32.S)
-  */
-diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
-index 288b065955b729..996595c9897e0a 100644
---- a/arch/x86/include/asm/page_64_types.h
-+++ b/arch/x86/include/asm/page_64_types.h
-@@ -58,6 +58,44 @@
- #define __VIRTUAL_MASK_SHIFT	47
- #endif
- 
-+/*
-+ * User space process size.  This is the first address outside the user range.
-+ * There are a few constraints that determine this:
-+ *
-+ * On Intel CPUs, if a SYSCALL instruction is at the highest canonical
-+ * address, then that syscall will enter the kernel with a
-+ * non-canonical return address, and SYSRET will explode dangerously.
-+ * We avoid this particular problem by preventing anything executable
-+ * from being mapped at the maximum canonical address.
-+ *
-+ * On AMD CPUs in the Ryzen family, there's a nasty bug in which the
-+ * CPUs malfunction if they execute code from the highest canonical page.
-+ * They'll speculate right off the end of the canonical space, and
-+ * bad things happen.  This is worked around in the same way as the
-+ * Intel problem.
-+ *
-+ * With page table isolation enabled, we map the LDT in ... [stay tuned]
-+ */
-+#define TASK_SIZE_MAX	((1UL << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
-+
-+#define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
-+
-+/* This decides where the kernel will search for a free chunk of vm
-+ * space during mmap's.
-+ */
-+#define IA32_PAGE_OFFSET	((current->personality & ADDR_LIMIT_3GB) ? \
-+					0xc0000000 : 0xFFFFe000)
-+
-+#define TASK_SIZE_LOW		(test_thread_flag(TIF_ADDR32) ? \
-+					IA32_PAGE_OFFSET : DEFAULT_MAP_WINDOW)
-+#define TASK_SIZE		(test_thread_flag(TIF_ADDR32) ? \
-+					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
-+#define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_ADDR32)) ? \
-+					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
-+
-+#define STACK_TOP		TASK_SIZE_LOW
-+#define STACK_TOP_MAX		TASK_SIZE_MAX
-+
- /*
-  * Maximum kernel image size is limited to 1 GiB, due to the fixmap living
-  * in the next 1 GiB (see level2_kernel_pgt in arch/x86/kernel/head_64.S).
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 97143d87994c24..1618eeb08361a9 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -782,17 +782,6 @@ static inline void spin_lock_prefetch(const void *x)
- })
- 
- #ifdef CONFIG_X86_32
--/*
-- * User space process size: 3GB (default).
-- */
--#define IA32_PAGE_OFFSET	PAGE_OFFSET
--#define TASK_SIZE		PAGE_OFFSET
--#define TASK_SIZE_LOW		TASK_SIZE
--#define TASK_SIZE_MAX		TASK_SIZE
--#define DEFAULT_MAP_WINDOW	TASK_SIZE
--#define STACK_TOP		TASK_SIZE
--#define STACK_TOP_MAX		STACK_TOP
--
- #define INIT_THREAD  {							  \
- 	.sp0			= TOP_OF_INIT_STACK,			  \
- 	.sysenter_cs		= __KERNEL_CS,				  \
-@@ -802,44 +791,6 @@ static inline void spin_lock_prefetch(const void *x)
- #define KSTK_ESP(task)		(task_pt_regs(task)->sp)
- 
- #else
--/*
-- * User space process size.  This is the first address outside the user range.
-- * There are a few constraints that determine this:
-- *
-- * On Intel CPUs, if a SYSCALL instruction is at the highest canonical
-- * address, then that syscall will enter the kernel with a
-- * non-canonical return address, and SYSRET will explode dangerously.
-- * We avoid this particular problem by preventing anything executable
-- * from being mapped at the maximum canonical address.
-- *
-- * On AMD CPUs in the Ryzen family, there's a nasty bug in which the
-- * CPUs malfunction if they execute code from the highest canonical page.
-- * They'll speculate right off the end of the canonical space, and
-- * bad things happen.  This is worked around in the same way as the
-- * Intel problem.
-- *
-- * With page table isolation enabled, we map the LDT in ... [stay tuned]
-- */
--#define TASK_SIZE_MAX	((1UL << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
--
--#define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
--
--/* This decides where the kernel will search for a free chunk of vm
-- * space during mmap's.
-- */
--#define IA32_PAGE_OFFSET	((current->personality & ADDR_LIMIT_3GB) ? \
--					0xc0000000 : 0xFFFFe000)
--
--#define TASK_SIZE_LOW		(test_thread_flag(TIF_ADDR32) ? \
--					IA32_PAGE_OFFSET : DEFAULT_MAP_WINDOW)
--#define TASK_SIZE		(test_thread_flag(TIF_ADDR32) ? \
--					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
--#define TASK_SIZE_OF(child)	((test_tsk_thread_flag(child, TIF_ADDR32)) ? \
--					IA32_PAGE_OFFSET : TASK_SIZE_MAX)
--
--#define STACK_TOP		TASK_SIZE_LOW
--#define STACK_TOP_MAX		TASK_SIZE_MAX
--
- #define INIT_THREAD  {						\
- 	.addr_limit		= KERNEL_DS,			\
- }
--- 
-2.28.0
+The file system part has been posted a few times, and the read/write side
+has been pretty much unchanced.  For splice this series drops the
+conversion of the seq_file and sysctl code to the iter ops, and thus loses
+the splice support for them.  The reasons for that is that it caused a lot
+of churn for not much use - splice for these small files really isn't much
+of a win, even if existing userspace uses it.  All callers I found do the
+proper fallback, but if this turns out to be an issue the conversion can
+be resurrected.
 
+Besides x86 and powerpc I plan to eventually convert all other
+architectures, although this will be a slow process, starting with the
+easier ones once the infrastructure is merged.  The process to convert
+architectures is roughtly:
+
+ - ensure there is no set_fs(KERNEL_DS) left in arch specific code
+ - implement __get_kernel_nofault and __put_kernel_nofault
+ - remove the arch specific address limitation functionality
+
+Diffstat:
+ arch/Kconfig                           |    3 
+ arch/alpha/Kconfig                     |    1 
+ arch/arc/Kconfig                       |    1 
+ arch/arm/Kconfig                       |    1 
+ arch/arm64/Kconfig                     |    1 
+ arch/c6x/Kconfig                       |    1 
+ arch/csky/Kconfig                      |    1 
+ arch/h8300/Kconfig                     |    1 
+ arch/hexagon/Kconfig                   |    1 
+ arch/ia64/Kconfig                      |    1 
+ arch/m68k/Kconfig                      |    1 
+ arch/microblaze/Kconfig                |    1 
+ arch/mips/Kconfig                      |    1 
+ arch/nds32/Kconfig                     |    1 
+ arch/nios2/Kconfig                     |    1 
+ arch/openrisc/Kconfig                  |    1 
+ arch/parisc/Kconfig                    |    1 
+ arch/powerpc/include/asm/processor.h   |    7 -
+ arch/powerpc/include/asm/thread_info.h |    5 -
+ arch/powerpc/include/asm/uaccess.h     |   78 ++++++++-----------
+ arch/powerpc/kernel/signal.c           |    3 
+ arch/powerpc/lib/sstep.c               |    6 -
+ arch/riscv/Kconfig                     |    1 
+ arch/s390/Kconfig                      |    1 
+ arch/sh/Kconfig                        |    1 
+ arch/sparc/Kconfig                     |    1 
+ arch/um/Kconfig                        |    1 
+ arch/x86/ia32/ia32_aout.c              |    1 
+ arch/x86/include/asm/page_32_types.h   |   11 ++
+ arch/x86/include/asm/page_64_types.h   |   38 +++++++++
+ arch/x86/include/asm/processor.h       |   60 ---------------
+ arch/x86/include/asm/thread_info.h     |    2 
+ arch/x86/include/asm/uaccess.h         |   26 ------
+ arch/x86/kernel/asm-offsets.c          |    3 
+ arch/x86/lib/getuser.S                 |   28 ++++---
+ arch/x86/lib/putuser.S                 |   21 +++--
+ arch/xtensa/Kconfig                    |    1 
+ drivers/char/mem.c                     |   16 ----
+ drivers/misc/lkdtm/bugs.c              |    2 
+ drivers/misc/lkdtm/core.c              |    4 +
+ drivers/misc/lkdtm/usercopy.c          |    2 
+ fs/read_write.c                        |   69 ++++++++++-------
+ fs/splice.c                            |  130 +++------------------------------
+ include/linux/fs.h                     |    2 
+ include/linux/uaccess.h                |   18 ++++
+ lib/test_bitmap.c                      |   10 ++
+ 46 files changed, 235 insertions(+), 332 deletions(-)
