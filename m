@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD13C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 15:38:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA858C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 15:41:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E9A320786
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 15:38:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5D12120674
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 15:41:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Nnpj9aHP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E9A320786
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ZRkPL5Ut"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D12120674
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWFSd2Fd8zDqWw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:38:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWFWY49QszDqZw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:41:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
@@ -28,29 +28,30 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Nnpj9aHP; dkim-atps=neutral
+ header.s=default header.b=ZRkPL5Ut; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWF0N698lzDqc5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 01:17:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWF0b54rHzDqcX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 01:18:07 +1000 (AEST)
 Received: from aquarius.haifa.ibm.com (nesher1.haifa.il.ibm.com [195.110.40.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1557A2083B;
- Tue, 18 Aug 2020 15:17:43 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id CF0552080C;
+ Tue, 18 Aug 2020 15:17:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1597763874;
- bh=J2TTgbSkpqMfLCXDnbmKHenVNbCxcYzX9yMnhVHfk48=;
+ s=default; t=1597763885;
+ bh=PDSdSqs6s6DgqNLhBcuuvT25sUGk4T0hXtDSJGfBsrY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Nnpj9aHPG2KrOH4/+klVGNuK/8Jk1zpZIDm/NkthQ+PlCtSHYH5K9SF+vic/Hgljh
- aX6GYVU+9totQf5Ls3jsX3v4EOxk19bt3ErWGD3vxRwxDr77xrhkql9OdQ1TIDsYPz
- M1XgT1PKnZBp1hv2FG7lhMFlFVATie/SitWQyBf0=
+ b=ZRkPL5UtoYHI6d9QOQmC27otNdwTpYVIzy2mBxFcsar+pfVbZMUNsByEvMFu5/lVq
+ +/Teqoicmnsf77QsGmS6VSFHXMzDm2mnzA2PZaZ0ObJqLAuZt9daTQWOXKbk2AsBNG
+ rNswnU4dZW5M9JzlkIhRuIWROvJSpn3VRcFUWPxU=
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 06/17] riscv: drop unneeded node initialization
-Date: Tue, 18 Aug 2020 18:16:23 +0300
-Message-Id: <20200818151634.14343-7-rppt@kernel.org>
+Subject: [PATCH v3 07/17] mircoblaze: drop unneeded NUMA and sparsemem
+ initializations
+Date: Tue, 18 Aug 2020 18:16:24 +0300
+Message-Id: <20200818151634.14343-8-rppt@kernel.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200818151634.14343-1-rppt@kernel.org>
 References: <20200818151634.14343-1-rppt@kernel.org>
@@ -96,37 +97,50 @@ Sender: "Linuxppc-dev"
 
 From: Mike Rapoport <rppt@linux.ibm.com>
 
-RISC-V does not (yet) support NUMA  and for UMA architectures node 0 is
-used implicitly during early memory initialization.
+microblaze does not support neither NUMA not SPARSMEM, so there is no point
+to call memblock_set_node() and sparse_memory_present_with_active_regions()
+functions during microblaze memory initialization.
 
-There is no need to call memblock_set_node(), remove this call and the
-surrounding code.
+Remove these calls and the surrounding code.
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/riscv/mm/init.c | 9 ---------
- 1 file changed, 9 deletions(-)
+ arch/microblaze/mm/init.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 787c75f751a5..0485cfaacc72 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -191,15 +191,6 @@ void __init setup_bootmem(void)
- 	early_init_fdt_scan_reserved_mem();
- 	memblock_allow_resize();
- 	memblock_dump_all();
+diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
+index 0880a003573d..49e0c241f9b1 100644
+--- a/arch/microblaze/mm/init.c
++++ b/arch/microblaze/mm/init.c
+@@ -105,9 +105,8 @@ static void __init paging_init(void)
+ 
+ void __init setup_memory(void)
+ {
+-	struct memblock_region *reg;
 -
+ #ifndef CONFIG_MMU
++	struct memblock_region *reg;
+ 	u32 kernel_align_start, kernel_align_size;
+ 
+ 	/* Find main memory where is the kernel */
+@@ -161,17 +160,6 @@ void __init setup_memory(void)
+ 	pr_info("%s: max_low_pfn: %#lx\n", __func__, max_low_pfn);
+ 	pr_info("%s: max_pfn: %#lx\n", __func__, max_pfn);
+ 
+-	/* Add active regions with valid PFNs */
 -	for_each_memblock(memory, reg) {
--		unsigned long start_pfn = memblock_region_memory_base_pfn(reg);
--		unsigned long end_pfn = memblock_region_memory_end_pfn(reg);
+-		unsigned long start_pfn, end_pfn;
 -
--		memblock_set_node(PFN_PHYS(start_pfn),
--				  PFN_PHYS(end_pfn - start_pfn),
+-		start_pfn = memblock_region_memory_base_pfn(reg);
+-		end_pfn = memblock_region_memory_end_pfn(reg);
+-		memblock_set_node(start_pfn << PAGE_SHIFT,
+-				  (end_pfn - start_pfn) << PAGE_SHIFT,
 -				  &memblock.memory, 0);
 -	}
+-
+ 	paging_init();
  }
  
- #ifdef CONFIG_MMU
 -- 
 2.26.2
 
