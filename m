@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D84C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:05:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7275FC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:07:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF5B52067C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:05:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1E7BD2067C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:07:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Hd8yj2Z4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF5B52067C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="uR9TA7jf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E7BD2067C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHN870gbzDq72
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:05:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHR30TD5zDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:07:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
@@ -28,35 +28,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=Hd8yj2Z4; dkim-atps=neutral
+ header.s=default header.b=uR9TA7jf; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWH7y1v7TzDqbm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 02:54:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWH9P1CmCzDqdD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 02:55:53 +1000 (AEST)
 Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B6523207D3;
- Tue, 18 Aug 2020 16:54:34 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7C32C207D3;
+ Tue, 18 Aug 2020 16:55:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1597769675;
- bh=3vbm55O2sXgcIvXGhZRQabLgIImj+oFTn5mSUu/7Agw=;
+ s=default; t=1597769751;
+ bh=kWZIADp0fbyfmlx1mMs190XGGSwSELp1BU6+YcV3YmI=;
  h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=Hd8yj2Z4AZnjkkZfNcW76gJD1StQ0Hd498Lrh2p0s3HytUpyS9vBhtC0Hkx1oj+KM
- IOhlAnOWEf0qRJZ5I5H9B/xQOTLqe7baPNC2DDKpqx0Cxc5f3lEm/D63e6/yzYs8Vx
- wnW+amRKnMUbil8RaF824efxXqqyaLSdP05mlc2o=
-Date: Tue, 18 Aug 2020 17:54:04 +0100
+ b=uR9TA7jfh5MpSxsGF3Mqvhc3Fsc5jKlT8kz8nhAYvI6PhpdUCgS/WaisC3yk2A5tT
+ ROtFHmSaDLjq5evfNlKoE4nSZ/exNXuKAxwZTp/GF+e+2d88toPBiXijAfHlQddONU
+ Pj1/FYuHr5KtL9DjoOhvs/2C1+75NXErvmwFnvm0=
+Date: Tue, 18 Aug 2020 17:55:20 +0100
 From: Mark Brown <broonie@kernel.org>
 To: festevam@gmail.com, Xiubo.Lee@gmail.com, tiwai@suse.com,
  Shengjiu Wang <shengjiu.wang@nxp.com>, timur@kernel.org, lgirdwood@gmail.com,
  linux-kernel@vger.kernel.org, nicoleotsuka@gmail.com,
  linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org, perex@perex.cz
-In-Reply-To: <1597047103-6863-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1597047103-6863-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2] ASoC: fsl-asoc-card: Get "extal" clock rate by
- clk_get_rate
-Message-Id: <159776961931.56094.3057738370364224756.b4-ty@kernel.org>
+In-Reply-To: <20200805063413.4610-1-shengjiu.wang@nxp.com>
+References: <20200805063413.4610-1-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v3 0/3] refine and clean code for synchronous mode
+Message-Id: <159776961930.56094.11883381459081946963.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,11 +71,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 10 Aug 2020 16:11:43 +0800, Shengjiu Wang wrote:
-> On some platform(.e.g. i.MX8QM MEK), the "extal" clock is different
-> with the mclk of codec, then the clock rate is also different.
-> So it is better to get clock rate of "extal" rate by clk_get_rate,
-> don't reuse the clock rate of mclk.
+On Wed, 5 Aug 2020 14:34:10 +0800, Shengjiu Wang wrote:
+> refine and clean code for synchronous mode
+> 
+> Shengjiu Wang (3):
+>   ASoC: fsl_sai: Refine enable/disable TE/RE sequence in trigger()
+>   ASoC: fsl_sai: Drop TMR/RMR settings for synchronous mode
+>   ASoC: fsl_sai: Replace synchronous check with fsl_sai_dir_is_synced
+> 
+> [...]
 
 Applied to
 
@@ -84,8 +87,12 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl-asoc-card: Get "extal" clock rate by clk_get_rate
-      commit: a8fd5ca8016948a611bff62b0990ade9e1f8e83c
+[1/3] ASoC: fsl_sai: Refine enable/disable TE/RE sequence in trigger()
+      commit: 94741eba63c23b0f1527b0ae0125e6b553bde10e
+[2/3] ASoC: fsl_sai: Drop TMR/RMR settings for synchronous mode
+      commit: 7b3bee091ec375777ade2a37e4b0c9319f92de27
+[3/3] ASoC: fsl_sai: Replace synchronous check with fsl_sai_dir_is_synced
+      commit: 9355a7b1896f6fadcbd63d199d1f343bf2e4fed8
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
