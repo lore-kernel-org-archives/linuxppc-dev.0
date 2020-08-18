@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC910C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:29:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88037C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:31:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7FD420658
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:29:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7FD420658
+	by mail.kernel.org (Postfix) with ESMTPS id 413DF20674
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:31:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 413DF20674
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHwJ51w7zDqdW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:29:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHyW3C6gzDqdw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:31:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhT412QzDqbc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 03:19:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhS4pfszDqb9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 03:19:18 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BWHhH6c2Pz9vCxm;
- Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BWHhK58Xyz9vCxp;
+ Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Ob_gp16UB6xB; Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
+ with ESMTP id 2sG3yHrf7ea4; Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhH5Yrkz9vCxg;
- Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D3A58B7EC;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhK4Mkgz9vCxg;
  Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7DB0A8B7EC;
+ Tue, 18 Aug 2020 19:19:15 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id NIlQY05V3jyF; Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
+ with ESMTP id YkpBHcYFd8X0; Tue, 18 Aug 2020 19:19:15 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E4938B7D7;
- Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F7CA8B7D7;
+ Tue, 18 Aug 2020 19:19:15 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 1EE6065CF4; Tue, 18 Aug 2020 17:19:13 +0000 (UTC)
-Message-Id: <35b1bd44a1a66f5bcf9b457a1c480ac8d5ef50b2.1597770847.git.christophe.leroy@csgroup.eu>
+ id 3045665CF4; Tue, 18 Aug 2020 17:19:15 +0000 (UTC)
+Message-Id: <3cd1e284e93c60db981659585e18d1f6bb73ed2f.1597770847.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 References: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 01/25] powerpc/signal: Move inline functions in signal.h
+Subject: [PATCH v2 03/25] powerpc/ptrace: Consolidate reg index calculation
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 18 Aug 2020 17:19:13 +0000 (UTC)
+Date: Tue, 18 Aug 2020 17:19:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,118 +76,72 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To really be inlined, the functions need to be defined in the
-same C file as the caller, or in an included header.
+Today we have:
 
-Move functions defined inline from signal .c in signal.h
+	#ifdef CONFIG_PPC32
+		index = addr >> 2;
+		if ((addr & 3) || child->thread.regs == NULL)
+	#else
+		index = addr >> 3;
+		if ((addr & 7))
+	#endif
 
-Fixes: 3dd4eb83a9c0 ("powerpc: move common register copy functions from signal_32.c to signal.c")
+sizeof(long) has value 4 for PPC32 and value 8 for PPC64.
+
+Dividing by 4 is equivalent to >> 2 and dividing by 8 is equivalent
+to >> 3.
+
+And 3 and 7 are respectively (sizeof(long) - 1).
+
+Use sizeof(long) to get rid of the #ifdef CONFIG_PPC32 and consolidate
+the calculation and checking.
+
+thread.regs have to be not NULL on both PPC32 and PPC64 so adding
+that test on PPC64 is harmless.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/signal.c | 30 --------------------------
- arch/powerpc/kernel/signal.h | 41 +++++++++++++++++++++++++++++-------
- 2 files changed, 33 insertions(+), 38 deletions(-)
+ arch/powerpc/kernel/ptrace/ptrace.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index d15a98c758b8..3b56db02b762 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -133,36 +133,6 @@ unsigned long copy_ckvsx_from_user(struct task_struct *task,
- 	return 0;
- }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index f6e51be47c6e..51557a9c0765 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -55,14 +55,9 @@ long arch_ptrace(struct task_struct *child, long request,
+ 
+ 		ret = -EIO;
+ 		/* convert to index and check */
+-#ifdef CONFIG_PPC32
+-		index = addr >> 2;
+-		if ((addr & 3) || (index > PT_FPSCR)
++		index = addr / sizeof(long);
++		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR)
+ 		    || (child->thread.regs == NULL))
 -#else
--inline unsigned long copy_fpr_to_user(void __user *to,
--				      struct task_struct *task)
--{
--	return __copy_to_user(to, task->thread.fp_state.fpr,
--			      ELF_NFPREG * sizeof(double));
--}
--
--inline unsigned long copy_fpr_from_user(struct task_struct *task,
--					void __user *from)
--{
--	return __copy_from_user(task->thread.fp_state.fpr, from,
--			      ELF_NFPREG * sizeof(double));
--}
--
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--inline unsigned long copy_ckfpr_to_user(void __user *to,
--					 struct task_struct *task)
--{
--	return __copy_to_user(to, task->thread.ckfp_state.fpr,
--			      ELF_NFPREG * sizeof(double));
--}
--
--inline unsigned long copy_ckfpr_from_user(struct task_struct *task,
--						 void __user *from)
--{
--	return __copy_from_user(task->thread.ckfp_state.fpr, from,
--				ELF_NFPREG * sizeof(double));
--}
--#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- #endif
+-		index = addr >> 3;
+-		if ((addr & 7) || (index > PT_FPSCR))
+-#endif
+ 			break;
  
- /* Log an error when sending an unhandled signal to a process. Controlled
-diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index d396efca4068..4626d39cc0f0 100644
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -19,14 +19,6 @@ extern int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- extern int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 			      struct task_struct *tsk);
+ 		CHECK_FULL_REGS(child->thread.regs);
+@@ -90,14 +85,9 @@ long arch_ptrace(struct task_struct *child, long request,
  
--extern unsigned long copy_fpr_to_user(void __user *to,
--				      struct task_struct *task);
--extern unsigned long copy_ckfpr_to_user(void __user *to,
--					       struct task_struct *task);
--extern unsigned long copy_fpr_from_user(struct task_struct *task,
--					void __user *from);
--extern unsigned long copy_ckfpr_from_user(struct task_struct *task,
--						 void __user *from);
- extern unsigned long get_tm_stackpointer(struct task_struct *tsk);
+ 		ret = -EIO;
+ 		/* convert to index and check */
+-#ifdef CONFIG_PPC32
+-		index = addr >> 2;
+-		if ((addr & 3) || (index > PT_FPSCR)
++		index = addr / sizeof(long);
++		if ((addr & (sizeof(long) - 1)) || (index > PT_FPSCR)
+ 		    || (child->thread.regs == NULL))
+-#else
+-		index = addr >> 3;
+-		if ((addr & 7) || (index > PT_FPSCR))
+-#endif
+ 			break;
  
- #ifdef CONFIG_VSX
-@@ -38,6 +30,39 @@ extern unsigned long copy_vsx_from_user(struct task_struct *task,
- 					void __user *from);
- extern unsigned long copy_ckvsx_from_user(struct task_struct *task,
- 						 void __user *from);
-+unsigned long copy_fpr_to_user(void __user *to, struct task_struct *task);
-+unsigned long copy_ckfpr_to_user(void __user *to, struct task_struct *task);
-+unsigned long copy_fpr_from_user(struct task_struct *task, void __user *from);
-+unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
-+#else
-+static inline unsigned long
-+copy_fpr_to_user(void __user *to, struct task_struct *task)
-+{
-+	return __copy_to_user(to, task->thread.fp_state.fpr,
-+			      ELF_NFPREG * sizeof(double));
-+}
-+
-+static inline unsigned long
-+copy_fpr_from_user(struct task_struct *task, void __user *from)
-+{
-+	return __copy_from_user(task->thread.fp_state.fpr, from,
-+			      ELF_NFPREG * sizeof(double));
-+}
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+inline unsigned long copy_ckfpr_to_user(void __user *to, struct task_struct *task)
-+{
-+	return __copy_to_user(to, task->thread.ckfp_state.fpr,
-+			      ELF_NFPREG * sizeof(double));
-+}
-+
-+static inline unsigned long
-+copy_ckfpr_from_user(struct task_struct *task, void __user *from)
-+{
-+	return __copy_from_user(task->thread.ckfp_state.fpr, from,
-+				ELF_NFPREG * sizeof(double));
-+}
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
- #endif
- 
- #ifdef CONFIG_PPC64
+ 		CHECK_FULL_REGS(child->thread.regs);
 -- 
 2.25.0
 
