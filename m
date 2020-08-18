@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8DFC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A389C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:25:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C31420716
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:22:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C31420716
+	by mail.kernel.org (Postfix) with ESMTPS id 307082078D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:24:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 307082078D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVx7N5tHmzDqXw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 13:22:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVx9b1jWZzDqYq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 13:24:51 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVx5Q0tKwzDqXM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVx5Q4LmXzDqXN
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 13:21:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BVx5P5gv8z9sTR; Tue, 18 Aug 2020 13:21:13 +1000 (AEST)
+ id 4BVx5Q3GDFz9sTT; Tue, 18 Aug 2020 13:21:14 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1596794701-23530-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1596794701-23530-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V6 0/2] powerpc/perf: Add support for perf extended regs
- in powerpc
-Message-Id: <159772076195.1537671.8929069233918277642.b4-ty@ellerman.id.au>
-Date: Tue, 18 Aug 2020 13:21:13 +1000 (AEST)
+To: mpe@ellerman.id.au, Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <20200817005618.3305028-1-maddy@linux.ibm.com>
+References: <20200817005618.3305028-1-maddy@linux.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/kernel/cputable: cleanup the function
+ declarations
+Message-Id: <159772076231.1537671.8380311708899292462.b4-ty@ellerman.id.au>
+Date: Tue, 18 Aug 2020 13:21:14 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,31 +48,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
- kjain@linux.ibm.com, acme@kernel.org, jolsa@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 7 Aug 2020 06:04:59 -0400, Athira Rajeev wrote:
-> Patch set to add support for perf extended register capability in
-> powerpc. The capability flag PERF_PMU_CAP_EXTENDED_REGS, is used to
-> indicate the PMU which support extended registers. The generic code
-> define the mask of extended registers as 0 for non supported architectures.
+On Mon, 17 Aug 2020 06:26:17 +0530, Madhavan Srinivasan wrote:
+> __machine_check_early_realmode_p*() are currently declared
+> as extern in cputable.c and because of this when compiled
+> with "C=1" (which enables semantic checker) produces these
+> warnings.
 > 
-> patch 1/2 defines the PERF_PMU_CAP_EXTENDED_REGS mask to output the
-> values of mmcr0,mmcr1,mmcr2 for POWER9. Defines `PERF_REG_EXTENDED_MASK`
-> at runtime which contains mask value of the supported registers under
-> extended regs.
+>   CHECK   arch/powerpc/kernel/mce_power.c
+> arch/powerpc/kernel/mce_power.c:709:6: warning: symbol '__machine_check_early_realmode_p7' was not declared. Should it be static?
+> arch/powerpc/kernel/mce_power.c:717:6: warning: symbol '__machine_check_early_realmode_p8' was not declared. Should it be static?
+> arch/powerpc/kernel/mce_power.c:722:6: warning: symbol '__machine_check_early_realmode_p9' was not declared. Should it be static?
+> arch/powerpc/kernel/mce_power.c:740:6: warning: symbol '__machine_check_early_realmode_p10' was not declared. Should it be static?
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/2] powerpc/perf: Add support for outputting extended regs in perf intr_regs
-      https://git.kernel.org/powerpc/c/781fa4811d95314c1965c0c3337c9ac36ef26093
-[2/2] powerpc/perf: Add extended regs support for power10 platform
-      https://git.kernel.org/powerpc/c/d735599a069f6936c1392e07075c34a19bda949a
+[1/2] powerpc/kernel: Cleanup machine check function declarations
+      https://git.kernel.org/powerpc/c/388692e943a58f28aac0fe83e75f5994da9ff8a1
+[2/2] powerpc: Add POWER10 raw mode cputable entry
+      https://git.kernel.org/powerpc/c/327da008e65a25b8206b36b7fc0c9e4edbb36a58
 
 cheers
