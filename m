@@ -4,39 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDEB7C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18848C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:12:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A10720786
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:08:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A10720786
+	by mail.kernel.org (Postfix) with ESMTPS id C6F922080C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:12:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6F922080C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWCRk3p5qzDqcN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 00:08:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWCXl3WgpzDqW2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 00:12:23 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWCDV3YD4zDqVb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 23:58:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWCDW0rm2zDqVp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 23:58:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BWCDT2Qhyz9sTM; Tue, 18 Aug 2020 23:58:17 +1000 (AEST)
+ id 4BWCDV4wKxz9sTK; Tue, 18 Aug 2020 23:58:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20200817103301.158836-1-aneesh.kumar@linux.ibm.com>
-References: <20200817103301.158836-1-aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pkeys: Fix build error with PPC_MEM_KEYS disabled
-Message-Id: <159775907906.1766076.6349631455013586842.b4-ty@ellerman.id.au>
-Date: Tue, 18 Aug 2020 23:58:17 +1000 (AEST)
+To: Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <996184974d674ff984643778cf1cdd7fe58cc065.1597644194.git.christophe.leroy@csgroup.eu>
+References: <996184974d674ff984643778cf1cdd7fe58cc065.1597644194.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/fixmap: Fix the size of the early debug area
+Message-Id: <159775907925.1766076.11136700602764304510.b4-ty@ellerman.id.au>
+Date: Tue, 18 Aug 2020 23:58:18 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,23 +50,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Aug 2020 16:03:01 +0530, Aneesh Kumar K.V wrote:
-> IS_ENABLED() instead of #ifdef still requires variable declaration.
-> In this specific case, default_uamor is declared in asm/pkeys.h which
-> is only included if PPC_MEM_KEYS is enabled.
+On Mon, 17 Aug 2020 06:03:26 +0000 (UTC), Christophe Leroy wrote:
+> Commit ("03fd42d458fb powerpc/fixmap: Fix FIX_EARLY_DEBUG_BASE when
+> page size is 256k") reworked the setup of the early debug area and
+> mistakenly replaced 128 * 1024 by SZ_128.
 > 
-> arch/powerpc/mm/book3s64/hash_utils.c: In function ‘hash__early_init_mmu_secondary’:
-> arch/powerpc/mm/book3s64/hash_utils.c:1119:21: error: ‘default_uamor’ undeclared (first use in this function)
->  1119 |   mtspr(SPRN_UAMOR, default_uamor);
->       |                     ^~~~~~~~~~~~~
+> Change to SZ_128K to restore the original 128 kbytes size of the area.
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/pkeys: Fix build error with PPC_MEM_KEYS disabled
-      https://git.kernel.org/powerpc/c/1e4e4bcaf70ec89f8b499c93a83d078c1e5c0ea6
+[1/1] powerpc/fixmap: Fix the size of the early debug area
+      https://git.kernel.org/powerpc/c/fdc6edbb31fba76fd25d7bd016b675a92908d81e
 
 cheers
