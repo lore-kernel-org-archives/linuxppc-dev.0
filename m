@@ -2,41 +2,83 @@ Return-Path: <SRS0=LqqS=B4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64477C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:22:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B182C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:52:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC46A20786
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:22:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC46A20786
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 90F152080C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 14:52:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="PCglmSpi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90F152080C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWCm55wJ9zDqS3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 00:22:13 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWDQs3VMBzDqcT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 00:52:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.165;
+ helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256
+ header.s=strato-dkim-0002 header.b=PCglmSpi; 
+ dkim-atps=neutral
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de
+ [81.169.146.165])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWCDX4S5jzDqVb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 23:58:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BWCDX2MPxz9sTT; Tue, 18 Aug 2020 23:58:19 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Roth <mdroth@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20200811161544.10513-1-mdroth@linux.vnet.ibm.com>
-References: <20200811161544.10513-1-mdroth@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/pseries/hotplug-cpu: wait indefinitely for
- vCPU death
-Message-Id: <159775907980.1766076.5723178364660464279.b4-ty@ellerman.id.au>
-Date: Tue, 18 Aug 2020 23:58:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWDC6201RzDqZj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 00:42:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1597761720;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=yY8lZpT6KH3C16Gfks0UQ6yD6WQSNt9zdE+YDfsTYO4=;
+ b=PCglmSpi3+F7LdxqAyodT9ohTLEbbBZZIzAWVolmCzjigSnRul+eqxc9GGYmTIaHqR
+ JtAnlaYidP711InRL5yAMWhCXvX8hyWVnTtT4mrIlxGDJN6Gqw8w5XCFtfIyewS3+l4L
+ V1FrfJbUC/qobJSJEI09OVdTjAzt8tVerntQLYU40742EOm9Lw7no1sCSS/vuHE5cEcV
+ SJTSvQaJufXtz8ELrSwqhDz7teZU2NhzLzwvTRDc1BAGnwY8EJZQ3sfdaSIU95iK/Rzr
+ RQVeYXGbl7U7ShKWJBb6DTyij5XNID3TjahPaoSntod7U6g1i9yX31Ei4vzkqUo58th/
+ KitQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHvJzedV4hp0hM3BukOMWh76B1HxtPtLuZ1yU+QFTgVvLrsuJ"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:b10d:7054:d092:5f3e:8032:9dca]
+ by smtp.strato.de (RZmta 46.10.5 AUTH)
+ with ESMTPSA id 60686ew7IEfcrlW
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+ (Client did not present a certificate);
+ Tue, 18 Aug 2020 16:41:38 +0200 (CEST)
+Subject: Re: [Virtual ppce500] virtio_gpu virtio0: swiotlb buffer is full
+To: Gerd Hoffmann <kraxel@redhat.com>
+References: <87h7tb4zwp.fsf@linux.ibm.com>
+ <E1C071A5-19D1-4493-B04A-4507A70D7848@xenosoft.de>
+ <bc1975fb-23df-09c2-540a-c13b39ad56c5@xenosoft.de>
+ <51482c70-1007-1202-9ed1-2d174c1e923f@xenosoft.de>
+ <9688335c-d7d0-9eaa-22c6-511e708e0d2a@linux.ibm.com>
+ <9805f81d-651d-d1a3-fd05-fb224a8c2031@xenosoft.de>
+ <3162da18-462c-72b4-f8f0-eef896c6b162@xenosoft.de>
+ <3eee8130-6913-49d2-2160-abf0bf17c44e@xenosoft.de>
+ <20200818081830.d2a2cva4hd2jzwba@sirius.home.kraxel.org>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <0f2434a5-edcf-e7d1-f6ae-7c912dc8d859@xenosoft.de>
+Date: Tue, 18 Aug 2020 16:41:38 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
+MIME-Version: 1.0
+In-Reply-To: <20200818081830.d2a2cva4hd2jzwba@sirius.home.kraxel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,61 +90,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Greg Kurz <groug@kaod.org>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Cedric Le Goater <clg@kaod.org>
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ daniel.vetter@ffwll.ch, =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ gurchetansingh@chromium.org,
+ Maling list - DRI developers <dri-devel@lists.freedesktop.org>,
+ mad skateman <madskateman@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 Aug 2020 11:15:44 -0500, Michael Roth wrote:
-> For a power9 KVM guest with XIVE enabled, running a test loop
-> where we hotplug 384 vcpus and then unplug them, the following traces
-> can be seen (generally within a few loops) either from the unplugged
-> vcpu:
-> 
->   [ 1767.353447] cpu 65 (hwid 65) Ready to die...
->   [ 1767.952096] Querying DEAD? cpu 66 (66) shows 2
->   [ 1767.952311] list_del corruption. next->prev should be c00a000002470208, but was c00a000002470048
->   [ 1767.952322] ------------[ cut here ]------------
->   [ 1767.952323] kernel BUG at lib/list_debug.c:56!
->   [ 1767.952325] Oops: Exception in kernel mode, sig: 5 [#1]
->   [ 1767.952326] LE SMP NR_CPUS=2048 NUMA pSeries
->   [ 1767.952328] Modules linked in: fuse nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nf_tables_set nft_chain_nat_ipv6 nf_nat_ipv6 nft_chain_route_ipv6 nft_chain_nat_ipv4 nf_nat_ipv4 nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 nft_chain_route_ipv4 ip6_tables nft_compat ip_set nf_tables nfnetlink uio_pdrv_genirq ip_tables xfs libcrc32c sd_mod sg xts vmx_crypto virtio_net net_failover failover virtio_scsi dm_multipath dm_mirror dm_region_hash dm_log dm_mod be2iscsi bnx2i cnic uio cxgb4i cxgb4 libcxgbi libcxgb qla4xxx iscsi_boot_sysfs iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi
->   [ 1767.952352] CPU: 66 PID: 0 Comm: swapper/66 Kdump: loaded Not tainted 4.18.0-221.el8.ppc64le #1
->   [ 1767.952354] NIP:  c0000000007ab50c LR: c0000000007ab508 CTR: 00000000000003ac
->   [ 1767.952355] REGS: c0000009e5a17840 TRAP: 0700   Not tainted  (4.18.0-221.el8.ppc64le)
->   [ 1767.952355] MSR:  800000000282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 28000842  XER: 20040000
->   [ 1767.952360] CFAR: c0000000001ffe64 IRQMASK: 1
->   [ 1767.952360] GPR00: c0000000007ab508 c0000009e5a17ac0 c000000001ac0700 0000000000000054
->   [ 1767.952360] GPR04: c0000009f056cf90 c0000009f05f5628 c0000009ed40d654 c000000001c90700
->   [ 1767.952360] GPR08: 0000000000000007 c0000009f0573980 00000009ef2b0000 7562202c38303230
->   [ 1767.952360] GPR12: 0000000000000000 c0000007fff6ce80 c00a000002470208 0000000000000000
->   [ 1767.952360] GPR16: 0000000000000001 c0000009f05fbb00 0000000000000800 c0000009ff3d4980
->   [ 1767.952360] GPR20: c0000009f05fbb10 5deadbeef0000100 5deadbeef0000200 0000000000187961
->   [ 1767.952360] GPR24: c0000009e5a17b78 0000000000000000 0000000000000001 ffffffffffffffff
->   [ 1767.952360] GPR28: c00a000002470200 c0000009f05fbb10 c0000009f05fbb10 0000000000000000
->   [ 1767.952375] NIP [c0000000007ab50c] __list_del_entry_valid+0xac/0x100
->   [ 1767.952376] LR [c0000000007ab508] __list_del_entry_valid+0xa8/0x100
->   [ 1767.952377] Call Trace:
->   [ 1767.952378] [c0000009e5a17ac0] [c0000000007ab508] __list_del_entry_valid+0xa8/0x100 (unreliable)
->   [ 1767.952381] [c0000009e5a17b20] [c000000000476e18] free_pcppages_bulk+0x1f8/0x940
->   [ 1767.952383] [c0000009e5a17c20] [c00000000047a9a0] free_unref_page+0xd0/0x100
->   [ 1767.952386] [c0000009e5a17c50] [c0000000000bc2a8] xive_spapr_cleanup_queue+0x148/0x1b0
->   [ 1767.952388] [c0000009e5a17cf0] [c0000000000b96dc] xive_teardown_cpu+0x1bc/0x240
->   [ 1767.952391] [c0000009e5a17d30] [c00000000010bf28] pseries_mach_cpu_die+0x78/0x2f0
->   [ 1767.952393] [c0000009e5a17de0] [c00000000005c8d8] cpu_die+0x48/0x70
->   [ 1767.952394] [c0000009e5a17e00] [c000000000021cf0] arch_cpu_idle_dead+0x20/0x40
->   [ 1767.952397] [c0000009e5a17e20] [c0000000001b4294] do_idle+0x2f4/0x4c0
->   [ 1767.952399] [c0000009e5a17ea0] [c0000000001b46a8] cpu_startup_entry+0x38/0x40
->   [ 1767.952400] [c0000009e5a17ed0] [c00000000005c43c] start_secondary+0x7bc/0x8f0
->   [ 1767.952403] [c0000009e5a17f90] [c00000000000ac70] start_secondary_prolog+0x10/0x14
-> 
-> [...]
+On 18 August 2020 at 10:18 am, Gerd Hoffmann wrote:
+> On Mon, Aug 17, 2020 at 11:19:58AM +0200, Christian Zigotzky wrote:
+>> Hello
+>>
+>> I compiled the RC1 of kernel 5.9 today. Unfortunately the issue with the
+>> VirtIO-GPU (see below) still exists. Therefore we still need the patch (see
+>> below) for using the VirtIO-GPU in a virtual e5500 PPC64 QEMU machine.
+> It is fixed in drm-misc-next (commit 51c3b0cc32d2e17581fce5b487ee95bbe9e8270a).
+>
+> Will cherry-pick into drm-misc-fixes once the branch is 5.9-based, which
+> in turn should bring it to 5.9-rc2 or -rc3.
+>
+> take care,
+>    Gerd
+>
+Hello Gerd,
 
-Applied to powerpc/fixes.
+I compiled a new kernel with the latest DRM misc updates today. The 
+patch is included in these updates.
 
-[1/1] powerpc/pseries/hotplug-cpu: wait indefinitely for vCPU death
-      https://git.kernel.org/powerpc/c/801980f6497946048709b9b09771a1729551d705
+This kernel works with the VirtIO-GPU in a virtual e5500 QEMU/KVM HV 
+machine on my X5000.
 
-cheers
+Unfortunately I can only use the VirtIO-GPU (Monitor: Red Hat, Inc. 8") 
+with a resolution of 640x480. If I set a higher resolution then the 
+guest disables the monitor.
+I can use higher resolutions with the stable kernel 5.8 and the VirtIO-GPU.
+
+Please check the latest DRM updates.
+
+Thanks,
+Christian
