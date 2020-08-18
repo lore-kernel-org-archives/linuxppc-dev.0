@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 105E2C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A579EC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:04:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDAE5206B5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:01:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDAE5206B5
+	by mail.kernel.org (Postfix) with ESMTPS id 5DD1E206B5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:04:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DD1E206B5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWJdZ3b2RzDqsQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 04:01:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWJh11DTgzDqst
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 04:04:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhn1pJTzDqbt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhn1p77zDqbf
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 03:19:37 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BWHhg3Tvnz9vCy0;
- Tue, 18 Aug 2020 19:19:31 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BWHhf34BCz9vCxx;
+ Tue, 18 Aug 2020 19:19:30 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8pkMd_j9NkKu; Tue, 18 Aug 2020 19:19:31 +0200 (CEST)
+ with ESMTP id RF92PzeOvD8m; Tue, 18 Aug 2020 19:19:30 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhg2lZJz9vCxg;
- Tue, 18 Aug 2020 19:19:31 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhf2DZ1z9vCxg;
+ Tue, 18 Aug 2020 19:19:30 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A9098B7EC;
- Tue, 18 Aug 2020 19:19:33 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D7298B7EC;
+ Tue, 18 Aug 2020 19:19:32 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Zzzz-Z2qN1Ye; Tue, 18 Aug 2020 19:19:33 +0200 (CEST)
+ with ESMTP id 0CYmYbAE1Ec5; Tue, 18 Aug 2020 19:19:32 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E96978B7D7;
- Tue, 18 Aug 2020 19:19:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E4D318B7D7;
+ Tue, 18 Aug 2020 19:19:31 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C8C0565CF4; Tue, 18 Aug 2020 17:19:32 +0000 (UTC)
-Message-Id: <537c7082ee309a0bb9c67a50c5d9dd929aedb82d.1597770847.git.christophe.leroy@csgroup.eu>
+ id C2CD665CF4; Tue, 18 Aug 2020 17:19:31 +0000 (UTC)
+Message-Id: <f3c36d687e4228f58d5c207a4036aa9ddcc7420a.1597770847.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 References: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 20/25] signal: Add unsafe_put_compat_sigset()
+Subject: [PATCH v2 19/25] powerpc/signal32: Remove ifdefery in middle of
+ if/else
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 18 Aug 2020 17:19:32 +0000 (UTC)
+Date: Tue, 18 Aug 2020 17:19:31 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,61 +76,86 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Implement 'unsafe' version of put_compat_sigset()
-
-For the bigendian, use unsafe_put_user() directly
-to avoid intermediate copy through the stack.
-
-For the littleendian, use a straight unsafe_copy_to_user().
+MSR_TM_ACTIVE() is always defined and returns always 0 when
+CONFIG_PPC_TRANSACTIONAL_MEM is not selected, so the awful
+ifdefery in the middle of an if/else can be removed.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- include/linux/compat.h | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ arch/powerpc/kernel/signal_32.c | 22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index d38c4d7e83bd..7ec6e44b093b 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -442,6 +442,38 @@ put_compat_sigset(compat_sigset_t __user *compat, const sigset_t *set,
- #endif
- }
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 93c2d6304831..310d3b8d9ad5 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -447,6 +447,12 @@ static int save_tm_user_regs(struct pt_regs *regs, struct mcontext __user *frame
  
-+#ifdef CONFIG_CPU_BIG_ENDIAN
-+#define unsafe_put_compat_sigset(compat, set, label) do {		\
-+	compat_sigset_t __user *__c = compat;				\
-+	const sigset_t *__s = set;					\
-+									\
-+	switch (_NSIG_WORDS) {						\
-+	case 4:								\
-+		unsafe_put_user(__s->sig[3] >> 32, &__c->sig[7], label);	\
-+		unsafe_put_user(__s->sig[3], &__c->sig[6], label);	\
-+		fallthrough;						\
-+	case 3:								\
-+		unsafe_put_user(__s->sig[2] >> 32, &__c->sig[5], label);	\
-+		unsafe_put_user(__s->sig[2], &__c->sig[4], label);	\
-+		fallthrough;						\
-+	case 2:								\
-+		unsafe_put_user(__s->sig[1] >> 32, &__c->sig[3], label);	\
-+		unsafe_put_user(__s->sig[1], &__c->sig[2], label);	\
-+		fallthrough;						\
-+	case 1:								\
-+		unsafe_put_user(__s->sig[0] >> 32, &__c->sig[1], label);	\
-+		unsafe_put_user(__s->sig[0], &__c->sig[0], label);	\
-+	}								\
-+} while (0)
+ 	return 0;
+ }
 +#else
-+#define unsafe_put_compat_sigset(compat, set, label) do {		\
-+	compat_sigset_t __user *__c = compat;				\
-+	const sigset_t *__s = set;					\
-+									\
-+	unsafe_copy_to_user(__c, __s, sizeof(*__c), label);		\
-+} while (0)
-+#endif
-+
- extern int compat_ptrace_request(struct task_struct *child,
- 				 compat_long_t request,
- 				 compat_ulong_t addr, compat_ulong_t data);
++static int save_tm_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
++			     struct mcontext __user *tm_frame, unsigned long msr)
++{
++	return 0;
++}
+ #endif
+ 
+ /*
+@@ -732,10 +738,8 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	unsigned long newsp = 0;
+ 	unsigned long tramp;
+ 	struct pt_regs *regs = tsk->thread.regs;
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	/* Save the thread's msr before get_tm_stackpointer() changes it */
+ 	unsigned long msr = regs->msr;
+-#endif
+ 
+ 	/* Set up Signal Frame */
+ 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
+@@ -786,14 +790,10 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	if (tramp == (unsigned long)mctx->mc_pad)
+ 		flush_icache_range(tramp, tramp + 2 * sizeof(unsigned long));
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (MSR_TM_ACTIVE(msr)) {
+ 		if (save_tm_user_regs(regs, mctx, tm_mctx, msr))
+ 			goto badframe;
+-	}
+-	else
+-#endif
+-	{
++	} else {
+ 		if (save_user_regs(regs, mctx, tm_mctx, 1))
+ 			goto badframe;
+ 	}
+@@ -842,10 +842,8 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	unsigned long newsp = 0;
+ 	unsigned long tramp;
+ 	struct pt_regs *regs = tsk->thread.regs;
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	/* Save the thread's msr before get_tm_stackpointer() changes it */
+ 	unsigned long msr = regs->msr;
+-#endif
+ 
+ 	/* Set up Signal Frame */
+ 	frame = get_sigframe(ksig, tsk, sizeof(*frame), 1);
+@@ -883,14 +881,10 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 	if (tramp == (unsigned long)mctx->mc_pad)
+ 		flush_icache_range(tramp, tramp + 2 * sizeof(unsigned long));
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (MSR_TM_ACTIVE(msr)) {
+ 		if (save_tm_user_regs(regs, mctx, tm_mctx, msr))
+ 			goto badframe;
+-	}
+-	else
+-#endif
+-	{
++	} else {
+ 		if (save_user_regs(regs, mctx, tm_mctx, 1))
+ 			goto badframe;
+ 	}
 -- 
 2.25.0
 
