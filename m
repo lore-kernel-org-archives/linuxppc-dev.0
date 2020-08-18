@@ -2,50 +2,70 @@ Return-Path: <SRS0=LqqS=B4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E3A6C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:22:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1B3EC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:25:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1CD820786
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:22:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1CD820786
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 6E40C20786
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 18:25:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E40C20786
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWK5805TzzDqck
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 04:22:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWK8p0YdjzDqkW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 04:25:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWJkL4CgwzDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 04:06:02 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
- id C0BB768AFE; Tue, 18 Aug 2020 20:05:55 +0200 (CEST)
-Date: Tue, 18 Aug 2020 20:05:55 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWK6V6F5ZzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 04:23:26 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4BWK6M41zRz9tyqY;
+ Tue, 18 Aug 2020 20:23:23 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id FoqN8CggTbOJ; Tue, 18 Aug 2020 20:23:23 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BWK6M2Tfqz9txTF;
+ Tue, 18 Aug 2020 20:23:23 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D4D48B7EC;
+ Tue, 18 Aug 2020 20:23:23 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 9MZ8ZSBzYxyO; Tue, 18 Aug 2020 20:23:23 +0200 (CEST)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7F18E8B7D7;
+ Tue, 18 Aug 2020 20:23:22 +0200 (CEST)
 Subject: Re: remove the last set_fs() in common code, and remove it for x86
  and powerpc
-Message-ID: <20200818180555.GA29185@lst.de>
+To: Christoph Hellwig <hch@lst.de>
 References: <20200817073212.830069-1-hch@lst.de>
  <319d15b1-cb4a-a7b4-3082-12bb30eb5143@csgroup.eu>
+ <20200818180555.GA29185@lst.de>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <e3781661-2e13-4f46-d892-181907a2e768@csgroup.eu>
+Date: Tue, 18 Aug 2020 20:23:12 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <319d15b1-cb4a-a7b4-3082-12bb30eb5143@csgroup.eu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20200818180555.GA29185@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,38 +80,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: linux-arch@vger.kernel.org, Kees Cook <keescook@chromium.org>,
  x86@kernel.org, linux-kernel@vger.kernel.org,
  Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 18, 2020 at 07:46:22PM +0200, Christophe Leroy wrote:
-> I gave it a go on my powerpc mpc832x. I tested it on top of my newest 
-> series that reworks the 32 bits signal handlers (see 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278) with 
-> the microbenchmark test used is that series.
->
-> With KUAP activated, on top of signal32 rework, performance is boosted as 
-> system time for the microbenchmark goes from 1.73s down to 1.56s, that is 
-> 10% quicker
->
-> Surprisingly, with the kernel as is today without my signal's series, your 
-> series degrades performance slightly (from 2.55s to 2.64s ie 3.5% slower).
->
->
-> I also observe, in both cases, a degradation on
->
-> 	dd if=/dev/zero of=/dev/null count=1M
->
-> Without your series, it runs in 5.29 seconds.
-> With your series, it runs in 5.82 seconds, that is 10% more time.
 
-That's pretty strage, I wonder if some kernel text cache line
-effects come into play here?
 
-The kernel access side is only used in slow path code, so it should
-not make a difference, and the uaccess code is simplified and should be
-(marginally) faster.
+Le 18/08/2020 à 20:05, Christoph Hellwig a écrit :
+> On Tue, Aug 18, 2020 at 07:46:22PM +0200, Christophe Leroy wrote:
+>> I gave it a go on my powerpc mpc832x. I tested it on top of my newest
+>> series that reworks the 32 bits signal handlers (see
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278) with
+>> the microbenchmark test used is that series.
+>>
+>> With KUAP activated, on top of signal32 rework, performance is boosted as
+>> system time for the microbenchmark goes from 1.73s down to 1.56s, that is
+>> 10% quicker
+>>
+>> Surprisingly, with the kernel as is today without my signal's series, your
+>> series degrades performance slightly (from 2.55s to 2.64s ie 3.5% slower).
+>>
+>>
+>> I also observe, in both cases, a degradation on
+>>
+>> 	dd if=/dev/zero of=/dev/null count=1M
+>>
+>> Without your series, it runs in 5.29 seconds.
+>> With your series, it runs in 5.82 seconds, that is 10% more time.
+> 
+> That's pretty strage, I wonder if some kernel text cache line
+> effects come into play here?
+> 
+> The kernel access side is only used in slow path code, so it should
+> not make a difference, and the uaccess code is simplified and should be
+> (marginally) faster.
+> 
+> Btw, was this with the __{get,put}_user_allowed cockup that you noticed
+> fixed?
+> 
 
-Btw, was this with the __{get,put}_user_allowed cockup that you noticed
-fixed?
+Yes it is with the __get_user_size() replaced by __get_user_size_allowed().
+
+Christophe
