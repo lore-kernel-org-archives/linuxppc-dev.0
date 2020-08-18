@@ -4,21 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6445BC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC910C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:29:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2032A20658
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:27:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2032A20658
+	by mail.kernel.org (Postfix) with ESMTPS id A7FD420658
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 17:29:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7FD420658
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHt36MH4zDqND
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:27:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWHwJ51w7zDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 03:29:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,39 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhS4rMJzDqbC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWHhT412QzDqbc
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 03:19:17 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BWHhJ5MkSz9vCxn;
- Tue, 18 Aug 2020 19:19:12 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BWHhH6c2Pz9vCxm;
+ Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bKuQ5JGo67fd; Tue, 18 Aug 2020 19:19:12 +0200 (CEST)
+ with ESMTP id Ob_gp16UB6xB; Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhJ4VHnz9vCxg;
- Tue, 18 Aug 2020 19:19:12 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BWHhH5Yrkz9vCxg;
+ Tue, 18 Aug 2020 19:19:11 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 791C18B7EC;
- Tue, 18 Aug 2020 19:19:14 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9D3A58B7EC;
+ Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2kYvDiy7EB13; Tue, 18 Aug 2020 19:19:14 +0200 (CEST)
+ with ESMTP id NIlQY05V3jyF; Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 475FC8B7D7;
- Tue, 18 Aug 2020 19:19:14 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E4938B7D7;
+ Tue, 18 Aug 2020 19:19:13 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2641B65CF4; Tue, 18 Aug 2020 17:19:14 +0000 (UTC)
-Message-Id: <376c258267aeae54a4423bc4a2e107a9611f0039.1597770847.git.christophe.leroy@csgroup.eu>
+ id 1EE6065CF4; Tue, 18 Aug 2020 17:19:13 +0000 (UTC)
+Message-Id: <35b1bd44a1a66f5bcf9b457a1c480ac8d5ef50b2.1597770847.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 References: <cover.1597770847.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 02/25] powerpc/ptrace: Move declaration of ptrace_get_reg()
- and ptrace_set_reg()
+Subject: [PATCH v2 01/25] powerpc/signal: Move inline functions in signal.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 18 Aug 2020 17:19:14 +0000 (UTC)
+Date: Tue, 18 Aug 2020 17:19:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,62 +76,118 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ptrace_get_reg() and ptrace_set_reg() are only used internally by
-ptrace.
+To really be inlined, the functions need to be defined in the
+same C file as the caller, or in an included header.
 
-Move them in arch/powerpc/kernel/ptrace/ptrace-decl.h
+Move functions defined inline from signal .c in signal.h
 
+Fixes: 3dd4eb83a9c0 ("powerpc: move common register copy functions from signal_32.c to signal.c")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/ptrace.h        | 6 ------
- arch/powerpc/kernel/ptrace/ptrace-decl.h | 3 +++
- arch/powerpc/kernel/ptrace/ptrace32.c    | 2 ++
- 3 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/signal.c | 30 --------------------------
+ arch/powerpc/kernel/signal.h | 41 +++++++++++++++++++++++++++++-------
+ 2 files changed, 33 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 155a197c0aa1..3c3cf537c3bf 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -171,12 +171,6 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
- 		set_thread_flag(TIF_NOERROR); \
- 	} while(0)
- 
--struct task_struct;
--extern int ptrace_get_reg(struct task_struct *task, int regno,
--			  unsigned long *data);
--extern int ptrace_put_reg(struct task_struct *task, int regno,
--			  unsigned long data);
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index d15a98c758b8..3b56db02b762 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -133,36 +133,6 @@ unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 	return 0;
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+-#else
+-inline unsigned long copy_fpr_to_user(void __user *to,
+-				      struct task_struct *task)
+-{
+-	return __copy_to_user(to, task->thread.fp_state.fpr,
+-			      ELF_NFPREG * sizeof(double));
+-}
 -
- #define current_pt_regs() \
- 	((struct pt_regs *)((unsigned long)task_stack_page(current) + THREAD_SIZE) - 1)
+-inline unsigned long copy_fpr_from_user(struct task_struct *task,
+-					void __user *from)
+-{
+-	return __copy_from_user(task->thread.fp_state.fpr, from,
+-			      ELF_NFPREG * sizeof(double));
+-}
+-
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-inline unsigned long copy_ckfpr_to_user(void __user *to,
+-					 struct task_struct *task)
+-{
+-	return __copy_to_user(to, task->thread.ckfp_state.fpr,
+-			      ELF_NFPREG * sizeof(double));
+-}
+-
+-inline unsigned long copy_ckfpr_from_user(struct task_struct *task,
+-						 void __user *from)
+-{
+-	return __copy_from_user(task->thread.ckfp_state.fpr, from,
+-				ELF_NFPREG * sizeof(double));
+-}
+-#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ #endif
  
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-decl.h b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-index 67447a6197eb..2ddc68412fa8 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-decl.h
-+++ b/arch/powerpc/kernel/ptrace/ptrace-decl.h
-@@ -159,6 +159,9 @@ int tm_cgpr32_set(struct task_struct *target, const struct user_regset *regset,
+ /* Log an error when sending an unhandled signal to a process. Controlled
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index d396efca4068..4626d39cc0f0 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -19,14 +19,6 @@ extern int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
+ extern int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
+ 			      struct task_struct *tsk);
  
- /* ptrace-view */
+-extern unsigned long copy_fpr_to_user(void __user *to,
+-				      struct task_struct *task);
+-extern unsigned long copy_ckfpr_to_user(void __user *to,
+-					       struct task_struct *task);
+-extern unsigned long copy_fpr_from_user(struct task_struct *task,
+-					void __user *from);
+-extern unsigned long copy_ckfpr_from_user(struct task_struct *task,
+-						 void __user *from);
+ extern unsigned long get_tm_stackpointer(struct task_struct *tsk);
  
-+int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data);
-+int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data);
+ #ifdef CONFIG_VSX
+@@ -38,6 +30,39 @@ extern unsigned long copy_vsx_from_user(struct task_struct *task,
+ 					void __user *from);
+ extern unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 						 void __user *from);
++unsigned long copy_fpr_to_user(void __user *to, struct task_struct *task);
++unsigned long copy_ckfpr_to_user(void __user *to, struct task_struct *task);
++unsigned long copy_fpr_from_user(struct task_struct *task, void __user *from);
++unsigned long copy_ckfpr_from_user(struct task_struct *task, void __user *from);
++#else
++static inline unsigned long
++copy_fpr_to_user(void __user *to, struct task_struct *task)
++{
++	return __copy_to_user(to, task->thread.fp_state.fpr,
++			      ELF_NFPREG * sizeof(double));
++}
 +
- extern const struct user_regset_view user_ppc_native_view;
- 
- /* ptrace-(no)adv */
-diff --git a/arch/powerpc/kernel/ptrace/ptrace32.c b/arch/powerpc/kernel/ptrace/ptrace32.c
-index 7589a9665ffb..d30b9ad70edc 100644
---- a/arch/powerpc/kernel/ptrace/ptrace32.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace32.c
-@@ -23,6 +23,8 @@
- 
- #include <asm/switch_to.h>
- 
-+#include "ptrace-decl.h"
++static inline unsigned long
++copy_fpr_from_user(struct task_struct *task, void __user *from)
++{
++	return __copy_from_user(task->thread.fp_state.fpr, from,
++			      ELF_NFPREG * sizeof(double));
++}
 +
- /*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++inline unsigned long copy_ckfpr_to_user(void __user *to, struct task_struct *task)
++{
++	return __copy_to_user(to, task->thread.ckfp_state.fpr,
++			      ELF_NFPREG * sizeof(double));
++}
++
++static inline unsigned long
++copy_ckfpr_from_user(struct task_struct *task, void __user *from)
++{
++	return __copy_from_user(task->thread.ckfp_state.fpr, from,
++				ELF_NFPREG * sizeof(double));
++}
++#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ #endif
+ 
+ #ifdef CONFIG_PPC64
 -- 
 2.25.0
 
