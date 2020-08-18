@@ -6,37 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BA1CC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E030AC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:28:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0573B207DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:26:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0573B207DA
+	by mail.kernel.org (Postfix) with ESMTPS id 9E570207DE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 03:28:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E570207DE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BVxCg5xZ3zDqXl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 13:26:39 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BVxFq0FGfzDqXv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Aug 2020 13:28:31 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BVx5R0JzXzDqXM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 13:21:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BVx5S0ptMzDqXM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2020 13:21:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BVx5Q6v9hz9sTX; Tue, 18 Aug 2020 13:21:14 +1000 (AEST)
+ id 4BVx5R476bz9sRK; Tue, 18 Aug 2020 13:21:15 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20200803035600.1820371-1-mikey@neuling.org>
-References: <20200803035600.1820371-1-mikey@neuling.org>
-Subject: Re: [PATCH] powerpc: Fix P10 PVR revision in /proc/cpuinfo for SMT4
- cores
-Message-Id: <159772076140.1537671.7948201442853663666.b4-ty@ellerman.id.au>
-Date: Tue, 18 Aug 2020 13:21:14 +1000 (AEST)
+To: mpe@ellerman.id.au, Sandipan Das <sandipan@linux.ibm.com>
+In-Reply-To: <a4956d838bf59b0a71a2553c5ca81131ea8b49b9.1596561758.git.sandipan@linux.ibm.com>
+References: <a4956d838bf59b0a71a2553c5ca81131ea8b49b9.1596561758.git.sandipan@linux.ibm.com>
+Subject: Re: [PATCH v4] selftests/powerpc: Fix pkey syscall redefinitions
+Message-Id: <159772076159.1537671.9788542551591591295.b4-ty@ellerman.id.au>
+Date: Tue, 18 Aug 2020 13:21:15 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,23 +47,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: grimm@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: sachinp@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
+ David Laight <david.laight@aculab.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 3 Aug 2020 13:56:00 +1000, Michael Neuling wrote:
-> On POWER10 bit 12 in the PVR indicates if the core is SMT4 or
-> SMT8. Bit 12 is set for SMT4.
+On Tue, 4 Aug 2020 23:01:37 +0530, Sandipan Das wrote:
+> On distros using older glibc versions, the pkey tests
+> encounter build failures due to redefinition of the
+> pkey syscall numbers.
 > 
-> Without this patch, /proc/cpuinfo on a SMT4 DD1 POWER10 looks like
-> this:
->     cpu             : POWER10, altivec supported
->     revision        : 17.0 (pvr 0080 1100)
+> For compatibility, commit 743f3544fffb added a wrapper
+> for the gettid() syscall and included syscall.h if the
+> version of glibc used is older than 2.30. This leads
+> to different definitions of SYS_pkey_* as the ones in
+> the pkey test header set numeric constants where as the
+> ones from syscall.h reuse __NR_pkey_*. The compiler
+> complains about redefinitions since they are different.
+> 
+> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc: Fix P10 PVR revision in /proc/cpuinfo for SMT4 cores
-      https://git.kernel.org/powerpc/c/030a2c689fb46e1690f7ded8b194bab7678efb28
+[1/1] selftests/powerpc: Fix pkey syscall redefinitions
+      https://git.kernel.org/powerpc/c/a7aaa2f26bfd932a654706b19859e7adf802bee2
 
 cheers
