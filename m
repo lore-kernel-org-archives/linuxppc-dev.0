@@ -2,53 +2,71 @@ Return-Path: <SRS0=nuQA=B5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7D49C433E3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:08:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B146DC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:19:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7073F20786
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:08:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7073F20786
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1758120738
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:19:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1758120738
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWf5Z4H7CzDqpv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 17:08:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWfKx20gxzDqHF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 17:19:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWdvJ6TLwzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 16:59:55 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D0091A02FF;
- Wed, 19 Aug 2020 08:59:48 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 3F2EB1A0311;
- Wed, 19 Aug 2020 08:59:44 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 5199F4024E;
- Wed, 19 Aug 2020 08:59:34 +0200 (CEST)
-From: Ran Wang <ran.wang_1@nxp.com>
-To: Li Yang <leoyang.li@nxp.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v4] soc: fsl: enable acpi support in RCPM driver
-Date: Wed, 19 Aug 2020 14:52:07 +0800
-Message-Id: <20200819065207.43930-1-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWfHd4pzWzDqSx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 17:17:30 +1000 (AEST)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4BWfHT3GNGz9tx31;
+ Wed, 19 Aug 2020 09:17:25 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 00Qb-dSzLs7G; Wed, 19 Aug 2020 09:17:25 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BWfHT2MxBz9tx30;
+ Wed, 19 Aug 2020 09:17:25 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C25B8B7F5;
+ Wed, 19 Aug 2020 09:17:26 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id XHszll2otBUV; Wed, 19 Aug 2020 09:17:26 +0200 (CEST)
+Received: from [172.25.230.104] (po15451.idsi0.si.c-s.fr [172.25.230.104])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E3D3B8B767;
+ Wed, 19 Aug 2020 09:17:25 +0200 (CEST)
+Subject: Re: remove the last set_fs() in common code, and remove it for x86
+ and powerpc
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Christoph Hellwig <hch@lst.de>
+References: <20200817073212.830069-1-hch@lst.de>
+ <319d15b1-cb4a-a7b4-3082-12bb30eb5143@csgroup.eu>
+ <20200818180555.GA29185@lst.de>
+ <e3781661-2e13-4f46-d892-181907a2e768@csgroup.eu>
+Message-ID: <f2e31c89-dd9e-f0f8-ef5c-e930d01a3b65@csgroup.eu>
+Date: Wed, 19 Aug 2020 09:16:59 +0200
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
+MIME-Version: 1.0
+In-Reply-To: <e3781661-2e13-4f46-d892-181907a2e768@csgroup.eu>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,75 +78,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peng Ma <peng.ma@nxp.com>, Ran Wang <ran.wang_1@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, Kees Cook <keescook@chromium.org>,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ Al Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Peng Ma <peng.ma@nxp.com>
 
-This patch enables ACPI support in RCPM driver.
 
-Signed-off-by: Peng Ma <peng.ma@nxp.com>
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
----
-Change in v4:
- - Make commit subject more accurate
- - Remove unrelated new blank line
+Le 18/08/2020 à 20:23, Christophe Leroy a écrit :
+> 
+> 
+> Le 18/08/2020 à 20:05, Christoph Hellwig a écrit :
+>> On Tue, Aug 18, 2020 at 07:46:22PM +0200, Christophe Leroy wrote:
+>>> I gave it a go on my powerpc mpc832x. I tested it on top of my newest
+>>> series that reworks the 32 bits signal handlers (see
+>>> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278) with 
+>>>
+>>> the microbenchmark test used is that series.
+>>>
+>>> With KUAP activated, on top of signal32 rework, performance is 
+>>> boosted as
+>>> system time for the microbenchmark goes from 1.73s down to 1.56s, 
+>>> that is
+>>> 10% quicker
+>>>
+>>> Surprisingly, with the kernel as is today without my signal's series, 
+>>> your
+>>> series degrades performance slightly (from 2.55s to 2.64s ie 3.5% 
+>>> slower).
+>>>
+>>>
+>>> I also observe, in both cases, a degradation on
+>>>
+>>>     dd if=/dev/zero of=/dev/null count=1M
+>>>
+>>> Without your series, it runs in 5.29 seconds.
+>>> With your series, it runs in 5.82 seconds, that is 10% more time.
+>>
+>> That's pretty strage, I wonder if some kernel text cache line
+>> effects come into play here?
+>>
+>> The kernel access side is only used in slow path code, so it should
+>> not make a difference, and the uaccess code is simplified and should be
+>> (marginally) faster.
+>>
+>> Btw, was this with the __{get,put}_user_allowed cockup that you noticed
+>> fixed?
+>>
+> 
+> Yes it is with the __get_user_size() replaced by __get_user_size_allowed().
 
-Change in v3:
- - Add #ifdef CONFIG_ACPI for acpi_device_id
- - Rename rcpm_acpi_imx_ids to rcpm_acpi_ids
+I made a test with only the first patch of your series: That's 
+definitely the culprit. With only that patch applies, the duration is 
+6.64 seconds, that's a 25% degradation.
 
-Change in v2:
- - Update acpi_device_id to fix conflict with other driver
+A perf record provides the following without the patch:
+     41.91%  dd       [kernel.kallsyms]  [k] __arch_clear_user
+      7.02%  dd       [kernel.kallsyms]  [k] vfs_read
+      6.86%  dd       [kernel.kallsyms]  [k] new_sync_read
+      6.68%  dd       [kernel.kallsyms]  [k] iov_iter_zero
+      6.03%  dd       [kernel.kallsyms]  [k] transfer_to_syscall
+      3.39%  dd       [kernel.kallsyms]  [k] memset
+      3.07%  dd       [kernel.kallsyms]  [k] __fsnotify_parent
+      2.68%  dd       [kernel.kallsyms]  [k] ksys_read
+      2.09%  dd       [kernel.kallsyms]  [k] read_iter_zero
+      2.01%  dd       [kernel.kallsyms]  [k] __fget_light
+      1.84%  dd       [kernel.kallsyms]  [k] __fdget_pos
+      1.35%  dd       [kernel.kallsyms]  [k] rw_verify_area
+      1.32%  dd       libc-2.23.so       [.] __GI___libc_write
+      1.21%  dd       [kernel.kallsyms]  [k] vfs_write
+...
+      0.03%  dd       [kernel.kallsyms]  [k] write_null
 
- drivers/soc/fsl/rcpm.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+And the following with the patch:
 
-diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
-index a093dbe..b5aa6db 100644
---- a/drivers/soc/fsl/rcpm.c
-+++ b/drivers/soc/fsl/rcpm.c
-@@ -2,7 +2,7 @@
- //
- // rcpm.c - Freescale QorIQ RCPM driver
- //
--// Copyright 2019 NXP
-+// Copyright 2019-2020 NXP
- //
- // Author: Ran Wang <ran.wang_1@nxp.com>
- 
-@@ -13,6 +13,7 @@
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/kernel.h>
-+#include <linux/acpi.h>
- 
- #define RCPM_WAKEUP_CELL_MAX_SIZE	7
- 
-@@ -139,10 +140,19 @@ static const struct of_device_id rcpm_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, rcpm_of_match);
- 
-+#ifdef CONFIG_ACPI
-+static const struct acpi_device_id rcpm_acpi_ids[] = {
-+	{"NXP0015",},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(acpi, rcpm_acpi_ids);
-+#endif
-+
- static struct platform_driver rcpm_driver = {
- 	.driver = {
- 		.name = "rcpm",
- 		.of_match_table = rcpm_of_match,
-+		.acpi_match_table = ACPI_PTR(rcpm_acpi_ids),
- 		.pm	= &rcpm_pm_ops,
- 	},
- 	.probe = rcpm_probe,
--- 
-2.7.4
+     15.54%  dd       [kernel.kallsyms]  [k] __arch_clear_user
+      9.17%  dd       [kernel.kallsyms]  [k] vfs_read
+      6.54%  dd       [kernel.kallsyms]  [k] new_sync_write
+      6.31%  dd       [kernel.kallsyms]  [k] transfer_to_syscall
+      6.29%  dd       [kernel.kallsyms]  [k] __fsnotify_parent
+      6.20%  dd       [kernel.kallsyms]  [k] new_sync_read
+      5.47%  dd       [kernel.kallsyms]  [k] memset
+      5.13%  dd       [kernel.kallsyms]  [k] vfs_write
+      4.44%  dd       [kernel.kallsyms]  [k] iov_iter_zero
+      2.95%  dd       [kernel.kallsyms]  [k] write_iter_null
+      2.82%  dd       [kernel.kallsyms]  [k] ksys_read
+      2.46%  dd       [kernel.kallsyms]  [k] __fget_light
+      2.34%  dd       libc-2.23.so       [.] __GI___libc_read
+      1.89%  dd       [kernel.kallsyms]  [k] iov_iter_advance
+      1.76%  dd       [kernel.kallsyms]  [k] __fdget_pos
+      1.65%  dd       [kernel.kallsyms]  [k] rw_verify_area
+      1.63%  dd       [kernel.kallsyms]  [k] read_iter_zero
+      1.60%  dd       [kernel.kallsyms]  [k] iov_iter_init
+      1.22%  dd       [kernel.kallsyms]  [k] ksys_write
+      1.14%  dd       libc-2.23.so       [.] __GI___libc_write
 
+Christophe
+
+> 
+> Christophe
