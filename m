@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55688C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:29:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3BC7C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:32:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EC634205CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:29:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4E9F920866
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:32:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="WX2gN2X4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC634205CB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="L8+sUoxQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E9F920866
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWpXd50rwzDqgD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:29:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWpcb6KS9zDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:32:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
@@ -30,59 +30,59 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=WX2gN2X4; dkim-atps=neutral
+ header.s=pp1 header.b=L8+sUoxQ; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWnyj0bRTzDqw2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:03:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWnyn5KhyzDqtG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:03:29 +1000 (AEST)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07JD22PZ002129; Wed, 19 Aug 2020 09:03:01 -0400
+ 07JD23xW002169; Wed, 19 Aug 2020 09:03:07 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=9AtpSWJA58L9/hLE98davTNN23dVxuHwiSyXCdftH0U=;
- b=WX2gN2X4w3f7Lh3GqBL3RsR7G+vRB7ack3oVkVS7bAIitbSOZTE6RXvgPPL6Ngo+jL6T
- sIdP8oPoJ6vjmyIXW8KkhPU8OETGwkxNlRogJ0PhrqYPD3/S2XLLN5Bqj6pFX10ic6/A
- 8P93K02+es0SuZVAJKirtfKBTwSx72xfbJaGnx+4gVgdc8CS12Y4A//21Z4HIKnAlZWG
- W59BU6KznPdW+8Z58aK9V21k0KAJOlLC0zOoZhihyGR43WP0h3mlTH1sIQeFXpqhpdnm
- jvp7IaZV70G6NcnQb21tY6fINbfBucLKkYVyYA1YgxhzE0AWrHBkJYR5hKHq+fnugqoI rg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
- [169.55.85.253])
- by mx0b-001b2d01.pphosted.com with ESMTP id 330ww94edh-1
+ bh=K2b6bsePaCfb+kSnAyo442riivw9M51C9berQkiNJ0A=;
+ b=L8+sUoxQ2xofOjgIYCT8ZHBCexOziAVtV5JBamzdbCfaOg9w7Vyp06Y6auA+sZEYjKcg
+ gxu9bzWIsbs+SV0/DxPy0451uXej96APj2csbNCfWb5koc9qpRltGdLAYXviTkjBQwe7
+ PoGN3nj1KSKdgpAkmTAInliCirGeCvGdQjE3xDbbsOpLEqVkqF6ZzbrP0D2g+omj8xdF
+ Wh36vD6zPkrj0wPJhubnP/K/MoFCID/Q7l8LWp17JTmLJz2loH/rQ87vpDoSUCy39gFP
+ M11uoLynBB05CX7GW4KAA2YyZu9yuHKV1s9eqA1JHRSBp1NdZ5ooA8r/IOv+TucBaHN2 tA== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com
+ [169.63.121.186])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 330ww94ebm-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 09:02:57 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
- by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JD0o7I024544;
- Wed, 19 Aug 2020 13:01:42 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma01wdc.us.ibm.com with ESMTP id 3304tkkxay-1
+ Wed, 19 Aug 2020 09:02:51 -0400
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+ by ppma03wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JD0FW5023738;
+ Wed, 19 Aug 2020 13:01:40 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23]) by ppma03wdc.us.ibm.com with ESMTP id 3304ce42xa-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 13:01:42 +0000
+ Wed, 19 Aug 2020 13:01:40 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07JD1gxg51773722
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07JD1dGw34144522
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Aug 2020 13:01:42 GMT
+ Wed, 19 Aug 2020 13:01:39 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 53EEFB205F;
- Wed, 19 Aug 2020 13:01:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BB67AB205F;
+ Wed, 19 Aug 2020 13:01:39 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4390CB2064;
- Wed, 19 Aug 2020 13:01:40 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9CDB1B2066;
+ Wed, 19 Aug 2020 13:01:37 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.3.58])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 19 Aug 2020 13:01:39 +0000 (GMT)
+ Wed, 19 Aug 2020 13:01:37 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v2 07/13] mm/debug_vm_pgtable/set_pte/pmd/pud: Don't use
- set_*_at to update an existing pte entry
-Date: Wed, 19 Aug 2020 18:31:01 +0530
-Message-Id: <20200819130107.478414-8-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 06/13] mm/debug_vm_pgtable/THP: Mark the pte entry huge
+ before using set_pmd/pud_at
+Date: Wed, 19 Aug 2020 18:31:00 +0530
+Message-Id: <20200819130107.478414-7-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
 References: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
@@ -96,7 +96,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  spamscore=0
  priorityscore=1501 malwarescore=0 clxscore=1015 mlxscore=0 phishscore=0
  impostorscore=0 lowpriorityscore=0 bulkscore=0 adultscore=0
- mlxlogscore=383 suspectscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 suspectscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2006250000 definitions=main-2008190110
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -116,115 +116,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-set_pte_at() should not be used to set a pte entry at locations that
-already holds a valid pte entry. Architectures like ppc64 don't do TLB
-invalidate in set_pte_at() and hence expect it to be used to set locations
-that are not a valid PTE.
+kernel expects entries to be marked huge before we use set_pmd_at()/set_pud_at().
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- mm/debug_vm_pgtable.c | 35 +++++++++++++++--------------------
- 1 file changed, 15 insertions(+), 20 deletions(-)
+ mm/debug_vm_pgtable.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
-index 76f4c713e5a3..9c7e2c9cfc76 100644
+index ffa10ede6842..76f4c713e5a3 100644
 --- a/mm/debug_vm_pgtable.c
 +++ b/mm/debug_vm_pgtable.c
-@@ -74,15 +74,18 @@ static void __init pte_advanced_tests(struct mm_struct *mm,
+@@ -150,7 +150,7 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
+ 				      unsigned long pfn, unsigned long vaddr,
+ 				      pgprot_t prot)
  {
- 	pte_t pte = pfn_pte(pfn, prot);
+-	pmd_t pmd = pfn_pmd(pfn, prot);
++	pmd_t pmd;
  
-+	/*
-+	 * Architectures optimize set_pte_at by avoiding TLB flush.
-+	 * This requires set_pte_at to be not used to update an
-+	 * existing pte entry. Clear pte before we do set_pte_at
-+	 */
-+
- 	pr_debug("Validating PTE advanced\n");
- 	pte = pfn_pte(pfn, prot);
- 	set_pte_at(mm, vaddr, ptep, pte);
- 	ptep_set_wrprotect(mm, vaddr, ptep);
- 	pte = ptep_get(ptep);
- 	WARN_ON(pte_write(pte));
--
--	pte = pfn_pte(pfn, prot);
--	set_pte_at(mm, vaddr, ptep, pte);
- 	ptep_get_and_clear(mm, vaddr, ptep);
- 	pte = ptep_get(ptep);
- 	WARN_ON(!pte_none(pte));
-@@ -96,13 +99,11 @@ static void __init pte_advanced_tests(struct mm_struct *mm,
- 	ptep_set_access_flags(vma, vaddr, ptep, pte, 1);
- 	pte = ptep_get(ptep);
- 	WARN_ON(!(pte_write(pte) && pte_dirty(pte)));
--
--	pte = pfn_pte(pfn, prot);
--	set_pte_at(mm, vaddr, ptep, pte);
- 	ptep_get_and_clear_full(mm, vaddr, ptep, 1);
- 	pte = ptep_get(ptep);
- 	WARN_ON(!pte_none(pte));
+ 	if (!has_transparent_hugepage())
+ 		return;
+@@ -159,19 +159,19 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
+ 	/* Align the address wrt HPAGE_PMD_SIZE */
+ 	vaddr = (vaddr & HPAGE_PMD_MASK) + HPAGE_PMD_SIZE;
  
-+	pte = pfn_pte(pfn, prot);
- 	pte = pte_mkyoung(pte);
- 	set_pte_at(mm, vaddr, ptep, pte);
- 	ptep_test_and_clear_young(vma, vaddr, ptep);
-@@ -164,9 +165,6 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
+-	pmd = pfn_pmd(pfn, prot);
++	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
+ 	set_pmd_at(mm, vaddr, pmdp, pmd);
  	pmdp_set_wrprotect(mm, vaddr, pmdp);
  	pmd = READ_ONCE(*pmdp);
  	WARN_ON(pmd_write(pmd));
--
--	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
--	set_pmd_at(mm, vaddr, pmdp, pmd);
+ 
+-	pmd = pfn_pmd(pfn, prot);
++	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
+ 	set_pmd_at(mm, vaddr, pmdp, pmd);
  	pmdp_huge_get_and_clear(mm, vaddr, pmdp);
  	pmd = READ_ONCE(*pmdp);
  	WARN_ON(!pmd_none(pmd));
-@@ -180,13 +178,11 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
- 	pmdp_set_access_flags(vma, vaddr, pmdp, pmd, 1);
- 	pmd = READ_ONCE(*pmdp);
- 	WARN_ON(!(pmd_write(pmd) && pmd_dirty(pmd)));
--
--	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
--	set_pmd_at(mm, vaddr, pmdp, pmd);
- 	pmdp_huge_get_and_clear_full(vma, vaddr, pmdp, 1);
- 	pmd = READ_ONCE(*pmdp);
- 	WARN_ON(!pmd_none(pmd));
  
+-	pmd = pfn_pmd(pfn, prot);
 +	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
- 	pmd = pmd_mkyoung(pmd);
+ 	pmd = pmd_wrprotect(pmd);
+ 	pmd = pmd_mkclean(pmd);
  	set_pmd_at(mm, vaddr, pmdp, pmd);
- 	pmdp_test_and_clear_young(vma, vaddr, pmdp);
-@@ -283,18 +279,10 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
+@@ -267,7 +267,7 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
+ 				      unsigned long pfn, unsigned long vaddr,
+ 				      pgprot_t prot)
+ {
+-	pud_t pud = pfn_pud(pfn, prot);
++	pud_t pud;
+ 
+ 	if (!has_transparent_hugepage())
+ 		return;
+@@ -276,25 +276,28 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
+ 	/* Align the address wrt HPAGE_PUD_SIZE */
+ 	vaddr = (vaddr & HPAGE_PUD_MASK) + HPAGE_PUD_SIZE;
+ 
++	pud = pud_mkhuge(pfn_pud(pfn, prot));
+ 	set_pud_at(mm, vaddr, pudp, pud);
+ 	pudp_set_wrprotect(mm, vaddr, pudp);
+ 	pud = READ_ONCE(*pudp);
  	WARN_ON(pud_write(pud));
  
  #ifndef __PAGETABLE_PMD_FOLDED
--
--	pud = pud_mkhuge(pfn_pud(pfn, prot));
--	set_pud_at(mm, vaddr, pudp, pud);
+-	pud = pfn_pud(pfn, prot);
++
++	pud = pud_mkhuge(pfn_pud(pfn, prot));
+ 	set_pud_at(mm, vaddr, pudp, pud);
  	pudp_huge_get_and_clear(mm, vaddr, pudp);
  	pud = READ_ONCE(*pudp);
  	WARN_ON(!pud_none(pud));
  
--	pud = pud_mkhuge(pfn_pud(pfn, prot));
--	set_pud_at(mm, vaddr, pudp, pud);
--	pudp_huge_get_and_clear_full(mm, vaddr, pudp, 1);
--	pud = READ_ONCE(*pudp);
--	WARN_ON(!pud_none(pud));
- #endif /* __PAGETABLE_PMD_FOLDED */
- 
- 	pud = pud_mkhuge(pfn_pud(pfn, prot));
-@@ -307,6 +295,13 @@ static void __init pud_advanced_tests(struct mm_struct *mm,
+-	pud = pfn_pud(pfn, prot);
++	pud = pud_mkhuge(pfn_pud(pfn, prot));
+ 	set_pud_at(mm, vaddr, pudp, pud);
+ 	pudp_huge_get_and_clear_full(mm, vaddr, pudp, 1);
  	pud = READ_ONCE(*pudp);
- 	WARN_ON(!(pud_write(pud) && pud_dirty(pud)));
- 
-+#ifndef __PAGETABLE_PMD_FOLDED
-+	pudp_huge_get_and_clear_full(vma, vaddr, pudp, 1);
-+	pud = READ_ONCE(*pudp);
-+	WARN_ON(!pud_none(pud));
-+#endif /* __PAGETABLE_PMD_FOLDED */
+ 	WARN_ON(!pud_none(pud));
+ #endif /* __PAGETABLE_PMD_FOLDED */
+-	pud = pfn_pud(pfn, prot);
 +
 +	pud = pud_mkhuge(pfn_pud(pfn, prot));
- 	pud = pud_mkyoung(pud);
+ 	pud = pud_wrprotect(pud);
+ 	pud = pud_mkclean(pud);
  	set_pud_at(mm, vaddr, pudp, pud);
- 	pudp_test_and_clear_young(vma, vaddr, pudp);
 -- 
 2.26.2
 
