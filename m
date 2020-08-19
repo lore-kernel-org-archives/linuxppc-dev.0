@@ -2,61 +2,63 @@ Return-Path: <SRS0=nuQA=B5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 116F5C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF72CC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:58:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F7C02075E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:21:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F7C02075E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 04EE9204EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 01:58:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="r02uflVG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04EE9204EC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWVPG5PJ5zDqsq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 11:21:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.121; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0121.hostedemail.com
- [216.40.44.121])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWWCS29HvzDqtV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 11:58:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWVM64NcBzDqVb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 11:20:00 +1000 (AEST)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay07.hostedemail.com (Postfix) with ESMTP id A882B181D330D;
- Wed, 19 Aug 2020 01:19:56 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: wash41_4712ceb27023
-X-Filterd-Recvd-Size: 2169
-Received: from XPS-9350.home (unknown [47.151.133.149])
- (Authenticated sender: joe@perches.com)
- by omf13.hostedemail.com (Postfix) with ESMTPA;
- Wed, 19 Aug 2020 01:19:55 +0000 (UTC)
-Message-ID: <3ca05f10dec479a70f6c33274ded8d4fab9c01ec.camel@perches.com>
-Subject: Re: [PATCH v2 11/25] powerpc/signal: Refactor bad frame logging
-From: Joe Perches <joe@perches.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Date: Tue, 18 Aug 2020 18:19:54 -0700
-In-Reply-To: <fa094445c119fc00315e1c13783b493346306c6a.1597770847.git.christophe.leroy@csgroup.eu>
-References: <cover.1597770847.git.christophe.leroy@csgroup.eu>
- <fa094445c119fc00315e1c13783b493346306c6a.1597770847.git.christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.36.4-0ubuntu1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWW9M4SpdzDqnM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 11:56:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=r02uflVG; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4BWW9M3BK3z9sTg; Wed, 19 Aug 2020 11:56:39 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4BWW9M1tHfz9sTh; Wed, 19 Aug 2020 11:56:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1597802199;
+ bh=6tXzM2jfYiRHHGW3ZOPE+f9n9rS7MYVMzTKLrnjVAmU=;
+ h=From:To:Subject:Date:In-Reply-To:References:From;
+ b=r02uflVGfLvahGgTnvRHaC9IE/p9fWdXNkkDhq5DXIZmZyFTmYdqB8o4P1LCqMZc0
+ koujBkczy8Zwsc4uTIDGf5pq4bdkZecuOLGtWlzypsT2cwPhQqJHnktNEr6ocN36DI
+ yQbR94x543KjidTzPAm1LliNrAX/G6zYIJwbmm8UAsKlVYxHhMHyyL8224fHAYyoEV
+ Owgkmoxpl4C+KZ3zRjVV6fLCRZ/R/0eIfvg6thC8z1jeqdbfLf2AstpFpEu7x0QoHS
+ aQtIUdw2qKQ0cObrrisdFWdCetJwUauo5uWjyig0m4t8DwPxthCC7qcDA3muixEAMm
+ oZ69KI91fwpfw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/3] powerpc/smp: Move ppc_md.cpu_die() to
+ smp_ops.cpu_offline_self()
+Date: Wed, 19 Aug 2020 11:56:34 +1000
+Message-Id: <20200819015634.1974478-3-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200819015634.1974478-1-mpe@ellerman.id.au>
+References: <20200819015634.1974478-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,37 +70,251 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2020-08-18 at 17:19 +0000, Christophe Leroy wrote:
-> The logging of bad frame appears half a dozen of times
-> and is pretty similar.
-[]
-> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-[]
-> @@ -355,3 +355,14 @@ static unsigned long get_tm_stackpointer(struct task_struct *tsk)
->  #endif
->  	return ret;
->  }
-> +
-> +static const char fm32[] = KERN_INFO "%s[%d]: bad frame in %s: %p nip %08lx lr %08lx\n";
-> +static const char fm64[] = KERN_INFO "%s[%d]: bad frame in %s: %p nip %016lx lr %016lx\n";
+We have smp_ops->cpu_die() and ppc_md.cpu_die(). One of them offlines
+the current CPU and one offlines another CPU, can you guess which is
+which? Also one is in smp_ops and one is in ppc_md?
 
-Why not remove this and use it in place with
-%08lx/%016x used as %px with a case to (void *)?
+So rename ppc_md.cpu_die(), to cpu_offline_self(), because that's what
+it does. And move it into smp_ops where it belongs.
 
-> +void signal_fault(struct task_struct *tsk, struct pt_regs *regs,
-> +		  const char *where, void __user *ptr)
-> +{
-> +	if (show_unhandled_signals)
-> +		printk_ratelimited(regs->msr & MSR_64BIT ? fm64 : fm32, tsk->comm,
-> +				   task_pid_nr(tsk), where, ptr, regs->nip, regs->link);
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/machdep.h           | 1 -
+ arch/powerpc/include/asm/smp.h               | 3 +++
+ arch/powerpc/kernel/smp.c                    | 4 ++--
+ arch/powerpc/kernel/sysfs.c                  | 4 +++-
+ arch/powerpc/platforms/85xx/smp.c            | 4 ++--
+ arch/powerpc/platforms/powermac/pmac.h       | 2 +-
+ arch/powerpc/platforms/powermac/sleep.S      | 6 +++---
+ arch/powerpc/platforms/powermac/smp.c        | 8 ++++----
+ arch/powerpc/platforms/powernv/smp.c         | 4 ++--
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 6 +++---
+ 10 files changed, 23 insertions(+), 19 deletions(-)
 
-	pr_info_ratelimited("%s[%d]: bad frame in %s: %p nip %016lx lr %016lx\n",
-			    tsk->comm, task_pid_nr(tsk), where, ptr,
-			    (void *)regs->nip, (void *)regs->link);
-
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index a90b892f0bfe..cc2ec7101520 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -65,7 +65,6 @@ struct machdep_calls {
+ 	void __noreturn	(*restart)(char *cmd);
+ 	void __noreturn (*halt)(void);
+ 	void		(*panic)(char *str);
+-	void		(*cpu_die)(void);
+ 
+ 	long		(*time_init)(void); /* Optional, may be NULL */
+ 
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index a314d2d2d2be..0d00faf8f119 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -49,6 +49,9 @@ struct smp_ops_t {
+ 	int   (*cpu_disable)(void);
+ 	void  (*cpu_die)(unsigned int nr);
+ 	int   (*cpu_bootable)(unsigned int nr);
++#ifdef CONFIG_HOTPLUG_CPU
++	void  (*cpu_offline_self)(void);
++#endif
+ };
+ 
+ extern int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index c616d975bf95..faba0fdee500 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1439,8 +1439,8 @@ void arch_cpu_idle_dead(void)
+ 	 */
+ 	this_cpu_disable_ftrace();
+ 
+-	if (ppc_md.cpu_die)
+-		ppc_md.cpu_die();
++	if (smp_ops->cpu_offline_self)
++		smp_ops->cpu_offline_self();
+ 
+ 	/* If we return, we re-enter start_secondary */
+ 	start_secondary_resume();
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 6bebc9a52444..7c4ccc03c2de 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -1161,6 +1161,7 @@ static int __init topology_init(void)
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu *c = &per_cpu(cpu_devices, cpu);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
+ 		/*
+ 		 * For now, we just see if the system supports making
+ 		 * the RTAS calls for CPU hotplug.  But, there may be a
+@@ -1168,8 +1169,9 @@ static int __init topology_init(void)
+ 		 * CPU.  For instance, the boot cpu might never be valid
+ 		 * for hotplugging.
+ 		 */
+-		if (ppc_md.cpu_die)
++		if (smp_ops->cpu_offline_self)
+ 			c->hotpluggable = 1;
++#endif
+ 
+ 		if (cpu_online(cpu) || c->hotpluggable) {
+ 			register_cpu(c, cpu);
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index fda108bae95f..c6df294054fe 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -112,7 +112,7 @@ static void mpc85xx_take_timebase(void)
+ 	local_irq_restore(flags);
+ }
+ 
+-static void smp_85xx_mach_cpu_die(void)
++static void smp_85xx_cpu_offline_self(void)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 
+@@ -506,7 +506,7 @@ void __init mpc85xx_smp_init(void)
+ 	if (qoriq_pm_ops) {
+ 		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
+ 		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
+-		ppc_md.cpu_die = smp_85xx_mach_cpu_die;
++		smp_85xx_ops.cpu_offline_self = smp_85xx_cpu_offline_self;
+ 		smp_85xx_ops.cpu_die = qoriq_cpu_kill;
+ 	}
+ #endif
+diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
+index 16a52afdb76e..0d715db434dc 100644
+--- a/arch/powerpc/platforms/powermac/pmac.h
++++ b/arch/powerpc/platforms/powermac/pmac.h
+@@ -34,7 +34,7 @@ extern void pmac_check_ht_link(void);
+ 
+ extern void pmac_setup_smp(void);
+ extern int psurge_secondary_virq;
+-extern void low_cpu_die(void) __attribute__((noreturn));
++extern void low_cpu_offline_self(void) __attribute__((noreturn));
+ 
+ extern int pmac_nvram_init(void);
+ extern void pmac_pic_init(void);
+diff --git a/arch/powerpc/platforms/powermac/sleep.S b/arch/powerpc/platforms/powermac/sleep.S
+index f9a680fdd9c4..c51bb63c9417 100644
+--- a/arch/powerpc/platforms/powermac/sleep.S
++++ b/arch/powerpc/platforms/powermac/sleep.S
+@@ -201,8 +201,8 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	addi r3,r3,sleep_storage@l
+ 	stw r5,0(r3)
+ 
+-	.globl	low_cpu_die
+-low_cpu_die:
++	.globl	low_cpu_offline_self
++low_cpu_offline_self:
+ 	/* Flush & disable all caches */
+ 	bl	flush_disable_caches
+ 
+@@ -244,7 +244,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPEC7450)
+ 	mtmsr	r2
+ 	isync
+ 	b	1b
+-_ASM_NOKPROBE_SYMBOL(low_cpu_die)
++_ASM_NOKPROBE_SYMBOL(low_cpu_offline_self)
+ /*
+  * Here is the resume code.
+  */
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index eb23264910e1..a6fedcfb714f 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -920,7 +920,7 @@ static int smp_core99_cpu_disable(void)
+ 
+ #ifdef CONFIG_PPC32
+ 
+-static void pmac_cpu_die(void)
++static void pmac_cpu_offline_self(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+@@ -930,12 +930,12 @@ static void pmac_cpu_die(void)
+ 	generic_set_cpu_dead(cpu);
+ 	smp_wmb();
+ 	mb();
+-	low_cpu_die();
++	low_cpu_offline_self();
+ }
+ 
+ #else /* CONFIG_PPC32 */
+ 
+-static void pmac_cpu_die(void)
++static void pmac_cpu_offline_self(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
+@@ -1020,7 +1020,7 @@ void __init pmac_setup_smp(void)
+ #endif /* CONFIG_PPC_PMAC32_PSURGE */
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-	ppc_md.cpu_die = pmac_cpu_die;
++	smp_ops->cpu_offline_self = pmac_cpu_offline_self;
+ #endif
+ }
+ 
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index bbf361f23ae8..54c4ba45c7ce 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -158,7 +158,7 @@ static void pnv_flush_interrupts(void)
+ 	}
+ }
+ 
+-static void pnv_smp_cpu_kill_self(void)
++static void pnv_cpu_offline_self(void)
+ {
+ 	unsigned long srr1, unexpected_mask, wmask;
+ 	unsigned int cpu;
+@@ -417,6 +417,7 @@ static struct smp_ops_t pnv_smp_ops = {
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	.cpu_disable	= pnv_smp_cpu_disable,
+ 	.cpu_die	= generic_cpu_die,
++	.cpu_offline_self = pnv_cpu_offline_self,
+ #endif /* CONFIG_HOTPLUG_CPU */
+ };
+ 
+@@ -430,7 +431,6 @@ void __init pnv_smp_init(void)
+ 	smp_ops = &pnv_smp_ops;
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-	ppc_md.cpu_die	= pnv_smp_cpu_kill_self;
+ #ifdef CONFIG_KEXEC_CORE
+ 	crash_wake_offline = 1;
+ #endif
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index c6e0d8abf75e..43b020a30072 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -55,7 +55,7 @@ static void rtas_stop_self(void)
+ 	panic("Alas, I survived.\n");
+ }
+ 
+-static void pseries_mach_cpu_die(void)
++static void pseries_cpu_offline_self(void)
+ {
+ 	unsigned int hwcpu = hard_smp_processor_id();
+ 
+@@ -102,7 +102,7 @@ static int pseries_cpu_disable(void)
+  * to self-destroy so that the cpu-offline thread can send the CPU_DEAD
+  * notifications.
+  *
+- * OTOH, pseries_mach_cpu_die() is called by the @cpu when it wants to
++ * OTOH, pseries_cpu_offline_self() is called by the @cpu when it wants to
+  * self-destruct.
+  */
+ static void pseries_cpu_die(unsigned int cpu)
+@@ -895,7 +895,7 @@ static int __init pseries_cpu_hotplug_init(void)
+ 		return 0;
+ 	}
+ 
+-	ppc_md.cpu_die = pseries_mach_cpu_die;
++	smp_ops->cpu_offline_self = pseries_cpu_offline_self;
+ 	smp_ops->cpu_disable = pseries_cpu_disable;
+ 	smp_ops->cpu_die = pseries_cpu_die;
+ 
+-- 
+2.25.1
 
