@@ -7,82 +7,82 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07CF4C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:39:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7ED3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:41:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A6E9204EC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:39:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 99FA1204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:41:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="XgFUTu1J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A6E9204EC
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="MBFUQ3Rq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99FA1204FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWplv29QBzDqgN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:39:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWppb3n70zDqpp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:41:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=XgFUTu1J; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=MBFUQ3Rq; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWp0J050tzDqvZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:04:47 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWp2V3ywvzDqts
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:06:42 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07JD443t115069; Wed, 19 Aug 2020 09:04:24 -0400
+ 07JD4mWP147352; Wed, 19 Aug 2020 09:06:31 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=sxOdLzp5MZWZ6egfMK178l+k+Rsst7sfujQe5cIcPEE=;
- b=XgFUTu1JCAHI0QFcYnkUcJ5Qoc3phob0r2Ooi+UW0J6BMrF/m6d0hxZnQJP+KdJzcR3g
- Dcw7CeiBsj1Mh2JRZUfKmc57w13wuhpw+Ek95TMPYGX+o0pz7dx1UR7hjYu1t2hI4ZP2
- jSEZHR9BPNcfat5K74tmsAHT++n0wLiR/9us5h4Ghrbv74RTd4FCNi1yFg/EGV0VWyuu
- WFzQL7iJORfS7b5bx3b+lgG1nMTHGuTIIM6U7Zk8htroe6B4P5p0fvPyZuKzcieAuL8I
- tdcEZaoWZyjgdbsz6sPjySFGxqn6+ASBPNs7PqMKAYb0N2XB1rRFIzrhjPP6VEcjHHVj RA== 
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3313antr94-1
+ bh=JLWywUjS/+67SbhHMCFbphWRk1msvYeIOt1EvP/0J1s=;
+ b=MBFUQ3RqlEF7I8EdzusxR+MWdr6Efh6jexw3zswEBX4IWmwAPwEpfK2JbOU3EV80pguP
+ NoP/2Fz6wasU5YX17dHC9PFPYXZFbHyC8wVltUu6A4ytZIb1QHFXmlPmeXd1va6Vd1OS
+ nhOqiuENA4csBfpU5K6zNaLr+Ym1Y0EaFEFCFdIsH9yOo29s53th++A31DNGSJYNYw28
+ E9hC664pN2gROzznzyW+HD4lMNjigEdcqn2SY9bb9zGRU4eXNGXSnoWkz7sR9+OFeaz+
+ A3B5lKM1Py/pNk0DGonN51oisqBfIc5ndNzMJofkYv27+EPxObumd7rGCeD30E5YhgZc Mw== 
+Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.27])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 3304sxcq26-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 09:04:22 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JCuDP4006281;
- Wed, 19 Aug 2020 13:01:37 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma02wdc.us.ibm.com with ESMTP id 3304scv00w-1
+ Wed, 19 Aug 2020 09:06:28 -0400
+Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
+ by ppma05wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JD0WFo032462;
+ Wed, 19 Aug 2020 13:01:57 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma05wdc.us.ibm.com with ESMTP id 3304tguyaq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 13:01:37 +0000
+ Wed, 19 Aug 2020 13:01:57 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07JD1bAN32375208
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07JD1vJH53281184
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Aug 2020 13:01:37 GMT
+ Wed, 19 Aug 2020 13:01:57 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3552AB205F;
- Wed, 19 Aug 2020 13:01:37 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 37053B205F;
+ Wed, 19 Aug 2020 13:01:57 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3FB59B2066;
- Wed, 19 Aug 2020 13:01:35 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5071BB2067;
+ Wed, 19 Aug 2020 13:01:55 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.3.58])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 19 Aug 2020 13:01:34 +0000 (GMT)
+ Wed, 19 Aug 2020 13:01:54 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v2 05/13] mm/debug_vm_pgtable/savedwrite: Enable savedwrite
- test with CONFIG_NUMA_BALANCING
-Date: Wed, 19 Aug 2020 18:30:59 +0530
-Message-Id: <20200819130107.478414-6-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 13/13] mm/debug_vm_pgtable: populate a pte entry before
+ fetching it
+Date: Wed, 19 Aug 2020 18:31:07 +0530
+Message-Id: <20200819130107.478414-14-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
 References: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
@@ -93,11 +93,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-19_04:2020-08-19,
  2020-08-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0
- mlxlogscore=920 lowpriorityscore=0 clxscore=1015 malwarescore=0
- adultscore=0 impostorscore=0 bulkscore=0 mlxscore=0 phishscore=0
- priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2006250000 definitions=main-2008190110
+ clxscore=1015 adultscore=0
+ mlxscore=0 malwarescore=0 spamscore=0 mlxlogscore=936 lowpriorityscore=0
+ bulkscore=0 phishscore=0 impostorscore=0 suspectscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2008190115
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,57 +116,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Saved write support was added to track the write bit of a pte after marking the
-pte protnone. This was done so that AUTONUMA can convert a write pte to protnone
-and still track the old write bit. When converting it back we set the pte write
-bit correctly thereby avoiding a write fault again. Hence enable the test only
-when CONFIG_NUMA_BALANCING is enabled and use protnone protflags.
+pte_clear_tests operate on an existing pte entry. Make sure that is not a none
+pte entry.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- mm/debug_vm_pgtable.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ mm/debug_vm_pgtable.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
-index cf3c4792b4a2..ffa10ede6842 100644
+index 09ce9974c187..7d9f8e1d790f 100644
 --- a/mm/debug_vm_pgtable.c
 +++ b/mm/debug_vm_pgtable.c
-@@ -114,10 +114,14 @@ static void __init pte_savedwrite_tests(unsigned long pfn, pgprot_t prot)
+@@ -531,7 +531,7 @@ static void __init pgd_populate_tests(struct mm_struct *mm, pgd_t *pgdp,
+ static void __init pte_clear_tests(struct mm_struct *mm, pte_t *ptep,
+ 				   unsigned long vaddr)
  {
- 	pte_t pte = pfn_pte(pfn, prot);
+-	pte_t pte = ptep_get(ptep);
++	pte_t pte =  ptep_get_and_clear(mm, vaddr, ptep);
  
-+	if (!IS_ENABLED(CONFIG_NUMA_BALANCING))
-+		return;
-+
- 	pr_debug("Validating PTE saved write\n");
- 	WARN_ON(!pte_savedwrite(pte_mk_savedwrite(pte_clear_savedwrite(pte))));
- 	WARN_ON(pte_savedwrite(pte_clear_savedwrite(pte_mk_savedwrite(pte))));
- }
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- static void __init pmd_basic_tests(unsigned long pfn, pgprot_t prot)
- {
-@@ -225,6 +229,9 @@ static void __init pmd_savedwrite_tests(unsigned long pfn, pgprot_t prot)
- {
- 	pmd_t pmd = pfn_pmd(pfn, prot);
+ 	pr_debug("Validating PTE clear\n");
+ 	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+@@ -929,7 +929,7 @@ static int __init debug_vm_pgtable(void)
+ 	p4d_t *p4dp, *saved_p4dp;
+ 	pud_t *pudp, *saved_pudp;
+ 	pmd_t *pmdp, *saved_pmdp, pmd;
+-	pte_t *ptep;
++	pte_t *ptep, pte;
+ 	pgtable_t saved_ptep;
+ 	pgprot_t prot, protnone;
+ 	phys_addr_t paddr;
+@@ -1034,6 +1034,8 @@ static int __init debug_vm_pgtable(void)
+ 	 */
  
-+	if (!IS_ENABLED(CONFIG_NUMA_BALANCING))
-+		return;
-+
- 	pr_debug("Validating PMD saved write\n");
- 	WARN_ON(!pmd_savedwrite(pmd_mk_savedwrite(pmd_clear_savedwrite(pmd))));
- 	WARN_ON(pmd_savedwrite(pmd_clear_savedwrite(pmd_mk_savedwrite(pmd))));
-@@ -1005,8 +1012,8 @@ static int __init debug_vm_pgtable(void)
- 	pmd_huge_tests(pmdp, pmd_aligned, prot);
- 	pud_huge_tests(pudp, pud_aligned, prot);
- 
--	pte_savedwrite_tests(pte_aligned, prot);
--	pmd_savedwrite_tests(pmd_aligned, prot);
-+	pte_savedwrite_tests(pte_aligned, protnone);
-+	pmd_savedwrite_tests(pmd_aligned, protnone);
- 
+ 	ptep = pte_alloc_map_lock(mm, pmdp, vaddr, &ptl);
++	pte = pfn_pte(pte_aligned, prot);
++	set_pte_at(mm, vaddr, ptep, pte);
+ 	pte_clear_tests(mm, ptep, vaddr);
+ 	pte_advanced_tests(mm, vma, ptep, pte_aligned, vaddr, prot);
  	pte_unmap_unlock(ptep, ptl);
- 
 -- 
 2.26.2
 
