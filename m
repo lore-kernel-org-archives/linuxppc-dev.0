@@ -2,109 +2,53 @@ Return-Path: <SRS0=nuQA=B5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E304C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:07:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7D49C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:08:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C10EC207DE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:07:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="cS4YVKf+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C10EC207DE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7073F20786
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:08:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7073F20786
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWf3X0LzJzDqDJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 17:07:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWf5Z4H7CzDqpv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 17:08:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=cS4YVKf+; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWdnz2pWgzDqvT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 16:55:19 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07J6XXUj110884; Wed, 19 Aug 2020 02:55:08 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=C7XeqbggeBaD2Gri2aoVWoHh472g5HoW3i7+WuntM3k=;
- b=cS4YVKf+AsuoT3VC8iNvjTGygGK/6lvwTeHDO2rvqAbjEOFDvtYe4YYioJO7aUE5geVs
- IAsSQQ7zQU5AHBLdU2c5tOaB9DC/JxcPlgVHL6ZxVidRM8BgS1PA/YIPS703flHLF0Io
- 1XXpaZuRjFjvuLDj25kHPgdy376m/wxrK+eZyzEn/HLUkdpTFaPtk3AgvVhA41ka7e/A
- xlEsF8KOInbHi3Opk4TrdlHuPEnbzG6Yat+eOpyi8Q/o48Scuq+WMERVIq3WTTeFVjBz
- 6LNOOQdb/aZt2WzmSr6Cu00RzxucrmszY+j/Zcmgvk6dKE5kUgbaPx2jBTQMphCr3npd Aw== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3304r47p4a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 02:55:08 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07J6idUp004588;
- Wed, 19 Aug 2020 06:55:04 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24]) by ppma01dal.us.ibm.com with ESMTP id 3304cccgw4-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 06:55:04 +0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07J6t3rs37159278
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Aug 2020 06:55:04 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D39EEAC05B;
- Wed, 19 Aug 2020 06:55:03 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 14E22AC05F;
- Wed, 19 Aug 2020 06:55:01 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.102.26.142])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 19 Aug 2020 06:55:01 +0000 (GMT)
-X-Mailer: emacs 27.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-Subject: Re: [PATCH 14/16] debug_vm_pgtable/hugetlb: Disable hugetlb test on
- ppc64
-In-Reply-To: <08c63a65-cd3f-73f3-1698-5e60f398fbad@arm.com>
-References: <20200812063358.369514-1-aneesh.kumar@linux.ibm.com>
- <20200812063358.369514-14-aneesh.kumar@linux.ibm.com>
- <d067c278-6391-72f1-75c2-ccbd52909233@arm.com>
- <efc8f8c8-c16d-0826-9401-a45005ecaf62@linux.ibm.com>
- <83766a01-6ffb-798c-c5b9-46b2d672f618@arm.com>
- <535169b9-f4f0-57ce-0c2b-30afc237d4bd@linux.ibm.com>
- <08c63a65-cd3f-73f3-1698-5e60f398fbad@arm.com>
-Date: Wed, 19 Aug 2020 12:24:59 +0530
-Message-ID: <87r1s315x8.fsf@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-19_04:2020-08-18,
- 2020-08-19 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0
- lowpriorityscore=0 clxscore=1015 impostorscore=0 bulkscore=0
- priorityscore=1501 suspectscore=0 mlxlogscore=999 mlxscore=0 adultscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008190056
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWdvJ6TLwzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 16:59:55 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D0091A02FF;
+ Wed, 19 Aug 2020 08:59:48 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 3F2EB1A0311;
+ Wed, 19 Aug 2020 08:59:44 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 5199F4024E;
+ Wed, 19 Aug 2020 08:59:34 +0200 (CEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Li Yang <leoyang.li@nxp.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH v4] soc: fsl: enable acpi support in RCPM driver
+Date: Wed, 19 Aug 2020 14:52:07 +0800
+Message-Id: <20200819065207.43930-1-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,74 +60,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Peng Ma <peng.ma@nxp.com>, Ran Wang <ran.wang_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Anshuman Khandual <anshuman.khandual@arm.com> writes:
+From: Peng Ma <peng.ma@nxp.com>
 
-> On 08/12/2020 07:22 PM, Aneesh Kumar K.V wrote:
->> On 8/12/20 7:04 PM, Anshuman Khandual wrote:
->>>
->>>
->>> On 08/12/2020 06:46 PM, Aneesh Kumar K.V wrote:
->>>> On 8/12/20 6:33 PM, Anshuman Khandual wrote:
->>>>>
->>>>>
->>>>> On 08/12/2020 12:03 PM, Aneesh Kumar K.V wrote:
->>>>>> The seems to be missing quite a lot of details w.r.t allocating
->>>>>> the correct pgtable_t page (huge_pte_alloc()), holding the right
->>>>>> lock (huge_pte_lock()) etc. The vma used is also not a hugetlb VMA.
->>>>>>
->>>>>> ppc64 do have runtime checks within CONFIG_DEBUG_VM for most of thes=
-e.
->>>>>> Hence disable the test on ppc64.
->>>>>
->>>>> This test is free from any platform specific #ifdefs which should
->>>>> never be broken. If hugetlb_advanced_tests() does not work or is
->>>>> not detailed enough for ppc64, then it would be great if you could
->>>>> suggest some improvements so that it works for all enabled platforms.
->>>>>
->>>>>
->>>>
->>>> As mentioned the test is broken. For hugetlb, the pgtable_t pages shou=
-ld be allocated by huge_pte_alloc(). We need to hold huget_pte_lock() befor=
-e=C2=A0 updating huge tlb pte. That takes hugepage size, which is mostly de=
-rived out of vma. Hence vma need to be a hugetlb vma. Some of the functions=
- also depend on hstate. Also we should use set_huge_pte_at() when setting u=
-p hugetlb pte entries. I was tempted to remove that test completely marking=
- it broken. But avoided that by marking it broken on only PPC64.
->>>
->>> The test is not broken, hugetlb helpers on multiple platforms dont comp=
-lain about
->>> this at all. The tests here emulate 'enough' MM objects required for th=
-e helpers
->>> on enabled platforms, to perform the primary task i.e page table transf=
-ormation it
->>> is expected to do. The test does not claim to emulate a perfect MM envi=
-ronment for
->>> a given subsystem's (like HugeTLB) arch helpers. Now in this case, the =
-MM objects
->>> being emulated for the HugeTLB advanced tests does not seem to be suffi=
-cient for
->>> ppc64 but it can be improved. But that does not mean it is broken in it=
-'s current
->>> form for other platforms.
->>>
->>=20
->> There is nothing ppc64 specific here. It is just that we have CONFIG_DEB=
-UG_VM based checks for different possibly wrong usages of these functions. =
-This was done because we have different page sizes, two different translati=
-ons to support and we want to avoid any wrong usage. IMHO expecting hugetlb=
- page table helpers to work with a non hugetlb VMA and=C2=A0 without holdin=
-g hugeTLB pte lock is a clear violation of hugetlb interface.
->
-> Do you have a modified version of the test with HugeTLB marked VMA and wi=
-th pte lock
-> held, which works on ppc664 ?
+This patch enables ACPI support in RCPM driver.
 
-Nope. That is one of the reason I commented that out. We can sort that
-out slowly.
+Signed-off-by: Peng Ma <peng.ma@nxp.com>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+---
+Change in v4:
+ - Make commit subject more accurate
+ - Remove unrelated new blank line
 
--aneesh
+Change in v3:
+ - Add #ifdef CONFIG_ACPI for acpi_device_id
+ - Rename rcpm_acpi_imx_ids to rcpm_acpi_ids
+
+Change in v2:
+ - Update acpi_device_id to fix conflict with other driver
+
+ drivers/soc/fsl/rcpm.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
+index a093dbe..b5aa6db 100644
+--- a/drivers/soc/fsl/rcpm.c
++++ b/drivers/soc/fsl/rcpm.c
+@@ -2,7 +2,7 @@
+ //
+ // rcpm.c - Freescale QorIQ RCPM driver
+ //
+-// Copyright 2019 NXP
++// Copyright 2019-2020 NXP
+ //
+ // Author: Ran Wang <ran.wang_1@nxp.com>
+ 
+@@ -13,6 +13,7 @@
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/kernel.h>
++#include <linux/acpi.h>
+ 
+ #define RCPM_WAKEUP_CELL_MAX_SIZE	7
+ 
+@@ -139,10 +140,19 @@ static const struct of_device_id rcpm_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, rcpm_of_match);
+ 
++#ifdef CONFIG_ACPI
++static const struct acpi_device_id rcpm_acpi_ids[] = {
++	{"NXP0015",},
++	{ }
++};
++MODULE_DEVICE_TABLE(acpi, rcpm_acpi_ids);
++#endif
++
+ static struct platform_driver rcpm_driver = {
+ 	.driver = {
+ 		.name = "rcpm",
+ 		.of_match_table = rcpm_of_match,
++		.acpi_match_table = ACPI_PTR(rcpm_acpi_ids),
+ 		.pm	= &rcpm_pm_ops,
+ 	},
+ 	.probe = rcpm_probe,
+-- 
+2.7.4
+
