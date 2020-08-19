@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91BFBC433ED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 06:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C900C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:02:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 500E8207FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 06:58:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 500E8207FF
+	by mail.kernel.org (Postfix) with ESMTPS id 80FC2207DE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 07:02:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80FC2207DE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWdsj0kRhzDqsD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 16:58:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWdyH0RZ9zDqw9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 17:02:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
@@ -27,32 +27,31 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWdld4KNnzDqrj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 16:53:16 +1000 (AEST)
-IronPort-SDR: EFdWk8ot8lTvcsQlx+M4llffWe0zUuKtkA3reHL6dJkuTt7hQxmyS58IFfLbNeKLwdFxnUp9PM
- szteIlhCRrRA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9717"; a="156129299"
-X-IronPort-AV: E=Sophos;i="5.76,330,1592895600"; d="scan'208";a="156129299"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWdlf6TKtzDqrj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 16:53:18 +1000 (AEST)
+IronPort-SDR: 2jGcRY9TvhnXBvnzhTLuVSHN6X7ZEY+fs4jOGYCjbqAZ2V7ik+mJnYOjXMqke+d0BU44zrEmUe
+ qNFh3AD+KHtw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9717"; a="156129300"
+X-IronPort-AV: E=Sophos;i="5.76,330,1592895600"; d="scan'208";a="156129300"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Aug 2020 23:53:13 -0700
-IronPort-SDR: ZUHTeQh+bmrn0op5vnm0le2LJjSGkNa1nfv14UzHfKYuluGhcRNER13Uwsd2s93ZGlrzpi+uAT
- DSnlasQn04dQ==
+IronPort-SDR: m8QtEHgIEtDxuDBVRHX9GJGLZ898zq6y3pTvUP3/uN8tlWzRHcT6uhmG+jSqBc+EGpvhQ30ENv
+ jGXYp/gm29Jw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,330,1592895600"; d="scan'208";a="297119642"
+X-IronPort-AV: E=Sophos;i="5.76,330,1592895600"; d="scan'208";a="278253148"
 Received: from lkp-server01.sh.intel.com (HELO 4cedd236b688) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 18 Aug 2020 23:53:12 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 18 Aug 2020 23:53:12 -0700
 Received: from kbuild by 4cedd236b688 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1k8HyB-0000BO-F7; Wed, 19 Aug 2020 06:53:11 +0000
-Date: Wed, 19 Aug 2020 14:53:05 +0800
+ id 1k8HyB-0000BU-QY; Wed, 19 Aug 2020 06:53:11 +0000
+Date: Wed, 19 Aug 2020 14:53:00 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- dc76919c80d7128cd46cfa0f1f356e4c12e50229
-Message-ID: <5f3ccc51.sOUwng+W/AdGaCHh%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS d4ecce4dcc8f8820286cf4e0859850c555e89854
+Message-ID: <5f3ccc4c.hEjZ1ZQ4Sww/qw5M%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,10 +72,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
-branch HEAD: dc76919c80d7128cd46cfa0f1f356e4c12e50229  powerpc/pseries/eeh: Fix dumb linebreaks
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: d4ecce4dcc8f8820286cf4e0859850c555e89854  Automatic merge of 'master', 'next' and 'fixes' (2020-08-18 23:23)
 
-elapsed time: 1040m
+elapsed time: 1041m
 
 configs tested: 66
 configs skipped: 1
