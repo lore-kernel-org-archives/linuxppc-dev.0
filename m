@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F0F4C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:10:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4331DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:12:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35B2020738
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:10:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E181B20738
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:12:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="D7SCrTBe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35B2020738
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Ktx+b3uH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E181B20738
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWWTh2hTnzDq9T
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 12:10:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWWWl6S5NzDqvY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 12:12:35 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWWBS3CtgzDqsJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWWBS3CyQzDqsp
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 11:57:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=D7SCrTBe; 
+ header.a=rsa-sha256 header.s=201909 header.b=Ktx+b3uH; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4BWWBQ6qhQz9sPC; Wed, 19 Aug 2020 11:57:34 +1000 (AEST)
+ id 4BWWBQ4wPkz9sTm; Wed, 19 Aug 2020 11:57:34 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BWWBQ4vrgz9sTg; Wed, 19 Aug 2020 11:57:34 +1000 (AEST)
+ id 4BWWBQ1CV9z9sTh; Wed, 19 Aug 2020 11:57:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
  s=201909; t=1597802254;
- bh=DymT0kLzg9Tf/u2TjpQq8hazeDb5T+7qPUv+otiurkg=;
+ bh=bHUASLZHj+Xq0qxLbKcrw9Zmw/Epl1Spvj51Am/t+r8=;
  h=From:To:Subject:Date:In-Reply-To:References:From;
- b=D7SCrTBe3FNpUaLa+gxoHlOi2wuDuw9p80RvE5MMFxdjO1EEnro9DlSodjOznHyVe
- 97Y/8MwsjBRVGofiQaSjPeab2+ZffxAMNQoRhM+gZRgrn1wPdfomwy0a+3eu2gVmIQ
- ZI2tS6i/nrY0bDNefL65JKBmpD76M6yHbZqf+5wNfaYhylV4awBYgJXlZ2vQRDSunJ
- hFVmiJk4aDpVDfhJoUNo/AxQmwnbS064q7+J8BU07B9w+AsEmRIaS06KgIoP0uJiFZ
- 5EkURO51MfCey3+KDv6wTu9CXJYegYLeolCOZ4JGXoz3lfJ7S43leTvvAmsniezQ0X
- GKr8ONAruqzIQ==
+ b=Ktx+b3uH+ZapQWqPWzEFyFlZ1IKBzb74u15aXP+/BYUvbIipbCiznKNgvgSnzbAUa
+ bIAV2wQMpP5tU+cHDCX7mh2cQ9k5is0OqU/KzqIhMw5HZHnaZbRYiAs3Pb4a0flC2q
+ 5OPQ6sDoFTp6eaI64hqmSU7VrbZ+E6tI7J2U8smuiDF7SQMJCLrvW+St9ikyL47vVx
+ eB2iuZ5oYJJeIaWPNwMa8M6yEzLxH8CaeMqg9knZFsRvcDazONrJIXz2BTQNJQ5rmS
+ HGFRDYEanqQRQFnPBLeg260LqHo5u6fFMlGhPAzwCGcDV4XZ78EoO7Z4KulYVFBUOp
+ b0dxigJ8nZLpQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/9] selftests/powerpc: Include asm/cputable.h from utils.h
-Date: Wed, 19 Aug 2020 11:57:22 +1000
-Message-Id: <20200819015727.1977134-4-mpe@ellerman.id.au>
+Subject: [PATCH 3/9] selftests/powerpc: Move set_dscr() into rfi_flush.c
+Date: Wed, 19 Aug 2020 11:57:21 +1000
+Message-Id: <20200819015727.1977134-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200819015727.1977134-1-mpe@ellerman.id.au>
 References: <20200819015727.1977134-1-mpe@ellerman.id.au>
@@ -73,98 +73,135 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-utils.h provides have_hwcap() and have_hwcap2() which check for a
-feature bit. Those bits are defined in asm/cputable.h, so include it
-in utils.h so users of utils.h don't have to do it manually.
+This version of set_dscr() was added for the RFI flush test, and is
+fairly specific to it. It also clashes with the version of set_dscr()
+in dscr/dscr.h. So move it into the RFI flush test where it's used.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/alignment/alignment_handler.c | 2 --
- tools/testing/selftests/powerpc/include/utils.h               | 1 +
- tools/testing/selftests/powerpc/pmu/count_stcx_fail.c         | 1 -
- tools/testing/selftests/powerpc/pmu/per_event_excludes.c      | 2 --
- tools/testing/selftests/powerpc/stringloops/memcmp.c          | 2 +-
- tools/testing/selftests/powerpc/tm/tm.h                       | 3 +--
- 6 files changed, 3 insertions(+), 8 deletions(-)
+ .../testing/selftests/powerpc/include/utils.h |  1 -
+ .../selftests/powerpc/security/rfi_flush.c    | 35 +++++++++++++++++++
+ tools/testing/selftests/powerpc/utils.c       | 35 -------------------
+ 3 files changed, 35 insertions(+), 36 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-index 55ef15184057..e4063eba4a5b 100644
---- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-+++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-@@ -55,8 +55,6 @@
- #include <setjmp.h>
- #include <signal.h>
- 
--#include <asm/cputable.h>
--
- #include "utils.h"
- #include "instructions.h"
- 
 diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
-index bba400d1bb90..052b5a775dc2 100644
+index 71d2924f5b8b..bba400d1bb90 100644
 --- a/tools/testing/selftests/powerpc/include/utils.h
 +++ b/tools/testing/selftests/powerpc/include/utils.h
-@@ -12,6 +12,7 @@
- #include <stdbool.h>
- #include <linux/auxvec.h>
- #include <linux/perf_event.h>
-+#include <asm/cputable.h>
- #include "reg.h"
- 
- /* Avoid headaches with PRI?64 - just use %ll? always */
-diff --git a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-index 2980abca31e0..2070a1e2b3a5 100644
---- a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-+++ b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-@@ -9,7 +9,6 @@
- #include <stdbool.h>
+@@ -35,7 +35,6 @@ int pick_online_cpu(void);
+ int read_debugfs_file(char *debugfs_file, int *result);
+ int write_debugfs_file(char *debugfs_file, int result);
+ int read_sysfs_file(char *debugfs_file, char *result, size_t result_size);
+-void set_dscr(unsigned long val);
+ int perf_event_open_counter(unsigned int type,
+ 			    unsigned long config, int group_fd);
+ int perf_event_enable(int fd);
+diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tools/testing/selftests/powerpc/security/rfi_flush.c
+index 0a7d0afb26b8..fd37ff9b1c45 100644
+--- a/tools/testing/selftests/powerpc/security/rfi_flush.c
++++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
+@@ -10,6 +10,7 @@
+ #include <stdint.h>
+ #include <malloc.h>
+ #include <unistd.h>
++#include <signal.h>
+ #include <stdlib.h>
  #include <string.h>
- #include <sys/prctl.h>
--#include <asm/cputable.h>
+ #include <stdio.h>
+@@ -41,6 +42,40 @@ static void syscall_loop(char *p, unsigned long iterations,
+ 	}
+ }
  
- #include "event.h"
- #include "utils.h"
-diff --git a/tools/testing/selftests/powerpc/pmu/per_event_excludes.c b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-index 2d37942bf72b..ad32a09a6540 100644
---- a/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-+++ b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-@@ -12,8 +12,6 @@
- #include <string.h>
- #include <sys/prctl.h>
- 
--#include <asm/cputable.h>
--
- #include "event.h"
- #include "lib.h"
- #include "utils.h"
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index 979df3d98368..cb2f18855c8d 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -4,7 +4,7 @@
- #include <string.h>
- #include <sys/mman.h>
- #include <time.h>
--#include <asm/cputable.h>
++static void sigill_handler(int signr, siginfo_t *info, void *unused)
++{
++	static int warned = 0;
++	ucontext_t *ctx = (ucontext_t *)unused;
++	unsigned long *pc = &UCONTEXT_NIA(ctx);
 +
- #include "utils.h"
++	/* mtspr 3,RS to check for move to DSCR below */
++	if ((*((unsigned int *)*pc) & 0xfc1fffff) == 0x7c0303a6) {
++		if (!warned++)
++			printf("WARNING: Skipping over dscr setup. Consider running 'ppc64_cpu --dscr=1' manually.\n");
++		*pc += 4;
++	} else {
++		printf("SIGILL at %p\n", pc);
++		abort();
++	}
++}
++
++static void set_dscr(unsigned long val)
++{
++	static int init = 0;
++	struct sigaction sa;
++
++	if (!init) {
++		memset(&sa, 0, sizeof(sa));
++		sa.sa_sigaction = sigill_handler;
++		sa.sa_flags = SA_SIGINFO;
++		if (sigaction(SIGILL, &sa, NULL))
++			perror("sigill_handler");
++		init = 1;
++	}
++
++	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
++}
++
+ int rfi_flush_test(void)
+ {
+ 	char *p;
+diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
+index 638ffacc90aa..1f36ee1a909a 100644
+--- a/tools/testing/selftests/powerpc/utils.c
++++ b/tools/testing/selftests/powerpc/utils.c
+@@ -10,7 +10,6 @@
+ #include <fcntl.h>
+ #include <link.h>
+ #include <sched.h>
+-#include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -273,40 +272,6 @@ int perf_event_reset(int fd)
+ 	return 0;
+ }
  
- #define SIZE 256
-diff --git a/tools/testing/selftests/powerpc/tm/tm.h b/tools/testing/selftests/powerpc/tm/tm.h
-index c402464b038f..c5a1e5c163fc 100644
---- a/tools/testing/selftests/powerpc/tm/tm.h
-+++ b/tools/testing/selftests/powerpc/tm/tm.h
-@@ -6,9 +6,8 @@
- #ifndef _SELFTESTS_POWERPC_TM_TM_H
- #define _SELFTESTS_POWERPC_TM_TM_H
- 
--#include <asm/tm.h>
--#include <asm/cputable.h>
- #include <stdbool.h>
-+#include <asm/tm.h>
- 
- #include "utils.h"
- 
+-static void sigill_handler(int signr, siginfo_t *info, void *unused)
+-{
+-	static int warned = 0;
+-	ucontext_t *ctx = (ucontext_t *)unused;
+-	unsigned long *pc = &UCONTEXT_NIA(ctx);
+-
+-	/* mtspr 3,RS to check for move to DSCR below */
+-	if ((*((unsigned int *)*pc) & 0xfc1fffff) == 0x7c0303a6) {
+-		if (!warned++)
+-			printf("WARNING: Skipping over dscr setup. Consider running 'ppc64_cpu --dscr=1' manually.\n");
+-		*pc += 4;
+-	} else {
+-		printf("SIGILL at %p\n", pc);
+-		abort();
+-	}
+-}
+-
+-void set_dscr(unsigned long val)
+-{
+-	static int init = 0;
+-	struct sigaction sa;
+-
+-	if (!init) {
+-		memset(&sa, 0, sizeof(sa));
+-		sa.sa_sigaction = sigill_handler;
+-		sa.sa_flags = SA_SIGINFO;
+-		if (sigaction(SIGILL, &sa, NULL))
+-			perror("sigill_handler");
+-		init = 1;
+-	}
+-
+-	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
+-}
+-
+ int using_hash_mmu(bool *using_hash)
+ {
+ 	char line[128];
 -- 
 2.25.1
 
