@@ -2,25 +2,26 @@ Return-Path: <SRS0=nuQA=B5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E13D0C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:10:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DD6FC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:13:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DC6D206FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:10:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C34DA2076E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 13:13:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="QTRE54S5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DC6D206FA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="gNV94Nmx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C34DA2076E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWp6T2FDszDq6l
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:10:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWp9q4NTpzDqw1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 23:13:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
@@ -29,58 +30,62 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=QTRE54S5; dkim-atps=neutral
+ header.s=pp1 header.b=gNV94Nmx; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWnx65FH2zDqsm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:02:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWnxK5NZDzDqtv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 23:02:13 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07JCXFnH018653; Wed, 19 Aug 2020 09:01:26 -0400
+ 07JCXGsG018872; Wed, 19 Aug 2020 09:01:47 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=maxRhctJ153oO1otaE3QmElvIy7z+ogaQ5FlmNSoDPE=;
- b=QTRE54S5eOa0zCIJHc8ZCUkEjtG64MxdrBZYUEpIiX4hvVRM/z2uXMeDGy4Q+YWvIQwt
- 6EiXZnEqkq17CkKQvUq5fFWVY4rRCvYhqnH6FppM0SJ6rywWWiWZhT5A7bWvTnugEU9P
- ma5o1WPok0q32CA6Y1p/bDT/acJPr687NtR4B87UG5wtBW9knKY3Bbp1mNWM5l+kOGaI
- RGbNCfOce+lk0UtxG6sgaKaY/As9UAuH7iBGUNj+Eg9tspbxIki9stoySKxmS34L2crP
- IuXZITq6XRJmvruq88dccjSrKx24jeZshkAE2uFHtBcbGAWsbU90FkflzljMdXEMbVtg Yg== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 330ccb382m-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=omCxvYNpezWEGCLnFHZ7RMBgCk5ZvbZ48pGj5tExOII=;
+ b=gNV94NmxcxcUP4OSz5UBsO1MsWyuAMWfUki6tlXPaLrrTdbpI719ckz4Vr+epru9HBJE
+ tHgzYFyrLrIxNqzncv+ig06g37vabNjU1/cyvn3awQ9tB5JhEPkOQmFQ6jzew/t6YJlh
+ ycAvZMUi4Pnr8xCZd+T5JMc4yOiUAJutKsVhlZdDZ3hU8fTrXjThPd+4hFkLeDtAwe/B
+ Ugx4DSDnnqwXYg8slJqPMNVHTpjNdF8iAYJyA+MaIXkrg6BBD/+uyF5LxhT8GdECBkx1
+ a23vGI1/6ZKKiHcK9ymMvPe0hU6z/2s6SIpGxT8rRRdJ+GSxbESIH+oSuOB5YZXH7/aZ dg== 
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com
+ [169.53.41.122])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 330ccb38ju-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 09:01:26 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JD0faZ026802;
- Wed, 19 Aug 2020 13:01:25 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma01dal.us.ibm.com with ESMTP id 3304ccf3ss-1
+ Wed, 19 Aug 2020 09:01:46 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+ by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07JCxH6s025200;
+ Wed, 19 Aug 2020 13:01:45 GMT
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24]) by ppma04dal.us.ibm.com with ESMTP id 3304uqpwk5-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 19 Aug 2020 13:01:25 +0000
+ Wed, 19 Aug 2020 13:01:45 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07JD1O5b37617938
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07JD1iPZ47186424
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 19 Aug 2020 13:01:24 GMT
+ Wed, 19 Aug 2020 13:01:44 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 314EDB206A;
- Wed, 19 Aug 2020 13:01:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BFF84B2065;
+ Wed, 19 Aug 2020 13:01:44 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1283B2064;
- Wed, 19 Aug 2020 13:01:21 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BA4DDB2064;
+ Wed, 19 Aug 2020 13:01:42 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.3.58])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 19 Aug 2020 13:01:21 +0000 (GMT)
+ Wed, 19 Aug 2020 13:01:42 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v2 00/13] mm/debug_vm_pgtable fixes
-Date: Wed, 19 Aug 2020 18:30:54 +0530
-Message-Id: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v2 08/13] mm/debug_vm_pgtable/thp: Use page table
+ depost/withdraw with THP
+Date: Wed, 19 Aug 2020 18:31:02 +0530
+Message-Id: <20200819130107.478414-9-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
+References: <20200819130107.478414-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
@@ -88,7 +93,7 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-19_04:2020-08-19,
  2020-08-19 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 mlxlogscore=611
+ mlxscore=0 mlxlogscore=999
  suspectscore=0 impostorscore=0 lowpriorityscore=0 spamscore=0
  malwarescore=0 clxscore=1015 phishscore=0 priorityscore=1501 adultscore=0
  bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
@@ -111,46 +116,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series includes fixes for debug_vm_pgtable test code so that
-they follow page table updates rules correctly. The first two patches introduce
-changes w.r.t ppc64. The patches are included in this series for completeness. We can
-merge them via ppc64 tree if required.
+Architectures like ppc64 use deposited page table while updating the huge pte
+entries.
 
-Hugetlb test is disabled on ppc64 because that needs larger change to satisfy
-page table update rules.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ mm/debug_vm_pgtable.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-Changes from V1:
-* Address review feedback
-* drop test specific pfn_pte and pfn_pmd.
-* Update ppc64 page table helper to add _PAGE_PTE 
-
-Aneesh Kumar K.V (13):
-  powerpc/mm: Add DEBUG_VM WARN for pmd_clear
-  powerpc/mm: Move setting pte specific flags to pfn_pte
-  mm/debug_vm_pgtable/ppc64: Avoid setting top bits in radom value
-  mm/debug_vm_pgtables/hugevmap: Use the arch helper to identify huge
-    vmap support.
-  mm/debug_vm_pgtable/savedwrite: Enable savedwrite test with
-    CONFIG_NUMA_BALANCING
-  mm/debug_vm_pgtable/THP: Mark the pte entry huge before using
-    set_pmd/pud_at
-  mm/debug_vm_pgtable/set_pte/pmd/pud: Don't use set_*_at to update an
-    existing pte entry
-  mm/debug_vm_pgtable/thp: Use page table depost/withdraw with THP
-  mm/debug_vm_pgtable/locks: Move non page table modifying test together
-  mm/debug_vm_pgtable/locks: Take correct page table lock
-  mm/debug_vm_pgtable/pmd_clear: Don't use pmd/pud_clear on pte entries
-  mm/debug_vm_pgtable/hugetlb: Disable hugetlb test on ppc64
-  mm/debug_vm_pgtable: populate a pte entry before fetching it
-
- arch/powerpc/include/asm/book3s/64/pgtable.h |  29 +++-
- arch/powerpc/include/asm/nohash/pgtable.h    |   5 -
- arch/powerpc/mm/book3s64/pgtable.c           |   2 +-
- arch/powerpc/mm/pgtable.c                    |   5 -
- include/linux/io.h                           |  12 ++
- mm/debug_vm_pgtable.c                        | 151 +++++++++++--------
- 6 files changed, 127 insertions(+), 77 deletions(-)
-
+diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+index 9c7e2c9cfc76..6dcac2b40fef 100644
+--- a/mm/debug_vm_pgtable.c
++++ b/mm/debug_vm_pgtable.c
+@@ -149,7 +149,7 @@ static void __init pmd_basic_tests(unsigned long pfn, pgprot_t prot)
+ static void __init pmd_advanced_tests(struct mm_struct *mm,
+ 				      struct vm_area_struct *vma, pmd_t *pmdp,
+ 				      unsigned long pfn, unsigned long vaddr,
+-				      pgprot_t prot)
++				      pgprot_t prot, pgtable_t pgtable)
+ {
+ 	pmd_t pmd;
+ 
+@@ -160,6 +160,8 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
+ 	/* Align the address wrt HPAGE_PMD_SIZE */
+ 	vaddr = (vaddr & HPAGE_PMD_MASK) + HPAGE_PMD_SIZE;
+ 
++	pgtable_trans_huge_deposit(mm, pmdp, pgtable);
++
+ 	pmd = pmd_mkhuge(pfn_pmd(pfn, prot));
+ 	set_pmd_at(mm, vaddr, pmdp, pmd);
+ 	pmdp_set_wrprotect(mm, vaddr, pmdp);
+@@ -188,6 +190,8 @@ static void __init pmd_advanced_tests(struct mm_struct *mm,
+ 	pmdp_test_and_clear_young(vma, vaddr, pmdp);
+ 	pmd = READ_ONCE(*pmdp);
+ 	WARN_ON(pmd_young(pmd));
++
++	pgtable = pgtable_trans_huge_withdraw(mm, pmdp);
+ }
+ 
+ static void __init pmd_leaf_tests(unsigned long pfn, pgprot_t prot)
+@@ -1000,7 +1004,7 @@ static int __init debug_vm_pgtable(void)
+ 	pgd_clear_tests(mm, pgdp);
+ 
+ 	pte_advanced_tests(mm, vma, ptep, pte_aligned, vaddr, prot);
+-	pmd_advanced_tests(mm, vma, pmdp, pmd_aligned, vaddr, prot);
++	pmd_advanced_tests(mm, vma, pmdp, pmd_aligned, vaddr, prot, saved_ptep);
+ 	pud_advanced_tests(mm, vma, pudp, pud_aligned, vaddr, prot);
+ 	hugetlb_advanced_tests(mm, vma, ptep, pte_aligned, vaddr, prot);
+ 
 -- 
 2.26.2
 
