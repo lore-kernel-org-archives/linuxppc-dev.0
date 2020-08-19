@@ -7,55 +7,53 @@ X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D92DDC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C6A3C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:02:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8830E2067C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:00:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 39B412067C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 02:02:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="ge3eqSkk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8830E2067C
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="cTSWORja"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39B412067C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BWWFh54GZzDqpG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 12:00:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BWWJL3rYzzDqws
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Aug 2020 12:02:42 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BWW9L6pWqzDqnK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BWW9L55vjzDqnG
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2020 11:56:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=ge3eqSkk; 
+ header.a=rsa-sha256 header.s=201909 header.b=cTSWORja; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix)
- id 4BWW9L6B8Sz9sTY; Wed, 19 Aug 2020 11:56:38 +1000 (AEST)
+ id 4BWW9L1nHdz9sPC; Wed, 19 Aug 2020 11:56:38 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BWW9L5CqSz9sTb; Wed, 19 Aug 2020 11:56:38 +1000 (AEST)
+ id 4BWW9L0tXlz9sPf; Wed, 19 Aug 2020 11:56:38 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
  s=201909; t=1597802198;
- bh=l6AFhSuZ28HjKGhc4vYbzbK6GGmi/2uRw/gPbOMqX4s=;
- h=From:To:Subject:Date:In-Reply-To:References:From;
- b=ge3eqSkkLTpyM4gm91A1RDKKwamIpJTWcxA1pRjv/y68E01kwUT7PzOfMHFuSy7IX
- NEYgGUMD3EcIWwm4Q8HkvfduI0ms4TxPkDzGfFmBT2A2r3zxH8yEH1f0rS6pX5Vd/t
- QTw4L616VtmYc9cdbK9WB3Ovh8t/sugmKSUofb5JpRHPjxME1mkXDiSiMaHWouvV6Z
- TUGrdNAGiswR0YVF7AAQ74QWRL0B5W3ozuSIZscuwz40zsL0EXTCF1+e/MiLldy27q
- QAR4p8bIQHthm4ihQsHa5rOPUmSiz5I7MIeVgRUiO31o9P66LLgzidUqavH9wpQ0ir
- chGexVmMhmEGg==
+ bh=Prz0kVKTTItN/Fnihy2LtXTxdem/kzeiAb6o80fgg3Q=;
+ h=From:To:Subject:Date:From;
+ b=cTSWORjaYEOf+uFRb2TqCzpK2JyCXW70jSOTuhv6b8Hpj2Fpnz0egIJzMivg+YyLr
+ YO3Tyq+FvGyJqkKxKotb3l6RsEDKLc9RhMA7P2dwBH9o+W7Oev5dWhGoBT9Q2FInjJ
+ phQrrYklUJeEErzG4h0mttcyqifYq4Vtgc+Ujz+AbA2u2BGAxJPwp7acIqo+QM6TIU
+ LIUGWJGlBpc9kqyhECePCioSFDJh9rZ4hCMEMhaz4C0RjBP9Vo14a8mH2Z4NfeTUZI
+ tK+FZYbZ8fOuoi8tlKlVOz6oUI2cyXaH/KkOAqlb0AKVSakb3iERyXIblBnivyExXD
+ d2mE1razlg7Yw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] powerpc/smp: Fold cpu_die() into its only caller
-Date: Wed, 19 Aug 2020 11:56:33 +1000
-Message-Id: <20200819015634.1974478-2-mpe@ellerman.id.au>
+Subject: [PATCH 1/3] powerpc: Move arch_cpu_idle_dead() into smp.c
+Date: Wed, 19 Aug 2020 11:56:32 +1000
+Message-Id: <20200819015634.1974478-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200819015634.1974478-1-mpe@ellerman.id.au>
-References: <20200819015634.1974478-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,43 +71,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Avoid the eternal confusion between cpu_die() and __cpu_die() by
-removing the former, folding it into its only caller.
+arch_cpu_idle_dead() is in idle.c, which makes sense, but it's inside
+a CONFIG_HOTPLUG_CPU block.
+
+It would be more at home in smp.c, inside the existing
+CONFIG_HOTPLUG_CPU block. Note that CONFIG_HOTPLUG_CPU depends on
+CONFIG_SMP so even though smp.c is not built for SMP=n builds, that's
+fine.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/smp.h | 1 -
- arch/powerpc/kernel/smp.c      | 4 ----
- 2 files changed, 5 deletions(-)
+ arch/powerpc/kernel/idle.c | 8 --------
+ arch/powerpc/kernel/smp.c  | 6 ++++++
+ 2 files changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 49a25e2400f2..a314d2d2d2be 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -29,7 +29,6 @@ extern int boot_cpuid;
- extern int spinning_secondaries;
- extern u32 *cpu_to_phys_id;
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 422e31d2f5a2..ae0e2632393d 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -41,14 +41,6 @@ static int __init powersave_off(char *arg)
+ }
+ __setup("powersave=off", powersave_off);
  
--extern void cpu_die(void);
- extern int cpu_to_chip_id(int cpu);
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index b05d2db13d08..c616d975bf95 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1432,11 +1432,7 @@ void __cpu_die(unsigned int cpu)
- void arch_cpu_idle_dead(void)
- {
- 	sched_preempt_enable_no_resched();
+-#ifdef CONFIG_HOTPLUG_CPU
+-void arch_cpu_idle_dead(void)
+-{
+-	sched_preempt_enable_no_resched();
 -	cpu_die();
 -}
+-#endif
+-
+ void arch_cpu_idle(void)
+ {
+ 	ppc64_runlatch_off();
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 8261999c7d52..b05d2db13d08 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1429,6 +1429,12 @@ void __cpu_die(unsigned int cpu)
+ 		smp_ops->cpu_die(cpu);
+ }
  
--void cpu_die(void)
--{
++void arch_cpu_idle_dead(void)
++{
++	sched_preempt_enable_no_resched();
++	cpu_die();
++}
++
+ void cpu_die(void)
+ {
  	/*
- 	 * Disable on the down path. This will be re-enabled by
- 	 * start_secondary() via start_secondary_resume() below
 -- 
 2.25.1
 
