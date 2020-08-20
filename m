@@ -4,39 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A82AC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 13:43:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B961DC433E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 13:47:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42EA320674
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 13:43:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42EA320674
+	by mail.kernel.org (Postfix) with ESMTPS id 6F6BF208DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 13:47:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F6BF208DB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BXQpH1wq1zDr3t
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 23:43:19 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BXQvC3kG6zDr41
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 23:47:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BXQXl0DWZzDr1P
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2020 23:31:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BXQXr5Nr2zDr1V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2020 23:31:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BXQXj4vy3z9sTy; Thu, 20 Aug 2020 23:31:27 +1000 (AEST)
+ id 4BXQXm2B0lz9sV5; Thu, 20 Aug 2020 23:31:36 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <1596717992-7321-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-References: <1596717992-7321-1-git-send-email-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/perf: Account for interrupts during PMC overflow
- for an invalid SIAR check
-Message-Id: <159793027448.2366922.17263399145655268415.b4-ty@ellerman.id.au>
-Date: Thu, 20 Aug 2020 23:31:27 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+In-Reply-To: <20200820061844.306460-1-hegdevasant@linux.vnet.ibm.com>
+References: <20200820061844.306460-1-hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries: Do not initiate shutdown when system
+ is running on UPS
+Message-Id: <159793027467.2366922.12802265066694495629.b4-ty@ellerman.id.au>
+Date: Thu, 20 Aug 2020 23:31:36 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,29 +49,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 Aug 2020 08:46:32 -0400, Athira Rajeev wrote:
-> Performance monitor interrupt handler checks if any counter has overflown
-> and calls `record_and_restart` in core-book3s which invokes
-> `perf_event_overflow` to record the sample information.
-> Apart from creating sample, perf_event_overflow also does the interrupt
-> and period checks via perf_event_account_interrupt.
+On Thu, 20 Aug 2020 11:48:44 +0530, Vasant Hegde wrote:
+> As per PAPR we have to look for both EPOW sensor value and event modifier to
+> identify type of event and take appropriate action.
 > 
-> Currently we record information only if the SIAR valid bit is set
-> ( using `siar_valid` check ) and hence the interrupt check.
-> But it is possible that we do sampling for some events that are not
-> generating valid SIAR and hence there is no chance to disable the event
-> if interrupts is more than max_samples_per_tick. This leads to soft lockup.
+> Sensor value = 3 (EPOW_SYSTEM_SHUTDOWN) schedule system to be shutdown after
+>                   OS defined delay (default 10 mins).
+> 
+> EPOW Event Modifier for sensor value = 3:
+>    We have to initiate immediate shutdown for most of the event modifier except
+>    value = 2 (system running on UPS).
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/perf: Fix soft lockups due to missed interrupt accounting
-      https://git.kernel.org/powerpc/c/17899eaf88d689529b866371344c8f269ba79b5f
+[1/1] powerpc/pseries: Do not initiate shutdown when system is running on UPS
+      https://git.kernel.org/powerpc/c/90a9b102eddf6a3f987d15f4454e26a2532c1c98
 
 cheers
