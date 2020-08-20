@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A77C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 17:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 074ECC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 18:25:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 417D3208A9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 17:05:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 417D3208A9
+	by mail.kernel.org (Postfix) with ESMTPS id 33E44208B3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Aug 2020 18:25:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33E44208B3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BXWHp257KzDr10
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 03:05:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BXY4D2PN6zDr0Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 04:25:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BXWFB5QjRzDr0x
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 03:03:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BXY1m5XCyzDqkj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 04:23:37 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BXWDz2jj7z9vCy8;
- Thu, 20 Aug 2020 19:03:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BXY1f2ynwz9v1R9;
+ Thu, 20 Aug 2020 20:23:34 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id GD-bwbqjcmIS; Thu, 20 Aug 2020 19:03:15 +0200 (CEST)
+ with ESMTP id NXZNIUL1tC2R; Thu, 20 Aug 2020 20:23:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BXWDz0hF0z9vCxy;
- Thu, 20 Aug 2020 19:03:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BXY1f1S9Dz9v0xQ;
+ Thu, 20 Aug 2020 20:23:34 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 91B728B860;
- Thu, 20 Aug 2020 19:03:16 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C2A08B863;
+ Thu, 20 Aug 2020 20:23:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id S7nJLVSUMHis; Thu, 20 Aug 2020 19:03:16 +0200 (CEST)
+ with ESMTP id vk2POjKl9U-w; Thu, 20 Aug 2020 20:23:34 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 659498B764;
- Thu, 20 Aug 2020 19:03:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BF0858B764;
+ Thu, 20 Aug 2020 20:23:32 +0200 (CEST)
 Subject: Re: [PATCH] powerpc: Fix a bug in __div64_32 if divisor is zero
 To: Guohua Zhong <zhongguohua1@huawei.com>, paulus@samba.org,
  mpe@ellerman.id.au, benh@kernel.crashing.org, gregkh@linuxfoundation.org
 References: <20200820131049.42940-1-zhongguohua1@huawei.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <50d351e0-bbad-f25f-6b4c-265b7a73c878@csgroup.eu>
-Date: Thu, 20 Aug 2020 19:02:59 +0200
+Message-ID: <8dedfcce-04e0-ec7d-6af5-ec1d6d8602b0@csgroup.eu>
+Date: Thu, 20 Aug 2020 20:23:30 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.11.0
 MIME-Version: 1.0
@@ -151,6 +151,17 @@ Le 20/08/2020 à 15:10, Guohua Zhong a écrit :
 > +	li	r9,0
 > +	cmplw	r4,r9	# check if divisor r4 is zero
 > +	beq	5f			# jump to label 5 if r4(divisor) is zero
+
+In generic version in lib/math/div64.c, there is no checking of 'base' 
+either.
+Do we really want to add this check in the powerpc version only ?
+
+The only user of __div64_32() is do_div() in 
+include/asm-generic/div64.h. Wouldn't it be better to do the check there ?
+
+Christophe
+
+
 >   	lwz	r5,0(r3)	# get the dividend into r5/r6
 >   	lwz	r6,4(r3)
 >   	cmplw	r5,r4
@@ -171,21 +182,8 @@ Le 20/08/2020 à 15:10, Guohua Zhong a écrit :
 >   
 >   _GLOBAL(__div64_32)
 > +	li	r9,0
-
-You don't need to load r9 with 0, use cmplwi instead.
-
 > +	cmplw	r4,r9	# check if divisor r4 is zero
 > +	beq	5f			# jump to label 5 if r4(divisor) is zero
-
-You should leave space between the compare and the branch (i.e. have 
-other instructions inbetween when possible), so that the processor can 
-prepare the branching and do a good prediction. Same as the compare 
-below, you see that there are two other instructions between the cmplw 
-are the blt. You can eventually use another cr field than cr0 in order 
-to nest several test/branches.
-Also because on recent powerpc32, instructions are fetched and executed 
-two by two.
-
 >   	lwz	r5,0(r3)	# get the dividend into r5/r6
 >   	lwz	r6,4(r3)
 >   	cmplw	r5,r4
@@ -196,5 +194,3 @@ two by two.
 > +5:					# return if divisor r4 is zero
 >   	blr
 > 
-
-Christophe
