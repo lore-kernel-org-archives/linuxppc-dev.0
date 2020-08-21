@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD9B7C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 20:18:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36008C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 20:19:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E42620735
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 20:18:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D590020735
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 20:19:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="oskdNenP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E42620735
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="njkQpcRW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D590020735
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BYCWL2fV2zDrJt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 06:18:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BYCYC0xJSzDq7F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 06:19:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
  helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
@@ -29,33 +29,34 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=oskdNenP; dkim-atps=neutral
+ header.s=default header.b=njkQpcRW; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BYCSF5cC9zDrJB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 06:15:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BYCSJ3v4qzDrHn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 06:15:28 +1000 (AEST)
 Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
  [73.231.172.41])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 3E7D820738;
- Fri, 21 Aug 2020 20:15:23 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9477A20735;
+ Fri, 21 Aug 2020 20:07:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1598040923;
- bh=/T7D++jQJVYAEaRhehB6OXQudUAED1x+6RQtwjpgepM=;
+ s=default; t=1598040478;
+ bh=ignXh6GswzXrZuZocSxHHQfCSn5EcPz6JCZGg+djnYo=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=oskdNenPwocChae4HFuF7bNEbcd6pqb+OlqWuz9XE4T4ExAobZJPQ+Vv46iy4oJdJ
- oXZ5UgEOsQ9iMg+gIaCRVB3NH/LeXX5fSGqlllwM6nWkPLGW1EIkJD68mjCC8Opx/j
- cXUc7Nleu7OIBwWugqQCCej8//v19BgSMb5VLM1Q=
-Date: Fri, 21 Aug 2020 13:15:22 -0700
+ b=njkQpcRWmyvRGvq8Ez91V2VkE1Zs62ocapcA2kFZe6Cg3jHjvrg/HHMBFU7llUhLq
+ pibH5nQ/+1y7fY2Rj6xKk66sjW7+05COtWLKo7FT9ik+mMR+lneY17JFnOY5rRvOSo
+ 4E2SVYhlV9OdHOnpvUTpJrFSRWD0cVpJMF1873g0=
+Date: Fri, 21 Aug 2020 13:07:57 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v6 06/12] powerpc: inline huge vmap supported functions
-Message-Id: <20200821131522.c819f9c5c1fc24d90244c6dd@linux-foundation.org>
-In-Reply-To: <20200821151216.1005117-7-npiggin@gmail.com>
+Subject: Re: [PATCH v6 01/12] mm/vmalloc: fix vmalloc_to_page for huge vmap
+ mappings
+Message-Id: <20200821130757.289570e4bb491672087d3396@linux-foundation.org>
+In-Reply-To: <20200821151216.1005117-2-npiggin@gmail.com>
 References: <20200821151216.1005117-1-npiggin@gmail.com>
- <20200821151216.1005117-7-npiggin@gmail.com>
+ <20200821151216.1005117-2-npiggin@gmail.com>
 X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -79,27 +80,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 22 Aug 2020 01:12:10 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
+On Sat, 22 Aug 2020 01:12:05 +1000 Nicholas Piggin <npiggin@gmail.com> wrote:
 
->  #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
-> -bool arch_vmap_p4d_supported(pgprot_t prot);
-> -bool arch_vmap_pud_supported(pgprot_t prot);
-> -bool arch_vmap_pmd_supported(pgprot_t prot);
-> +static inline bool arch_vmap_p4d_supported(pgprot_t prot)
-> +{
-> +	return false;
-> +}
-> +
-> +static inline bool arch_vmap_pud_supported(pgprot_t prot)
-> +{
-> +	/* HPT does not cope with large pages in the vmalloc area */
-> +	return radix_enabled();
-> +}
-> +
-> +static inline bool arch_vmap_pmd_supported(pgprot_t prot)
-> +{
-> +	return radix_enabled();
-> +}
->  #endif
+> vmalloc_to_page returns NULL for addresses mapped by larger pages[*].
+> Whether or not a vmap is huge depends on the architecture details,
+> alignments, boot options, etc., which the caller can not be expected
+> to know. Therefore HUGE_VMAP is a regression for vmalloc_to_page.
 
-Oh.  OK, whatever ;)
+I assume this doesn't matter in current mainline?
+
+If wrong, then what are the user-visible effects and why no cc:stable?
+
+> This change teaches vmalloc_to_page about larger pages, and returns
+> the struct page that corresponds to the offset within the large page.
+> This makes the API agnostic to mapping implementation details.
