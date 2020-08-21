@@ -2,69 +2,61 @@ Return-Path: <SRS0=lwUg=B7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0176DC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 299C4C433E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 10:36:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E21E207DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:29:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E21E207DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sguazz.it
+	by mail.kernel.org (Postfix) with ESMTPS id 81BF520738
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 10:36:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="ZmjgC9SC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81BF520738
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BXx7411w2zDr72
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 19:29:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=centrum.lixper.it (client-ip=46.4.16.148; helo=centrum.lixper.it;
- envelope-from=srs0=9qiu=b7=sguazz.it=giuseppe@centrum.lixper.it;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sguazz.it
-X-Greylist: delayed 2091 seconds by postgrey-1.36 at bilbo;
- Fri, 21 Aug 2020 18:58:03 AEST
-Received: from centrum.lixper.it (centrum.lixper.it [46.4.16.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BXycV53h7zDr8D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 20:36:42 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BXwQg6lsLzDqcw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 18:58:02 +1000 (AEST)
-Received: from net-2-44-194-190.cust.vodafonedsl.it ([2.44.194.190] helo=uefi)
- by centrum.lixper.it with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.84_2)
- (envelope-from <giuseppe@sguazz.it>)
- id 1k92KF-00023D-Vn; Fri, 21 Aug 2020 10:23:06 +0200
-Message-ID: <3558dadc530a60e9e3f958f0d6d4a0f28958ae86.camel@sguazz.it>
-Subject: Re: kernel since 5.6 do not boot anymore on Apple PowerBook
-From: Giuseppe Sacco <giuseppe@sguazz.it>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, 
- linuxppc-dev@lists.ozlabs.org
-Date: Fri, 21 Aug 2020 10:22:58 +0200
-In-Reply-To: <59de290b-4b6c-a55e-9289-e640473b1382@csgroup.eu>
-References: <89e412a76350b28f791bb8a2b6f9647a034f6fc8.camel@sguazz.it>
- <04544f16-fb20-54b9-e56e-47d45af03b6c@csgroup.eu>
- <c98f8586c16c86bb9b4485138bbabce9f15c282b.camel@sguazz.it>
- <64815669-5282-f74f-efc6-6c4c376fb602@csgroup.eu>
- <990279c219476c4d513df52454adf583de32641a.camel@sguazz.it>
- <211a35b02193ae79a201d4d567fe1d7a53a979f5.camel@sguazz.it>
- <639a48d1-815b-33f1-3c9e-cd9ca8ec41b1@csgroup.eu>
- <aab7a9fefe9ccfa272fbc45eeaa8228fced14d3b.camel@sguazz.it>
- <498426507489f2c8e32daaf7af1105b5adba552f.camel@sguazz.it>
- <c2a89243-6135-4edd-2c1c-42c2159b5a1e@csgroup.eu>
- <e6878657490aa34b54b3daf0430073078a9840e7.camel@sguazz.it>
- <b70a6343-a380-ff08-a401-04f9ab50be6b@csgroup.eu>
- <59de290b-4b6c-a55e-9289-e640473b1382@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.4-2 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BXyYb3NKbzDr6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 20:34:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=ZmjgC9SC; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4BXyYZ4kXlz9sPB; Fri, 21 Aug 2020 20:34:10 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4BXyYZ3g1Jz9sTF; Fri, 21 Aug 2020 20:34:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1598006050;
+ bh=6IeqeXu1SmWY4L/7HoCdAVC4LYQ5JZ6uDzQLdVBwQJE=;
+ h=From:To:Subject:Date:From;
+ b=ZmjgC9SCu3LdZY6ddacoKS51YDBExb5EPp5UA3aivmAa+wz1k/BKRM03d5Mbukrce
+ E2bKkDezY+AnfAzKgKHlaUfQgsNrxnnswz4PHEUHNT89/NpkiTpFYYgU5eS2seNprI
+ FehHhK2fTQi2I/skNfsKtqtxadjMu+wph5gqi0e2EEbjnvhQoiljoAdVreW4iOPvT5
+ 1PvfnD7xwAhI0+kXk4TDUmYelNs9eDHuth8UWCfhaDB78atRqWOaYMni/GvRh6QX13
+ B9HwiX3bk0U0mpoq+GpKPi6yEBJFuJbwzc+TzVHr7vByvhsvmuEctey7Xubwc94lQu
+ 7Q//HEcinwGbg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/prom_init: Check display props exist before enabling
+ btext
+Date: Fri, 21 Aug 2020 20:34:07 +1000
+Message-Id: <20200821103407.3362149-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-GeoIP: IT
-X-SRS: Sender address rewritten from <giuseppe@sguazz.it> to
- <SRS0=9qIu=B7=sguazz.it=giuseppe@centrum.lixper.it> by centrum.lixper.it.
-X-Mailman-Approved-At: Fri, 21 Aug 2020 19:27:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,60 +72,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Cristophe,
+It's possible to enable CONFIG_PPC_EARLY_DEBUG_BOOTX for a pseries
+kernel (maybe it shouldn't be), which is then booted with qemu/slof.
 
-Il giorno ven, 21/08/2020 alle 08.55 +0200, Christophe Leroy ha
-scritto:
-> Hi Giuseppe,
-> 
-> Le 08/07/2020 à 20:44, Christophe Leroy a écrit :
-> > 
-> > Le 08/07/2020 à 19:36, Giuseppe Sacco a écrit :
-> > > Hi Cristophe,
-> > > 
-> > > Il giorno mer, 08/07/2020 alle 19.09 +0200, Christophe Leroy ha
-> > > scritto:
-[...]
-> > > > What's the result with:
-> > > > 
-> > > > LANG=C make ARCH=powerpc CROSS_COMPILE=powerpc-linux- vmlinux
-> > > 
-> > > $ LANG=C make ARCH=powerpc CROSS_COMPILE=powerpc-linux- vmlinux
-> > >    CALL    scripts/checksyscalls.sh
-> > >    CALL    scripts/atomic/check-atomics.sh
-> > >    CHK     include/generated/compile.h
-> > >    CC      kernel/module.o
-> > > kernel/module.c: In function 'do_init_module':
-> > > kernel/module.c:3593:2: error: implicit declaration of function
-> > > 'module_enable_ro'; did you mean 'module_enable_x'? [-Werror=implicit-
-> > > function-declaration]
-> > >   3593 |  module_enable_ro(mod, true);
-> > >        |  ^~~~~~~~~~~~~~~~
-> > >        |  module_enable_x
-> > > cc1: some warnings being treated as errors
-> > > make[1]: *** [scripts/Makefile.build:267: kernel/module.o] Error 1
-> > > make: *** [Makefile:1735: kernel] Error 2
-> > > 
-> > > So, should I 'git bisect skip'?
-> > 
-> > Ah yes, I had the exact same problem last time I bisected.
-> > 
-> > So yes do 'git bisect skip'. You'll probably hit this problem half a 
-> > dozen of times, but at the end you should get a usefull bisect anyway.
-> > 
-> 
-> Were you able to progress ?
+But if you do that the kernel crashes in draw_byte(), with a DAR
+pointing somewhere near INT_MAX.
 
-Very slowly. I am still working on it, currently at recompile #276.
-git-bisect states that I have still about 700 commits to check, but the
-real problem is that more than 60% of built kernels crash even before
-displaying the cpu_freq message (probably another long lasting bug
-hides the one I am looking for). All these skipped kernels make
-bisecting very very slow.
+Adding some debug to prom_init we see that we're not able to read the
+"address" property from OF, so we're just using whatever junk value
+was on the stack.
 
-A short video about the problem I face when I skip the build is here:
-https://eppesuigoccas.homedns.org/~giuseppe/bug%20avvio%20powerbook%20g4.mp4
+So check the properties can be read properly from OF, if not we bail
+out before initialising btext, which avoids the crash.
 
-Bye,
-Giuseppe
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/prom_init.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index ae7ec9903191..5090a5ab54e5 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2422,10 +2422,19 @@ static void __init prom_check_displays(void)
+ 			u32 width, height, pitch, addr;
+ 
+ 			prom_printf("Setting btext !\n");
+-			prom_getprop(node, "width", &width, 4);
+-			prom_getprop(node, "height", &height, 4);
+-			prom_getprop(node, "linebytes", &pitch, 4);
+-			prom_getprop(node, "address", &addr, 4);
++
++			if (prom_getprop(node, "width", &width, 4) == PROM_ERROR)
++				return;
++
++			if (prom_getprop(node, "height", &height, 4) == PROM_ERROR)
++				return;
++
++			if (prom_getprop(node, "linebytes", &pitch, 4) == PROM_ERROR)
++				return;
++
++			if (prom_getprop(node, "address", &addr, 4) == PROM_ERROR)
++				return;
++
+ 			prom_printf("W=%d H=%d LB=%d addr=0x%x\n",
+ 				    width, height, pitch, addr);
+ 			btext_setup_display(width, height, 8, pitch, addr);
+-- 
+2.25.1
 
