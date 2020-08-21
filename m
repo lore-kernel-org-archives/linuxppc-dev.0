@@ -2,67 +2,69 @@ Return-Path: <SRS0=lwUg=B7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF114C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0176DC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4C05207DA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:21:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4C05207DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3E21E207DA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 09:29:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E21E207DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sguazz.it
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BXwxf68MQzDr6w
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 19:21:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BXx7411w2zDr72
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 19:29:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=nefkom.net (client-ip=212.18.0.9; helo=mail-out.m-online.net;
- envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ smtp.mailfrom=centrum.lixper.it (client-ip=46.4.16.148; helo=centrum.lixper.it;
+ envelope-from=srs0=9qiu=b7=sguazz.it=giuseppe@centrum.lixper.it;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sguazz.it
+X-Greylist: delayed 2091 seconds by postgrey-1.36 at bilbo;
+ Fri, 21 Aug 2020 18:58:03 AEST
+Received: from centrum.lixper.it (centrum.lixper.it [46.4.16.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BXwvT0Bk5zDr6Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 19:19:30 +1000 (AEST)
-Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
- by mail-out.m-online.net (Postfix) with ESMTP id 4BXwvK4SfGz1qs0H;
- Fri, 21 Aug 2020 11:19:25 +0200 (CEST)
-Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
- by mail.m-online.net (Postfix) with ESMTP id 4BXwvK3qgKz1qy63;
- Fri, 21 Aug 2020 11:19:25 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at mnet-online.de
-Received: from mail.mnet-online.de ([192.168.8.182])
- by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
- port 10024)
- with ESMTP id F0_dCBk9PgC1; Fri, 21 Aug 2020 11:19:24 +0200 (CEST)
-X-Auth-Info: xzm2TsjnGK9QJrldEjTYj5rRu9jtvPfdYQZy6A0x9whwb0PqbRObjNI3MuMTzqpI
-Received: from igel.home (ppp-46-244-185-194.dynamic.mnet-online.de
- [46.244.185.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.mnet-online.de (Postfix) with ESMTPSA;
- Fri, 21 Aug 2020 11:19:24 +0200 (CEST)
-Received: by igel.home (Postfix, from userid 1000)
- id EAD032C0765; Fri, 21 Aug 2020 11:19:23 +0200 (CEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Fix module loading failure when
- VMALLOC_END is over 0xf0000000
-References: <09fc73fe9c7423c6b4cf93f93df9bb0ed8eefab5.1597994047.git.christophe.leroy@csgroup.eu>
-X-Yow: HERE!!  Put THIS on!!  I'm in CHARGE!!
-Date: Fri, 21 Aug 2020 11:19:23 +0200
-In-Reply-To: <09fc73fe9c7423c6b4cf93f93df9bb0ed8eefab5.1597994047.git.christophe.leroy@csgroup.eu>
- (Christophe Leroy's message of "Fri, 21 Aug 2020 07:15:25 +0000
- (UTC)")
-Message-ID: <874kowwe3o.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/27.1 (gnu/linux)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BXwQg6lsLzDqcw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 18:58:02 +1000 (AEST)
+Received: from net-2-44-194-190.cust.vodafonedsl.it ([2.44.194.190] helo=uefi)
+ by centrum.lixper.it with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.84_2)
+ (envelope-from <giuseppe@sguazz.it>)
+ id 1k92KF-00023D-Vn; Fri, 21 Aug 2020 10:23:06 +0200
+Message-ID: <3558dadc530a60e9e3f958f0d6d4a0f28958ae86.camel@sguazz.it>
+Subject: Re: kernel since 5.6 do not boot anymore on Apple PowerBook
+From: Giuseppe Sacco <giuseppe@sguazz.it>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ linuxppc-dev@lists.ozlabs.org
+Date: Fri, 21 Aug 2020 10:22:58 +0200
+In-Reply-To: <59de290b-4b6c-a55e-9289-e640473b1382@csgroup.eu>
+References: <89e412a76350b28f791bb8a2b6f9647a034f6fc8.camel@sguazz.it>
+ <04544f16-fb20-54b9-e56e-47d45af03b6c@csgroup.eu>
+ <c98f8586c16c86bb9b4485138bbabce9f15c282b.camel@sguazz.it>
+ <64815669-5282-f74f-efc6-6c4c376fb602@csgroup.eu>
+ <990279c219476c4d513df52454adf583de32641a.camel@sguazz.it>
+ <211a35b02193ae79a201d4d567fe1d7a53a979f5.camel@sguazz.it>
+ <639a48d1-815b-33f1-3c9e-cd9ca8ec41b1@csgroup.eu>
+ <aab7a9fefe9ccfa272fbc45eeaa8228fced14d3b.camel@sguazz.it>
+ <498426507489f2c8e32daaf7af1105b5adba552f.camel@sguazz.it>
+ <c2a89243-6135-4edd-2c1c-42c2159b5a1e@csgroup.eu>
+ <e6878657490aa34b54b3daf0430073078a9840e7.camel@sguazz.it>
+ <b70a6343-a380-ff08-a401-04f9ab50be6b@csgroup.eu>
+ <59de290b-4b6c-a55e-9289-e640473b1382@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.4-2 
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-GeoIP: IT
+X-SRS: Sender address rewritten from <giuseppe@sguazz.it> to
+ <SRS0=9qIu=B7=sguazz.it=giuseppe@centrum.lixper.it> by centrum.lixper.it.
+X-Mailman-Approved-At: Fri, 21 Aug 2020 19:27:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,34 +76,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Aug 21 2020, Christophe Leroy wrote:
+Hello Cristophe,
 
-> In is_module_segment(), when VMALLOC_END is over 0xf0000000,
-> ALIGN(VMALLOC_END, SZ_256M) has value 0.
->
-> In that case, addr >= ALIGN(VMALLOC_END, SZ_256M) is always
-> true then is_module_segment() always returns false.
->
-> Use (ALIGN(VMALLOC_END, SZ_256M) - 1) which will have
-> value 0xffffffff and will be suitable for the comparison.
->
-> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Fixes: c49643319715 ("powerpc/32s: Only leave NX unset on segments used for modules")
+Il giorno ven, 21/08/2020 alle 08.55 +0200, Christophe Leroy ha
+scritto:
+> Hi Giuseppe,
+> 
+> Le 08/07/2020 à 20:44, Christophe Leroy a écrit :
+> > 
+> > Le 08/07/2020 à 19:36, Giuseppe Sacco a écrit :
+> > > Hi Cristophe,
+> > > 
+> > > Il giorno mer, 08/07/2020 alle 19.09 +0200, Christophe Leroy ha
+> > > scritto:
+[...]
+> > > > What's the result with:
+> > > > 
+> > > > LANG=C make ARCH=powerpc CROSS_COMPILE=powerpc-linux- vmlinux
+> > > 
+> > > $ LANG=C make ARCH=powerpc CROSS_COMPILE=powerpc-linux- vmlinux
+> > >    CALL    scripts/checksyscalls.sh
+> > >    CALL    scripts/atomic/check-atomics.sh
+> > >    CHK     include/generated/compile.h
+> > >    CC      kernel/module.o
+> > > kernel/module.c: In function 'do_init_module':
+> > > kernel/module.c:3593:2: error: implicit declaration of function
+> > > 'module_enable_ro'; did you mean 'module_enable_x'? [-Werror=implicit-
+> > > function-declaration]
+> > >   3593 |  module_enable_ro(mod, true);
+> > >        |  ^~~~~~~~~~~~~~~~
+> > >        |  module_enable_x
+> > > cc1: some warnings being treated as errors
+> > > make[1]: *** [scripts/Makefile.build:267: kernel/module.o] Error 1
+> > > make: *** [Makefile:1735: kernel] Error 2
+> > > 
+> > > So, should I 'git bisect skip'?
+> > 
+> > Ah yes, I had the exact same problem last time I bisected.
+> > 
+> > So yes do 'git bisect skip'. You'll probably hit this problem half a 
+> > dozen of times, but at the end you should get a usefull bisect anyway.
+> > 
+> 
+> Were you able to progress ?
 
-Thanks, that fixes the crash.
+Very slowly. I am still working on it, currently at recompile #276.
+git-bisect states that I have still about 700 commits to check, but the
+real problem is that more than 60% of built kernels crash even before
+displaying the cpu_freq message (probably another long lasting bug
+hides the one I am looking for). All these skipped kernels make
+bisecting very very slow.
 
-Tested-by: Andreas Schwab <schwab@linux-m68k.org>
+A short video about the problem I face when I skip the build is here:
+https://eppesuigoccas.homedns.org/~giuseppe/bug%20avvio%20powerbook%20g4.mp4
 
-Andreas.
+Bye,
+Giuseppe
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
-"And now for something completely different."
