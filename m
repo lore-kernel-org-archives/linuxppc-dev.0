@@ -2,25 +2,26 @@ Return-Path: <SRS0=lwUg=B7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 803B7C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 05:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 058AEC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 05:52:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E9A7204EA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 05:50:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A6C7E20732
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 05:52:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TfwEFqBs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E9A7204EA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="wC3e5XpW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6C7E20732
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BXrGM5W66zDr0K
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 15:50:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BXrJ50LFWzDqC5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 15:52:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -30,38 +31,39 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=TfwEFqBs; 
+ header.s=casper.20170209 header.b=wC3e5XpW; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BXr9C4xKnzDqx6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 15:46:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BXrBD5N4GzDqxZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2020 15:47:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description;
- bh=ajUzawCVIQRA44N5aFKVmBYYI1IH9hA0rQus2v7jm1M=; b=TfwEFqBs960BsRA5hvI0O4oCNZ
- dAoIyHAY/Igg+63+8szSobAbssRbiHC5YFIKCWsegv9dVWY0K7Ydgdl96G7DyhjmIOpdziAZXt24P
- SnP4MEK+sNxXbJYhwZ2hTH6ke8Gl+rN5IPxwEmQrm+Yp0GumVOGwNCs+mXaf3k5y2w34NH2v1TEzj
- 7j9P578Yh55WK6ukWn0T81tLv8mXcQ8NzPmDTnkhZDHqPKrtzOjoLztcIUWOhS84Vd3NTta36LHsI
- SbgVtdCEdAbFD5jtjm73/9nHsffP1rZLt7uTaHKbupFRxrzmNmsvjCPbAIGn5hdxXBRH9307b0p4N
- 1oJ58huA==;
+ bh=VGKvwxaQDiLZ+z37bijIYhoz/siCPi3OExDmTDYH7nw=; b=wC3e5XpWvIWwRrMAoxzR+b2PiV
+ z2iL40tRUvmYqeJL2njjkYiwldy8/QjNlLBDodSEkKhGdYnKN+vfERf/y3xYrBq4ZN7A41b5VPdpu
+ hW2w9ZlKXGK2YdMyBoy0Oi8JSF3D1n00ROt/mOGgHUmLSBvsS5Coq6GgAfXqp9rIPBcG/YnVzJqJ+
+ 9EDBa2dkPeYJ2+ptbTxuV7fSkwS/vspYT7qYRufcu8LzH2tLSyCmOPdyc0aqp1C5YrycPg8+S2SZU
+ hHFGfai1g55qIDHxdfEzT9/QAHI+fyvVw9kTqpJ53Lw2DuU9H/qoc5FgqUAUyrAQCEAz3DUEM4SYv
+ i7VMp5PA==;
 Received: from hch by casper.infradead.org with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1k8zsI-0007XR-9F; Fri, 21 Aug 2020 05:46:02 +0000
-Date: Fri, 21 Aug 2020 06:46:02 +0100
+ Linux)) id 1k8zt7-0007aH-FN; Fri, 21 Aug 2020 05:46:53 +0000
+Date: Fri, 21 Aug 2020 06:46:53 +0100
 From: Christoph Hellwig <hch@infradead.org>
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v5 5/8] mm: HUGE_VMAP arch support cleanup
-Message-ID: <20200821054602.GC28291@infradead.org>
+Subject: Re: [PATCH v5 6/8] mm: Move vmap_range from lib/ioremap.c to
+ mm/vmalloc.c
+Message-ID: <20200821054653.GD28291@infradead.org>
 References: <20200821044427.736424-1-npiggin@gmail.com>
- <20200821044427.736424-6-npiggin@gmail.com>
+ <20200821044427.736424-7-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200821044427.736424-6-npiggin@gmail.com>
+In-Reply-To: <20200821044427.736424-7-npiggin@gmail.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
  casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -83,9 +85,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->  static int vmap_try_huge_pmd(pmd_t *pmd, unsigned long addr, unsigned long end,
-> -			phys_addr_t phys_addr, pgprot_t prot)
-> +			phys_addr_t phys_addr, pgprot_t prot, unsigned int max_page_shift)
->  {
+On Fri, Aug 21, 2020 at 02:44:25PM +1000, Nicholas Piggin wrote:
+> This is a generic kernel virtual memory mapper, not specific to ioremap.
 
-... and here.
+lib/ioremap doesn't exist any more.
+
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  include/linux/vmalloc.h |   2 +
+>  mm/ioremap.c            | 192 ----------------------------------------
+>  mm/vmalloc.c            | 191 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 193 insertions(+), 192 deletions(-)
+> 
+> diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
+> index 787d77ad7536..e3590e93bfff 100644
+> --- a/include/linux/vmalloc.h
+> +++ b/include/linux/vmalloc.h
+> @@ -181,6 +181,8 @@ extern struct vm_struct *remove_vm_area(const void *addr);
+>  extern struct vm_struct *find_vm_area(const void *addr);
+>  
+>  #ifdef CONFIG_MMU
+> +extern int vmap_range(unsigned long addr, unsigned long end, phys_addr_t phys_addr, pgprot_t prot,
+> +			unsigned int max_page_shift);
+
+Please avoid the pointlessly long line.  And don't add the pointless
+extern.
