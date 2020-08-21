@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A33A8C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 16:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CB81C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 16:55:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 50E5220732
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 16:53:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C6F5620702
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Aug 2020 16:55:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="2Wr50MoJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50E5220732
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="wnxd7sbx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6F5620702
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BY6yr37ZxzDqlw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 02:53:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BY71V1XCfzDrHd
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 02:55:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=2Wr50MoJ; dkim-atps=neutral
+ header.s=default header.b=wnxd7sbx; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BY6Ct3WrrzDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 02:19:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BY6Db3q1NzDr7s
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 02:19:59 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 21A7022E03;
- Fri, 21 Aug 2020 16:19:19 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 3817E23100;
+ Fri, 21 Aug 2020 16:19:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1598026760;
+ s=default; t=1598026797;
  bh=yKqhpIt2E7otdBYwhnTyQ4kLewxec0P6sMq8BMGFrfk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=2Wr50MoJZjs7rxRdcanhI7oiPNhKIw8m3838ij528kwN8x2U+IoSKWsbYRMm1sscp
- +qcLiOM7FlPWC7ueXRabZ4ricjuWq3S74fxezSfytR3s8pgVydmkzpCsaTf0K+x2Wl
- bHHoNRXJf3y0NjlaXaJMR4KH0plW0Wk/6ybgLGN8=
+ b=wnxd7sbxH4bHnSmT6e+1IcfgZMlT2IvNGBFpXxnhygv4r6NAA2ESU/42xzl9ciJb6
+ 81CmLcFXriPWLd5Zaj43nxgmtiAeGy/u5Wxpd64/+KVkV+7tdTghVNvxpOBlt2I6aH
+ ygb7NQS89GHmxLNiV9kIQnImfltxWmFDHcKAMQ10=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 17/30] selftests/powerpc: Purge extra count_pmc()
+Subject: [PATCH AUTOSEL 4.9 14/26] selftests/powerpc: Purge extra count_pmc()
  calls of ebb selftests
-Date: Fri, 21 Aug 2020 12:18:44 -0400
-Message-Id: <20200821161857.348955-17-sashal@kernel.org>
+Date: Fri, 21 Aug 2020 12:19:25 -0400
+Message-Id: <20200821161938.349246-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200821161857.348955-1-sashal@kernel.org>
-References: <20200821161857.348955-1-sashal@kernel.org>
+In-Reply-To: <20200821161938.349246-1-sashal@kernel.org>
+References: <20200821161938.349246-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
