@@ -4,56 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E412CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 07:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D449C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 07:25:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 910E82072D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 07:24:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 910E82072D
+	by mail.kernel.org (Postfix) with ESMTPS id 1556F2072D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 07:25:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1556F2072D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BYVHl0ngQzDqBW
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 17:24:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BYVKk31Q4zDqNn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 17:25:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BYVCd1xBzzDrCl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 17:20:28 +1000 (AEST)
-IronPort-SDR: 1zoCsOfBVgy1sq7YfZ7nU/XfU5nXnnG2+tZZjUOd/h4KgqEqUvXxxUAvc7wjnLtjJO2veYeNX0
- R9VS82MpA/bA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9720"; a="135754988"
-X-IronPort-AV: E=Sophos;i="5.76,339,1592895600"; d="scan'208";a="135754988"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BYVCm1GcczDrFd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2020 17:20:35 +1000 (AEST)
+IronPort-SDR: 8+9ikinChYwpwxk6aj0VCTsKYgnXA/t0z4Kjb3zXVY+38RqpqnHvB985GTkQjRgIy+hrDSMib6
+ 7F7cRmU16OKA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9720"; a="155666687"
+X-IronPort-AV: E=Sophos;i="5.76,339,1592895600"; d="scan'208";a="155666687"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Aug 2020 00:20:27 -0700
-IronPort-SDR: yGBfJdX4A7m/Chyt32Sa31LJjYIDpFfmQldwjhW13edshxhOf3Z8eAXFRE8OuuCv+RkvzxmZp/
- 67qkEHx0Z9oQ==
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Aug 2020 00:20:32 -0700
+IronPort-SDR: Q30bnYg8G3MLAYCGGkaeGduuSN4MjEQESYJMJWDMnLp3+hH2nvURlwKcplNCJvYlyI0TRFqWx6
+ WoU9abINCRng==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,339,1592895600"; d="scan'208";a="498757501"
+X-IronPort-AV: E=Sophos;i="5.76,339,1592895600"; d="scan'208";a="442586448"
 Received: from lkp-server01.sh.intel.com (HELO 91ed66e1ca04) ([10.239.97.150])
- by fmsmga005.fm.intel.com with ESMTP; 22 Aug 2020 00:20:26 -0700
+ by orsmga004.jf.intel.com with ESMTP; 22 Aug 2020 00:20:31 -0700
 Received: from kbuild by 91ed66e1ca04 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1k9NpB-0001aP-HD; Sat, 22 Aug 2020 07:20:25 +0000
-Date: Sat, 22 Aug 2020 15:19:54 +0800
+ id 1k9NpG-0001aT-KE; Sat, 22 Aug 2020 07:20:30 +0000
+Date: Sat, 22 Aug 2020 15:19:50 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- 02ee70dacfacaceb80719eee2c9b929170b6440a
-Message-ID: <5f40c71a.OCHP6UpCHLs1tnIp%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS d19274eb71328b768fcebe940a61eac39f8daecc
+Message-ID: <5f40c716.N0nH9f2sIjOI69hP%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,12 +72,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
-branch HEAD: 02ee70dacfacaceb80719eee2c9b929170b6440a  video: fbdev: controlfb: Fix build for COMPILE_TEST=y && PPC_PMAC=n
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: d19274eb71328b768fcebe940a61eac39f8daecc  Automatic merge of 'master', 'next' and 'fixes' (2020-08-21 23:47)
 
-elapsed time: 1041m
+elapsed time: 1042m
 
-configs tested: 84
+configs tested: 79
 configs skipped: 1
 
 The following configs have been built successfully.
@@ -97,11 +95,6 @@ riscv                            alldefconfig
 arm                   milbeaut_m10v_defconfig
 sh                         ecovec24_defconfig
 arm                          collie_defconfig
-arm                       aspeed_g4_defconfig
-arm                        clps711x_defconfig
-arm                           spitz_defconfig
-sh                        apsh4ad0a_defconfig
-arm                         orion5x_defconfig
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
