@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B36DC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 16:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B2EAC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 16:31:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E6EA20738
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 16:08:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E6EA20738
+	by mail.kernel.org (Postfix) with ESMTPS id 57FFD206C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Aug 2020 16:31:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57FFD206C0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BYjwz1Z2dzDqCb
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Aug 2020 02:08:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BYkRR2qFgzDqkq
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Aug 2020 02:31:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=huawei.com;
  envelope-from=zhongguohua1@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BYjv74gVGzDqhS
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2020 02:06:54 +1000 (AEST)
-Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 8C5A28320EC3711E4B94;
- Sun, 23 Aug 2020 00:06:43 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BYkPG2myBzDqWh
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2020 02:29:35 +1000 (AEST)
+Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 48E7FDE5EF43CB7E1CBE;
+ Sun, 23 Aug 2020 00:29:27 +0800 (CST)
 Received: from DESKTOP-8N3QUD5.china.huawei.com (10.67.102.173) by
- DGGEMS412-HUB.china.huawei.com (10.3.19.212) with Microsoft SMTP Server id
- 14.3.487.0; Sun, 23 Aug 2020 00:06:35 +0800
+ DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
+ 14.3.487.0; Sun, 23 Aug 2020 00:29:21 +0800
 From: Guohua Zhong <zhongguohua1@huawei.com>
-To: <zhongguohua1@huawei.com>
+To: <christophe.leroy@csgroup.eu>
 Subject: Re: [PATCH] powerpc: Fix a bug in __div64_32 if divisor is zero
-Date: Sun, 23 Aug 2020 00:06:34 +0800
-Message-ID: <20200822160634.24492-1-zhongguohua1@huawei.com>
+Date: Sun, 23 Aug 2020 00:29:20 +0800
+Message-ID: <20200822162920.42040-1-zhongguohua1@huawei.com>
 X-Mailer: git-send-email 2.21.0.windows.1
-In-Reply-To: <20200820131049.42940-1-zhongguohua1@huawei.com>
-References: <20200820131049.42940-1-zhongguohua1@huawei.com>
+In-Reply-To: <50d351e0-bbad-f25f-6b4c-265b7a73c878@csgroup.eu>
+References: <50d351e0-bbad-f25f-6b4c-265b7a73c878@csgroup.eu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -60,9 +60,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nixiaoming@huawei.com, wangle6@huawei.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: nixiaoming@huawei.com, zhongguohua1@huawei.com, wangle6@huawei.com,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
