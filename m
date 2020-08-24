@@ -2,60 +2,67 @@ Return-Path: <SRS0=9Gbk=CC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLACK autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 741BCC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:10:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF423C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:18:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D13B206BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:10:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D13B206BE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 76C3C206BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:18:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="AbX/5AnX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76C3C206BE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BZcZ02kXbzDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 13:10:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BZcl34BmtzDqQY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 13:18:07 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BZcVY16K4zDqQF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2020 13:07:14 +1000 (AEST)
-IronPort-SDR: nWWRqbSrvCqC3NvkpGcFBb8JMMwaoecJfDnlEFuZvi4wOqBWO3ETGz5XrDFwgIUei4d1EfFzWj
- f5Bsw0ooqdTQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9722"; a="153422758"
-X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="153422758"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Aug 2020 20:07:11 -0700
-IronPort-SDR: pmpOw+Xa88+3uST/3nbwxSnOswjOOwCOK+iyAn4oXsGBRhfshdhvb5jzUSlsOIkf3UBfZidh8A
- pOIf91eoI1Qw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="328335002"
-Received: from lkp-server01.sh.intel.com (HELO 91ed66e1ca04) ([10.239.97.150])
- by orsmga008.jf.intel.com with ESMTP; 23 Aug 2020 20:07:09 -0700
-Received: from kbuild by 91ed66e1ca04 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kA2pA-0002Mr-V7; Mon, 24 Aug 2020 03:07:08 +0000
-Date: Mon, 24 Aug 2020 11:06:18 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 3829b105d464789815a333dd34ceac63cfe9bd22
-Message-ID: <5f432eaa.0dGIR0c59CL6wyuZ%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BZcjL05yPzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2020 13:16:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=AbX/5AnX; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4BZcjK64rPz9sTF; Mon, 24 Aug 2020 13:16:37 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BZcjK4dg7z9sT6;
+ Mon, 24 Aug 2020 13:16:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1598238997;
+ bh=poxDGuxQh4qdop80Jcv3/uVTNCxslAPY/Q+LFsPieYA=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=AbX/5AnXaENk9T1yvWUU+o5XzxtbibRkaUcJFxxKy0SLN/YYVO+vmg5Sds6JziJwf
+ FfFP4AN358zbzzYaIgtx/CHrqSb5QQrIfpQphzCJUHg4FuAkTek76XwItlKWcUgwXc
+ pZYdxD02q+D+jvmkuWmuzAd2BVKiXPFwQymiMk86Aj1j0TUiOGh6V51U2lGamBN9P8
+ WpOxGhr0b8vcNU+cZY9bTQ+tJnkAq4t0ITBobyMoLbG6jNSeVEYSInqhpUWjyTJKsb
+ qmvL9rRRDuVj1qw9lCCyCx5JkIk6aySbzQWOjslE+eV9ui0//dBSzOVD+L5m8stP5Y
+ U5WNo386y2NIQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/prom_init: Check display props exist before
+ enabling btext
+In-Reply-To: <b0b2c5ba-4b3a-f125-d7f7-49822489c923@ozlabs.ru>
+References: <20200821103407.3362149-1-mpe@ellerman.id.au>
+ <b0b2c5ba-4b3a-f125-d7f7-49822489c923@ozlabs.ru>
+Date: Mon, 24 Aug 2020 13:16:34 +1000
+Message-ID: <87sgcchgx9.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,130 +74,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 3829b105d464789815a333dd34ceac63cfe9bd22  Automatic merge of 'master', 'next' and 'fixes' (2020-08-23 21:44)
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> On 21/08/2020 20:34, Michael Ellerman wrote:
+>> It's possible to enable CONFIG_PPC_EARLY_DEBUG_BOOTX for a pseries
+>> kernel (maybe it shouldn't be), which is then booted with qemu/slof.
+>
+>
+> CONFIG_BOOTX_TEXT=y
+> CONFIG_PPC_EARLY_DEBUG=y
+> CONFIG_PPC_EARLY_DEBUG_BOOTX=y
+>
+> this does not crash my VM. The changed chunk is sitting under "if
+> (prom_getprop(node, "linux,boot-display", NULL, 0)" and I cannot find
+> what creates this property - it is neither slof/grub/qemu, unlikely that
+> it is phyp so it must be this one:
+>
+> arch/powerpc/platforms/powermac/bootx_init.c|244|
+> bootx_dt_add_string("linux,boot-display", mem_end);
 
-elapsed time: 846m
+It's in prom_init.c:
 
-configs tested: 107
-configs skipped: 8
+static void __init prom_init_stdout(void)
+{
+...
+	stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+	if (stdout_node != PROM_ERROR) {
+		val = cpu_to_be32(stdout_node);
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+		/* If it's a display, note it */
+		memset(type, 0, sizeof(type));
+		prom_getprop(stdout_node, "device_type", type, sizeof(type));
+		if (prom_strcmp(type, "display") == 0)
+			prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
+	}
+}
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-m68k                       m5475evb_defconfig
-m68k                       bvme6000_defconfig
-m68k                           sun3_defconfig
-powerpc                      chrp32_defconfig
-arm                            qcom_defconfig
-arm                         mv78xx0_defconfig
-c6x                        evmc6457_defconfig
-powerpc                      pasemi_defconfig
-arm                            hisi_defconfig
-arm                        spear3xx_defconfig
-nds32                            alldefconfig
-powerpc                     powernv_defconfig
-sh                        apsh4ad0a_defconfig
-arm                  colibri_pxa270_defconfig
-mips                   sb1250_swarm_defconfig
-arm                         shannon_defconfig
-m68k                            q40_defconfig
-ia64                         bigsur_defconfig
-powerpc                      pmac32_defconfig
-powerpc                     skiroot_defconfig
-arc                            hsdk_defconfig
-csky                             alldefconfig
-riscv                    nommu_virt_defconfig
-arm                        neponset_defconfig
-h8300                            allyesconfig
-sh                          polaris_defconfig
-sh                          urquell_defconfig
-powerpc                             defconfig
-m68k                         apollo_defconfig
-powerpc                          alldefconfig
-arm                            pleb_defconfig
-arm                            dove_defconfig
-powerpc                    amigaone_defconfig
-arm                          tango4_defconfig
-sh                            shmin_defconfig
-arm                           tegra_defconfig
-arm                            mps2_defconfig
-arm64                            alldefconfig
-arc                             nps_defconfig
-arm                          ep93xx_defconfig
-um                           x86_64_defconfig
-arm                       cns3420vb_defconfig
-arm                        multi_v5_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a002-20200823
-x86_64               randconfig-a003-20200823
-x86_64               randconfig-a005-20200823
-x86_64               randconfig-a001-20200823
-x86_64               randconfig-a006-20200823
-x86_64               randconfig-a004-20200823
-i386                 randconfig-a002-20200823
-i386                 randconfig-a004-20200823
-i386                 randconfig-a003-20200823
-i386                 randconfig-a005-20200823
-i386                 randconfig-a006-20200823
-i386                 randconfig-a001-20200823
-i386                 randconfig-a013-20200823
-i386                 randconfig-a012-20200823
-i386                 randconfig-a011-20200823
-i386                 randconfig-a016-20200823
-i386                 randconfig-a014-20200823
-i386                 randconfig-a015-20200823
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+> which is powermac and not pseries. Or may be that pmac firmware.
+>
+> Where did you see this crash?
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+Qemu pseries either TCG or KVM with eg:
+
+$ qemu-system-ppc64 -M pseries -cpu POWER8 -m 1G -kernel build~/vmlinux
+
+
+>> But if you do that the kernel crashes in draw_byte(), with a DAR
+>> pointing somewhere near INT_MAX.
+>> 
+>> Adding some debug to prom_init we see that we're not able to read the
+>> "address" property from OF, so we're just using whatever junk value
+>> was on the stack.
+>> 
+>> So check the properties can be read properly from OF, if not we bail
+>> out before initialising btext, which avoids the crash.
+>
+> This is a right thing any way, just the commit log is confusing.
+>
+> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Thanks.
+
+cheers
