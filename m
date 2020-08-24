@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_PASS,URIBL_BLACK,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9CEDC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 16:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6128FC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 17:01:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D93D204EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 16:58:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 14964205CB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 17:01:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="kGMbmlON"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D93D204EA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qHa1y1Nb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14964205CB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BZyxj2H1PzDqJq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 02:58:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BZz126qVrzDqMr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 03:01:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=kGMbmlON; dkim-atps=neutral
+ header.s=default header.b=qHa1y1Nb; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BZyWm3d1szDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 02:39:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BZyX03YtQzDqPN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 02:39:44 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 8639922D07;
- Mon, 24 Aug 2020 16:39:29 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id A5EBC22C9F;
+ Mon, 24 Aug 2020 16:39:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1598287170;
- bh=y1xrZB73UBLkKpH9sshs4QQ2EYIUcbA/kyqtn27aCng=;
+ s=default; t=1598287182;
+ bh=UHGPWOeMMPesFHOhN85ifiETrCaVltIOD1OiXejC61g=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=kGMbmlONW7yRvcLW1FMbB8Nl+AqXLmgyDPSX9j06xaUQEfjZhTb//FIj3KGcqARdT
- 3Vu+JByCfvO2fEGUt3E/njKBWSajaNRC4jg6Y2wm5jKZenZZRqGJ+7jBL/M+xEZ6qL
- sTdJ6R2hYnJy0xwfypzpof6HFBAXsansQt7jl1ns=
+ b=qHa1y1NbZd3c/pBuiBwKoGpFW2R6bicXWDVdGA0fk8tFCHLMAlb6Jadb+46pyAiK/
+ tBJwTn4aAB6q9m3vLIKrSuqPrPKO8QDEWeJBNFk8nYcgJUhaCjBYAc6M19YoeqAn4o
+ Rfg0Uf9f6vzNl88aiGbMsZhGyuMyLq1UHB9G0/9A=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 11/11] powerpc/perf: Fix soft lockups due to
- missed interrupt accounting
-Date: Mon, 24 Aug 2020 12:39:14 -0400
-Message-Id: <20200824163914.607152-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 8/8] powerpc/perf: Fix soft lockups due to missed
+ interrupt accounting
+Date: Mon, 24 Aug 2020 12:39:31 -0400
+Message-Id: <20200824163931.607291-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200824163914.607152-1-sashal@kernel.org>
-References: <20200824163914.607152-1-sashal@kernel.org>
+In-Reply-To: <20200824163931.607291-1-sashal@kernel.org>
+References: <20200824163931.607291-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -114,10 +114,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 3188040022c4f..78f75e48dfe7f 100644
+index ba49ae6625f1b..a10b67df83bae 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -2096,6 +2096,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+@@ -2042,6 +2042,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
  
  		if (perf_event_overflow(event, &data, regs))
  			power_pmu_stop(event, 0);
