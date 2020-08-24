@@ -6,53 +6,52 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B4DC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 741BCC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:10:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5A5F206BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:08:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5A5F206BE
+	by mail.kernel.org (Postfix) with ESMTPS id 2D13B206BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 03:10:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D13B206BE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BZcXJ6RJNzDqRZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 13:08:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BZcZ02kXbzDqSs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Aug 2020 13:10:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BZcVY2kMDzDqQG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BZcVY16K4zDqQF
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2020 13:07:14 +1000 (AEST)
-IronPort-SDR: qR7+XWHvPiS10fkZcz2svKaHS7Spm1y4wkS/t6GM/TgUiRYNbrjftmaUNrMNBBpLMXqA3m16lk
- inB9zz0OJsXg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9722"; a="155815191"
-X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="155815191"
+IronPort-SDR: nWWRqbSrvCqC3NvkpGcFBb8JMMwaoecJfDnlEFuZvi4wOqBWO3ETGz5XrDFwgIUei4d1EfFzWj
+ f5Bsw0ooqdTQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9722"; a="153422758"
+X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="153422758"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 Aug 2020 20:07:10 -0700
-IronPort-SDR: w/eox9c6cNrsiJ0S/QOoLcBmroD+nRc6iJsteLts3088sWiiO16fyvRj6Ya4QzDJLPXPEMI4yf
- 8SJaFrcDg3+w==
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Aug 2020 20:07:11 -0700
+IronPort-SDR: pmpOw+Xa88+3uST/3nbwxSnOswjOOwCOK+iyAn4oXsGBRhfshdhvb5jzUSlsOIkf3UBfZidh8A
+ pOIf91eoI1Qw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="338256537"
+X-IronPort-AV: E=Sophos;i="5.76,347,1592895600"; d="scan'208";a="328335002"
 Received: from lkp-server01.sh.intel.com (HELO 91ed66e1ca04) ([10.239.97.150])
- by orsmga007.jf.intel.com with ESMTP; 23 Aug 2020 20:07:09 -0700
+ by orsmga008.jf.intel.com with ESMTP; 23 Aug 2020 20:07:09 -0700
 Received: from kbuild by 91ed66e1ca04 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1kA2pA-0002Mo-R9; Mon, 24 Aug 2020 03:07:08 +0000
-Date: Mon, 24 Aug 2020 11:06:22 +0800
+ id 1kA2pA-0002Mr-V7; Mon, 24 Aug 2020 03:07:08 +0000
+Date: Mon, 24 Aug 2020 11:06:18 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- 02a4db8feb0e35a215b6b803bce0ab8a1fd32838
-Message-ID: <5f432eae.tRITWjoO0GFkk6nt%lkp@intel.com>
+Subject: [powerpc:merge] BUILD SUCCESS 3829b105d464789815a333dd34ceac63cfe9bd22
+Message-ID: <5f432eaa.0dGIR0c59CL6wyuZ%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,12 +72,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
-branch HEAD: 02a4db8feb0e35a215b6b803bce0ab8a1fd32838  powerpc/64: Remove unused generic_secondary_thread_init()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 3829b105d464789815a333dd34ceac63cfe9bd22  Automatic merge of 'master', 'next' and 'fixes' (2020-08-23 21:44)
 
-elapsed time: 845m
+elapsed time: 846m
 
-configs tested: 112
+configs tested: 107
 configs skipped: 8
 
 The following configs have been built successfully.
@@ -121,12 +120,6 @@ m68k                         apollo_defconfig
 powerpc                          alldefconfig
 arm                            pleb_defconfig
 arm                            dove_defconfig
-mips                      malta_kvm_defconfig
-powerpc                          g5_defconfig
-x86_64                           alldefconfig
-arm                          ep93xx_defconfig
-arm                         lpc32xx_defconfig
-sh                             shx3_defconfig
 powerpc                    amigaone_defconfig
 arm                          tango4_defconfig
 sh                            shmin_defconfig
@@ -134,6 +127,7 @@ arm                           tegra_defconfig
 arm                            mps2_defconfig
 arm64                            alldefconfig
 arc                             nps_defconfig
+arm                          ep93xx_defconfig
 um                           x86_64_defconfig
 arm                       cns3420vb_defconfig
 arm                        multi_v5_defconfig
