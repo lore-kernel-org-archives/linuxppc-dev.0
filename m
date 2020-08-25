@@ -2,81 +2,59 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54CF9C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:43:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06271C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:54:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A69B2071E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:43:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=iram.es header.i=@iram.es header.b="WZjTZ7FE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A69B2071E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id 91CC72075F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:54:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91CC72075F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbTFH3NG3zDqS2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:43:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbTTp3k10zDqSj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:54:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
+ envelope-from=yukuai3@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
- (client-ip=130.206.19.181; helo=mx02.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iram.es
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
- header.s=DKIM header.b=WZjTZ7FE; dkim-atps=neutral
-Received: from mx02.puc.rediris.es (outbound6sev.lav.puc.rediris.es
- [130.206.19.181])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbTBt3mPtzDqR6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:41:38 +1000 (AEST)
-Received: from mta-out03.sim.rediris.es (mta-out03.sim.rediris.es
- [130.206.24.45])
- by mx02.puc.rediris.es  with ESMTP id 07PCfVGa012867-07PCfVGc012867
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Tue, 25 Aug 2020 14:41:31 +0200
-Received: from mta-out03.sim.rediris.es (localhost.localdomain [127.0.0.1])
- by mta-out03.sim.rediris.es (Postfix) with ESMTPS id B26153038132;
- Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by mta-out03.sim.rediris.es (Postfix) with ESMTP id A30F63038133;
- Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
-X-Amavis-Modified: Mail body modified (using disclaimer) -
- mta-out03.sim.rediris.es
-Received: from mta-out03.sim.rediris.es ([127.0.0.1])
- by localhost (mta-out03.sim.rediris.es [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id 9GqycDEfOhw6; Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
-Received: from lt-gp.iram.es (32.236.223.87.dynamic.jazztel.es [87.223.236.32])
- by mta-out03.sim.rediris.es (Postfix) with ESMTPA id 3B0F73038132;
- Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
-Date: Tue, 25 Aug 2020 14:41:20 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Jordan Niethe <jniethe5@gmail.com>
-Subject: Re: [PATCH] powerpc: Update documentation of ISA versions for Power10
-Message-ID: <20200825124120.GA815@lt-gp.iram.es>
-References: <20200825114507.13297-1-jniethe5@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbSmT2bQzzDqNj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:22:14 +1000 (AEST)
+Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id 45575E51671AF449BBA3;
+ Tue, 25 Aug 2020 20:06:00 +0800 (CST)
+Received: from huawei.com (10.175.127.227) by DGGEMS410-HUB.china.huawei.com
+ (10.3.19.210) with Microsoft SMTP Server id 14.3.487.0; Tue, 25 Aug 2020
+ 20:05:52 +0800
+From: Yu Kuai <yukuai3@huawei.com>
+To: <timur@kernel.org>, <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>,
+ <festevam@gmail.com>, <shengjiu.wang@gmail.com>, <lgirdwood@gmail.com>,
+ <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.com>,
+ <shawnguo@kernel.org>, <s.hauer@pengutronix.de>, <kernel@pengutronix.de>,
+ <linux-imx@nxp.com>, <xobs@kosagi.com>
+Subject: [PATCH 1/2] ASoC: fsl: imx-es8328: add missing kfree() call in
+ imx_es8328_probe()
+Date: Tue, 25 Aug 2020 20:05:30 +0800
+Message-ID: <20200825120531.1479304-2-yukuai3@huawei.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200825120531.1479304-1-yukuai3@huawei.com>
+References: <20200825120531.1479304-1-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200825114507.13297-1-jniethe5@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
- c=relaxed/relaxed; 
- h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
- bh=7DkJDRMyoChX/KiMn+d1NyOoMTfbSshQgJzCT7WF7Fo=;
- b=WZjTZ7FECnXnYdy7ttLfWDMVKznVb6NthiXDaBxiUWHLXRBB639rQWEEp94GE4NlVrXAB7xRI6JV
- cRRzj7jYrx+m97WVKMXfLCYBoJnzwrUkHELl184S72yAgx4n+/Lp7ImLSvgzbNp0njf7NXMP32M1
- BU4vMzZoEq1/HL02mGQgWtJydxhjA1e4gNjCS9nXAR7FE7jQb/xUHyD0XEJY2Svzs0ey2ZR7uSKw
- zMPwNy+afs0aohkc3rXM3A9NNCAqVbv8yi3R0DPAphaUvk3q2LKrca2lYcibHesf/tJpSX5Oor4E
- sJPqma/xhr1xC2c/dG+gbidNBGb+pNk/9bYhVw==
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.127.227]
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Tue, 25 Aug 2020 22:52:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,61 +66,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, yi.zhang@huawei.com,
+ linux-kernel@vger.kernel.org, yukuai@huawei.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 25, 2020 at 09:45:07PM +1000, Jordan Niethe wrote:
-> Update the CPU to ISA Version Mapping document to include Power10 and
-> ISA v3.1.
-> 
-> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
-> ---
->  Documentation/powerpc/isa-versions.rst | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/powerpc/isa-versions.rst
-> index a363d8c1603c..72aff1eaaea1 100644
-> --- a/Documentation/powerpc/isa-versions.rst
-> +++ b/Documentation/powerpc/isa-versions.rst
-> @@ -7,6 +7,7 @@ Mapping of some CPU versions to relevant ISA versions.
->  ========= ====================================================================
->  CPU       Architecture version
->  ========= ====================================================================
-> +Power10   Power ISA v3.1
->  Power9    Power ISA v3.0B
->  Power8    Power ISA v2.07
->  Power7    Power ISA v2.06
-> @@ -32,6 +33,7 @@ Key Features
->  ========== ==================
->  CPU        VMX (aka. Altivec)
->  ========== ==================
-> +Power10    Yes
->  Power9     Yes
->  Power8     Yes
->  Power7     Yes
-> @@ -47,6 +49,7 @@ PPC970     Yes
->  ========== ====
->  CPU        VSX
->  ========== ====
-> +Power10    Yes
->  Power9     Yes
->  Power8     Yes
->  Power7     Yes
-> @@ -62,6 +65,7 @@ PPC970     No
->  ========== ====================================
->  CPU        Transactional Memory
->  ========== ====================================
-> +Power10    Yes
->  Power9     Yes (* see transactional_memory.txt)
->  Power8     Yes
->  Power7     No
+If memory allocation for 'data' or 'comp' succeed, imx_es8328_probe()
+doesn't have corresponding kfree() in exception handling. Thus add
+kfree() for this function implementation.
 
-Huh? 
+Fixes: 7e7292dba215 ("ASoC: fsl: add imx-es8328 machine driver")
+Signed-off-by: Yu Kuai <yukuai3@huawei.com>
+---
+ sound/soc/fsl/imx-es8328.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-Transactional memory has been removed from the architecture for Power10. 
-
-	Gabriel
+diff --git a/sound/soc/fsl/imx-es8328.c b/sound/soc/fsl/imx-es8328.c
+index 15a27a2cd0ca..8f71ed3a6f75 100644
+--- a/sound/soc/fsl/imx-es8328.c
++++ b/sound/soc/fsl/imx-es8328.c
+@@ -151,7 +151,7 @@ static int imx_es8328_probe(struct platform_device *pdev)
+ 	comp = devm_kzalloc(dev, 3 * sizeof(*comp), GFP_KERNEL);
+ 	if (!comp) {
+ 		ret = -ENOMEM;
+-		goto fail;
++		goto free_data;
+ 	}
  
+ 	data->dev = dev;
+@@ -182,12 +182,12 @@ static int imx_es8328_probe(struct platform_device *pdev)
+ 	ret = snd_soc_of_parse_card_name(&data->card, "model");
+ 	if (ret) {
+ 		dev_err(dev, "Unable to parse card name\n");
+-		goto fail;
++		goto free_comp;
+ 	}
+ 	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
+ 	if (ret) {
+ 		dev_err(dev, "Unable to parse routing: %d\n", ret);
+-		goto fail;
++		goto free_comp;
+ 	}
+ 	data->card.num_links = 1;
+ 	data->card.owner = THIS_MODULE;
+@@ -196,10 +196,14 @@ static int imx_es8328_probe(struct platform_device *pdev)
+ 	ret = snd_soc_register_card(&data->card);
+ 	if (ret) {
+ 		dev_err(dev, "Unable to register: %d\n", ret);
+-		goto fail;
++		goto free_comp;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, data);
++free_comp:
++	kfree(comp);
++free_data:
++	kfree(data);
+ fail:
+ 	of_node_put(ssi_np);
+ 	of_node_put(codec_np);
+-- 
+2.25.4
 
