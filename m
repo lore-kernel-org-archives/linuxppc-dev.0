@@ -2,65 +2,81 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52B9FC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:14:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54CF9C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:43:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00A6C20706
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:14:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5A69B2071E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:43:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NtoEFfPQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00A6C20706
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (2048-bit key) header.d=iram.es header.i=@iram.es header.b="WZjTZ7FE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A69B2071E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbSbM5d84zDqSg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:14:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbTFH3NG3zDqS2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:43:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=NtoEFfPQ; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (sender SPF authorized) smtp.mailfrom=iram.es
+ (client-ip=130.206.19.181; helo=mx02.puc.rediris.es;
+ envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=iram.es
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256
+ header.s=DKIM header.b=WZjTZ7FE; dkim-atps=neutral
+Received: from mx02.puc.rediris.es (outbound6sev.lav.puc.rediris.es
+ [130.206.19.181])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbSXF2b1CzDq97
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:11:40 +1000 (AEST)
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B355920706;
- Tue, 25 Aug 2020 12:11:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1598357498;
- bh=lLcZy5Wo6jWvC7rPiDhmximohADFk1jbAXM/KoH5hVQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=NtoEFfPQ4QExLDKzsR29XM4M/Hv+Kf1cudKSei+JdGaz0fTh1snxnWmUmgHiCwQJi
- WPgVVcN4Pu2OE2jRcg8B69zc0BULmNtSPu9Z/m7CPUYkS5AZ7faPAbV5PL4t7IyHXy
- 6yW0DhQ13Ay17zkd3EdsQTxsjBq5yQ242NBffaf4=
-Date: Tue, 25 Aug 2020 13:11:02 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Yu Kuai <yukuai3@huawei.com>
-Subject: Re: [PATCH 1/2] ASoC: fsl: imx-es8328: add missing kfree() call in
- imx_es8328_probe()
-Message-ID: <20200825121102.GF5379@sirena.org.uk>
-References: <20200825120531.1479304-1-yukuai3@huawei.com>
- <20200825120531.1479304-2-yukuai3@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbTBt3mPtzDqR6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:41:38 +1000 (AEST)
+Received: from mta-out03.sim.rediris.es (mta-out03.sim.rediris.es
+ [130.206.24.45])
+ by mx02.puc.rediris.es  with ESMTP id 07PCfVGa012867-07PCfVGc012867
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Tue, 25 Aug 2020 14:41:31 +0200
+Received: from mta-out03.sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by mta-out03.sim.rediris.es (Postfix) with ESMTPS id B26153038132;
+ Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by mta-out03.sim.rediris.es (Postfix) with ESMTP id A30F63038133;
+ Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
+X-Amavis-Modified: Mail body modified (using disclaimer) -
+ mta-out03.sim.rediris.es
+Received: from mta-out03.sim.rediris.es ([127.0.0.1])
+ by localhost (mta-out03.sim.rediris.es [127.0.0.1]) (amavisd-new, port 10026)
+ with ESMTP id 9GqycDEfOhw6; Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
+Received: from lt-gp.iram.es (32.236.223.87.dynamic.jazztel.es [87.223.236.32])
+ by mta-out03.sim.rediris.es (Postfix) with ESMTPA id 3B0F73038132;
+ Tue, 25 Aug 2020 14:41:31 +0200 (CEST)
+Date: Tue, 25 Aug 2020 14:41:20 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Jordan Niethe <jniethe5@gmail.com>
+Subject: Re: [PATCH] powerpc: Update documentation of ISA versions for Power10
+Message-ID: <20200825124120.GA815@lt-gp.iram.es>
+References: <20200825114507.13297-1-jniethe5@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="twz1s1Hj1O0rHoT0"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200825120531.1479304-2-yukuai3@huawei.com>
-X-Cookie: Don't get to bragging.
+In-Reply-To: <20200825114507.13297-1-jniethe5@gmail.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; d=iram.es; s=DKIM;
+ c=relaxed/relaxed; 
+ h=date:from:to:cc:subject:message-id:references:mime-version:content-type;
+ bh=7DkJDRMyoChX/KiMn+d1NyOoMTfbSshQgJzCT7WF7Fo=;
+ b=WZjTZ7FECnXnYdy7ttLfWDMVKznVb6NthiXDaBxiUWHLXRBB639rQWEEp94GE4NlVrXAB7xRI6JV
+ cRRzj7jYrx+m97WVKMXfLCYBoJnzwrUkHELl184S72yAgx4n+/Lp7ImLSvgzbNp0njf7NXMP32M1
+ BU4vMzZoEq1/HL02mGQgWtJydxhjA1e4gNjCS9nXAR7FE7jQb/xUHyD0XEJY2Svzs0ey2ZR7uSKw
+ zMPwNy+afs0aohkc3rXM3A9NNCAqVbv8yi3R0DPAphaUvk3q2LKrca2lYcibHesf/tJpSX5Oor4E
+ sJPqma/xhr1xC2c/dG+gbidNBGb+pNk/9bYhVw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,48 +88,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, timur@kernel.org, Xiubo.Lee@gmail.com,
- yi.zhang@huawei.com, festevam@gmail.com, s.hauer@pengutronix.de,
- tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
- linux-imx@nxp.com, kernel@pengutronix.de, yukuai@huawei.com,
- shawnguo@kernel.org, xobs@kosagi.com, shengjiu.wang@gmail.com,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Aug 25, 2020 at 09:45:07PM +1000, Jordan Niethe wrote:
+> Update the CPU to ISA Version Mapping document to include Power10 and
+> ISA v3.1.
+> 
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  Documentation/powerpc/isa-versions.rst | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/powerpc/isa-versions.rst
+> index a363d8c1603c..72aff1eaaea1 100644
+> --- a/Documentation/powerpc/isa-versions.rst
+> +++ b/Documentation/powerpc/isa-versions.rst
+> @@ -7,6 +7,7 @@ Mapping of some CPU versions to relevant ISA versions.
+>  ========= ====================================================================
+>  CPU       Architecture version
+>  ========= ====================================================================
+> +Power10   Power ISA v3.1
+>  Power9    Power ISA v3.0B
+>  Power8    Power ISA v2.07
+>  Power7    Power ISA v2.06
+> @@ -32,6 +33,7 @@ Key Features
+>  ========== ==================
+>  CPU        VMX (aka. Altivec)
+>  ========== ==================
+> +Power10    Yes
+>  Power9     Yes
+>  Power8     Yes
+>  Power7     Yes
+> @@ -47,6 +49,7 @@ PPC970     Yes
+>  ========== ====
+>  CPU        VSX
+>  ========== ====
+> +Power10    Yes
+>  Power9     Yes
+>  Power8     Yes
+>  Power7     Yes
+> @@ -62,6 +65,7 @@ PPC970     No
+>  ========== ====================================
+>  CPU        Transactional Memory
+>  ========== ====================================
+> +Power10    Yes
+>  Power9     Yes (* see transactional_memory.txt)
+>  Power8     Yes
+>  Power7     No
 
---twz1s1Hj1O0rHoT0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Huh? 
 
-On Tue, Aug 25, 2020 at 08:05:30PM +0800, Yu Kuai wrote:
-> If memory allocation for 'data' or 'comp' succeed, imx_es8328_probe()
-> doesn't have corresponding kfree() in exception handling. Thus add
-> kfree() for this function implementation.
+Transactional memory has been removed from the architecture for Power10. 
 
-> @@ -151,7 +151,7 @@ static int imx_es8328_probe(struct platform_device *pdev)
->  	comp = devm_kzalloc(dev, 3 * sizeof(*comp), GFP_KERNEL);
->  	if (!comp) {
+	Gabriel
+ 
 
-The allocation is being done using devm_ which means no explicit kfree()
-is needed, the allocation will be automatically unwound when the device
-is unbound.
-
---twz1s1Hj1O0rHoT0
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl9E/9YACgkQJNaLcl1U
-h9By5wf9GsLAxwbWBAbrnKCxyu9PM9ucYMMERlrYpCaWXat0bBzG/zblA6fGcCVd
-UtSA/ON7K+KTqqXX7wYEK1HebOUSfemHcJDZ9OvUfpFkswXpZqkhAmcm4n4wZ0Jo
-ARFpyf9ifjltEU43SfqNs9iwVW6Dj/RXghoQ6/iTh4vzXokipE6IuXiPNnxsJ09g
-SjeN6JJJe0SLYLhPIcrPb7tSIv5ZB5no846dUSUdgpxKN7g0G3nGFeQjYjh63P1u
-ghEhEfq9nUvhjfMZmajC1CtiUjrgf+Y+3eXDByE0p/goE9PH/nQbgTYOsHoSEExC
-BviLGNDWPywLcqIgIv9fsj+ewCVfVg==
-=kko3
------END PGP SIGNATURE-----
-
---twz1s1Hj1O0rHoT0--
