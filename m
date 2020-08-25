@@ -2,61 +2,57 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAE02C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E12C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 05:01:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E74020737
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E74020737
+	by mail.kernel.org (Postfix) with ESMTPS id 98D2920706
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 05:01:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98D2920706
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbGxW0Fz7zDqBK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 14:59:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbH0B64L5zDqSS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 15:01:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=perches.com
- (client-ip=216.40.44.41; helo=smtprelay.hostedemail.com;
+ (client-ip=216.40.44.72; helo=smtprelay.hostedemail.com;
  envelope-from=joe@perches.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0041.hostedemail.com
- [216.40.44.41])
+Received: from smtprelay.hostedemail.com (smtprelay0072.hostedemail.com
+ [216.40.44.72])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbGtS6McFzDq7k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 14:56:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbGv34QGCzDqBv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 14:57:19 +1000 (AEST)
 Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
  [216.40.38.60])
- by smtprelay04.hostedemail.com (Postfix) with ESMTP id B846B180A9F54;
- Tue, 25 Aug 2020 04:56:42 +0000 (UTC)
+ by smtprelay03.hostedemail.com (Postfix) with ESMTP id 57804837F24D;
+ Tue, 25 Aug 2020 04:57:14 +0000 (UTC)
 X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: chalk60_631385f27059
-X-Filterd-Recvd-Size: 5825
+X-HE-Tag: rings03_320fcc527059
+X-Filterd-Recvd-Size: 1890
 Received: from joe-laptop.perches.com (unknown [47.151.133.149])
  (Authenticated sender: joe@perches.com)
  by omf08.hostedemail.com (Postfix) with ESMTPA;
- Tue, 25 Aug 2020 04:56:38 +0000 (UTC)
+ Tue, 25 Aug 2020 04:57:13 +0000 (UTC)
 From: Joe Perches <joe@perches.com>
-To: Jiri Kosina <trivial@kernel.org>, oprofile-list@lists.sf.net,
- linux-ide@vger.kernel.org, drbd-dev@lists.linbit.com,
- linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linaro-mm-sig@lists.linaro.org, intel-gfx@lists.freedesktop.org,
- linux-hwmon@vger.kernel.org, linux-input@vger.kernel.org,
- linux-bcache@vger.kernel.org, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
- linux-nfs@vger.kernel.org
-Subject: [PATCH 00/29] treewide: Convert comma separated statements
-Date: Mon, 24 Aug 2020 21:55:57 -0700
-Message-Id: <cover.1598331148.git.joe@perches.com>
+To: Jiri Kosina <trivial@kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>
+Subject: [PATCH 17/29] fs_enet: Avoid comma separated statements
+Date: Mon, 24 Aug 2020 21:56:14 -0700
+Message-Id: <418850ae2026b293ea6ba3b8b19b8a7f8dfcaf3d.1598331149.git.joe@perches.com>
 X-Mailer: git-send-email 2.26.0
+In-Reply-To: <cover.1598331148.git.joe@perches.com>
+References: <cover.1598331148.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,105 +66,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-block@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-kselftest@vger.kernel.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org
+Cc: Jakub Kicinski <kuba@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are many comma separated statements in the kernel.
-See:https://lore.kernel.org/lkml/alpine.DEB.2.22.394.2008201856110.2524@hadrien/
+Use semicolons and braces.
 
-Convert the comma separated statements that are in if/do/while blocks
-to use braces and semicolons.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Many comma separated statements still exist but those are changes for
-another day.
-
-Joe Perches (29):
-  coding-style.rst: Avoid comma statements
-  alpha: Avoid comma separated statements
-  ia64: Avoid comma separated statements
-  sparc: Avoid comma separated statements
-  ata: Avoid comma separated statements
-  drbd: Avoid comma separated statements
-  lp: Avoid comma separated statements
-  dma-buf: Avoid comma separated statements
-  drm/gma500: Avoid comma separated statements
-  drm/i915: Avoid comma separated statements
-  hwmon: (scmi-hwmon): Avoid comma separated statements
-  Input: MT - Avoid comma separated statements
-  bcache: Avoid comma separated statements
-  media: Avoid comma separated statements
-  mtd: Avoid comma separated statements
-  8390: Avoid comma separated statements
-  fs_enet: Avoid comma separated statements
-  wan: sbni: Avoid comma separated statements
-  s390/tty3270: Avoid comma separated statements
-  scai/arm: Avoid comma separated statements
-  media: atomisp: Avoid comma separated statements
-  video: fbdev: Avoid comma separated statements
-  fuse: Avoid comma separated statements
-  reiserfs: Avoid comma separated statements
-  lib/zlib: Avoid comma separated statements
-  lib: zstd: Avoid comma separated statements
-  ipv6: fib6: Avoid comma separated statements
-  sunrpc: Avoid comma separated statements
-  tools: Avoid comma separated statements
-
- Documentation/process/coding-style.rst        |  17 +
- arch/alpha/kernel/pci_iommu.c                 |   8 +-
- arch/alpha/oprofile/op_model_ev4.c            |  22 +-
- arch/alpha/oprofile/op_model_ev5.c            |   8 +-
- arch/ia64/kernel/smpboot.c                    |   7 +-
- arch/sparc/kernel/smp_64.c                    |   7 +-
- drivers/ata/pata_icside.c                     |  21 +-
- drivers/block/drbd/drbd_receiver.c            |   6 +-
- drivers/char/lp.c                             |   6 +-
- drivers/dma-buf/st-dma-fence.c                |   7 +-
- drivers/gpu/drm/gma500/mdfld_intel_display.c  |  44 ++-
- drivers/gpu/drm/i915/gt/gen8_ppgtt.c          |   8 +-
- drivers/gpu/drm/i915/gt/intel_gt_requests.c   |   6 +-
- .../gpu/drm/i915/gt/selftest_workarounds.c    |   6 +-
- drivers/gpu/drm/i915/intel_runtime_pm.c       |   6 +-
- drivers/hwmon/scmi-hwmon.c                    |   6 +-
- drivers/input/input-mt.c                      |  11 +-
- drivers/md/bcache/bset.c                      |  12 +-
- drivers/md/bcache/sysfs.c                     |   6 +-
- drivers/media/i2c/msp3400-kthreads.c          |  12 +-
- drivers/media/pci/bt8xx/bttv-cards.c          |   6 +-
- drivers/media/pci/saa7134/saa7134-video.c     |   7 +-
- drivers/mtd/devices/lart.c                    |  10 +-
- drivers/net/ethernet/8390/axnet_cs.c          |  19 +-
- drivers/net/ethernet/8390/lib8390.c           |  14 +-
- drivers/net/ethernet/8390/pcnet_cs.c          |   6 +-
- .../ethernet/freescale/fs_enet/fs_enet-main.c |  11 +-
- drivers/net/wan/sbni.c                        | 101 +++---
- drivers/s390/char/tty3270.c                   |   6 +-
- drivers/scsi/arm/cumana_2.c                   |  19 +-
- drivers/scsi/arm/eesox.c                      |   9 +-
- drivers/scsi/arm/powertec.c                   |   9 +-
- .../media/atomisp/pci/atomisp_subdev.c        |   6 +-
- drivers/video/fbdev/tgafb.c                   |  12 +-
- fs/fuse/dir.c                                 |  24 +-
- fs/reiserfs/fix_node.c                        |  36 ++-
- lib/zlib_deflate/deftree.c                    |  49 ++-
- lib/zstd/compress.c                           | 120 ++++---
- lib/zstd/fse_compress.c                       |  24 +-
- lib/zstd/huf_compress.c                       |   6 +-
- net/ipv6/ip6_fib.c                            |  12 +-
- net/sunrpc/sysctl.c                           |   6 +-
- tools/lib/subcmd/help.c                       |  10 +-
- tools/power/cpupower/utils/cpufreq-set.c      |  14 +-
- tools/testing/selftests/vm/gup_benchmark.c    |  18 +-
- tools/testing/selftests/vm/userfaultfd.c      | 296 +++++++++++-------
- 46 files changed, 694 insertions(+), 382 deletions(-)
-
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index bf846b42bc74..78e008b81374 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -562,10 +562,13 @@ fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			BD_ENET_TX_TC);
+ 		CBDS_SC(bdp, BD_ENET_TX_READY);
+ 
+-		if ((CBDR_SC(bdp) & BD_ENET_TX_WRAP) == 0)
+-			bdp++, curidx++;
+-		else
+-			bdp = fep->tx_bd_base, curidx = 0;
++		if ((CBDR_SC(bdp) & BD_ENET_TX_WRAP) == 0) {
++			bdp++;
++			curidx++;
++		} else {
++			bdp = fep->tx_bd_base;
++			curidx = 0;
++		}
+ 
+ 		len = skb_frag_size(frag);
+ 		CBDW_BUFADDR(bdp, skb_frag_dma_map(fep->dev, frag, 0, len,
 -- 
 2.26.0
 
