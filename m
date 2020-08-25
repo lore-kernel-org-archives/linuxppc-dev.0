@@ -2,71 +2,65 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 809A6C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:09:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52B9FC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:14:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E15B220706
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:09:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E15B220706
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 00A6C20706
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 12:14:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NtoEFfPQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00A6C20706
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbSTH6qvZzDqWb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:09:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbSbM5d84zDqSg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:14:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=NtoEFfPQ; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbSQQ31T5zDqT3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:06:35 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BbSQF70Pmz9txtG;
- Tue, 25 Aug 2020 14:06:29 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8AaT7tXaia4q; Tue, 25 Aug 2020 14:06:29 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BbSQF5K6zz9txtB;
- Tue, 25 Aug 2020 14:06:29 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0E4628B814;
- Tue, 25 Aug 2020 14:06:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 0TBW-9nZB4Hz; Tue, 25 Aug 2020 14:06:30 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 491A78B812;
- Tue, 25 Aug 2020 14:06:30 +0200 (CEST)
-Subject: Re: [PATCH v5 5/8] powerpc/watchpoint: Fix exception handling for
- CONFIG_HAVE_HW_BREAKPOINT=N
-To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, christophe.leroy@c-s.fr
-References: <20200825043617.1073634-1-ravi.bangoria@linux.ibm.com>
- <20200825043617.1073634-6-ravi.bangoria@linux.ibm.com>
- <91d34b89-603a-fddc-ea0f-53a79b287eed@csgroup.eu>
- <1e706137-3de9-a713-5a86-48fbc5e6f740@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <aeff0680-d260-26ab-9f32-ac6ac1df2df3@csgroup.eu>
-Date: Tue, 25 Aug 2020 14:06:21 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.11.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbSXF2b1CzDq97
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 22:11:40 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id B355920706;
+ Tue, 25 Aug 2020 12:11:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1598357498;
+ bh=lLcZy5Wo6jWvC7rPiDhmximohADFk1jbAXM/KoH5hVQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=NtoEFfPQ4QExLDKzsR29XM4M/Hv+Kf1cudKSei+JdGaz0fTh1snxnWmUmgHiCwQJi
+ WPgVVcN4Pu2OE2jRcg8B69zc0BULmNtSPu9Z/m7CPUYkS5AZ7faPAbV5PL4t7IyHXy
+ 6yW0DhQ13Ay17zkd3EdsQTxsjBq5yQ242NBffaf4=
+Date: Tue, 25 Aug 2020 13:11:02 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Yu Kuai <yukuai3@huawei.com>
+Subject: Re: [PATCH 1/2] ASoC: fsl: imx-es8328: add missing kfree() call in
+ imx_es8328_probe()
+Message-ID: <20200825121102.GF5379@sirena.org.uk>
+References: <20200825120531.1479304-1-yukuai3@huawei.com>
+ <20200825120531.1479304-2-yukuai3@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <1e706137-3de9-a713-5a86-48fbc5e6f740@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="twz1s1Hj1O0rHoT0"
+Content-Disposition: inline
+In-Reply-To: <20200825120531.1479304-2-yukuai3@huawei.com>
+X-Cookie: Don't get to bragging.
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,63 +72,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, pedromfc@linux.ibm.com, linux-kernel@vger.kernel.org,
- paulus@samba.org, jniethe5@gmail.com, rogealve@linux.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, timur@kernel.org, Xiubo.Lee@gmail.com,
+ yi.zhang@huawei.com, festevam@gmail.com, s.hauer@pengutronix.de,
+ tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com,
+ linux-imx@nxp.com, kernel@pengutronix.de, yukuai@huawei.com,
+ shawnguo@kernel.org, xobs@kosagi.com, shengjiu.wang@gmail.com,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--twz1s1Hj1O0rHoT0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Le 25/08/2020 à 13:07, Ravi Bangoria a écrit :
-> Hi Christophe,
-> 
->>> diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c 
->>> b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
->>> index 57a0ab822334..866597b407bc 100644
->>> --- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
->>> +++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
->>> @@ -286,11 +286,16 @@ long ppc_del_hwdebug(struct task_struct *child, 
->>> long data)
->>>       }
->>>       return ret;
->>>   #else /* CONFIG_HAVE_HW_BREAKPOINT */
->>> +    if (child->thread.hw_brk[data - 1].flags & HW_BRK_FLAG_DISABLED)
->>
->> I think child->thread.hw_brk[data - 1].flags & HW_BRK_FLAG_DISABLED 
->> should go around additionnal ()
-> 
-> Not sure I follow.
+On Tue, Aug 25, 2020 at 08:05:30PM +0800, Yu Kuai wrote:
+> If memory allocation for 'data' or 'comp' succeed, imx_es8328_probe()
+> doesn't have corresponding kfree() in exception handling. Thus add
+> kfree() for this function implementation.
 
-Neither do I ....
+> @@ -151,7 +151,7 @@ static int imx_es8328_probe(struct platform_device *pdev)
+>  	comp = devm_kzalloc(dev, 3 * sizeof(*comp), GFP_KERNEL);
+>  	if (!comp) {
 
-I thought that GCC would emit a warning for that, but in fact it only 
-emit warnings for things like:
+The allocation is being done using devm_ which means no explicit kfree()
+is needed, the allocation will be automatically unwound when the device
+is unbound.
 
-	if (flags & HW_BRK_FLAG_DISABLED == HW_BRK_FLAG_DISABLED)
+--twz1s1Hj1O0rHoT0
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> 
->>
->>> +        goto del;
->>> +
->>>       if (child->thread.hw_brk[data - 1].address == 0)
->>>           return -ENOENT;
->>
->> What about replacing the above if by:
->>      if (!(child->thread.hw_brk[data - 1].flags) & 
->> HW_BRK_FLAG_DISABLED) &&
->>          child->thread.hw_brk[data - 1].address == 0)
->>          return -ENOENT;
-> okay.. that's more compact.
-> 
-> But more importantly, what I wanted to know is whether 
-> CONFIG_HAVE_HW_BREAKPOINT
-> is set or not in production/distro builds for 8xx. Because I see it's 
-> not set in
-> 8xx defconfigs.
+-----BEGIN PGP SIGNATURE-----
 
-Yes in our production configs with have CONFIG_PERF_EVENTS, that implies 
-CONFIG_HAVE_HW_BREAKPOINT
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl9E/9YACgkQJNaLcl1U
+h9By5wf9GsLAxwbWBAbrnKCxyu9PM9ucYMMERlrYpCaWXat0bBzG/zblA6fGcCVd
+UtSA/ON7K+KTqqXX7wYEK1HebOUSfemHcJDZ9OvUfpFkswXpZqkhAmcm4n4wZ0Jo
+ARFpyf9ifjltEU43SfqNs9iwVW6Dj/RXghoQ6/iTh4vzXokipE6IuXiPNnxsJ09g
+SjeN6JJJe0SLYLhPIcrPb7tSIv5ZB5no846dUSUdgpxKN7g0G3nGFeQjYjh63P1u
+ghEhEfq9nUvhjfMZmajC1CtiUjrgf+Y+3eXDByE0p/goE9PH/nQbgTYOsHoSEExC
+BviLGNDWPywLcqIgIv9fsj+ewCVfVg==
+=kko3
+-----END PGP SIGNATURE-----
 
-Christophe
+--twz1s1Hj1O0rHoT0--
