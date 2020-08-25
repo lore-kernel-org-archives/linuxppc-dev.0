@@ -2,66 +2,81 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A0ADC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 13:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1212CC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 13:29:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DC6220639
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 13:25:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DC6220639
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 23BCF20639
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 13:29:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zvala3I9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23BCF20639
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbV9g31KyzDqVm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 23:25:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbVG24MmzzDqW8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 23:29:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::343;
+ helo=mail-ot1-x343.google.com; envelope-from=jniethe5@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=Zvala3I9; dkim-atps=neutral
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com
+ [IPv6:2607:f8b0:4864:20::343])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbTqc3wKqzDqRH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 23:10:04 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4BbTqV26QQz9tyVh;
- Tue, 25 Aug 2020 15:09:58 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 5ZdoqaRg7J6E; Tue, 25 Aug 2020 15:09:58 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4BbTqV0wwFz9tyVY;
- Tue, 25 Aug 2020 15:09:58 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 91E588B812;
- Tue, 25 Aug 2020 15:09:59 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uqvT5x_W3ots; Tue, 25 Aug 2020 15:09:59 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4FA3F8B81B;
- Tue, 25 Aug 2020 15:09:59 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2F25565D37; Tue, 25 Aug 2020 13:09:59 +0000 (UTC)
-Message-Id: <a89a09146fc464a54e196d92f7a241cc88030e12.1598360789.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1598360789.git.christophe.leroy@csgroup.eu>
-References: <cover.1598360789.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v11 5/5] powerpc/vdso: Provide __kernel_clock_gettime64() on
- vdso32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- nathanl@linux.ibm.com, anton@ozlabs.org
-Date: Tue, 25 Aug 2020 13:09:59 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbV1d4S27zDqSg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 23:18:44 +1000 (AEST)
+Received: by mail-ot1-x343.google.com with SMTP id h16so10308400oti.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 06:18:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=G0nr2Rnp+JRA+sjbGO6qBW7oW4QCJUBcgVXTMTOZTT0=;
+ b=Zvala3I9GALjR8IXJLy6GMX803AkKrYajm9x1/Hk0Uh7qXBpgHqNX01WqAd4KoLwOg
+ QQNVgrmf3jZnG4Bb5rohR8EPBtExqsAfN/wu8cYCapesWZDpwrW7oCPxTG1Wtv3SkQuw
+ LcuJdUZUtCZN7ox6D3dq5UoWSB7mYvSDM45bvijt0sOCNdSIy+Lvn78n2M3pkF0ocwhI
+ 4MsDf7ZTmCAQjzkG+k3h7sEtTbLuuLm9u5zZdpm0jv1gQMCSK4LKgEy/6ki+nChBvqYj
+ PzRXPXVhr0CcekwnD+9bkDHiOP9Fog3jmubLEnk8+jonTpMhqvPX5s56w2x5ToVR3J6s
+ eRLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=G0nr2Rnp+JRA+sjbGO6qBW7oW4QCJUBcgVXTMTOZTT0=;
+ b=HXGOi/Y8S9vgzokd+mvRnNfTMSuE9MxrCEl38s02AupqtbdmYkdT63zsEXSNRZ8bde
+ HAOGXmXJtbVqqeIpY3KeO95PCoyoJgHYitGVdy1oynL93kAyXf9vqgGW/UZ3hwKR+PYn
+ APCzNkVGiVur4p9T10hZJ4V0Ao8UE0iLn7ntRuwgXL3e1VsLIvPdgAuNfJ1c+H4myBpB
+ 6A4fEvpB/VB1tSIagPvFfNIaZVqGeUbY/mnKPGGe/kjYnT2t7x4ZJyyZmC7tD8H91Auh
+ UWfNjinCjgDw2lsSZq6bmDLm73LY84uNfgBHT2ztX/3z9E2EQWoVGPUwgIk2jy0TwDYf
+ YKBA==
+X-Gm-Message-State: AOAM530LfyeGhCQst84GNl+O/ZIEQCuE0GoDJTw1YReZuQRROlsSfTJp
+ 0m45l+jx50Qd1HZyVq37DDlP6b2nvmoQz6XjHi/zHuDNoMA=
+X-Google-Smtp-Source: ABdhPJzaH0mEUIkdGw9gBxdO4W3phLP52jbBCR4uJ0dLhCwArlEzNs3bN/kNnUENS307WXv/io+zkZ5jYSjfvYKNLuc=
+X-Received: by 2002:a05:6830:1283:: with SMTP id
+ z3mr6558318otp.51.1598361518607; 
+ Tue, 25 Aug 2020 06:18:38 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200825114507.13297-1-jniethe5@gmail.com>
+ <20200825124120.GA815@lt-gp.iram.es>
+In-Reply-To: <20200825124120.GA815@lt-gp.iram.es>
+From: Jordan Niethe <jniethe5@gmail.com>
+Date: Tue, 25 Aug 2020 23:18:27 +1000
+Message-ID: <CACzsE9pUunmsZJjfkjn=E=1BFiq0OH1h1VDQgxpbBmDFRfKkLA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Update documentation of ISA versions for Power10
+To: Gabriel Paubert <paubert@iram.es>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,73 +88,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
- luto@kernel.org, tglx@linutronix.de, vincenzo.frascino@arm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provides __kernel_clock_gettime64() on vdso32. This is the
-64 bits version of __kernel_clock_gettime() which is
-y2038 compliant.
+On Tue, Aug 25, 2020 at 10:41 PM Gabriel Paubert <paubert@iram.es> wrote:
+>
+> On Tue, Aug 25, 2020 at 09:45:07PM +1000, Jordan Niethe wrote:
+> > Update the CPU to ISA Version Mapping document to include Power10 and
+> > ISA v3.1.
+> >
+> > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> > ---
+> >  Documentation/powerpc/isa-versions.rst | 4 ++++
+> >  1 file changed, 4 insertions(+)
+> >
+> > diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/powerpc/isa-versions.rst
+> > index a363d8c1603c..72aff1eaaea1 100644
+> > --- a/Documentation/powerpc/isa-versions.rst
+> > +++ b/Documentation/powerpc/isa-versions.rst
+> > @@ -7,6 +7,7 @@ Mapping of some CPU versions to relevant ISA versions.
+> >  ========= ====================================================================
+> >  CPU       Architecture version
+> >  ========= ====================================================================
+> > +Power10   Power ISA v3.1
+> >  Power9    Power ISA v3.0B
+> >  Power8    Power ISA v2.07
+> >  Power7    Power ISA v2.06
+> > @@ -32,6 +33,7 @@ Key Features
+> >  ========== ==================
+> >  CPU        VMX (aka. Altivec)
+> >  ========== ==================
+> > +Power10    Yes
+> >  Power9     Yes
+> >  Power8     Yes
+> >  Power7     Yes
+> > @@ -47,6 +49,7 @@ PPC970     Yes
+> >  ========== ====
+> >  CPU        VSX
+> >  ========== ====
+> > +Power10    Yes
+> >  Power9     Yes
+> >  Power8     Yes
+> >  Power7     Yes
+> > @@ -62,6 +65,7 @@ PPC970     No
+> >  ========== ====================================
+> >  CPU        Transactional Memory
+> >  ========== ====================================
+> > +Power10    Yes
+> >  Power9     Yes (* see transactional_memory.txt)
+> >  Power8     Yes
+> >  Power7     No
+>
+> Huh?
+>
+> Transactional memory has been removed from the architecture for Power10.
+Yeah you're right, I confused myself looking at CPU_FTRS_POWER10...
+#define CPU_FTRS_POWER10 (CPU_FTR_LWSYNC | \
+        CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
+        CPU_FTR_MMCRA | CPU_FTR_SMT | \
+        CPU_FTR_COHERENT_ICACHE | \
+        CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+        CPU_FTR_DSCR | \
+        CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+        CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+        CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
+        CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_ARCH_31 | \
+        CPU_FTR_DAWR | CPU_FTR_DAWR1)
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/vdso32/gettimeofday.S  | 9 +++++++++
- arch/powerpc/kernel/vdso32/vdso32.lds.S    | 1 +
- arch/powerpc/kernel/vdso32/vgettimeofday.c | 6 ++++++
- 3 files changed, 16 insertions(+)
+CPU_FTR_TM_COMP should not be in there.
 
-diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index fd7b01c51281..a6e29f880e0e 100644
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -35,6 +35,15 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	cvdso_call __c_kernel_clock_gettime
- V_FUNCTION_END(__kernel_clock_gettime)
- 
-+/*
-+ * Exact prototype of clock_gettime64()
-+ *
-+ * int __kernel_clock_gettime64(clockid_t clock_id, struct __timespec64 *ts);
-+ *
-+ */
-+V_FUNCTION_BEGIN(__kernel_clock_gettime64)
-+	cvdso_call __c_kernel_clock_gettime64
-+V_FUNCTION_END(__kernel_clock_gettime64)
- 
- /*
-  * Exact prototype of clock_getres()
-diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-index 4c985467a668..582c5b046cc9 100644
---- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-@@ -148,6 +148,7 @@ VERSION
- #ifndef CONFIG_PPC_BOOK3S_601
- 		__kernel_gettimeofday;
- 		__kernel_clock_gettime;
-+		__kernel_clock_gettime64;
- 		__kernel_clock_getres;
- 		__kernel_time;
- 		__kernel_get_tbfreq;
-diff --git a/arch/powerpc/kernel/vdso32/vgettimeofday.c b/arch/powerpc/kernel/vdso32/vgettimeofday.c
-index 0b9ab4c22ef2..f7f71fecf4ed 100644
---- a/arch/powerpc/kernel/vdso32/vgettimeofday.c
-+++ b/arch/powerpc/kernel/vdso32/vgettimeofday.c
-@@ -11,6 +11,12 @@ int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
- 	return __cvdso_clock_gettime32_data(vd, clock, ts);
- }
- 
-+int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
-+			       const struct vdso_data *vd)
-+{
-+	return __cvdso_clock_gettime_data(vd, clock, ts);
-+}
-+
- int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz,
- 			    const struct vdso_data *vd)
- {
--- 
-2.25.0
-
+>
+>         Gabriel
+>
+>
