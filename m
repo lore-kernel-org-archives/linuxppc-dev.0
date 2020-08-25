@@ -2,49 +2,86 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E2DFC433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:46:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E06FDC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 23:21:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6E2120706
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:46:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6E2120706
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id D9BC02075F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 23:21:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="g17iV+Lc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D9BC02075F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbkcB5Y3NzDqZC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 08:46:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BblNl3cWTzDqYn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 09:21:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=nicoleotsuka@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=canonical.com
- (client-ip=91.189.89.112; helo=youngberry.canonical.com;
- envelope-from=cascardo@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=canonical.com
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=g17iV+Lc; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbkZB6kyCzDqXl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 08:44:18 +1000 (AEST)
-Received: from 1.general.cascardo.us.vpn ([10.172.70.58] helo=mussarela)
- by youngberry.canonical.com with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
- (envelope-from <cascardo@canonical.com>)
- id 1kAhfp-0006AU-Ay; Tue, 25 Aug 2020 22:44:13 +0000
-Date: Tue, 25 Aug 2020 19:44:08 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-To: stable@vger.kernel.org
-Subject: Please apply commit 0828137e8f16 ("powerpc/64s: Don't init FSCR_DSCR
- in __init_FSCR()") to v4.14.y, v4.19.y, v5.4.y, v5.7.y
-Message-ID: <20200825224408.GB6060@mussarela>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BblLZ3VSbzDqX6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 09:19:16 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id l191so87597pgd.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 16:19:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=nzT4cIv5aZloZUa85ooGLcuJKku+lTzXEIFwdhhhrM4=;
+ b=g17iV+Lc6aSBOLe+PXWahWJW6Y2WovRbdTAFwXkgWGEBHeis8BwaGJ1/CrBTJ6wOxj
+ UKRTRHo+JKIkjHdtn9pMcUYhCibnMervY6vIJWwS4RQlE3LSjVqmLUTaL39UbAGj4g6L
+ 0j0826j4CHEZnT2exq6W7xhcrJUuL+xeGwEr2VpfFjtGbo9lANRsknS4EVWyKfxKl7Il
+ /yIG9aDg8s8XYB33HFnAKY/2MhxQ2vY2S/m+geHEPThOE90LQ6W/H7XBdg78bySpsa/G
+ t/9acHQaOTqhr0MpHdKlJO7fxd8cXHOELXVJXXUfDBije2GdrgU/aZZQogR8XNVpmWFo
+ c4uQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=nzT4cIv5aZloZUa85ooGLcuJKku+lTzXEIFwdhhhrM4=;
+ b=ii1CqobwV8DEjEouXwFuPB+p6DrfpndzBBx81NHlVnoj2qhS3LJLq+zlm0IHOxlI1V
+ p68V+7mfEvRU4qR34Bv7OPXwi0zKKCznP6C14X5b4mhwVwxdqu4VePBB0X0+6rG3xF/5
+ O+Ov+5a4bXoBnSOg/xF9kynX2Eg/emsH0MsmqmiIQXKiE/Ka9Jkck8uMH16uwUqwHauS
+ psbXOEKKsRGTKWjAH84UE9ke27OUOQaINRbp2SBpVL8bO+rd8dEYxXX0bYtey5qsF6d4
+ WwUlH5DW7QkRirVJmhouPj/GYUU3eXtmQkqvaDPxyt5Vkd3FmpFLwlIx0mb20opvVxLU
+ jDHA==
+X-Gm-Message-State: AOAM530aw5SYzQNcsshNqraIDGvmemhdKyDYjn4zyDkuatu3aNacN6j9
+ d7amdkls5xFaVPi1iGgNhlw=
+X-Google-Smtp-Source: ABdhPJyK06Dvh5ZLh8ZEvQMG4jqMYYcFE+LKTmieWcScqEbOmexcuH0IBvKor0u/mjocM4FCOCK/kw==
+X-Received: by 2002:a63:4545:: with SMTP id u5mr8237031pgk.229.1598397551754; 
+ Tue, 25 Aug 2020 16:19:11 -0700 (PDT)
+Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id v78sm344700pfc.121.2020.08.25.16.19.10
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 25 Aug 2020 16:19:11 -0700 (PDT)
+Date: Tue, 25 Aug 2020 16:19:00 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Niklas Schnelle <schnelle@linux.ibm.com>
+Subject: Re: [RFT][PATCH 0/7] Avoid overflow at boundary_size
+Message-ID: <20200825231900.GA4726@Asurada-Nvidia>
+References: <20200820231923.23678-1-nicoleotsuka@gmail.com>
+ <4321af30-9554-6897-5281-05afd88f2631@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4321af30-9554-6897-5281-05afd88f2631@linux.ibm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,19 +93,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sashal@kernel.org, linuxppc-dev@lists.ozlabs.org,
- gregkh@linuxfoundation.org
+Cc: linux-ia64@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, hch@lst.de,
+ sfr@canb.auug.org.au, deller@gmx.de, x86@kernel.org, borntraeger@de.ibm.com,
+ mingo@redhat.com, mattst88@gmail.com, fenghua.yu@intel.com, gor@linux.ibm.com,
+ linux-s390@vger.kernel.org, hca@linux.ibm.com, ink@jurassic.park.msu.ru,
+ tglx@linutronix.de, gerald.schaefer@linux.ibm.com, rth@twiddle.net,
+ tony.luck@intel.com, linux-parisc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After commit 912c0a7f2b5daa3cbb2bc10f303981e493de73bd ("powerpc/64s: Save FSCR
-to init_task.thread.fscr after feature init"), which has been applied to the
-referred branches, when userspace sets the user DSCR MSR, it won't be inherited
-or restored during context switch, because the facility unavailable interrupt
-won't trigger.
+Hi Niklas,
 
-Applying 0828137e8f16721842468e33df0460044a0c588b ("powerpc/64s: Don't init
-FSCR_DSCR in __init_FSCR()") will fix it.
+On Tue, Aug 25, 2020 at 12:16:27PM +0200, Niklas Schnelle wrote:
+> On 8/21/20 1:19 AM, Nicolin Chen wrote:
+> > We are expending the default DMA segmentation boundary to its
+> > possible maximum value (ULONG_MAX) to indicate that a device
+> > doesn't specify a boundary limit. So all dma_get_seg_boundary
+> > callers should take a precaution with the return values since
+> > it would easily get overflowed.
+> > 
+> > I scanned the entire kernel tree for all the existing callers
+> > and found that most of callers may get overflowed in two ways:
+> > either "+ 1" or passing it to ALIGN() that does "+ mask".
+> > 
+> > According to kernel defines:
+> >     #define ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
+> >     #define ALIGN(x, a)	ALIGN_MASK(x, (typeof(x))(a) - 1)
+> > 
+> > We can simplify the logic here:
+> >   ALIGN(boundary + 1, 1 << shift) >> shift
+> > = ALIGN_MASK(b + 1, (1 << s) - 1) >> s
+> > = {[b + 1 + (1 << s) - 1] & ~[(1 << s) - 1]} >> s
+> > = [b + 1 + (1 << s) - 1] >> s
+> > = [b + (1 << s)] >> s
+> > = (b >> s) + 1
+> > 
+> > So this series of patches fix the potential overflow with this
+> > overflow-free shortcut.
+ 
+> haven't seen any other feedback from other maintainers,
 
-Cascardo.
+I am wondering this too...whether I sent correctly or not.
+
+> so I guess you will resend this?
+
+Do I need to? Though I won't mind doing so if it's necessary..
+
+> On first glance it seems to make sense.
+> I'm a little confused why it is only a "potential overflow"
+> while this part
+> 
+> "We are expending the default DMA segmentation boundary to its
+>  possible maximum value (ULONG_MAX) to indicate that a device
+>  doesn't specify a boundary limit"
+> 
+> sounds to me like ULONG_MAX is actually used, does that
+> mean there are currently no devices which do not specify a
+> boundary limit?
+
+Sorry for the confusion. We actually applied ULONG_MAX change
+last week but reverted it right after, due to a bug report at
+one of these "potential" overflows. So at this moment the top
+of the tree doesn't set default boundary to ULONG_MAX yet.
+
+Thanks
+Nic
