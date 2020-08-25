@@ -2,96 +2,87 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00A67C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 17:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2860EC433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:24:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 39B3521775
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 17:29:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F191F2075E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 22:24:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="heDK+YX+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39B3521775
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz header.b="XD+Xf2uf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F191F2075E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=alliedtelesis.co.nz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbbZS1MnXzDqZG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 03:29:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bbk7B3WzVzDqYt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 08:24:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=drt@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+ smtp.mailfrom=alliedtelesis.co.nz (client-ip=202.36.163.20;
+ helo=gate2.alliedtelesis.co.nz;
+ envelope-from=chris.packham@alliedtelesis.co.nz; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=alliedtelesis.co.nz
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=heDK+YX+; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ unprotected) header.d=alliedtelesis.co.nz header.i=@alliedtelesis.co.nz
+ header.a=rsa-sha256 header.s=mail181024 header.b=XD+Xf2uf; 
+ dkim-atps=neutral
+Received: from gate2.alliedtelesis.co.nz (gate2.alliedtelesis.co.nz
+ [202.36.163.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbbX034RlzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 03:26:54 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07PH1vaG188263; Tue, 25 Aug 2020 13:26:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject : date : message-id; s=pp1;
- bh=FOunzJ/TVxVFN90AVQ13n0/U/0TJTXV7sLNEwjcOXxY=;
- b=heDK+YX+g6bTLSCFbvf3h4XTNfnJktraDL/26ytjdi/oLw4DYZTfqT9JwAhm0snggfJI
- ZD6xrkSbwgY9whfvOrJSTflggVdOMqwobgPTtr7xqfDT6fRFdWv71hQ/RYgciI53BF9B
- wGF4dtJ24SrLf1HROOVMQ+ZTlRQKudo6elkSmdJJcaapxr5dzwGRqeykVYJPt4Is9kB6
- uY1nCy+jzgk61B5rezf0iqP/PhWs7wkoiztTa3TXo+CBPC18tpfRi53WYarFVvhl9+Up
- 5J2kg31X4Z7WjoDgXU2vcwHyOqLA8/UHKyZ0BceyhdMoZB2K6e2yzxt8/aBVODNPxKwZ yA== 
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0b-001b2d01.pphosted.com with ESMTP id 3356d917f3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 Aug 2020 13:26:49 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07PHHnTJ025476;
- Tue, 25 Aug 2020 17:26:49 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28]) by ppma02dal.us.ibm.com with ESMTP id 332utua0jq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 Aug 2020 17:26:49 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07PHQm6V32178518
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 25 Aug 2020 17:26:48 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80891AE062;
- Tue, 25 Aug 2020 17:26:48 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B47FAE05F;
- Tue, 25 Aug 2020 17:26:48 +0000 (GMT)
-Received: from ltcalpine2-lp16.aus.stglabs.ibm.com (unknown [9.40.195.199])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 25 Aug 2020 17:26:47 +0000 (GMT)
-From: Dany Madden <drt@linux.ibm.com>
-To: davem@davemloft.net
-Subject: [PATCH net v3] ibmvnic fix NULL tx_pools and rx_tools issue at
- do_reset
-Date: Tue, 25 Aug 2020 13:26:41 -0400
-Message-Id: <20200825172641.806912-1-drt@linux.ibm.com>
-X-Mailer: git-send-email 2.18.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-25_06:2020-08-25,
- 2020-08-25 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- clxscore=1015 impostorscore=0 spamscore=0 phishscore=0 adultscore=0
- bulkscore=0 malwarescore=0 mlxscore=0 mlxlogscore=999 suspectscore=1
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008250124
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bbk4y329PzDqXq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 08:22:26 +1000 (AEST)
+Received: from mmarshal3.atlnz.lc (mmarshal3.atlnz.lc [10.32.18.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by gate2.alliedtelesis.co.nz (Postfix) with ESMTPS id 22E8E8011F;
+ Wed, 26 Aug 2020 10:22:23 +1200 (NZST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alliedtelesis.co.nz;
+ s=mail181024; t=1598394143;
+ bh=txgr+HWFTXiMGfvnsvIrOEATORmNGcS3KEA7Im9+DJg=;
+ h=From:To:CC:Subject:Date:In-Reply-To;
+ b=XD+Xf2uf56iDBSz163/qHibLMx/CmVB3YrWGZ8O3uJqow92w3cYJyXmKpG8dtu+tN
+ A8QA335zJ5f5r7o7FcQ007WCrsad0M45ehKXq4csBu3XS4+go1XzXYyf3QPphk/edy
+ pd6UsedaX77AFh542ouNs2ffQ0fbP0Tvqmc0VtqHzRRt6BICJ6qKuwhIk4O3PV0o10
+ 45X8j8aPud4jRuiV7Gqo2EXcELYFuPoz4C8DqclXKO9TrJ8VLicxyUmWaJtdebijfm
+ Mm34AYBMmM5tNIMzW2TqBlLz35x8RyfB4o6maBzY7JD9Fmb4P54zGMU8xaTvGtdTwc
+ PVyQiK25ydKwA==
+Received: from svr-chch-ex1.atlnz.lc (Not Verified[10.32.16.77]) by
+ mmarshal3.atlnz.lc with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5f458f1f0000>; Wed, 26 Aug 2020 10:22:23 +1200
+Received: from svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8:409d:36f5:8899:92e8)
+ by svr-chch-ex1.atlnz.lc (2001:df5:b000:bc8:409d:36f5:8899:92e8) with
+ Microsoft SMTP Server (TLS) id 15.0.1497.2; Wed, 26 Aug 2020 10:22:22 +1200
+Received: from svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8]) by
+ svr-chch-ex1.atlnz.lc ([fe80::409d:36f5:8899:92e8%12]) with mapi id
+ 15.00.1497.006; Wed, 26 Aug 2020 10:22:22 +1200
+From: Chris Packham <Chris.Packham@alliedtelesis.co.nz>
+To: Heiner Kallweit <hkallweit1@gmail.com>, "broonie@kernel.org"
+ <broonie@kernel.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>
+Subject: Re: fsl_espi errors on v5.7.15
+Thread-Topic: fsl_espi errors on v5.7.15
+Thread-Index: AQHWceVnik7XsBYbp0S+yHVGh1hdQak2WMaAgAQdSwCAAz9MAIAAfdcAgAD5u4CAB+sMAIAAYfwAgAA6JQCAAPtUgA==
+Date: Tue, 25 Aug 2020 22:22:21 +0000
+Message-ID: <31e91237-4f87-66da-dac3-2304779e5749@alliedtelesis.co.nz>
+In-Reply-To: <f97dc3af-d1f0-6974-ec2d-ace8d7e73993@gmail.com>
+Accept-Language: en-NZ, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.32.1.11]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <DD6E89351CA59E48A9BFF5130A4A7D27@atlnz.lc>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,83 +94,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dany Madden <drt@linux.ibm.com>, netdev@vger.kernel.org,
- Mingming Cao <mmc@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mingming Cao <mmc@linux.vnet.ibm.com>
-
-At the time of do_rest, ibmvnic tries to re-initalize the tx_pools
-and rx_pools to avoid re-allocating the long term buffer. However
-there is a window inside do_reset that the tx_pools and
-rx_pools were freed before re-initialized making it possible to deference
-null pointers.
-
-This patch fix this issue by always check the tx_pool
-and rx_pool are not NULL after ibmvnic_login. If so, re-allocating
-the pools. This will avoid getting into calling reset_tx/rx_pools with
-NULL adapter tx_pools/rx_pools pointer. Also add null pointer check in
-reset_tx_pools and reset_rx_pools to safe handle NULL pointer case.
-
-Signed-off-by: Mingming Cao <mmc@linux.vnet.ibm.com>
-Signed-off-by: Dany Madden <drt@linux.ibm.com>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 5afb3c9c52d2..d3a774331afc 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -479,6 +479,9 @@ static int reset_rx_pools(struct ibmvnic_adapter *adapter)
- 	int i, j, rc;
- 	u64 *size_array;
- 
-+	if (!adapter->rx_pool)
-+		return -1;
-+
- 	size_array = (u64 *)((u8 *)(adapter->login_rsp_buf) +
- 		be32_to_cpu(adapter->login_rsp_buf->off_rxadd_buff_size));
- 
-@@ -649,6 +652,9 @@ static int reset_tx_pools(struct ibmvnic_adapter *adapter)
- 	int tx_scrqs;
- 	int i, rc;
- 
-+	if (!adapter->tx_pool)
-+		return -1;
-+
- 	tx_scrqs = be32_to_cpu(adapter->login_rsp_buf->num_txsubm_subcrqs);
- 	for (i = 0; i < tx_scrqs; i++) {
- 		rc = reset_one_tx_pool(adapter, &adapter->tso_pool[i]);
-@@ -2011,7 +2017,10 @@ static int do_reset(struct ibmvnic_adapter *adapter,
- 		    adapter->req_rx_add_entries_per_subcrq !=
- 		    old_num_rx_slots ||
- 		    adapter->req_tx_entries_per_subcrq !=
--		    old_num_tx_slots) {
-+		    old_num_tx_slots ||
-+		    !adapter->rx_pool ||
-+		    !adapter->tso_pool ||
-+		    !adapter->tx_pool) {
- 			release_rx_pools(adapter);
- 			release_tx_pools(adapter);
- 			release_napi(adapter);
-@@ -2024,10 +2033,14 @@ static int do_reset(struct ibmvnic_adapter *adapter,
- 		} else {
- 			rc = reset_tx_pools(adapter);
- 			if (rc)
-+				netdev_dbg(adapter->netdev, "reset tx pools failed (%d)\n",
-+						rc);
- 				goto out;
- 
- 			rc = reset_rx_pools(adapter);
- 			if (rc)
-+				netdev_dbg(adapter->netdev, "reset rx pools failed (%d)\n",
-+						rc);
- 				goto out;
- 		}
- 		ibmvnic_disable_irqs(adapter);
--- 
-2.18.2
-
+T24gMjUvMDgvMjAgNzoyMiBwbSwgSGVpbmVyIEthbGx3ZWl0IHdyb3RlOg0KDQo8c25pcD4NCj4g
+SSd2ZSBiZWVuIHN0YXJpbmcgYXQgc3BpLWZzbC1lc3BpLmMgZm9yIHdoaWxlIG5vdyBhbmQgSSB0
+aGluayBJJ3ZlDQo+PiBpZGVudGlmaWVkIGEgY291cGxlIG9mIGRlZmljaWVuY2llcyB0aGF0IG1h
+eSBvciBtYXkgbm90IGJlIHJlbGF0ZWQgdG8gbXkNCj4+IGlzc3VlLg0KPj4NCj4+IEZpcnN0IEkg
+dGhpbmsgdGhlICdUcmFuc2ZlciBkb25lIGJ1dCBTUElFX0RPTiBpc24ndCBzZXQnIG1lc3NhZ2Ug
+Y2FuIGJlDQo+PiBnZW5lcmF0ZWQgc3B1cmlvdXNseS4gSW4gZnNsX2VzcGlfaXJxKCkgd2UgcmVh
+ZCB0aGUgRVNQSV9TUElFIHJlZ2lzdGVyLg0KPj4gV2UgYWxzbyB3cml0ZSBiYWNrIHRvIGl0IHRv
+IGNsZWFyIHRoZSBjdXJyZW50IGV2ZW50cy4gV2UgcmUtcmVhZCBpdCBpbg0KPj4gZnNsX2VzcGlf
+Y3B1X2lycSgpIGFuZCBjb21wbGFpbiB3aGVuIFNQSUVfRE9OIGlzIG5vdCBzZXQuIEJ1dCB3ZSBj
+YW4NCj4+IG5hdHVyYWxseSBlbmQgdXAgaW4gdGhhdCBzaXR1YXRpb24gaWYgd2UncmUgZG9pbmcg
+YSBsYXJnZSByZWFkLiBDb25zaWRlcg0KPj4gdGhlIG1lc3NhZ2VzIGZvciByZWFkaW5nIGEgYmxv
+Y2sgb2YgZGF0YSBmcm9tIGEgc3BpLW5vciBjaGlwDQo+Pg0KPj4gICDCoHR4ID0gUkVBRF9PUCAr
+IEFERFINCj4+ICAgwqByeCA9IGRhdGENCj4+DQo+PiBXZSBzZXR1cCB0aGUgdHJhbnNmZXIgYW5k
+IHB1bXAgb3V0IHRoZSB0eF9idWYuIFRoZSBmaXJzdCBpbnRlcnJ1cHQgZ29lcw0KPj4gb2ZmIGFu
+ZCBFU1BJX1NQSUUgaGFzIFNQSU1fRE9OIGFuZCBTUElNX1JYVCBzZXQuIFdlIGVtcHR5IHRoZSBy
+eCBmaWZvLA0KPj4gY2xlYXIgRVNQSV9TUElFIGFuZCB3YWl0IGZvciB0aGUgbmV4dCBpbnRlcnJ1
+cHQuIFRoZSBuZXh0IGludGVycnVwdA0KPj4gZmlyZXMgYW5kIHRoaXMgdGltZSB3ZSBoYXZlIEVT
+UElfU1BJRSB3aXRoIGp1c3QgU1BJTV9SWFQgc2V0LiBUaGlzDQo+PiBjb250aW51ZXMgdW50aWwg
+d2UndmUgcmVjZWl2ZWQgYWxsIHRoZSBkYXRhIGFuZCB3ZSBmaW5pc2ggd2l0aCBFU1BJX1NQSUUN
+Cj4+IGhhdmluZyBvbmx5IFNQSU1fUlhUIHNldC4gV2hlbiB3ZSByZS1yZWFkIGl0IHdlIGNvbXBs
+YWluIHRoYXQgU1BJRV9ET04NCj4+IGlzbid0IHNldC4NCj4+DQo+PiBUaGUgb3RoZXIgZGVmaWNp
+ZW5jeSBpcyB0aGF0IHdlIG9ubHkgZ2V0IGFuIGludGVycnVwdCB3aGVuIHRoZSBhbW91bnQgb2YN
+Cj4+IGRhdGEgaW4gdGhlIHJ4IGZpZm8gaXMgYWJvdmUgRlNMX0VTUElfUlhUSFIuIElmIHRoZXJl
+IGFyZSBmZXdlciB0aGFuDQo+PiBGU0xfRVNQSV9SWFRIUiBsZWZ0IHRvIGJlIHJlY2VpdmVkIHdl
+IHdpbGwgbmV2ZXIgcHVsbCB0aGVtIG91dCBvZiB0aGUgZmlmby4NCj4+DQo+IFNQSU1fRE9OIHdp
+bGwgdHJpZ2dlciBhbiBpbnRlcnJ1cHQgb25jZSB0aGUgbGFzdCBjaGFyYWN0ZXJzIGhhdmUgYmVl
+bg0KPiB0cmFuc2ZlcnJlZCwgYW5kIHJlYWQgdGhlIHJlbWFpbmluZyBjaGFyYWN0ZXJzIGZyb20g
+dGhlIEZJRk8uDQoNClRoZSBUMjA4MFJNIHRoYXQgSSBoYXZlIHNheXMgdGhlIGZvbGxvd2luZyBh
+Ym91dCB0aGUgRE9OIGJpdA0KDQoiTGFzdCBjaGFyYWN0ZXIgd2FzIHRyYW5zbWl0dGVkLiBUaGUg
+bGFzdCBjaGFyYWN0ZXIgd2FzIHRyYW5zbWl0dGVkIGFuZCANCmEgbmV3IGNvbW1hbmQgY2FuIGJl
+IHdyaXR0ZW4gZm9yIHRoZSBuZXh0IGZyYW1lLiINCg0KVGhhdCBkb2VzIGF0IGxlYXN0IHNlZW0g
+dG8gZml0IHdpdGggbXkgYXNzZXJ0aW9uIHRoYXQgaXQncyBhbGwgYWJvdXQgdGhlIA0KVFggZGly
+ZWN0aW9uLiBCdXQgdGhlIGZhY3QgdGhhdCBpdCBkb2Vzbid0IGhhcHBlbiBhbGwgdGhlIHRpbWUg
+dGhyb3dzIA0Kc29tZSBkb3VidCBvbiBpdC4NCg0KPiBJIHRoaW5rIHRoZSByZWFzb24gSSdtIHNl
+ZWluZyBzb21lIHZhcmlhYmlsaXR5IGlzIGJlY2F1c2Ugb2YgaG93IGZhc3QNCj4+IChvciBzbG93
+KSB0aGUgaW50ZXJydXB0cyBnZXQgcHJvY2Vzc2VkIGFuZCBob3cgZmFzdCB0aGUgc3BpLW5vciBj
+aGlwIGNhbg0KPj4gZmlsbCB0aGUgQ1BVcyByeCBmaWZvLg0KPj4NCj4gVG8gcnVsZSBvdXQgdGlt
+aW5nIGlzc3VlcyBhdCBoaWdoIGJ1cyBmcmVxdWVuY2llcyBJIGluaXRpYWxseSBhc2tlZA0KPiBm
+b3IgcmUtdGVzdGluZyBhdCBsb3dlciBmcmVxdWVuY2llcy4gSWYgeW91IGUuZy4gbGltaXQgdGhl
+IGJ1cyB0byAxIE1Ieg0KPiBvciBldmVuIGxlc3MsIHRoZW4gdGltaW5nIHNob3VsZG4ndCBiZSBh
+biBpc3N1ZS4NClllcyBJJ3ZlIGN1cnJlbnRseSBnb3Qgc3BpLW1heC1mcmVxdWVuY3kgPSA8MTAw
+MDAwMD47IGluIG15IGR0cy4gSSB3b3VsZCANCmFsc28gZXhwZWN0IGEgc2xvd2VyIGZyZXF1ZW5j
+eSB3b3VsZCBmaXQgbXkgIkRPTiBpcyBmb3IgVFgiIG5hcnJhdGl2ZS4NCj4gTGFzdCByZWxldmFu
+dCBmdW5jdGlvbmFsIGNoYW5nZXMgaGF2ZSBiZWVuIGRvbmUgYWxtb3N0IDQgeWVhcnMgYWdvLg0K
+PiBBbmQgeW91cnMgaXMgdGhlIGZpcnN0IHN1Y2ggcmVwb3J0IEkgc2VlLiBTbyBxdWVzdGlvbiBp
+cyB3aGF0IGNvdWxkIGJlIHNvDQo+IHNwZWNpYWwgd2l0aCB5b3VyIHNldHVwIHRoYXQgaXQgc2Vl
+bXMgeW91J3JlIHRoZSBvbmx5IG9uZSBiZWluZyBhZmZlY3RlZC4NCj4gVGhlIHNjZW5hcmlvcyB5
+b3UgZGVzY3JpYmUgYXJlIHN0YW5kYXJkLCB0aGVyZWZvcmUgbXVjaCBtb3JlIHBlb3BsZQ0KPiBz
+aG91bGQgYmUgYWZmZWN0ZWQgaW4gY2FzZSBvZiBhIGRyaXZlciBidWcuDQpBZ3JlZWQuIEJ1dCBl
+dmVuIG9uIG15IGhhcmR3YXJlICh3aGljaCBtYXkgaGF2ZSBhIGxhdGVudCBpc3N1ZSBkZXNwaXRl
+IA0KYmVpbmcgaW4gdGhlIGZpZWxkIGZvciBnb2luZyBvbiA1IHllYXJzKSB0aGUgaXNzdWUgb25s
+eSB0cmlnZ2VycyB1bmRlciANCnNvbWUgZmFpcmx5IHNwZWNpZmljIGNpcmN1bXN0YW5jZXMuDQo+
+IFlvdSBzYWlkIHRoYXQga2VybmVsIGNvbmZpZyBpbXBhY3RzIGhvdyBmcmVxdWVudGx5IHRoZSBp
+c3N1ZSBoYXBwZW5zLg0KPiBUaGVyZWZvcmUgcXVlc3Rpb24gaXMgd2hhdCdzIHRoZSBkaWZmIGlu
+IGtlcm5lbCBjb25maWcsIGFuZCBob3cgY291bGQNCj4gdGhlIGRpZmZlcmVuY2VzIGJlIHJlbGF0
+ZWQgdG8gU1BJLg0KDQpJdCBkaWQgc2VlbSB0byBiZSBzb21ld2hhdCByYW5kb20uIFRoaW5ncyBs
+aWtlIENPTkZJR19QUkVFTVBUIGhhdmUgYW4gDQppbXBhY3QgYnV0IGV2ZXJ5IHRpbWUgSSBmb3Vu
+ZCBzb21ldGhpbmcgdGhhdCBzZWVtZWQgdG8gYmUgaGF2aW5nIGFuIA0KaW1wYWN0IEkndmUgYmVl
+biBhYmxlIHRvIGRpc3Byb3ZlIGl0LiBJIGFjdHVhbGx5IHRoaW5rIGl0cyBhYm91dCBob3cgDQpi
+dXN5IHRoZSBzeXN0ZW0gaXMgd2hpY2ggbWF5IG9yIG1heSBub3QgYWZmZWN0IHdoZW4gd2UgZ2V0
+IHJvdW5kIHRvIA0KcHJvY2Vzc2luZyB0aGUgaW50ZXJydXB0cy4NCg0KSSBoYXZlIG1hbmFnZWQg
+dG8gZ2V0IHRoZSAnVHJhbnNmZXIgZG9uZSBidXQgU1BJRV9ET04gaXNuJ3Qgc2V0IScgdG8gDQpv
+Y2N1ciBvbiB0aGUgVDIwODBSREIuDQoNCkkndmUgaGFkIHRvIGFkZCB0aGUgZm9sbG93aW5nIHRv
+IGV4cG9zZSB0aGUgZW52aXJvbm1lbnQgYXMgYSBtdGQgcGFydGl0aW9uDQoNCmRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDh4cmRiLmR0c2kgDQpiL2FyY2gvcG93ZXJw
+Yy9ib290L2R0cy9mc2wvdDIwOHhyZGIuZHRzaQ0KaW5kZXggZmY4N2U2N2M3MGRhLi5mYmY5NWZj
+MWZkNjggMTAwNjQ0DQotLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QyMDh4cmRiLmR0
+c2kNCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDIwOHhyZGIuZHRzaQ0KQEAgLTEx
+Niw2ICsxMTYsMTUgQEAgZmxhc2hAMCB7DQogwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgY29tcGF0aWJsZSA9ICJtaWNyb24sbjI1
+cTUxMmF4MyIsIA0KImplZGVjLHNwaS1ub3IiOw0KIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJlZyA9IDwwPjsNCiDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBz
+cGktbWF4LWZyZXF1ZW5jeSA9IDwxMDAwMDAwMD47IC8qIA0KaW5wdXQgY2xvY2sgKi8NCisNCivC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqAgcGFydGl0aW9uQHUtYm9vdCB7DQorwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJlZyA9IDwweDAw
+MDAwMDAwIDB4MDAxMDAwMDA+Ow0KK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBsYWJlbCA9ICJ1LWJv
+b3QiOw0KK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgIH07DQorwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcGFydGl0aW9uQHUtYm9vdC1lbnYgew0KK8KgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoCByZWcgPSA8MHgwMDEwMDAwMCAweDAwMDEwMDAwPjsNCivCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqAgbGFiZWwgPSAidS1ib290LWVudiI7DQorwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgfTsNCiDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIH07DQogwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgIH07DQoNCkFuZCBJJ20gdXNpbmcgdGhlIGZvbGxvd2luZyBzY3JpcHQg
+dG8gcG9rZSBhdCB0aGUgZW52aXJvbm1lbnQgKHdhcm5pbmcgDQppZiBhbnlvbmUgZG9lcyB0cnkg
+dGhpcyBhbmQgdGhlIGJ1ZyBoaXRzIGl0IGNhbiByZW5kZXIgeW91ciB1LWJvb3QgDQplbnZpcm9u
+bWVudCBpbnZhbGlkKS4NCg0KY2F0IGZsYXNoL2Z3X2Vudl90ZXN0LnNoDQojIS9iaW4vc2gNCg0K
+Z2VuZXJhdGVfZndfZW52X2NvbmZpZygpDQp7DQogwqAgY2F0IC9wcm9jL210ZCB8IHNlZCAncy9b
+OiJdLy9nJyB8IHdoaWxlIHJlYWQgZGV2IHNpemUgZXJhc2VzaXplIG5hbWUgOyBkbw0KIMKgwqDC
+oMKgIGVjaG8gIiRkZXYgJHNpemUgJGVyYXNlc2l6ZSAkbmFtZSINCiDCoMKgwqDCoCBbICIkbmFt
+ZSIgPSAidS1ib290LWVudiIgXSAmJiBlY2hvICIvZGV2LyRkZXYgMHgwMDAwIDB4MjAwMCANCiRl
+cmFzZXNpemUiID4vZmxhc2gvZndfZW52LmNvbmZpZw0KIMKgIGRvbmUNCn0NCg0KY3ljbGVzPTEw
+DQpbICQjIC1nZSAxIF0gJiYgY3ljbGVzPSQxDQoNCmdlbmVyYXRlX2Z3X2Vudl9jb25maWcNCg0K
+ZndfcHJpbnRlbnYgLWMgL2ZsYXNoL2Z3X2Vudi5jb25maWcNCg0KZG1lc2cgLWMgPi9kZXYvbnVs
+bA0KeD0wDQp3aGlsZSBbICR4IC1sdCAkY3ljbGVzIF07IGRvDQogwqDCoMKgIGZ3X3ByaW50ZW52
+IC1jIC9mbGFzaC9md19lbnYuY29uZmlnID4vZGV2L251bGwgfHwgYnJlYWsNCiDCoMKgwqAgZndf
+c2V0ZW52IC1jIC9mbGFzaC9md19lbnYuY29uZmlnIGZvbyAkUkFORE9NIHx8IGJyZWFrOw0KIMKg
+wqDCoCBkbWVzZyAtYyB8IGdyZXAgLXEgZnNsX2VzcGkgJiYgYnJlYWs7DQogwqDCoMKgIGxldCB4
+PXgrMQ0KZG9uZQ0KDQplY2hvICJSYW4gJHggY3ljbGVzIg0K
