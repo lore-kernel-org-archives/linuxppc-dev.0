@@ -2,110 +2,63 @@ Return-Path: <SRS0=ZLNG=CD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CBD3C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:52:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAE02C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 981AD2072D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:52:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="FQOfe1VX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 981AD2072D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3E74020737
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E74020737
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BbGnh2g4XzDqTh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 14:52:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BbGxW0Fz7zDqBK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Aug 2020 14:59:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=FQOfe1VX; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=none (no SPF record) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.41; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=perches.com
+Received: from smtprelay.hostedemail.com (smtprelay0041.hostedemail.com
+ [216.40.44.41])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BbGRl2MvzzDqBl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 14:37:07 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07P4W0Ce058364; Tue, 25 Aug 2020 00:36:45 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=ALicwylMRdt++AkmiA3Lf+/Mg69vaDPZZtSuWe3nmYk=;
- b=FQOfe1VX828uK6NLUMHfd2pbOZeBHESUWhPJXJuH8NYuwRIhR44nWd9ofU6BZVFxGAln
- qR1JwOXVmiHVpwS4xrZ9Aoh2sopsKiSJECI5p9mqB5WjuEUvZT3js013Vwn4UmcFFovi
- Pa64bSQuJJx8mm1qU9WPetOo0poGsIUuTwfr8p9oXn2gWPAiw4wc26FHm7iUqbTvCl/t
- sG3WeGjAFG9zkj/AK0F8MtU1bc+aVWFLB/JcLYKFEFKpYtJsszWQ1q1sGYfom2IGZBzt
- 7JmHOY45XHuFsQKKMM5ioLQrIQ37Mv5k4+RVBPbgdGIfI4LqPclG73bMwwf/UnxWTm4m aA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 334t8x9t4n-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 Aug 2020 00:36:44 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 07P4WMeJ059205;
- Tue, 25 Aug 2020 00:36:44 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0a-001b2d01.pphosted.com with ESMTP id 334t8x9t3t-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 Aug 2020 00:36:44 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07P4Wdu9030786;
- Tue, 25 Aug 2020 04:36:41 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06ams.nl.ibm.com with ESMTP id 332uk6b1cq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 25 Aug 2020 04:36:41 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 07P4ac2k65995118
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 25 Aug 2020 04:36:38 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C8CF3AE051;
- Tue, 25 Aug 2020 04:36:38 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 365CFAE04D;
- Tue, 25 Aug 2020 04:36:36 +0000 (GMT)
-Received: from bangoria.ibmuc.com (unknown [9.199.33.167])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 25 Aug 2020 04:36:36 +0000 (GMT)
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-To: mpe@ellerman.id.au, christophe.leroy@c-s.fr
-Subject: [PATCH v5 5/8] powerpc/watchpoint: Fix exception handling for
- CONFIG_HAVE_HW_BREAKPOINT=N
-Date: Tue, 25 Aug 2020 10:06:14 +0530
-Message-Id: <20200825043617.1073634-6-ravi.bangoria@linux.ibm.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200825043617.1073634-1-ravi.bangoria@linux.ibm.com>
-References: <20200825043617.1073634-1-ravi.bangoria@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BbGtS6McFzDq7k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2020 14:56:47 +1000 (AEST)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay04.hostedemail.com (Postfix) with ESMTP id B846B180A9F54;
+ Tue, 25 Aug 2020 04:56:42 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: chalk60_631385f27059
+X-Filterd-Recvd-Size: 5825
+Received: from joe-laptop.perches.com (unknown [47.151.133.149])
+ (Authenticated sender: joe@perches.com)
+ by omf08.hostedemail.com (Postfix) with ESMTPA;
+ Tue, 25 Aug 2020 04:56:38 +0000 (UTC)
+From: Joe Perches <joe@perches.com>
+To: Jiri Kosina <trivial@kernel.org>, oprofile-list@lists.sf.net,
+ linux-ide@vger.kernel.org, drbd-dev@lists.linbit.com,
+ linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, intel-gfx@lists.freedesktop.org,
+ linux-hwmon@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-bcache@vger.kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
+ linux-nfs@vger.kernel.org
+Subject: [PATCH 00/29] treewide: Convert comma separated statements
+Date: Mon, 24 Aug 2020 21:55:57 -0700
+Message-Id: <cover.1598331148.git.joe@perches.com>
+X-Mailer: git-send-email 2.26.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-08-24_12:2020-08-24,
- 2020-08-24 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0
- adultscore=0 spamscore=0 impostorscore=0 mlxscore=0 bulkscore=0
- mlxlogscore=965 lowpriorityscore=0 malwarescore=0 phishscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2008250030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -117,142 +70,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ravi.bangoria@linux.ibm.com, mikey@neuling.org, jniethe5@gmail.com,
- pedromfc@linux.ibm.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- rogealve@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-block@vger.kernel.org, linux-mtd@lists.infradead.org,
+ linux-kselftest@vger.kernel.org, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On powerpc, ptrace watchpoint works in one-shot mode. i.e. kernel
-disables event every time it fires and user has to re-enable it.
-Also, in case of ptrace watchpoint, kernel notifies ptrace user
-before executing instruction.
+There are many comma separated statements in the kernel.
+See:https://lore.kernel.org/lkml/alpine.DEB.2.22.394.2008201856110.2524@hadrien/
 
-With CONFIG_HAVE_HW_BREAKPOINT=N, kernel is missing to disable
-ptrace event and thus it's causing infinite loop of exceptions.
-This is especially harmful when user watches on a data which is
-also read/written by kernel, eg syscall parameters. In such case,
-infinite exceptions happens in kernel mode which causes soft-lockup.
+Convert the comma separated statements that are in if/do/while blocks
+to use braces and semicolons.
 
-Fixes: 9422de3e953d ("powerpc: Hardware breakpoints rewrite to handle non DABR breakpoint registers")
-Reported-by: Pedro Miraglia Franco de Carvalho <pedromfc@linux.ibm.com>
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
----
- arch/powerpc/include/asm/hw_breakpoint.h  |  3 ++
- arch/powerpc/kernel/process.c             | 48 +++++++++++++++++++++++
- arch/powerpc/kernel/ptrace/ptrace-noadv.c |  5 +++
- 3 files changed, 56 insertions(+)
+Many comma separated statements still exist but those are changes for
+another day.
 
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index 2eca3dd54b55..c72263214d3f 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -18,6 +18,7 @@ struct arch_hw_breakpoint {
- 	u16		type;
- 	u16		len; /* length of the target data symbol */
- 	u16		hw_len; /* length programmed in hw */
-+	u8		flags;
- };
- 
- /* Note: Don't change the first 6 bits below as they are in the same order
-@@ -37,6 +38,8 @@ struct arch_hw_breakpoint {
- #define HW_BRK_TYPE_PRIV_ALL	(HW_BRK_TYPE_USER | HW_BRK_TYPE_KERNEL | \
- 				 HW_BRK_TYPE_HYP)
- 
-+#define HW_BRK_FLAG_DISABLED	0x1
-+
- /* Minimum granularity */
- #ifdef CONFIG_PPC_8xx
- #define HW_BREAKPOINT_SIZE  0x4
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 016bd831908e..160fbbf41d40 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -636,6 +636,44 @@ void do_send_trap(struct pt_regs *regs, unsigned long address,
- 				    (void __user *)address);
- }
- #else	/* !CONFIG_PPC_ADV_DEBUG_REGS */
-+
-+static void do_break_handler(struct pt_regs *regs)
-+{
-+	struct arch_hw_breakpoint null_brk = {0};
-+	struct arch_hw_breakpoint *info;
-+	struct ppc_inst instr = ppc_inst(0);
-+	int type = 0;
-+	int size = 0;
-+	unsigned long ea;
-+	int i;
-+
-+	/*
-+	 * If underneath hw supports only one watchpoint, we know it
-+	 * caused exception. 8xx also falls into this category.
-+	 */
-+	if (nr_wp_slots() == 1) {
-+		__set_breakpoint(0, &null_brk);
-+		current->thread.hw_brk[0] = null_brk;
-+		current->thread.hw_brk[0].flags |= HW_BRK_FLAG_DISABLED;
-+		return;
-+	}
-+
-+	/* Otherwise findout which DAWR caused exception and disable it. */
-+	wp_get_instr_detail(regs, &instr, &type, &size, &ea);
-+
-+	for (i = 0; i < nr_wp_slots(); i++) {
-+		info = &current->thread.hw_brk[i];
-+		if (!info->address)
-+			continue;
-+
-+		if (wp_check_constraints(regs, instr, ea, type, size, info)) {
-+			__set_breakpoint(i, &null_brk);
-+			current->thread.hw_brk[i] = null_brk;
-+			current->thread.hw_brk[i].flags |= HW_BRK_FLAG_DISABLED;
-+		}
-+	}
-+}
-+
- void do_break (struct pt_regs *regs, unsigned long address,
- 		    unsigned long error_code)
- {
-@@ -647,6 +685,16 @@ void do_break (struct pt_regs *regs, unsigned long address,
- 	if (debugger_break_match(regs))
- 		return;
- 
-+	/*
-+	 * We reach here only when watchpoint exception is generated by ptrace
-+	 * event (or hw is buggy!). Now if CONFIG_HAVE_HW_BREAKPOINT is set,
-+	 * watchpoint is already handled by hw_breakpoint_handler() so we don't
-+	 * have to do anything. But when CONFIG_HAVE_HW_BREAKPOINT is not set,
-+	 * we need to manually handle the watchpoint here.
-+	 */
-+	if (!IS_ENABLED(CONFIG_HAVE_HW_BREAKPOINT))
-+		do_break_handler(regs);
-+
- 	/* Deliver the signal to userspace */
- 	force_sig_fault(SIGTRAP, TRAP_HWBKPT, (void __user *)address);
- }
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-noadv.c b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-index 57a0ab822334..866597b407bc 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-noadv.c
-@@ -286,11 +286,16 @@ long ppc_del_hwdebug(struct task_struct *child, long data)
- 	}
- 	return ret;
- #else /* CONFIG_HAVE_HW_BREAKPOINT */
-+	if (child->thread.hw_brk[data - 1].flags & HW_BRK_FLAG_DISABLED)
-+		goto del;
-+
- 	if (child->thread.hw_brk[data - 1].address == 0)
- 		return -ENOENT;
- 
-+del:
- 	child->thread.hw_brk[data - 1].address = 0;
- 	child->thread.hw_brk[data - 1].type = 0;
-+	child->thread.hw_brk[data - 1].flags = 0;
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 
- 	return 0;
+Joe Perches (29):
+  coding-style.rst: Avoid comma statements
+  alpha: Avoid comma separated statements
+  ia64: Avoid comma separated statements
+  sparc: Avoid comma separated statements
+  ata: Avoid comma separated statements
+  drbd: Avoid comma separated statements
+  lp: Avoid comma separated statements
+  dma-buf: Avoid comma separated statements
+  drm/gma500: Avoid comma separated statements
+  drm/i915: Avoid comma separated statements
+  hwmon: (scmi-hwmon): Avoid comma separated statements
+  Input: MT - Avoid comma separated statements
+  bcache: Avoid comma separated statements
+  media: Avoid comma separated statements
+  mtd: Avoid comma separated statements
+  8390: Avoid comma separated statements
+  fs_enet: Avoid comma separated statements
+  wan: sbni: Avoid comma separated statements
+  s390/tty3270: Avoid comma separated statements
+  scai/arm: Avoid comma separated statements
+  media: atomisp: Avoid comma separated statements
+  video: fbdev: Avoid comma separated statements
+  fuse: Avoid comma separated statements
+  reiserfs: Avoid comma separated statements
+  lib/zlib: Avoid comma separated statements
+  lib: zstd: Avoid comma separated statements
+  ipv6: fib6: Avoid comma separated statements
+  sunrpc: Avoid comma separated statements
+  tools: Avoid comma separated statements
+
+ Documentation/process/coding-style.rst        |  17 +
+ arch/alpha/kernel/pci_iommu.c                 |   8 +-
+ arch/alpha/oprofile/op_model_ev4.c            |  22 +-
+ arch/alpha/oprofile/op_model_ev5.c            |   8 +-
+ arch/ia64/kernel/smpboot.c                    |   7 +-
+ arch/sparc/kernel/smp_64.c                    |   7 +-
+ drivers/ata/pata_icside.c                     |  21 +-
+ drivers/block/drbd/drbd_receiver.c            |   6 +-
+ drivers/char/lp.c                             |   6 +-
+ drivers/dma-buf/st-dma-fence.c                |   7 +-
+ drivers/gpu/drm/gma500/mdfld_intel_display.c  |  44 ++-
+ drivers/gpu/drm/i915/gt/gen8_ppgtt.c          |   8 +-
+ drivers/gpu/drm/i915/gt/intel_gt_requests.c   |   6 +-
+ .../gpu/drm/i915/gt/selftest_workarounds.c    |   6 +-
+ drivers/gpu/drm/i915/intel_runtime_pm.c       |   6 +-
+ drivers/hwmon/scmi-hwmon.c                    |   6 +-
+ drivers/input/input-mt.c                      |  11 +-
+ drivers/md/bcache/bset.c                      |  12 +-
+ drivers/md/bcache/sysfs.c                     |   6 +-
+ drivers/media/i2c/msp3400-kthreads.c          |  12 +-
+ drivers/media/pci/bt8xx/bttv-cards.c          |   6 +-
+ drivers/media/pci/saa7134/saa7134-video.c     |   7 +-
+ drivers/mtd/devices/lart.c                    |  10 +-
+ drivers/net/ethernet/8390/axnet_cs.c          |  19 +-
+ drivers/net/ethernet/8390/lib8390.c           |  14 +-
+ drivers/net/ethernet/8390/pcnet_cs.c          |   6 +-
+ .../ethernet/freescale/fs_enet/fs_enet-main.c |  11 +-
+ drivers/net/wan/sbni.c                        | 101 +++---
+ drivers/s390/char/tty3270.c                   |   6 +-
+ drivers/scsi/arm/cumana_2.c                   |  19 +-
+ drivers/scsi/arm/eesox.c                      |   9 +-
+ drivers/scsi/arm/powertec.c                   |   9 +-
+ .../media/atomisp/pci/atomisp_subdev.c        |   6 +-
+ drivers/video/fbdev/tgafb.c                   |  12 +-
+ fs/fuse/dir.c                                 |  24 +-
+ fs/reiserfs/fix_node.c                        |  36 ++-
+ lib/zlib_deflate/deftree.c                    |  49 ++-
+ lib/zstd/compress.c                           | 120 ++++---
+ lib/zstd/fse_compress.c                       |  24 +-
+ lib/zstd/huf_compress.c                       |   6 +-
+ net/ipv6/ip6_fib.c                            |  12 +-
+ net/sunrpc/sysctl.c                           |   6 +-
+ tools/lib/subcmd/help.c                       |  10 +-
+ tools/power/cpupower/utils/cpufreq-set.c      |  14 +-
+ tools/testing/selftests/vm/gup_benchmark.c    |  18 +-
+ tools/testing/selftests/vm/userfaultfd.c      | 296 +++++++++++-------
+ 46 files changed, 694 insertions(+), 382 deletions(-)
+
 -- 
-2.26.2
+2.26.0
 
