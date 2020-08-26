@@ -2,51 +2,63 @@ Return-Path: <SRS0=u8mG=CE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB6C6C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 10:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00598C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 10:30:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 076402067C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 10:03:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 076402067C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 69C3120707
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 10:30:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bGwRZ4U4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69C3120707
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bc1fC0KNjzDqV7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 20:03:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bc2FX4d7nzDqX1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Aug 2020 20:30:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
+ smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
+ helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=bGwRZ4U4; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bc1cP67skzDqV7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 20:02:13 +1000 (AEST)
-Received: from gaia (unknown [46.69.195.127])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bc2Cd5M9PzDqVj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2020 20:29:16 +1000 (AEST)
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl
+ [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0AE522067C;
- Wed, 26 Aug 2020 10:02:08 +0000 (UTC)
-Date: Wed, 26 Aug 2020 11:02:06 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v7 07/12] arm64: inline huge vmap supported functions
-Message-ID: <20200826100205.GA6712@gaia>
-References: <20200825145753.529284-1-npiggin@gmail.com>
- <20200825145753.529284-8-npiggin@gmail.com>
+ by mail.kernel.org (Postfix) with ESMTPSA id 1306C2071E;
+ Wed, 26 Aug 2020 10:29:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1598437754;
+ bh=FqIljNcAU9kdTquRGY/YEvffKwBFgT6R95TwqOGVZ0o=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=bGwRZ4U4reQ7zeesbhCXiUnk3SSIQvPPXo3B73MaoqDUQ7HC6588f+DSfp/NTSj13
+ ZvR5B9oFAhIq8wdpcDiwxiC+pYDu4qQ1FVuSKHxs8IRYjKtJ5whzwpo2X2fs8LLv6E
+ CShuYlojuwNrU5w0q6bDBDX++XZebwHWlmy1F2O0=
+Date: Wed, 26 Aug 2020 12:29:29 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+Subject: Re: Please apply commit 0828137e8f16 ("powerpc/64s: Don't init
+ FSCR_DSCR in __init_FSCR()") to v4.14.y, v4.19.y, v5.4.y, v5.7.y
+Message-ID: <20200826102929.GA3356257@kroah.com>
+References: <20200825224408.GB6060@mussarela>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200825145753.529284-8-npiggin@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200825224408.GB6060@mussarela>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,28 +70,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Will Deacon <will@kernel.org>,
- linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- linux-mm@kvack.org, Zefan Li <lizefan@huawei.com>,
- Jonathan Cameron <Jonathan.Cameron@Huawei.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: sashal@kernel.org, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 26, 2020 at 12:57:48AM +1000, Nicholas Piggin wrote:
-> This allows unsupported levels to be constant folded away, and so
-> p4d_free_pud_page can be removed because it's no longer linked to.
+On Tue, Aug 25, 2020 at 07:44:08PM -0300, Thadeu Lima de Souza Cascardo wrote:
+> After commit 912c0a7f2b5daa3cbb2bc10f303981e493de73bd ("powerpc/64s: Save FSCR
+> to init_task.thread.fscr after feature init"), which has been applied to the
+> referred branches, when userspace sets the user DSCR MSR, it won't be inherited
+> or restored during context switch, because the facility unavailable interrupt
+> won't trigger.
 > 
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> 
-> Ack or objection if this goes via the -mm tree?
+> Applying 0828137e8f16721842468e33df0460044a0c588b ("powerpc/64s: Don't init
+> FSCR_DSCR in __init_FSCR()") will fix it.
 
-No objections.
+Now queued up, thanks.
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+greg k-h
