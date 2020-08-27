@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ADE2C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC6B7C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:43:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EED1620707
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:41:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0DFAA2177B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:43:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="gJrlue9p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EED1620707
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qDoHkm4o"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DFAA2177B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bcn575WLSzDqg9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:41:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bcn876MM5zDqgL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:43:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,35 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=gJrlue9p; 
+ header.s=casper.20170209 header.b=qDoHkm4o; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBW0WfrzDqcx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBX2LBDzDqcx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=TXXlSSf7SfiIdDcWgXqZJ7xhYsZWGzhY0xh4QhcsR6E=; b=gJrlue9puIQuWS8bmp4ZtASi2j
- 3LGvMuBRiMLFUVyXhQx/yHPZSTM2kHWsQrdZm28crL5cL6VIKpnkAoe9L5MC2K9SLCMWngpzvncOl
- CSVBeJxQX6sFrmICRF0z9EaHv3dW+ajbkYm+rQdlWkQm3oFa8ZZiTJzoZPWYZbRVmCWaK8bcd1bg9
- QgpfYRi34/lVJ2lvmWE6RRYe4MW3yoPxj1Ql3PneBZ5Wt6xKu0sFb9VDOU+/jz0KkInclSiuLaMZg
- nWOc+9LRLEU6Swjpo2JvFBbTrvU1+zA8Ah64T/CB9nnbOOoLUrZ8Tr6e9T1LCFLNScRcp+JoP8HmY
- ttQnJxaA==;
+ bh=bH0npQmg7q4MUz/DOcBOJ2fcWOcjfiOlt/aOz+3Bgpg=; b=qDoHkm4oNsZEW79orXl+D8WUrB
+ 9Pk1CysTwtWbAFFqGczkLvYpnSuCJoEgpGRGkxRa+57lWvrtsVaZ3/IneyU2YNvkNaZW//7OqYcQT
+ Ltc088gv978lf81iLxJwgy8h0uQZOSMqbxlwF8ud1FGDsFg2Lax2tUzyMli02z6WWn8iYQvAJHzrh
+ L5dhnS+aCI5KUWdqjBrk2CwJHJ2vKUFQ8pZTnT1VHzt75XvQb5Ke3ZN6ChateF6JN/5FUDQeg7Fq9
+ f4OGjxhhCr1vu89Xg7KsyvmQsTgXhpMmcsrPTJVI5iPUDa98ThNICkVveiohqP3smRHMjaHMunbpT
+ VXZldOfQ==;
 Received: from [2001:4bb8:18c:45ba:9892:9e86:5202:32f0] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kBJOL-00045g-Rb; Thu, 27 Aug 2020 15:00:42 +0000
+ id 1kBJOO-000464-Li; Thu, 27 Aug 2020 15:00:45 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
  x86@kernel.org
-Subject: [PATCH 07/10] x86: make TASK_SIZE_MAX usable from assembly code
-Date: Thu, 27 Aug 2020 17:00:27 +0200
-Message-Id: <20200827150030.282762-8-hch@lst.de>
+Subject: [PATCH 09/10] powerpc: use non-set_fs based maccess routines
+Date: Thu, 27 Aug 2020 17:00:29 +0200
+Message-Id: <20200827150030.282762-10-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200827150030.282762-1-hch@lst.de>
 References: <20200827150030.282762-1-hch@lst.de>
@@ -85,47 +85,40 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For 64-bit the only thing missing was a strategic _AC, and for 32-bit we
-need to use __PAGE_OFFSET instead of PAGE_OFFSET in the TASK_SIZE
-definition to escape the explicit unsigned long cast.  This just works
-because __PAGE_OFFSET is defined using _AC itself and thus never needs
-the cast anyway.
+Provide __get_kernel_nofault and __put_kernel_nofault routines to
+implement the maccess routines without messing with set_fs and without
+opening up access to user space.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/include/asm/page_32_types.h | 4 ++--
- arch/x86/include/asm/page_64_types.h | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
-index 26236925fb2c36..f462895a33e452 100644
---- a/arch/x86/include/asm/page_32_types.h
-+++ b/arch/x86/include/asm/page_32_types.h
-@@ -44,8 +44,8 @@
- /*
-  * User space process size: 3GB (default).
-  */
--#define IA32_PAGE_OFFSET	PAGE_OFFSET
--#define TASK_SIZE		PAGE_OFFSET
-+#define IA32_PAGE_OFFSET	__PAGE_OFFSET
-+#define TASK_SIZE		__PAGE_OFFSET
- #define TASK_SIZE_LOW		TASK_SIZE
- #define TASK_SIZE_MAX		TASK_SIZE
- #define DEFAULT_MAP_WINDOW	TASK_SIZE
-diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
-index 996595c9897e0a..838515daf87b36 100644
---- a/arch/x86/include/asm/page_64_types.h
-+++ b/arch/x86/include/asm/page_64_types.h
-@@ -76,7 +76,7 @@
-  *
-  * With page table isolation enabled, we map the LDT in ... [stay tuned]
-  */
--#define TASK_SIZE_MAX	((1UL << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
-+#define TASK_SIZE_MAX	((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - PAGE_SIZE)
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 00699903f1efca..7fe3531ad36a77 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -623,4 +623,20 @@ do {									\
+ 		__put_user_goto(*(u8*)(_src + _i), (u8 __user *)(_dst + _i), e);\
+ } while (0)
  
- #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
- 
++#define HAVE_GET_KERNEL_NOFAULT
++
++#define __get_kernel_nofault(dst, src, type, err_label)			\
++do {									\
++	int __kr_err;							\
++									\
++	__get_user_size_allowed(*((type *)(dst)), (__force type __user *)(src),\
++			sizeof(type), __kr_err);			\
++	if (unlikely(__kr_err))						\
++		goto err_label;						\
++} while (0)
++
++#define __put_kernel_nofault(dst, src, type, err_label)			\
++	__put_user_size_goto(*((type *)(src)),				\
++		(__force type __user *)(dst), sizeof(type), err_label)
++
+ #endif	/* _ARCH_POWERPC_UACCESS_H */
 -- 
 2.28.0
 
