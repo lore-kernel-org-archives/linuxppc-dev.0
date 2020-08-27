@@ -2,70 +2,71 @@ Return-Path: <SRS0=o3hI=CF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C08F0C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 14:43:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A456C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:05:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E216E2087D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 14:43:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E216E2087D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sguazz.it
+	by mail.kernel.org (Postfix) with ESMTPS id F014320678
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:05:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="EAf8Yl6V"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F014320678
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bclpd4BYxzDqdx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 00:43:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=centrum.lixper.it (client-ip=46.4.16.148; helo=centrum.lixper.it;
- envelope-from=srs0=mied=cf=sguazz.it=giuseppe@centrum.lixper.it;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BcmHV5MqtzDqfK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:05:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
+ helo=casper.infradead.org;
+ envelope-from=batv+811462fdb5f870f212f0+6213+infradead.org+hch@casper.srs.infradead.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sguazz.it
-Received: from centrum.lixper.it (centrum.lixper.it [46.4.16.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
+ header.s=casper.20170209 header.b=EAf8Yl6V; 
+ dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BclgW0TGLzDq9V
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 00:37:26 +1000 (AEST)
-Received: from net-2-44-194-190.cust.vodafonedsl.it ([2.44.194.190] helo=uefi)
- by centrum.lixper.it with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.84_2)
- (envelope-from <giuseppe@sguazz.it>) id 1kBJ1j-0006r3-8t
- for linuxppc-dev@lists.ozlabs.org; Thu, 27 Aug 2020 16:37:19 +0200
-Message-ID: <37c4253abc08ef3e93d67cae5b92252af96fcf65.camel@sguazz.it>
-Subject: Re: kernel since 5.6 do not boot anymore on Apple PowerBook
-From: Giuseppe Sacco <giuseppe@sguazz.it>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Aug 2020 16:37:13 +0200
-In-Reply-To: <afae7efd-0d8a-5672-7b75-9394b0ff3d3c@csgroup.eu>
-References: <89e412a76350b28f791bb8a2b6f9647a034f6fc8.camel@sguazz.it>
- <498426507489f2c8e32daaf7af1105b5adba552f.camel@sguazz.it>
- <c2a89243-6135-4edd-2c1c-42c2159b5a1e@csgroup.eu>
- <e6878657490aa34b54b3daf0430073078a9840e7.camel@sguazz.it>
- <b70a6343-a380-ff08-a401-04f9ab50be6b@csgroup.eu>
- <59de290b-4b6c-a55e-9289-e640473b1382@csgroup.eu>
- <3558dadc530a60e9e3f958f0d6d4a0f28958ae86.camel@sguazz.it>
- <a62714c0-1b17-305d-577d-529e1781ec56@csgroup.eu>
- <8ce38d9bb162268f53a2292a916c44579421e552.camel@sguazz.it>
- <5158eae8-6809-ae07-0d16-58f2a766f534@csgroup.eu>
- <c707f59d379a51b83ba52e796d137887219c32fc.camel@sguazz.it>
- <f96d336d-fb81-fe9d-9890-db57c6560e85@csgroup.eu>
- <e7a620fa7521e84e2010660b87f20dd24a3b0cd4.camel@sguazz.it>
- <65baad98-79a0-5ee4-521e-5327029de459@csgroup.eu>
- <0a18fc199cef2643bd07591205a6234c2edf6c95.camel@sguazz.it>
- <afd75c134e2c4a57f8cf1f064595455e67b17e41.camel@sguazz.it>
- <cab15033beeefa317aae40370664e108f57dc050.camel@sguazz.it>
- <afae7efd-0d8a-5672-7b75-9394b0ff3d3c@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.36.4-2 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBM4pWszDqcv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=WnUT44U564BtTxR+CgxY1D0BXTu5a2MR+R2q2mWaxn8=; b=EAf8Yl6V6A2IAfW5NiN9dXI4lg
+ Js5uFIb0IB5xrVtkWEMPRdaJHrj+Wp5ilcm49q0E9wgBciAuotYq8K5OBbCrOtvIL5mamvPEfB89d
+ c5z4Cds8cffCjW3gMZvhYLZRZr3Y1JCmIF7X20PINMsSevxFB+6EQmEpc+ueGwbFdmOpF9VJNjDQH
+ h2wPlNL+90vSuLdvA8oOW/Snimax50sYs7kj9Nu1xrQ2LfumTpdnB/7COvoRl1EdDVvceu6BQN7F5
+ VZ13vdvCaJs8yOT4zxFUy785qCH9MQ/rydGmWfPaT6ACr0TWu8TH1r+u2NWQ5dwXsZriJc39nz+Y9
+ 0KFYD6+w==;
+Received: from [2001:4bb8:18c:45ba:9892:9e86:5202:32f0] (helo=localhost)
+ by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+ id 1kBJOD-00044O-Cf; Thu, 27 Aug 2020 15:00:33 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
+ x86@kernel.org
+Subject: [PATCH 01/10] fs: don't allow kernel reads and writes without iter ops
+Date: Thu, 27 Aug 2020 17:00:21 +0200
+Message-Id: <20200827150030.282762-2-hch@lst.de>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200827150030.282762-1-hch@lst.de>
+References: <20200827150030.282762-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-GeoIP: IT
-X-SRS: Sender address rewritten from <giuseppe@sguazz.it> to
- <SRS0=Mied=CF=sguazz.it=giuseppe@centrum.lixper.it> by centrum.lixper.it.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ casper.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,36 +78,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-fsdevel@vger.kernel.org, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Il giorno gio, 27/08/2020 alle 12.39 +0200, Christophe Leroy ha
-scritto:
-> Hi,
-> 
-> Le 27/08/2020 à 10:28, Giuseppe Sacco a écrit :
-[...]
-> > Sorry, I made a mistake. The real problem is down, on the same
-> > function, when it calls low_sleep_handler(). This is where the problem
-> > probably is.
-> 
-> Great, you spotted the problem.
-> 
-> I see what it is, it is in low_sleep_handler() in 
-> arch/powerpc/platforms/powermac/sleep.S
-> 
-> All critical registers are saved on the stack. At restore, they are 
-> restore BEFORE re-enabling MMU (because they are needed for that). But 
-> when we have VMAP_STACK, the stack can hardly be accessed without the 
-> MMU enabled. tophys() doesn't work for virtual stack addresses.
-> 
-> Therefore, the low_sleep_handler() has to be reworked for using an area 
-> in the linear mem instead of the stack.
+Don't allow calling ->read or ->write with set_fs as a preparation for
+killing off set_fs.  All the instances that we use kernel_read/write on
+are using the iter ops already.
 
-I am sorry, but I don't know how to fix it. Should I open a bug for
-tracking this problem?
+If a file has both the regular ->read/->write methods and the iter
+variants those could have different semantics for messed up enough
+drivers.  Also fails the kernel access to them in that case.
 
-Thank you,
-Giuseppe
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+---
+ fs/read_write.c | 67 +++++++++++++++++++++++++++++++------------------
+ 1 file changed, 42 insertions(+), 25 deletions(-)
+
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 5db58b8c78d0dd..702c4301d9eb6b 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -419,27 +419,41 @@ static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, lo
+ 	return ret;
+ }
+ 
++static int warn_unsupported(struct file *file, const char *op)
++{
++	pr_warn_ratelimited(
++		"kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
++		op, file, current->pid, current->comm);
++	return -EINVAL;
++}
++
+ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+ {
+-	mm_segment_t old_fs = get_fs();
++	struct kvec iov = {
++		.iov_base	= buf,
++		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
++	};
++	struct kiocb kiocb;
++	struct iov_iter iter;
+ 	ssize_t ret;
+ 
+ 	if (WARN_ON_ONCE(!(file->f_mode & FMODE_READ)))
+ 		return -EINVAL;
+ 	if (!(file->f_mode & FMODE_CAN_READ))
+ 		return -EINVAL;
++	/*
++	 * Also fail if ->read_iter and ->read are both wired up as that
++	 * implies very convoluted semantics.
++	 */
++	if (unlikely(!file->f_op->read_iter || file->f_op->read))
++		return warn_unsupported(file, "read");
+ 
+-	if (count > MAX_RW_COUNT)
+-		count =  MAX_RW_COUNT;
+-	set_fs(KERNEL_DS);
+-	if (file->f_op->read)
+-		ret = file->f_op->read(file, (void __user *)buf, count, pos);
+-	else if (file->f_op->read_iter)
+-		ret = new_sync_read(file, (void __user *)buf, count, pos);
+-	else
+-		ret = -EINVAL;
+-	set_fs(old_fs);
++	init_sync_kiocb(&kiocb, file);
++	kiocb.ki_pos = *pos;
++	iov_iter_kvec(&iter, READ, &iov, 1, iov.iov_len);
++	ret = file->f_op->read_iter(&kiocb, &iter);
+ 	if (ret > 0) {
++		*pos = kiocb.ki_pos;
+ 		fsnotify_access(file);
+ 		add_rchar(current, ret);
+ 	}
+@@ -510,28 +524,31 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t
+ /* caller is responsible for file_start_write/file_end_write */
+ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
+ {
+-	mm_segment_t old_fs;
+-	const char __user *p;
++	struct kvec iov = {
++		.iov_base	= (void *)buf,
++		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
++	};
++	struct kiocb kiocb;
++	struct iov_iter iter;
+ 	ssize_t ret;
+ 
+ 	if (WARN_ON_ONCE(!(file->f_mode & FMODE_WRITE)))
+ 		return -EBADF;
+ 	if (!(file->f_mode & FMODE_CAN_WRITE))
+ 		return -EINVAL;
++	/*
++	 * Also fail if ->write_iter and ->write are both wired up as that
++	 * implies very convoluted semantics.
++	 */
++	if (unlikely(!file->f_op->write_iter || file->f_op->write))
++		return warn_unsupported(file, "write");
+ 
+-	old_fs = get_fs();
+-	set_fs(KERNEL_DS);
+-	p = (__force const char __user *)buf;
+-	if (count > MAX_RW_COUNT)
+-		count =  MAX_RW_COUNT;
+-	if (file->f_op->write)
+-		ret = file->f_op->write(file, p, count, pos);
+-	else if (file->f_op->write_iter)
+-		ret = new_sync_write(file, p, count, pos);
+-	else
+-		ret = -EINVAL;
+-	set_fs(old_fs);
++	init_sync_kiocb(&kiocb, file);
++	kiocb.ki_pos = *pos;
++	iov_iter_kvec(&iter, WRITE, &iov, 1, iov.iov_len);
++	ret = file->f_op->write_iter(&kiocb, &iter);
+ 	if (ret > 0) {
++		*pos = kiocb.ki_pos;
+ 		fsnotify_modify(file);
+ 		add_wchar(current, ret);
+ 	}
+-- 
+2.28.0
 
