@@ -2,70 +2,88 @@ Return-Path: <SRS0=o3hI=CF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA734C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 06:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC05C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 06:13:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6061220786
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 06:09:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="q5xjA01W"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6061220786
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id F1BB520786
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 06:13:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1BB520786
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BcXP64z97zDqbB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 16:09:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BcXTx3JkTzDqcF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 16:13:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=codefail.de (client-ip=198.54.127.72;
+ helo=se15-1.privateemail.com; envelope-from=cmr@codefail.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=codefail.de
+Received: from se15-1.privateemail.com (se15-1.privateemail.com
+ [198.54.127.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcXMM5JHwzDqMn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 16:07:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=q5xjA01W; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BcXML6TWyz9sRK;
- Thu, 27 Aug 2020 16:07:42 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1598508462;
- bh=44uY6wuEUM9I0JSFoXE1y1Uy0dwu2ymTti2d/hjXB9Q=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=q5xjA01W3XD/TpFExMucgl8Kri5f+Ef7AP9pCxS/DNeYTKW91Auy3P2tubG3me3K2
- qWyWAZje2GB3pVju7H/Kw6mDMujUnwSZZBkQkW2KMi3k46JzNFdhgPtMs2YDQ4rC3B
- POEZ8aqWMNLIYkhuR+PtLzhoT2oyXZJqPUHNE+QfFqPqB/XS7Bp67VkB79XqEhNB2g
- 5CXaXMMh15tJkKGyFc4wi9rYnuwXpJdWcDrtxwq5tqXXgeEzluv18u1FGARDgAAKcE
- K2qA8YVj/U3EchXV21UlLwNP+LdZrmYDX8CWPxD3Bv2yb9JJ4wvKUQWr4AvMLbrYBi
- jyG0oLrUO1qbA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pratik Sampat <psampat@linux.ibm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org,
- npiggin@gmail.com, mikey@neuling.org, ego@linux.vnet.ibm.com,
- svaidy@linux.ibm.com, linux-kernel@vger.kernel.org, pratik.r.sampat@gmail.com
-Subject: Re: [PATCH] Revert "powerpc/powernv/idle: Replace CPU feature check
- with PVR check"
-In-Reply-To: <170e1919-bc45-6b99-dc4d-713418c98be1@linux.ibm.com>
-References: <20200826082918.89306-1-psampat@linux.ibm.com>
- <1fb7fcef-a39d-d36e-35d5-021a5c9ea82c@csgroup.eu>
- <170e1919-bc45-6b99-dc4d-713418c98be1@linux.ibm.com>
-Date: Thu, 27 Aug 2020 16:07:39 +1000
-Message-ID: <87imd439lg.fsf@mpe.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcXQn4dyfzDqXK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 16:10:41 +1000 (AEST)
+Received: from new-01-3.privateemail.com ([198.54.122.47])
+ by se15.registrar-servers.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.92)
+ (envelope-from <cmr@codefail.de>)
+ id 1kBAOi-0002B1-P8; Wed, 26 Aug 2020 22:24:33 -0700
+Received: from MTA-13.privateemail.com (unknown [10.20.147.29])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 258AFA74;
+ Thu, 27 Aug 2020 05:24:27 +0000 (UTC)
+Received: from mta-13.privateemail.com (localhost [127.0.0.1])
+ by mta-13.privateemail.com (Postfix) with ESMTP id 0387880061;
+ Thu, 27 Aug 2020 01:24:22 -0400 (EDT)
+Received: from geist.attlocal.net (unknown [10.20.151.231])
+ by mta-13.privateemail.com (Postfix) with ESMTPA id A949C8005C;
+ Thu, 27 Aug 2020 05:24:20 +0000 (UTC)
+From: "Christopher M. Riedl" <cmr@codefail.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 2/6] x86: Add LKDTM accessor for patching addr
+Date: Thu, 27 Aug 2020 00:26:55 -0500
+Message-Id: <20200827052659.24922-3-cmr@codefail.de>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200827052659.24922-1-cmr@codefail.de>
+References: <20200827052659.24922-1-cmr@codefail.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
+X-Originating-IP: 198.54.122.47
+X-SpamExperts-Domain: o3.privateemail.com
+X-SpamExperts-Username: out-03
+Authentication-Results: registrar-servers.com;
+ auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
+X-SpamExperts-Outgoing-Class: ham
+X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00988328726046)
+X-Recommended-Action: accept
+X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0fJi3Ojdyt5h9PLOIGvr3lipSDasLI4SayDByyq9LIhVoMTMy/X6pyNr
+ Gb/FW2b+jUTNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kq02yUY2BU41HLqp9U+7si8M8
+ LdvJpZ7k99Lvu8YZXeI6p5bbhGYzvfahQ7X4A9L0Ye/JicEYVQv1wTfnWwJUGLoHT+TiZ2cHCmVO
+ a6Hj9ohKUEMdSe7EvQ2LmvIpJjdQJODXbtOodkPED+RkHjVGH2xZ/WG2ZLv5RT/cF5Q6687AHRjU
+ JmjnvGEokRBTZJpViFKfD1jKgYfH+6S5qDVYoHta8E9ScH7TtyK/xsUDPODbhw3Crbac1ieeuRax
+ ITFpzO11BRKqT8B4uLrn7iz8uvLBMzbIQcSG8L0jOzL80Q1MxDcqDeEvahfPkDkTlH91LgaQnmF8
+ H6pa6B8MTK1ligAJ9G0GMvMSOAhk0taEj8weJNI+C0vMCMVtmGEXbiaCRPGqg4v6OwYy/yt5Cj+T
+ 3txbXpCgbiKBsA+Ddi6maweYdUirBly/K12a4uqqibUj/dHBojDbLVZkEx6TcwTT039q0aZI3qbh
+ XsaDdLgW9brs8lq6YeUVTmb2st+aVE9JYOaeuiH/yEdZH8S1+TgcJBOjh0vPxcQOjKKOrYIQYpwa
+ mUdylUIKhf3z2GAHxH7IMNrut00GZ5qvF8IF7tMR72KEsztVVBDOPEFKS2UxZBZDGO6iIQJwM5Rw
+ VSHiNllowov2GavqJ07j7hZY8mVbefiuK2KN35hXmy7nXQ2QuBuxX4OQOI/UQ6jnFfMBgzwOw1To
+ H/cUtROfGg27pVfRPjU3fSpvtX7kDRT+AqQr2T3rxJw/s9JEmzH0m3M+UGtqDfkBjIvvy6OYDiIm
+ hhRfemivBolEzt6VXB2TTRsq0ulDPDo3pDJlUlQ25PasjIMI9uAIvgWsH+Wq0zDLDi3S8euO5TcD
+ eKjrEmYPn2IVWRsZR6NeDQwp7lDA8K9tDm+p97/T4LRRVYxF+VXiiOfHJN40eTXlWiUAYdLmsJdA
+ oPKCpWwKtkkGG+bEnfOEkWTNI3SjTCvjMfNBc9ze9o81pXKSQ+GI7QB7PH97h6/L6Wb57LVs51cV
+ C2TOjdXlLnr1FFwa8AyQYqjO7qYtiXb+9Q==
+X-Report-Abuse-To: spam@se5.registrar-servers.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,69 +95,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: kernel-hardening@lists.openwall.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Pratik Sampat <psampat@linux.ibm.com> writes:
-> On 26/08/20 2:07 pm, Christophe Leroy wrote:
->> Le 26/08/2020 =C3=A0 10:29, Pratik Rajesh Sampat a =C3=A9crit=C2=A0:
->>> Cpuidle stop state implementation has minor optimizations for P10
->>> where hardware preserves more SPR registers compared to P9.
->>> The current P9 driver works for P10, although does few extra
->>> save-restores. P9 driver can provide the required power management
->>> features like SMT thread folding and core level power savings
->>> on a P10 platform.
->>>
->>> Until the P10 stop driver is available, revert the commit which
->>> allows for only P9 systems to utilize cpuidle and blocks all
->>> idle stop states for P10.
->>> Cpu idle states are enabled and tested on the P10 platform
->>> with this fix.
->>>
->>> This reverts commit 8747bf36f312356f8a295a0c39ff092d65ce75ae.
->>>
->>> Fixes: 8747bf36f312 ("powerpc/powernv/idle: Replace CPU feature check=20
->>> with PVR check")
->>> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
->>> ---
->>> =C2=A0 @mpe: This revert would resolve a staging issue wherein the P10 =
-stop
->>> =C2=A0 driver is not yet ready while cpuidle stop states need not be bl=
-ocked
->>> =C2=A0 on 5.9 for Power10 systems which could cause SMT folding related
->>> =C2=A0 performance issues.
->>>
->>> =C2=A0 The P10 stop driver is in the works here:
->>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-August/216773.html
->>>
->>> =C2=A0 arch/powerpc/platforms/powernv/idle.c | 2 +-
->>> =C2=A0 1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/idle.c=20
->>> b/arch/powerpc/platforms/powernv/idle.c
->>> index 77513a80cef9..345ab062b21a 100644
->>> --- a/arch/powerpc/platforms/powernv/idle.c
->>> +++ b/arch/powerpc/platforms/powernv/idle.c
->>> @@ -1223,7 +1223,7 @@ static void __init pnv_probe_idle_states(void)
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return;
->>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
->>> =C2=A0 -=C2=A0=C2=A0=C2=A0 if (pvr_version_is(PVR_POWER9))
->>> +=C2=A0=C2=A0=C2=A0 if (cpu_has_feature(CPU_FTR_ARCH_300))
->>
->> Why not something like:
->>
->> =C2=A0=C2=A0=C2=A0=C2=A0if (pvr_version_is(PVR_POWER9) || pvr_version_is=
-(PVR_POWER10))
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pnv_power9_idle_init();=20
->
-> In order to use PVR_POWER10 I would need to define it under
-> arch/powerpc/include/asm/reg.h, which is not present in 5.9 yet.
->
-> However, if it okay with @mpe I could split out Nick's P10 stop driver
-> (https://lists.ozlabs.org/pipermail/linuxppc-dev/2020-August/216773.html)
-> into two parts:
+When live patching a STRICT_RWX kernel, a mapping is installed at a
+"patching address" with temporary write permissions. Provide a
+LKDTM-only accessor function for this address in preparation for a LKDTM
+test which attempts to "hijack" this mapping by writing to it from
+another CPU.
 
-I'll just take this for now, it's the simplest option.
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/x86/include/asm/text-patching.h | 4 ++++
+ arch/x86/kernel/alternative.c        | 7 +++++++
+ 2 files changed, 11 insertions(+)
 
-cheers
+diff --git a/arch/x86/include/asm/text-patching.h b/arch/x86/include/asm/text-patching.h
+index 6593b42cb379..f67b4dd30bf8 100644
+--- a/arch/x86/include/asm/text-patching.h
++++ b/arch/x86/include/asm/text-patching.h
+@@ -148,4 +148,8 @@ void int3_emulate_call(struct pt_regs *regs, unsigned long func)
+ }
+ #endif /* !CONFIG_UML_X86 */
+ 
++#ifdef CONFIG_LKDTM
++unsigned long read_cpu_patching_addr(unsigned int cpu);
++#endif
++
+ #endif /* _ASM_X86_TEXT_PATCHING_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index c3daf0aaa0ee..c16833f35a1f 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -843,6 +843,13 @@ static inline void unuse_temporary_mm(temp_mm_state_t prev_state)
+ __ro_after_init struct mm_struct *poking_mm;
+ __ro_after_init unsigned long poking_addr;
+ 
++#ifdef CONFIG_LKDTM
++unsigned long read_cpu_patching_addr(unsigned int cpu)
++{
++	return poking_addr;
++}
++#endif
++
+ static void *__text_poke(void *addr, const void *opcode, size_t len)
+ {
+ 	bool cross_page_boundary = offset_in_page(addr) + len > PAGE_SIZE;
+-- 
+2.28.0
+
