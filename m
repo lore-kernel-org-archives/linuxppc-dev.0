@@ -7,83 +7,83 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E50C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:22:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 267A9C433E1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:24:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE7F420738
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:22:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3348920738
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:24:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="k6NeVAWE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE7F420738
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="n+kOVFv6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3348920738
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BcbLx3nWPzDqKl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 18:22:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BcbPT1ypXzDqjh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 18:24:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=k6NeVAWE; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=n+kOVFv6; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcZzJ74T8zDqDs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 18:05:32 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 07R82NaX095461; Thu, 27 Aug 2020 04:05:09 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcZzL0LMRzDqfs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 18:05:33 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07R82EL2026701; Thu, 27 Aug 2020 04:05:16 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=lRtd7ye0+CNHfnxvkGBpHOyntXvdI5t4XHx4fH21RiQ=;
- b=k6NeVAWEFW1l5NOYyuMOpkRmCIKcQc4pfqN1pEkt9w23ZhJjR+2KxNrk6kaajPbymxec
- iyFoZIw+HGDcYyfnLl2KwOCp+ZSozCIUTzs4aYKqxdty7ceky6g9ffFg6ODTJOTIhUYg
- Zgfcyj5X9yAf40ubbzxA46kgvrC5wtj2TPG1nFpW/0hnRY/mkunQrXcSOvbFlhesj8yk
- In4QOzl6pcjOrKOs+dcI8/c7gXKRqb151HtSBUZ8z9priODiLoPH3Kbxl/4F8gIJSAXf
- 0aILG+TFG7ebn11Hem19ZLIWFx0VSxLcQTnimTchZq+O8XJjtV2WhTrHN6awmcRtR/p8 jQ== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 3366qjc1r0-1
+ bh=893UJQi8hOsUkObBOmcaXi0QGZ1whNTeHCCSlXG9Ep0=;
+ b=n+kOVFv6ly4U8+r/J6T1xNXylRM2v5/u1pliBjQEayr4rtHHXGkjTGIAlTSrfU+AezDF
+ s/THgQZkDnGv9KaNV62795WuqI/sj/olL9erWCCiSGgjLzMC4WuJz4AAG0L+iTZ3ms1a
+ aD83jTl4NqIAljjrmz8rxWQsQPTgdzb0F8PdZmhcwGvDa/HPWYJq6reinDY/5zLLjExV
+ zt+ft4P6GgP48seXLm9td7dOzLba5Je6OPYXhe37TQWwbkGQ6+DWktV/+mFD2+n8GWZm
+ MobUQa82b8nud50mJ7EpTGpjEQHM5pTR4Sf25p5FFFKPFe48t4KnAGwd2jWki9UbmLkE Sg== 
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
+ [169.55.91.170])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3367x0t2sg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Aug 2020 04:05:09 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07R838h3019621;
- Thu, 27 Aug 2020 08:05:08 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01dal.us.ibm.com with ESMTP id 332utttcpe-1
+ Thu, 27 Aug 2020 04:05:16 -0400
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+ by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07R82YFT016529;
+ Thu, 27 Aug 2020 08:05:15 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma02wdc.us.ibm.com with ESMTP id 332ujqgcb4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 27 Aug 2020 08:05:08 +0000
+ Thu, 27 Aug 2020 08:05:15 +0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 07R856EF53805342
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07R85Dpv59834788
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 27 Aug 2020 08:05:06 GMT
+ Thu, 27 Aug 2020 08:05:13 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9126978074;
- Thu, 27 Aug 2020 08:05:06 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BDC5178067;
+ Thu, 27 Aug 2020 08:05:11 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D31227805E;
- Thu, 27 Aug 2020 08:05:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 335187805C;
+ Thu, 27 Aug 2020 08:05:07 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.102.17.9])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 27 Aug 2020 08:05:01 +0000 (GMT)
+ Thu, 27 Aug 2020 08:05:06 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v3 03/13] mm/debug_vm_pgtable/ppc64: Avoid setting top bits in
- radom value
-Date: Thu, 27 Aug 2020 13:34:28 +0530
-Message-Id: <20200827080438.315345-4-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v3 04/13] mm/debug_vm_pgtables/hugevmap: Use the arch helper
+ to identify huge vmap support.
+Date: Thu, 27 Aug 2020 13:34:29 +0530
+Message-Id: <20200827080438.315345-5-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200827080438.315345-1-aneesh.kumar@linux.ibm.com>
 References: <20200827080438.315345-1-aneesh.kumar@linux.ibm.com>
@@ -94,10 +94,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-08-27_02:2020-08-27,
  2020-08-27 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0
- mlxlogscore=891 spamscore=0 priorityscore=1501 adultscore=0
- impostorscore=0 suspectscore=0 mlxscore=0 bulkscore=0 lowpriorityscore=0
- phishscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ impostorscore=0 spamscore=0
+ malwarescore=0 bulkscore=0 adultscore=0 mlxscore=0 suspectscore=0
+ mlxlogscore=999 priorityscore=1501 phishscore=0 lowpriorityscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2006250000 definitions=main-2008270057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -122,39 +122,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ppc64 use bit 62 to indicate a pte entry (_PAGE_PTE). Avoid setting that bit in
-random value.
+ppc64 supports huge vmap only with radix translation. Hence use arch helper
+to determine the huge vmap support.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- mm/debug_vm_pgtable.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ mm/debug_vm_pgtable.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
-index 086309fb9b6f..bbf9df0e64c6 100644
+index bbf9df0e64c6..28f9d0558c20 100644
 --- a/mm/debug_vm_pgtable.c
 +++ b/mm/debug_vm_pgtable.c
-@@ -44,10 +44,17 @@
-  * entry type. But these bits might affect the ability to clear entries with
-  * pxx_clear() because of how dynamic page table folding works on s390. So
-  * while loading up the entries do not change the lower 4 bits. It does not
-- * have affect any other platform.
-+ * have affect any other platform. Also avoid the 62nd bit on ppc64 that is
-+ * used to mark a pte entry.
-  */
--#define S390_MASK_BITS	4
--#define RANDOM_ORVALUE	GENMASK(BITS_PER_LONG - 1, S390_MASK_BITS)
-+#define S390_SKIP_MASK		GENMASK(3, 0)
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#define PPC64_SKIP_MASK		GENMASK(62, 62)
-+#else
-+#define PPC64_SKIP_MASK		0x0
-+#endif
-+#define ARCH_SKIP_MASK (S390_SKIP_MASK | PPC64_SKIP_MASK)
-+#define RANDOM_ORVALUE (GENMASK(BITS_PER_LONG - 1, 0) & ~ARCH_SKIP_MASK)
- #define RANDOM_NZVALUE	GENMASK(7, 0)
+@@ -28,6 +28,7 @@
+ #include <linux/swapops.h>
+ #include <linux/start_kernel.h>
+ #include <linux/sched/mm.h>
++#include <linux/io.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
  
- static void __init pte_basic_tests(unsigned long pfn, pgprot_t prot)
+@@ -206,11 +207,12 @@ static void __init pmd_leaf_tests(unsigned long pfn, pgprot_t prot)
+ 	WARN_ON(!pmd_leaf(pmd));
+ }
+ 
++#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+ static void __init pmd_huge_tests(pmd_t *pmdp, unsigned long pfn, pgprot_t prot)
+ {
+ 	pmd_t pmd;
+ 
+-	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMAP))
++	if (!arch_ioremap_pmd_supported())
+ 		return;
+ 
+ 	pr_debug("Validating PMD huge\n");
+@@ -224,6 +226,10 @@ static void __init pmd_huge_tests(pmd_t *pmdp, unsigned long pfn, pgprot_t prot)
+ 	pmd = READ_ONCE(*pmdp);
+ 	WARN_ON(!pmd_none(pmd));
+ }
++#else /* !CONFIG_HAVE_ARCH_HUGE_VMAP */
++static void __init pmd_huge_tests(pmd_t *pmdp, unsigned long pfn, pgprot_t prot) { }
++#endif /* !CONFIG_HAVE_ARCH_HUGE_VMAP */
++
+ 
+ static void __init pmd_savedwrite_tests(unsigned long pfn, pgprot_t prot)
+ {
+@@ -320,11 +326,12 @@ static void __init pud_leaf_tests(unsigned long pfn, pgprot_t prot)
+ 	WARN_ON(!pud_leaf(pud));
+ }
+ 
++#ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+ static void __init pud_huge_tests(pud_t *pudp, unsigned long pfn, pgprot_t prot)
+ {
+ 	pud_t pud;
+ 
+-	if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMAP))
++	if (!arch_ioremap_pud_supported())
+ 		return;
+ 
+ 	pr_debug("Validating PUD huge\n");
+@@ -338,6 +345,10 @@ static void __init pud_huge_tests(pud_t *pudp, unsigned long pfn, pgprot_t prot)
+ 	pud = READ_ONCE(*pudp);
+ 	WARN_ON(!pud_none(pud));
+ }
++#else /* !CONFIG_HAVE_ARCH_HUGE_VMAP */
++static void __init pud_huge_tests(pud_t *pudp, unsigned long pfn, pgprot_t prot) { }
++#endif /* !CONFIG_HAVE_ARCH_HUGE_VMAP */
++
+ #else  /* !CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
+ static void __init pud_basic_tests(unsigned long pfn, pgprot_t prot) { }
+ static void __init pud_advanced_tests(struct mm_struct *mm,
 -- 
 2.26.2
 
