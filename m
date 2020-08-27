@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3997CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C924C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:26:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D258F2080C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:19:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CCF532080C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:26:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qqzFGQBK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D258F2080C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HOnxeUy1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCF532080C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BcmcP3ltgzDqdk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:19:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bcmm70zBHzDqc4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:26:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,35 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=qqzFGQBK; 
+ header.s=casper.20170209 header.b=HOnxeUy1; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBS35SHzDqdg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBM66ZjzDqcx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=dyzNrnbeRWDBy321zJA1JkTbM9HGH7MmVKIH+miEUVA=; b=qqzFGQBKp4rz3CojCaU6LVmeg/
- wy22QbDo3yrLseAyIZRfKajDAvgWpAmCyobfFJ98XfvNlwTwpLPBBhvVMxCvExW6QZHxzGmEPlYfv
- BDzZbXRQ/Q/mUowEfX40dLVlBockSCtJAg0jj2ua1GnJLk/A07DsBvlboc1NBxzhuGDQMnDAb0LGL
- 2u3k0lxMJZcQjqcgc6JIDrCmU0l2UVWkSi6jXuaUiniQgqRmmyjseS8B9AeXw9DnJ/my/M/xjpuno
- WuwU1p7oNZkbAUz6/EsyiB4Zuu1stA+r0ytzDQyaJXNjmT7XHwL46DiKldYh9h/kRvHZSKjcPj9cg
- TmnHkMXg==;
+ bh=qdxrwOFViywP/5XuzkfTTZlvXDJmaru1paUb7ZwS2hs=; b=HOnxeUy17i24/revnqoDslYl3g
+ RyseqUhtzK3Wt4ScXjBi9wxyZvRY21MDDTqIsCWpBW/wp7J9m+yeJ06gCbEJCygv1dzjXlgeSxaa/
+ XSTGEfCb0wfE6cw1431A/DnhLyjw/YUo9fHUX1BEzweg3m7VpzihX4Lw9S32zBTAPBnjhDQ2vCPRZ
+ QPV39sDGsS2u1uVhlQmC9+Tbh+2K2KisNetDIN/NCdgmprR5Bgfkn/yPLIGOBXUasNoAoZZHCNY76
+ o5Bvig8Xe47I5VvYDjf97aTbioX1ywX84meC8pqhE/uSpvEP1uM13OmRX5GxLkSEn6Z2ZieAChs8B
+ /Q/9kDWA==;
 Received: from [2001:4bb8:18c:45ba:9892:9e86:5202:32f0] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kBJOJ-000451-0R; Thu, 27 Aug 2020 15:00:39 +0000
+ id 1kBJOE-00044X-Ki; Thu, 27 Aug 2020 15:00:34 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
  x86@kernel.org
-Subject: [PATCH 05/10] lkdtm: disable set_fs-based tests for !CONFIG_SET_FS
-Date: Thu, 27 Aug 2020 17:00:25 +0200
-Message-Id: <20200827150030.282762-6-hch@lst.de>
+Subject: [PATCH 02/10] fs: don't allow splice read/write without explicit ops
+Date: Thu, 27 Aug 2020 17:00:22 +0200
+Message-Id: <20200827150030.282762-3-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200827150030.282762-1-hch@lst.de>
 References: <20200827150030.282762-1-hch@lst.de>
@@ -85,57 +85,217 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Once we can't manipulate the address limit, we also can't test what
-happens when the manipulation is abused.
+default_file_splice_write is the last piece of generic code that uses
+set_fs to make the uaccess routines operate on kernel pointers.  It
+implements a "fallback loop" for splicing from files that do not actually
+provide a proper splice_read method.  The usual file systems and other
+high bandwith instances all provide a ->splice_read, so this just removes
+support for various device drivers and procfs/debugfs files.  If splice
+support for any of those turns out to be important it can be added back
+by switching them to the iter ops and using generic_file_splice_read.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Kees Cook <keescook@chromium.org>
 ---
- drivers/misc/lkdtm/bugs.c     | 4 ++++
- drivers/misc/lkdtm/usercopy.c | 4 ++++
- 2 files changed, 8 insertions(+)
+ fs/read_write.c    |   2 +-
+ fs/splice.c        | 130 +++++----------------------------------------
+ include/linux/fs.h |   2 -
+ 3 files changed, 15 insertions(+), 119 deletions(-)
 
-diff --git a/drivers/misc/lkdtm/bugs.c b/drivers/misc/lkdtm/bugs.c
-index 4dfbfd51bdf774..0d5b93694a0183 100644
---- a/drivers/misc/lkdtm/bugs.c
-+++ b/drivers/misc/lkdtm/bugs.c
-@@ -315,11 +315,15 @@ void lkdtm_CORRUPT_LIST_DEL(void)
- /* Test if unbalanced set_fs(KERNEL_DS)/set_fs(USER_DS) check exists. */
- void lkdtm_CORRUPT_USER_DS(void)
- {
-+#ifdef CONFIG_SET_FS
- 	pr_info("setting bad task size limit\n");
- 	set_fs(KERNEL_DS);
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 702c4301d9eb6b..8c61f67453e3d3 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -1077,7 +1077,7 @@ ssize_t vfs_iter_write(struct file *file, struct iov_iter *iter, loff_t *ppos,
+ }
+ EXPORT_SYMBOL(vfs_iter_write);
  
- 	/* Make sure we do not keep running with a KERNEL_DS! */
- 	force_sig(SIGKILL);
-+#else
-+	pr_err("XFAIL: this requires set_fs()\n");
-+#endif
+-ssize_t vfs_readv(struct file *file, const struct iovec __user *vec,
++static ssize_t vfs_readv(struct file *file, const struct iovec __user *vec,
+ 		  unsigned long vlen, loff_t *pos, rwf_t flags)
+ {
+ 	struct iovec iovstack[UIO_FASTIOV];
+diff --git a/fs/splice.c b/fs/splice.c
+index d7c8a7c4db07ff..412df7b48f9eb7 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -342,89 +342,6 @@ const struct pipe_buf_operations nosteal_pipe_buf_ops = {
+ };
+ EXPORT_SYMBOL(nosteal_pipe_buf_ops);
+ 
+-static ssize_t kernel_readv(struct file *file, const struct kvec *vec,
+-			    unsigned long vlen, loff_t offset)
+-{
+-	mm_segment_t old_fs;
+-	loff_t pos = offset;
+-	ssize_t res;
+-
+-	old_fs = get_fs();
+-	set_fs(KERNEL_DS);
+-	/* The cast to a user pointer is valid due to the set_fs() */
+-	res = vfs_readv(file, (const struct iovec __user *)vec, vlen, &pos, 0);
+-	set_fs(old_fs);
+-
+-	return res;
+-}
+-
+-static ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
+-				 struct pipe_inode_info *pipe, size_t len,
+-				 unsigned int flags)
+-{
+-	struct kvec *vec, __vec[PIPE_DEF_BUFFERS];
+-	struct iov_iter to;
+-	struct page **pages;
+-	unsigned int nr_pages;
+-	unsigned int mask;
+-	size_t offset, base, copied = 0;
+-	ssize_t res;
+-	int i;
+-
+-	if (pipe_full(pipe->head, pipe->tail, pipe->max_usage))
+-		return -EAGAIN;
+-
+-	/*
+-	 * Try to keep page boundaries matching to source pagecache ones -
+-	 * it probably won't be much help, but...
+-	 */
+-	offset = *ppos & ~PAGE_MASK;
+-
+-	iov_iter_pipe(&to, READ, pipe, len + offset);
+-
+-	res = iov_iter_get_pages_alloc(&to, &pages, len + offset, &base);
+-	if (res <= 0)
+-		return -ENOMEM;
+-
+-	nr_pages = DIV_ROUND_UP(res + base, PAGE_SIZE);
+-
+-	vec = __vec;
+-	if (nr_pages > PIPE_DEF_BUFFERS) {
+-		vec = kmalloc_array(nr_pages, sizeof(struct kvec), GFP_KERNEL);
+-		if (unlikely(!vec)) {
+-			res = -ENOMEM;
+-			goto out;
+-		}
+-	}
+-
+-	mask = pipe->ring_size - 1;
+-	pipe->bufs[to.head & mask].offset = offset;
+-	pipe->bufs[to.head & mask].len -= offset;
+-
+-	for (i = 0; i < nr_pages; i++) {
+-		size_t this_len = min_t(size_t, len, PAGE_SIZE - offset);
+-		vec[i].iov_base = page_address(pages[i]) + offset;
+-		vec[i].iov_len = this_len;
+-		len -= this_len;
+-		offset = 0;
+-	}
+-
+-	res = kernel_readv(in, vec, nr_pages, *ppos);
+-	if (res > 0) {
+-		copied = res;
+-		*ppos += res;
+-	}
+-
+-	if (vec != __vec)
+-		kfree(vec);
+-out:
+-	for (i = 0; i < nr_pages; i++)
+-		put_page(pages[i]);
+-	kvfree(pages);
+-	iov_iter_advance(&to, copied);	/* truncates and discards */
+-	return res;
+-}
+-
+ /*
+  * Send 'sd->len' bytes to socket from 'sd->file' at position 'sd->pos'
+  * using sendpage(). Return the number of bytes sent.
+@@ -788,33 +705,6 @@ iter_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
+ 
+ EXPORT_SYMBOL(iter_file_splice_write);
+ 
+-static int write_pipe_buf(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+-			  struct splice_desc *sd)
+-{
+-	int ret;
+-	void *data;
+-	loff_t tmp = sd->pos;
+-
+-	data = kmap(buf->page);
+-	ret = __kernel_write(sd->u.file, data + buf->offset, sd->len, &tmp);
+-	kunmap(buf->page);
+-
+-	return ret;
+-}
+-
+-static ssize_t default_file_splice_write(struct pipe_inode_info *pipe,
+-					 struct file *out, loff_t *ppos,
+-					 size_t len, unsigned int flags)
+-{
+-	ssize_t ret;
+-
+-	ret = splice_from_pipe(pipe, out, ppos, len, flags, write_pipe_buf);
+-	if (ret > 0)
+-		*ppos += ret;
+-
+-	return ret;
+-}
+-
+ /**
+  * generic_splice_sendpage - splice data from a pipe to a socket
+  * @pipe:	pipe to splice from
+@@ -836,15 +726,23 @@ ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe, struct file *out,
+ 
+ EXPORT_SYMBOL(generic_splice_sendpage);
+ 
++static int warn_unsupported(struct file *file, const char *op)
++{
++	pr_debug_ratelimited(
++		"splice %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
++		op, file, current->pid, current->comm);
++	return -EINVAL;
++}
++
+ /*
+  * Attempt to initiate a splice from pipe to file.
+  */
+ static long do_splice_from(struct pipe_inode_info *pipe, struct file *out,
+ 			   loff_t *ppos, size_t len, unsigned int flags)
+ {
+-	if (out->f_op->splice_write)
+-		return out->f_op->splice_write(pipe, out, ppos, len, flags);
+-	return default_file_splice_write(pipe, out, ppos, len, flags);
++	if (unlikely(!out->f_op->splice_write))
++		return warn_unsupported(out, "write");
++	return out->f_op->splice_write(pipe, out, ppos, len, flags);
  }
  
- /* Test that VMAP_STACK is actually allocating with a leading guard page */
-diff --git a/drivers/misc/lkdtm/usercopy.c b/drivers/misc/lkdtm/usercopy.c
-index b833367a45d053..04d10063835241 100644
---- a/drivers/misc/lkdtm/usercopy.c
-+++ b/drivers/misc/lkdtm/usercopy.c
-@@ -327,6 +327,7 @@ void lkdtm_USERCOPY_KERNEL(void)
+ /*
+@@ -866,9 +764,9 @@ static long do_splice_to(struct file *in, loff_t *ppos,
+ 	if (unlikely(len > MAX_RW_COUNT))
+ 		len = MAX_RW_COUNT;
  
- void lkdtm_USERCOPY_KERNEL_DS(void)
- {
-+#ifdef CONFIG_SET_FS
- 	char __user *user_ptr =
- 		(char __user *)(0xFUL << (sizeof(unsigned long) * 8 - 4));
- 	mm_segment_t old_fs = get_fs();
-@@ -338,6 +339,9 @@ void lkdtm_USERCOPY_KERNEL_DS(void)
- 	if (copy_to_user(user_ptr, buf, sizeof(buf)) == 0)
- 		pr_err("copy_to_user() to noncanonical address succeeded!?\n");
- 	set_fs(old_fs);
-+#else
-+	pr_err("XFAIL: this requires set_fs()\n");
-+#endif
+-	if (in->f_op->splice_read)
+-		return in->f_op->splice_read(in, ppos, pipe, len, flags);
+-	return default_file_splice_read(in, ppos, pipe, len, flags);
++	if (unlikely(!in->f_op->splice_read))
++		return warn_unsupported(in, "read");
++	return in->f_op->splice_read(in, ppos, pipe, len, flags);
  }
  
- void __init lkdtm_usercopy_init(void)
+ /**
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index e019ea2f1347e6..d33cc3e8ed410b 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1894,8 +1894,6 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
+ 
+ extern ssize_t vfs_read(struct file *, char __user *, size_t, loff_t *);
+ extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
+-extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
+-		unsigned long, loff_t *, rwf_t);
+ extern ssize_t vfs_copy_file_range(struct file *, loff_t , struct file *,
+ 				   loff_t, size_t, unsigned int);
+ extern ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
 -- 
 2.28.0
 
