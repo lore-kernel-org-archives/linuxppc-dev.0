@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1E52C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B9D3C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:50:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 892142087D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:47:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EFD6522B40
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 15:50:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="LPerV9+R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 892142087D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="f8lIoJuK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFD6522B40
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BcnDG2r9fzDqDh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:47:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BcnJ44w8YzDqJQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 01:50:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,35 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=LPerV9+R; 
+ header.s=casper.20170209 header.b=f8lIoJuK; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBW38klzDqcv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcmBY5tmdzDqdW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2020 01:00:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=A5kYsd9oAQ3AwImcW24uVtwuNCdcCvpOc/Y4LXpS54c=; b=LPerV9+RtrW4sQYE6zRKyCyM/U
- THsj7M2Bdoy7UvUxEbXYcsPxpq0AILG1qcLh6v1TZvXw6xTgGQPpHBL1IkoZVHD4pSkImDzq13CNw
- Ng3svSr3WrU7i4SBpaV1aQvlSm+jQtb8ZM1TDDBa69BzkR0jCY3FDJ10guXXt95xkKo2heDY1jv7O
- Wktn6meVkkovpUrVBiyXen1Umy49DzlW/Wh0Na1S5DGx7rqvPIAuDOwi/suuRn+f9gPLT/wm1XwLQ
- enoLfuBDjq4HbozejcGDrlXLeRVT5bclYr8Sn2BIBFO+3xNf5Y0PPsoX93MTGlyFwrd7pJn3ezx/v
- mpSVufxw==;
+ bh=9L27YQ1TPyefQxTRY5L3HB3ezDjb1XN91QeXJxbd6ZI=; b=f8lIoJuKQotvfkFzBil2G7U/19
+ R1QYHo+Y6/3sLKgfHXqPHytc1QNPQgmwYxPbk/LAOgRYqDhmzvD+So+xOYAyudYPsRvr7Q1wqvT2C
+ VhTsyJGaJ2TzvOCQu/dcF8ISG/rYe3X/k174M8iR5BkktY5dz42zc3AUnuMmD+PwY3JFhvi3oBAta
+ 9PWnxwTkOP32j3hjBi0nmCwBL0uH8ks0NajtNndAd3TGj3dNQgtWEIkMhJa2dKHfv4oPNmU65XYUo
+ II3IzN9ya++Dntv9sFpGvt6B4Yjv/BmaJnVmUI7s5Z6VsFFXGFrWaAHKfbsgr2Fn3M9LLtUvYggF/
+ Awphnz3g==;
 Received: from [2001:4bb8:18c:45ba:9892:9e86:5202:32f0] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kBJON-00045q-5u; Thu, 27 Aug 2020 15:00:43 +0000
+ id 1kBJOQ-00046E-7N; Thu, 27 Aug 2020 15:00:46 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
  x86@kernel.org
-Subject: [PATCH 08/10] x86: remove address space overrides using set_fs()
-Date: Thu, 27 Aug 2020 17:00:28 +0200
-Message-Id: <20200827150030.282762-9-hch@lst.de>
+Subject: [PATCH 10/10] powerpc: remove address space overrides using set_fs()
+Date: Thu, 27 Aug 2020 17:00:30 +0200
+Message-Id: <20200827150030.282762-11-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200827150030.282762-1-hch@lst.de>
 References: <20200827150030.282762-1-hch@lst.de>
@@ -86,118 +86,106 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Stop providing the possibility to override the address space using
-set_fs() now that there is no need for that any more.  To properly
-handle the TASK_SIZE_MAX checking for 4 vs 5-level page tables on
-x86 a new alternative is introduced, which just like the one in
-entry_64.S has to use the hardcoded virtual address bits to escape
-the fact that TASK_SIZE_MAX isn't actually a constant when 5-level
-page tables are enabled.
+set_fs() now that there is no need for that any more.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/Kconfig                   |  1 -
- arch/x86/ia32/ia32_aout.c          |  1 -
- arch/x86/include/asm/processor.h   | 11 +----------
- arch/x86/include/asm/thread_info.h |  2 --
- arch/x86/include/asm/uaccess.h     | 26 +-------------------------
- arch/x86/kernel/asm-offsets.c      |  3 ---
- arch/x86/lib/getuser.S             | 28 ++++++++++++++++++----------
- arch/x86/lib/putuser.S             | 21 ++++++++++++---------
- 8 files changed, 32 insertions(+), 61 deletions(-)
+ arch/powerpc/Kconfig                   |  1 -
+ arch/powerpc/include/asm/processor.h   |  7 ---
+ arch/powerpc/include/asm/thread_info.h |  5 +--
+ arch/powerpc/include/asm/uaccess.h     | 62 ++++++++------------------
+ arch/powerpc/kernel/signal.c           |  3 --
+ arch/powerpc/lib/sstep.c               |  6 +--
+ 6 files changed, 22 insertions(+), 62 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f85c13355732fe..7101ac64bb209d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -237,7 +237,6 @@ config X86
- 	select HAVE_ARCH_KCSAN			if X86_64
- 	select X86_FEATURE_NAMES		if PROC_FS
- 	select PROC_PID_ARCH_STATUS		if PROC_FS
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3f09d6fdf89405..1f48bbfb3ce99d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -249,7 +249,6 @@ config PPC
+ 	select PCI_SYSCALL			if PCI
+ 	select PPC_DAWR				if PPC64
+ 	select RTC_LIB
 -	select SET_FS
- 	imply IMA_SECURE_AND_OR_TRUSTED_BOOT    if EFI
- 
- config INSTRUCTION_DECODER
-diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
-index ca8a657edf5977..a09fc37ead9d47 100644
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -239,7 +239,6 @@ static int load_aout_binary(struct linux_binprm *bprm)
- 	(regs)->ss = __USER32_DS;
- 	regs->r8 = regs->r9 = regs->r10 = regs->r11 =
- 	regs->r12 = regs->r13 = regs->r14 = regs->r15 = 0;
--	set_fs(USER_DS);
- 	return 0;
- }
- 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 1618eeb08361a9..189573d95c3af6 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -482,10 +482,6 @@ extern unsigned int fpu_user_xstate_size;
- 
- struct perf_event;
+ 	select SPARSE_IRQ
+ 	select SYSCTL_EXCEPTION_TRACE
+ 	select THREAD_INFO_IN_TASK
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index ed0d633ab5aa42..f01e4d650c520a 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -83,10 +83,6 @@ struct task_struct;
+ void start_thread(struct pt_regs *regs, unsigned long fdptr, unsigned long sp);
+ void release_thread(struct task_struct *);
  
 -typedef struct {
--	unsigned long		seg;
+-	unsigned long seg;
 -} mm_segment_t;
 -
- struct thread_struct {
- 	/* Cached TLS descriptors: */
- 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
-@@ -538,8 +534,6 @@ struct thread_struct {
- 	 */
- 	unsigned long		iopl_emul;
+ #define TS_FPR(i) fp_state.fpr[i][TS_FPROFFSET]
+ #define TS_CKFPR(i) ckfp_state.fpr[i][TS_FPROFFSET]
  
--	mm_segment_t		addr_limit;
--
- 	unsigned int		sig_on_uaccess_err:1;
- 
- 	/* Floating point and extended processor state */
-@@ -785,15 +779,12 @@ static inline void spin_lock_prefetch(const void *x)
- #define INIT_THREAD  {							  \
- 	.sp0			= TOP_OF_INIT_STACK,			  \
- 	.sysenter_cs		= __KERNEL_CS,				  \
--	.addr_limit		= KERNEL_DS,				  \
- }
- 
- #define KSTK_ESP(task)		(task_pt_regs(task)->sp)
- 
+@@ -148,7 +144,6 @@ struct thread_struct {
+ 	unsigned long	ksp_vsid;
+ #endif
+ 	struct pt_regs	*regs;		/* Pointer to saved register state */
+-	mm_segment_t	addr_limit;	/* for get_fs() validation */
+ #ifdef CONFIG_BOOKE
+ 	/* BookE base exception scratch space; align on cacheline */
+ 	unsigned long	normsave[8] ____cacheline_aligned;
+@@ -295,7 +290,6 @@ struct thread_struct {
+ #define INIT_THREAD { \
+ 	.ksp = INIT_SP, \
+ 	.ksp_limit = INIT_SP_LIMIT, \
+-	.addr_limit = KERNEL_DS, \
+ 	.pgdir = swapper_pg_dir, \
+ 	.fpexc_mode = MSR_FE0 | MSR_FE1, \
+ 	SPEFSCR_INIT \
+@@ -303,7 +297,6 @@ struct thread_struct {
  #else
--#define INIT_THREAD  {						\
--	.addr_limit		= KERNEL_DS,			\
--}
-+#define INIT_THREAD { }
+ #define INIT_THREAD  { \
+ 	.ksp = INIT_SP, \
+-	.addr_limit = KERNEL_DS, \
+ 	.fpexc_mode = 0, \
+ }
+ #endif
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index ca6c9702570494..46a210b03d2b80 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -90,7 +90,6 @@ void arch_setup_new_exec(void);
+ #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
+ #define TIF_SIGPENDING		1	/* signal pending */
+ #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+-#define TIF_FSCHECK		3	/* Check FS is USER_DS on return */
+ #define TIF_SYSCALL_EMU		4	/* syscall emulation active */
+ #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
+ #define TIF_PATCH_PENDING	6	/* pending live patching update */
+@@ -130,7 +129,6 @@ void arch_setup_new_exec(void);
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
+ #define _TIF_NOHZ		(1<<TIF_NOHZ)
+-#define _TIF_FSCHECK		(1<<TIF_FSCHECK)
+ #define _TIF_SYSCALL_EMU	(1<<TIF_SYSCALL_EMU)
+ #define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+ 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
+@@ -138,8 +136,7 @@ void arch_setup_new_exec(void);
  
- extern unsigned long KSTK_ESP(struct task_struct *task);
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
+-				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
+-				 _TIF_FSCHECK)
++				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
  
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index 267701ae3d86dd..44733a4bfc4294 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -102,7 +102,6 @@ struct thread_info {
- #define TIF_SYSCALL_TRACEPOINT	28	/* syscall tracepoint instrumentation */
- #define TIF_ADDR32		29	/* 32-bit address space on 64 bits */
- #define TIF_X32			30	/* 32-bit native x86-64 binary */
--#define TIF_FSCHECK		31	/* Check FS is USER_DS on return */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-@@ -131,7 +130,6 @@ struct thread_info {
- #define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
- #define _TIF_ADDR32		(1 << TIF_ADDR32)
- #define _TIF_X32		(1 << TIF_X32)
--#define _TIF_FSCHECK		(1 << TIF_FSCHECK)
- 
- /* flags to check in __switch_to() */
- #define _TIF_WORK_CTXSW_BASE					\
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index ecefaffd15d4c8..a4ceda0510ea87 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -12,30 +12,6 @@
- #include <asm/smap.h>
+ /* Bits in local_flags */
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 7fe3531ad36a77..39727537d39701 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -8,62 +8,36 @@
  #include <asm/extable.h>
+ #include <asm/kup.h>
  
 -/*
 - * The fs value determines whether argument validity checking should be
@@ -205,175 +193,110 @@ index ecefaffd15d4c8..a4ceda0510ea87 100644
 - * get_fs() == KERNEL_DS, checking is bypassed.
 - *
 - * For historical reasons, these macros are grossly misnamed.
+- *
+- * The fs/ds values are now the highest legal address in the "segment".
+- * This simplifies the checking in the routines below.
 - */
 -
--#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
+-#define MAKE_MM_SEG(s)  ((mm_segment_t) { (s) })
 -
--#define KERNEL_DS	MAKE_MM_SEG(-1UL)
--#define USER_DS 	MAKE_MM_SEG(TASK_SIZE_MAX)
+-#define KERNEL_DS	MAKE_MM_SEG(~0UL)
+ #ifdef __powerpc64__
+ /* We use TASK_SIZE_USER64 as TASK_SIZE is not constant */
+-#define USER_DS		MAKE_MM_SEG(TASK_SIZE_USER64 - 1)
+-#else
+-#define USER_DS		MAKE_MM_SEG(TASK_SIZE - 1)
+-#endif
 -
 -#define get_fs()	(current->thread.addr_limit)
++#define TASK_SIZE_MAX		TASK_SIZE_USER64
+ 
 -static inline void set_fs(mm_segment_t fs)
--{
++static inline bool __access_ok(unsigned long addr, unsigned long size)
+ {
 -	current->thread.addr_limit = fs;
--	/* On user-mode return, check fs is correct */
+-	/* On user-mode return check addr_limit (fs) is correct */
 -	set_thread_flag(TIF_FSCHECK);
--}
++	if (addr >= TASK_SIZE_MAX)
++		return false;
++	/*
++	 * This check is sufficient because there is a large enough gap between
++	 * user addresses and the kernel addresses.
++	 */
++	return size <= TASK_SIZE_MAX;
+ }
 -
 -#define uaccess_kernel() (get_fs().seg == KERNEL_DS.seg)
--#define user_addr_max() (current->thread.addr_limit.seg)
+-#define user_addr_max()	(get_fs().seg)
 -
- /*
-  * Test whether a block of memory is a valid user space address.
-  * Returns 0 if the range is valid, nonzero otherwise.
-@@ -93,7 +69,7 @@ static inline bool pagefault_disabled(void);
- #define access_ok(addr, size)					\
- ({									\
- 	WARN_ON_IN_IRQ();						\
--	likely(!__range_not_ok(addr, size, user_addr_max()));		\
-+	likely(!__range_not_ok(addr, size, TASK_SIZE_MAX));		\
- })
- 
- /*
-diff --git a/arch/x86/kernel/asm-offsets.c b/arch/x86/kernel/asm-offsets.c
-index 3ca07ad552ae0c..70b7154f4bdd62 100644
---- a/arch/x86/kernel/asm-offsets.c
-+++ b/arch/x86/kernel/asm-offsets.c
-@@ -37,9 +37,6 @@ static void __used common(void)
- 	OFFSET(TASK_stack_canary, task_struct, stack_canary);
- #endif
- 
--	BLANK();
--	OFFSET(TASK_addr_limit, task_struct, thread.addr_limit);
+-#ifdef __powerpc64__
+-/*
+- * This check is sufficient because there is a large enough
+- * gap between user addresses and the kernel addresses
+- */
+-#define __access_ok(addr, size, segment)	\
+-	(((addr) <= (segment).seg) && ((size) <= (segment).seg))
 -
- 	BLANK();
- 	OFFSET(crypto_tfm_ctx_offset, crypto_tfm, __crt_ctx);
- 
-diff --git a/arch/x86/lib/getuser.S b/arch/x86/lib/getuser.S
-index c8a85b512796e1..ccc9808c66420a 100644
---- a/arch/x86/lib/getuser.S
-+++ b/arch/x86/lib/getuser.S
-@@ -35,10 +35,18 @@
- #include <asm/smap.h>
- #include <asm/export.h>
- 
-+#ifdef CONFIG_X86_5LEVEL
-+#define LOAD_TASK_SIZE_MAX \
-+	ALTERNATIVE "mov $((1 << 47) - 4096),%rdx", \
-+		    "mov $((1 << 56) - 4096),%rdx", X86_FEATURE_LA57
-+#else
-+#define LOAD_TASK_SIZE_MAX	mov $TASK_SIZE_MAX,%_ASM_DX
-+#endif
-+
- 	.text
- SYM_FUNC_START(__get_user_1)
--	mov PER_CPU_VAR(current_task), %_ASM_DX
--	cmp TASK_addr_limit(%_ASM_DX),%_ASM_AX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_DX,%_ASM_AX
- 	jae bad_get_user
- 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
- 	and %_ASM_DX, %_ASM_AX
-@@ -53,8 +61,8 @@ EXPORT_SYMBOL(__get_user_1)
- SYM_FUNC_START(__get_user_2)
- 	add $1,%_ASM_AX
- 	jc bad_get_user
--	mov PER_CPU_VAR(current_task), %_ASM_DX
--	cmp TASK_addr_limit(%_ASM_DX),%_ASM_AX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_DX,%_ASM_AX
- 	jae bad_get_user
- 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
- 	and %_ASM_DX, %_ASM_AX
-@@ -69,8 +77,8 @@ EXPORT_SYMBOL(__get_user_2)
- SYM_FUNC_START(__get_user_4)
- 	add $3,%_ASM_AX
- 	jc bad_get_user
--	mov PER_CPU_VAR(current_task), %_ASM_DX
--	cmp TASK_addr_limit(%_ASM_DX),%_ASM_AX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_DX,%_ASM_AX
- 	jae bad_get_user
- 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
- 	and %_ASM_DX, %_ASM_AX
-@@ -86,8 +94,8 @@ SYM_FUNC_START(__get_user_8)
- #ifdef CONFIG_X86_64
- 	add $7,%_ASM_AX
- 	jc bad_get_user
--	mov PER_CPU_VAR(current_task), %_ASM_DX
--	cmp TASK_addr_limit(%_ASM_DX),%_ASM_AX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_DX,%_ASM_AX
- 	jae bad_get_user
- 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
- 	and %_ASM_DX, %_ASM_AX
-@@ -99,8 +107,8 @@ SYM_FUNC_START(__get_user_8)
  #else
- 	add $7,%_ASM_AX
- 	jc bad_get_user_8
--	mov PER_CPU_VAR(current_task), %_ASM_DX
--	cmp TASK_addr_limit(%_ASM_DX),%_ASM_AX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_DX,%_ASM_AX
- 	jae bad_get_user_8
- 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
- 	and %_ASM_DX, %_ASM_AX
-diff --git a/arch/x86/lib/putuser.S b/arch/x86/lib/putuser.S
-index 7c7c92db8497af..f5a56394985875 100644
---- a/arch/x86/lib/putuser.S
-+++ b/arch/x86/lib/putuser.S
-@@ -31,12 +31,18 @@
-  * as they get called from within inline assembly.
-  */
++#define TASK_SIZE_MAX		TASK_SIZE
  
--#define ENTER	mov PER_CPU_VAR(current_task), %_ASM_BX
-+#ifdef CONFIG_X86_5LEVEL
-+#define LOAD_TASK_SIZE_MAX \
-+	ALTERNATIVE "mov $((1 << 47) - 4096),%rbx", \
-+		    "mov $((1 << 56) - 4096),%rbx", X86_FEATURE_LA57
-+#else
-+#define LOAD_TASK_SIZE_MAX	mov $TASK_SIZE_MAX,%_ASM_BX
-+#endif
+-static inline int __access_ok(unsigned long addr, unsigned long size,
+-			mm_segment_t seg)
++static inline bool __access_ok(unsigned long addr, unsigned long size)
+ {
+-	if (addr > seg.seg)
+-		return 0;
+-	return (size == 0 || size - 1 <= seg.seg - addr);
++	if (addr >= TASK_SIZE_MAX)
++		return false;
++	if (size == 0)
++		return false;
++	return size <= TASK_SIZE_MAX - addr;
+ }
+-
+-#endif
++#endif /* __powerpc64__ */
  
- .text
- SYM_FUNC_START(__put_user_1)
--	ENTER
--	cmp TASK_addr_limit(%_ASM_BX),%_ASM_CX
-+	LOAD_TASK_SIZE_MAX
-+	cmp %_ASM_BX,%_ASM_CX
- 	jae .Lbad_put_user
- 	ASM_STAC
- 1:	movb %al,(%_ASM_CX)
-@@ -47,8 +53,7 @@ SYM_FUNC_END(__put_user_1)
- EXPORT_SYMBOL(__put_user_1)
+ #define access_ok(addr, size)		\
+ 	(__chk_user_ptr(addr),		\
+-	 __access_ok((__force unsigned long)(addr), (size), get_fs()))
++	 __access_ok((unsigned long)(addr), (size)))
  
- SYM_FUNC_START(__put_user_2)
--	ENTER
--	mov TASK_addr_limit(%_ASM_BX),%_ASM_BX
-+	LOAD_TASK_SIZE_MAX
- 	sub $1,%_ASM_BX
- 	cmp %_ASM_BX,%_ASM_CX
- 	jae .Lbad_put_user
-@@ -61,8 +66,7 @@ SYM_FUNC_END(__put_user_2)
- EXPORT_SYMBOL(__put_user_2)
+ /*
+  * These are the main single-value transfer routines.  They automatically
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index d15a98c758b8b4..df547d8e31e49c 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -312,9 +312,6 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ {
+ 	user_exit();
  
- SYM_FUNC_START(__put_user_4)
--	ENTER
--	mov TASK_addr_limit(%_ASM_BX),%_ASM_BX
-+	LOAD_TASK_SIZE_MAX
- 	sub $3,%_ASM_BX
- 	cmp %_ASM_BX,%_ASM_CX
- 	jae .Lbad_put_user
-@@ -75,8 +79,7 @@ SYM_FUNC_END(__put_user_4)
- EXPORT_SYMBOL(__put_user_4)
+-	/* Check valid addr_limit, TIF check is done there */
+-	addr_limit_user_check();
+-
+ 	if (thread_info_flags & _TIF_UPROBE)
+ 		uprobe_notify_resume(regs);
  
- SYM_FUNC_START(__put_user_8)
--	ENTER
--	mov TASK_addr_limit(%_ASM_BX),%_ASM_BX
-+	LOAD_TASK_SIZE_MAX
- 	sub $7,%_ASM_BX
- 	cmp %_ASM_BX,%_ASM_CX
- 	jae .Lbad_put_user
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index caee8cc77e1954..8342188ea1acd0 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -108,11 +108,11 @@ static nokprobe_inline long address_ok(struct pt_regs *regs,
+ {
+ 	if (!user_mode(regs))
+ 		return 1;
+-	if (__access_ok(ea, nb, USER_DS))
++	if (__access_ok(ea, nb))
+ 		return 1;
+-	if (__access_ok(ea, 1, USER_DS))
++	if (__access_ok(ea, 1))
+ 		/* Access overlaps the end of the user region */
+-		regs->dar = USER_DS.seg;
++		regs->dar = TASK_SIZE_MAX - 1;
+ 	else
+ 		regs->dar = ea;
+ 	return 0;
 -- 
 2.28.0
 
