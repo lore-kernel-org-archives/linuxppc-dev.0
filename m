@@ -2,88 +2,98 @@ Return-Path: <SRS0=o3hI=CF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A48B7C433E1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:14:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90A52C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:16:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5ECF42177B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:14:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5ECF42177B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id 35E5822B47
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 08:16:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Cypc7oHP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35E5822B47
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bcb9n4GdTzDqhF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 18:14:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BcbCx372GzDqFm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Aug 2020 18:16:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=198.54.127.72;
- helo=se15-1.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=codefail.de
-Received: from se15-1.privateemail.com (se15-1.privateemail.com
- [198.54.127.72])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Cypc7oHP; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BcZwb4VPxzDqfY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 18:03:10 +1000 (AEST)
-Received: from new-01-3.privateemail.com ([198.54.122.47])
- by se15.registrar-servers.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.92)
- (envelope-from <cmr@codefail.de>)
- id 1kBAOl-0002Gu-Df; Wed, 26 Aug 2020 22:24:33 -0700
-Received: from MTA-13.privateemail.com (unknown [10.20.147.29])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 57494A76;
- Thu, 27 Aug 2020 05:24:31 +0000 (UTC)
-Received: from mta-13.privateemail.com (localhost [127.0.0.1])
- by mta-13.privateemail.com (Postfix) with ESMTP id CE1F18004B;
- Thu, 27 Aug 2020 01:24:28 -0400 (EDT)
-Received: from geist.attlocal.net (unknown [10.20.151.231])
- by mta-13.privateemail.com (Postfix) with ESMTPA id 3933B80053;
- Thu, 27 Aug 2020 05:24:22 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/6] powerpc: Initialize a temporary mm for code patching
-Date: Thu, 27 Aug 2020 00:26:58 -0500
-Message-Id: <20200827052659.24922-6-cmr@codefail.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200827052659.24922-1-cmr@codefail.de>
-References: <20200827052659.24922-1-cmr@codefail.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BcZyt6ByvzDqZP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2020 18:05:10 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 07R82NPd019894; Thu, 27 Aug 2020 04:04:53 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=Jd8o/QGIRyQ/TUB5l2muLN6OnK4kcqeFLiQvLDATR58=;
+ b=Cypc7oHPrVvO7n4dWsWKGenlnp2TnMbhEPdV1kdVRv5Ak0jE9ZAbFromUeV14TQJ5bKw
+ XUKNhcYDNiwFGYu6gTUi6O3CHaUOj57vSzR5LxbcyGEGIjfgCPxqsEx6KKALcPyY3c/+
+ yxzH1E1wOTaV5WgztasjNfLQ06Z29qzi2T5sAkrR8xUEnYug86BXa0HE9d//Yvi8PixG
+ Vec9B7r02Ys0Hfv2fyjAAGykXj2VQEWz4MXmF4DHZCtP7EU9tU5eajqPMx825RsiGfWZ
+ Qx+5LuNbdADP9om8gzMUJkQ3i2vbKOuYIJ6y2WHYM+NF3qr2ZU5uPpYzgjMDmqEwD4pM cg== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com
+ [169.47.144.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 3368qv8j9y-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Aug 2020 04:04:52 -0400
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+ by ppma04wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 07R82xEo026953;
+ Thu, 27 Aug 2020 08:04:51 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by ppma04wdc.us.ibm.com with ESMTP id 332ujf0byk-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 27 Aug 2020 08:04:51 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 07R84oWl51315094
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 27 Aug 2020 08:04:50 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1ABEE78064;
+ Thu, 27 Aug 2020 08:04:50 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2D4AC7805F;
+ Thu, 27 Aug 2020 08:04:45 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.102.17.9])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Thu, 27 Aug 2020 08:04:44 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org
+Subject: [PATCH v3 00/13] mm/debug_vm_pgtable fixes
+Date: Thu, 27 Aug 2020 13:34:25 +0530
+Message-Id: <20200827080438.315345-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
-X-Originating-IP: 198.54.122.47
-X-SpamExperts-Domain: o3.privateemail.com
-X-SpamExperts-Username: out-03
-Authentication-Results: registrar-servers.com;
- auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
-X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00776017203759)
-X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0fJi3Ojdyt5h9PLOIGvr3lipSDasLI4SayDByyq9LIhVv7rlXgnegPp0
- HsLwAHEZaUTNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kq02yUY2BU41HLqp9U+7si8M8
- LdvJpZ7k99Lvu8YZXeI6p5bbhGYzvfahQ7X4A9L0Ye/JicEYVQv1wTfnWwJUGLoHT+TiZ2cHCmVO
- a6Hj9oipjXdGD/4stwDWza1vvIswJODXbtOodkPED+RkHjVGH2xZ/WG2ZLv5RT/cF5Q6687AHRjU
- JmjnvGEokRBTZJpViFKfD1jKgYfH+6S5qDVYoHta8E9ScH7TtyK/xsUDPODbhw3Crbac1ieeuRax
- ITFpzO11BRKqT8B4uLrn7iz8uvLBMzbIQcSG8L0jOzL80Q1MxDcqDeEvahfPkDkTlH91LgaQnmF8
- H6pa6B8MTK1ligAJ9G0GMvMSOAhk0taEj8weJNI+C0vMCMVtmGEXbiaCRPGqg4v6OwYy/yt5Cj+T
- 3txbXpCgbiKBsA+Ddi6maweYdUirBly/K12a4uqqibUj/dHBojDbLVZkEx6TcwTT039q0aZI3qbh
- XsaDdLgW9brs8lq6YeUVTmb2st+aVE9JYOaeuiH/yEdZH8S1+TgcJBOjh0vPxcQOjKKOrYIQYpwa
- mUdylUIKhf3z2GAHxH7IMNrut00GZ5qvF8IF7tMR7zZ0OXNO45l0fhWSb7cPfaFqshmoTS0FU6vE
- Cbg2Clldwov2GavqJ07j7hZY8mVbefiuK2KN35hXmy7nXQ2QuBuxX4OQOI/UQ6jnFfMBgzwOw1To
- H/cUtROfGg27pVfRPjU3fSpvtX7kDRT+AqQr2T3rxJw/s9JEmzH0m3M+UGtqY+MEFEMbQyzq3WYA
- UeYsX5BtyrbC60lIMha6/GOK3MlDPDo3pDJlUlQ25PasjIMI9uAIvgWsH+Wq0zDLDi3S8euO5TcD
- eKjrEmYPn2IVWRsZR6NeDQwp7lDA8K9tDm+p97/T4LRRVYxF+VXiiOfHJN40eTXlWiUAYdLmsJdA
- oPKCpWwKtkkGG+bEnfOEkWTNI3SjTCvjMfNBc9ze9o81pXKSQ+GI7QB7PH97h6/L6Wb57LVs51cV
- C2TOjdXlLnr1FFwa8AyQYqjO7qYtiXb+9Q==
-X-Report-Abuse-To: spam@se5.registrar-servers.com
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-08-27_02:2020-08-27,
+ 2020-08-27 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0
+ mlxscore=0 mlxlogscore=537 priorityscore=1501 suspectscore=0 phishscore=0
+ impostorscore=0 spamscore=0 clxscore=1011 bulkscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2008270057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,93 +105,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-hardening@lists.openwall.com
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>, Qian Cai <cai@lca.pw>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, Vineet Gupta <vgupta@synopsys.com>,
+ linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When code patching a STRICT_KERNEL_RWX kernel the page containing the
-address to be patched is temporarily mapped with permissive memory
-protections. Currently, a per-cpu vmalloc patch area is used for this
-purpose. While the patch area is per-cpu, the temporary page mapping is
-inserted into the kernel page tables for the duration of the patching.
-The mapping is exposed to CPUs other than the patching CPU - this is
-undesirable from a hardening perspective.
+This patch series includes fixes for debug_vm_pgtable test code so that
+they follow page table updates rules correctly. The first two patches introduce
+changes w.r.t ppc64. The patches are included in this series for completeness. We can
+merge them via ppc64 tree if required.
 
-Use the `poking_init` init hook to prepare a temporary mm and patching
-address. Initialize the temporary mm by copying the init mm. Choose a
-randomized patching address inside the temporary mm userspace address
-portion. The next patch uses the temporary mm and patching address for
-code patching.
+Hugetlb test is disabled on ppc64 because that needs larger change to satisfy
+page table update rules.
 
-Based on x86 implementation:
+The patches are on top of 15bc20c6af4ceee97a1f90b43c0e386643c071b4 (linus/master)
 
-commit 4fc19708b165
-("x86/alternatives: Initialize temporary mm for patching")
+Changes from v2:
+* Fix build failure with different configs and architecture.
 
-Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
----
- arch/powerpc/lib/code-patching.c | 40 ++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+Changes from v1:
+* Address review feedback
+* drop test specific pfn_pte and pfn_pmd.
+* Update ppc64 page table helper to add _PAGE_PTE 
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 89b37ece6d2f..051d7ae6d8ee 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -11,6 +11,8 @@
- #include <linux/cpuhotplug.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/sched/task.h>
-+#include <linux/random.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/page.h>
-@@ -109,6 +111,44 @@ static inline void unuse_temporary_mm(struct temp_mm *temp_mm)
- 	}
- }
- 
-+static struct mm_struct *patching_mm __ro_after_init;
-+static unsigned long patching_addr __ro_after_init;
-+
-+void __init poking_init(void)
-+{
-+	spinlock_t *ptl; /* for protecting pte table */
-+	pte_t *ptep;
-+
-+	/*
-+	 * Some parts of the kernel (static keys for example) depend on
-+	 * successful code patching. Code patching under STRICT_KERNEL_RWX
-+	 * requires this setup - otherwise we cannot patch at all. We use
-+	 * BUG_ON() here and later since an early failure is preferred to
-+	 * buggy behavior and/or strange crashes later.
-+	 */
-+	patching_mm = copy_init_mm();
-+	BUG_ON(!patching_mm);
-+
-+	/*
-+	 * Choose a randomized, page-aligned address from the range:
-+	 * [PAGE_SIZE, DEFAULT_MAP_WINDOW - PAGE_SIZE]
-+	 * The lower address bound is PAGE_SIZE to avoid the zero-page.
-+	 * The upper address bound is DEFAULT_MAP_WINDOW - PAGE_SIZE to stay
-+	 * under DEFAULT_MAP_WINDOW in hash.
-+	 */
-+	patching_addr = PAGE_SIZE + ((get_random_long() & PAGE_MASK)
-+			% (DEFAULT_MAP_WINDOW - 2 * PAGE_SIZE));
-+
-+	/*
-+	 * PTE allocation uses GFP_KERNEL which means we need to pre-allocate
-+	 * the PTE here. We cannot do the allocation during patching with IRQs
-+	 * disabled (ie. "atomic" context).
-+	 */
-+	ptep = get_locked_pte(patching_mm, patching_addr, &ptl);
-+	BUG_ON(!ptep);
-+	pte_unmap_unlock(ptep, ptl);
-+}
-+
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
- 
- #ifdef CONFIG_LKDTM
+
+Aneesh Kumar K.V (13):
+  powerpc/mm: Add DEBUG_VM WARN for pmd_clear
+  powerpc/mm: Move setting pte specific flags to pfn_pte
+  mm/debug_vm_pgtable/ppc64: Avoid setting top bits in radom value
+  mm/debug_vm_pgtables/hugevmap: Use the arch helper to identify huge
+    vmap support.
+  mm/debug_vm_pgtable/savedwrite: Enable savedwrite test with
+    CONFIG_NUMA_BALANCING
+  mm/debug_vm_pgtable/THP: Mark the pte entry huge before using
+    set_pmd/pud_at
+  mm/debug_vm_pgtable/set_pte/pmd/pud: Don't use set_*_at to update an
+    existing pte entry
+  mm/debug_vm_pgtable/thp: Use page table depost/withdraw with THP
+  mm/debug_vm_pgtable/locks: Move non page table modifying test together
+  mm/debug_vm_pgtable/locks: Take correct page table lock
+  mm/debug_vm_pgtable/pmd_clear: Don't use pmd/pud_clear on pte entries
+  mm/debug_vm_pgtable/hugetlb: Disable hugetlb test on ppc64
+  mm/debug_vm_pgtable: populate a pte entry before fetching it
+
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  29 +++-
+ arch/powerpc/include/asm/nohash/pgtable.h    |   5 -
+ arch/powerpc/mm/pgtable.c                    |   5 -
+ mm/debug_vm_pgtable.c                        | 170 ++++++++++++-------
+ 4 files changed, 131 insertions(+), 78 deletions(-)
+
 -- 
-2.28.0
+2.26.2
 
