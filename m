@@ -2,61 +2,50 @@ Return-Path: <SRS0=2YcT=CG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50281C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 17:00:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A35EAC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 17:08:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 041682074A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 17:00:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 041682074A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4A2CB20776
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Aug 2020 17:08:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A2CB20776
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BdQnW1WKgzDqsp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Aug 2020 02:59:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BdQz73Df2zDqcN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Aug 2020 03:08:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BdQgC60tWzDqnT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Aug 2020 02:54:31 +1000 (AEST)
-IronPort-SDR: LeSispFvMydbFen5ccPGLbsfh8PTL3JoIySN2MzLQErDcNyESwF9a6lDMU1BKzuaVw+3+4AUiN
- 2ZwWDNoYrDCg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9727"; a="220947115"
-X-IronPort-AV: E=Sophos;i="5.76,364,1592895600"; d="scan'208";a="220947115"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Aug 2020 09:54:28 -0700
-IronPort-SDR: XIl4wpQyGJs9TEneKCtiWqYpo1Ak4d4Q8Ws+i6DvfavegdOJQ29O5YIZL+F7X+6iLK9EcliyA+
- tzaqd03eTH1Q==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,364,1592895600"; d="scan'208";a="282452397"
-Received: from lkp-server02.sh.intel.com (HELO 301dc1beeb51) ([10.239.97.151])
- by fmsmga008.fm.intel.com with ESMTP; 28 Aug 2020 09:54:23 -0700
-Received: from kbuild by 301dc1beeb51 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kBhdu-00006A-N5; Fri, 28 Aug 2020 16:54:22 +0000
-Date: Sat, 29 Aug 2020 00:53:43 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 4a133eb351ccc275683ad49305d0b04dde903733
-Message-ID: <5f493697.sab9iDKIHNxx8kYl%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BdQwn2nYPzDqdd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Aug 2020 03:06:17 +1000 (AEST)
+Received: from gaia (unknown [46.69.195.127])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 67CC620776;
+ Fri, 28 Aug 2020 17:06:11 +0000 (UTC)
+Date: Fri, 28 Aug 2020 18:06:08 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Will Deacon <will@kernel.org>
+Subject: Re: Flushing transparent hugepages
+Message-ID: <20200828170608.GJ3169@gaia>
+References: <20200818150736.GQ17456@casper.infradead.org>
+ <20200818160815.GA16191@willie-the-truck>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20200818160815.GA16191@willie-the-truck>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,174 +57,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
+ Matthew Wilcox <willy@infradead.org>, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 4a133eb351ccc275683ad49305d0b04dde903733  powerpc/32s: Disable VMAP stack which CONFIG_ADB_PMU
+On Tue, Aug 18, 2020 at 05:08:16PM +0100, Will Deacon wrote:
+> On Tue, Aug 18, 2020 at 04:07:36PM +0100, Matthew Wilcox wrote:
+> > For example, arm64 seems confused in this scenario:
+> > 
+> > void flush_dcache_page(struct page *page)
+> > {
+> >         if (test_bit(PG_dcache_clean, &page->flags))
+> >                 clear_bit(PG_dcache_clean, &page->flags);
+> > }
+> > 
+> > ...
+> > 
+> > void __sync_icache_dcache(pte_t pte)
+> > {
+> >         struct page *page = pte_page(pte);
+> > 
+> >         if (!test_and_set_bit(PG_dcache_clean, &page->flags))
+> >                 sync_icache_aliases(page_address(page), page_size(page));
+> > }
+> > 
+> > So arm64 keeps track on a per-page basis which ones have been flushed.
+> > page_size() will return PAGE_SIZE if called on a tail page or regular
+> > page, but will return PAGE_SIZE << compound_order if called on a head
+> > page.  So this will either over-flush, or it's missing the opportunity
+> > to clear the bits on all the subpages which have now been flushed.
+> 
+> Hmm, that seems to go all the way back to 2014 as the result of a bug fix
+> in 923b8f5044da ("arm64: mm: Make icache synchronisation logic huge page
+> aware") which has a Reported-by Mark and a CC stable, suggesting something
+> _was_ going wrong at the time :/ Was there a point where the tail pages
+> could end up with PG_arch_1 uncleared on allocation?
 
-elapsed time: 871m
+In my experience, it's the other way around: you can end up with
+PG_arch_1 cleared in a tail page when the head one was set (splitting
+THP).
 
-configs tested: 151
-configs skipped: 18
+> > What would you _like_ to see?  Would you rather flush_dcache_page()
+> > were called once for each subpage, or would you rather maintain
+> > the page-needs-flushing state once per compound page?  We could also
+> > introduce flush_dcache_thp() if some architectures would prefer it one
+> > way and one the other, although that brings into question what to do
+> > for hugetlbfs pages.
+> 
+> For arm64, we'd like to see PG_arch_1 preserved during huge page splitting
+> [1], but there was a worry that it might break x86 and s390. It's also not
+> clear to me that we can change __sync_icache_dcache() as it's called when
+> we're installing the entry in the page-table, so why would it be called
+> again for the tail pages?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Indeed, __sync_icache_dcache() is called from set_pte_at() on the head
+page, though it could always iterate and flush the tail pages
+individually (I think we could have done this in commit 923b8f5044da).
+Currently I suspect it does some over-flushing if you use THP on
+executable pages (it's a no-op on non-exec pages).
 
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-x86_64                           allyesconfig
-m68k                       m5208evb_defconfig
-m68k                        mvme147_defconfig
-openrisc                    or1ksim_defconfig
-arm                         cm_x300_defconfig
-arc                        nsim_700_defconfig
-sh                           se7206_defconfig
-s390                             alldefconfig
-mips                         rt305x_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                     pseries_defconfig
-arm                        keystone_defconfig
-sh                           se7722_defconfig
-parisc                generic-64bit_defconfig
-mips                           rs90_defconfig
-m68k                       bvme6000_defconfig
-mips                        bcm47xx_defconfig
-c6x                        evmc6474_defconfig
-microblaze                    nommu_defconfig
-powerpc                  mpc866_ads_defconfig
-powerpc                     pq2fads_defconfig
-m68k                         apollo_defconfig
-m68k                             allyesconfig
-arm                         axm55xx_defconfig
-sh                               alldefconfig
-mips                      fuloong2e_defconfig
-arc                 nsimosci_hs_smp_defconfig
-arm                       cns3420vb_defconfig
-arm                            qcom_defconfig
-mips                  maltasmvp_eva_defconfig
-nios2                            allyesconfig
-powerpc                           allnoconfig
-parisc                generic-32bit_defconfig
-mips                          rb532_defconfig
-ia64                             alldefconfig
-mips                        vocore2_defconfig
-powerpc                          alldefconfig
-arc                           tb10x_defconfig
-m68k                           sun3_defconfig
-sh                           se7721_defconfig
-sh                           se7780_defconfig
-arm                           efm32_defconfig
-powerpc                    adder875_defconfig
-arm                        mvebu_v7_defconfig
-m68k                       m5275evb_defconfig
-mips                       rbtx49xx_defconfig
-arm                        neponset_defconfig
-sh                     magicpanelr2_defconfig
-arm                         lpc18xx_defconfig
-mips                        jmr3927_defconfig
-arm                          exynos_defconfig
-arm                          pxa910_defconfig
-arm                          lpd270_defconfig
-nios2                               defconfig
-mips                             allyesconfig
-mips                    maltaup_xpa_defconfig
-sh                             shx3_defconfig
-arm                            u300_defconfig
-sh                           se7724_defconfig
-mips                         db1xxx_defconfig
-mips                        maltaup_defconfig
-arm                        realview_defconfig
-h8300                               defconfig
-mips                malta_kvm_guest_defconfig
-mips                  cavium_octeon_defconfig
-arc                             nps_defconfig
-arm                       spear13xx_defconfig
-arm                          moxart_defconfig
-powerpc                      ep88xc_defconfig
-mips                         bigsur_defconfig
-arm                         orion5x_defconfig
-sh                          sdk7780_defconfig
-c6x                         dsk6455_defconfig
-arc                              alldefconfig
-arm                  colibri_pxa270_defconfig
-mips                       lemote2f_defconfig
-s390                          debug_defconfig
-alpha                            alldefconfig
-arm                           sama5_defconfig
-arm                            mmp2_defconfig
-h8300                            allyesconfig
-sh                          lboxre2_defconfig
-arm                         bcm2835_defconfig
-sh                         apsh4a3a_defconfig
-m68k                       m5475evb_defconfig
-mips                           ip22_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-x86_64               randconfig-a003-20200827
-x86_64               randconfig-a002-20200827
-x86_64               randconfig-a001-20200827
-x86_64               randconfig-a005-20200827
-x86_64               randconfig-a006-20200827
-x86_64               randconfig-a004-20200827
-i386                 randconfig-a002-20200828
-i386                 randconfig-a005-20200828
-i386                 randconfig-a003-20200828
-i386                 randconfig-a004-20200828
-i386                 randconfig-a001-20200828
-i386                 randconfig-a006-20200828
-x86_64               randconfig-a015-20200828
-x86_64               randconfig-a012-20200828
-x86_64               randconfig-a016-20200828
-x86_64               randconfig-a014-20200828
-x86_64               randconfig-a011-20200828
-x86_64               randconfig-a013-20200828
-i386                 randconfig-a013-20200828
-i386                 randconfig-a012-20200828
-i386                 randconfig-a011-20200828
-i386                 randconfig-a016-20200828
-i386                 randconfig-a014-20200828
-i386                 randconfig-a015-20200828
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+With MTE (arm64 memory tagging) I'm introducing a PG_arch_2 flag and
+losing this is more problematic as it can lead to clearing valid tags.
+In the subsequent patch [2], mte_sync_tags() (also called from
+set_pte_at()) checks the PG_arch_2 in each page of a compound one.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+My preference would be to treat both PG_arch_1 and _2 similarly.
+
+> [1] https://lore.kernel.org/linux-arch/20200703153718.16973-8-catalin.marinas@arm.com/
+
+[2] https://lore.kernel.org/linux-arch/20200703153718.16973-9-catalin.marinas@arm.com/
+
+-- 
+Catalin
