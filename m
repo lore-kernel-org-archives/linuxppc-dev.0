@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.6 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45147C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:52:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E888C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:54:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A24572098B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:52:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A24572098B
+	by mail.kernel.org (Postfix) with ESMTPS id D5C562098B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:54:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D5C562098B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bg58T1gLdzDqMT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 19:52:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bg5Bc6NkGzDqNJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 19:54:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
  (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=ro@suse.de;
@@ -28,12 +28,12 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bg3l968KXzDqCw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 18:48:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bg44x3hktzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 19:04:01 +1000 (AEST)
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
- by mx2.suse.de (Postfix) with ESMTP id 30D20B5B1;
- Mon, 31 Aug 2020 08:49:04 +0000 (UTC)
+ by mx2.suse.de (Postfix) with ESMTP id B9B45AC6F;
+ Mon, 31 Aug 2020 09:04:32 +0000 (UTC)
 Subject: Re: KVM on POWER8 host lock up since 10d91611f426 ("powerpc/64s:
  Reimplement book3s idle code in C")
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
@@ -69,15 +69,15 @@ Autocrypt: addr=ro@suse.de; prefer-encrypt=mutual; keydata=
 Organization: =?UTF-8?Q?SUSE_Linux_Products_GmbH=2c_GF=3a_Jeff_Hawn=2c_Jenni?=
  =?UTF-8?Q?fer_Guild=2c_Felix_Imend=c3=b6rffer=2c_HRB_21284_=28AG_N=c3=bcrnb?=
  =?UTF-8?Q?erg=29?=
-Message-ID: <50693d7e-6c8b-4908-d003-25b99a867850@suse.de>
-Date: Mon, 31 Aug 2020 10:48:22 +0200
+Message-ID: <7573237a-9a1b-f707-ce43-3051dd587b1d@suse.de>
+Date: Mon, 31 Aug 2020 11:03:51 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.11.0
 MIME-Version: 1.0
 In-Reply-To: <1598835313.5688ngko4f.astroid@bobo.none>
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="JeC1d0qapDFrwmMKZ7OrmTl1ssvp1JI4D"
+ boundary="I9H6WOvu1YG8j7l92eyxHVmnsGmloBf1p"
 X-Mailman-Approved-At: Mon, 31 Aug 2020 19:46:54 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,98 +95,102 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---JeC1d0qapDFrwmMKZ7OrmTl1ssvp1JI4D
-Content-Type: multipart/mixed; boundary="xtmuhw6YWoHKyYCgkmzPdDBQo4QDmz3Of"
+--I9H6WOvu1YG8j7l92eyxHVmnsGmloBf1p
+Content-Type: multipart/mixed; boundary="odgtes13dwVecbhgxfUfhLbDVjEPI9FTh"
 
---xtmuhw6YWoHKyYCgkmzPdDBQo4QDmz3Of
+--odgtes13dwVecbhgxfUfhLbDVjEPI9FTh
 Content-Type: text/plain; charset=utf-8
 Content-Language: de-DE
 Content-Transfer-Encoding: quoted-printable
 
 Am 31.08.20 um 03:14 schrieb Nicholas Piggin:
-> Excerpts from Michal Such=C3=A1nek's message of August 31, 2020 6:11 am=
-:
->> Hello,
->>
->> on POWER8 KVM hosts lock up since commit 10d91611f426 ("powerpc/64s:
->> Reimplement book3s idle code in C").
->>
->> The symptom is host locking up completely after some hours of KVM
->> workload with messages like
->>
->> 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu=
- 47
->> 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu=
- 71
->> 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu=
- 47
->> 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu=
- 71
->> 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu=
- 47
->>
->> printed before the host locks up.
->>
->> The machines run sandboxed builds which is a mixed workload resulting =
-in
->> IO/single core/mutiple core load over time and there are periods of no=
 
->> activity and no VMS runnig as well. The VMs are shortlived so VM
->> setup/terdown is somewhat excercised as well.
->>
->> POWER9 with the new guest entry fast path does not seem to be affected=
-=2E
->>
->> Reverted the patch and the followup idle fixes on top of 5.2.14 and
->> re-applied commit a3f3072db6ca ("powerpc/powernv/idle: Restore IAMR
->> after idle") which gives same idle code as 5.1.16 and the kernel seems=
-
->> stable.
->>
->> Config is attached.
->>
->> I cannot easily revert this commit, especially if I want to use the sa=
-me
->> kernel on POWER8 and POWER9 - many of the POWER9 fixes are applicable
->> only to the new idle code.
->>
->> Any idea what can be the problem?
->=20
 > So hwthread_state is never getting back to to HWTHREAD_IN_IDLE on
 > those threads. I wonder what they are doing. POWER8 doesn't have a good=
 
 > NMI IPI and I don't know if it supports pdbg dumping registers from the=
 
-> BMC unfortunately. Do the messages always come in pairs of CPUs?
+> BMC unfortunately.
+
+
+> Do the messages always come in pairs of CPUs?
+
+well,
+- one problem is that at some point the machine just locks up completely,=
+
+  so I can not tell if there were lines not printed any more and in some
+  cases all I get is a single line
+- looking at the stats in generally it's either one cpu printed several
+  times or a pair ("not strictly") alternatingly
+
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.029821] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.058630] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.108268] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.210206] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.323465] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.334420] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.345470] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.395185] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:16+00:00 obs-power8-03 kernel: [51284.517182] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:17+00:00 obs-power8-03 kernel: [51284.600716] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:18+00:00 obs-power8-03 kernel: [51286.201589] KVM: could=
+n't grab cpu 92
+2020-07-30T03:16:19+00:00 obs-power8-03 kernel: [51286.627273] KVM: could=
+n't grab cpu 92
+
+2020-07-30T16:44:16+00:00 obs-power8-04 kernel: [30099.726288] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:16+00:00 obs-power8-04 kernel: [30099.736843] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30099.747429] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30099.877138] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30099.916422] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30099.931755] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.029003] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.334895] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.392713] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.569011] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.617048] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:17+00:00 obs-power8-04 kernel: [30100.628107] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:18+00:00 obs-power8-04 kernel: [30100.809046] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:18+00:00 obs-power8-04 kernel: [30101.001097] KVM: could=
+n't grab cpu 61
+2020-07-30T16:44:19+00:00 obs-power8-04 kernel: [30102.109007] KVM: could=
+n't grab cpu 125
+2020-07-30T16:44:19+00:00 obs-power8-04 kernel: [30102.254470] KVM: could=
+n't grab cpu 61
+
+
+
 >=20
 > I'm not sure where to start with reproducing, I'll have to try. How man=
 y
 > vCPUs in the guests? Do you have several guests running at once?
-
-Hello all,
-
-some details on the setup...
-these machines are buildservice workers, (build.opensuse.org) and all the=
-y
-do is spawn new VMs, run a package building job inside (rpmbuild, debbuil=
-d,...)
-
-The machines are running in OPAL/PowerNV mode, with "ppc64_cpu --smt=3Dof=
-f".
-The number of VMs varies across the machines:
-obs-power8-01: 18 instances, "-smp 16,threads=3D8"
-obs-power8-02: 20 instances, "-smp 8,threads=3D8"
-obs-power8-03: 30 instances, "-smp 8,threads=3D8"
-obs-power8-04: 20 instances, "-smp 8,threads=3D8"
-obs-power8-05: 36 instances, "-smp 4,threads=3D2" (this one with "ppc64_c=
-pu --subcores-per-core=3D4"
-
-but anyway the stalls can be seen on all of them, sometimes after 4 hours=
-
-sometimes just after about a day. The 01 with more cpu overcommit seems
-a little faster reproducing the problem, but that's more gut feeling than=
-
-anything backed by real numbers.
+>=20
+> Thanks,
+> Nick
+>=20
 
 
 --=20
@@ -201,18 +205,18 @@ SUSE Software Solutions Germany GmbH, Maxfeldstr. 5, 90409 N=C3=BCrnberg,=
 x Imend=C3=B6rffer
 
 
---xtmuhw6YWoHKyYCgkmzPdDBQo4QDmz3Of--
+--odgtes13dwVecbhgxfUfhLbDVjEPI9FTh--
 
---JeC1d0qapDFrwmMKZ7OrmTl1ssvp1JI4D
+--I9H6WOvu1YG8j7l92eyxHVmnsGmloBf1p
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iF0EARECAB0WIQQX3GVThqc4S1PFylw85PLnI/K0FwUCX0y5XAAKCRA85PLnI/K0
-F0iYAJoDVbxZt4VEOQixhoiXJRFKyP448wCg2jXtZYciL0csTNIv3JTTtgg3Ws4=
-=lGKR
+iF0EARECAB0WIQQX3GVThqc4S1PFylw85PLnI/K0FwUCX0y89wAKCRA85PLnI/K0
+F6+IAKDModNhTQHCFjxF+Tn5cMWbgOhFTQCfZVnYO+8PF9WWplR1wrglGCaiub0=
+=fQuM
 -----END PGP SIGNATURE-----
 
---JeC1d0qapDFrwmMKZ7OrmTl1ssvp1JI4D--
+--I9H6WOvu1YG8j7l92eyxHVmnsGmloBf1p--
