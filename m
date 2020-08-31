@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9550BC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 15:34:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0BBEC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 15:37:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E71B207EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 15:34:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 94361207EA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 15:37:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pIpne26A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E71B207EA
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PuoAeAil"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94361207EA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BgDl2416PzDqP5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 01:34:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BgDqK5HcczDqBj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 01:37:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -29,35 +29,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=pIpne26A; dkim-atps=neutral
+ header.s=default header.b=PuoAeAil; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BgDg50sX8zDqN9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 01:30:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BgDgp6PT5zDqQ4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 01:31:18 +1000 (AEST)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 20EF021527;
- Mon, 31 Aug 2020 15:30:36 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 832A321707;
+ Mon, 31 Aug 2020 15:31:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1598887838;
+ s=default; t=1598887876;
  bh=ZjKWjBFa8jx2a1LkBVVi50zo2hxUJAg7OKt/hGAhRLg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=pIpne26ARZRZ1AzeM8M0zger2+AVlH4O8PX24rUlBFVrGl7DB/dAV1jTo6aibOdDA
- QQQzu5B90zyWkeiSHLm7dUeSl2dMxsWR9klHLApnW9VdHyw7XV1FDYsfkLcVLmFiGz
- Tebz7Lu7gCii7HAATY6CoTg3QzLfTUFMt8gVkFnw=
+ b=PuoAeAil8Y4zzuBODnsoaCqvLj2gf+B/QIn9aHT765aodtkdI4qsPZCYzNpS/CLIK
+ XwnwJQfhFlj8fmad0Ezh/ndlrX89SQrU9WHbvrixP6Y1jUCp0eWA+BdwMEOmDNjnxq
+ ubB40tarI7PmgTCzXQzb+UYVHt4ctZOeYYrb2hJ4=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.8 42/42] fsldma: fix very broken 32-bit ppc ioread64
+Subject: [PATCH AUTOSEL 5.4 23/23] fsldma: fix very broken 32-bit ppc ioread64
  functionality
-Date: Mon, 31 Aug 2020 11:29:34 -0400
-Message-Id: <20200831152934.1023912-42-sashal@kernel.org>
+Date: Mon, 31 Aug 2020 11:30:39 -0400
+Message-Id: <20200831153039.1024302-23-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200831152934.1023912-1-sashal@kernel.org>
-References: <20200831152934.1023912-1-sashal@kernel.org>
+In-Reply-To: <20200831153039.1024302-1-sashal@kernel.org>
+References: <20200831153039.1024302-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
