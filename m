@@ -2,64 +2,52 @@ Return-Path: <SRS0=+nHh=CJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3550C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 08:34:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C004C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:09:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C4802073A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 08:34:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C4802073A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 1C355208CA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 09:09:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C355208CA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bg3QS5y81zDqVD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 18:34:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bg4Bz2nkPzDqRq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 19:09:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bg3Ld1fs9zDqQm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 18:30:47 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bg3LR36qlz9v477;
- Mon, 31 Aug 2020 10:30:39 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id K6lQaRa8maTz; Mon, 31 Aug 2020 10:30:39 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bg3LR1m3Hz9v470;
- Mon, 31 Aug 2020 10:30:39 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 49AD48B79B;
- Mon, 31 Aug 2020 10:30:44 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zLN717HQK_Vm; Mon, 31 Aug 2020 10:30:44 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.104])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0F8548B799;
- Mon, 31 Aug 2020 10:30:44 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7D05B65D48; Mon, 31 Aug 2020 08:30:43 +0000 (UTC)
-Message-Id: <f6ea2483c2c389567b007945948f704d18cfaeea.1598862623.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 1/2] powerpc/8xx: Refactor calculation of number of entries
- per PTE in page tables
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 31 Aug 2020 08:30:43 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bg48l11KVzDqQy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 19:07:19 +1000 (AEST)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 1560CB6A0;
+ Mon, 31 Aug 2020 09:07:51 +0000 (UTC)
+Date: Mon, 31 Aug 2020 11:07:15 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: KVM on POWER8 host lock up since 10d91611f426 ("powerpc/64s:
+ Reimplement book3s idle code in C")
+Message-ID: <20200831090715.GB29521@kitsune.suse.cz>
+References: <20200830201145.GA29521@kitsune.suse.cz>
+ <1598835313.5688ngko4f.astroid@bobo.none>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1598835313.5688ngko4f.astroid@bobo.none>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,88 +59,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ro@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8xx, the number of entries occupied by a PTE in the page tables
-depends on the size of the page. At the time being, this calculation
-is done in two places: in pte_update() and in set_huge_pte_at()
+On Mon, Aug 31, 2020 at 11:14:18AM +1000, Nicholas Piggin wrote:
+> Excerpts from Michal Suchánek's message of August 31, 2020 6:11 am:
+> > Hello,
+> > 
+> > on POWER8 KVM hosts lock up since commit 10d91611f426 ("powerpc/64s:
+> > Reimplement book3s idle code in C").
+> > 
+> > The symptom is host locking up completely after some hours of KVM
+> > workload with messages like
+> > 
+> > 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu 47
+> > 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu 71
+> > 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu 47
+> > 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu 71
+> > 2020-08-30T10:51:31+00:00 obs-power8-01 kernel: KVM: couldn't grab cpu 47
+> > 
+> > printed before the host locks up.
+> > 
+> > The machines run sandboxed builds which is a mixed workload resulting in
+> > IO/single core/mutiple core load over time and there are periods of no
+> > activity and no VMS runnig as well. The VMs are shortlived so VM
+> > setup/terdown is somewhat excercised as well.
+> > 
+> > POWER9 with the new guest entry fast path does not seem to be affected.
+> > 
+> > Reverted the patch and the followup idle fixes on top of 5.2.14 and
+> > re-applied commit a3f3072db6ca ("powerpc/powernv/idle: Restore IAMR
+> > after idle") which gives same idle code as 5.1.16 and the kernel seems
+> > stable.
+> > 
+> > Config is attached.
+> > 
+> > I cannot easily revert this commit, especially if I want to use the same
+> > kernel on POWER8 and POWER9 - many of the POWER9 fixes are applicable
+> > only to the new idle code.
+> > 
+> > Any idea what can be the problem?
+> 
+> So hwthread_state is never getting back to to HWTHREAD_IN_IDLE on
+> those threads. I wonder what they are doing. POWER8 doesn't have a good
+> NMI IPI and I don't know if it supports pdbg dumping registers from the
+> BMC unfortunately. Do the messages always come in pairs of CPUs?
+> 
+> I'm not sure where to start with reproducing, I'll have to try. How many
+> vCPUs in the guests? Do you have several guests running at once?
 
-Refactor this calculation into a helper called
-number_of_cells_per_pte(). For the time being, the val param is
-unused. It will be used by following patch.
+The guests are spawned on demand - there are like 20-30 'slots'
+configured where a VM may be running or it may be idle with no VM
+spawned when there are no jobs available.
 
-Instead of opencoding is_hugepd(), use hugepd_ok() with a forward
-declaration.
+Thanks
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/nohash/32/pgtable.h | 18 ++++++++++++------
- arch/powerpc/mm/pgtable.c                    |  6 ++++--
- 2 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index b9e134d0f03a..80bbc21b87f0 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -227,6 +227,17 @@ static inline void pmd_clear(pmd_t *pmdp)
-  */
- #ifdef CONFIG_PPC_8xx
- static pmd_t *pmd_off(struct mm_struct *mm, unsigned long addr);
-+static int hugepd_ok(hugepd_t hpd);
-+
-+static int number_of_cells_per_pte(pmd_t *pmd, pte_basic_t val, int huge)
-+{
-+	if (!huge)
-+		return PAGE_SIZE / SZ_4K;
-+	else if (hugepd_ok(*((hugepd_t *)pmd)))
-+		return 1;
-+	else
-+		return SZ_512K / SZ_4K;
-+}
- 
- static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
- 				     unsigned long clr, unsigned long set, int huge)
-@@ -237,12 +248,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
- 	int num, i;
- 	pmd_t *pmd = pmd_off(mm, addr);
- 
--	if (!huge)
--		num = PAGE_SIZE / SZ_4K;
--	else if ((pmd_val(*pmd) & _PMD_PAGE_MASK) != _PMD_PAGE_8M)
--		num = SZ_512K / SZ_4K;
--	else
--		num = 1;
-+	num = number_of_cells_per_pte(pmd, new, huge);
- 
- 	for (i = 0; i < num; i++, entry++, new += SZ_4K)
- 		*entry = new;
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 9c0547d77af3..2dcad640b869 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -266,8 +266,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_
- 	pmd_t *pmd = pmd_off(mm, addr);
- 	pte_basic_t val;
- 	pte_basic_t *entry = &ptep->pte;
--	int num = is_hugepd(*((hugepd_t *)pmd)) ? 1 : SZ_512K / SZ_4K;
--	int i;
-+	int num, i;
- 
- 	/*
- 	 * Make sure hardware valid bit is not set. We don't do
-@@ -280,6 +279,9 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_
- 	pte = set_pte_filter(pte);
- 
- 	val = pte_val(pte);
-+
-+	num = number_of_cells_per_pte(pmd, val, 1);
-+
- 	for (i = 0; i < num; i++, entry++, val += SZ_4K)
- 		*entry = val;
- }
--- 
-2.25.0
-
+Michal
