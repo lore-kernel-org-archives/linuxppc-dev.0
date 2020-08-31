@@ -8,70 +8,70 @@ X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1D2DC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 20:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D5AC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 20:46:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AFC52054F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 20:44:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7B02F20678
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Aug 2020 20:46:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FTBIoSkS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AFC52054F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Okj7fpWG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B02F20678
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BgMd40mjszDqBM
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 06:44:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BgMgX5SczzDqM7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 06:46:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1042;
- helo=mail-pj1-x1042.google.com; envelope-from=nicoleotsuka@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044;
+ helo=mail-pj1-x1044.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=FTBIoSkS; dkim-atps=neutral
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
- [IPv6:2607:f8b0:4864:20::1042])
+ header.s=20161025 header.b=Okj7fpWG; dkim-atps=neutral
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com
+ [IPv6:2607:f8b0:4864:20::1044])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BgMVd3BkyzDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 06:38:48 +1000 (AEST)
-Received: by mail-pj1-x1042.google.com with SMTP id kx11so474903pjb.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 13:38:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BgMVd4ZCmzDqSH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 06:38:49 +1000 (AEST)
+Received: by mail-pj1-x1044.google.com with SMTP id o16so495978pjr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2020 13:38:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=X3g/RFdq0XCD5HjHScp80cQCvDJiBf0FEu2sjpwx7PM=;
- b=FTBIoSkSFCuYfdZZaBdmEHEhwrbZcdgJQEmZ6+shh7rWUbYFsVNhqAvIZ76+x5Agay
- HZGd1vGAqH8QZN271wpNdm5UMhzNI4fjZxpDIzQoQQOkYhhXQV4pGykHjIkWUcRA+os0
- cfATZ79F07KBkEiXisWvSKSKRlB4nNLiJWGlc+KoC+c9cNTLJbaRwkGPyOMfTgCsij4L
- AIXUcsy6y/nvNko5LI3a7lMyuCUxiq3vv5/NauqeVADCoaX5kExpDbcxIi+KIEtcENxO
- D5VqKn4IFfj/HP7QtYhkIJMrqIKq81+SfGjp//+umfJhEqXXpj1hdk14thzK3bwfoS2D
- lu4g==
+ bh=WWik1+r7ug1ahh3ihIBeIV7cbQz02Md5UqkfuQNEKrg=;
+ b=Okj7fpWGg9YFfyZ+dRvcEQiQ7iYaNcxPLqiq9ImnYm94y1t9sfUfXMWAjv4FUQwlhM
+ fh8D+RSxU4t3clsLQsQCgEgfq+QF+9pjiwrVGlGKlvyxD3+cSWXGO+w0JiH/FI0PPAb1
+ QeMTY5fHsFDxWqBlTtsGJFwbX9XsCW9p0AmGpDQ0oZhv9Yu74QWoV3vXLOpniaYS7gKe
+ F7yYAjP8/4STfz32tCbou/bMWvPtSe0j+wPoFI2VjqOmN2Ihwv3Whu0F10nlaKbJ0/+9
+ oGWK2xB8owNJZgtTI/cGbVR/o9XAewzP/dRMACRZJKQ3btWQGUUwCDv0CHPYkGN2iV9l
+ Gjew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=X3g/RFdq0XCD5HjHScp80cQCvDJiBf0FEu2sjpwx7PM=;
- b=NgDjrJ5KHV/8ygtjUex1mE2fNke7Ry/dklswAsfshue7PL3Cx5ykFOC1L7Dm89M5rq
- ZWj+sy1WP0IFmeJkEM599BweVwWH4OyZ2HzOzzFmYNubvRe2eTuB9ueY9Fr86vNYm9pp
- 18LMOUKjzyqQp0apHvLKiQWS6MaPoYU0Q/QF1yMfTu+bhVWs1OMato2C8XjLpCMyiby+
- EvoRnbExB/1WqJZCXGwxzoX02XxjNNlDdHnaObz2RTXVQlUK1ns7/zniYbxBe6n6mz0Z
- ffAsBGDj5J7eh6XJqeDs4cXi2WZyWiyYcuQ9L5UXqs6wHeJcQAsazQskT2NTcLTsj+up
- nEsw==
-X-Gm-Message-State: AOAM530PFKjzsSSkejmXaOL7Hzyi4vz7TzDKr4wbRTf1I/hky4xd5G/3
- tWeQ9BpbqLOUjZIs8aYHiXE=
-X-Google-Smtp-Source: ABdhPJzEZnz05KuonW+slQotpW/KiNfPxzeDAkLgmc5mo6VYw9R1Q8hucg2SB2LlI1X3IRYPBhim3A==
-X-Received: by 2002:a17:902:8605:: with SMTP id
- f5mr2376275plo.263.1598906324684; 
- Mon, 31 Aug 2020 13:38:44 -0700 (PDT)
+ bh=WWik1+r7ug1ahh3ihIBeIV7cbQz02Md5UqkfuQNEKrg=;
+ b=KXOkhoX0KOcomfjD6s8cIXuuXhXHIKeCsAOWUDwMPpE+1Wt3QbrWhmxI8/xIsOCvbW
+ mhhpbIUHPn3lqIbb/i+akrHYoS+SCdU6R6VzIHV2oyFl0xoE4IHWxEmSomKgb/vJ6vmQ
+ 7/NPh1Rp1pEtBeGK81RRilY39xBgZ+kNolAnGmZWIi0Tcu7sb1vJdelUTWrBcdloGgPo
+ 7rAfsC0m+NZ5gzmYzsS5U4rCFkQ13+79GK2VRs9fiB2ENgEouiaicuSzE/PGhctkgKlC
+ sHhi7IolW2IP2/KWeCV21EKkjNe0v1e9NdvnGZStPBjMbyLB5hEtdgEZRfqg+2sjJzA4
+ xucA==
+X-Gm-Message-State: AOAM530DtMs3ysvvhKc7zwmOlMpSF6rA7Y6AeiSqkEMVFO3XsrNtHTZd
+ GPdYpsg+tQVwogYOYoPFKhA=
+X-Google-Smtp-Source: ABdhPJzb64ZD7SZ8Zo3vceH3nOEuontqr0yZrVSPKjB0ptcnTiJ0jR2bKfMnjBq6bhBFFVVzWLBPEQ==
+X-Received: by 2002:a17:90a:b10a:: with SMTP id
+ z10mr1044115pjq.102.1598906327541; 
+ Mon, 31 Aug 2020 13:38:47 -0700 (PDT)
 Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
  [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id a26sm116850pfn.93.2020.08.31.13.38.43
+ by smtp.gmail.com with ESMTPSA id a26sm116850pfn.93.2020.08.31.13.38.46
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 31 Aug 2020 13:38:44 -0700 (PDT)
+ Mon, 31 Aug 2020 13:38:47 -0700 (PDT)
 From: Nicolin Chen <nicoleotsuka@gmail.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
  rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
@@ -80,9 +80,9 @@ To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
  borntraeger@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
  mingo@redhat.com, bp@alien8.de, x86@kernel.org, hpa@zytor.com,
  James.Bottomley@HansenPartnership.com, deller@gmx.de
-Subject: [RESEND][PATCH 1/7] powerpc/iommu: Avoid overflow at boundary_size
-Date: Mon, 31 Aug 2020 13:38:05 -0700
-Message-Id: <20200831203811.8494-2-nicoleotsuka@gmail.com>
+Subject: [RESEND][PATCH 3/7] ia64/sba_iommu: Avoid overflow at boundary_size
+Date: Mon, 31 Aug 2020 13:38:07 -0700
+Message-Id: <20200831203811.8494-4-nicoleotsuka@gmail.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200831203811.8494-1-nicoleotsuka@gmail.com>
 References: <20200831203811.8494-1-nicoleotsuka@gmail.com>
@@ -123,38 +123,27 @@ We can simplify the logic here:
 
 So fixing a potential overflow with the safer shortcut.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
 Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 Cc: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/iommu.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/ia64/hp/common/sba_iommu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 9704f3f76e63..c01ccbf8afdd 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -236,15 +236,14 @@ static unsigned long iommu_range_alloc(struct device *dev,
- 		}
- 	}
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 656a4888c300..945954903bb0 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -485,8 +485,8 @@ sba_search_bitmap(struct ioc *ioc, struct device *dev,
+ 	ASSERT(((unsigned long) ioc->res_hint & (sizeof(unsigned long) - 1UL)) == 0);
+ 	ASSERT(res_ptr < res_end);
  
--	if (dev)
--		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
--				      1 << tbl->it_page_shift);
--	else
--		boundary_size = ALIGN(1UL << 32, 1 << tbl->it_page_shift);
- 	/* 4GB boundary for iseries_hv_alloc and iseries_hv_map */
-+	boundary_size = dev ? dma_get_seg_boundary(dev) : U32_MAX;
-+
+-	boundary_size = (unsigned long long)dma_get_seg_boundary(dev) + 1;
+-	boundary_size = ALIGN(boundary_size, 1ULL << iovp_shift) >> iovp_shift;
 +	/* Overflow-free shortcut for: ALIGN(b + 1, 1 << s) >> s */
-+	boundary_size = (boundary_size >> tbl->it_page_shift) + 1;
++	boundary_size = (dma_get_seg_boundary(dev) >> iovp_shift) + 1;
  
- 	n = iommu_area_alloc(tbl->it_map, limit, start, npages, tbl->it_offset,
--			     boundary_size >> tbl->it_page_shift, align_mask);
-+			     boundary_size, align_mask);
- 	if (n == -1) {
- 		if (likely(pass == 0)) {
- 			/* First try the pool from the start */
+ 	BUG_ON(ioc->ibase & ~iovp_mask);
+ 	shift = ioc->ibase >> iovp_shift;
 -- 
 2.17.1
 
