@@ -2,54 +2,65 @@ Return-Path: <SRS0=3GPV=CK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BFFBC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 11:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9222BC433E6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 12:02:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C95B2206FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 11:45:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C95B2206FA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0166D206EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 12:02:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="E17/BDja"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0166D206EF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BglcF6rmjzDqZL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 21:45:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bgm0N1vFxzDqYq
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 22:02:28 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BglZH2JypzDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 21:43:18 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6EEEF1A006E;
- Tue,  1 Sep 2020 13:07:11 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BF7B11A004F;
- Tue,  1 Sep 2020 13:07:06 +0200 (CEST)
-Received: from 10.192.242.69 (shlinux2.ap.freescale.net [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id F32454024E;
- Tue,  1 Sep 2020 13:07:00 +0200 (CEST)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com
-Subject: [PATCH] ASoC: fsl_sai: Support multiple data channel enable bits
-Date: Tue,  1 Sep 2020 19:01:08 +0800
-Message-Id: <1598958068-10552-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bgly34DzSzDqXt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 22:00:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=E17/BDja; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4Bgly111gqz9sVS;
+ Tue,  1 Sep 2020 22:00:25 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1598961626;
+ bh=bNF75aZajY8dqH+S8STH5rR/AlZdtT5JXvFy8iAsGMo=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=E17/BDja+BGxSe7whyBgQehfG9HYsbuS0N2b54qlT+T+cAB2KLGOtAxvb2OGmXrJA
+ bQthxgUNnHzp89QxLQQSNbrAwruCWESMzbhoRX5MjYqIdlS0OzA7TZ5ghxvom32cqH
+ nNAKwDeHIiQzirC92lmv6+7QMv0TEFTnqrQr4bGJ7XPvz9xuTp+rfsdQNeaA4qEPxN
+ m/yr7Odq5uA4LxkxOZ5RkVFmkUaTt3fxyUix1Y2acOTlY09WsqhDpqGJtmna8Vmr1q
+ BNj5ShKytxaGa3uyCI9wd1wZir0Dt1ZRWrQhpejLoWhQPRsYGYE4GkQPBxfdNU9ha0
+ Kq0RR7TEYO5PA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] powerpc/64s/radix: Fix mm_cpumask trimming race vs
+ kthread_use_mm
+In-Reply-To: <20200828100022.1099682-5-npiggin@gmail.com>
+References: <20200828100022.1099682-1-npiggin@gmail.com>
+ <20200828100022.1099682-5-npiggin@gmail.com>
+Date: Tue, 01 Sep 2020 22:00:20 +1000
+Message-ID: <87pn751zcb.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,132 +72,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-One data channel is one data line. From imx7ulp, the SAI IP is
-enhanced to support multiple data channels.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Commit 0cef77c7798a7 ("powerpc/64s/radix: flush remote CPUs out of
+> single-threaded mm_cpumask") added a mechanism to trim the mm_cpumask of
+> a process under certain conditions. One of the assumptions is that
+> mm_users would not be incremented via a reference outside the process
+> context with mmget_not_zero() then go on to kthread_use_mm() via that
+> reference.
+>
+> That invariant was broken by io_uring code (see previous sparc64 fix),
+> but I'll point Fixes: to the original powerpc commit because we are
+> changing that assumption going forward, so this will make backports
+> match up.
+>
+> Fix this by no longer relying on that assumption, but by having each CPU
+> check the mm is not being used, and clearing their own bit from the mask
+> if it's okay. This fix relies on commit 38cf307c1f20 ("mm: fix
+> kthread_use_mm() vs TLB invalidate") to disable irqs over the mm switch,
+> and ARCH_WANT_IRQS_OFF_ACTIVATE_MM to be enabled.
 
-If there is only two channels input and slots is 2, then enable one
-data channel is enough for data transfer. So enable the TCE/RCE and
-transmit/receive mask register according to the input channels and
-slots configuration.
+You could use:
 
-Move the data channel enablement from startup() to hw_params().
+Depends-on: 38cf307c1f20 ("mm: fix kthread_use_mm() vs TLB invalidate")
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_sai.c | 30 ++++++++++++------------------
- sound/soc/fsl/fsl_sai.h |  2 +-
- 2 files changed, 13 insertions(+), 19 deletions(-)
+> Fixes: 0cef77c7798a7 ("powerpc/64s/radix: flush remote CPUs out of single-threaded mm_cpumask")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/tlb.h       | 13 -------------
+>  arch/powerpc/mm/book3s64/radix_tlb.c | 23 ++++++++++++++++-------
+>  2 files changed, 16 insertions(+), 20 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 62c5fdb678fc..38c7bcbb361d 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -443,6 +443,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	u32 slots = (channels == 1) ? 2 : channels;
- 	u32 slot_width = word_width;
- 	int adir = tx ? RX : TX;
-+	u32 pins;
- 	int ret;
- 
- 	if (sai->slots)
-@@ -451,6 +452,8 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	if (sai->slot_width)
- 		slot_width = sai->slot_width;
- 
-+	pins = DIV_ROUND_UP(channels, slots);
-+
- 	if (!sai->is_slave_mode) {
- 		if (sai->bclk_ratio)
- 			ret = fsl_sai_set_bclk(cpu_dai, tx,
-@@ -501,13 +504,17 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 				   FSL_SAI_CR5_FBT_MASK, val_cr5);
- 	}
- 
-+	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
-+			   FSL_SAI_CR3_TRCE_MASK,
-+			   FSL_SAI_CR3_TRCE((1 << pins) - 1));
- 	regmap_update_bits(sai->regmap, FSL_SAI_xCR4(tx, ofs),
- 			   FSL_SAI_CR4_SYWD_MASK | FSL_SAI_CR4_FRSZ_MASK,
- 			   val_cr4);
- 	regmap_update_bits(sai->regmap, FSL_SAI_xCR5(tx, ofs),
- 			   FSL_SAI_CR5_WNW_MASK | FSL_SAI_CR5_W0W_MASK |
- 			   FSL_SAI_CR5_FBT_MASK, val_cr5);
--	regmap_write(sai->regmap, FSL_SAI_xMR(tx), ~0UL - ((1 << channels) - 1));
-+	regmap_write(sai->regmap, FSL_SAI_xMR(tx),
-+		     ~0UL - ((1 << min(channels, slots)) - 1));
- 
- 	return 0;
- }
-@@ -517,6 +524,10 @@ static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
- {
- 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
- 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-+	unsigned int ofs = sai->soc_data->reg_offset;
-+
-+	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
-+			   FSL_SAI_CR3_TRCE_MASK, 0);
- 
- 	if (!sai->is_slave_mode &&
- 			sai->mclk_streams & BIT(substream->stream)) {
-@@ -651,14 +662,9 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
- 		struct snd_soc_dai *cpu_dai)
- {
- 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
--	unsigned int ofs = sai->soc_data->reg_offset;
- 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	int ret;
- 
--	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
--			   FSL_SAI_CR3_TRCE_MASK,
--			   FSL_SAI_CR3_TRCE);
--
- 	/*
- 	 * EDMA controller needs period size to be a multiple of
- 	 * tx/rx maxburst
-@@ -675,17 +681,6 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
- 	return ret;
- }
- 
--static void fsl_sai_shutdown(struct snd_pcm_substream *substream,
--		struct snd_soc_dai *cpu_dai)
--{
--	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
--	unsigned int ofs = sai->soc_data->reg_offset;
--	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
--
--	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
--			   FSL_SAI_CR3_TRCE_MASK, 0);
--}
--
- static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
- 	.set_bclk_ratio	= fsl_sai_set_dai_bclk_ratio,
- 	.set_sysclk	= fsl_sai_set_dai_sysclk,
-@@ -695,7 +690,6 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
- 	.hw_free	= fsl_sai_hw_free,
- 	.trigger	= fsl_sai_trigger,
- 	.startup	= fsl_sai_startup,
--	.shutdown	= fsl_sai_shutdown,
- };
- 
- static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index 6aba7d28f5f3..5f630be74853 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -109,7 +109,7 @@
- #define FSL_SAI_CR2_DIV_MASK	0xff
- 
- /* SAI Transmit and Receive Configuration 3 Register */
--#define FSL_SAI_CR3_TRCE	BIT(16)
-+#define FSL_SAI_CR3_TRCE(x)     ((x) << 16)
- #define FSL_SAI_CR3_TRCE_MASK	GENMASK(23, 16)
- #define FSL_SAI_CR3_WDFL(x)	(x)
- #define FSL_SAI_CR3_WDFL_MASK	0x1f
--- 
-2.27.0
+One minor nit below if you're respinning anyway.
 
+You know this stuff better than me, but I still reviewed it and it seems
+good to me.
+
+Reviewed-by: Michael Ellerman <mpe@ellerman.id.au>
+
+> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+> index fbc6f3002f23..d97f061fecac 100644
+> --- a/arch/powerpc/include/asm/tlb.h
+> +++ b/arch/powerpc/include/asm/tlb.h
+> @@ -66,19 +66,6 @@ static inline int mm_is_thread_local(struct mm_struct *mm)
+>  		return false;
+>  	return cpumask_test_cpu(smp_processor_id(), mm_cpumask(mm));
+>  }
+> -static inline void mm_reset_thread_local(struct mm_struct *mm)
+> -{
+> -	WARN_ON(atomic_read(&mm->context.copros) > 0);
+> -	/*
+> -	 * It's possible for mm_access to take a reference on mm_users to
+> -	 * access the remote mm from another thread, but it's not allowed
+> -	 * to set mm_cpumask, so mm_users may be > 1 here.
+> -	 */
+> -	WARN_ON(current->mm != mm);
+> -	atomic_set(&mm->context.active_cpus, 1);
+> -	cpumask_clear(mm_cpumask(mm));
+> -	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
+> -}
+>  #else /* CONFIG_PPC_BOOK3S_64 */
+>  static inline int mm_is_thread_local(struct mm_struct *mm)
+>  {
+> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+> index 0d233763441f..a421a0e3f930 100644
+> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> @@ -645,19 +645,29 @@ static void do_exit_flush_lazy_tlb(void *arg)
+>  	struct mm_struct *mm = arg;
+>  	unsigned long pid = mm->context.id;
+>  
+> +	/*
+> +	 * A kthread could have done a mmget_not_zero() after the flushing CPU
+> +	 * checked mm_users == 1, and be in the process of kthread_use_mm when
+                                ^
+                                in mm_is_singlethreaded()
+
+Adding that reference would help join the dots for a new reader I think.
+
+cheers
+
+> +	 * interrupted here. In that case, current->mm will be set to mm,
+> +	 * because kthread_use_mm() setting ->mm and switching to the mm is
+> +	 * done with interrupts off.
+> +	 */
+>  	if (current->mm == mm)
+> -		return; /* Local CPU */
+> +		goto out_flush;
+>  
+>  	if (current->active_mm == mm) {
+> -		/*
+> -		 * Must be a kernel thread because sender is single-threaded.
+> -		 */
+> -		BUG_ON(current->mm);
+> +		WARN_ON_ONCE(current->mm != NULL);
+> +		/* Is a kernel thread and is using mm as the lazy tlb */
+>  		mmgrab(&init_mm);
+> -		switch_mm(mm, &init_mm, current);
+>  		current->active_mm = &init_mm;
+> +		switch_mm_irqs_off(mm, &init_mm, current);
+>  		mmdrop(mm);
+>  	}
+> +
+> +	atomic_dec(&mm->context.active_cpus);
+> +	cpumask_clear_cpu(smp_processor_id(), mm_cpumask(mm));
+> +
+> +out_flush:
+>  	_tlbiel_pid(pid, RIC_FLUSH_ALL);
+>  }
+>  
+> @@ -672,7 +682,6 @@ static void exit_flush_lazy_tlbs(struct mm_struct *mm)
+>  	 */
+>  	smp_call_function_many(mm_cpumask(mm), do_exit_flush_lazy_tlb,
+>  				(void *)mm, 1);
+> -	mm_reset_thread_local(mm);
+>  }
+>  
+>  void radix__flush_tlb_mm(struct mm_struct *mm)
