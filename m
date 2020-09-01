@@ -2,58 +2,81 @@ Return-Path: <SRS0=3GPV=CK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.6 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2019BC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 10:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CCF8C433E6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 10:07:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE429206A5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 10:03:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE429206A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DD273206A5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 10:07:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cVTmSw6X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD273206A5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BgjLV61WZzDqZb
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 20:02:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BgjRF6Ds1zDqY5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 20:07:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::244;
+ helo=mail-oi1-x244.google.com; envelope-from=allen.lkml@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
- (client-ip=217.140.110.172; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
- by lists.ozlabs.org (Postfix) with ESMTP id 4BgjG75H43zDqXX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 19:59:11 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DC11630E;
- Tue,  1 Sep 2020 02:59:09 -0700 (PDT)
-Received: from [10.163.69.134] (unknown [10.163.69.134])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1711B3F71F;
- Tue,  1 Sep 2020 02:59:04 -0700 (PDT)
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Subject: Re: [PATCH v3 09/13] mm/debug_vm_pgtable/locks: Move non page table
- modifying test together
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20200827080438.315345-1-aneesh.kumar@linux.ibm.com>
- <20200827080438.315345-10-aneesh.kumar@linux.ibm.com>
- <d0a0a50c-702b-c63a-edf2-263e4e7bd4a5@arm.com>
- <b6240372-4554-8c17-186a-cdc0b0a9089c@linux.ibm.com>
- <9b75b175-f319-d40e-a95e-b323b3db654a@arm.com>
- <58a5280f-4882-4a36-c52d-15ad879209d6@linux.ibm.com>
-Message-ID: <4fad7c4b-14ca-b558-504b-6b20a6c85ec3@arm.com>
-Date: Tue, 1 Sep 2020 15:28:32 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=cVTmSw6X; dkim-atps=neutral
+Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com
+ [IPv6:2607:f8b0:4864:20::244])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BgjP05p6PzDqRn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 20:05:08 +1000 (AEST)
+Received: by mail-oi1-x244.google.com with SMTP id z195so647863oia.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2020 03:05:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=12zlZh/I8vKcpFmFAYP7329YZeBRoOUT8YXeGfQKuJs=;
+ b=cVTmSw6XX+UT6JUTH4rdPSJ9FNDlYkQZYUfvTr2XorsOE1gcdNjHOzTRgqjMvpA4Xy
+ TsmOhTC0Xb1IGa6M2dfbBdowKCpxJ866AVZrI14hUdZEmiCll6cl3emPVLdxv6nSMdq2
+ kqV0dP0hQxBQOU9KFPrbouWkY2RRe0sNwVjlm+Fi0S7vhwBaebaEb7gXqLl+HGDhJaOv
+ Z893PplsVmLuxu4Qg5AghWQuMPM3Yki2X6UZhkcCMiAWTzre3QwjLxDhUhIXwTDMYo57
+ TjPtLbMB6+ljoKyyBzxOv7VO7jk6WxlGmym/CuGp432h8bnzpkLQOQNCWDR8/zgVa858
+ cQvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=12zlZh/I8vKcpFmFAYP7329YZeBRoOUT8YXeGfQKuJs=;
+ b=uC/JZR8q7kmms6IRvO/sjih16ZgLXUs2aLnORX0Y6PS0H0pwbE039Pm0mOgDajSaI3
+ E4YXvN30lS+WFMCDlwwJar9/2zSq90c7JlTvoF7vut6Ur7862VocWZAyDUe9u/VxAPKk
+ +XP3ONEgVzyR0ZtCduEhhb/dqpwmzWJzCBtP0/+ApnaCb9t6V+j8O8QcGj21Q60SSaTT
+ tk0OtM1b7s8UcLgTnm6+qFdzCcTu3evhRKDfz5qE8NEx0HxIxGt7iFDirUlatqbeEfss
+ 7eCsofR+uZXmeP6HRpDgVQY+gjg7v2FpO+22GbRiNY/NlkhoFzEPQoLJitw2elufkhzX
+ x15g==
+X-Gm-Message-State: AOAM533VlxnEjL07gIaccdFVXzD+i0EzUJ5RmR7RbqTzf+FYy0j8Wy7n
+ rHREi9mOlc3qZWiy71LZnZ0zAvD97VggFsPxE8c=
+X-Google-Smtp-Source: ABdhPJye06bcGhAWcYxufpzsaAsoo5AYygMhxy14Mms95Z97Cmb8t1iCi6Fk2wDJAHKUVMTHJ8UVPQHQTR7OYPMT4tY=
+X-Received: by 2002:aca:4c09:: with SMTP id z9mr72588oia.175.1598954704359;
+ Tue, 01 Sep 2020 03:05:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <58a5280f-4882-4a36-c52d-15ad879209d6@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+References: <20200817085703.25732-1-allen.cryptic@gmail.com>
+ <s5hsgckl084.wl-tiwai@suse.de> <20200818104432.GB5337@sirena.org.uk>
+ <CAOMdWSK79WWsmsxJH9zUMZMfkBNRWXbmEHg-haxNZopHjC1cGw@mail.gmail.com>
+ <20200819111605.GC5441@sirena.org.uk> <s5h4koyj2no.wl-tiwai@suse.de>
+In-Reply-To: <s5h4koyj2no.wl-tiwai@suse.de>
+From: Allen <allen.lkml@gmail.com>
+Date: Tue, 1 Sep 2020 15:34:53 +0530
+Message-ID: <CAOMdWSJ2VKhbnRDTNVuTKSL12k0qhryO7yznstAk8k_nBGp2=Q@mail.gmail.com>
+Subject: Re: [PATCH 00/10] sound: convert tasklets to use new tasklet_setup()
+To: Takashi Iwai <tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,74 +88,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Christophe Leroy <christophe.leroy@c-s.fr>, x86@kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>, Qian Cai <cai@lca.pw>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Vineet Gupta <vgupta@synopsys.com>, linux-snps-arc@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: alsa-devel@alsa-project.org, Kees Cook <keescook@chromium.org>,
+ timur@kernel.org, Xiubo.Lee@gmail.com,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, clemens@ladisch.de,
+ tiwai@suse.com, o-takashi@sakamocchi.jp, nicoleotsuka@gmail.com,
+ Allen Pais <allen.cryptic@gmail.com>, Mark Brown <broonie@kernel.org>,
+ perex@perex.cz, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Takashi,
+> > > > These patches which I wasn't CCed on and which need their subject lines
+> > > > fixing :( .  With the subject lines fixed I guess so so
+> >
+> > > Extremely sorry. I thought I had it covered. How would you like it
+> > > worded?
+> >
+> > ASoC:
+>
+> To be more exact, "ASoC:" prefix is for sound/soc/*, and for the rest
+> sound/*, use "ALSA:" prefix please.
 
+I could not get the generic API accepted upstream. We would stick to
+from_tasklet()
+or container_of(). Could I go ahead and send out V2 using
+from_tasklet() with subject line fixed?
 
-On 09/01/2020 03:06 PM, Aneesh Kumar K.V wrote:
-> 
->>>>
->>>> [   17.080644] ------------[ cut here ]------------
->>>> [   17.081342] kernel BUG at mm/pgtable-generic.c:164!
->>>> [   17.082091] Internal error: Oops - BUG: 0 [#1] PREEMPT SMP
->>>> [   17.082977] Modules linked in:
->>>> [   17.083481] CPU: 79 PID: 1 Comm: swapper/0 Tainted: G        W         5.9.0-rc2-00105-g740e72cd6717 #14
->>>> [   17.084998] Hardware name: linux,dummy-virt (DT)
->>>> [   17.085745] pstate: 60400005 (nZCv daif +PAN -UAO BTYPE=--)
->>>> [   17.086645] pc : pgtable_trans_huge_deposit+0x58/0x60
->>>> [   17.087462] lr : debug_vm_pgtable+0x4dc/0x8f0
->>>> [   17.088168] sp : ffff80001219bcf0
->>>> [   17.088710] x29: ffff80001219bcf0 x28: ffff8000114ac000
->>>> [   17.089574] x27: ffff8000114ac000 x26: 0020000000000fd3
->>>> [   17.090431] x25: 0020000081400fd3 x24: fffffe00175c12c0
->>>> [   17.091286] x23: ffff0005df04d1a8 x22: 0000f18d6e035000
->>>> [   17.092143] x21: ffff0005dd790000 x20: ffff0005df18e1a8
->>>> [   17.093003] x19: ffff0005df04cb80 x18: 0000000000000014
->>>> [   17.093859] x17: 00000000b76667d0 x16: 00000000fd4e6611
->>>> [   17.094716] x15: 0000000000000001 x14: 0000000000000002
->>>> [   17.095572] x13: 000000000055d966 x12: fffffe001755e400
->>>> [   17.096429] x11: 0000000000000008 x10: ffff0005fcb6e210
->>>> [   17.097292] x9 : ffff0005fcb6e210 x8 : 0020000081590fd3
->>>> [   17.098149] x7 : ffff0005dd71e0c0 x6 : ffff0005df18e1a8
->>>> [   17.099006] x5 : 0020000081590fd3 x4 : 0020000081590fd3
->>>> [   17.099862] x3 : ffff0005df18e1a8 x2 : fffffe00175c12c0
->>>> [   17.100718] x1 : fffffe00175c1300 x0 : 0000000000000000
->>>> [   17.101583] Call trace:
->>>> [   17.101993]  pgtable_trans_huge_deposit+0x58/0x60
->>>> [   17.102754]  do_one_initcall+0x74/0x1cc
->>>> [   17.103381]  kernel_init_freeable+0x1d0/0x238
->>>> [   17.104089]  kernel_init+0x14/0x118
->>>> [   17.104658]  ret_from_fork+0x10/0x34
->>>> [   17.105251] Code: f9000443 f9000843 f9000822 d65f03c0 (d4210000)
->>>> [   17.106303] ---[ end trace e63471e00f8c147f ]---
->>>>
->>>
->>> IIUC, this should happen even without the series right? This is
->>>
->>>      assert_spin_locked(pmd_lockptr(mm, pmdp));
->>
->> Crash does not happen without this series. A previous patch [PATCH v3 08/13]
->> added pgtable_trans_huge_deposit/withdraw() in pmd_advanced_tests(). arm64
->> does not define __HAVE_ARCH_PGTABLE_DEPOSIT and hence falls back on generic
->> pgtable_trans_huge_deposit() which the asserts the lock.
->>
-> 
-> 
-> I fixed that by moving the pgtable deposit after adding the pmd locks correctly.
-> 
-> mm/debug_vm_pgtable/locks: Move non page table modifying test together
-> mm/debug_vm_pgtable/locks: Take correct page table lock
-> mm/debug_vm_pgtable/thp: Use page table depost/withdraw with THP
-
-Right, it does fix. But then both those patches should be folded/merged in
-order to preserve git bisect ability, besides test classification reasons
-as mentioned in a previous response and a possible redundant movement of
-hugetlb_basic_tests().
+Thanks,
+-- 
+       - Allen
