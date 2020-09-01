@@ -2,78 +2,83 @@ Return-Path: <SRS0=3GPV=CK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94A3CC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 21:49:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5377AC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 22:19:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45D61206FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 21:49:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45D61206FA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 654072078B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 22:19:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d1jAEWWO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 654072078B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bh11Z5tGczDqKj
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 07:49:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bh1gw2nWtzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 08:19:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=nicoleotsuka@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=d1jAEWWO; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bh0zG49k4zDqJT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2020 07:47:21 +1000 (AEST)
-Received: by mail-ot1-f67.google.com with SMTP id e23so2514919otk.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2020 14:47:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bh1dx5BVQzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2020 08:17:25 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id g29so1462293pgl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2020 15:17:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=lJJ7V03Abw0UVLOnJIZ7fdpPykj9kG/OFLFAvUpMf7Q=;
+ b=d1jAEWWOy8icND/vVRiaFSXB4NAsmPg4/p84CGOXK5ZkquCur08xxEn9w3Qg5HW4Ih
+ Q0gSWJJOMlIBYMQfx+k3vV2iE2eqctfeFhszNit+BFUqWHCOGRZvKf+w7oWBOQ7qZjGJ
+ R3carjvVRL1VoqsobU7Ai4fZe2WkgqC+P43wyk1NRoiNzdsSh5N+pGt8fXsZVs8y65z3
+ oZPq6lbJbBe32p/VRMi11dh2YeShysKzo0sN/L1NzkTjK6fZcthpif7m5oE97odMeUUQ
+ UMDAuHZLZxQ6lwIJv2Az6oePWTshK4pAuKc9lohg6OX1A1cWekU/i+5kExQnmn/u1jG8
+ 3+KQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=HtDmdS2o4yWHgA155sIUrMDEsVQmMWq03sAjdZrfpNk=;
- b=YAGTNtgzk1JT0rRIuZVB97JtSCb0RZFduwN1RkCnod0f0BT8TBtGUrUNN+GEqOofzf
- rgDBouEl9KKq4ji7LG3qk0gY0IHrXEIylZZ97Lbl1KmegE25bEG01EM1Snt2O7C47ad4
- MYloh3lv9zgkN64JrKKMaoEvtYya9kMl5UUfgL0o0RXHruNbQK2wSJzpH+dNMJjS0orF
- /q57htUtWokLC2J6pDHjawxEyrcBkJ4fkd2tZJdNCTykNSLiJlNL5P1gQsDltN3hd2uh
- RC8L8zw0bwDyaNL94yj+vC9TupIlzNFhFudoBmwku8OozvX2QQ4VHmInmful5C3FzszS
- J1Tg==
-X-Gm-Message-State: AOAM532AbFlXycuOIPTBRe/vkWtI3mJiBD7rw3ePzrq/Ge0OV4GKMVff
- Ix9e/xLV9x4YLWCHLkj1Cs9OIXx55bo=
-X-Google-Smtp-Source: ABdhPJxQcCn5AMUxxBqRbce6L2fcuqikuDht0/03kCXDqB23Lo2StWDoZTXMXJXAvzIizzA1u0dLZQ==
-X-Received: by 2002:a05:6830:1209:: with SMTP id
- r9mr3059740otp.206.1598996429897; 
- Tue, 01 Sep 2020 14:40:29 -0700 (PDT)
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com.
- [209.85.210.51])
- by smtp.gmail.com with ESMTPSA id o7sm413032otl.63.2020.09.01.14.40.29
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 01 Sep 2020 14:40:29 -0700 (PDT)
-Received: by mail-ot1-f51.google.com with SMTP id a2so1641499otr.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2020 14:40:29 -0700 (PDT)
-X-Received: by 2002:a05:6830:12c3:: with SMTP id
- a3mr3039860otq.74.1598996428949; 
- Tue, 01 Sep 2020 14:40:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200730125259.GA8948@gondor.apana.org.au>
- <VE1PR04MB6687FB075B9A6A0923F576978F2E0@VE1PR04MB6687.eurprd04.prod.outlook.com>
- <20200901015630.GA9065@gondor.apana.org.au>
-In-Reply-To: <20200901015630.GA9065@gondor.apana.org.au>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Tue, 1 Sep 2020 16:40:16 -0500
-X-Gmail-Original-Message-ID: <CADRPPNTt5dCX1pRUp5OenZBuMNJcN+k8jMVmUo5qw5g0VLZ4hQ@mail.gmail.com>
-Message-ID: <CADRPPNTt5dCX1pRUp5OenZBuMNJcN+k8jMVmUo5qw5g0VLZ4hQ@mail.gmail.com>
-Subject: Re: [PATCH] soc: fsl: Remove bogus packed attributes from qman.h
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=lJJ7V03Abw0UVLOnJIZ7fdpPykj9kG/OFLFAvUpMf7Q=;
+ b=Dwv+7ukecVyWUNWI8ijW/VfKdo9E0UJh/1GVMGU3vP6Xcg47VobO5nJ3H64bJ3OHnG
+ aXHe0LsCu3K6egG0/EXmHr9i92uhZB68rRdio4gKrM+0iYZJ7dioq+aAsiXeZqYcMTbo
+ aXRHQOBfx2KGA5Z/xhemQr0OfFRGiHIpya41IuOaO4ucInp0kNy4qyyd/VvL+rha04Kk
+ TbZ+ZLSIECoSasWy/uQfksXdbNUju+psQvMLflSY9BWcCP0qcabSoCS9ZRBWyVyKI+Ft
+ 4xWj954Y3niJMrFTeTYFKpZ6Mb3v9gTMU1OQavWnckNDFn4vVHGon/wN9lyrmMS6eK2R
+ NLKg==
+X-Gm-Message-State: AOAM530iRdwoUvRG60ZN2fu5V5EE/9It033C6a0qZ60wqy3OHZSMCJGo
+ MON6+zvmQZmakCkTqfKlGcY=
+X-Google-Smtp-Source: ABdhPJzfNSxWnLtzXlyH14JQieBaCH5fI+LitYgbfDa0OIwWsXALFv3Wh2kOb00SOdtQ04Jd1bz+aA==
+X-Received: by 2002:a63:784e:: with SMTP id t75mr3167596pgc.389.1598998642725; 
+ Tue, 01 Sep 2020 15:17:22 -0700 (PDT)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id w203sm3201356pfc.97.2020.09.01.15.17.21
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 01 Sep 2020 15:17:22 -0700 (PDT)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: hch@lst.de
+Subject: [PATCH 1/2] dma-mapping: introduce dma_get_seg_boundary_nr_pages()
+Date: Tue,  1 Sep 2020 15:16:45 -0700
+Message-Id: <20200901221646.26491-2-nicoleotsuka@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200901221646.26491-1-nicoleotsuka@gmail.com>
+References: <20200901221646.26491-1-nicoleotsuka@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,83 +90,262 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linux-ia64@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
+ sfr@canb.auug.org.au, deller@gmx.de, x86@kernel.org, borntraeger@de.ibm.com,
+ mingo@redhat.com, mattst88@gmail.com, fenghua.yu@intel.com, gor@linux.ibm.com,
+ schnelle@linux.ibm.com, hca@linux.ibm.com, ink@jurassic.park.msu.ru,
+ tglx@linutronix.de, gerald.schaefer@linux.ibm.com, rth@twiddle.net,
+ tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Aug 31, 2020 at 8:57 PM Herbert Xu <herbert@gondor.apana.org.au> wr=
-ote:
->
-> On Tue, Sep 01, 2020 at 01:50:38AM +0000, Leo Li wrote:
-> >
-> > Sorry for the late response.  I missed this email previously.
-> >
-> > These structures are descriptors used by hardware, we cannot have _ANY_=
- padding from the compiler.  The compiled result might be the same with or =
-without the __packed attribute for now, but I think keep it there probably =
-is safer for dealing with unexpected alignment requirements from the compil=
-er in the future.
-> >
-> > Having conflicting alignment requirements warning might means something=
- is wrong with the structure in certain scenario.  I just tried a ARM64 bui=
-ld but didn't see the warnings.  Could you share the warning you got and th=
-e build setup?  Thanks.
->
-> Just do a COMPILE_TEST build on x86-64:
->
-> In file included from ../drivers/crypto/caam/qi.c:12:
+We found that callers of dma_get_seg_boundary mostly do an ALIGN
+with page mask and then do a page shift to get number of pages:
+    ALIGN(boundary + 1, 1 << shift) >> shift
 
-Looks like the CAAM driver and dependent QBMAN driver doesn't support
-COMPILE_TEST yet.  Are you trying to add the support for it?
+However, the boundary might be as large as ULONG_MAX, which means
+that a device has no specific boundary limit. So either "+ 1" or
+passing it to ALIGN() would potentially overflow.
 
-I changed the Kconfig to enable the COMPILE_TEST anyway and updated my
-toolchain to gcc-10 trying to duplicate the issue.  The issues can
-only be reproduced with "W=3D1".
+According to kernel defines:
+    #define ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
+    #define ALIGN(x, a)	ALIGN_MASK(x, (typeof(x))(a) - 1)
 
-> ../include/soc/fsl/qman.h:259:1: warning: alignment 1 of =E2=80=98struct =
-qm_dqrr_entry=E2=80=99 is less than 8 [-Wpacked-not-aligned]
->  } __packed;
->  ^
-> ../include/soc/fsl/qman.h:292:2: warning: alignment 1 of =E2=80=98struct =
-<anonymous>=E2=80=99 is less than 8 [-Wpacked-not-aligned]
->   } __packed ern;
->   ^
+We can simplify the logic here into a helper function doing:
+  ALIGN(boundary + 1, 1 << shift) >> shift
+= ALIGN_MASK(b + 1, (1 << s) - 1) >> s
+= {[b + 1 + (1 << s) - 1] & ~[(1 << s) - 1]} >> s
+= [b + 1 + (1 << s) - 1] >> s
+= [b + (1 << s)] >> s
+= (b >> s) + 1
 
-I think this is a valid concern that if the parent structure doesn't
-meet certain alignment requirements, the alignment for the
-sub-structure cannot be guaranteed.  If we just remove the __packed
-attribute from the parent structure, the compiler could try to add
-padding in the parent structure to fulfill the alignment requirements
-of the sub structure which is not good.  I think the following changes
-are a better fix for the warnings:
+This patch introduces and applies dma_get_seg_boundary_nr_pages()
+as an overflow-free helper for the dma_get_seg_boundary() callers
+to get numbers of pages. It also takes care of the NULL dev case
+for non-DMA API callers.
 
-diff --git a/include/soc/fsl/qman.h b/include/soc/fsl/qman.h
-index cfe00e08e85b..9f484113cfda 100644
---- a/include/soc/fsl/qman.h
-+++ b/include/soc/fsl/qman.h
-@@ -256,7 +256,7 @@ struct qm_dqrr_entry {
-        __be32 context_b;
-        struct qm_fd fd;
-        u8 __reserved4[32];
--} __packed;
-+} __packed __aligned(64);
- #define QM_DQRR_VERB_VBIT              0x80
- #define QM_DQRR_VERB_MASK              0x7f    /* where the verb contains;=
- */
- #define QM_DQRR_VERB_FRAME_DEQUEUE     0x60    /* "this format" */
-@@ -289,7 +289,7 @@ union qm_mr_entry {
-                __be32 tag;
-                struct qm_fd fd;
-                u8 __reserved1[32];
--       } __packed ern;
-+       } __packed __aligned(64) ern;
-        struct {
-                u8 verb;
-                u8 fqs;         /* Frame Queue Status */
+Suggested-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ arch/alpha/kernel/pci_iommu.c    |  7 +------
+ arch/ia64/hp/common/sba_iommu.c  |  3 +--
+ arch/powerpc/kernel/iommu.c      |  9 ++-------
+ arch/s390/pci/pci_dma.c          |  6 ++----
+ arch/sparc/kernel/iommu-common.c | 10 +++-------
+ arch/sparc/kernel/iommu.c        |  3 +--
+ arch/sparc/kernel/pci_sun4v.c    |  3 +--
+ arch/x86/kernel/amd_gart_64.c    |  3 +--
+ drivers/parisc/ccio-dma.c        |  3 +--
+ drivers/parisc/sba_iommu.c       |  3 +--
+ include/linux/dma-mapping.h      | 19 +++++++++++++++++++
+ 11 files changed, 33 insertions(+), 36 deletions(-)
 
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index 81037907268d..6f7de4f4e191 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -141,12 +141,7 @@ iommu_arena_find_pages(struct device *dev, struct pci_iommu_arena *arena,
+ 	unsigned long boundary_size;
+ 
+ 	base = arena->dma_base >> PAGE_SHIFT;
+-	if (dev) {
+-		boundary_size = dma_get_seg_boundary(dev) + 1;
+-		boundary_size >>= PAGE_SHIFT;
+-	} else {
+-		boundary_size = 1UL << (32 - PAGE_SHIFT);
+-	}
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, PAGE_SHIFT);
+ 
+ 	/* Search forward for the first mask-aligned sequence of N free ptes */
+ 	ptes = arena->ptes;
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 656a4888c300..b49b73a95067 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -485,8 +485,7 @@ sba_search_bitmap(struct ioc *ioc, struct device *dev,
+ 	ASSERT(((unsigned long) ioc->res_hint & (sizeof(unsigned long) - 1UL)) == 0);
+ 	ASSERT(res_ptr < res_end);
+ 
+-	boundary_size = (unsigned long long)dma_get_seg_boundary(dev) + 1;
+-	boundary_size = ALIGN(boundary_size, 1ULL << iovp_shift) >> iovp_shift;
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, iovp_shift);
+ 
+ 	BUG_ON(ioc->ibase & ~iovp_mask);
+ 	shift = ioc->ibase >> iovp_shift;
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 9704f3f76e63..cbc2e62db597 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -236,15 +236,10 @@ static unsigned long iommu_range_alloc(struct device *dev,
+ 		}
+ 	}
+ 
+-	if (dev)
+-		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-				      1 << tbl->it_page_shift);
+-	else
+-		boundary_size = ALIGN(1UL << 32, 1 << tbl->it_page_shift);
+-	/* 4GB boundary for iseries_hv_alloc and iseries_hv_map */
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, tbl->it_page_shift);
+ 
+ 	n = iommu_area_alloc(tbl->it_map, limit, start, npages, tbl->it_offset,
+-			     boundary_size >> tbl->it_page_shift, align_mask);
++			     boundary_size, align_mask);
+ 	if (n == -1) {
+ 		if (likely(pass == 0)) {
+ 			/* First try the pool from the start */
+diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
+index 64b1399a73f0..4a37d8f4de9d 100644
+--- a/arch/s390/pci/pci_dma.c
++++ b/arch/s390/pci/pci_dma.c
+@@ -261,13 +261,11 @@ static unsigned long __dma_alloc_iommu(struct device *dev,
+ 				       unsigned long start, int size)
+ {
+ 	struct zpci_dev *zdev = to_zpci(to_pci_dev(dev));
+-	unsigned long boundary_size;
+ 
+-	boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-			      PAGE_SIZE) >> PAGE_SHIFT;
+ 	return iommu_area_alloc(zdev->iommu_bitmap, zdev->iommu_pages,
+ 				start, size, zdev->start_dma >> PAGE_SHIFT,
+-				boundary_size, 0);
++				dma_get_seg_boundary_nr_pages(dev, PAGE_SHIFT),
++				0);
+ }
+ 
+ static dma_addr_t dma_alloc_address(struct device *dev, int size)
+diff --git a/arch/sparc/kernel/iommu-common.c b/arch/sparc/kernel/iommu-common.c
+index 59cb16691322..23ca75f09277 100644
+--- a/arch/sparc/kernel/iommu-common.c
++++ b/arch/sparc/kernel/iommu-common.c
+@@ -166,13 +166,6 @@ unsigned long iommu_tbl_range_alloc(struct device *dev,
+ 		}
+ 	}
+ 
+-	if (dev)
+-		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-				      1 << iommu->table_shift);
+-	else
+-		boundary_size = ALIGN(1ULL << 32, 1 << iommu->table_shift);
+-
+-	boundary_size = boundary_size >> iommu->table_shift;
+ 	/*
+ 	 * if the skip_span_boundary_check had been set during init, we set
+ 	 * things up so that iommu_is_span_boundary() merely checks if the
+@@ -181,6 +174,9 @@ unsigned long iommu_tbl_range_alloc(struct device *dev,
+ 	if ((iommu->flags & IOMMU_NO_SPAN_BOUND) != 0) {
+ 		shift = 0;
+ 		boundary_size = iommu->poolsize * iommu->nr_pools;
++	} else {
++		boundary_size = dma_get_seg_boundary_nr_pages(dev,
++					iommu->table_shift);
+ 	}
+ 	n = iommu_area_alloc(iommu->map, limit, start, npages, shift,
+ 			     boundary_size, align_mask);
+diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+index 4ae7388b1bff..c3e4e2df26a8 100644
+--- a/arch/sparc/kernel/iommu.c
++++ b/arch/sparc/kernel/iommu.c
+@@ -472,8 +472,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	outs->dma_length = 0;
+ 
+ 	max_seg_size = dma_get_max_seg_size(dev);
+-	seg_boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-				  IO_PAGE_SIZE) >> IO_PAGE_SHIFT;
++	seg_boundary_size = dma_get_seg_boundary_nr_pages(dev, IO_PAGE_SHIFT);
+ 	base_shift = iommu->tbl.table_map_base >> IO_PAGE_SHIFT;
+ 	for_each_sg(sglist, s, nelems, i) {
+ 		unsigned long paddr, npages, entry, out_entry = 0, slen;
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 14b93c5564e3..6b92dd51c002 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -508,8 +508,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	iommu_batch_start(dev, prot, ~0UL);
+ 
+ 	max_seg_size = dma_get_max_seg_size(dev);
+-	seg_boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-				  IO_PAGE_SIZE) >> IO_PAGE_SHIFT;
++	seg_boundary_size = dma_get_seg_boundary_nr_pages(dev, IO_PAGE_SHIFT);
+ 
+ 	mask = *dev->dma_mask;
+ 	if (!iommu_use_atu(iommu, mask))
+diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+index e89031e9c847..bccc5357bffd 100644
+--- a/arch/x86/kernel/amd_gart_64.c
++++ b/arch/x86/kernel/amd_gart_64.c
+@@ -96,8 +96,7 @@ static unsigned long alloc_iommu(struct device *dev, int size,
+ 
+ 	base_index = ALIGN(iommu_bus_base & dma_get_seg_boundary(dev),
+ 			   PAGE_SIZE) >> PAGE_SHIFT;
+-	boundary_size = ALIGN((u64)dma_get_seg_boundary(dev) + 1,
+-			      PAGE_SIZE) >> PAGE_SHIFT;
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, PAGE_SHIFT);
+ 
+ 	spin_lock_irqsave(&iommu_bitmap_lock, flags);
+ 	offset = iommu_area_alloc(iommu_gart_bitmap, iommu_pages, next_bit,
+diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
+index a5507f75b524..ba16b7f8f806 100644
+--- a/drivers/parisc/ccio-dma.c
++++ b/drivers/parisc/ccio-dma.c
+@@ -356,8 +356,7 @@ ccio_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
+ 	** ggg sacrifices another 710 to the computer gods.
+ 	*/
+ 
+-	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
+-			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, IOVP_SHIFT);
+ 
+ 	if (pages_needed <= 8) {
+ 		/*
+diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
+index d4314fba0269..959bda193b96 100644
+--- a/drivers/parisc/sba_iommu.c
++++ b/drivers/parisc/sba_iommu.c
+@@ -342,8 +342,7 @@ sba_search_bitmap(struct ioc *ioc, struct device *dev,
+ 	unsigned long shift;
+ 	int ret;
+ 
+-	boundary_size = ALIGN((unsigned long long)dma_get_seg_boundary(dev) + 1,
+-			      1ULL << IOVP_SHIFT) >> IOVP_SHIFT;
++	boundary_size = dma_get_seg_boundary_nr_pages(dev, IOVP_SHIFT);
+ 
+ #if defined(ZX1_SUPPORT)
+ 	BUG_ON(ioc->ibase & ~IOVP_MASK);
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 52635e91143b..faab0a8210b9 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -632,6 +632,25 @@ static inline unsigned long dma_get_seg_boundary(struct device *dev)
+ 	return DMA_BIT_MASK(32);
+ }
+ 
++/**
++ * dma_get_seg_boundary_nr_pages - return the segment boundary in "page" units
++ * @dev: device to guery the boundary for
++ * @page_shift: ilog() of the IOMMU page size
++ *
++ * Return the segment boundary in IOMMU page units (which may be different from
++ * the CPU page size) for the passed in device.
++ *
++ * If @dev is NULL a boundary of U32_MAX is assumed, this case is just for
++ * non-DMA API callers.
++ */
++static inline unsigned long dma_get_seg_boundary_nr_pages(struct device *dev,
++		unsigned int page_shift)
++{
++	if (!dev)
++		return (U32_MAX >> page_shift) + 1;
++	return (dma_get_seg_boundary(dev) >> page_shift) + 1;
++}
++
+ static inline int dma_set_seg_boundary(struct device *dev, unsigned long mask)
+ {
+ 	if (dev->dma_parms) {
+-- 
+2.17.1
 
-Regards,
-Leo
