@@ -2,65 +2,57 @@ Return-Path: <SRS0=3GPV=CK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3079EC433E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 07:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F26D2C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 07:34:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C545E2071B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 07:33:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="a/bpJOhS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C545E2071B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A40C7206CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 07:34:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A40C7206CD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bgf1d4S3kzDqSp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 17:33:09 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BgdzB2L5TzDqM1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 17:31:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=a/bpJOhS; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Bgdz92lPxz9sTC;
- Tue,  1 Sep 2020 17:31:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1598945461;
- bh=03sHYm631sdFvHM5NaS/cwjM4VK1GZ0RfuJMTFnqpEc=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=a/bpJOhSiqrggdqpabXGJruLmgoojqIjNOtKdWPNocerR0Tx+kpxlpwOBXWByNo/u
- 4MMDvjMJXHZd3qpIFjDpNQwir2JtlbC9QuIRNfQv7+DKiRCdMAqVS2zB0NNm3xvlxi
- hvo4hfX2X+T6n9TewBPyqOaQPF1dB6lLff4nNk3wepYL7lE7hDv4mTN4tfQemSqXSJ
- WI1dVOLHIsHxXYqamewX3UAYivUNxFlBxI1JOPhVmYtR5K6iqZSaxTQcLo/zn3B6PJ
- QNOduqvxUP/5omK0ZAxn1i6wfTDPjM1ab8plb48Tm0DDJw3DYQUCXwF5Hbpl36yYaa
- HcDxgeuynTQ2A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2 16/23] powerpc: use asm-generic/mmu_context.h for no-op
- implementations
-In-Reply-To: <20200826145249.745432-17-npiggin@gmail.com>
-References: <20200826145249.745432-1-npiggin@gmail.com>
- <20200826145249.745432-17-npiggin@gmail.com>
-Date: Tue, 01 Sep 2020 17:30:59 +1000
-Message-ID: <87sgc20x8s.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bgf3T2HfKzDqGY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 17:34:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Bgf1963YJzDqSp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 17:32:44 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8002A1FB;
+ Tue,  1 Sep 2020 00:32:41 -0700 (PDT)
+Received: from [10.163.69.134] (unknown [10.163.69.134])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3DFC33F71F;
+ Tue,  1 Sep 2020 00:32:36 -0700 (PDT)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH v3 03/13] mm/debug_vm_pgtable/ppc64: Avoid setting top
+ bits in radom value
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org,
+ akpm@linux-foundation.org
+References: <20200827080438.315345-1-aneesh.kumar@linux.ibm.com>
+ <20200827080438.315345-4-aneesh.kumar@linux.ibm.com>
+ <3a0b0101-e6ec-26c5-e104-5b0bb95c3e51@arm.com>
+ <1a8abe92-032b-f60f-1df1-52bb409b35a3@linux.ibm.com>
+Message-ID: <75771782-734b-69f6-4a07-2d3542458319@arm.com>
+Date: Tue, 1 Sep 2020 13:02:04 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1a8abe92-032b-f60f-1df1-52bb409b35a3@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,80 +64,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Christophe Leroy <christophe.leroy@c-s.fr>, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>, Qian Cai <cai@lca.pw>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Vineet Gupta <vgupta@synopsys.com>, linux-snps-arc@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/include/asm/mmu_context.h | 22 +++++++---------------
->  1 file changed, 7 insertions(+), 15 deletions(-)
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
-cheers
 
 
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index 7f3658a97384..bc22e247ab55 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -14,7 +14,9 @@
->  /*
->   * Most if the context management is out of line
->   */
-> +#define init_new_context init_new_context
->  extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
-> +#define destroy_context destroy_context
->  extern void destroy_context(struct mm_struct *mm);
->  #ifdef CONFIG_SPAPR_TCE_IOMMU
->  struct mm_iommu_table_group_mem_t;
-> @@ -235,27 +237,15 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
->  }
->  #define switch_mm_irqs_off switch_mm_irqs_off
->  
-> -
-> -#define deactivate_mm(tsk,mm)	do { } while (0)
-> -
-> -/*
-> - * After we have set current->mm to a new value, this activates
-> - * the context for the new mm so we see the new mappings.
-> - */
-> -static inline void activate_mm(struct mm_struct *prev, struct mm_struct *next)
-> -{
-> -	switch_mm(prev, next, current);
-> -}
-> -
-> -/* We don't currently use enter_lazy_tlb() for anything */
-> +#ifdef CONFIG_PPC_BOOK3E_64
-> +#define enter_lazy_tlb enter_lazy_tlb
->  static inline void enter_lazy_tlb(struct mm_struct *mm,
->  				  struct task_struct *tsk)
->  {
->  	/* 64-bit Book3E keeps track of current PGD in the PACA */
-> -#ifdef CONFIG_PPC_BOOK3E_64
->  	get_paca()->pgd = NULL;
-> -#endif
->  }
-> +#endif
->  
->  extern void arch_exit_mmap(struct mm_struct *mm);
->  
-> @@ -298,5 +288,7 @@ static inline int arch_dup_mmap(struct mm_struct *oldmm,
->  	return 0;
->  }
->  
-> +#include <asm-generic/mmu_context.h>
-> +
->  #endif /* __KERNEL__ */
->  #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
-> -- 
-> 2.23.0
+On 09/01/2020 11:51 AM, Aneesh Kumar K.V wrote:
+> On 9/1/20 8:45 AM, Anshuman Khandual wrote:
+>>
+>>
+>> On 08/27/2020 01:34 PM, Aneesh Kumar K.V wrote:
+>>> ppc64 use bit 62 to indicate a pte entry (_PAGE_PTE). Avoid setting that bit in
+>>> random value.
+>>>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>> ---
+>>>   mm/debug_vm_pgtable.c | 13 ++++++++++---
+>>>   1 file changed, 10 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+>>> index 086309fb9b6f..bbf9df0e64c6 100644
+>>> --- a/mm/debug_vm_pgtable.c
+>>> +++ b/mm/debug_vm_pgtable.c
+>>> @@ -44,10 +44,17 @@
+>>>    * entry type. But these bits might affect the ability to clear entries with
+>>>    * pxx_clear() because of how dynamic page table folding works on s390. So
+>>>    * while loading up the entries do not change the lower 4 bits. It does not
+>>> - * have affect any other platform.
+>>> + * have affect any other platform. Also avoid the 62nd bit on ppc64 that is
+>>> + * used to mark a pte entry.
+>>>    */
+>>> -#define S390_MASK_BITS    4
+>>> -#define RANDOM_ORVALUE    GENMASK(BITS_PER_LONG - 1, S390_MASK_BITS)
+>>> +#define S390_SKIP_MASK        GENMASK(3, 0)
+>>> +#ifdef CONFIG_PPC_BOOK3S_64
+>>> +#define PPC64_SKIP_MASK        GENMASK(62, 62)
+>>> +#else
+>>> +#define PPC64_SKIP_MASK        0x0
+>>> +#endif
+>>
+>> Please drop the #ifdef CONFIG_PPC_BOOK3S_64 here. We already accommodate skip
+>> bits for a s390 platform requirement and can also do so for ppc64 as well. As
+>> mentioned before, please avoid adding any platform specific constructs in the
+>> test.
+>>
+> 
+> 
+> that is needed so that it can be built on 32 bit architectures.I did face build errors with arch-linux
+
+Could not (#if __BITS_PER_LONG == 32) be used instead or something like
+that. But should be a generic conditional check identifying 32 bit arch
+not anything platform specific.
