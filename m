@@ -2,70 +2,48 @@ Return-Path: <SRS0=3GPV=CK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69DB0C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 08:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A30B4C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 09:13:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23085206CD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 08:17:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23085206CD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 13A6A206A5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 09:13:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13A6A206A5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bgg166ZLVzDqHP
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 18:17:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BghFJ5HP7zDqTh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Sep 2020 19:13:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bgfz65jnLzDq61
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 18:15:59 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bgfyz1lftz9v20B;
- Tue,  1 Sep 2020 10:15:55 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id vrO1j-oApmn5; Tue,  1 Sep 2020 10:15:55 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bgfyz0zcNz9v208;
- Tue,  1 Sep 2020 10:15:55 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2EA198B774;
- Tue,  1 Sep 2020 10:15:56 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 5T9UKEc4Lnwh; Tue,  1 Sep 2020 10:15:56 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 92CD68B75E;
- Tue,  1 Sep 2020 10:15:55 +0200 (CEST)
-Subject: Re: [PATCH] powerpc/mm: Remove DEBUG_VM_PGTABLE support on ppc64
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-References: <20200901080245.67950-1-aneesh.kumar@linux.ibm.com>
- <4519baaa-cb95-6ebb-200f-4520badb56f6@csgroup.eu>
- <39467f79-d213-772d-9ed1-93afedc2fc7a@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <6661a001-0a00-17b6-cb34-0f3510ca1fec@csgroup.eu>
-Date: Tue, 1 Sep 2020 10:15:44 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BghBm4CjYzDqQm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2020 19:11:11 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 5724168B05; Tue,  1 Sep 2020 11:11:05 +0200 (CEST)
+Date: Tue, 1 Sep 2020 11:11:05 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: Re: [RESEND][PATCH 0/7] Avoid overflow at boundary_size
+Message-ID: <20200901091105.GA4959@lst.de>
+References: <20200831203811.8494-1-nicoleotsuka@gmail.com>
+ <20200901073623.GA30418@lst.de> <20200901075401.GA5667@Asurada-Nvidia>
 MIME-Version: 1.0
-In-Reply-To: <39467f79-d213-772d-9ed1-93afedc2fc7a@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200901075401.GA5667@Asurada-Nvidia>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,69 +55,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: linux-ia64@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, sfr@canb.auug.org.au, deller@gmx.de,
+ x86@kernel.org, borntraeger@de.ibm.com, mingo@redhat.com, mattst88@gmail.com,
+ fenghua.yu@intel.com, gor@linux.ibm.com, schnelle@linux.ibm.com,
+ hca@linux.ibm.com, ink@jurassic.park.msu.ru, tglx@linutronix.de,
+ gerald.schaefer@linux.ibm.com, rth@twiddle.net, tony.luck@intel.com,
+ linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Sep 01, 2020 at 12:54:01AM -0700, Nicolin Chen wrote:
+> Hi Christoph,
+> 
+> On Tue, Sep 01, 2020 at 09:36:23AM +0200, Christoph Hellwig wrote:
+> > I really don't like all the open coded smarts in the various drivers.
+> > What do you think about a helper like the one in the untested patch
+> 
+> A helper function will be actually better. I was thinking of
+> one yet not very sure about the naming and where to put it.
+> 
+> > below (on top of your series).  Also please include the original
+> > segment boundary patch with the next resend so that the series has
+> > the full context.
+> 
+> I will use your change instead and resend with the ULONG_MAX
+> change. But in that case, should I make separate changes for
+> different files like this series, or just one single change
+> like yours?
+> 
+> Asking this as I was expecting that those changes would get
+> applied by different maintainers. But now it feels like you
+> will merge it to your tree at once?
 
-
-Le 01/09/2020 à 10:12, Aneesh Kumar K.V a écrit :
-> On 9/1/20 1:40 PM, Christophe Leroy wrote:
->>
->>
->> Le 01/09/2020 à 10:02, Aneesh Kumar K.V a écrit :
->>> The test is broken w.r.t page table update rules and results in kernel
->>> crash as below. Disable the support untill we get the tests updated.
->>>
->>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->>
->> Any Fixes: tag ?
->>
->>> ---
->>>   arch/powerpc/Kconfig | 1 -
->>>   1 file changed, 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index 65bed1fdeaad..787e829b6f25 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -116,7 +116,6 @@ config PPC
->>>       #
->>>       select ARCH_32BIT_OFF_T if PPC32
->>>       select ARCH_HAS_DEBUG_VIRTUAL
->>> -    select ARCH_HAS_DEBUG_VM_PGTABLE
->>
->>
->> You say you remove support for ppc64 but you are removing it for both 
->> PPC64 and PPC32. Should you replace the line by:
-> 
-> Does it work on PPC32 with DEBUG_VM enabled? I was expecting it will be 
-> broken there too.
-
-I was wondering. I have just started a build to test that on my 8xx. 
-I'll tell you before noon (Paris).
-
-Christophe
-
-> 
->>
->>      select ARCH_HAS_DEBUG_VM_PGTABLE if PPC32
->>
->>>       select ARCH_HAS_DEVMEM_IS_ALLOWED
->>>       select ARCH_HAS_ELF_RANDOMIZE
->>>       select ARCH_HAS_FORTIFY_SOURCE
->>>
->>
->> What about 
->> Documentation/features/debug/debug-vm-pgtable/arch-support.txt ?
->>
-> 
-> I am hoping we can enable the config once we resolve the test issues. 
-> may be in next merge window.
-> 
-> -aneesh
-> 
-> 
-> 
+I guess one patch is fine.  I can queue it up in the dma-mapping
+tree as a prep patch for the default boundary change.
