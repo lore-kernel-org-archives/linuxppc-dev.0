@@ -7,81 +7,82 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C266FC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 11:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EEBBC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 11:50:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E41220758
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 11:49:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2DD0520758
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 11:50:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="axvOKxi6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E41220758
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="CjApxh6k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DD0520758
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BhMfN1ytDzDqsb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 21:49:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BhMhR2bxjzDqrM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 21:50:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=axvOKxi6; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=CjApxh6k; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BhMWD3hBWzDqnV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2020 21:42:48 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BhMWH4fvQzDqnV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2020 21:42:51 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 082BWAoq035404; Wed, 2 Sep 2020 07:42:37 -0400
+ 082BXQ0f161905; Wed, 2 Sep 2020 07:42:43 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=LVwTeyKe/+eadJkxhdcPDPb/XZX3HzejRljrDbr75SI=;
- b=axvOKxi6yC4hQD+HszDRSjPxzhBDCbkjbYNNDY09EqRLXmzZtiVZyskb/JY1eNzrttky
- pgX5XHr5r43+e1hqsPklwXSFWycQLEmyA4M6nc8j4YFyzm0QLp4T4QJsUOgmh1N83YhK
- mtoqDS95q/ptk3LjnJLnByEjPzvXPcyLfBqRwb1QpZkijjTXfc8gC9sRY0zviINz0FgZ
- Y0u97vIZAN/d5Le+epmThHZM97u+RvMvtsZ2x0f5gXqjx+VsGLDjub0ekRg7NRPo+PZM
- zCwYKYAyDTZjXSJBlPbTm9rvKV6gvgTXHijMkp8MngjvopS36xbV+ga7PG5aIde47wCr 0A== 
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33a7pa5udu-1
+ bh=KzeJsfIijoQur6qJ9CMsdEgGci9yFHtbcjKzaCWlYOo=;
+ b=CjApxh6khQ+Ymbb5R+ERfCm7mpEreUzV1nNl2c7i05OgHUK/bJKyN6VNbGn3/pshtzBg
+ NocakXpa0r98sM/T3C9M+jDjSYpkL5u5FmxTS+p+YPvYnQiJu2FN+P6VyrvcbTMmkLpe
+ 4q4sBMAyyPHvA1z63xZGvH6x01UXMZAmFeLew20Gj0E75bIqQl6SFmmaZOxCbPCVOU9Z
+ Q+sUdKBGPv2BABr8WBtGGUFtKgH1boeiAtl30Uos7JsBLu8chv1rl5aCJmaWm+Fj2dLj
+ ipanuLFuE0pEtvD81LIfayqSB1iyMWtNbmCMef1WH6htLvumOjx/tekqJZOrYYQjwq+W 2w== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33a7cc6gbd-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Sep 2020 07:42:37 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 082BbRZH031106;
- Wed, 2 Sep 2020 11:42:36 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27]) by ppma02wdc.us.ibm.com with ESMTP id 337en9qcs0-1
+ Wed, 02 Sep 2020 07:42:42 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 082BfxK3031505;
+ Wed, 2 Sep 2020 11:42:42 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25]) by ppma03dal.us.ibm.com with ESMTP id 337en9fa5w-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 02 Sep 2020 11:42:36 +0000
+ Wed, 02 Sep 2020 11:42:42 +0000
 Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
  [9.57.199.108])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 082BgaU852036004
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 082BgfL339387638
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 2 Sep 2020 11:42:36 GMT
+ Wed, 2 Sep 2020 11:42:41 GMT
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4236DB2064;
- Wed,  2 Sep 2020 11:42:36 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 79F22B2064;
+ Wed,  2 Sep 2020 11:42:41 +0000 (GMT)
 Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2244FB205F;
- Wed,  2 Sep 2020 11:42:34 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5E231B205F;
+ Wed,  2 Sep 2020 11:42:39 +0000 (GMT)
 Received: from skywalker.ibmuc.com (unknown [9.199.61.124])
  by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  2 Sep 2020 11:42:33 +0000 (GMT)
+ Wed,  2 Sep 2020 11:42:39 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: [PATCH v4 01/13] powerpc/mm: Add DEBUG_VM WARN for pmd_clear
-Date: Wed,  2 Sep 2020 17:12:10 +0530
-Message-Id: <20200902114222.181353-2-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH v4 03/13] mm/debug_vm_pgtable/ppc64: Avoid setting top bits in
+ radom value
+Date: Wed,  2 Sep 2020 17:12:12 +0530
+Message-Id: <20200902114222.181353-4-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200902114222.181353-1-aneesh.kumar@linux.ibm.com>
 References: <20200902114222.181353-1-aneesh.kumar@linux.ibm.com>
@@ -92,11 +93,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-09-02_03:2020-09-02,
  2020-09-02 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 mlxlogscore=999
- spamscore=0 phishscore=0 suspectscore=0 malwarescore=0 priorityscore=1501
- mlxscore=0 clxscore=1015 impostorscore=0 adultscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009020105
+ priorityscore=1501
+ suspectscore=0 bulkscore=0 spamscore=0 impostorscore=0 adultscore=0
+ phishscore=0 lowpriorityscore=0 malwarescore=0 mlxscore=0 clxscore=1015
+ mlxlogscore=873 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009020105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,46 +116,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With the hash page table, the kernel should not use pmd_clear for clearing
-huge pte entries. Add a DEBUG_VM WARN to catch the wrong usage.
+ppc64 use bit 62 to indicate a pte entry (_PAGE_PTE). Avoid setting
+that bit in random value.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ mm/debug_vm_pgtable.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 6de56c3b33c4..079211968987 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -868,6 +868,13 @@ static inline bool pte_ci(pte_t pte)
+diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+index 086309fb9b6f..00649b47f6e0 100644
+--- a/mm/debug_vm_pgtable.c
++++ b/mm/debug_vm_pgtable.c
+@@ -44,10 +44,17 @@
+  * entry type. But these bits might affect the ability to clear entries with
+  * pxx_clear() because of how dynamic page table folding works on s390. So
+  * while loading up the entries do not change the lower 4 bits. It does not
+- * have affect any other platform.
++ * have affect any other platform. Also avoid the 62nd bit on ppc64 that is
++ * used to mark a pte entry.
+  */
+-#define S390_MASK_BITS	4
+-#define RANDOM_ORVALUE	GENMASK(BITS_PER_LONG - 1, S390_MASK_BITS)
++#define S390_SKIP_MASK		GENMASK(3, 0)
++#if __BITS_PER_LONG == 64
++#define PPC64_SKIP_MASK		GENMASK(62, 62)
++#else
++#define PPC64_SKIP_MASK		0x0
++#endif
++#define ARCH_SKIP_MASK (S390_SKIP_MASK | PPC64_SKIP_MASK)
++#define RANDOM_ORVALUE (GENMASK(BITS_PER_LONG - 1, 0) & ~ARCH_SKIP_MASK)
+ #define RANDOM_NZVALUE	GENMASK(7, 0)
  
- static inline void pmd_clear(pmd_t *pmdp)
- {
-+	if (IS_ENABLED(CONFIG_DEBUG_VM) && !radix_enabled()) {
-+		/*
-+		 * Don't use this if we can possibly have a hash page table
-+		 * entry mapping this.
-+		 */
-+		WARN_ON((pmd_val(*pmdp) & (H_PAGE_HASHPTE | _PAGE_PTE)) == (H_PAGE_HASHPTE | _PAGE_PTE));
-+	}
- 	*pmdp = __pmd(0);
- }
- 
-@@ -916,6 +923,13 @@ static inline int pmd_bad(pmd_t pmd)
- 
- static inline void pud_clear(pud_t *pudp)
- {
-+	if (IS_ENABLED(CONFIG_DEBUG_VM) && !radix_enabled()) {
-+		/*
-+		 * Don't use this if we can possibly have a hash page table
-+		 * entry mapping this.
-+		 */
-+		WARN_ON((pud_val(*pudp) & (H_PAGE_HASHPTE | _PAGE_PTE)) == (H_PAGE_HASHPTE | _PAGE_PTE));
-+	}
- 	*pudp = __pud(0);
- }
- 
+ static void __init pte_basic_tests(unsigned long pfn, pgprot_t prot)
 -- 
 2.26.2
 
