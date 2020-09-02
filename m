@@ -3,22 +3,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A06CC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 14:45:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAFE5C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 14:51:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35BB82078E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 14:45:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35BB82078E
+	by mail.kernel.org (Postfix) with ESMTPS id 8152C2078E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 14:51:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8152C2078E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BhRZS6vPVzDqgs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 00:45:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BhRj869GfzDqcJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 00:51:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=ri07=cl=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,12 +27,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BhRRb4KTkzDqwY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 00:39:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BhRZL4MR6zDqcw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 00:45:46 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 206203] kmemleak reports various leaks in drivers/of/unittest.c
-Date: Wed, 02 Sep 2020 14:39:52 +0000
+Date: Wed, 02 Sep 2020 14:45:40 +0000
 X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
@@ -49,7 +48,7 @@ X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
 X-Bugzilla-Changed-Fields: attachments.isobsolete attachments.created
-Message-ID: <bug-206203-206035-oKLERFQgi9@https.bugzilla.kernel.org/>
+Message-ID: <bug-206203-206035-p0sJYmYApW@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-206203-206035@https.bugzilla.kernel.org/>
 References: <bug-206203-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -78,13 +77,13 @@ Erhard F. (erhard_f@mailbox.org) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
- Attachment #288189|0                           |1
+ Attachment #288187|0                           |1
         is obsolete|                            |
 
---- Comment #19 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 292287
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D292287&action=3Dedit
-kmemleak output (kernel 5.9-rc3, Talos II)
+--- Comment #20 from Erhard F. (erhard_f@mailbox.org) ---
+Created attachment 292289
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D292289&action=3Dedit
+kernel .config (kernel 5.9-rc3, Talos II)
 
 --=20
 You are receiving this mail because:
