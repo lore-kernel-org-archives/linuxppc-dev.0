@@ -2,57 +2,59 @@ Return-Path: <SRS0=iKE2=CL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D4C6C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 06:20:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2635C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 06:22:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2DA3F20758
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 06:20:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7E15B20758
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 06:22:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="sOvM+oWr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DA3F20758
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="Ffc2tECG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E15B20758
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BhDMJ56pNzDqMr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 16:20:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BhDPP5N6bzDqbr
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Sep 2020 16:22:17 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BhDK70BkXzDq9k
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BhDK70lCwzDqMr
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2020 16:18:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=sOvM+oWr; dkim-atps=neutral
+ header.s=201707 header.b=Ffc2tECG; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 4BhDK65dhWz9sSJ; Wed,  2 Sep 2020 16:18:34 +1000 (AEST)
+ id 4BhDK64lNVz9sV8; Wed,  2 Sep 2020 16:18:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1599027514; bh=92OiPKNwGzvI92aBDZKrl9ja+G+TFCy0aCOwfiebq1E=;
+ t=1599027514; bh=SvqrLtSy7O4r2ulnso5MmauMzcR2/XPprpW6tHLdmU0=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=sOvM+oWr+E6AxOGH5S4kSqMjRLhG/3AI5+MldMl6wLi+xcjohCQcgq2Z+WqW+MCFa
- lmm6FGnVUUkf3tmf3QO0UgdQmyRpIMsGNktzV23GQXwB74q9s6gCYU705hmpqXXwej
- Z9JMtLx4LCGbJCVIKKvXMaIdaPasq1oDGu8ED/xf+fpRKsikvk+iqwPB3gCaRz4qNr
- aM9ja/ABQMowYWaZcvLWAWr1Tyj0IhdOPeWS1wR9xP68KhU+lNOogCKNvt3klGE2nT
- qOzHv2qg2+p0YOkrSZOJTdfCISwkU/jhy4W20DwLVGO+qhc54P7BwywCnvb7n4XGU/
- C4g6F4gsHXpQA==
-Date: Wed, 2 Sep 2020 16:13:18 +1000
+ b=Ffc2tECGO/BfdwgaKDDzmaBTJHLSERwSxWOrUXDRUFZmpDniBaHsrswbonOJpjcBF
+ 6zrgDy8atFX7fKYRdRRkVCOrl5b/8pEHyUszcURis/g4MKfrlIhHu+03gnuz9BRPDH
+ qp0Kg65i41QOuU99/vPq38d0FbXqAo7lg4QnuU1NsQyI022Q+aDsR5ZDUByM30LJJ6
+ PnKN6Til4YplHTxVPpENQH5x6ZslU5wA+AwOL91UrR49bkCOeJjBpsMOry0XWU04Ll
+ JxX1pOfKU+6VlnJkTMU6FF/xJwVc5YdtPaJxfvembQcSIYlSn9Q/ggMr3CAU/pq8in
+ LNaEwQgmR13Kw==
+Date: Wed, 2 Sep 2020 16:18:29 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Jordan Niethe <jniethe5@gmail.com>
-Subject: Re: [RFC PATCH 1/2] KVM: PPC: Use the ppc_inst type
-Message-ID: <20200902061318.GE272502@thinks.paulus.ozlabs.org>
+Subject: Re: [RFC PATCH 2/2] KVM: PPC: Book3S HV: Support prefixed instructions
+Message-ID: <20200902061829.GF272502@thinks.paulus.ozlabs.org>
 References: <20200820033922.32311-1-jniethe5@gmail.com>
+ <20200820033922.32311-2-jniethe5@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200820033922.32311-1-jniethe5@gmail.com>
+In-Reply-To: <20200820033922.32311-2-jniethe5@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,83 +71,96 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Aug 20, 2020 at 01:39:21PM +1000, Jordan Niethe wrote:
-> The ppc_inst type was added to help cope with the addition of prefixed
-> instructions to the ISA. Convert KVM to use this new type for dealing
-> wiht instructions. For now do not try to add further support for
-> prefixed instructions.
-
-This change does seem to splatter itself across a lot of code that
-mostly or exclusively runs on machines which are not POWER10 and will
-never need to handle prefixed instructions, unfortunately.  I wonder
-if there is a less invasive way to approach this.
-
-In particular we are inflicting this 64-bit struct on 32-bit platforms
-unnecessarily (I assume, correct me if I am wrong here).
-
-How would it be to do something like:
-
-typedef unsigned long ppc_inst_t;
-
-so it is 32 bits on 32-bit platforms and 64 bits on 64-bit platforms,
-and then use that instead of 'struct ppc_inst'?  You would still need
-to change the function declarations but I think most of the function
-bodies would not need to be changed.  In particular you would avoid a
-lot of the churn related to having to add ppc_inst_val() and suchlike.
-
-> -static inline unsigned make_dsisr(unsigned instr)
-> +static inline unsigned make_dsisr(struct ppc_inst instr)
+On Thu, Aug 20, 2020 at 01:39:22PM +1000, Jordan Niethe wrote:
+> There are two main places where instructions are loaded from the guest:
+>     * Emulate loadstore - such as when performing MMIO emulation
+>       triggered by an HDSI
+>     * After an HV emulation assistance interrupt (e40)
+> 
+> If it is a prefixed instruction that triggers these cases, its suffix
+> must be loaded. Use the SRR1_PREFIX bit to decide if a suffix needs to
+> be loaded. Make sure if this bit is set inject_interrupt() also sets it
+> when giving an interrupt to the guest.
+> 
+> ISA v3.10 extends the Hypervisor Emulation Instruction Register (HEIR)
+> to 64 bits long to accommodate prefixed instructions. For interrupts
+> caused by a word instruction the instruction is loaded into bits 32:63
+> and bits 0:31 are zeroed. When caused by a prefixed instruction the
+> prefix and suffix are loaded into bits 0:63.
+> 
+> Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s.c               | 15 +++++++++++++--
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c     | 10 +++++++---
+>  arch/powerpc/kvm/book3s_hv_builtin.c    |  3 +++
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 14 ++++++++++++++
+>  4 files changed, 37 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index 70d8967acc9b..18b1928a571b 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -456,13 +456,24 @@ int kvmppc_load_last_inst(struct kvm_vcpu *vcpu,
 >  {
->  	unsigned dsisr;
-> +	u32 word = ppc_inst_val(instr);
+>  	ulong pc = kvmppc_get_pc(vcpu);
+>  	u32 word;
+> +	u64 doubleword;
+>  	int r;
 >  
+>  	if (type == INST_SC)
+>  		pc -= 4;
 >  
->  	/* bits  6:15 --> 22:31 */
-> -	dsisr = (instr & 0x03ff0000) >> 16;
-> +	dsisr = (word & 0x03ff0000) >> 16;
+> -	r = kvmppc_ld(vcpu, &pc, sizeof(u32), &word, false);
+> -	*inst = ppc_inst(word);
+> +	if ((kvmppc_get_msr(vcpu) & SRR1_PREFIXED)) {
+> +		r = kvmppc_ld(vcpu, &pc, sizeof(u64), &doubleword, false);
+
+Should we also have a check here that the doubleword is not crossing a
+page boundary?  I can't think of a way to get this code to cross a
+page boundary, assuming the hardware is working correctly, but it
+makes me just a little nervous.
+
+> +#ifdef CONFIG_CPU_LITTLE_ENDIAN
+> +		*inst = ppc_inst_prefix(doubleword & 0xffffffff, doubleword >> 32);
+> +#else
+> +		*inst = ppc_inst_prefix(doubleword >> 32, doubleword & 0xffffffff);
+> +#endif
+
+Ick.  Is there a cleaner way to do this?
+
+> +	} else {
+> +		r = kvmppc_ld(vcpu, &pc, sizeof(u32), &word, false);
+> +		*inst = ppc_inst(word);
+> +	}
+> +
+>  	if (r == EMULATE_DONE)
+>  		return r;
+>  	else
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 775ce41738ce..0802471f4856 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -411,9 +411,13 @@ static int instruction_is_store(struct ppc_inst instr)
+>  	unsigned int mask;
 >  
->  	if (IS_XFORM(instr)) {
->  		/* bits 29:30 --> 15:16 */
-> -		dsisr |= (instr & 0x00000006) << 14;
-> +		dsisr |= (word & 0x00000006) << 14;
->  		/* bit     25 -->    17 */
-> -		dsisr |= (instr & 0x00000040) << 8;
-> +		dsisr |= (word & 0x00000040) << 8;
->  		/* bits 21:24 --> 18:21 */
-> -		dsisr |= (instr & 0x00000780) << 3;
-> +		dsisr |= (word & 0x00000780) << 3;
->  	} else {
->  		/* bit      5 -->    17 */
-> -		dsisr |= (instr & 0x04000000) >> 12;
-> +		dsisr |= (word & 0x04000000) >> 12;
->  		/* bits  1: 4 --> 18:21 */
-> -		dsisr |= (instr & 0x78000000) >> 17;
-> +		dsisr |= (word & 0x78000000) >> 17;
->  		/* bits 30:31 --> 12:13 */
->  		if (IS_DSFORM(instr))
-> -			dsisr |= (instr & 0x00000003) << 18;
-> +			dsisr |= (word & 0x00000003) << 18;
+>  	mask = 0x10000000;
+> -	if ((ppc_inst_val(instr) & 0xfc000000) == 0x7c000000)
+> -		mask = 0x100;		/* major opcode 31 */
+> -	return (ppc_inst_val(instr) & mask) != 0;
+> +	if (ppc_inst_prefixed(instr)) {
+> +		return (ppc_inst_suffix(instr) & mask) != 0;
+> +	} else {
+> +		if ((ppc_inst_val(instr) & 0xfc000000) == 0x7c000000)
+> +			mask = 0x100;		/* major opcode 31 */
+> +		return (ppc_inst_val(instr) & mask) != 0;
+> +	}
 
-Here I would have done something like:
+The way the code worked before, the mask depended on whether the
+instruction was a D-form (or DS-form or other variant) instruction,
+where you can tell loads and stores apart by looking at the major
+opcode, or an X-form instruction, where you look at the minor opcode.
 
-> -static inline unsigned make_dsisr(unsigned instr)
-> +static inline unsigned make_dsisr(struct ppc_inst pi)
->  {
->  	unsigned dsisr;
-> +	u32 instr = ppc_inst_val(pi);
-
-and left the rest of the function unchanged.
-
-At first I wondered why we still had that function, since IBM Power
-CPUs have not set DSISR on an alignment interrupt since POWER3 days.
-It turns out it this function is used by PR KVM when it is emulating
-one of the old 32-bit PowerPC CPUs (601, 603, 604, 750, 7450 etc.).
-
-> diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
-
-Despite the file name, this code is not used on IBM Power servers.
-It is for platforms which run under an ePAPR (not server PAPR)
-hypervisor (which would be a KVM variant, but generally book E KVM not
-book 3S).
+Now we are only looking at the minor opcode if it is not a prefixed
+instruction.  Are there no X-form prefixed loads or stores?
 
 Paul.
