@@ -2,62 +2,111 @@ Return-Path: <SRS0=NZKl=CM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-18.4 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94473C433E9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 19:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DEAAC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 21:24:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5622A20722
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 19:42:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5622A20722
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id A0AA7206E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 21:24:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uhJId/G7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0AA7206E7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BjB6g3SQGzDr61
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 05:42:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BjDMp2WDFzDrFP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 07:24:22 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BjB2X1QznzDrCW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2020 05:39:12 +1000 (AEST)
-IronPort-SDR: H3SsZwwTLzBAXAJiDbF+ZoBNpK5gh93Ilmfk3eDxOI1ZU8nEsRq4/KVogpyjo3L5NIzydJk7L9
- NLu+a1C4CtVQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9733"; a="221857712"
-X-IronPort-AV: E=Sophos;i="5.76,387,1592895600"; d="scan'208";a="221857712"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Sep 2020 12:39:08 -0700
-IronPort-SDR: /Gta/a8vAJ/0sduVyD5jSca/5k9+vMR/+29poTfw3m1XbR2giAA52lbQwxHoZnSvShal26ta7L
- YWKFf4HrkaBw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,387,1592895600"; d="scan'208";a="298157210"
-Received: from lkp-server01.sh.intel.com (HELO f1af165c0d27) ([10.239.97.150])
- by orsmga003.jf.intel.com with ESMTP; 03 Sep 2020 12:39:07 -0700
-Received: from kbuild by f1af165c0d27 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kDv4c-0000EL-Kx; Thu, 03 Sep 2020 19:39:06 +0000
-Date: Fri, 04 Sep 2020 03:38:57 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 4c62285439f80f8996c38e0bda79b1125a192365
-Message-ID: <5f514651.n0rSjbHzaLVMwT7g%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BjDKL3CQzzDqkf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2020 07:22:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=uhJId/G7; dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4BjDKL035Xz8tjC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2020 07:22:14 +1000 (AEST)
+Received: by ozlabs.org (Postfix)
+ id 4BjDKK6c4Rz9sTK; Fri,  4 Sep 2020 07:22:13 +1000 (AEST)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::541;
+ helo=mail-ed1-x541.google.com; envelope-from=chunkeey@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=uhJId/G7; dkim-atps=neutral
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
+ [IPv6:2a00:1450:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4BjDKK632Fz9sSP
+ for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2020 07:22:13 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id c10so4104232edk.6
+ for <linuxppc-dev@ozlabs.org>; Thu, 03 Sep 2020 14:22:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-transfer-encoding:content-language;
+ bh=vBV+kSnYK7stIvbafZ/3dbWe9aWGsvygRzHJWB0ieE8=;
+ b=uhJId/G7YwMUYivWz2MZK3Va/d8mPsiMb0N+6zAkgrYfvNnwAwfineuyIElhIT9fm8
+ UEnrMrc77YqYUN8f43yJh94SLJOIo8N6KKbqGvzUfwD2sTt4Ho6gFZ9hzoS2x/nyZBZ5
+ RJO1Ejc9wTVAUFRxKN8m+ae/1PbnIeBdEOdF5dZH/xStNU2pcy/UIuPF+bdeqzWS1LWQ
+ xuGm4EeelCyMZ6o8gthD4P2PAoeZ6VKlg1bMhpDZRcrUyphfx6fnAwuQMv9MfTw299df
+ gYz0F0xAKOw/7DHVeED4oxoz2LANUPoea9m/wPdUXgzUk55aVxm4vVYiV/sTZMP2MX+m
+ mt5w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-transfer-encoding
+ :content-language;
+ bh=vBV+kSnYK7stIvbafZ/3dbWe9aWGsvygRzHJWB0ieE8=;
+ b=In+IEZIyqHTUaDf+u8MRRdOTa0sZIptIG0m7SoVQvwCmwrlO5MQdskwkyZbGEpSGLb
+ zVMkzt4JmYSqah8teg8EIbqHufVO9BC7GeEqVbLCP5wKnvaAeTuqHncGx2vi/Llc9j1H
+ GlkXtNr7G3I+I1hY7DkK3IvaSB3evzhF5B5F3VRXWfdTzkkkprJKzRS3NafMBv+uV6jw
+ dPv7mr8LAK0hUcexaxVBWzR7LfYiGw20MLFKMCHzrgh7jCp6lQIUbBGc5EQ3p0cgxqDb
+ WM08wmsMKTKC9jgBLt3CSstSiHBAvy6HISbjq1BOa3QlCEBZ+wGazshjiiZ61IL4xYtC
+ PHNg==
+X-Gm-Message-State: AOAM530ktXGmwi5Wa7U7BNo8VSLPON4j1pZEItdu3CReqQli8S2qADQS
+ uY4ar9zX1Y/+u7E0u0rG6KY=
+X-Google-Smtp-Source: ABdhPJwHqLjDfnZhEB3lyW8q9fTU/0jaonIf9K1wnH01NxTQX8L6z74aTonkHYqT3BjZoQz25mzs9g==
+X-Received: by 2002:a50:9dc6:: with SMTP id l6mr5557421edk.136.1599168124276; 
+ Thu, 03 Sep 2020 14:22:04 -0700 (PDT)
+Received: from debian64.daheim (p5b0d7509.dip0.t-ipconnect.de. [91.13.117.9])
+ by smtp.gmail.com with ESMTPSA id
+ l23sm4096769eje.46.2020.09.03.14.22.03
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 03 Sep 2020 14:22:03 -0700 (PDT)
+Received: from localhost.daheim ([127.0.0.1])
+ by debian64.daheim with esmtp (Exim 4.94)
+ (envelope-from <chunkeey@gmail.com>)
+ id 1kDwfe-005t99-NH; Thu, 03 Sep 2020 23:21:26 +0200
+Subject: Re: [PATCH] powerpc/boot/dts: Fix dtc "pciex" warnings
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20200623130320.405852-1-mpe@ellerman.id.au>
+From: Christian Lamparter <chunkeey@gmail.com>
+Message-ID: <d2652e63-b136-a805-fd6d-00584b64c772@gmail.com>
+Date: Thu, 3 Sep 2020 23:21:26 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20200623130320.405852-1-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,188 +118,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, Chris Blake <chrisrblake93@gmail.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 4c62285439f80f8996c38e0bda79b1125a192365  Revert "powerpc/build: vdso linker warning for orphan sections"
+On 2020-06-23 15:03, Michael Ellerman wrote:
+> With CONFIG_OF_ALL_DTBS=y, as set by eg. allmodconfig, we see lots of
+> warnings about our dts files, such as:
+>
+>    arch/powerpc/boot/dts/glacier.dts:492.26-532.5:
+>    Warning (pci_bridge): /plb/pciex@d00000000: node name is not "pci"
+>    or "pcie"
+>
+> The node name should not particularly matter, it's just a name, and
+> AFAICS there's no kernel code that cares whether nodes are *named*
+> "pciex" or "pcie". So shutup these warnings by converting to the name
+> dtc wants.
+>
+> As always there's some risk this could break something obscure that
+> does rely on the name, in which case we can revert.
 
-elapsed time: 800m
+Hmm, I noticed this when I was looking up why nobody commented
+on my series of adding more devices to the APM82181/bluestone series:
 
-configs tested: 162
-configs skipped: 19
+<https://lore.kernel.org/linuxppc-dev/cover.1598124791.git.chunkeey@gmail.com/>
+(I'll post a v3 "soonish".)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                         ps3_defconfig
-arm                             mxs_defconfig
-powerpc                      ppc6xx_defconfig
-mips                         rt305x_defconfig
-nios2                            alldefconfig
-sh                          polaris_defconfig
-arm                          gemini_defconfig
-arc                        nsim_700_defconfig
-arm                       cns3420vb_defconfig
-arm                         vf610m4_defconfig
-ia64                         bigsur_defconfig
-xtensa                           alldefconfig
-arm                              zx_defconfig
-microblaze                          defconfig
-mips                        vocore2_defconfig
-mips                      maltasmvp_defconfig
-powerpc                      ppc44x_defconfig
-arm                           spitz_defconfig
-xtensa                       common_defconfig
-mips                            e55_defconfig
-m68k                            q40_defconfig
-m68k                       m5475evb_defconfig
-arm                          badge4_defconfig
-arm                            zeus_defconfig
-um                             i386_defconfig
-mips                         mpc30x_defconfig
-c6x                        evmc6474_defconfig
-arm                      jornada720_defconfig
-arm                           h5000_defconfig
-arm                           sunxi_defconfig
-sh                           se7721_defconfig
-arm                        shmobile_defconfig
-nds32                             allnoconfig
-arm                           omap1_defconfig
-mips                  decstation_64_defconfig
-arc                      axs103_smp_defconfig
-mips                          rb532_defconfig
-arc                              alldefconfig
-sh                      rts7751r2d1_defconfig
-arm                        mvebu_v5_defconfig
-arm                         nhk8815_defconfig
-mips                           ip28_defconfig
-openrisc                         alldefconfig
-arm                          iop32x_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                      tqm8xx_defconfig
-c6x                              alldefconfig
-sh                            hp6xx_defconfig
-sh                         ecovec24_defconfig
-arm                          collie_defconfig
-m68k                          multi_defconfig
-sparc                            allyesconfig
-sh                         microdev_defconfig
-mips                          malta_defconfig
-mips                        workpad_defconfig
-c6x                        evmc6457_defconfig
-mips                          rm200_defconfig
-h8300                            alldefconfig
-mips                            gpr_defconfig
-sh                   sh7724_generic_defconfig
-mips                           mtx1_defconfig
-arm                           stm32_defconfig
-arm                            hisi_defconfig
-microblaze                    nommu_defconfig
-sh                          lboxre2_defconfig
-powerpc                  mpc885_ads_defconfig
-mips                      pic32mzda_defconfig
-mips                       capcella_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20200903
-x86_64               randconfig-a006-20200903
-x86_64               randconfig-a003-20200903
-x86_64               randconfig-a005-20200903
-x86_64               randconfig-a001-20200903
-x86_64               randconfig-a002-20200903
-i386                 randconfig-a004-20200902
-i386                 randconfig-a005-20200902
-i386                 randconfig-a006-20200902
-i386                 randconfig-a002-20200902
-i386                 randconfig-a001-20200902
-i386                 randconfig-a003-20200902
-i386                 randconfig-a004-20200903
-i386                 randconfig-a005-20200903
-i386                 randconfig-a006-20200903
-i386                 randconfig-a002-20200903
-i386                 randconfig-a001-20200903
-i386                 randconfig-a003-20200903
-x86_64               randconfig-a013-20200902
-x86_64               randconfig-a016-20200902
-x86_64               randconfig-a011-20200902
-x86_64               randconfig-a012-20200902
-x86_64               randconfig-a015-20200902
-x86_64               randconfig-a014-20200902
-i386                 randconfig-a016-20200903
-i386                 randconfig-a015-20200903
-i386                 randconfig-a011-20200903
-i386                 randconfig-a013-20200903
-i386                 randconfig-a014-20200903
-i386                 randconfig-a012-20200903
-i386                 randconfig-a016-20200902
-i386                 randconfig-a015-20200902
-i386                 randconfig-a011-20200902
-i386                 randconfig-a013-20200902
-i386                 randconfig-a014-20200902
-i386                 randconfig-a012-20200902
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+Unfortunately yes. This patch will break uboot code in Meraki MX60(W) / MX60.
 
-clang tested configs:
-x86_64               randconfig-a004-20200902
-x86_64               randconfig-a006-20200902
-x86_64               randconfig-a003-20200902
-x86_64               randconfig-a005-20200902
-x86_64               randconfig-a001-20200902
-x86_64               randconfig-a002-20200902
-x86_64               randconfig-a013-20200903
-x86_64               randconfig-a016-20200903
-x86_64               randconfig-a011-20200903
-x86_64               randconfig-a012-20200903
-x86_64               randconfig-a015-20200903
-x86_64               randconfig-a014-20200903
+ > https://github.com/riptidewave93/meraki-uboot/blob/mx60w-20180413/board/amcc/bluestone/bluestone.c#L1178
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+| if (!pci_available()) {
+|     fdt_find_and_setprop(blob, "/plb/pciex@d00000000", "status",
+|                   "disabled", sizeof("disabled"), 1);
+| }
+
+
+Backstory: There are two version of the Meraki MX60. The MX60
+and the MX60W. The difference is that the MX60W has a populated
+mini-pcie slot on the PCB for a >W<ireless card.
+
+That said, this is not earth shattering.
+
+(In theory, this can also cause problems for the bluestone and canyonlands
+dev boards that have the option to be configured as either dual sata or
+pcie+sata.... But this is probably not a problem for customer boards)
+
+OT: Please note that the plb, opb and ebc node paths (/plb/opb/ebc) are
+hardcoded too :(. Amending the proper unit-addresses will lead to no-longer
+working DTBs as the "ranges" are missing.
+
+Cheers,
+Christian
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>
+> diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+> index cc965a1816b6..aa1ae94cd776 100644
+> --- a/arch/powerpc/boot/dts/bluestone.dts
+> +++ b/arch/powerpc/boot/dts/bluestone.dts
+> @@ -325,7 +325,7 @@ EMAC0: ethernet@ef600c00 {
+>   			};
+>   		};
+>   
+> -		PCIE0: pciex@d00000000 {
+> +		PCIE0: pcie@d00000000 {
+>   			device_type = "pci";
+>   			#interrupt-cells = <1>;
+>   			#size-cells = <2>;
+
