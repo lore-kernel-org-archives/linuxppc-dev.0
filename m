@@ -2,80 +2,42 @@ Return-Path: <SRS0=NZKl=CM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 243F1C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 10:59:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1660C433E9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:30:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5F12F206A5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 10:59:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q1yCvbZ8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F12F206A5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 276A9206EB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:30:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 276A9206EB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BhyWB6ksJzDr4Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 20:59:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::444;
- helo=mail-pf1-x444.google.com; envelope-from=andy.shevchenko@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=q1yCvbZ8; dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bj0WD1JpGzDqsW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 22:30:00 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BhyT43bn6zDqdW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 20:58:00 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id k15so2006863pfc.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2020 03:57:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=XvxPmxtC0Bk31a11OwZrMge+dU3uUM43arNhidKdfeY=;
- b=q1yCvbZ8w01P8xuPxnIcZnEF3Hr07ImVQMcXxZgqnSncr+zba54pN3npDYYOjJXhbm
- XIqjp77VnYo3sJUa9nsc/OkcPZ2a5Y90boSJn50VaZ74haoOIwzEqzuApddDmuRsWA4t
- 5LlNWMh47eFOI/t/pn9hyEBoN/9bMzFwyvwPxAFUkJ5XUIrhRgszLM/M8If1a/RC8WmZ
- 6qZ5sWP8uitmybmf3cwkB0qwBCXj3OoX/HrhU+S1S1dHFyplWZAkXiQoi27iG3iQmbnm
- EQGK1zrcCUMrp+7WqPhSebA3XqqW6nM8d6/yeJZq7qMNXZRfKdpHSJtV5y0ESKKzTh/Z
- pJhA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=XvxPmxtC0Bk31a11OwZrMge+dU3uUM43arNhidKdfeY=;
- b=qLILdHWwrUBQqUuwfWWqxgbm/BcDBynQDz5Rwv8MRXwEwLyW5JPrVrcCjDVDVDqFQX
- Vg+7gfoY43e1I+Dtxf0ZpQu6IWACBM1zyCqawlnPeuTaTq/o6lg/pAf3J03NR5iowPvg
- C2yrlZNimYTI8fHmaz723qBer/pnnKA6Jm4MXdFLt4BwPsjp3QjJ7h88xA0uSP0APO5B
- hsGlXJ6aaQU7pXFHoP81C742jIq/WwOJpPDf7OVlfvvFkDghzAsINGkuJycv9ECHowp1
- BARjMAKY+1Z0Cz91ZOPdkD6iKSC0xGT4EsWTDAJa0FNh8FKJXYUbjiu8+IsuxapFaWzT
- Hdjg==
-X-Gm-Message-State: AOAM5308C3oBMnVKBVnHivCDJIHdqKCHHrnO0co4dmu7Y1DzTJuSDO1o
- VIsyVh24jHK6qox8fmEk/D3zoDQPRgVVUqofGQI=
-X-Google-Smtp-Source: ABdhPJzWVo7SnArbq5BTD4S1cYWUGvNIOFTqyxYbAJGJHhEbl/k7IWPLuudMRiwWjgcOrgrKPL+6Qt7HKDzE/CcnN7Y=
-X-Received: by 2002:a62:6083:0:b029:13c:1611:66c4 with SMTP id
- u125-20020a6260830000b029013c161166c4mr1648433pfb.15.1599130676695; Thu, 03
- Sep 2020 03:57:56 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200901221646.26491-1-nicoleotsuka@gmail.com>
- <20200901221646.26491-2-nicoleotsuka@gmail.com>
-In-Reply-To: <20200901221646.26491-2-nicoleotsuka@gmail.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Thu, 3 Sep 2020 13:57:39 +0300
-Message-ID: <CAHp75VcVJBSnPQ6NfdF8FdEDfM+oQ=Sr+cH5VGX4SrAqrgpf-g@mail.gmail.com>
-Subject: Re: [PATCH 1/2] dma-mapping: introduce dma_get_seg_boundary_nr_pages()
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bj0R970TkzDqkS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 22:26:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4Bj0R86w3Nz9sTS; Thu,  3 Sep 2020 22:26:28 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+In-Reply-To: <20200828100852.426575-1-aneesh.kumar@linux.ibm.com>
+References: <20200828100852.426575-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/book3s64/radix: Fix boot failure with large
+ amount of guest memory
+Message-Id: <159913592782.5893.11673409396364673972.b4-ty@ellerman.id.au>
+Date: Thu,  3 Sep 2020 22:26:28 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,72 +49,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org,
- James Bottomley <James.Bottomley@hansenpartnership.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Helge Deller <deller@gmx.de>,
- "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Vasily Gorbik <gor@linux.ibm.com>, schnelle@linux.ibm.com, hca@linux.ibm.com,
- ink@jurassic.park.msu.ru, Thomas Gleixner <tglx@linutronix.de>,
- gerald.schaefer@linux.ibm.com, rth@twiddle.net,
- Tony Luck <tony.luck@intel.com>, linux-parisc@vger.kernel.org,
- linux-s390@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Cc: Shirisha Ganta <shiganta@in.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 2, 2020 at 1:20 AM Nicolin Chen <nicoleotsuka@gmail.com> wrote:
->
-> We found that callers of dma_get_seg_boundary mostly do an ALIGN
-> with page mask and then do a page shift to get number of pages:
->     ALIGN(boundary + 1, 1 << shift) >> shift
->
-> However, the boundary might be as large as ULONG_MAX, which means
-> that a device has no specific boundary limit. So either "+ 1" or
-> passing it to ALIGN() would potentially overflow.
->
-> According to kernel defines:
->     #define ALIGN_MASK(x, mask) (((x) + (mask)) & ~(mask))
->     #define ALIGN(x, a) ALIGN_MASK(x, (typeof(x))(a) - 1)
->
-> We can simplify the logic here into a helper function doing:
->   ALIGN(boundary + 1, 1 << shift) >> shift
-> = ALIGN_MASK(b + 1, (1 << s) - 1) >> s
-> = {[b + 1 + (1 << s) - 1] & ~[(1 << s) - 1]} >> s
-> = [b + 1 + (1 << s) - 1] >> s
-> = [b + (1 << s)] >> s
-> = (b >> s) + 1
->
-> This patch introduces and applies dma_get_seg_boundary_nr_pages()
-> as an overflow-free helper for the dma_get_seg_boundary() callers
-> to get numbers of pages. It also takes care of the NULL dev case
-> for non-DMA API callers.
+On Fri, 28 Aug 2020 15:38:52 +0530, Aneesh Kumar K.V wrote:
+> If the hypervisor doesn't support hugepages, the kernel ends up allocating a large
+> number of page table pages. The early page table allocation was wrongly
+> setting the max memblock limit to ppc64_rma_size with radix translation
+> which resulted in boot failure as shown below.
+> 
+> Kernel panic - not syncing:
+> early_alloc_pgtable: Failed to allocate 16777216 bytes align=0x1000000 nid=-1 from=0x0000000000000000 max_addr=0xffffffffffffffff
+>  CPU: 0 PID: 0 Comm: swapper Not tainted 5.8.0-24.9-default+ #2
+>  Call Trace:
+>  [c0000000016f3d00] [c0000000007c6470] dump_stack+0xc4/0x114 (unreliable)
+>  [c0000000016f3d40] [c00000000014c78c] panic+0x164/0x418
+>  [c0000000016f3dd0] [c000000000098890] early_alloc_pgtable+0xe0/0xec
+>  [c0000000016f3e60] [c0000000010a5440] radix__early_init_mmu+0x360/0x4b4
+>  [c0000000016f3ef0] [c000000001099bac] early_init_mmu+0x1c/0x3c
+>  [c0000000016f3f10] [c00000000109a320] early_setup+0x134/0x170
+> 
+> [...]
 
-...
+Applied to powerpc/fixes.
 
-> +static inline unsigned long dma_get_seg_boundary_nr_pages(struct device *dev,
-> +               unsigned int page_shift)
-> +{
-> +       if (!dev)
-> +               return (U32_MAX >> page_shift) + 1;
-> +       return (dma_get_seg_boundary(dev) >> page_shift) + 1;
+[1/1] powerpc/book3s64/radix: Fix boot failure with large amount of guest memory
+      https://git.kernel.org/powerpc/c/103a8542cb35b5130f732d00b0419a594ba1b517
 
-Can it be better to do something like
-  unsigned long boundary = dev ? dma_get_seg_boundary(dev) : U32_MAX;
-
-  return (boundary >> page_shift) + 1;
-
-?
-
-> +}
-
--- 
-With Best Regards,
-Andy Shevchenko
+cheers
