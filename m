@@ -2,23 +2,24 @@ Return-Path: <SRS0=NZKl=CM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.9 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7A1BC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 07:29:36 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D92C9C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 08:58:05 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 02DDE20737
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 07:29:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02DDE20737
+	by mail.kernel.org (Postfix) with ESMTPS id 47FED206A5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 08:58:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47FED206A5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BhsrY2j1zzDql6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 17:29:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bhvpg2nJCzDr69
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 18:58:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,28 +28,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BhspD72QwzDqgL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 17:27:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bhvmk131SzDr4m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 18:56:20 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bhsp66rdGzB09ZZ;
- Thu,  3 Sep 2020 09:27:26 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BhvmX2Z1czB09b1;
+ Thu,  3 Sep 2020 10:56:12 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id rH9lzYdCHhM9; Thu,  3 Sep 2020 09:27:26 +0200 (CEST)
+ with ESMTP id IpxxRaqw7gdu; Thu,  3 Sep 2020 10:56:12 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bhsp64yDPzB09ZW;
- Thu,  3 Sep 2020 09:27:26 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BhvmX0njbzB09b0;
+ Thu,  3 Sep 2020 10:56:12 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B05F68B7B1;
- Thu,  3 Sep 2020 09:27:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 38FCA8B7B7;
+ Thu,  3 Sep 2020 10:56:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id EOoz4qHnxzKL; Thu,  3 Sep 2020 09:27:27 +0200 (CEST)
+ with ESMTP id p0dUuYBZyAAj; Thu,  3 Sep 2020 10:56:13 +0200 (CEST)
 Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0575E8B790;
- Thu,  3 Sep 2020 09:27:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7DFDE8B7B1;
+ Thu,  3 Sep 2020 10:56:12 +0200 (CEST)
 Subject: Re: [PATCH 10/10] powerpc: remove address space overrides using
  set_fs()
 To: Christoph Hellwig <hch@lst.de>,
@@ -61,8 +62,8 @@ References: <20200827150030.282762-1-hch@lst.de>
  <CAHk-=wiDCcxuHgENo3UtdFi2QW9B7yXvNpG5CtF=A6bc6PTTgA@mail.gmail.com>
  <20200903071144.GA19247@lst.de>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <e6afe576-c3b2-81af-b042-e5930a8fd4c8@csgroup.eu>
-Date: Thu, 3 Sep 2020 09:27:04 +0200
+Message-ID: <0f042edf-f277-7637-9913-850cbb7bf3a4@csgroup.eu>
+Date: Thu, 3 Sep 2020 10:55:52 +0200
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.12.0
 MIME-Version: 1.0
@@ -94,33 +95,6 @@ Sender: "Linuxppc-dev"
 
 
 Le 03/09/2020 à 09:11, Christoph Hellwig a écrit :
-> On Wed, Sep 02, 2020 at 11:02:22AM -0700, Linus Torvalds wrote:
->> I don't see why this change would make any difference.
-> 
-> Me neither, but while looking at a different project I did spot places
-> that actually do an access_ok with len 0, that's why I wanted him to
-> try.
-> 
-> That being said: Christophe are these number stables?  Do you get
-> similar numbers with multiple runs?
-
-Yes the numbers are similar with multiple runs and multiple reboots.
-
-> 
->> And btw, why do the 32-bit and 64-bit checks even differ? It's not
->> like the extra (single) instruction should even matter. I think the
->> main reason is that the simpler 64-bit case could stay as a macro
->> (because it only uses "addr" and "size" once), but honestly, that
->> "simplification" doesn't help when you then need to have that #ifdef
->> for the 32-bit case and an inline function anyway.
-> 
-> I'll have to leave that to the powerpc folks.  The intent was to not
-> change the behavior (and I even fucked that up for the the size == 0
-> case).
-> 
->> However, I suspect a bigger reason for the actual performance
->> degradation would be the patch that makes things use "write_iter()"
->> for writing, even when a simpler "write()" exists.
 > 
 > Except that we do not actually have such a patch.  For normal user
 > writes we only use ->write_iter if ->write is not present.  But what
@@ -129,18 +103,52 @@ Yes the numbers are similar with multiple runs and multiple reboots.
 > read which might help a tad with this workload, but should not be part
 > of a regression.
 > 
-> Also Christophe:  can you bisect which patch starts this?  Is it really
-> this last patch in the series?
 
-5.9-rc2: 91.5MB/s
-Patch 1: 74.9MB/s
-Patch 2: 97.9MB/s
-Patch 3: 97.7MB/s
-Patch 4 to 9: 97.9MB/s
-Patch 10: 85.3MB/s
-Patch 11: 75.4MB/s
-
-See my other mail, when removing CONFIG_STACKPROTECTOR, I get a stable 
-99.8MB/s throughput.
+With that patch below, throughput is 113.5MB/s (instead of 99.9MB/s).
+So a 14% improvement. That's not bad.
 
 Christophe
+
+> 
+> ---
+> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+> index abd4ffdc8cdebc..1dc99ab158457a 100644
+> --- a/drivers/char/mem.c
+> +++ b/drivers/char/mem.c
+> @@ -726,6 +726,27 @@ static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
+>   	return written;
+>   }
+>   
+> +static ssize_t read_zero(struct file *file, char __user *buf,
+> +			 size_t count, loff_t *ppos)
+> +{
+> +	size_t cleared = 0;
+> +
+> +	while (count) {
+> +		size_t chunk = min_t(size_t, count, PAGE_SIZE);
+> +
+> +		if (clear_user(buf + cleared, chunk))
+> +			return cleared ? cleared : -EFAULT;
+> +		cleared += chunk;
+> +		count -= chunk;
+> +
+> +		if (signal_pending(current))
+> +			return cleared ? cleared : -ERESTARTSYS;
+> +		cond_resched();
+> +	}
+> +
+> +	return cleared;
+> +}
+> +
+>   static int mmap_zero(struct file *file, struct vm_area_struct *vma)
+>   {
+>   #ifndef CONFIG_MMU
+> @@ -921,6 +942,7 @@ static const struct file_operations zero_fops = {
+>   	.llseek		= zero_lseek,
+>   	.write		= write_zero,
+>   	.read_iter	= read_iter_zero,
+> +	.read		= read_zero,
+>   	.write_iter	= write_iter_zero,
+>   	.mmap		= mmap_zero,
+>   	.get_unmapped_area = get_unmapped_area_zero,
+> 
