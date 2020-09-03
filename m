@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB4C2C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 14:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2269FC2BC11
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 15:03:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B9B920716
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 14:58:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7175620716
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 15:03:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="aXm8ada5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B9B920716
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="pbq83prJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7175620716
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bj3p55vX5zDqH2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 00:58:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bj3w025tTzDr8g
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 01:03:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,35 +31,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=aXm8ada5; 
+ header.s=casper.20170209 header.b=pbq83prJ; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bj31d2S4rzDr3j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2020 00:23:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bj31f22qqzDr3k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2020 00:23:02 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=glRx1e+2K28c137CnQcnREE32Krzi32mzQeiUOb4p8k=; b=aXm8ada5czGlZeEedfKGmsycdu
- XFy77fTL6a7UVpeZ5XjCNDyNL1ym6/11MKlvDcgii10R7629AQHAVCkS1pGwSTGRKAJaWkw9LRvVF
- 3JSzd4hQb6IDMc6kLI8zVGFbH+Lmkx9TwN07Xr/fV64EzjAO4ABTibJ83Uw29e0dbrGs2LbZedqvb
- E8L6It2nFiIxyBiDcKt9cU59Qp6Q8YAEQmxWAQW02CvAeC7oFJnRoWJDoze120xNiGkiCqg84AoPh
- qpjFDVcO28oUIXPgpopWgoQ9ldSmsPzP3JAuBajxqnl6TjEfHRBKOYSm8K16fkeoOmXevyEP4yp7W
- IG/giTfg==;
+ bh=/cLLiDTD8xZJBHOJYcLmc5ERwKhT+Ciq5XK7jpceMuE=; b=pbq83prJA+fXxcThqWYFnT6Obn
+ cUYsu8Ni43+cor2RGu4rMBXxx7jfdsvpSVOSbX4n16DOzdUbgX9qa7z4CI2mQONm2tUUq3iwxvpaT
+ PM+GsYXPjLEPSTSXLJ9emDurcHWPxYrAywVj6rnTZwCt3n4JkkPiYnbaL7Q6NVb2FaOUCpKaXDHe0
+ PsFbVpRoGFu5Vk5sxFJBrEGV1wary0gsgg3l+jttzBGpShbLPyv4yKusnpMoZymJMX6jCQtUIP/zF
+ V1lPH4wsMKGNI9oxjFTB2lfnEuD0MMrqEDlJ9FDYQUUbT7Qp6DeutsJWfrQu8SdGCw+rdyRpuJPR6
+ 8A94iuFw==;
 Received: from [2001:4bb8:184:af1:c70:4a89:bc61:2] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kDq8c-0004bL-6R; Thu, 03 Sep 2020 14:22:54 +0000
+ id 1kDq8d-0004bX-CJ; Thu, 03 Sep 2020 14:22:55 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
  Al Viro <viro@zeniv.linux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>,
  x86@kernel.org
-Subject: [PATCH 08/14] test_bitmap: remove user bitmap tests
-Date: Thu,  3 Sep 2020 16:22:36 +0200
-Message-Id: <20200903142242.925828-9-hch@lst.de>
+Subject: [PATCH 09/14] lkdtm: remove set_fs-based tests
+Date: Thu,  3 Sep 2020 16:22:37 +0200
+Message-Id: <20200903142242.925828-10-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200903142242.925828-1-hch@lst.de>
 References: <20200903142242.925828-1-hch@lst.de>
@@ -86,177 +86,124 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We can't run the tests for userspace bitmap parsing if set_fs() doesn't
-exist, and it is about to go away for x86, powerpc with other major
-architectures to follow.
+Once we can't manipulate the address limit, we also can't test what
+happens when the manipulation is abused.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- lib/test_bitmap.c | 91 +++++++++++------------------------------------
- 1 file changed, 21 insertions(+), 70 deletions(-)
+ drivers/misc/lkdtm/bugs.c               | 10 ----------
+ drivers/misc/lkdtm/core.c               |  2 --
+ drivers/misc/lkdtm/lkdtm.h              |  2 --
+ drivers/misc/lkdtm/usercopy.c           | 15 ---------------
+ tools/testing/selftests/lkdtm/tests.txt |  2 --
+ 5 files changed, 31 deletions(-)
 
-diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
-index df903c53952bb9..4425a1dd4ef1c7 100644
---- a/lib/test_bitmap.c
-+++ b/lib/test_bitmap.c
-@@ -354,50 +354,37 @@ static const struct test_bitmap_parselist parselist_tests[] __initconst = {
- 
- };
- 
--static void __init __test_bitmap_parselist(int is_user)
-+static void __init test_bitmap_parselist(void)
- {
- 	int i;
- 	int err;
- 	ktime_t time;
- 	DECLARE_BITMAP(bmap, 2048);
--	char *mode = is_user ? "_user"  : "";
- 
- 	for (i = 0; i < ARRAY_SIZE(parselist_tests); i++) {
- #define ptest parselist_tests[i]
- 
--		if (is_user) {
--			mm_segment_t orig_fs = get_fs();
--			size_t len = strlen(ptest.in);
--
--			set_fs(KERNEL_DS);
--			time = ktime_get();
--			err = bitmap_parselist_user((__force const char __user *)ptest.in, len,
--						    bmap, ptest.nbits);
--			time = ktime_get() - time;
--			set_fs(orig_fs);
--		} else {
--			time = ktime_get();
--			err = bitmap_parselist(ptest.in, bmap, ptest.nbits);
--			time = ktime_get() - time;
--		}
-+		time = ktime_get();
-+		err = bitmap_parselist(ptest.in, bmap, ptest.nbits);
-+		time = ktime_get() - time;
- 
- 		if (err != ptest.errno) {
--			pr_err("parselist%s: %d: input is %s, errno is %d, expected %d\n",
--					mode, i, ptest.in, err, ptest.errno);
-+			pr_err("parselist: %d: input is %s, errno is %d, expected %d\n",
-+					i, ptest.in, err, ptest.errno);
- 			continue;
- 		}
- 
- 		if (!err && ptest.expected
- 			 && !__bitmap_equal(bmap, ptest.expected, ptest.nbits)) {
--			pr_err("parselist%s: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
--					mode, i, ptest.in, bmap[0],
-+			pr_err("parselist: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
-+					i, ptest.in, bmap[0],
- 					*ptest.expected);
- 			continue;
- 		}
- 
- 		if (ptest.flags & PARSE_TIME)
--			pr_err("parselist%s: %d: input is '%s' OK, Time: %llu\n",
--					mode, i, ptest.in, time);
-+			pr_err("parselist: %d: input is '%s' OK, Time: %llu\n",
-+					i, ptest.in, time);
- 
- #undef ptest
- 	}
-@@ -443,75 +430,41 @@ static const struct test_bitmap_parselist parse_tests[] __initconst = {
- #undef step
- };
- 
--static void __init __test_bitmap_parse(int is_user)
-+static void __init test_bitmap_parse(void)
- {
- 	int i;
- 	int err;
- 	ktime_t time;
- 	DECLARE_BITMAP(bmap, 2048);
--	char *mode = is_user ? "_user"  : "";
- 
- 	for (i = 0; i < ARRAY_SIZE(parse_tests); i++) {
- 		struct test_bitmap_parselist test = parse_tests[i];
-+		size_t len = test.flags & NO_LEN ? UINT_MAX : strlen(test.in);
- 
--		if (is_user) {
--			size_t len = strlen(test.in);
--			mm_segment_t orig_fs = get_fs();
--
--			set_fs(KERNEL_DS);
--			time = ktime_get();
--			err = bitmap_parse_user((__force const char __user *)test.in, len,
--						bmap, test.nbits);
--			time = ktime_get() - time;
--			set_fs(orig_fs);
--		} else {
--			size_t len = test.flags & NO_LEN ?
--				UINT_MAX : strlen(test.in);
--			time = ktime_get();
--			err = bitmap_parse(test.in, len, bmap, test.nbits);
--			time = ktime_get() - time;
--		}
-+		time = ktime_get();
-+		err = bitmap_parse(test.in, len, bmap, test.nbits);
-+		time = ktime_get() - time;
- 
- 		if (err != test.errno) {
--			pr_err("parse%s: %d: input is %s, errno is %d, expected %d\n",
--					mode, i, test.in, err, test.errno);
-+			pr_err("parse: %d: input is %s, errno is %d, expected %d\n",
-+					i, test.in, err, test.errno);
- 			continue;
- 		}
- 
- 		if (!err && test.expected
- 			 && !__bitmap_equal(bmap, test.expected, test.nbits)) {
--			pr_err("parse%s: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
--					mode, i, test.in, bmap[0],
-+			pr_err("parse: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
-+					i, test.in, bmap[0],
- 					*test.expected);
- 			continue;
- 		}
- 
- 		if (test.flags & PARSE_TIME)
--			pr_err("parse%s: %d: input is '%s' OK, Time: %llu\n",
--					mode, i, test.in, time);
-+			pr_err("parse: %d: input is '%s' OK, Time: %llu\n",
-+					i, test.in, time);
- 	}
+diff --git a/drivers/misc/lkdtm/bugs.c b/drivers/misc/lkdtm/bugs.c
+index 4dfbfd51bdf774..a0675d4154d2fd 100644
+--- a/drivers/misc/lkdtm/bugs.c
++++ b/drivers/misc/lkdtm/bugs.c
+@@ -312,16 +312,6 @@ void lkdtm_CORRUPT_LIST_DEL(void)
+ 		pr_err("list_del() corruption not detected!\n");
  }
  
--static void __init test_bitmap_parselist(void)
+-/* Test if unbalanced set_fs(KERNEL_DS)/set_fs(USER_DS) check exists. */
+-void lkdtm_CORRUPT_USER_DS(void)
 -{
--	__test_bitmap_parselist(0);
+-	pr_info("setting bad task size limit\n");
+-	set_fs(KERNEL_DS);
+-
+-	/* Make sure we do not keep running with a KERNEL_DS! */
+-	force_sig(SIGKILL);
 -}
 -
--static void __init test_bitmap_parselist_user(void)
--{
--	__test_bitmap_parselist(1);
--}
--
--static void __init test_bitmap_parse(void)
--{
--	__test_bitmap_parse(0);
--}
--
--static void __init test_bitmap_parse_user(void)
--{
--	__test_bitmap_parse(1);
--}
--
- #define EXP1_IN_BITS	(sizeof(exp1) * 8)
+ /* Test that VMAP_STACK is actually allocating with a leading guard page */
+ void lkdtm_STACK_GUARD_PAGE_LEADING(void)
+ {
+diff --git a/drivers/misc/lkdtm/core.c b/drivers/misc/lkdtm/core.c
+index a5e344df916632..97803f213d9d45 100644
+--- a/drivers/misc/lkdtm/core.c
++++ b/drivers/misc/lkdtm/core.c
+@@ -112,7 +112,6 @@ static const struct crashtype crashtypes[] = {
+ 	CRASHTYPE(CORRUPT_STACK_STRONG),
+ 	CRASHTYPE(CORRUPT_LIST_ADD),
+ 	CRASHTYPE(CORRUPT_LIST_DEL),
+-	CRASHTYPE(CORRUPT_USER_DS),
+ 	CRASHTYPE(STACK_GUARD_PAGE_LEADING),
+ 	CRASHTYPE(STACK_GUARD_PAGE_TRAILING),
+ 	CRASHTYPE(UNSET_SMEP),
+@@ -172,7 +171,6 @@ static const struct crashtype crashtypes[] = {
+ 	CRASHTYPE(USERCOPY_STACK_FRAME_FROM),
+ 	CRASHTYPE(USERCOPY_STACK_BEYOND),
+ 	CRASHTYPE(USERCOPY_KERNEL),
+-	CRASHTYPE(USERCOPY_KERNEL_DS),
+ 	CRASHTYPE(STACKLEAK_ERASING),
+ 	CRASHTYPE(CFI_FORWARD_PROTO),
+ #ifdef CONFIG_X86_32
+diff --git a/drivers/misc/lkdtm/lkdtm.h b/drivers/misc/lkdtm/lkdtm.h
+index 8878538b2c1322..6dec4c9b442ff3 100644
+--- a/drivers/misc/lkdtm/lkdtm.h
++++ b/drivers/misc/lkdtm/lkdtm.h
+@@ -27,7 +27,6 @@ void lkdtm_OVERFLOW_UNSIGNED(void);
+ void lkdtm_ARRAY_BOUNDS(void);
+ void lkdtm_CORRUPT_LIST_ADD(void);
+ void lkdtm_CORRUPT_LIST_DEL(void);
+-void lkdtm_CORRUPT_USER_DS(void);
+ void lkdtm_STACK_GUARD_PAGE_LEADING(void);
+ void lkdtm_STACK_GUARD_PAGE_TRAILING(void);
+ void lkdtm_UNSET_SMEP(void);
+@@ -96,7 +95,6 @@ void lkdtm_USERCOPY_STACK_FRAME_TO(void);
+ void lkdtm_USERCOPY_STACK_FRAME_FROM(void);
+ void lkdtm_USERCOPY_STACK_BEYOND(void);
+ void lkdtm_USERCOPY_KERNEL(void);
+-void lkdtm_USERCOPY_KERNEL_DS(void);
  
- static void __init test_bitmap_arr32(void)
-@@ -675,9 +628,7 @@ static void __init selftest(void)
- 	test_replace();
- 	test_bitmap_arr32();
- 	test_bitmap_parse();
--	test_bitmap_parse_user();
- 	test_bitmap_parselist();
--	test_bitmap_parselist_user();
- 	test_mem_optimisations();
- 	test_for_each_set_clump8();
- 	test_bitmap_cut();
+ /* lkdtm_stackleak.c */
+ void lkdtm_STACKLEAK_ERASING(void);
+diff --git a/drivers/misc/lkdtm/usercopy.c b/drivers/misc/lkdtm/usercopy.c
+index b833367a45d053..109e8d4302c113 100644
+--- a/drivers/misc/lkdtm/usercopy.c
++++ b/drivers/misc/lkdtm/usercopy.c
+@@ -325,21 +325,6 @@ void lkdtm_USERCOPY_KERNEL(void)
+ 	vm_munmap(user_addr, PAGE_SIZE);
+ }
+ 
+-void lkdtm_USERCOPY_KERNEL_DS(void)
+-{
+-	char __user *user_ptr =
+-		(char __user *)(0xFUL << (sizeof(unsigned long) * 8 - 4));
+-	mm_segment_t old_fs = get_fs();
+-	char buf[10] = {0};
+-
+-	pr_info("attempting copy_to_user() to noncanonical address: %px\n",
+-		user_ptr);
+-	set_fs(KERNEL_DS);
+-	if (copy_to_user(user_ptr, buf, sizeof(buf)) == 0)
+-		pr_err("copy_to_user() to noncanonical address succeeded!?\n");
+-	set_fs(old_fs);
+-}
+-
+ void __init lkdtm_usercopy_init(void)
+ {
+ 	/* Prepare cache that lacks SLAB_USERCOPY flag. */
+diff --git a/tools/testing/selftests/lkdtm/tests.txt b/tools/testing/selftests/lkdtm/tests.txt
+index 9d266e79c6a270..74a8d329a72c80 100644
+--- a/tools/testing/selftests/lkdtm/tests.txt
++++ b/tools/testing/selftests/lkdtm/tests.txt
+@@ -9,7 +9,6 @@ EXCEPTION
+ #CORRUPT_STACK_STRONG Crashes entire system on success
+ CORRUPT_LIST_ADD list_add corruption
+ CORRUPT_LIST_DEL list_del corruption
+-CORRUPT_USER_DS Invalid address limit on user-mode return
+ STACK_GUARD_PAGE_LEADING
+ STACK_GUARD_PAGE_TRAILING
+ UNSET_SMEP CR4 bits went missing
+@@ -67,6 +66,5 @@ USERCOPY_STACK_FRAME_TO
+ USERCOPY_STACK_FRAME_FROM
+ USERCOPY_STACK_BEYOND
+ USERCOPY_KERNEL
+-USERCOPY_KERNEL_DS
+ STACKLEAK_ERASING OK: the rest of the thread stack is properly erased
+ CFI_FORWARD_PROTO
 -- 
 2.28.0
 
