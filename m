@@ -6,37 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F578C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A39DFC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:37:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CA7F20639
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:34:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CA7F20639
+	by mail.kernel.org (Postfix) with ESMTPS id 4EAC6206EB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 12:37:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EAC6206EB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bj0bm5jlZzDr5X
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 22:33:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bj0gT0YB5zDqkc
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Sep 2020 22:37:08 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bj0RB04DrzDqkZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 22:26:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bj0Sv3Hl9zDqvd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2020 22:27:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 4Bj0Sr2Jkwz9sTS; Thu,  3 Sep 2020 22:27:56 +1000 (AEST)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4Bj0R95l96z9sTd; Thu,  3 Sep 2020 22:26:29 +1000 (AEST)
+ id 4Bj0Sq6b6Sz9sTM; Thu,  3 Sep 2020 22:27:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-In-Reply-To: <20200902040122.136414-1-aneesh.kumar@linux.ibm.com>
-References: <20200902040122.136414-1-aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/mm: Remove DEBUG_VM_PGTABLE support on powerpc
-Message-Id: <159913592797.5893.5829441560236719450.b4-ty@ellerman.id.au>
-Date: Thu,  3 Sep 2020 22:26:29 +1000 (AEST)
+To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20200901124653.523182-1-mpe@ellerman.id.au>
+References: <20200901124653.523182-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests/powerpc: Skip PROT_SAO test in guests/LPARS
+Message-Id: <159913602428.7198.2228774336078806098.b4-ty@ellerman.id.au>
+Date: Thu,  3 Sep 2020 22:27:55 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,40 +49,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2 Sep 2020 09:31:22 +0530, Aneesh Kumar K.V wrote:
-> The test is broken w.r.t page table update rules and results in kernel
-> crash as below. Disable the support until we get the tests updated.
-> 
-> [   21.083519] kernel BUG at arch/powerpc/mm/pgtable.c:304!
-> cpu 0x0: Vector: 700 (Program Check) at [c000000c6d1e76c0]
->     pc: c00000000009a5ec: assert_pte_locked+0x14c/0x380
->     lr: c0000000005eeeec: pte_update+0x11c/0x190
->     sp: c000000c6d1e7950
->    msr: 8000000002029033
->   current = 0xc000000c6d172c80
->   paca    = 0xc000000003ba0000   irqmask: 0x03   irq_happened: 0x01
->     pid   = 1, comm = swapper/0
-> kernel BUG at arch/powerpc/mm/pgtable.c:304!
-> [link register   ] c0000000005eeeec pte_update+0x11c/0x190
-> [c000000c6d1e7950] 0000000000000001 (unreliable)
-> [c000000c6d1e79b0] c0000000005eee14 pte_update+0x44/0x190
-> [c000000c6d1e7a10] c000000001a2ca9c pte_advanced_tests+0x160/0x3d8
-> [c000000c6d1e7ab0] c000000001a2d4fc debug_vm_pgtable+0x7e8/0x1338
-> [c000000c6d1e7ba0] c0000000000116ec do_one_initcall+0xac/0x5f0
-> [c000000c6d1e7c80] c0000000019e4fac kernel_init_freeable+0x4dc/0x5a4
-> [c000000c6d1e7db0] c000000000012474 kernel_init+0x24/0x160
-> [c000000c6d1e7e20] c00000000000cbd0 ret_from_kernel_thread+0x5c/0x6c
-> 
-> [...]
+On Tue, 1 Sep 2020 22:46:53 +1000, Michael Ellerman wrote:
+> In commit 9b725a90a8f1 ("powerpc/64s: Disallow PROT_SAO in LPARs by
+> default") PROT_SAO was disabled in guests/LPARs by default. So skip
+> the test if we are running in a guest to avoid a spurious failure.
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/mm: Remove DEBUG_VM_PGTABLE support on powerpc
-      https://git.kernel.org/powerpc/c/675bceb097e6fb9769309093ec6f3d33a2fed9cc
+[1/1] selftests/powerpc: Skip PROT_SAO test in guests/LPARS
+      https://git.kernel.org/powerpc/c/fc1f178cdb31783ff37296ecae817a1045a1a513
 
 cheers
