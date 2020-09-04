@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC86C43461
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63636C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:37:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E5BB208C7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:35:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E5BB208C7
+	by mail.kernel.org (Postfix) with ESMTPS id C6D4A2078E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:37:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6D4A2078E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BjvDf1J5lzDqqY
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2020 09:35:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BjvH25f72zDqFD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2020 09:37:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -28,19 +28,18 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv2G1qVlzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2020 09:26:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv2H3JsrzDqmY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2020 09:26:31 +1000 (AEST)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 050452ACD7; Fri,  4 Sep 2020 19:26:27 -0400 (EDT)
+ id 192662ACD8; Fri,  4 Sep 2020 19:26:28 -0400 (EDT)
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Message-Id: <c281611544768e758bd58fe812cf702a5bd2d042.1599260540.git.fthain@telegraphics.com.au>
+Message-Id: <5a0ba3dc5612c7aac596727331284a3676c08472.1599260540.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1599260540.git.fthain@telegraphics.com.au>
 References: <cover.1599260540.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 4/5] powerpc/tau: Check processor type before enabling TAU
- interrupt
+Subject: [PATCH 5/5] powerpc/tau: Disable TAU between measurements
 Date: Sat, 05 Sep 2020 09:02:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -58,107 +57,190 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-According to Freescale's documentation, MPC74XX processors have an
-erratum that prevents the TAU interrupt from working, so don't try to
-use it when running on those processors.
+Enabling CONFIG_TAU_INT causes random crashes:
+
+Unrecoverable exception 1700 at c0009414 (msr=1000)
+Oops: Unrecoverable exception, sig: 6 [#1]
+BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.7.0-pmac-00043-gd5f545e1a8593 #5
+NIP:  c0009414 LR: c0009414 CTR: c00116fc
+REGS: c0799eb8 TRAP: 1700   Not tainted  (5.7.0-pmac-00043-gd5f545e1a8593)
+MSR:  00001000 <ME>  CR: 22000228  XER: 00000100
+
+GPR00: 00000000 c0799f70 c076e300 00800000 0291c0ac 00e00000 c076e300 00049032
+GPR08: 00000001 c00116fc 00000000 dfbd3200 ffffffff 007f80a8 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 c075ce04
+GPR24: c075ce04 dfff8880 c07b0000 c075ce04 00080000 00000001 c079ef98 c079ef5c
+NIP [c0009414] arch_cpu_idle+0x24/0x6c
+LR [c0009414] arch_cpu_idle+0x24/0x6c
+Call Trace:
+[c0799f70] [00000001] 0x1 (unreliable)
+[c0799f80] [c0060990] do_idle+0xd8/0x17c
+[c0799fa0] [c0060ba4] cpu_startup_entry+0x20/0x28
+[c0799fb0] [c072d220] start_kernel+0x434/0x44c
+[c0799ff0] [00003860] 0x3860
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX 3d20c07b XXXXXXXX XXXXXXXX XXXXXXXX 7c0802a6
+XXXXXXXX XXXXXXXX XXXXXXXX 4e800421 XXXXXXXX XXXXXXXX XXXXXXXX 7d2000a6
+---[ end trace 3a0c9b5cb216db6b ]---
+
+Resolve this problem by disabling each THRMn comparator when handling
+the associated THRMn interrupt and by disabling the TAU entirely when
+updating THRMn thresholds.
 
 Fixes: 1da177e4c3f41 ("Linux-2.6.12-rc2")
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- arch/powerpc/kernel/tau_6xx.c  | 33 ++++++++++++++-------------------
- arch/powerpc/platforms/Kconfig |  5 ++---
- 2 files changed, 16 insertions(+), 22 deletions(-)
+ arch/powerpc/kernel/tau_6xx.c  | 65 +++++++++++++---------------------
+ arch/powerpc/platforms/Kconfig |  9 ++---
+ 2 files changed, 26 insertions(+), 48 deletions(-)
 
 diff --git a/arch/powerpc/kernel/tau_6xx.c b/arch/powerpc/kernel/tau_6xx.c
-index b8d7e7d498e0a..614b5b272d9c6 100644
+index 614b5b272d9c6..0b4694b8d2482 100644
 --- a/arch/powerpc/kernel/tau_6xx.c
 +++ b/arch/powerpc/kernel/tau_6xx.c
-@@ -40,6 +40,8 @@ static struct tau_temp
- 	unsigned char grew;
- } tau[NR_CPUS];
+@@ -42,8 +42,6 @@ static struct tau_temp
  
-+static bool tau_int_enable;
-+
- #undef DEBUG
+ static bool tau_int_enable;
  
+-#undef DEBUG
+-
  /* TODO: put these in a /proc interface, with some sanity checks, and maybe
-@@ -54,22 +56,13 @@ static struct tau_temp
- 
- static void set_thresholds(unsigned long cpu)
- {
--#ifdef CONFIG_TAU_INT
--	/*
--	 * setup THRM1,
--	 * threshold, valid bit, enable interrupts, interrupt when below threshold
--	 */
--	mtspr(SPRN_THRM1, THRM1_THRES(tau[cpu].low) | THRM1_V | THRM1_TIE | THRM1_TID);
-+	u32 maybe_tie = tau_int_enable ? THRM1_TIE : 0;
- 
--	/* setup THRM2,
--	 * threshold, valid bit, enable interrupts, interrupt when above threshold
--	 */
--	mtspr (SPRN_THRM2, THRM1_THRES(tau[cpu].high) | THRM1_V | THRM1_TIE);
--#else
--	/* same thing but don't enable interrupts */
--	mtspr(SPRN_THRM1, THRM1_THRES(tau[cpu].low) | THRM1_V | THRM1_TID);
--	mtspr(SPRN_THRM2, THRM1_THRES(tau[cpu].high) | THRM1_V);
--#endif
-+	/* setup THRM1, threshold, valid bit, interrupt when below threshold */
-+	mtspr(SPRN_THRM1, THRM1_THRES(tau[cpu].low) | THRM1_V | maybe_tie | THRM1_TID);
-+
-+	/* setup THRM2, threshold, valid bit, interrupt when above threshold */
-+	mtspr(SPRN_THRM2, THRM1_THRES(tau[cpu].high) | THRM1_V | maybe_tie);
- }
+  * dynamic adjustment to minimize # of interrupts */
+ /* configurable values for step size and how much to expand the window when
+@@ -67,42 +65,33 @@ static void set_thresholds(unsigned long cpu)
  
  static void TAUupdate(int cpu)
-@@ -142,9 +135,8 @@ static void tau_timeout(void * info)
- 	local_irq_save(flags);
+ {
+-	unsigned thrm;
+-
+-#ifdef DEBUG
+-	printk("TAUupdate ");
+-#endif
++	u32 thrm;
++	u32 bits = THRM1_TIV | THRM1_TIN | THRM1_V;
+ 
+ 	/* if both thresholds are crossed, the step_sizes cancel out
+ 	 * and the window winds up getting expanded twice. */
+-	if((thrm = mfspr(SPRN_THRM1)) & THRM1_TIV){ /* is valid? */
+-		if(thrm & THRM1_TIN){ /* crossed low threshold */
+-			if (tau[cpu].low >= step_size){
+-				tau[cpu].low -= step_size;
+-				tau[cpu].high -= (step_size - window_expand);
+-			}
+-			tau[cpu].grew = 1;
+-#ifdef DEBUG
+-			printk("low threshold crossed ");
+-#endif
++	thrm = mfspr(SPRN_THRM1);
++	if ((thrm & bits) == bits) {
++		mtspr(SPRN_THRM1, 0);
++
++		if (tau[cpu].low >= step_size) {
++			tau[cpu].low -= step_size;
++			tau[cpu].high -= (step_size - window_expand);
+ 		}
++		tau[cpu].grew = 1;
++		pr_debug("%s: low threshold crossed\n", __func__);
+ 	}
+-	if((thrm = mfspr(SPRN_THRM2)) & THRM1_TIV){ /* is valid? */
+-		if(thrm & THRM1_TIN){ /* crossed high threshold */
+-			if (tau[cpu].high <= 127-step_size){
+-				tau[cpu].low += (step_size - window_expand);
+-				tau[cpu].high += step_size;
+-			}
+-			tau[cpu].grew = 1;
+-#ifdef DEBUG
+-			printk("high threshold crossed ");
+-#endif
++	thrm = mfspr(SPRN_THRM2);
++	if ((thrm & bits) == bits) {
++		mtspr(SPRN_THRM2, 0);
++
++		if (tau[cpu].high <= 127 - step_size) {
++			tau[cpu].low += (step_size - window_expand);
++			tau[cpu].high += step_size;
+ 		}
++		tau[cpu].grew = 1;
++		pr_debug("%s: high threshold crossed\n", __func__);
+ 	}
+-
+-#ifdef DEBUG
+-	printk("grew = %d\n", tau[cpu].grew);
+-#endif
+ }
+ 
+ #ifdef CONFIG_TAU_INT
+@@ -127,17 +116,17 @@ void TAUException(struct pt_regs * regs)
+ static void tau_timeout(void * info)
+ {
+ 	int cpu;
+-	unsigned long flags;
+ 	int size;
+ 	int shrink;
+ 
+-	/* disabling interrupts *should* be okay */
+-	local_irq_save(flags);
  	cpu = smp_processor_id();
  
--#ifndef CONFIG_TAU_INT
--	TAUupdate(cpu);
--#endif
-+	if (!tau_int_enable)
-+		TAUupdate(cpu);
+ 	if (!tau_int_enable)
+ 		TAUupdate(cpu);
  
++	/* Stop thermal sensor comparisons and interrupts */
++	mtspr(SPRN_THRM3, 0);
++
  	size = tau[cpu].high - tau[cpu].low;
  	if (size > min_window && ! tau[cpu].grew) {
-@@ -225,6 +217,9 @@ static int __init TAU_init(void)
- 		return 1;
- 	}
+ 		/* do an exponential shrink of half the amount currently over size */
+@@ -159,18 +148,12 @@ static void tau_timeout(void * info)
  
-+	tau_int_enable = IS_ENABLED(CONFIG_TAU_INT) &&
-+			 !strcmp(cur_cpu_spec->platform, "ppc750");
-+
- 	tau_workq = alloc_workqueue("tau", WQ_UNBOUND, 1, 0);
- 	if (!tau_workq)
- 		return -ENOMEM;
-@@ -234,7 +229,7 @@ static int __init TAU_init(void)
- 	queue_work(tau_workq, &tau_work);
+ 	set_thresholds(cpu);
  
- 	pr_info("Thermal assist unit using %s, shrink_timer: %d ms\n",
--		IS_ENABLED(CONFIG_TAU_INT) ? "interrupts" : "workqueue", shrink_timer);
-+		tau_int_enable ? "interrupts" : "workqueue", shrink_timer);
- 	tau_initialized = 1;
+-	/*
+-	 * Do the enable every time, since otherwise a bunch of (relatively)
+-	 * complex sleep code needs to be added. One mtspr every time
+-	 * tau_timeout is called is probably not a big deal.
+-	 *
++	/* Restart thermal sensor comparisons and interrupts.
+ 	 * The "PowerPC 740 and PowerPC 750 Microprocessor Datasheet"
+ 	 * recommends that "the maximum value be set in THRM3 under all
+ 	 * conditions."
+ 	 */
+ 	mtspr(SPRN_THRM3, THRM3_SITV(0x1fff) | THRM3_E);
+-
+-	local_irq_restore(flags);
+ }
  
- 	return 0;
+ static struct workqueue_struct *tau_workq;
 diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index fb7515b4fa9c6..9fe36f0b54c1a 100644
+index 9fe36f0b54c1a..b439b027a42f1 100644
 --- a/arch/powerpc/platforms/Kconfig
 +++ b/arch/powerpc/platforms/Kconfig
-@@ -223,9 +223,8 @@ config TAU
- 	  temperature within 2-4 degrees Celsius. This option shows the current
- 	  on-die temperature in /proc/cpuinfo if the cpu supports it.
- 
--	  Unfortunately, on some chip revisions, this sensor is very inaccurate
--	  and in many cases, does not work at all, so don't assume the cpu
--	  temp is actually what /proc/cpuinfo says it is.
-+	  Unfortunately, this sensor is very inaccurate when uncalibrated, so
-+	  don't assume the cpu temp is actually what /proc/cpuinfo says it is.
+@@ -227,7 +227,7 @@ config TAU
+ 	  don't assume the cpu temp is actually what /proc/cpuinfo says it is.
  
  config TAU_INT
- 	bool "Interrupt driven TAU driver (DANGEROUS)"
+-	bool "Interrupt driven TAU driver (DANGEROUS)"
++	bool "Interrupt driven TAU driver (EXPERIMENTAL)"
+ 	depends on TAU
+ 	help
+ 	  The TAU supports an interrupt driven mode which causes an interrupt
+@@ -235,12 +235,7 @@ config TAU_INT
+ 	  to get notified the temp has exceeded a range. With this option off,
+ 	  a timer is used to re-check the temperature periodically.
+ 
+-	  However, on some cpus it appears that the TAU interrupt hardware
+-	  is buggy and can cause a situation which would lead unexplained hard
+-	  lockups.
+-
+-	  Unless you are extending the TAU driver, or enjoy kernel/hardware
+-	  debugging, leave this option off.
++	  If in doubt, say N here.
+ 
+ config TAU_AVERAGE
+ 	bool "Average high and low temp"
 -- 
 2.26.2
 
