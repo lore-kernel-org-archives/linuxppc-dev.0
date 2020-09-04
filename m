@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0DDBC43461
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A6CEC43461
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:31:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BCFF52078E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:30:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCFF52078E
+	by mail.kernel.org (Postfix) with ESMTPS id 704BD2078E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Sep 2020 23:31:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 704BD2078E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv6H6TqMzDqPT
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2020 09:29:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv8R1H1LzDqnr
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Sep 2020 09:31:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
  helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
@@ -28,18 +28,18 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv2G00RmzDqmb
+ by lists.ozlabs.org (Postfix) with ESMTP id 4Bjv2G159CzDqmf
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2020 09:26:29 +1000 (AEST)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 8929E2ACC0; Fri,  4 Sep 2020 19:26:27 -0400 (EDT)
+ id DC54E2ACD6; Fri,  4 Sep 2020 19:26:27 -0400 (EDT)
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Message-Id: <896f542e5f0f1d6cf8218524c2b67d79f3d69b3c.1599260540.git.fthain@telegraphics.com.au>
+Message-Id: <d7c7ee33232cf72a6a6bbb6ef05838b2e2b113c0.1599260540.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1599260540.git.fthain@telegraphics.com.au>
 References: <cover.1599260540.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 1/5] powerpc/tau: Use appropriate temperature sample interval
+Subject: [PATCH 3/5] powerpc/tau: Remove duplicated set_thresholds() call
 Date: Sat, 05 Sep 2020 09:02:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -57,59 +57,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-According to the MPC750 Users Manual, the SITV value in Thermal
-Management Register 3 is 13 bits long. The present code calculates the
-SITV value as 60 * 500 cycles. This would overflow to give 10 us on
-a 500 MHz CPU rather than the intended 60 us. (But according to the
-Microprocessor Datasheet, there is also a factor of 266 that has to be
-applied to this value on certain parts i.e. speed sort above 266 MHz.)
-Always use the maximum cycle count, as recommended by the Datasheet.
+The commentary at the call site seems to disagree with the code. The
+conditional prevents calling set_thresholds() via the exception handler,
+which appears to crash. Perhaps that's because it immediately triggers
+another TAU exception. Anyway, calling set_thresholds() from TAUupdate()
+is redundant because tau_timeout() does so.
 
 Fixes: 1da177e4c3f41 ("Linux-2.6.12-rc2")
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- arch/powerpc/include/asm/reg.h |  2 +-
- arch/powerpc/kernel/tau_6xx.c  | 12 ++++--------
- 2 files changed, 5 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/tau_6xx.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 88e6c78100d9b..c750afc62887c 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -815,7 +815,7 @@
- #define THRM1_TIN	(1 << 31)
- #define THRM1_TIV	(1 << 30)
- #define THRM1_THRES(x)	((x&0x7f)<<23)
--#define THRM3_SITV(x)	((x&0x3fff)<<1)
-+#define THRM3_SITV(x)	((x & 0x1fff) << 1)
- #define THRM1_TID	(1<<2)
- #define THRM1_TIE	(1<<1)
- #define THRM1_V		(1<<0)
 diff --git a/arch/powerpc/kernel/tau_6xx.c b/arch/powerpc/kernel/tau_6xx.c
-index e2ab8a111b693..976d5bc1b5176 100644
+index 268205cc347da..b8d7e7d498e0a 100644
 --- a/arch/powerpc/kernel/tau_6xx.c
 +++ b/arch/powerpc/kernel/tau_6xx.c
-@@ -178,15 +178,11 @@ static void tau_timeout(void * info)
- 	 * complex sleep code needs to be added. One mtspr every time
- 	 * tau_timeout is called is probably not a big deal.
- 	 *
--	 * Enable thermal sensor and set up sample interval timer
--	 * need 20 us to do the compare.. until a nice 'cpu_speed' function
--	 * call is implemented, just assume a 500 mhz clock. It doesn't really
--	 * matter if we take too long for a compare since it's all interrupt
--	 * driven anyway.
--	 *
--	 * use a extra long time.. (60 us @ 500 mhz)
-+	 * The "PowerPC 740 and PowerPC 750 Microprocessor Datasheet"
-+	 * recommends that "the maximum value be set in THRM3 under all
-+	 * conditions."
- 	 */
--	mtspr(SPRN_THRM3, THRM3_SITV(500*60) | THRM3_E);
-+	mtspr(SPRN_THRM3, THRM3_SITV(0x1fff) | THRM3_E);
- 
- 	local_irq_restore(flags);
+@@ -110,11 +110,6 @@ static void TAUupdate(int cpu)
+ #ifdef DEBUG
+ 	printk("grew = %d\n", tau[cpu].grew);
+ #endif
+-
+-#ifndef CONFIG_TAU_INT /* tau_timeout will do this if not using interrupts */
+-	set_thresholds(cpu);
+-#endif
+-
  }
+ 
+ #ifdef CONFIG_TAU_INT
 -- 
 2.26.2
 
