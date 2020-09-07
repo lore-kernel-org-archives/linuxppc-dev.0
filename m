@@ -5,19 +5,19 @@ X-Spam-Level:
 X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48F91C43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BBAAC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:23:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9763D21582
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:21:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9763D21582
+	by mail.kernel.org (Postfix) with ESMTPS id 7657621582
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:23:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7657621582
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BlJ8D37rWzDqNH
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 16:21:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BlJ9x1fmlzDqPC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 16:23:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=pnrx=cq=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -27,30 +27,31 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BlJ5H0LVqzDqNZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BlJ5H2F9vzDqRb
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2020 16:18:59 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 209181] kernel BUG at arch/powerpc/mm/pgtable.c:304!
+Subject: [Bug 209029] kernel 5.9-rc2 fails to boot on a PowerMac G5 11,2 -
+ BUG: Kernel NULL pointer dereference on read at 0x00000020
 Date: Mon, 07 Sep 2020 06:18:54 +0000
-X-Bugzilla-Reason: CC
+X-Bugzilla-Reason: None
 X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: None
-X-Bugzilla-Product: Memory Management
-X-Bugzilla-Component: Page Allocator
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: zlang@redhat.com
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: DUPLICATE
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: akpm@linux-foundation.org
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-209181-206035-M6x6WxV50S@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-209181-206035@https.bugzilla.kernel.org/>
-References: <bug-209181-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-209029-206035-karM0wBBvt@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-209029-206035@https.bugzilla.kernel.org/>
+References: <bug-209029-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -71,20 +72,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D209181
+https://bugzilla.kernel.org/show_bug.cgi?id=3D209029
 
 Zorro Lang (zlang@redhat.com) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |DUPLICATE
+                 CC|                            |zlang@redhat.com
 
---- Comment #3 from Zorro Lang (zlang@redhat.com) ---
-
-
-*** This bug has been marked as a duplicate of bug 209029 ***
+--- Comment #5 from Zorro Lang (zlang@redhat.com) ---
+*** Bug 209181 has been marked as a duplicate of this bug. ***
 
 --=20
 You are receiving this mail because:
-You are on the CC list for the bug.=
+You are watching the assignee of the bug.=
