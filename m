@@ -3,22 +3,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C8AAC43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48F91C43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:21:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C388721582
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:19:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C388721582
+	by mail.kernel.org (Postfix) with ESMTPS id 9763D21582
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 06:21:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9763D21582
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=bugzilla.kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BlJ6G5G35zDqPK
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 16:19:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BlJ8D37rWzDqNH
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 16:21:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=pnrx=cq=bugzilla.kernel.org=bugzilla-daemon@kernel.org;
@@ -28,12 +27,12 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BlJ4K2tKhzDqM6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2020 16:18:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BlJ5H0LVqzDqNZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2020 16:18:59 +1000 (AEST)
 From: bugzilla-daemon@bugzilla.kernel.org
 To: linuxppc-dev@lists.ozlabs.org
 Subject: [Bug 209181] kernel BUG at arch/powerpc/mm/pgtable.c:304!
-Date: Mon, 07 Sep 2020 06:18:02 +0000
+Date: Mon, 07 Sep 2020 06:18:54 +0000
 X-Bugzilla-Reason: CC
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -43,13 +42,13 @@ X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
 X-Bugzilla-Who: zlang@redhat.com
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
+X-Bugzilla-Status: RESOLVED
+X-Bugzilla-Resolution: DUPLICATE
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: akpm@linux-foundation.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-209181-206035-w28FoYW0Su@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: bug_status resolution
+Message-ID: <bug-209181-206035-M6x6WxV50S@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-209181-206035@https.bugzilla.kernel.org/>
 References: <bug-209181-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -74,16 +73,17 @@ Sender: "Linuxppc-dev"
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D209181
 
---- Comment #2 from Zorro Lang (zlang@redhat.com) ---
-(In reply to Christophe Leroy from comment #1)
-> See https://bugzilla.kernel.org/show_bug.cgi?id=3D209029
->=20
-> Patch at
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20200902040122.
-> 136414-1-aneesh.kumar@linux.ibm.com/ to deactivate CONFIG_DEBUG_VM_PGTABLE
-> on powerpc until the issue is fixes.
+Zorro Lang (zlang@redhat.com) changed:
 
-Thanks for this info
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |RESOLVED
+         Resolution|---                         |DUPLICATE
+
+--- Comment #3 from Zorro Lang (zlang@redhat.com) ---
+
+
+*** This bug has been marked as a duplicate of bug 209029 ***
 
 --=20
 You are receiving this mail because:
