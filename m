@@ -7,89 +7,89 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2AACC43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 18:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF48C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 18:08:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4821206B5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 18:06:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3ABA3206B5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Sep 2020 18:08:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="DKUC1cxI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4821206B5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="ojRtU0Wp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3ABA3206B5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Blbp73yVKzDqPg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 04:06:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Blbr733sRzDqPn
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 04:08:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=gerald.schaefer@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=DKUC1cxI; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=ojRtU0Wp; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Blbl36tV4zDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 04:04:15 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 087I2Kaj149186; Mon, 7 Sep 2020 14:03:16 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Blbl612KczDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 04:04:17 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 087I10sF168501; Mon, 7 Sep 2020 14:03:12 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references; s=pp1;
- bh=llOokXYaeFuIqVieDq95v0tbRJZyTidIz682PTCYDAE=;
- b=DKUC1cxIdAyXGdb1LJMQxZCmyRckMOY3yH+BL2PIngvCYp9BUjlEt9kNIZfUGGbwFQPD
- bantvKYv38QTxd4IL4TDUhdMYgKl7HtCjI4wLqN0xpm18+BVow6mrg+vGE8uN95Pqb7K
- r3A/hRvxcHV07fQVv4bHCljFgqnzeJAwpg4w4cxTYbt9ypJOOXXa/60NC6bwYZ2xTJyI
- /wWSwGk1krs3AmfcV9p3i0tMaQ8847pcow1g3GsKVixL9i1Bvuu/CzewQKiyoiqtOg7x
- wMTvQsX3CLxuhJDnZskAgiskS7ZyMC1EO8GXmdBTdbeZjjPLW3zmvsr58bQCVaBm2qrv pw== 
+ bh=lPGa6fWKfg3zay7vzZC1yMSTVM3fph9XzvKCzbKMAZ4=;
+ b=ojRtU0WpNelqlWdKuuRj7EZ3Ew91FliVqZBfL28XZLl3kgc9xTy2w9eKrt0T7dq5OIaV
+ ajZiW2c+dVJOb9tzdbDRN72evoPel8Q9pT4Dtn2nvtcN1zLXjctC2mbkoPGlL7NxEs8/
+ 2+aVYxDB8qwwqkvJn83ix+3pJaA0OVzwbX0opLJ+gNnXILNtb2sPQPNIYJU9s+UKoFig
+ 5eiWrEyF8s1TjHP5kQ0Q5gYxfnAvCnqm54EufHj5iZH0p55iyNR810bWXzT3+V5YkSz/
+ CI91o8Fs1+McSHLmyKsyesWHI54UteZg6V7rgjFTCnLkMIu0dz80C6qFm10FMVtdKG0p 3A== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33dsgfrbxf-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 33dp6gdmkn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 07 Sep 2020 14:03:16 -0400
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 087I2StQ149524;
- Mon, 7 Sep 2020 14:03:15 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33dsgfrbwd-1
+ Mon, 07 Sep 2020 14:03:12 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 087I3B3x174820;
+ Mon, 7 Sep 2020 14:03:11 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 33dp6gdmjw-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 07 Sep 2020 14:03:15 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 087I39Cf010781;
- Mon, 7 Sep 2020 18:03:13 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma05fra.de.ibm.com with ESMTP id 33c2a89kvj-1
+ Mon, 07 Sep 2020 14:03:11 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 087I28ep016507;
+ Mon, 7 Sep 2020 18:03:09 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by ppma06ams.nl.ibm.com with ESMTP id 33cyq51cw4-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 07 Sep 2020 18:03:13 +0000
+ Mon, 07 Sep 2020 18:03:09 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
  [9.149.105.60])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 087I3A7O64356840
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 087I36be26542470
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 7 Sep 2020 18:03:11 GMT
+ Mon, 7 Sep 2020 18:03:06 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CDA974203F;
- Mon,  7 Sep 2020 18:03:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A2B9C42047;
+ Mon,  7 Sep 2020 18:03:06 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B683442045;
- Mon,  7 Sep 2020 18:03:09 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 81E2C42041;
+ Mon,  7 Sep 2020 18:03:05 +0000 (GMT)
 Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  7 Sep 2020 18:03:09 +0000 (GMT)
+ Mon,  7 Sep 2020 18:03:05 +0000 (GMT)
 From: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 To: Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>
-Subject: [RFC PATCH v2 3/3] mm: make generic pXd_addr_end() macros inline
- functions
-Date: Mon,  7 Sep 2020 20:00:58 +0200
-Message-Id: <20200907180058.64880-4-gerald.schaefer@linux.ibm.com>
+Subject: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
+ folding
+Date: Mon,  7 Sep 2020 20:00:56 +0200
+Message-Id: <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
 References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
@@ -98,11 +98,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-09-07_11:2020-09-07,
  2020-09-07 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0
- mlxscore=0 adultscore=0 priorityscore=1501 clxscore=1015
- lowpriorityscore=0 phishscore=0 mlxlogscore=950 suspectscore=0 bulkscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009070168
+ mlxlogscore=999
+ malwarescore=0 mlxscore=0 clxscore=1015 phishscore=0 bulkscore=0
+ lowpriorityscore=0 priorityscore=1501 suspectscore=0 spamscore=0
+ impostorscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2006250000 definitions=main-2009070168
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -140,74 +140,212 @@ Sender: "Linuxppc-dev"
 
 From: Alexander Gordeev <agordeev@linux.ibm.com>
 
-Since pXd_addr_end() macros take pXd page-table entry as a
-parameter it makes sense to check the entry type on compile.
-Even though most archs do not make use of page-table entries
-in pXd_addr_end() calls, checking the type in traversal code
-paths could help to avoid subtle bugs.
+Commit 1a42010cdc26 ("s390/mm: convert to the generic get_user_pages_fast
+code") introduced a subtle but severe bug on s390 with gup_fast, due to
+dynamic page table folding.
 
+The question "What would it require for the generic code to work for s390"
+has already been discussed here
+https://lkml.kernel.org/r/20190418100218.0a4afd51@mschwideX1
+and ended with a promising approach here
+https://lkml.kernel.org/r/20190419153307.4f2911b5@mschwideX1
+which in the end unfortunately didn't quite work completely.
+
+We tried to mimic static level folding by changing pgd_offset to always
+calculate top level page table offset, and do nothing in folded pXd_offset.
+What has been overlooked is that PxD_SIZE/MASK and thus pXd_addr_end do
+not reflect this dynamic behaviour, and still act like static 5-level
+page tables.
+
+Here is an example of what happens with gup_fast on s390, for a task with
+3-levels paging, crossing a 2 GB pud boundary:
+
+// addr = 0x1007ffff000, end = 0x10080001000
+static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+                         unsigned int flags, struct page **pages, int *nr)
+{
+        unsigned long next;
+        pud_t *pudp;
+
+        // pud_offset returns &p4d itself (a pointer to a value on stack)
+        pudp = pud_offset(&p4d, addr);
+        do {
+                // on second iteratation reading "random" stack value
+                pud_t pud = READ_ONCE(*pudp);
+
+                // next = 0x10080000000, due to PUD_SIZE/MASK != PGDIR_SIZE/MASK on s390
+                next = pud_addr_end(addr, end);
+                ...
+        } while (pudp++, addr = next, addr != end); // pudp++ iterating over stack
+
+        return 1;
+}
+
+pud_addr_end = 0x10080000000 is correct, but the previous pgd/p4d_addr_end
+should also have returned that limit, instead of the 5-level static
+pgd/p4d limits with PUD_SIZE/MASK != PGDIR_SIZE/MASK. Then the "end"
+parameter for gup_pud_range would also have been 0x10080000000, and we
+would not iterate further in gup_pud_range, but rather go back and
+(correctly) do it in gup_pgd_range.
+
+So, for the second iteration in gup_pud_range, we will increase pudp,
+which pointed to a stack value and not the real pud table. This new pudp
+will then point to whatever lies behind the p4d stack value. In general,
+this happens to be the previously read pgd, but it probably could also
+be something different, depending on compiler decisions.
+
+Most unfortunately, if it happens to be the pgd value, which is the
+same as the p4d / pud due to folding, it is a valid and present entry.
+So after the increment, we would still point to the same pud entry.
+The addr however has been increased in the second iteration, so that we
+now have different pmd/pte_index values, which will result in very wrong
+behaviour for the remaining gup_pmd/pte_range calls. We will effectively
+operate on an address minus 2 GB, due to missing pudp increase.
+
+In the "good case", if nothing is mapped there, we will fall back to
+the slow gup path. But if something is mapped there, and valid
+for gup_fast, we will end up (silently) getting references on the wrong
+pages and also add the wrong pages to the **pages result array. This
+can cause data corruption.
+
+Fix this by introducing new pXd_addr_end_folded helpers, which take an
+additional pXd entry value parameter, that can be used on s390
+to determine the correct page table level and return corresponding
+end / boundary. With that, the pointer iteration will always
+happen in gup_pgd_range for s390. No change for other architectures
+introduced.
+
+Fixes: 1a42010cdc26 ("s390/mm: convert to the generic get_user_pages_fast code")
+Cc: <stable@vger.kernel.org> # 5.2+
+Reviewed-by: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
 Signed-off-by: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
 ---
- include/linux/pgtable.h | 36 ++++++++++++++++++++----------------
- 1 file changed, 20 insertions(+), 16 deletions(-)
+ arch/s390/include/asm/pgtable.h | 42 +++++++++++++++++++++++++++++++++
+ include/linux/pgtable.h         | 16 +++++++++++++
+ mm/gup.c                        |  8 +++----
+ 3 files changed, 62 insertions(+), 4 deletions(-)
 
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 7eb01a5459cd..027206e4959d 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -512,6 +512,48 @@ static inline bool mm_pmd_folded(struct mm_struct *mm)
+ }
+ #define mm_pmd_folded(mm) mm_pmd_folded(mm)
+ 
++/*
++ * With dynamic page table levels on s390, the static pXd_addr_end() functions
++ * will not return corresponding dynamic boundaries. This is no problem as long
++ * as only pXd pointers are passed down during page table walk, because
++ * pXd_offset() will simply return the given pointer for folded levels, and the
++ * pointer iteration over a range simply happens at the correct page table
++ * level.
++ * It is however a problem with gup_fast, or other places walking the page
++ * tables w/o locks using READ_ONCE(), and passing down the pXd values instead
++ * of pointers. In this case, the pointer given to pXd_offset() is a pointer to
++ * a stack variable, which cannot be used for pointer iteration at the correct
++ * level. Instead, the iteration then has to happen by going up to pgd level
++ * again. To allow this, provide pXd_addr_end_folded() functions with an
++ * additional pXd value parameter, which can be used on s390 to determine the
++ * folding level and return the corresponding boundary.
++ */
++static inline unsigned long rste_addr_end_folded(unsigned long rste, unsigned long addr, unsigned long end)
++{
++	unsigned long type = (rste & _REGION_ENTRY_TYPE_MASK) >> 2;
++	unsigned long size = 1UL << (_SEGMENT_SHIFT + type * 11);
++	unsigned long boundary = (addr + size) & ~(size - 1);
++
++	/*
++	 * FIXME The below check is for internal testing only, to be removed
++	 */
++	VM_BUG_ON(type < (_REGION_ENTRY_TYPE_R3 >> 2));
++
++	return (boundary - 1) < (end - 1) ? boundary : end;
++}
++
++#define pgd_addr_end_folded pgd_addr_end_folded
++static inline unsigned long pgd_addr_end_folded(pgd_t pgd, unsigned long addr, unsigned long end)
++{
++	return rste_addr_end_folded(pgd_val(pgd), addr, end);
++}
++
++#define p4d_addr_end_folded p4d_addr_end_folded
++static inline unsigned long p4d_addr_end_folded(p4d_t p4d, unsigned long addr, unsigned long end)
++{
++	return rste_addr_end_folded(p4d_val(p4d), addr, end);
++}
++
+ static inline int mm_has_pgste(struct mm_struct *mm)
+ {
+ #ifdef CONFIG_PGSTE
 diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 67ebc22cf83d..d9e7d16c2263 100644
+index e8cbc2e795d5..981c4c2a31fe 100644
 --- a/include/linux/pgtable.h
 +++ b/include/linux/pgtable.h
-@@ -656,31 +656,35 @@ static inline int arch_unmap_one(struct mm_struct *mm,
-  */
- 
- #ifndef pgd_addr_end
--#define pgd_addr_end(pgd, addr, end)					\
--({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
--	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
--})
-+#define pgd_addr_end pgd_addr_end
-+static inline unsigned long pgd_addr_end(pgd_t pgd, unsigned long addr, unsigned long end)
-+{	unsigned long __boundary = (addr + PGDIR_SIZE) & PGDIR_MASK;
-+	return (__boundary - 1 < end - 1) ? __boundary : end;
-+}
+@@ -681,6 +681,22 @@ static inline int arch_unmap_one(struct mm_struct *mm,
+ })
  #endif
  
- #ifndef p4d_addr_end
--#define p4d_addr_end(p4d, addr, end)					\
--({	unsigned long __boundary = ((addr) + P4D_SIZE) & P4D_MASK;	\
--	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
--})
-+#define p4d_addr_end p4d_addr_end
-+static inline unsigned long p4d_addr_end(p4d_t p4d, unsigned long addr, unsigned long end)
-+{	unsigned long __boundary = (addr + P4D_SIZE) & P4D_MASK;
-+	return (__boundary - 1 < end - 1) ? __boundary : end;
-+}
- #endif
- 
- #ifndef pud_addr_end
--#define pud_addr_end(pud, addr, end)					\
--({	unsigned long __boundary = ((addr) + PUD_SIZE) & PUD_MASK;	\
--	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
--})
-+#define pud_addr_end pud_addr_end
-+static inline unsigned long pud_addr_end(pud_t pud, unsigned long addr, unsigned long end)
-+{	unsigned long __boundary = (addr + PUD_SIZE) & PUD_MASK;
-+	return (__boundary - 1 < end - 1) ? __boundary : end;
-+}
- #endif
- 
- #ifndef pmd_addr_end
--#define pmd_addr_end(pmd, addr, end)					\
--({	unsigned long __boundary = ((addr) + PMD_SIZE) & PMD_MASK;	\
--	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
--})
-+#define pmd_addr_end pmd_addr_end
-+static inline unsigned long pmd_addr_end(pmd_t pmd, unsigned long addr, unsigned long end)
-+{	unsigned long __boundary = (addr + PMD_SIZE) & PMD_MASK;
-+	return (__boundary - 1 < end - 1) ? __boundary : end;
-+}
- #endif
- 
++#ifndef pgd_addr_end_folded
++#define pgd_addr_end_folded(pgd, addr, end)	pgd_addr_end(addr, end)
++#endif
++
++#ifndef p4d_addr_end_folded
++#define p4d_addr_end_folded(p4d, addr, end)	p4d_addr_end(addr, end)
++#endif
++
++#ifndef pud_addr_end_folded
++#define pud_addr_end_folded(pud, addr, end)	pud_addr_end(addr, end)
++#endif
++
++#ifndef pmd_addr_end_folded
++#define pmd_addr_end_folded(pmd, addr, end)	pmd_addr_end(addr, end)
++#endif
++
  /*
+  * When walking page tables, we usually want to skip any p?d_none entries;
+  * and any p?d_bad entries - reporting the error before resetting to none.
+diff --git a/mm/gup.c b/mm/gup.c
+index bd883a112724..ba4aace5d0f4 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -2521,7 +2521,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 	do {
+ 		pmd_t pmd = READ_ONCE(*pmdp);
+ 
+-		next = pmd_addr_end(addr, end);
++		next = pmd_addr_end_folded(pmd, addr, end);
+ 		if (!pmd_present(pmd))
+ 			return 0;
+ 
+@@ -2564,7 +2564,7 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+ 	do {
+ 		pud_t pud = READ_ONCE(*pudp);
+ 
+-		next = pud_addr_end(addr, end);
++		next = pud_addr_end_folded(pud, addr, end);
+ 		if (unlikely(!pud_present(pud)))
+ 			return 0;
+ 		if (unlikely(pud_huge(pud))) {
+@@ -2592,7 +2592,7 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ 	do {
+ 		p4d_t p4d = READ_ONCE(*p4dp);
+ 
+-		next = p4d_addr_end(addr, end);
++		next = p4d_addr_end_folded(p4d, addr, end);
+ 		if (p4d_none(p4d))
+ 			return 0;
+ 		BUILD_BUG_ON(p4d_huge(p4d));
+@@ -2617,7 +2617,7 @@ static void gup_pgd_range(unsigned long addr, unsigned long end,
+ 	do {
+ 		pgd_t pgd = READ_ONCE(*pgdp);
+ 
+-		next = pgd_addr_end(addr, end);
++		next = pgd_addr_end_folded(pgd, addr, end);
+ 		if (pgd_none(pgd))
+ 			return;
+ 		if (unlikely(pgd_huge(pgd))) {
 -- 
 2.17.1
 
