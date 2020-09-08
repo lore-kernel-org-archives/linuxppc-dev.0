@@ -6,51 +6,51 @@ X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0F8DC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 14:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D441C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 14:38:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C31022AAC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 14:34:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C31022AAC
+	by mail.kernel.org (Postfix) with ESMTPS id 268F02087D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 14:38:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 268F02087D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bm72y2FVqzDq7W
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 00:34:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bm77T4XWwzDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 00:38:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com;
  envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bm6yY62LPzDqGS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 00:30:56 +1000 (AEST)
-IronPort-SDR: 0AXP8hcdGFs8CxkoUr+QZeQBzdQEIyE3j52GTTvlzv5sXQtOPlhLctiCHCjJGSiVycYgxusGAv
- +io7ydWh6/Ww==
-X-IronPort-AV: E=McAfee;i="6000,8403,9737"; a="145848033"
-X-IronPort-AV: E=Sophos;i="5.76,406,1592895600"; d="scan'208";a="145848033"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bm71R47c7zDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 00:33:30 +1000 (AEST)
+IronPort-SDR: 5LA8wPSZ/dacaHaa82SDikVQ5UB7ST+F7ZMrjw28HxquvVe4jvkis0cnxZVoc+2rxH6FV5I9+a
+ uZvttzYqklSw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9737"; a="155539147"
+X-IronPort-AV: E=Sophos;i="5.76,406,1592895600"; d="scan'208";a="155539147"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Sep 2020 07:30:53 -0700
-IronPort-SDR: ndL2DJshgh/vbNSSCv90rM6ev8zdorBW8zwzPE3v6MAMnL0xf15C0rGPIm3gECY231GP8JPeIb
- mLzwhm0XAOKQ==
-X-IronPort-AV: E=Sophos;i="5.76,406,1592895600"; d="scan'208";a="505090215"
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Sep 2020 07:33:27 -0700
+IronPort-SDR: LURf6PCdqcZBk2A33XsDbcNK0rx6eZaCaxb7Z8cx45jJtlWK3WY8LU+KFYIgxMUGGTJVdx6jKe
+ N2y4JDVtO2+w==
+X-IronPort-AV: E=Sophos;i="5.76,406,1592895600"; d="scan'208";a="505091111"
 Received: from sparasa-mobl1.amr.corp.intel.com (HELO [10.251.10.231])
  ([10.251.10.231])
  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Sep 2020 07:30:50 -0700
-Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
- folding
+ 08 Sep 2020 07:33:25 -0700
+Subject: Re: [RFC PATCH v2 2/3] mm: make pXd_addr_end() functions page-table
+ entry aware
 To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
  Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>
 References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
- <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
+ <20200907180058.64880-3-gerald.schaefer@linux.ibm.com>
 From: Dave Hansen <dave.hansen@intel.com>
 Autocrypt: addr=dave.hansen@intel.com; keydata=
  xsFNBE6HMP0BEADIMA3XYkQfF3dwHlj58Yjsc4E5y5G67cfbt8dvaUq2fx1lR0K9h1bOI6fC
@@ -95,12 +95,12 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  OPsw5tV/LmQ5GXH0JQ/TZXWygyRFyyI2FqNTx4WHqUn3yFj8rwTAU1tluRUYyeLy0ayUlKBH
  ybj0N71vWO936MqP6haFERzuPAIpxj2ezwu0xb1GjTk4ynna6h5GjnKgdfOWoRtoWndMZxbA
  z5cecg==
-Message-ID: <0dbc6ec8-45ea-0853-4856-2bc1e661a5a5@intel.com>
-Date: Tue, 8 Sep 2020 07:30:50 -0700
+Message-ID: <8e28858d-e6a4-1c4f-4087-5f4a9719db94@intel.com>
+Date: Tue, 8 Sep 2020 07:33:24 -0700
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
+In-Reply-To: <20200907180058.64880-3-gerald.schaefer@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -140,25 +140,17 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 9/7/20 11:00 AM, Gerald Schaefer wrote:
-> Commit 1a42010cdc26 ("s390/mm: convert to the generic get_user_pages_fast
-> code") introduced a subtle but severe bug on s390 with gup_fast, due to
-> dynamic page table folding.
+> x86:
+> add/remove: 0/0 grow/shrink: 2/0 up/down: 10/0 (10)
+> Function                                     old     new   delta
+> vmemmap_populate                             587     592      +5
+> munlock_vma_pages_range                      556     561      +5
+> Total: Before=15534694, After=15534704, chg +0.00%
+...
+>  arch/x86/mm/init_64.c                    | 15 ++++-----
+>  arch/x86/mm/kasan_init_64.c              | 16 +++++-----
 
-Would it be fair to say that the "fake" page table entries s390
-allocates on the stack are what's causing the trouble here?  That might
-be a nice thing to open up with here.  "Dynamic page table folding"
-really means nothing to me.
-
-> @@ -2521,7 +2521,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
->  	do {
->  		pmd_t pmd = READ_ONCE(*pmdp);
->  
-> -		next = pmd_addr_end(addr, end);
-> +		next = pmd_addr_end_folded(pmd, addr, end);
->  		if (!pmd_present(pmd))
->  			return 0;
-
-It looks like you fix this up later, but this would be a problem if left
-this way.  There's no documentation for whether I use
-pmd_addr_end_folded() or pmd_addr_end() when writing a page table walker.
-
+I didn't do a super thorough review on this, but it generally looks OK
+and the benefits of sharing more code between arches certainly outweigh
+a few bytes of binary growth.  For the x86 bits at least, feel free to
+add my ack.
