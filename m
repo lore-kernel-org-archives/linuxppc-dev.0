@@ -2,66 +2,87 @@ Return-Path: <SRS0=ON6F=CR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C71F8C43461
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 07:23:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D6E2C43461
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 07:49:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 73A9021D20
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 07:23:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DE00421D43
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 07:49:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="XYMUSZ1H"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73A9021D20
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pLZi3/af"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE00421D43
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BlxTY2XdhzDqRn
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 17:23:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BlxRw5wM0zDqPC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 17:22:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bly2w71Y1zDqQv
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 17:49:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::543;
+ helo=mail-pg1-x543.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=XYMUSZ1H; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 4BlxRw5PtDz9sTK; Tue,  8 Sep 2020 17:22:20 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=pLZi3/af; dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BlxRw4M7Wz9sSP;
- Tue,  8 Sep 2020 17:22:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1599549740;
- bh=mg1TEyvxbEj8SNkIqfkM5ur3s8H5/mC4Xozw7sbRNC4=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=XYMUSZ1HdpGRVA8LQnQJPGFN82ISfLaAwh2jG+KEWr2DoWl5AUpZKUqZjrELii39M
- TPa6IyKe5D0Vp5MX3obIAwCgRcOp96uVybIw1DGgDLTb9vYAhVxGxkcUlvVvlUBOEU
- mJ1Q3WpiI/SglxVnqmuOWTNnQL8vd0Uxw+0DmAkXkTscR9F5sfaUad9fsJdJP6qrgG
- z1BbnIGf2mL/65KT5LFgHEZo1pOFYQt7oxvbxul+qhNxWMujc/OLY4f9AKjBg1VV3i
- zSW1UzL20TXkJxwh4uk6xqoWqvNXj3z/HyYxZaU5SDUGzQT0mGwHJ7EeV865q0bqtq
- llBWnINtGmmhg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sachin Sant <sachinp@linux.vnet.ibm.com>
-Subject: Re: [PATCH] selftests/powerpc: Skip PROT_SAO test in guests/LPARS
-In-Reply-To: <5E12FA66-4147-46E6-9D8A-358FFAFDC3FB@linux.vnet.ibm.com>
-References: <20200901124653.523182-1-mpe@ellerman.id.au>
- <5E12FA66-4147-46E6-9D8A-358FFAFDC3FB@linux.vnet.ibm.com>
-Date: Tue, 08 Sep 2020 17:22:20 +1000
-Message-ID: <87k0x4spg3.fsf@mpe.ellerman.id.au>
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bly0Z3XwMzDqNs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 17:47:09 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id v15so9462580pgh.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2020 00:47:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=esWxwITpd48A7faZUHJwZ9TUfahg+Tdi9MtHhXdhMj0=;
+ b=pLZi3/afb7HbD/9HfHNXuNaEOQcA3XkxQ4Cu65yzGQ2T9sqjX25pDoBDquT161zLnS
+ ijBaQzHhCbpRzkJkkTQ9zF3XaT4YeB6aKjAzpPHzFXv096DZABaO9ERjV+qeBibCe/93
+ g6EOGMvku0guNP3rF/aFt2+tIb3k6LsL6SF+0Gt4adzy5XFMo9796IqgZQvhVb5gm0Lm
+ +uNzE7NfWtToEvtOedThkqe//lgstYf+iFf5LBHD0mfRz73w/4VX0FG5u0aQe7Gwo8wn
+ 0C18yu/8doOGv95Tjaqo8CzDUNrQhacxrg0lNiYme+YMtuZWPKjUobFvVnHfy5wjlw6b
+ 7Xmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=esWxwITpd48A7faZUHJwZ9TUfahg+Tdi9MtHhXdhMj0=;
+ b=Ky0f6MtdNCZGLtPHi+rx9FQsWBkIozhqm45INO1kVGGo/NgXPcyHurItN9U38UJqPj
+ prAMQO69gJePsdv5MVt+4F14Crwpn99yDL39MZcJEnzOtyBhj29fn5+JqYrZrl8hbqwn
+ tT2Z7UrHsl4IO8DossGVdn1NHHcmeUPlSONMITho5ikKw1cEevl3lCCcvo7wBKKI8rRz
+ SyVXsFRKm3wdh9CIX/9/5ExwEoOvCQtyPdhw5hTEv8HF39PLMItTOL1fqUTuwcGO1XFL
+ T0Hqor3urjATQxLLiBYt4UR1Qegyg6ODLWHl3wt/eiHdF96t5Azf5/7Oax3ZzyAWV27u
+ Y8lg==
+X-Gm-Message-State: AOAM530WloiR2u20YJOvLSYffVMiKRC33Ow35hky8/cNF3FJbin/8ihV
+ Ml5m/Z0Vl4G9G37ryBrRbMTD9FCYF60=
+X-Google-Smtp-Source: ABdhPJzR9MjIvoxxFvUhB0KWuliPG1EQYoIGrlqd3YyhUxY+9j8CTlUjw+7qow0DGAFltEEL0IaUCw==
+X-Received: by 2002:a62:7c82:0:b029:13c:1611:66b9 with SMTP id
+ x124-20020a627c820000b029013c161166b9mr21961340pfc.4.1599551225882; 
+ Tue, 08 Sep 2020 00:47:05 -0700 (PDT)
+Received: from localhost ([203.185.249.227])
+ by smtp.gmail.com with ESMTPSA id u27sm3160683pgm.60.2020.09.08.00.47.04
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 08 Sep 2020 00:47:05 -0700 (PDT)
+Date: Tue, 08 Sep 2020 17:46:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [RFC PATCH 02/12] powerpc: remove arguments from interrupt
+ handler functions
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <20200905174335.3161229-1-npiggin@gmail.com>
+ <20200905174335.3161229-3-npiggin@gmail.com>
+ <e34fead9-a356-3ae6-aa33-544380230bd5@csgroup.eu>
+In-Reply-To: <e34fead9-a356-3ae6-aa33-544380230bd5@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-Id: <1599550991.5091a1442f.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,32 +95,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sachin Sant <sachinp@linux.vnet.ibm.com> writes:
->> On 01-Sep-2020, at 6:16 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>=20
->> In commit 9b725a90a8f1 ("powerpc/64s: Disallow PROT_SAO in LPARs by
->> default") PROT_SAO was disabled in guests/LPARs by default. So skip
->> the test if we are running in a guest to avoid a spurious failure.
->>=20
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> =E2=80=94
->
-> Tested-by: Sachin Sant <sachinp@linux.vnet.ibm.com>
->
-> With the fix test is skipped while running in a guest
->
-> # ./prot_sao=20
-> test: prot-sao
-> tags: git_version:unknown
-> [SKIP] Test skipped on line 25
-> skip: prot-sao
-> #
+Excerpts from Christophe Leroy's message of September 7, 2020 7:20 pm:
+>=20
+>=20
+> Le 05/09/2020 =C3=A0 19:43, Nicholas Piggin a =C3=A9crit=C2=A0:
+>> Make interrupt handlers all just take the pt_regs * argument and load
+>> DAR/DSISR etc from that. Make those that return a value return long.
+>=20
+> I like this, it will likely simplify a bit the VMAP_STACK mess.
+>=20
+> Not sure it is that easy. My board is stuck after the start of init.
+>=20
+>=20
+> On the 8xx, on Instruction TLB Error exception, we do
+>=20
+> 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
+>=20
+> On book3s/32, on ISI exception we do:
+> 	andis.	r5,r9,DSISR_SRR1_MATCH_32S@h /* Filter relevant SRR1 bits */
+>=20
+> On 40x and bookE, on ISI exception we do:
+> 	li	r5,0			/* Pass zero as arg3 */
+>=20
+>=20
+> And regs->dsisr will just contain nothing
+>=20
+> So it means we should at least write back r5 into regs->dsisr from there=20
+> ? The performance impact should be minimal as we already write _DAR so=20
+> the cache line should already be in the cache.
 
-Thanks. Sorry I missed adding your Tested-by tag.
+Yes, I think that would be required. Sorry I didn't look closely at
+32 bit.
 
-cheers
+> A hacky 'stw r5, _DSISR(r1)' in handle_page_fault() does the trick,=20
+> allthough we don't want to do it for both ISI and DSI at the end, so=20
+> you'll have to do it in every head_xxx.S
+>=20
+>=20
+> While you are at it, it would probably also make sense to do remove the=20
+> address param of bad_page_fault(), there is no point in loading back=20
+> regs->dar in handle_page_fault() and machine_check_8xx() and=20
+> alignment_exception(), just read regs->dar in bad_page_fault()
+>=20
+> The case of do_break() should also be looked at.
+
+Yeah that's valid, I didn't do that because bad_page_fault was also
+being called from asm, but an incremental patch should be quite easy.
+
+> Why changing return code from int to long ?
+
+Oh it's to make the next patch work without any changes to function
+prototypes. Some handlers are returning int, others long. There is
+no reason not to just return long AFAIKS so that's what I changed to.
+
+Thanks,
+Nick
