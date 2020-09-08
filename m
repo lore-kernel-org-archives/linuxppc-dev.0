@@ -2,71 +2,59 @@ Return-Path: <SRS0=ON6F=CR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5697AC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 12:43:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7BFAC43461
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 13:01:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 823292220D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 12:43:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 823292220D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 47687224B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 13:01:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="O8CUyi94"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47687224B2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bm4ZC1Q8szDqSN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 22:43:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bm4zL5565zDqSm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Sep 2020 23:01:34 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bm4W23FcWzDqRG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 22:40:27 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bm4Vr1mvXz9tysg;
- Tue,  8 Sep 2020 14:40:20 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cIMhaNVcmlrN; Tue,  8 Sep 2020 14:40:20 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bm4Vr0fBLz9tysZ;
- Tue,  8 Sep 2020 14:40:20 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5BBAE8B7C1;
- Tue,  8 Sep 2020 14:40:21 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id xwRqAZ7QC05H; Tue,  8 Sep 2020 14:40:21 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B7AA88B7BE;
- Tue,  8 Sep 2020 14:40:18 +0200 (CEST)
-Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
- folding
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>
-References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
- <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
- <82fbe8f9-f199-5fc2-4168-eb43ad0b0346@csgroup.eu>
- <70a3dcb5-5ed1-6efa-6158-d0573d6927da@de.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <96b80926-cf5b-1afa-9b7a-949a2188e61f@csgroup.eu>
-Date: Tue, 8 Sep 2020 14:40:10 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bm4wG5ymhzDqRc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2020 22:58:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=O8CUyi94; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4Bm4wG2CCQz9sSJ; Tue,  8 Sep 2020 22:58:54 +1000 (AEST)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4Bm4wG1FFxz9sTS; Tue,  8 Sep 2020 22:58:54 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1599569934;
+ bh=KE/Ra+TMjADqCw/JtrFXsMxvBsgybgLiIE//budiCjY=;
+ h=From:To:Cc:Subject:Date:From;
+ b=O8CUyi941MRk3CWrtnbPA7mmYix+Pcoc3m9z2CfwcRNSdOtZtbmm6WUStUoMMAb+Y
+ Y2KOxhJPuFdg66Wl46EgE35UB/i3gZWurTF4+eCVDhPlqegMarUNkESeXUkPN1mVJA
+ 3wbrJ/CmVUJ6s/9jN68avuW6X8HDVij/YkX4dw7HfzewI4jrxCgje6PpYvutFTTEn6
+ RPKVce84lAF0B690lyBBYQv3UqI8nqn2FrxoKtiqLIwmZfsCeVx9XWr7qwxB2QIXpF
+ DPJ3Sh5eeF3ZsqPJOr2bF14iwCkzsvKmPwnLN5FWEK/OeHGKPqz4PLJ3Z1IYjsQwqo
+ Alr8zd0eyd2Sw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/64: Make VDSO32 track COMPAT on 64-bit
+Date: Tue,  8 Sep 2020 22:58:50 +1000
+Message-Id: <20200908125850.407939-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <70a3dcb5-5ed1-6efa-6158-d0573d6927da@de.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,85 +67,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mm <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, linux-sparc <sparclinux@vger.kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Richard Weinberger <richard@nod.at>, linux-x86 <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, Jeff Dike <jdike@addtoit.com>,
- Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>,
- linux-um <linux-um@lists.infradead.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm <linux-arm-kernel@lists.infradead.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linux-power <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>
+Cc: christophe.leroy@c-s.fr, msuchanek@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+When we added the VDSO32 kconfig symbol, which controls building of
+the 32-bit VDSO, we made it depend on CPU_BIG_ENDIAN (for 64-bit).
 
+That was because back then COMPAT was always enabled for 64-bit, so
+depending on it would have left the 32-bit VDSO always enabled, which
+we didn't want.
 
-Le 08/09/2020 à 14:09, Christian Borntraeger a écrit :
-> 
-> 
-> On 08.09.20 07:06, Christophe Leroy wrote:
->>
->>
->> Le 07/09/2020 à 20:00, Gerald Schaefer a écrit :
->>> From: Alexander Gordeev <agordeev@linux.ibm.com>
->>>
->>> Commit 1a42010cdc26 ("s390/mm: convert to the generic get_user_pages_fast
->>> code") introduced a subtle but severe bug on s390 with gup_fast, due to
->>> dynamic page table folding.
->>>
->>> The question "What would it require for the generic code to work for s390"
->>> has already been discussed here
->>> https://lkml.kernel.org/r/20190418100218.0a4afd51@mschwideX1
->>> and ended with a promising approach here
->>> https://lkml.kernel.org/r/20190419153307.4f2911b5@mschwideX1
->>> which in the end unfortunately didn't quite work completely.
->>>
->>> We tried to mimic static level folding by changing pgd_offset to always
->>> calculate top level page table offset, and do nothing in folded pXd_offset.
->>> What has been overlooked is that PxD_SIZE/MASK and thus pXd_addr_end do
->>> not reflect this dynamic behaviour, and still act like static 5-level
->>> page tables.
->>>
->>
->> [...]
->>
->>>
->>> Fix this by introducing new pXd_addr_end_folded helpers, which take an
->>> additional pXd entry value parameter, that can be used on s390
->>> to determine the correct page table level and return corresponding
->>> end / boundary. With that, the pointer iteration will always
->>> happen in gup_pgd_range for s390. No change for other architectures
->>> introduced.
->>
->> Not sure pXd_addr_end_folded() is the best understandable name, allthough I don't have any alternative suggestion at the moment.
->> Maybe could be something like pXd_addr_end_fixup() as it will disappear in the next patch, or pXd_addr_end_gup() ?
->>
->> Also, if it happens to be acceptable to get patch 2 in stable, I think you should switch patch 1 and patch 2 to avoid the step through pXd_addr_end_folded()
-> 
-> given that this fixes a data corruption issue, wouldnt it be the best to go forward
-> with this patch ASAP and then handle the other patches on top with all the time that
-> we need?
+But since then we have made COMPAT selectable, and off by default for
+ppc64le, so VDSO32 should really depend on that.
 
-I have no strong opinion on this, but I feel rather tricky to have to 
-change generic part of GUP to use a new fonction then revert that change 
-in the following patch, just because you want the first patch in stable 
-and not the second one.
+For most people this makes no difference, none of the defconfigs
+change, it's only if someone is building ppc64le with COMPAT=y, they
+will now also get VDSO32. If they've enabled COMPAT in order to run
+32-bit binaries they presumably also want the 32-bit VDSO.
 
-Regardless, I was wondering, why do we need a reference to the pXd at 
-all when calling pXd_addr_end() ?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/Kconfig.cputype | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Couldn't S390 retrieve the pXd by using the pXd_offset() dance with the 
-passed addr ?
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 87737ec86d39..a80ad0ef436e 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -490,13 +490,12 @@ endmenu
+ 
+ config VDSO32
+ 	def_bool y
+-	depends on PPC32 || CPU_BIG_ENDIAN
++	depends on PPC32 || COMPAT
+ 	help
+ 	  This symbol controls whether we build the 32-bit VDSO. We obviously
+ 	  want to do that if we're building a 32-bit kernel. If we're building
+-	  a 64-bit kernel then we only want a 32-bit VDSO if we're building for
+-	  big endian. That is because the only little endian configuration we
+-	  support is ppc64le which is 64-bit only.
++	  a 64-bit kernel then we only want a 32-bit VDSO if we're also enabling
++	  COMPAT.
+ 
+ choice
+ 	prompt "Endianness selection"
+-- 
+2.25.1
 
-Christophe
