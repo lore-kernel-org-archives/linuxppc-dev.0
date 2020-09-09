@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83673C43461
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:29:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92D53C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:33:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92B2822269
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:29:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92B2822269
+	by mail.kernel.org (Postfix) with ESMTPS id 75B80218AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:33:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75B80218AC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BmmCW19TbzDqXq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:29:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BmmHz40qNzDqYL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:33:19 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjkS68hPzDqGF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:37:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjkY0BdzzDqV8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:37:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BmjkR2Zwbz9sVR; Wed,  9 Sep 2020 23:37:34 +1000 (AEST)
+ id 4BmjkV2fkvz9sVW; Wed,  9 Sep 2020 23:37:38 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: ajd@linux.ibm.com, christophe_lombard@fr.ibm.com,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20200407115601.25453-1-fbarrat@linux.ibm.com>
-References: <20200407115601.25453-1-fbarrat@linux.ibm.com>
-Subject: Re: [PATCH] cxl: Rework error message for incompatible slots
-Message-Id: <159965824206.811679.9265334778679096487.b4-ty@ellerman.id.au>
-Date: Wed,  9 Sep 2020 23:37:34 +1000 (AEST)
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20200804005410.146094-2-oohall@gmail.com>
+References: <20200804005410.146094-1-oohall@gmail.com>
+ <20200804005410.146094-2-oohall@gmail.com>
+Subject: Re: [PATCH 1/6] powerpc/powernv/smp: Fix spurious DBG() warning
+Message-Id: <159965824427.811679.3711969846357918487.b4-ty@ellerman.id.au>
+Date: Wed,  9 Sep 2020 23:37:38 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,18 +48,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 7 Apr 2020 13:56:01 +0200, Frederic Barrat wrote:
-> Improve the error message shown if a capi adapter is plugged on a
-> capi-incompatible slot directly under the PHB (no intermediate switch).
+On Tue, 4 Aug 2020 10:54:05 +1000, Oliver O'Halloran wrote:
+> When building with W=1 we get the following warning:
+> 
+>  arch/powerpc/platforms/powernv/smp.c: In function ‘pnv_smp_cpu_kill_self’:
+>  arch/powerpc/platforms/powernv/smp.c:276:16: error: suggest braces around
+>  	empty body in an ‘if’ statement [-Werror=empty-body]
+>    276 |      cpu, srr1);
+>        |                ^
+>  cc1: all warnings being treated as errors
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] cxl: Rework error message for incompatible slots
-      https://git.kernel.org/powerpc/c/40ac790d99c6dd16b367d5c2339e446a5f1b0593
+[1/6] powerpc/powernv/smp: Fix spurious DBG() warning
+      https://git.kernel.org/powerpc/c/f6bac19cf65c5be21d14a0c9684c8f560f2096dd
+[2/6] powerpc/powernv: Include asm/powernv.h from the local powernv.h
+      https://git.kernel.org/powerpc/c/8471c1dd93de9a2278d41c527b76291e4ace8f1c
+[3/6] powerpc/powernv: Staticify functions without prototypes
+      https://git.kernel.org/powerpc/c/3b70464aa78917e88c1d4bfc2100c344c0eda8e0
+[4/6] powerpc/powernv: Fix spurious kerneldoc warnings in opal-prd.c
+      https://git.kernel.org/powerpc/c/fb248c3121af713f31736af359608491544cfc23
+[5/6] powerpc/powernv: Remove set but not used variable 'parent'
+      https://git.kernel.org/powerpc/c/18102e4bcc47f5b5ac70e2e4461d022c1ee6df24
+[6/6] powerpc/nx: Don't pack struct coprocessor_request_block
+      https://git.kernel.org/powerpc/c/3ced132a055c4e5046d21732393ae6848ff309e0
 
 cheers
