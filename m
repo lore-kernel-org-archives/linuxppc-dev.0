@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16F29C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89086C43461
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:51:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4CD92065E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:45:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4CD92065E
+	by mail.kernel.org (Postfix) with ESMTPS id 7621620639
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 15:51:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7621620639
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BmmYk4bGxzDqX2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:45:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BmmhP59s3zDqDm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:51:01 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bmjkd0XjzzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:37:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bmjnd3smvzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:40:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BmjkY6Y9Xz9sVZ; Wed,  9 Sep 2020 23:37:41 +1000 (AEST)
+ id 4Bmjnc0kPxz9sVR; Wed,  9 Sep 2020 23:40:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, zhengbin <zhengbin13@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org
-In-Reply-To: <1574144074-142032-1-git-send-email-zhengbin13@huawei.com>
-References: <1574144074-142032-1-git-send-email-zhengbin13@huawei.com>
-Subject: Re: [PATCH 0/5] powerpc: Remove five unused variables
-Message-Id: <159965824298.811679.9055020425603694906.b4-ty@ellerman.id.au>
-Date: Wed,  9 Sep 2020 23:37:41 +1000 (AEST)
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20200813151131.2070161-1-nathanl@linux.ibm.com>
+References: <20200813151131.2070161-1-nathanl@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/pseries: explicitly reschedule during
+ drmem_lmb list traversal
+Message-Id: <159965880868.842807.7404059898652054900.b4-ty@ellerman.id.au>
+Date: Wed,  9 Sep 2020 23:40:19 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,27 +48,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: tyreld@linux.ibm.com, cheloha@linux.ibm.com, ldufour@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 19 Nov 2019 14:14:29 +0800, zhengbin wrote:
-> zhengbin (5):
->   powerpc/fadump: Remove set but not used variable 'elf'
->   powerpc/perf: Remove set but not used variable 'target'
->   powerpc/powernv: Remove set but not used variable 'total_vfs'
->   powerpc/powernv: Remove set but not used variable 'pdn'
->   powerpc/powernv: Remove set but not used variable 'parent'
+On Thu, 13 Aug 2020 10:11:31 -0500, Nathan Lynch wrote:
+> The drmem lmb list can have hundreds of thousands of entries, and
+> unfortunately lookups take the form of linear searches. As long as
+> this is the case, traversals have the potential to monopolize the CPU
+> and provoke lockup reports, workqueue stalls, and the like unless
+> they explicitly yield.
+> 
+> Rather than placing cond_resched() calls within various
+> for_each_drmem_lmb() loop blocks in the code, put it in the iteration
+> expression of the loop macro itself so users can't omit it.
 > 
 > [...]
 
-Patches 1, 2 & 5 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/5] powerpc/fadump: Remove set but not used variable 'elf'
-      https://git.kernel.org/powerpc/c/738e6cad0ace88edec8f4ffa082749ad5df26409
-[2/5] powerpc/perf: Remove set but not used variable 'target'
-      https://git.kernel.org/powerpc/c/ef23cf9a89a7aec19a29d548d1e219d436b23b6e
-[5/5] powerpc/powernv: Remove set but not used variable 'parent'
-      https://git.kernel.org/powerpc/c/18102e4bcc47f5b5ac70e2e4461d022c1ee6df24
+[1/1] powerpc/pseries: explicitly reschedule during drmem_lmb list traversal
+      https://git.kernel.org/powerpc/c/9d6792ffe140240ae54c881cc4183f9acc24b4df
 
 cheers
