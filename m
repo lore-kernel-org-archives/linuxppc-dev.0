@@ -7,53 +7,52 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B2D6C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:11:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26155C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:13:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82FC520758
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:11:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82FC520758
+	by mail.kernel.org (Postfix) with ESMTPS id 70C1720758
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:13:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 70C1720758
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BmQVK32nCzDqTL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 12:11:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BmQXz6HKjzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 12:13:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
+ smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmQNP6qDwzDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 12:05:56 +1000 (AEST)
-IronPort-SDR: aDHOB2Wlq0QWlGCqOVe8aZ/5rzVFc+SbWA1OR92RKDOlP1TjU+ylBWNADerG0o5OpRihS600Ew
- yBLGQW5bfa6g==
-X-IronPort-AV: E=McAfee;i="6000,8403,9738"; a="159221791"
-X-IronPort-AV: E=Sophos;i="5.76,407,1592895600"; d="scan'208";a="159221791"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmQNR07RrzDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 12:05:58 +1000 (AEST)
+IronPort-SDR: 2F7iSBoAUKpG4h4+IANvUexravrbwma/k1jlZ3OUvW36NOdkhwfAEUqxWq7gGyGmTipg592Fvr
+ 4WOX/Qw3P07A==
+X-IronPort-AV: E=McAfee;i="6000,8403,9738"; a="137772548"
+X-IronPort-AV: E=Sophos;i="5.76,408,1592895600"; d="scan'208";a="137772548"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Sep 2020 19:05:53 -0700
-IronPort-SDR: rHix44TwMJzi/+sG+XemHAevK+KbVvfSz3Af+g7yOWZfVurovrjSIr82sIH8xdmotqYm55Ui0g
- sImGoj+RQWFw==
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Sep 2020 19:05:54 -0700
+IronPort-SDR: NVMGT7D4b36CIJNY64HpxOx+ulDHZvclg+zspwum1kcXs7gI/dPvwET94Gx/ko8OxRqg7UEraH
+ o5W0AiSz4raw==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,407,1592895600"; d="scan'208";a="341394112"
+X-IronPort-AV: E=Sophos;i="5.76,407,1592895600"; d="scan'208";a="343742149"
 Received: from lkp-server01.sh.intel.com (HELO fc0154cbc871) ([10.239.97.150])
- by FMSMGA003.fm.intel.com with ESMTP; 08 Sep 2020 19:05:51 -0700
+ by orsmga007.jf.intel.com with ESMTP; 08 Sep 2020 19:05:51 -0700
 Received: from kbuild by fc0154cbc871 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1kFpUd-0000Jk-1A; Wed, 09 Sep 2020 02:05:51 +0000
-Date: Wed, 09 Sep 2020 10:05:26 +0800
+ id 1kFpUd-0000Jo-1z; Wed, 09 Sep 2020 02:05:51 +0000
+Date: Wed, 09 Sep 2020 10:05:34 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 1ae9eb3074160f102fc2eb13d7b3d776e9b9e462
-Message-ID: <5f583866.72ZsfmYNIGosjSRt%lkp@intel.com>
+Subject: [powerpc:next] BUILD SUCCESS dc462267d2d7aacffc3c1d99b02d7a7c59db7c66
+Message-ID: <5f58386e.fEU4FKB3vJCxdLli%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,12 +73,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
-branch HEAD: 1ae9eb3074160f102fc2eb13d7b3d776e9b9e462  Hack: Fix dts/fsl builds
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next
+branch HEAD: dc462267d2d7aacffc3c1d99b02d7a7c59db7c66  powerpc/64s: handle ISA v3.1 local copy-paste context switches
 
-elapsed time: 746m
+elapsed time: 744m
 
-configs tested: 155
+configs tested: 151
 configs skipped: 12
 
 The following configs have been built successfully.
@@ -125,11 +124,6 @@ m68k                       m5275evb_defconfig
 h8300                               defconfig
 c6x                        evmc6474_defconfig
 mips                   sb1250_swarm_defconfig
-mips                         tb0287_defconfig
-riscv                            alldefconfig
-m68k                         amcore_defconfig
-arm                           h5000_defconfig
-sh                          lboxre2_defconfig
 arm                            qcom_defconfig
 sh                   sh7724_generic_defconfig
 mips                     loongson1b_defconfig
@@ -142,6 +136,7 @@ arm                          collie_defconfig
 arm                         hackkit_defconfig
 powerpc                 linkstation_defconfig
 arm                      footbridge_defconfig
+mips                         tb0287_defconfig
 mips                      bmips_stb_defconfig
 arm                             rpc_defconfig
 mips                        nlm_xlr_defconfig
