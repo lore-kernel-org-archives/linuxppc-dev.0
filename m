@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E84C43461
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:55:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA6DEC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:57:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 975A521D7D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:55:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 975A521D7D
+	by mail.kernel.org (Postfix) with ESMTPS id CD620206A2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:57:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD620206A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bmk6q6LV4zDqBs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 23:55:15 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bmk9g31kQzDqDp
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 23:57:43 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjW205bCzDqJK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:27:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjW15hVLzDqTs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:27:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BmjW14T0yz9sVm; Wed,  9 Sep 2020 23:27:41 +1000 (AEST)
+ id 4BmjVy5cDVz9sVb; Wed,  9 Sep 2020 23:27:38 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <wsa@kernel.org>,
- Colin King <colin.king@canonical.com>,
+To: hch@infradead.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20200806102901.44988-1-colin.king@canonical.com>
-References: <20200806102901.44988-1-colin.king@canonical.com>
-Subject: Re: [PATCH][V2] macintosh: windfarm: remove detatch debug containing
- spelling mistakes
-Message-Id: <159965716592.808686.16632951735856644964.b4-ty@ellerman.id.au>
-Date: Wed,  9 Sep 2020 23:27:41 +1000 (AEST)
+In-Reply-To: <245cabd8f291facac8c8c5fd370e361a69e02860.1597384145.git.christophe.leroy@csgroup.eu>
+References: <245cabd8f291facac8c8c5fd370e361a69e02860.1597384145.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc: Remove flush_instruction_cache() on 8xx
+Message-Id: <159965717033.808686.4691063730479167234.b4-ty@ellerman.id.au>
+Date: Wed,  9 Sep 2020 23:27:37 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,19 +50,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 Aug 2020 11:29:01 +0100, Colin King wrote:
-> There are spelling mistakes in two debug messages. As recommended
-> by Wolfram Sang, these can be removed as there is plenty of debug
-> in the driver core.
+On Fri, 14 Aug 2020 05:49:29 +0000 (UTC), Christophe Leroy wrote:
+> flush_instruction_cache() is never used on 8xx, remove it.
 
 Applied to powerpc/next.
 
-[1/1] macintosh: windfarm: remove detatch debug containing spelling mistakes
-      https://git.kernel.org/powerpc/c/7db0a07273e8f581d0b3e8a102d3d9dd99f43528
+[1/1] powerpc: Remove flush_instruction_cache() on 8xx
+      https://git.kernel.org/powerpc/c/76d46a1e2fe2c35f24c07b7cc8a41afbf98b349e
 
 cheers
