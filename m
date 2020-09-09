@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C4F3C43461
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:35:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E594C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:38:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3266B2087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:35:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3266B2087C
+	by mail.kernel.org (Postfix) with ESMTPS id 8CF2B2087C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 13:38:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CF2B2087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bmjgt2FTCzDqWW
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 23:35:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bmjkt0kKMzDqDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 23:37:58 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjVs49hmzDqFm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjVs71TSzDqTs
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:27:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BmjVq4KxKz9sTv; Wed,  9 Sep 2020 23:27:30 +1000 (AEST)
+ id 4BmjVs2XLBz9sVR; Wed,  9 Sep 2020 23:27:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <d5641ada199b8dd2af16ad00a66084cf974f2704.1596716418.git.christophe.leroy@csgroup.eu>
-References: <d5641ada199b8dd2af16ad00a66084cf974f2704.1596716418.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/fpu: Drop cvt_fd() and cvt_df()
-Message-Id: <159965716721.808686.10133921588629579775.b4-ty@ellerman.id.au>
-Date: Wed,  9 Sep 2020 23:27:30 +1000 (AEST)
+In-Reply-To: <fbe58d27cf128d5fe581e4510ded8701858f268e.1596716328.git.christophe.leroy@csgroup.eu>
+References: <fbe58d27cf128d5fe581e4510ded8701858f268e.1596716328.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/hwirq: Remove stale forward irq_chip declaration
+Message-Id: <159965716610.808686.6255095510129044770.b4-ty@ellerman.id.au>
+Date: Wed,  9 Sep 2020 23:27:33 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,15 +54,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 Aug 2020 12:20:34 +0000 (UTC), Christophe Leroy wrote:
-> Those two functions have been unused since commit identified below.
-> Drop them.
+On Thu, 6 Aug 2020 12:19:06 +0000 (UTC), Christophe Leroy wrote:
+> Since commit identified below, the forward declaration of
+> struct irq_chip is useless (was struct hw_interrupt_type at that time)
+> 
+> Remove it, together with the associated comment.
 
 Applied to powerpc/next.
 
-[1/2] powerpc/fpu: Drop cvt_fd() and cvt_df()
-      https://git.kernel.org/powerpc/c/63442de4301188129e1fcff144fbfb966ad5eb19
-[2/2] powerpc: drop hard_reset_now() and poweroff_now() declaration
-      https://git.kernel.org/powerpc/c/82eb1792426f8a171cdaa6cfccb63c39f55bc9bd
+[1/1] powerpc/hwirq: Remove stale forward irq_chip declaration
+      https://git.kernel.org/powerpc/c/169b9afee572853522901b7cbf34842c0494a887
 
 cheers
