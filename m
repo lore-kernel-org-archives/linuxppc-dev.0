@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53AECC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 14:44:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E20C7C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 14:48:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28B2F22242
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 14:44:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28B2F22242
+	by mail.kernel.org (Postfix) with ESMTPS id 1239122252
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 14:48:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1239122252
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BmlCh1F4vzDqBr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 00:44:32 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BmlHm2DcWzDqXd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 00:48:04 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjWL4j35zDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:27:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmjWM0WrXzDqTl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 23:27:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BmjWK53HXz9sW0; Wed,  9 Sep 2020 23:27:56 +1000 (AEST)
+ id 4BmjWL3SGfz9sVZ; Wed,  9 Sep 2020 23:27:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20200728173741.717372-1-nathanl@linux.ibm.com>
-References: <20200728173741.717372-1-nathanl@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: explicitly reschedule during drmem_lmb
- list traversal
-Message-Id: <159965716536.808686.6770489962945335382.b4-ty@ellerman.id.au>
-Date: Wed,  9 Sep 2020 23:27:56 +1000 (AEST)
+In-Reply-To: <20200813151131.2070161-1-nathanl@linux.ibm.com>
+References: <20200813151131.2070161-1-nathanl@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/pseries: explicitly reschedule during
+ drmem_lmb list traversal
+Message-Id: <159965716758.808686.7724723227719438063.b4-ty@ellerman.id.au>
+Date: Wed,  9 Sep 2020 23:27:58 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,7 +53,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Jul 2020 12:37:41 -0500, Nathan Lynch wrote:
+On Thu, 13 Aug 2020 10:11:31 -0500, Nathan Lynch wrote:
 > The drmem lmb list can have hundreds of thousands of entries, and
 > unfortunately lookups take the form of linear searches. As long as
 > this is the case, traversals have the potential to monopolize the CPU
@@ -63,6 +63,8 @@ On Tue, 28 Jul 2020 12:37:41 -0500, Nathan Lynch wrote:
 > Rather than placing cond_resched() calls within various
 > for_each_drmem_lmb() loop blocks in the code, put it in the iteration
 > expression of the loop macro itself so users can't omit it.
+> 
+> [...]
 
 Applied to powerpc/next.
 
