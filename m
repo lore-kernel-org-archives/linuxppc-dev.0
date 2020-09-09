@@ -2,96 +2,61 @@ Return-Path: <SRS0=zlPO=CS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62037C2D0E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 322FEC43461
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:08:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6274020758
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:06:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="gjWo4A9O"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6274020758
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	by mail.kernel.org (Postfix) with ESMTPS id 38B2E20758
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 02:08:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 38B2E20758
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BmQPW6lVlzDqTb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 12:06:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BmQRb0486zDqSP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Sep 2020 12:08:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=oracle.com (client-ip=156.151.31.85; helo=userp2120.oracle.com;
- envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
- header.s=corp-2020-01-29 header.b=gjWo4A9O; 
- dkim-atps=neutral
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BmQM407HLzDq8w
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 12:04:47 +1000 (AEST)
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08920GpD146724;
- Wed, 9 Sep 2020 02:04:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=to : cc : subject :
- from : message-id : references : date : in-reply-to : mime-version :
- content-type; s=corp-2020-01-29;
- bh=bI725EQwXGyV5rV6Dx/1p9ZvC5gDqSHkDjKs8RyZZcI=;
- b=gjWo4A9OdkpmR2GgRZ7/WDzHi5WH6OLxxR+kVVkaSoeLdY3LHQetaawlDsEUKImatxYK
- 3qzOhDFguUcP2+q3t3CxXxJHBRXDry8LxpvtK25pLktHkSkemLZD+l3ftM8fYmUdmURm
- dPYzlQT0tjr2MtLNqRqcOjh6K5kP5FwePUZVTl8I3Y4oXtVqgBIQla4V/4oty6PZopQm
- +594hG96mkFC64N9ia8fYB2rhAAKXw/MI1wpxaqPnlVaVF9NWnFcs1eNk3xjah5exAp1
- QYlM9XIysLNiBx+OnmlJYWtw2YQMSxosjdmAnEcdEWkS9b5oKCzT41TIVXOCNlu7zffW 8A== 
-Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
- by userp2120.oracle.com with ESMTP id 33c3amxtaw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 09 Sep 2020 02:04:37 +0000
-Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
- by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08920LeC172607;
- Wed, 9 Sep 2020 02:04:36 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by userp3030.oracle.com with ESMTP id 33cmkwwanq-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 09 Sep 2020 02:04:36 +0000
-Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 08924RJu009260;
- Wed, 9 Sep 2020 02:04:32 GMT
-Received: from ca-mkp.ca.oracle.com (/10.159.214.123)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Tue, 08 Sep 2020 19:04:25 -0700
-To: Tyrel Datwyler <tyreld@linux.ibm.com>
-Subject: Re: [PATCH v3 1/2] scsi: ibmvfc: use compiler attribute defines
- instead of __attribute__()
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq1a6xz66zs.fsf@ca-mkp.ca.oracle.com>
-References: <20200904232936.840193-1-tyreld@linux.ibm.com>
-Date: Tue, 08 Sep 2020 22:04:23 -0400
-In-Reply-To: <20200904232936.840193-1-tyreld@linux.ibm.com> (Tyrel Datwyler's
- message of "Fri, 4 Sep 2020 18:29:35 -0500")
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BmQNP6rvHzDqKl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2020 12:05:56 +1000 (AEST)
+IronPort-SDR: BMtVAAILBlI0IMQyxCIfuXa36/X9rAflwYSBIlLn01CxIze45Ywt5gMylweOqGU47KqeowgtpI
+ KDXYJd0nLNMg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9738"; a="137772557"
+X-IronPort-AV: E=Sophos;i="5.76,408,1592895600"; d="scan'208";a="137772557"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Sep 2020 19:05:54 -0700
+IronPort-SDR: yElna7TQwbXIEov4GMlTAMUngd4Pmt7ojX9VYvdd/PvXGX4JGHzmND9M9wOUQM8wdpzQhujNf0
+ sE3sWDra1GyA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.76,408,1592895600"; d="scan'208";a="304319680"
+Received: from lkp-server01.sh.intel.com (HELO fc0154cbc871) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 08 Sep 2020 19:05:51 -0700
+Received: from kbuild by fc0154cbc871 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1kFpUd-0000Jh-0k; Wed, 09 Sep 2020 02:05:51 +0000
+Date: Wed, 09 Sep 2020 10:05:31 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS 952478355a3e375c9bc70a8f237900bf88c3f531
+Message-ID: <5f58386b.qpIkOIP1umzxJg5N%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9738
- signatures=668679
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
- phishscore=0 suspectscore=1
- spamscore=0 mlxlogscore=945 adultscore=0 malwarescore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009090017
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9738
- signatures=668679
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
- priorityscore=1501
- clxscore=1015 bulkscore=0 malwarescore=0 lowpriorityscore=0
- mlxlogscore=977 suspectscore=1 adultscore=0 mlxscore=0 impostorscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009090017
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,21 +68,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linux-kernel@vger.kernel.org, james.bottomley@hansenpartnership.com,
- brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
+branch HEAD: 952478355a3e375c9bc70a8f237900bf88c3f531  Automatic merge of 'master', 'next' and 'fixes' (2020-09-08 10:21)
 
-Tyrel,
+elapsed time: 745m
 
-> Update ibmvfc.h structs to use the preferred  __packed and __aligned()
-> attribute macros defined in include/linux/compiler_attributes.h in place
-> of __attribute__().
+configs tested: 169
+configs skipped: 14
 
-Applied 1+2 to my 5.10 staging tree. Thanks!
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allmodconfig
+arm                              allyesconfig
+mips                           ip27_defconfig
+arm                   milbeaut_m10v_defconfig
+alpha                               defconfig
+arc                              alldefconfig
+m68k                        m5272c3_defconfig
+mips                 decstation_r4k_defconfig
+mips                           ip28_defconfig
+mips                          malta_defconfig
+powerpc                       holly_defconfig
+arm                        mvebu_v7_defconfig
+arc                     nsimosci_hs_defconfig
+sh                        sh7763rdp_defconfig
+sh                          r7785rp_defconfig
+mips                           rs90_defconfig
+m68k                       m5275evb_defconfig
+arm                          exynos_defconfig
+mips                malta_kvm_guest_defconfig
+m68k                        m5407c3_defconfig
+c6x                              allyesconfig
+mips                            gpr_defconfig
+sh                           se7780_defconfig
+powerpc                           allnoconfig
+m68k                            q40_defconfig
+arm                            zeus_defconfig
+sh                           se7705_defconfig
+riscv                    nommu_k210_defconfig
+arm                       spear13xx_defconfig
+sh                   secureedge5410_defconfig
+um                            kunit_defconfig
+sh                           se7721_defconfig
+arm                          moxart_defconfig
+mips                     cu1000-neo_defconfig
+arc                            hsdk_defconfig
+powerpc                          allmodconfig
+s390                                defconfig
+powerpc                      ppc6xx_defconfig
+arm                         hackkit_defconfig
+powerpc                 linkstation_defconfig
+arm                      footbridge_defconfig
+xtensa                              defconfig
+mips                         tb0287_defconfig
+mips                      bmips_stb_defconfig
+arm                             rpc_defconfig
+mips                        nlm_xlr_defconfig
+m68k                        stmark2_defconfig
+mips                         rt305x_defconfig
+arm                         s3c2410_defconfig
+riscv                            allmodconfig
+arm                         shannon_defconfig
+c6x                        evmc6457_defconfig
+arm                            pleb_defconfig
+powerpc                         ps3_defconfig
+arc                        vdk_hs38_defconfig
+arm                        trizeps4_defconfig
+powerpc                  mpc885_ads_defconfig
+sh                         apsh4a3a_defconfig
+arc                          axs101_defconfig
+sh                        apsh4ad0a_defconfig
+s390                       zfcpdump_defconfig
+arm                       mainstone_defconfig
+powerpc                      ppc64e_defconfig
+sh                            shmin_defconfig
+mips                           ci20_defconfig
+powerpc                          allyesconfig
+arm                        magician_defconfig
+arm                         assabet_defconfig
+m68k                            mac_defconfig
+xtensa                       common_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+x86_64               randconfig-a006-20200907
+x86_64               randconfig-a004-20200907
+x86_64               randconfig-a003-20200907
+x86_64               randconfig-a005-20200907
+x86_64               randconfig-a001-20200907
+x86_64               randconfig-a002-20200907
+i386                 randconfig-a004-20200908
+i386                 randconfig-a005-20200908
+i386                 randconfig-a006-20200908
+i386                 randconfig-a002-20200908
+i386                 randconfig-a001-20200908
+i386                 randconfig-a003-20200908
+i386                 randconfig-a004-20200907
+i386                 randconfig-a005-20200907
+i386                 randconfig-a006-20200907
+i386                 randconfig-a002-20200907
+i386                 randconfig-a003-20200907
+i386                 randconfig-a001-20200907
+i386                 randconfig-a004-20200909
+i386                 randconfig-a005-20200909
+i386                 randconfig-a006-20200909
+i386                 randconfig-a002-20200909
+i386                 randconfig-a001-20200909
+i386                 randconfig-a003-20200909
+x86_64               randconfig-a013-20200908
+x86_64               randconfig-a016-20200908
+x86_64               randconfig-a011-20200908
+x86_64               randconfig-a012-20200908
+x86_64               randconfig-a015-20200908
+x86_64               randconfig-a014-20200908
+i386                 randconfig-a016-20200907
+i386                 randconfig-a015-20200907
+i386                 randconfig-a011-20200907
+i386                 randconfig-a013-20200907
+i386                 randconfig-a014-20200907
+i386                 randconfig-a012-20200907
+i386                 randconfig-a016-20200908
+i386                 randconfig-a015-20200908
+i386                 randconfig-a011-20200908
+i386                 randconfig-a013-20200908
+i386                 randconfig-a014-20200908
+i386                 randconfig-a012-20200908
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20200908
+x86_64               randconfig-a006-20200908
+x86_64               randconfig-a003-20200908
+x86_64               randconfig-a001-20200908
+x86_64               randconfig-a005-20200908
+x86_64               randconfig-a002-20200908
+x86_64               randconfig-a013-20200909
+x86_64               randconfig-a016-20200909
+x86_64               randconfig-a011-20200909
+x86_64               randconfig-a012-20200909
+x86_64               randconfig-a015-20200909
+x86_64               randconfig-a014-20200909
+x86_64               randconfig-a013-20200907
+x86_64               randconfig-a011-20200907
+x86_64               randconfig-a016-20200907
+x86_64               randconfig-a012-20200907
+x86_64               randconfig-a015-20200907
+x86_64               randconfig-a014-20200907
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
