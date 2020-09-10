@@ -2,119 +2,71 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56AA2C43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8761C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:12:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 78BB0207EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:08:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="YfCX/fYM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78BB0207EA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 27A19214F1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:12:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27A19214F1
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnRj16HHhzDqtR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 04:08:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnRnK1F7MzDqsD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 04:12:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=209.85.166.68; helo=mail-io1-f68.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=YfCX/fYM; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-io1-f68.google.com (mail-io1-f68.google.com
+ [209.85.166.68])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnRV74X7QzDrT5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 03:59:27 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08AHYY7h006938; Thu, 10 Sep 2020 13:57:58 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=G9Zv2DFfzXQ+AcQ+DZwioP8Um0SpBOmEagJC1mqcw8c=;
- b=YfCX/fYM/+0cU4iK0BOtwuIlzhkFZzTLrSdJXWxJ1k4qvuqNmGqxiyn/KPt+KO86LgCv
- HLH9k4JhR6BcmigWtTWBD6ZPqiZuUa47ahKdOpl8NTgL6knGqAsfYVupChmLtkca9Bsc
- I831JKul4hMzTIOVuB0rQhwZQk9ohHxm25Hjd2rWK5KvyJjzUOFASuUvmuwRLK/W0F3S
- 15Nj4qDZJzISHQuSxWNdTxPuNefS3nEELxbeP0vDnPGrlCROMOBhYiQko1YZndl1q0z+
- /SnTTR+pYYRZOgX5pbpEMBYvpoOAlBwiL4k1va7ddddU5XSao6D8/ff297hykAE5qXrl Yg== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33frf88wyt-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 13:57:58 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08AHYZQN007007;
- Thu, 10 Sep 2020 13:57:57 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33frf88wy2-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 13:57:57 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08AHvttm028822;
- Thu, 10 Sep 2020 17:57:55 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma03ams.nl.ibm.com with ESMTP id 33c2a86aw6-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 17:57:55 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 08AHvqcP35914082
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Sep 2020 17:57:52 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 85058A4055;
- Thu, 10 Sep 2020 17:57:52 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 48D47A4053;
- Thu, 10 Sep 2020 17:57:51 +0000 (GMT)
-Received: from thinkpad (unknown [9.171.93.242])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Thu, 10 Sep 2020 17:57:51 +0000 (GMT)
-Date: Thu, 10 Sep 2020 19:57:49 +0200
-From: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
- folding
-Message-ID: <20200910195749.795232d1@thinkpad>
-In-Reply-To: <20200910130233.GK87483@ziepe.ca>
-References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
- <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
- <0dbc6ec8-45ea-0853-4856-2bc1e661a5a5@intel.com>
- <20200909142904.00b72921@thinkpad>
- <aacad1b7-f121-44a5-f01d-385cb0f6351e@intel.com>
- <20200909192534.442f8984@thinkpad>
- <20200909180324.GI87483@ziepe.ca>
- <20200910093925.GB29166@oc3871087118.ibm.com>
- <20200910130233.GK87483@ziepe.ca>
-X-Mailer: Claws Mail 3.17.6 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnRkd4h3GzDqmF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 04:10:15 +1000 (AEST)
+Received: by mail-io1-f68.google.com with SMTP id r25so8212527ioj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 11:10:15 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=vouhSmUcYcMbjxNbVHaIAIekKrOUzBSoOSn9DczZ8fY=;
+ b=TNy+udqCt8wSf4Dt9xQPjMZ2zLqJZKL+rBzaMpSZ9Ktyc9Qdp1HY+z/x2bWp4hn6Y5
+ KCW6a+UXqyWPPcrLD7WmGZcVbBhCyV9CcwcqY+lthtzm2ZozbJAUkVA+wf9Mb7eXYOxi
+ cLAF5qnaZkVWBLHiskImzlMMlF+8xXlKUs+UrKttWwZhOPPWeyuC0LncdXq8rz4sYZlm
+ FDcPi/mKKY9GJ5XlZaWINc/GRCt393wTRPE/XRSD7DokwRMLA5nTmD+HkfkqzzrW0IcP
+ mvljKaP5n1SHZj1yVoeWt8rVnatUPFJefHk+C4U9gTPr2ILMnNFMhqefTS6T8e+Pmdqm
+ m5dQ==
+X-Gm-Message-State: AOAM530XLCCD/iU+tx/D/tae0DJUikTioT6HByu59XUGD+Ry4MZ8URPQ
+ +3k9hWIUlzF6nYuor7jR5y0gVAX9W8on
+X-Google-Smtp-Source: ABdhPJySrXuTKcamxrp4PHnHzinO4XqL/L5q7pGaz1+cshGumWAhcgTYcHZzZ1TzUOdpZ7bP/QDMiw==
+X-Received: by 2002:a6b:f919:: with SMTP id j25mr8806437iog.113.1599761413871; 
+ Thu, 10 Sep 2020 11:10:13 -0700 (PDT)
+Received: from xps15 ([64.188.179.251])
+ by smtp.gmail.com with ESMTPSA id k14sm3220564ioa.7.2020.09.10.11.10.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 10 Sep 2020 11:10:13 -0700 (PDT)
+Received: (nullmailer pid 611387 invoked by uid 1000);
+ Thu, 10 Sep 2020 18:10:09 -0000
+Date: Thu, 10 Sep 2020 12:10:09 -0600
+From: Rob Herring <robh@kernel.org>
+To: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
+Subject: Re: [PATCHv7 04/12] PCI: designware-ep: Modify MSI and MSIX CAP way
+ of finding
+Message-ID: <20200910181009.GB592152@bogus>
+References: <20200811095441.7636-1-Zhiqiang.Hou@nxp.com>
+ <20200811095441.7636-5-Zhiqiang.Hou@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-10_05:2020-09-10,
- 2020-09-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 impostorscore=0
- mlxlogscore=999 clxscore=1015 mlxscore=0 priorityscore=1501 spamscore=0
- malwarescore=0 adultscore=0 lowpriorityscore=0 phishscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009100162
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200811095441.7636-5-Zhiqiang.Hou@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,74 +78,373 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>,
- Paul Mackerras <paulus@samba.org>, linux-sparc <sparclinux@vger.kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Richard Weinberger <richard@nod.at>, linux-x86 <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>, Heiko Carstens <hca@linux.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>,
- Jeff Dike <jdike@addtoit.com>, linux-um <linux-um@lists.infradead.org>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linux-arm <linux-arm-kernel@lists.infradead.org>,
- linux-mm <linux-mm@kvack.org>, linux-power <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Mike Rapoport <rppt@kernel.org>
+Cc: devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com,
+ Xiaowei Bao <xiaowei.bao@nxp.com>, roy.zang@nxp.com, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, minghuan.Lian@nxp.com,
+ jingoohan1@gmail.com, andrew.murray@arm.com, mingkai.hu@nxp.com,
+ gustavo.pimentel@synopsys.com, bhelgaas@google.com, shawnguo@kernel.org,
+ kishon@ti.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 10 Sep 2020 10:02:33 -0300
-Jason Gunthorpe <jgg@ziepe.ca> wrote:
-
-> On Thu, Sep 10, 2020 at 11:39:25AM +0200, Alexander Gordeev wrote:
+On Tue, Aug 11, 2020 at 05:54:33PM +0800, Zhiqiang Hou wrote:
+> From: Xiaowei Bao <xiaowei.bao@nxp.com>
 > 
-> > As Gerald mentioned, it is very difficult to explain in a clear way.
-> > Hopefully, one could make sense ot of it.
+> Each PF of EP device should have its own MSI or MSIX capabitily
+> struct, so create a dw_pcie_ep_func struct and move the msi_cap
+> and msix_cap to this struct from dw_pcie_ep, and manage the PFs
+> via a list.
 > 
-> I would say the page table API requires this invariant:
+> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+> Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+> ---
+> V7:
+>  - Rebase the patch without functionality change.
 > 
->         pud = pud_offset(p4d, addr);
->         do {
-> 		WARN_ON(pud != pud_offset(p4d, addr);
->                 next = pud_addr_end(addr, end);
->         } while (pud++, addr = next, addr != end);
+>  .../pci/controller/dwc/pcie-designware-ep.c   | 139 +++++++++++++++---
+>  drivers/pci/controller/dwc/pcie-designware.h  |  18 ++-
+>  2 files changed, 136 insertions(+), 21 deletions(-)
 > 
-> ie pud++ is supposed to be a shortcut for 
->   pud_offset(p4d, next)
+> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> index 56bd1cd71f16..4680a51c49c0 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> @@ -28,6 +28,19 @@ void dw_pcie_ep_init_notify(struct dw_pcie_ep *ep)
+>  }
+>  EXPORT_SYMBOL_GPL(dw_pcie_ep_init_notify);
+>  
+> +struct dw_pcie_ep_func *
+> +dw_pcie_ep_get_func_from_ep(struct dw_pcie_ep *ep, u8 func_no)
+> +{
+> +	struct dw_pcie_ep_func *ep_func;
+> +
+> +	list_for_each_entry(ep_func, &ep->func_list, list) {
+> +		if (ep_func->func_no == func_no)
+> +			return ep_func;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+>  static unsigned int dw_pcie_ep_func_select(struct dw_pcie_ep *ep, u8 func_no)
+>  {
+>  	unsigned int func_offset = 0;
+> @@ -68,6 +81,47 @@ void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar)
+>  		__dw_pcie_ep_reset_bar(pci, func_no, bar, 0);
+>  }
+>  
+> +static u8 __dw_pcie_ep_find_next_cap(struct dw_pcie_ep *ep, u8 func_no,
+> +		u8 cap_ptr, u8 cap)
+> +{
+> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> +	unsigned int func_offset = 0;
+> +	u8 cap_id, next_cap_ptr;
+> +	u16 reg;
+> +
+> +	if (!cap_ptr)
+> +		return 0;
+> +
+> +	func_offset = dw_pcie_ep_func_select(ep, func_no);
+> +
+> +	reg = dw_pcie_readw_dbi(pci, func_offset + cap_ptr);
+> +	cap_id = (reg & 0x00ff);
+> +
+> +	if (cap_id > PCI_CAP_ID_MAX)
+> +		return 0;
+> +
+> +	if (cap_id == cap)
+> +		return cap_ptr;
+> +
+> +	next_cap_ptr = (reg & 0xff00) >> 8;
+> +	return __dw_pcie_ep_find_next_cap(ep, func_no, next_cap_ptr, cap);
+> +}
+> +
+> +static u8 dw_pcie_ep_find_capability(struct dw_pcie_ep *ep, u8 func_no, u8 cap)
+> +{
+> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> +	unsigned int func_offset = 0;
+> +	u8 next_cap_ptr;
+> +	u16 reg;
+> +
+> +	func_offset = dw_pcie_ep_func_select(ep, func_no);
+> +
+> +	reg = dw_pcie_readw_dbi(pci, func_offset + PCI_CAPABILITY_LIST);
+> +	next_cap_ptr = (reg & 0x00ff);
+> +
+> +	return __dw_pcie_ep_find_next_cap(ep, func_no, next_cap_ptr, cap);
+> +}
+
+These are almost the same as __dw_pcie_find_next_cap and 
+dw_pcie_find_capability. Please modify them to take a function offset 
+and work for both host and endpoints.
+
+> +
+>  static int dw_pcie_ep_write_header(struct pci_epc *epc, u8 func_no,
+>  				   struct pci_epf_header *hdr)
+>  {
+> @@ -257,13 +311,18 @@ static int dw_pcie_ep_get_msi(struct pci_epc *epc, u8 func_no)
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  	u32 val, reg;
+>  	unsigned int func_offset = 0;
+> +	struct dw_pcie_ep_func *ep_func;
+>  
+> -	if (!ep->msi_cap)
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+> +
+> +	if (!ep_func->msi_cap)
+>  		return -EINVAL;
+>  
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+> -	reg = ep->msi_cap + func_offset + PCI_MSI_FLAGS;
+> +	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
+>  	val = dw_pcie_readw_dbi(pci, reg);
+>  	if (!(val & PCI_MSI_FLAGS_ENABLE))
+>  		return -EINVAL;
+> @@ -279,13 +338,18 @@ static int dw_pcie_ep_set_msi(struct pci_epc *epc, u8 func_no, u8 interrupts)
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  	u32 val, reg;
+>  	unsigned int func_offset = 0;
+> +	struct dw_pcie_ep_func *ep_func;
+> +
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+>  
+> -	if (!ep->msi_cap)
+> +	if (!ep_func->msi_cap)
+>  		return -EINVAL;
+>  
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+> -	reg = ep->msi_cap + func_offset + PCI_MSI_FLAGS;
+> +	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
+
+If msi_cap is now per function, then shouldn't it already include 
+'func_offset'?
+
+>  	val = dw_pcie_readw_dbi(pci, reg);
+>  	val &= ~PCI_MSI_FLAGS_QMASK;
+>  	val |= (interrupts << 1) & PCI_MSI_FLAGS_QMASK;
+> @@ -302,13 +366,18 @@ static int dw_pcie_ep_get_msix(struct pci_epc *epc, u8 func_no)
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  	u32 val, reg;
+>  	unsigned int func_offset = 0;
+> +	struct dw_pcie_ep_func *ep_func;
+> +
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+>  
+> -	if (!ep->msix_cap)
+> +	if (!ep_func->msix_cap)
+>  		return -EINVAL;
+>  
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+> -	reg = ep->msix_cap + func_offset + PCI_MSIX_FLAGS;
+> +	reg = ep_func->msix_cap + func_offset + PCI_MSIX_FLAGS;
+>  	val = dw_pcie_readw_dbi(pci, reg);
+>  	if (!(val & PCI_MSIX_FLAGS_ENABLE))
+>  		return -EINVAL;
+> @@ -325,25 +394,30 @@ static int dw_pcie_ep_set_msix(struct pci_epc *epc, u8 func_no, u16 interrupts,
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  	u32 val, reg;
+>  	unsigned int func_offset = 0;
+> +	struct dw_pcie_ep_func *ep_func;
+>  
+> -	if (!ep->msix_cap)
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+> +
+> +	if (!ep_func->msix_cap)
+>  		return -EINVAL;
+>  
+>  	dw_pcie_dbi_ro_wr_en(pci);
+>  
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+> -	reg = ep->msix_cap + func_offset + PCI_MSIX_FLAGS;
+> +	reg = ep_func->msix_cap + func_offset + PCI_MSIX_FLAGS;
+>  	val = dw_pcie_readw_dbi(pci, reg);
+>  	val &= ~PCI_MSIX_FLAGS_QSIZE;
+>  	val |= interrupts;
+>  	dw_pcie_writew_dbi(pci, reg, val);
+>  
+> -	reg = ep->msix_cap + func_offset + PCI_MSIX_TABLE;
+> +	reg = ep_func->msix_cap + func_offset + PCI_MSIX_TABLE;
+>  	val = offset | bir;
+>  	dw_pcie_writel_dbi(pci, reg, val);
+>  
+> -	reg = ep->msix_cap + func_offset + PCI_MSIX_PBA;
+> +	reg = ep_func->msix_cap + func_offset + PCI_MSIX_PBA;
+>  	val = (offset + (interrupts * PCI_MSIX_ENTRY_SIZE)) | bir;
+>  	dw_pcie_writel_dbi(pci, reg, val);
+>  
+> @@ -426,6 +500,7 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  			     u8 interrupt_num)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> +	struct dw_pcie_ep_func *ep_func;
+>  	struct pci_epc *epc = ep->epc;
+>  	unsigned int aligned_offset;
+>  	unsigned int func_offset = 0;
+> @@ -435,25 +510,29 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  	bool has_upper;
+>  	int ret;
+>  
+> -	if (!ep->msi_cap)
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+> +
+> +	if (!ep_func->msi_cap)
+>  		return -EINVAL;
+>  
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+>  	/* Raise MSI per the PCI Local Bus Specification Revision 3.0, 6.8.1. */
+> -	reg = ep->msi_cap + func_offset + PCI_MSI_FLAGS;
+> +	reg = ep_func->msi_cap + func_offset + PCI_MSI_FLAGS;
+>  	msg_ctrl = dw_pcie_readw_dbi(pci, reg);
+>  	has_upper = !!(msg_ctrl & PCI_MSI_FLAGS_64BIT);
+> -	reg = ep->msi_cap + func_offset + PCI_MSI_ADDRESS_LO;
+> +	reg = ep_func->msi_cap + func_offset + PCI_MSI_ADDRESS_LO;
+>  	msg_addr_lower = dw_pcie_readl_dbi(pci, reg);
+>  	if (has_upper) {
+> -		reg = ep->msi_cap + func_offset + PCI_MSI_ADDRESS_HI;
+> +		reg = ep_func->msi_cap + func_offset + PCI_MSI_ADDRESS_HI;
+>  		msg_addr_upper = dw_pcie_readl_dbi(pci, reg);
+> -		reg = ep->msi_cap + func_offset + PCI_MSI_DATA_64;
+> +		reg = ep_func->msi_cap + func_offset + PCI_MSI_DATA_64;
+>  		msg_data = dw_pcie_readw_dbi(pci, reg);
+>  	} else {
+>  		msg_addr_upper = 0;
+> -		reg = ep->msi_cap + func_offset + PCI_MSI_DATA_32;
+> +		reg = ep_func->msi_cap + func_offset + PCI_MSI_DATA_32;
+>  		msg_data = dw_pcie_readw_dbi(pci, reg);
+>  	}
+>  	aligned_offset = msg_addr_lower & (epc->mem->window.page_size - 1);
+> @@ -489,6 +568,7 @@ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  			      u16 interrupt_num)
+>  {
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> +	struct dw_pcie_ep_func *ep_func;
+>  	struct pci_epf_msix_tbl *msix_tbl;
+>  	struct pci_epc *epc = ep->epc;
+>  	unsigned int func_offset = 0;
+> @@ -499,9 +579,16 @@ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  	int ret;
+>  	u8 bir;
+>  
+> +	ep_func = dw_pcie_ep_get_func_from_ep(ep, func_no);
+> +	if (!ep_func)
+> +		return -EINVAL;
+> +
+> +	if (!ep_func->msix_cap)
+> +		return -EINVAL;
+> +
+>  	func_offset = dw_pcie_ep_func_select(ep, func_no);
+>  
+> -	reg = ep->msix_cap + func_offset + PCI_MSIX_TABLE;
+> +	reg = ep_func->msix_cap + func_offset + PCI_MSIX_TABLE;
+>  	tbl_offset = dw_pcie_readl_dbi(pci, reg);
+>  	bir = (tbl_offset & PCI_MSIX_TABLE_BIR);
+>  	tbl_offset &= PCI_MSIX_TABLE_OFFSET;
+> @@ -596,11 +683,15 @@ int dw_pcie_ep_init(struct dw_pcie_ep *ep)
+>  {
+>  	int ret;
+>  	void *addr;
+> +	u8 func_no;
+>  	struct pci_epc *epc;
+>  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+>  	struct device *dev = pci->dev;
+>  	struct device_node *np = dev->of_node;
+>  	const struct pci_epc_features *epc_features;
+> +	struct dw_pcie_ep_func *ep_func;
+> +
+> +	INIT_LIST_HEAD(&ep->func_list);
+>  
+>  	if (!pci->dbi_base || !pci->dbi_base2) {
+>  		dev_err(dev, "dbi_base/dbi_base2 is not populated\n");
+> @@ -660,9 +751,19 @@ int dw_pcie_ep_init(struct dw_pcie_ep *ep)
+>  	if (ret < 0)
+>  		epc->max_functions = 1;
+>  
+> -	ep->msi_cap = dw_pcie_find_capability(pci, PCI_CAP_ID_MSI);
+> +	for (func_no = 0; func_no < epc->max_functions; func_no++) {
+> +		ep_func = devm_kzalloc(dev, sizeof(*ep_func), GFP_KERNEL);
+> +		if (!ep_func)
+> +			return -ENOMEM;
+>  
+> -	ep->msix_cap = dw_pcie_find_capability(pci, PCI_CAP_ID_MSIX);
+> +		ep_func->func_no = func_no;
+> +		ep_func->msi_cap = dw_pcie_ep_find_capability(ep, func_no,
+> +							      PCI_CAP_ID_MSI);
+> +		ep_func->msix_cap = dw_pcie_ep_find_capability(ep, func_no,
+> +							       PCI_CAP_ID_MSIX);
+> +
+> +		list_add_tail(&ep_func->list, &ep->func_list);
+> +	}
+>  
+>  	if (ep->ops->ep_init)
+>  		ep->ops->ep_init(ep);
+> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+> index 745b4938225a..19c4ba486239 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware.h
+> +++ b/drivers/pci/controller/dwc/pcie-designware.h
+> @@ -230,8 +230,16 @@ struct dw_pcie_ep_ops {
+>  	unsigned int (*func_conf_select)(struct dw_pcie_ep *ep, u8 func_no);
+>  };
+>  
+> +struct dw_pcie_ep_func {
+> +	struct list_head	list;
+> +	u8			func_no;
+> +	u8			msi_cap;	/* MSI capability offset */
+> +	u8			msix_cap;	/* MSI-X capability offset */
+> +};
+> +
+>  struct dw_pcie_ep {
+>  	struct pci_epc		*epc;
+> +	struct list_head	func_list;
+>  	const struct dw_pcie_ep_ops *ops;
+>  	phys_addr_t		phys_base;
+>  	size_t			addr_size;
+> @@ -244,8 +252,6 @@ struct dw_pcie_ep {
+>  	u32			num_ob_windows;
+>  	void __iomem		*msi_mem;
+>  	phys_addr_t		msi_mem_phys;
+> -	u8			msi_cap;	/* MSI capability offset */
+> -	u8			msix_cap;	/* MSI-X capability offset */
+>  	struct pci_epf_bar	*epf_bar[PCI_STD_NUM_BARS];
+>  };
+>  
+> @@ -440,6 +446,8 @@ int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep, u8 func_no,
+>  				       u16 interrupt_num);
+>  void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar);
+> +struct dw_pcie_ep_func *
+> +dw_pcie_ep_get_func_from_ep(struct dw_pcie_ep *ep, u8 func_no);
+>  #else
+>  static inline void dw_pcie_ep_linkup(struct dw_pcie_ep *ep)
+>  {
+> @@ -490,5 +498,11 @@ static inline int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep,
+>  static inline void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar)
+>  {
+>  }
+> +
+> +static inline struct dw_pcie_ep_func *
+> +dw_pcie_ep_get_func_from_ep(struct dw_pcie_ep *ep, u8 func_no)
+> +{
+> +	return NULL;
+> +}
+>  #endif
+>  #endif /* _PCIE_DESIGNWARE_H */
+> -- 
+> 2.17.1
 > 
-
-Hmm, IIUC, all architectures with static folding will simply return
-the passed-in p4d pointer for pud_offset(p4d, addr), for 3-level
-pagetables. There is no difference for s390. For gup_fast, that p4d
-pointer is not really a pointer to a value in a pagetable, but
-to some local copy of such a value, and not just for s390.
-
-So, pud = p4d = pointer to copy, and increasing that pud pointer
-cannot be the same as pud_offset(p4d, next). I do see your point
-however, at last I think :-) My problem is that I do not see where
-we would have an s390-specific issue here. Maybe my understanding
-of how it works for others with static folding is wrong. That
-would explain my difficulties in getting your point...
-
-> While S390 does not follow this. Fixing addr_end brings it into
-> alignment by preventing pud++ from happening.
-
-Exactly, only that nobody seems to follow it, IIUC. Fixing it up
-with pXd_addr_end was my impression of what we need to do, in order to
-have it work the same way as for others.
-
-> The only currently known side effect is that gup_fast crashes, but it
-> sure is an unexpected thing.
-
-Well, from my understanding it feels more unexpected that something
-that is supposed to be a pointer to an entry in a page table, really is
-just a pointer to some copy somewhere.
