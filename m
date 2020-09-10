@@ -2,90 +2,72 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53187C43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A4F9C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:05:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34BBD20C09
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:04:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="CyoQUM+S"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34BBD20C09
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id AD16320C09
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:05:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD16320C09
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
-Received: from bilbo.ozlabs.org (unknown [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnRD41wShzDrQg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 03:47:16 +1000 (AEST)
+Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnRcX2yf2zDqs2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 04:05:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::144;
- helo=mail-lf1-x144.google.com; envelope-from=torvalds@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
- [IPv6:2a00:1450:4864:20::144])
+ smtp.mailfrom=gmail.com (client-ip=209.85.166.65; helo=mail-io1-f65.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-io1-f65.google.com (mail-io1-f65.google.com
+ [209.85.166.65])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnRB00W3bzDr3Z
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 03:45:21 +1000 (AEST)
-Received: by mail-lf1-x144.google.com with SMTP id x77so4082633lfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 10:45:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=tV9NvYryEbzez94zd9hdsCWt3FfBuGGawTOfDap0eBk=;
- b=CyoQUM+SKXH6085O6WtByg3nDuki2CTSBORvYvwm25BqShZutFnNs6mSZACayZwSEH
- qcd6gDs3XmrAOcCBysWWLpsCbEXmLRDCQnQxo0ENK46fWC+ppV/l5rSOr47qH79HuDsY
- BAC6cJAHl7u65bYmrM5WLZPBZBfoI7ltEXEKA=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnRSh1GqbzDrRC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 03:58:11 +1000 (AEST)
+Received: by mail-io1-f65.google.com with SMTP id j2so8089850ioj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 10:58:11 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=tV9NvYryEbzez94zd9hdsCWt3FfBuGGawTOfDap0eBk=;
- b=TlIJTDYETDaZAqYGDJTD/0Z4vcLmqlKMi0jQtN+2TvuKeqyhPJd44nU+umtm5nnuHj
- tAQlDwSX7D+ZZWly8Z8ZmfsCtI4+MCKsVuOCAyQIp9wPt8BSuLWfs+mzYWys1xvv1X0Z
- aesEWKm1K1nDX4pLWszEfrhvDXf64R9mV/93UCHAxKPp9O3UCKOSxR6YPbdHrAoJI+K2
- DCxD1giOU1gB4st0gEqahRJ29DdVibAUYd9ALwUZFlefV+KCrd5Ho6RXhtDLtzKIiirq
- hqQiItGzYWbHET/1JH0J50iWBVg6NtWzl0omn1lUaPnCh7phPD7Pik1h4iofs7JrxpD1
- IQFw==
-X-Gm-Message-State: AOAM530ec1BR52/VLWyVjVXbRY/TuMgnit8zftmeWwE/5HLTBCmNWsry
- hzBRMtA9AeNBCNFfu+t9Uj/eJx2R2rSPbQ==
-X-Google-Smtp-Source: ABdhPJzI1weiuk3tBz4xdPKT+j/5eell5/M8f1ww2pMCo+/4AeirXEOM0FSkTXqaW0KEHAzKb+FAeQ==
-X-Received: by 2002:a19:4ad8:: with SMTP id x207mr4722044lfa.73.1599759855566; 
- Thu, 10 Sep 2020 10:44:15 -0700 (PDT)
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com.
- [209.85.208.180])
- by smtp.gmail.com with ESMTPSA id a1sm1764216ljb.64.2020.09.10.10.44.15
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Thu, 10 Sep 2020 10:44:15 -0700 (PDT)
-Received: by mail-lj1-f180.google.com with SMTP id c2so9265226ljj.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 10:44:15 -0700 (PDT)
-X-Received: by 2002:a19:7d8b:: with SMTP id y133mr4765702lfc.152.1599759354367; 
- Thu, 10 Sep 2020 10:35:54 -0700 (PDT)
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=VxfApMJ0EUmdYdIgNKbi7UhLfWBEbGugyTzK4PjTtv0=;
+ b=iZ/UQ5mlIHKGannihzNDC6+IkkT5w8eS9vq4p+CjEzuT+a9+DeeXv/weFpU8bphHsx
+ MurIqpgWxJFWBg4p0lvi1+Iv+bgOkTEQD+4yngdz8ecsl5GOJb6utEoGRMbtGuYO0/ca
+ FBTG77+obBNbFYV0NBlww0AuGJp5XFF7sJtalTwylMW1T/HwESbuCeXDSwuvsnr9MIzI
+ cRm+3Vzy6FxAuydcEH6eU2XaZoH2pL7ElXEQQdsorV0w0q+ixlF9Gbs58kuCQdKMuPEU
+ +2ykvDlYfiawGqGVep0aeBgjmtCcugqO0AtDeCqxYpWEVKgsWe/soaNc3GNyfm4vB3Hk
+ n2wg==
+X-Gm-Message-State: AOAM531Ef3d9FyAxkgNLXllrKmtr+abjHuuDHzlQ4b1kj3tgVSBVTAU4
+ O6XW4OUcEgSfcVJ/NY6slw==
+X-Google-Smtp-Source: ABdhPJzHuaedQqz87WQhJT7BVc3Tmt6QFnyUykz+EZLkaJGLKC8fc3S8Bjou486WTPNTEl6SJdSQVg==
+X-Received: by 2002:a05:6638:2a6:: with SMTP id
+ d6mr9888898jaq.132.1599760686431; 
+ Thu, 10 Sep 2020 10:58:06 -0700 (PDT)
+Received: from xps15 ([64.188.179.251])
+ by smtp.gmail.com with ESMTPSA id h15sm3376285ils.74.2020.09.10.10.58.05
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 10 Sep 2020 10:58:05 -0700 (PDT)
+Received: (nullmailer pid 595458 invoked by uid 1000);
+ Thu, 10 Sep 2020 17:58:04 -0000
+Date: Thu, 10 Sep 2020 11:58:04 -0600
+From: Rob Herring <robh@kernel.org>
+To: Zhiqiang Hou <Zhiqiang.Hou@nxp.com>
+Subject: Re: [PATCHv7 02/12] PCI: designware-ep: Add the doorbell mode of
+ MSI-X in EP mode
+Message-ID: <20200910175804.GA592152@bogus>
+References: <20200811095441.7636-1-Zhiqiang.Hou@nxp.com>
+ <20200811095441.7636-3-Zhiqiang.Hou@nxp.com>
 MIME-Version: 1.0
-References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
- <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
- <0dbc6ec8-45ea-0853-4856-2bc1e661a5a5@intel.com>
- <20200909142904.00b72921@thinkpad>
- <aacad1b7-f121-44a5-f01d-385cb0f6351e@intel.com>
- <20200909192534.442f8984@thinkpad> <20200909180324.GI87483@ziepe.ca>
- <20200910093925.GB29166@oc3871087118.ibm.com>
-In-Reply-To: <20200910093925.GB29166@oc3871087118.ibm.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 10 Sep 2020 10:35:38 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wh4SuNvThq1nBiqk0N-fW6NsY5w=VawC=rJs7ekmjAhjA@mail.gmail.com>
-Message-ID: <CAHk-=wh4SuNvThq1nBiqk0N-fW6NsY5w=VawC=rJs7ekmjAhjA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
- folding
-To: Alexander Gordeev <agordeev@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200811095441.7636-3-Zhiqiang.Hou@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,49 +79,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>,
- Paul Mackerras <paulus@samba.org>, linux-sparc <sparclinux@vger.kernel.org>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Richard Weinberger <richard@nod.at>, linux-x86 <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@ziepe.ca>,
- Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- John Hubbard <jhubbard@nvidia.com>, Jeff Dike <jdike@addtoit.com>,
- linux-um <linux-um@lists.infradead.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm <linux-arm-kernel@lists.infradead.org>,
- linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-power <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>
+Cc: devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com,
+ Xiaowei Bao <xiaowei.bao@nxp.com>, roy.zang@nxp.com, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, leoyang.li@nxp.com, minghuan.Lian@nxp.com,
+ jingoohan1@gmail.com, andrew.murray@arm.com, mingkai.hu@nxp.com,
+ gustavo.pimentel@synopsys.com, bhelgaas@google.com, shawnguo@kernel.org,
+ kishon@ti.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 10, 2020 at 2:40 AM Alexander Gordeev
-<agordeev@linux.ibm.com> wrote:
->
-> It is only gup_fast case that exposes the issue. It hits because
-> pointers to stack copies are passed to gup_pXd_range iterators, not
-> pointers to real page tables itself.
+On Tue, Aug 11, 2020 at 05:54:31PM +0800, Zhiqiang Hou wrote:
+> From: Xiaowei Bao <xiaowei.bao@nxp.com>
+> 
+> Add the doorbell mode of MSI-X in DWC EP driver.
+> 
+> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+> Reviewed-by: Andrew Murray <andrew.murray@arm.com>
+> Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+> ---
+> V7:
+>  - Rebase the patch without functionality change.
+> 
+>  drivers/pci/controller/dwc/pcie-designware-ep.c | 14 ++++++++++++++
+>  drivers/pci/controller/dwc/pcie-designware.h    | 12 ++++++++++++
+>  2 files changed, 26 insertions(+)
+> 
+> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> index e5bd3a5ef380..e76b504ed465 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
+> @@ -471,6 +471,20 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  	return 0;
+>  }
+>  
+> +int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep, u8 func_no,
 
-Can we possibly change fast-gup to not do the stack copies?
+return void. It never has an error.
 
-I'd actually rather do something like that, than the "addr_end" thing.
+It could also just be an inline function.
 
-As you say, none of the other page table walking code does what the
-GUP code does, and I don't think it's required.
-
-The GUP code is kind of strange, I'm not quite sure why. Some of it
-unusually came from the powerpc code that handled their special odd
-hugepage model, and that may be why it's so different.
-
-How painful would it be to just pass the pmd (etc) _pointers_ around,
-rather than do the odd "take the address of local copies"?
-
-                  Linus
+> +				       u16 interrupt_num)
+> +{
+> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
+> +	u32 msg_data;
+> +
+> +	msg_data = (func_no << PCIE_MSIX_DOORBELL_PF_SHIFT) |
+> +		   (interrupt_num - 1);
+> +
+> +	dw_pcie_writel_dbi(pci, PCIE_MSIX_DOORBELL, msg_data);
+> +
+> +	return 0;
+> +}
+> +
+>  int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  			      u16 interrupt_num)
+>  {
+> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+> index 89f8271ec5ee..745b4938225a 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware.h
+> +++ b/drivers/pci/controller/dwc/pcie-designware.h
+> @@ -97,6 +97,9 @@
+>  #define PCIE_MISC_CONTROL_1_OFF		0x8BC
+>  #define PCIE_DBI_RO_WR_EN		BIT(0)
+>  
+> +#define PCIE_MSIX_DOORBELL		0x948
+> +#define PCIE_MSIX_DOORBELL_PF_SHIFT	24
+> +
+>  #define PCIE_PL_CHK_REG_CONTROL_STATUS			0xB20
+>  #define PCIE_PL_CHK_REG_CHK_REG_START			BIT(0)
+>  #define PCIE_PL_CHK_REG_CHK_REG_CONTINUOUS		BIT(1)
+> @@ -434,6 +437,8 @@ int dw_pcie_ep_raise_msi_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  			     u8 interrupt_num);
+>  int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  			     u16 interrupt_num);
+> +int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep, u8 func_no,
+> +				       u16 interrupt_num);
+>  void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar);
+>  #else
+>  static inline void dw_pcie_ep_linkup(struct dw_pcie_ep *ep)
+> @@ -475,6 +480,13 @@ static inline int dw_pcie_ep_raise_msix_irq(struct dw_pcie_ep *ep, u8 func_no,
+>  	return 0;
+>  }
+>  
+> +static inline int dw_pcie_ep_raise_msix_irq_doorbell(struct dw_pcie_ep *ep,
+> +						     u8 func_no,
+> +						     u16 interrupt_num)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline void dw_pcie_ep_reset_bar(struct dw_pcie *pci, enum pci_barno bar)
+>  {
+>  }
+> -- 
+> 2.17.1
+> 
