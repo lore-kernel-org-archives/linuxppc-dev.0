@@ -2,24 +2,23 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C154C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 21:11:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6562EC43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 21:14:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D7BB21D92
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 21:11:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D7BB21D92
+	by mail.kernel.org (Postfix) with ESMTPS id 9E6B3221E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 21:14:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E6B3221E2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnWmC1qvmzDqWK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 07:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnWqC3pPZzDqk8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 07:14:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
  helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
@@ -30,37 +29,35 @@ Received: from smtpout1.mo804.mail-out.ovh.net
  (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnWYx2Sb4zDqh2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnWYx3629zDqh3
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 07:02:59 +1000 (AEST)
 Received: from mxplan5.mail.ovh.net (unknown [10.109.138.7])
- by mo804.mail-out.ovh.net (Postfix) with ESMTPS id BD415603F5F8;
- Thu, 10 Sep 2020 23:02:54 +0200 (CEST)
+ by mo804.mail-out.ovh.net (Postfix) with ESMTPS id B2650603F5F3;
+ Thu, 10 Sep 2020 23:02:53 +0200 (CEST)
 Received: from kaod.org (37.59.142.104) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Thu, 10 Sep
- 2020 23:02:53 +0200
+ 2020 23:02:52 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-104R005685c7734-472e-4f8f-9067-62977696e0cb,
+ (GARM-104R005d4c8401b-9bff-41b3-a517-02ceadfe2a05,
  8FE11AEDAF16247B821E16C08928A26F58BE1972) smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/7] powerpc/prom: Fix W=1 compile warning
-Date: Thu, 10 Sep 2020 23:02:45 +0200
-Message-ID: <20200910210250.1962595-3-clg@kaod.org>
+Subject: [PATCH 0/7] powerpc: Fix a few W=1 compile warnings
+Date: Thu, 10 Sep 2020 23:02:43 +0200
+Message-ID: <20200910210250.1962595-1-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200910210250.1962595-1-clg@kaod.org>
-References: <20200910210250.1962595-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.104]
 X-ClientProxiedBy: DAG5EX1.mxp5.local (172.16.2.41) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 0ff1a18c-cdb3-4478-b604-1c02fd84242d
-X-Ovh-Tracer-Id: 10699989767890766816
+X-Ovh-Tracer-GUID: f4e652df-ca7c-43ad-8e2c-213c1f6b9d6d
+X-Ovh-Tracer-Id: 10699708292865297373
 X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudehjedgudehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMSCORE: 0
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudehjedgudehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecunecujfgurhephffvufffkffogggtgfhisehtkeertdertdejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepfedvuedtvdeikeekuefhkedujeejgffggffhtefglefgveevfeeghfdvgedtleevnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdegnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpegtlhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,95 +69,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org,
+Cc: linuxppc-dev@lists.ozlabs.org,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-arch/powerpc/kernel/prom.c: In function ‘early_reserve_mem’:
-arch/powerpc/kernel/prom.c:625:10: error: variable ‘reserve_map’ set but not used [-Werror=unused-but-set-variable]
-  __be64 *reserve_map;
-          ^~~~~~~~~~~
-cc1: all warnings being treated as errors
+Hello,
 
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
- arch/powerpc/kernel/prom.c | 51 +++++++++++++++++++-------------------
- 1 file changed, 26 insertions(+), 25 deletions(-)
+Here is a small contribution on improving compile with W=1.	
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index d8a2fb87ba0c..4bae9ebc7d0b 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -622,11 +622,6 @@ static void __init early_reserve_mem_dt(void)
- 
- static void __init early_reserve_mem(void)
- {
--	__be64 *reserve_map;
--
--	reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
--			fdt_off_mem_rsvmap(initial_boot_params));
--
- 	/* Look for the new "reserved-regions" property in the DT */
- 	early_reserve_mem_dt();
- 
-@@ -639,28 +634,34 @@ static void __init early_reserve_mem(void)
- 	}
- #endif /* CONFIG_BLK_DEV_INITRD */
- 
--#ifdef CONFIG_PPC32
--	/* 
--	 * Handle the case where we might be booting from an old kexec
--	 * image that setup the mem_rsvmap as pairs of 32-bit values
--	 */
--	if (be64_to_cpup(reserve_map) > 0xffffffffull) {
--		u32 base_32, size_32;
--		__be32 *reserve_map_32 = (__be32 *)reserve_map;
--
--		DBG("Found old 32-bit reserve map\n");
--
--		while (1) {
--			base_32 = be32_to_cpup(reserve_map_32++);
--			size_32 = be32_to_cpup(reserve_map_32++);
--			if (size_32 == 0)
--				break;
--			DBG("reserving: %x -> %x\n", base_32, size_32);
--			memblock_reserve(base_32, size_32);
-+	if (IS_ENABLED(CONFIG_PPC32)) {
-+		__be64 *reserve_map;
-+
-+		reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
-+				 fdt_off_mem_rsvmap(initial_boot_params));
-+
-+		/*
-+		 * Handle the case where we might be booting from an
-+		 * old kexec image that setup the mem_rsvmap as pairs
-+		 * of 32-bit values
-+		 */
-+		if (be64_to_cpup(reserve_map) > 0xffffffffull) {
-+			u32 base_32, size_32;
-+			__be32 *reserve_map_32 = (__be32 *)reserve_map;
-+
-+			DBG("Found old 32-bit reserve map\n");
-+
-+			while (1) {
-+				base_32 = be32_to_cpup(reserve_map_32++);
-+				size_32 = be32_to_cpup(reserve_map_32++);
-+				if (size_32 == 0)
-+					break;
-+				DBG("reserving: %x -> %x\n", base_32, size_32);
-+				memblock_reserve(base_32, size_32);
-+			}
-+			return;
- 		}
--		return;
- 	}
--#endif
- }
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+Thanks,
+
+C.
+
+Cédric Le Goater (7):
+  powerpc/sysfs: Fix W=1 compile warning
+  powerpc/prom: Fix W=1 compile warning
+  powerpc/sstep: Fix W=1 compile warning
+  powerpc/xive: Fix W=1 compile warning
+  powerpc/powernv/pci: Fix W=1 compile warning
+  powerpc/perf: Fix W=1 compile warning
+  powerpc/32: Fix W=1 compile warning
+
+ arch/powerpc/include/asm/asm-prototypes.h |  1 +
+ arch/powerpc/kernel/prom.c                | 51 ++++++++++++-----------
+ arch/powerpc/kernel/sysfs.c               |  3 +-
+ arch/powerpc/lib/sstep.c                  |  3 +-
+ arch/powerpc/perf/imc-pmu.c               |  3 --
+ arch/powerpc/platforms/powernv/pci-ioda.c |  8 ----
+ arch/powerpc/sysdev/xive/common.c         |  4 +-
+ 7 files changed, 32 insertions(+), 41 deletions(-)
+
 -- 
 2.25.4
 
