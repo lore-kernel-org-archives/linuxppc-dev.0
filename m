@@ -2,80 +2,81 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22E07C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:53:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AEB9C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:55:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34B2A20829
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:53:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 48CF720829
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:55:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BoSxMilj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34B2A20829
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RaAWdlZ2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48CF720829
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnDj42M3gzDqfZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 19:53:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnDlV200dzDqcy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 19:55:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d43;
- helo=mail-io1-xd43.google.com; envelope-from=idryomov@gmail.com;
+ helo=mail-io1-xd43.google.com; envelope-from=pankaj.gupta.linux@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=BoSxMilj; dkim-atps=neutral
+ header.s=20161025 header.b=RaAWdlZ2; dkim-atps=neutral
 Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
  [IPv6:2607:f8b0:4864:20::d43])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnD4H40xQzDqZq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 19:24:41 +1000 (AEST)
-Received: by mail-io1-xd43.google.com with SMTP id u6so6291284iow.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 02:24:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnDjJ4W7MzDqcc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 19:53:19 +1000 (AEST)
+Received: by mail-io1-xd43.google.com with SMTP id u126so6346791iod.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 02:53:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=UyqGiyvWtrvEPIbfLtgakvWHIPcO7f2wwjJnMPORWG0=;
- b=BoSxMiljYiAjMP/XBn/hYGNVKL/oHxnqnEUJ7qSdwoJLG0pxR2qK3V4/fkUTSaV51s
- 3pvr292/IyS8ps68VC6dxn72XHdiWpnrMVrw8xogJTOMYamirEZ059PvshX7H4Z5GWuh
- Vr7j8283bIhfaNsK7sxUGLf6s0Z2Efi6Yl4vefoBSqVlIDK265aYxjjSjS69bDYpqbGV
- /GSb5UhzJJFq63scKHt5GhqSRkybY6g2zuA571aN2zohyHumpin0aZgpFfaeOPy0WbSg
- Mpw6iHtgik0cTA/OjEeiGwKuBqjHR2p7i1mxyZ7WrSW4CGvjjQTt8jjc//sWyeGDOFMK
- 9KBQ==
+ :cc; bh=DXhFARB7iWozLIle7rA/3dcPZ4H06GlQ94RnYK663hI=;
+ b=RaAWdlZ2lNl7nXfiYHOzYx+GfQrIjOUeMopaIK9ZBs0wDY4n9MuS2XiRV1Y/YXkmLn
+ pJuxxyIoxZUP+VIh+mMq5fznWJVa2G/6K4TBuF6L09rpsivWa9At4G4GDPd4IG0pQnzj
+ TeAWq6VScWqV2pdBEmEZOJjchvKO1LlaqoLXIJxDrMoPoi3BVXKxeIQMgw4nvf8/fYyp
+ HF3hT6ZzvVaGa1OATUDBMc8cXDdO4P4B7MbL6j6WMNFEMNtHGJXzBCDYlCO4v2DXT3vr
+ noCvIYUFB8wvMPozut1JpXMO+4tRhnMrBpC3exgA4QHs5wNRvmdnYK2/e5bJc3A/K3Jw
+ 41Ew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=UyqGiyvWtrvEPIbfLtgakvWHIPcO7f2wwjJnMPORWG0=;
- b=AXnnrfaUoPTn7fkhilazAt48rnOtv9eMpf+gz/Fq4jy9ID/l9W6b+zwDbzQveScuPv
- GQOjFh7H/Z9TaS2A9LMJHsS6f5YfQRVHEEqa9htbXZyW5rApYeh9JgKtB2Uis1lqDJbT
- JcbcAiN3a81iSVRcHTuRd0c7gtQ+2Fqh9g7WAfIiTFB5TeAefZKBuIavE8sAwglgZ/Ya
- gv4IcpykN8lsLG9JWdFD7emXqKDUx+6qv9hVP3+DfY+rHrwoc4jTaFxKD+OL8iclTvJM
- HO6FXaL6l8ERiahVc6S9Ur/gvuyNjJ8xEfhGuezD5x9fe75xykPbx48r8cnktr6i7Di3
- 5N5A==
-X-Gm-Message-State: AOAM530vvjO5WGdgZZBGeIay2un58mecRSL7OQbV352L1CJBMunIzv3J
- nxhMmihiGU+D8Hkr0UHEOU6kIm1Geg+EcVCPks0=
-X-Google-Smtp-Source: ABdhPJzJ/LFpexv9kLm1kjwc0/B+7GHCOB8WQagf03Hz+gzhVFwgLWrpkGefOcCCEeSFlcKtCwndocR5oDNlZlvNymM=
-X-Received: by 2002:a5d:8846:: with SMTP id t6mr7056972ios.123.1599729876856; 
- Thu, 10 Sep 2020 02:24:36 -0700 (PDT)
+ bh=DXhFARB7iWozLIle7rA/3dcPZ4H06GlQ94RnYK663hI=;
+ b=tkVGU6leBqv0Owgy1o/ixHyCvvAi+eBvtC2fU3cQJ3+abT7XAe9PyHLP7SgkGf+nKH
+ /Cnhb2mwI8MGx1CZykS780EHiFfJSzV0Xek+AIMOz1LjWSEkGYnWUDfCz20NJ2IOzqMT
+ Y+wWV8F4YHuGwdoCWVCpVyZeDriZdzm2e4ivzKAfoAtMqb858XhwnCekUt4FKYNOKM/P
+ tEubNZGvoL8RNNACjDl0e6ezsoXQOGevbOkB4uL865CyWcb9rycHQRP5yiM1TnEQMTow
+ i5aOBmML5SdmdXntbQsqEBPdetojTuHIINy29/g7xtT5+ALH2ACNGwQIHXw1L2sDmZox
+ Z1eg==
+X-Gm-Message-State: AOAM531i+1/IosFq9ZmSn/dpSBlifwJCAVqk1NMojZbTdGHCR54LIUab
+ +zWZXdHUdxPlhM3NWEc48c7ZWTYG1gAr56g7WJ8=
+X-Google-Smtp-Source: ABdhPJxNu1IaH8bsVzGF36h3AxQcPj3XlD1+MCBc09C/TrTSOY0getsz2Hf3tGADGGHG07rp20HjQE3K915KSmBE84o=
+X-Received: by 2002:a02:6623:: with SMTP id k35mr7996256jac.105.1599731597724; 
+ Thu, 10 Sep 2020 02:53:17 -0700 (PDT)
 MIME-Version: 1.0
-References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-From: Ilya Dryomov <idryomov@gmail.com>
-Date: Thu, 10 Sep 2020 11:24:26 +0200
-Message-ID: <CAOi1vP-v77pj3G5Ez94CDYVs2jSO828c4uV_wzNi6sRKp=Yvyg@mail.gmail.com>
-Subject: Re: [trivial PATCH] treewide: Convert switch/case fallthrough;
- to break; 
-To: Joe Perches <joe@perches.com>
+References: <20200910091340.8654-1-david@redhat.com>
+ <20200910091340.8654-4-david@redhat.com>
+In-Reply-To: <20200910091340.8654-4-david@redhat.com>
+From: Pankaj Gupta <pankaj.gupta.linux@gmail.com>
+Date: Thu, 10 Sep 2020 11:53:06 +0200
+Message-ID: <CAM9Jb+gpSKtQbyTZrecNQNXO+oLahuwZ9JkE+TWe4BvB1nZy3w@mail.gmail.com>
+Subject: Re: [PATCH v3 3/7] mm/memory_hotplug: prepare passing flags to
+ add_memory() and friends
+To: David Hildenbrand <david@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 10 Sep 2020 19:49:35 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,131 +88,317 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
- oss-drivers@netronome.com, nouveau@lists.freedesktop.org,
- alsa-devel <alsa-devel@alsa-project.org>, dri-devel@lists.freedesktop.org,
- linux-mips@vger.kernel.org, linux-ide@vger.kernel.org, dm-devel@redhat.com,
- linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org,
- sparclinux@vger.kernel.org, kvmarm@lists.cs.columbia.edu,
- linux-rtc@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, dccp@vger.kernel.org, linux-rdma@vger.kernel.org,
- linux-atm-general@lists.sourceforge.net, linux-afs@lists.infradead.org,
- coreteam@netfilter.org, intel-wired-lan@lists.osuosl.org,
- linux-serial@vger.kernel.org, linux-input@vger.kernel.org,
- linux-mmc@vger.kernel.org, Kees Cook <kees.cook@canonical.com>,
- linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
- intel-gfx@lists.freedesktop.org, linux-sctp@vger.kernel.org,
- linux-mediatek@lists.infradead.org, linux-nvme@lists.infradead.org,
- storagedev@microchip.com, Ceph Development <ceph-devel@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
- Jiri Kosina <trivial@kernel.org>, linux-parisc@vger.kernel.org,
- netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org,
- Nick Desaulniers <ndesaulniers@google.com>,
- LKML <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org,
- netfilter-devel@vger.kernel.org,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-hyperv@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
+ Pingfan Liu <kernelfans@gmail.com>, virtualization@lists.linux-foundation.org,
+ Linux MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-s390@vger.kernel.org,
+ Wei Liu <wei.liu@kernel.org>, Stefano Stabellini <sstabellini@kernel.org>,
+ Dave Jiang <dave.jiang@intel.com>, Baoquan He <bhe@redhat.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, linux-acpi@vger.kernel.org,
+ xen-devel@lists.xenproject.org, Heiko Carstens <hca@linux.ibm.com>,
+ Len Brown <lenb@kernel.org>, Nathan Lynch <nathanl@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Leonardo Bras <leobras.c@gmail.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Juergen Gross <jgross@suse.com>, Libor Pechacek <lpechacek@suse.cz>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
+ Wei Yang <richardw.yang@linux.intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 9, 2020 at 10:10 PM Joe Perches <joe@perches.com> wrote:
+> We soon want to pass flags, e.g., to mark added System RAM resources.
+> mergeable. Prepare for that.
 >
-> fallthrough to a separate case/default label break; isn't very readable.
+> This patch is based on a similar patch by Oscar Salvador:
 >
-> Convert pseudo-keyword fallthrough; statements to a simple break; when
-> the next label is case or default and the only statement in the next
-> label block is break;
+> https://lkml.kernel.org/r/20190625075227.15193-3-osalvador@suse.de
 >
-> Found using:
->
-> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
->
-> Miscellanea:
->
-> o Move or coalesce a couple label blocks above a default: block.
->
-> Signed-off-by: Joe Perches <joe@perches.com>
+> Acked-by: Wei Liu <wei.liu@kernel.org>
+> Reviewed-by: Juergen Gross <jgross@suse.com> # Xen related part
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Jason Gunthorpe <jgg@ziepe.ca>
+> Cc: Pankaj Gupta <pankaj.gupta.linux@gmail.com>
+> Cc: Baoquan He <bhe@redhat.com>
+> Cc: Wei Yang <richardw.yang@linux.intel.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Vishal Verma <vishal.l.verma@intel.com>
+> Cc: Dave Jiang <dave.jiang@intel.com>
+> Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+> Cc: Haiyang Zhang <haiyangz@microsoft.com>
+> Cc: Stephen Hemminger <sthemmin@microsoft.com>
+> Cc: Wei Liu <wei.liu@kernel.org>
+> Cc: Heiko Carstens <hca@linux.ibm.com>
+> Cc: Vasily Gorbik <gor@linux.ibm.com>
+> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+> Cc: David Hildenbrand <david@redhat.com>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Jason Wang <jasowang@redhat.com>
+> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: Stefano Stabellini <sstabellini@kernel.org>
+> Cc: "Oliver O'Halloran" <oohall@gmail.com>
+> Cc: Pingfan Liu <kernelfans@gmail.com>
+> Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> Cc: Libor Pechacek <lpechacek@suse.cz>
+> Cc: Anton Blanchard <anton@ozlabs.org>
+> Cc: Leonardo Bras <leobras.c@gmail.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-acpi@vger.kernel.org
+> Cc: linux-nvdimm@lists.01.org
+> Cc: linux-hyperv@vger.kernel.org
+> Cc: linux-s390@vger.kernel.org
+> Cc: virtualization@lists.linux-foundation.org
+> Cc: xen-devel@lists.xenproject.org
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 > ---
+>  arch/powerpc/platforms/powernv/memtrace.c       |  2 +-
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  2 +-
+>  drivers/acpi/acpi_memhotplug.c                  |  3 ++-
+>  drivers/base/memory.c                           |  3 ++-
+>  drivers/dax/kmem.c                              |  2 +-
+>  drivers/hv/hv_balloon.c                         |  2 +-
+>  drivers/s390/char/sclp_cmd.c                    |  2 +-
+>  drivers/virtio/virtio_mem.c                     |  2 +-
+>  drivers/xen/balloon.c                           |  2 +-
+>  include/linux/memory_hotplug.h                  | 16 ++++++++++++----
+>  mm/memory_hotplug.c                             | 14 +++++++-------
+>  11 files changed, 30 insertions(+), 20 deletions(-)
 >
-> Compiled allyesconfig x86-64 only.
-> A few files for other arches were not compiled.
+> diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+> index 13b369d2cc454..6828108486f83 100644
+> --- a/arch/powerpc/platforms/powernv/memtrace.c
+> +++ b/arch/powerpc/platforms/powernv/memtrace.c
+> @@ -224,7 +224,7 @@ static int memtrace_online(void)
+>                         ent->mem = 0;
+>                 }
 >
->  arch/arm/mach-mmp/pm-pxa910.c                             |  2 +-
->  arch/arm64/kvm/handle_exit.c                              |  2 +-
->  arch/mips/kernel/cpu-probe.c                              |  2 +-
->  arch/mips/math-emu/cp1emu.c                               |  2 +-
->  arch/s390/pci/pci.c                                       |  2 +-
->  crypto/tcrypt.c                                           |  4 ++--
->  drivers/ata/sata_mv.c                                     |  2 +-
->  drivers/atm/lanai.c                                       |  2 +-
->  drivers/gpu/drm/i915/display/intel_sprite.c               |  2 +-
->  drivers/gpu/drm/nouveau/nvkm/engine/disp/hdmi.c           |  2 +-
->  drivers/hid/wacom_wac.c                                   |  2 +-
->  drivers/i2c/busses/i2c-i801.c                             |  2 +-
->  drivers/infiniband/ulp/rtrs/rtrs-clt.c                    | 14 +++++++-------
->  drivers/infiniband/ulp/rtrs/rtrs-srv.c                    |  6 +++---
->  drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c               |  2 +-
->  drivers/irqchip/irq-vic.c                                 |  4 ++--
->  drivers/md/dm.c                                           |  2 +-
->  drivers/media/dvb-frontends/drxd_hard.c                   |  2 +-
->  drivers/media/i2c/ov5640.c                                |  2 +-
->  drivers/media/i2c/ov6650.c                                |  5 ++---
->  drivers/media/i2c/smiapp/smiapp-core.c                    |  2 +-
->  drivers/media/i2c/tvp5150.c                               |  2 +-
->  drivers/media/pci/ddbridge/ddbridge-core.c                |  2 +-
->  drivers/media/usb/cpia2/cpia2_core.c                      |  2 +-
->  drivers/mfd/iqs62x.c                                      |  3 +--
->  drivers/mmc/host/atmel-mci.c                              |  2 +-
->  drivers/mtd/nand/raw/nandsim.c                            |  2 +-
->  drivers/net/ethernet/intel/e1000e/phy.c                   |  2 +-
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.c               |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c             |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c               |  2 +-
->  drivers/net/ethernet/intel/iavf/iavf_txrx.c               |  2 +-
->  drivers/net/ethernet/intel/igb/e1000_phy.c                |  2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c            |  2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c             |  2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c            |  2 +-
->  drivers/net/ethernet/intel/ixgbevf/vf.c                   |  2 +-
->  drivers/net/ethernet/netronome/nfp/nfpcore/nfp6000_pcie.c |  2 +-
->  drivers/net/ethernet/qlogic/qed/qed_mcp.c                 |  2 +-
->  drivers/net/ethernet/sfc/falcon/farch.c                   |  2 +-
->  drivers/net/ethernet/sfc/farch.c                          |  2 +-
->  drivers/net/phy/adin.c                                    |  3 +--
->  drivers/net/usb/pegasus.c                                 |  4 ++--
->  drivers/net/usb/usbnet.c                                  |  2 +-
->  drivers/net/wireless/ath/ath5k/eeprom.c                   |  2 +-
->  drivers/net/wireless/mediatek/mt7601u/dma.c               |  8 ++++----
->  drivers/nvme/host/core.c                                  | 12 ++++++------
->  drivers/pcmcia/db1xxx_ss.c                                |  4 ++--
->  drivers/power/supply/abx500_chargalg.c                    |  2 +-
->  drivers/power/supply/charger-manager.c                    |  2 +-
->  drivers/rtc/rtc-pcf85063.c                                |  2 +-
->  drivers/s390/scsi/zfcp_fsf.c                              |  2 +-
->  drivers/scsi/aic7xxx/aic79xx_core.c                       |  4 ++--
->  drivers/scsi/aic94xx/aic94xx_tmf.c                        |  2 +-
->  drivers/scsi/lpfc/lpfc_sli.c                              |  2 +-
->  drivers/scsi/smartpqi/smartpqi_init.c                     |  2 +-
->  drivers/scsi/sr.c                                         |  2 +-
->  drivers/tty/serial/sunsu.c                                |  2 +-
->  drivers/tty/serial/sunzilog.c                             |  2 +-
->  drivers/tty/vt/vt_ioctl.c                                 |  2 +-
->  drivers/usb/dwc3/core.c                                   |  2 +-
->  drivers/usb/gadget/legacy/inode.c                         |  2 +-
->  drivers/usb/gadget/udc/pxa25x_udc.c                       |  4 ++--
->  drivers/usb/host/ohci-hcd.c                               |  2 +-
->  drivers/usb/isp1760/isp1760-hcd.c                         |  2 +-
->  drivers/usb/musb/cppi_dma.c                               |  2 +-
->  drivers/usb/phy/phy-fsl-usb.c                             |  2 +-
->  drivers/video/fbdev/stifb.c                               |  2 +-
->  fs/afs/yfsclient.c                                        |  8 ++++----
->  fs/ceph/dir.c                                             |  2 +-
+> -               if (add_memory(ent->nid, ent->start, ent->size)) {
+> +               if (add_memory(ent->nid, ent->start, ent->size, MHP_NONE)) {
+>                         pr_err("Failed to add trace memory to node %d\n",
+>                                 ent->nid);
+>                         ret += 1;
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 0ea976d1cac47..e1c9fa0d730f5 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -615,7 +615,7 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>         nid = memory_add_physaddr_to_nid(lmb->base_addr);
+>
+>         /* Add the memory */
+> -       rc = __add_memory(nid, lmb->base_addr, block_sz);
+> +       rc = __add_memory(nid, lmb->base_addr, block_sz, MHP_NONE);
+>         if (rc) {
+>                 invalidate_lmb_associativity_index(lmb);
+>                 return rc;
+> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+> index e294f44a78504..2067c3bc55763 100644
+> --- a/drivers/acpi/acpi_memhotplug.c
+> +++ b/drivers/acpi/acpi_memhotplug.c
+> @@ -207,7 +207,8 @@ static int acpi_memory_enable_device(struct acpi_memory_device *mem_device)
+>                 if (node < 0)
+>                         node = memory_add_physaddr_to_nid(info->start_addr);
+>
+> -               result = __add_memory(node, info->start_addr, info->length);
+> +               result = __add_memory(node, info->start_addr, info->length,
+> +                                     MHP_NONE);
+>
+>                 /*
+>                  * If the memory block has been used by the kernel, add_memory()
+> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+> index 4db3c660de831..b4c297dd04755 100644
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -432,7 +432,8 @@ static ssize_t probe_store(struct device *dev, struct device_attribute *attr,
+>
+>         nid = memory_add_physaddr_to_nid(phys_addr);
+>         ret = __add_memory(nid, phys_addr,
+> -                          MIN_MEMORY_BLOCK_SIZE * sections_per_block);
+> +                          MIN_MEMORY_BLOCK_SIZE * sections_per_block,
+> +                          MHP_NONE);
+>
+>         if (ret)
+>                 goto out;
+> diff --git a/drivers/dax/kmem.c b/drivers/dax/kmem.c
+> index 7dcb2902e9b1b..896cb9444e727 100644
+> --- a/drivers/dax/kmem.c
+> +++ b/drivers/dax/kmem.c
+> @@ -95,7 +95,7 @@ int dev_dax_kmem_probe(struct dev_dax *dev_dax)
+>                  * this as RAM automatically.
+>                  */
+>                 rc = add_memory_driver_managed(numa_node, range.start,
+> -                               range_len(&range), kmem_name);
+> +                               range_len(&range), kmem_name, MHP_NONE);
+>
+>                 res->flags |= IORESOURCE_BUSY;
+>                 if (rc) {
+> diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
+> index 32e3bc0aa665a..3c0d52e244520 100644
+> --- a/drivers/hv/hv_balloon.c
+> +++ b/drivers/hv/hv_balloon.c
+> @@ -726,7 +726,7 @@ static void hv_mem_hot_add(unsigned long start, unsigned long size,
+>
+>                 nid = memory_add_physaddr_to_nid(PFN_PHYS(start_pfn));
+>                 ret = add_memory(nid, PFN_PHYS((start_pfn)),
+> -                               (HA_CHUNK << PAGE_SHIFT));
+> +                               (HA_CHUNK << PAGE_SHIFT), MHP_NONE);
+>
+>                 if (ret) {
+>                         pr_err("hot_add memory failed error is %d\n", ret);
+> diff --git a/drivers/s390/char/sclp_cmd.c b/drivers/s390/char/sclp_cmd.c
+> index a864b21af602a..f6e97f0830f64 100644
+> --- a/drivers/s390/char/sclp_cmd.c
+> +++ b/drivers/s390/char/sclp_cmd.c
+> @@ -406,7 +406,7 @@ static void __init add_memory_merged(u16 rn)
+>         if (!size)
+>                 goto skip_add;
+>         for (addr = start; addr < start + size; addr += block_size)
+> -               add_memory(0, addr, block_size);
+> +               add_memory(0, addr, block_size, MHP_NONE);
+>  skip_add:
+>         first_rn = rn;
+>         num = 1;
+> diff --git a/drivers/virtio/virtio_mem.c b/drivers/virtio/virtio_mem.c
+> index 834b7c13ef3dc..ed99e43354010 100644
+> --- a/drivers/virtio/virtio_mem.c
+> +++ b/drivers/virtio/virtio_mem.c
+> @@ -424,7 +424,7 @@ static int virtio_mem_mb_add(struct virtio_mem *vm, unsigned long mb_id)
+>
+>         dev_dbg(&vm->vdev->dev, "adding memory block: %lu\n", mb_id);
+>         return add_memory_driver_managed(nid, addr, memory_block_size_bytes(),
+> -                                        vm->resource_name);
+> +                                        vm->resource_name, MHP_NONE);
+>  }
+>
+>  /*
+> diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+> index 51427c752b37b..9f40a294d398d 100644
+> --- a/drivers/xen/balloon.c
+> +++ b/drivers/xen/balloon.c
+> @@ -331,7 +331,7 @@ static enum bp_state reserve_additional_memory(void)
+>         mutex_unlock(&balloon_mutex);
+>         /* add_memory_resource() requires the device_hotplug lock */
+>         lock_device_hotplug();
+> -       rc = add_memory_resource(nid, resource);
+> +       rc = add_memory_resource(nid, resource, MHP_NONE);
+>         unlock_device_hotplug();
+>         mutex_lock(&balloon_mutex);
+>
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 51a877fec8da8..e53d1058f3443 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -57,6 +57,12 @@ enum {
+>         MMOP_ONLINE_MOVABLE,
+>  };
+>
+> +/* Flags for add_memory() and friends to specify memory hotplug details. */
+> +typedef int __bitwise mhp_t;
+> +
+> +/* No special request */
+> +#define MHP_NONE               ((__force mhp_t)0)
+> +
+>  /*
+>   * Extended parameters for memory hotplug:
+>   * altmap: alternative allocator for memmap array (optional)
+> @@ -345,11 +351,13 @@ extern void set_zone_contiguous(struct zone *zone);
+>  extern void clear_zone_contiguous(struct zone *zone);
+>
+>  extern void __ref free_area_init_core_hotplug(int nid);
+> -extern int __add_memory(int nid, u64 start, u64 size);
+> -extern int add_memory(int nid, u64 start, u64 size);
+> -extern int add_memory_resource(int nid, struct resource *resource);
+> +extern int __add_memory(int nid, u64 start, u64 size, mhp_t mhp_flags);
+> +extern int add_memory(int nid, u64 start, u64 size, mhp_t mhp_flags);
+> +extern int add_memory_resource(int nid, struct resource *resource,
+> +                              mhp_t mhp_flags);
+>  extern int add_memory_driver_managed(int nid, u64 start, u64 size,
+> -                                    const char *resource_name);
+> +                                    const char *resource_name,
+> +                                    mhp_t mhp_flags);
+>  extern void move_pfn_range_to_zone(struct zone *zone, unsigned long start_pfn,
+>                                    unsigned long nr_pages,
+>                                    struct vmem_altmap *altmap, int migratetype);
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 8e1cd18b5cf14..8f0bd7c9a63a5 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -1039,7 +1039,7 @@ static int online_memory_block(struct memory_block *mem, void *arg)
+>   *
+>   * we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG
+>   */
+> -int __ref add_memory_resource(int nid, struct resource *res)
+> +int __ref add_memory_resource(int nid, struct resource *res, mhp_t mhp_flags)
+>  {
+>         struct mhp_params params = { .pgprot = PAGE_KERNEL };
+>         u64 start, size;
+> @@ -1118,7 +1118,7 @@ int __ref add_memory_resource(int nid, struct resource *res)
+>  }
+>
+>  /* requires device_hotplug_lock, see add_memory_resource() */
+> -int __ref __add_memory(int nid, u64 start, u64 size)
+> +int __ref __add_memory(int nid, u64 start, u64 size, mhp_t mhp_flags)
+>  {
+>         struct resource *res;
+>         int ret;
+> @@ -1127,18 +1127,18 @@ int __ref __add_memory(int nid, u64 start, u64 size)
+>         if (IS_ERR(res))
+>                 return PTR_ERR(res);
+>
+> -       ret = add_memory_resource(nid, res);
+> +       ret = add_memory_resource(nid, res, mhp_flags);
+>         if (ret < 0)
+>                 release_memory_resource(res);
+>         return ret;
+>  }
+>
+> -int add_memory(int nid, u64 start, u64 size)
+> +int add_memory(int nid, u64 start, u64 size, mhp_t mhp_flags)
+>  {
+>         int rc;
+>
+>         lock_device_hotplug();
+> -       rc = __add_memory(nid, start, size);
+> +       rc = __add_memory(nid, start, size, mhp_flags);
+>         unlock_device_hotplug();
+>
+>         return rc;
+> @@ -1167,7 +1167,7 @@ EXPORT_SYMBOL_GPL(add_memory);
+>   * "System RAM ($DRIVER)".
+>   */
+>  int add_memory_driver_managed(int nid, u64 start, u64 size,
+> -                             const char *resource_name)
+> +                             const char *resource_name, mhp_t mhp_flags)
+>  {
+>         struct resource *res;
+>         int rc;
+> @@ -1185,7 +1185,7 @@ int add_memory_driver_managed(int nid, u64 start, u64 size,
+>                 goto out_unlock;
+>         }
+>
+> -       rc = add_memory_resource(nid, res);
+> +       rc = add_memory_resource(nid, res, mhp_flags);
+>         if (rc < 0)
+>                 release_memory_resource(res);
+>
+> --
 
-For ceph:
+Reviewed-by: Pankaj Gupta <pankaj.gupta.linux@gmail.com>
 
-Acked-by: Ilya Dryomov <idryomov@gmail.com>
-
-Thanks,
-
-                Ilya
+> 2.26.2
+>
