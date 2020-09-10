@@ -2,61 +2,95 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 927ADC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30445C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 02:14:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5C7422229
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 01:23:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5C7422229
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 670F8207DE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 02:14:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ByQbn9Jd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 670F8207DE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bn1Nc1fxGzDqbx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 11:23:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bn2WM3mpnzDqZX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 12:14:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=oracle.com (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
+ envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=ByQbn9Jd; 
+ dkim-atps=neutral
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bn1JD5V6fzDqY0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 11:19:24 +1000 (AEST)
-IronPort-SDR: /t7+dNFlb5BS4rM+yNxxzvRR6N7hufE2QhTIjxPSfflVcvEpJG0INoyeJAlGI1FPTQHcoZacWB
- otYtgHgGIyuA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9739"; a="157732226"
-X-IronPort-AV: E=Sophos;i="5.76,411,1592895600"; d="scan'208";a="157732226"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Sep 2020 18:19:22 -0700
-IronPort-SDR: tOGzuj49fmjgpuYcc3sjtH7dBpw4Z402OzU10VgDAGVhwTvidfIMZjIYd6NN7Ik9lrVVe/5jot
- VP8kEanRtZGg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,411,1592895600"; d="scan'208";a="334007949"
-Received: from lkp-server01.sh.intel.com (HELO 12ff3cf3f2e9) ([10.239.97.150])
- by orsmga008.jf.intel.com with ESMTP; 09 Sep 2020 18:19:20 -0700
-Received: from kbuild by 12ff3cf3f2e9 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kGBF9-0000fa-UH; Thu, 10 Sep 2020 01:19:19 +0000
-Date: Thu, 10 Sep 2020 09:18:48 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 4b552a4cbf286ff9dcdab19153f3c1c7d1680fab
-Message-ID: <5f597ef8.bn/zMFSfzR+K/1PQ%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bn2TG4KCfzDqZT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 12:12:18 +1000 (AEST)
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+ by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08A2AccQ088409;
+ Thu, 10 Sep 2020 02:12:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=to : cc : subject :
+ from : message-id : references : date : in-reply-to : mime-version :
+ content-type; s=corp-2020-01-29;
+ bh=0Ob3xkYnA7g87tw9QRrxEgtLXmHMT5ZuRH5gPzD9bu4=;
+ b=ByQbn9JdMyJhjBqhbUKTU1FHB5qP+V2HKUbVR14Yum0o1FMdcJ2wGyiS19Fl28HagoYo
+ efUT/z0KgFbzRRhUtWDnZtdhcn5qU828kCrduExDf1Fr8h8sLPAHuKsjKR0caEytaeHf
+ 93R0kjidhQ2o+Gxdfhb0kxOkD2etGvRas6tqUJsNSKex9y6koIvlvHKic/XMO4XK3kAK
+ KngrXaUKLRV3bT8D5SCbWO7ZrS4p69fOaUe4VjuhprCCFO+Bin29BD7LmiLk4VwPawoW
+ yjZp2USgw1ahg2U2OIs0KANsabWtIpcxzVz5MKtM7et1OHxYE0mlzLc8/53oSAFRQeHV Ag== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+ by aserp2120.oracle.com with ESMTP id 33c2mm56ma-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 10 Sep 2020 02:12:01 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+ by userp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08A2APkX082529;
+ Thu, 10 Sep 2020 02:12:01 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userp3030.oracle.com with ESMTP id 33cmkyy6r9-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 10 Sep 2020 02:12:01 +0000
+Received: from abhmp0011.oracle.com (abhmp0011.oracle.com [141.146.116.17])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 08A2BvFi012904;
+ Thu, 10 Sep 2020 02:11:59 GMT
+Received: from ca-mkp.ca.oracle.com (/10.159.214.123)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Wed, 09 Sep 2020 19:11:56 -0700
+To: Jing Xiangfeng <jingxiangfeng@huawei.com>
+Subject: Re: [PATCH] scsi: ibmvfc: Fix error return in ibmvfc_probe()
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <yq1r1ra2xf0.fsf@ca-mkp.ca.oracle.com>
+References: <20200907083949.154251-1-jingxiangfeng@huawei.com>
+Date: Wed, 09 Sep 2020 22:11:50 -0400
+In-Reply-To: <20200907083949.154251-1-jingxiangfeng@huawei.com> (Jing
+ Xiangfeng's message of "Mon, 7 Sep 2020 16:39:49 +0800")
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9739
+ signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
+ phishscore=0 suspectscore=1
+ spamscore=0 mlxlogscore=999 adultscore=0 malwarescore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2009100019
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9739
+ signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0
+ priorityscore=1501
+ phishscore=0 adultscore=0 bulkscore=0 clxscore=1011 mlxlogscore=999
+ malwarescore=0 suspectscore=1 lowpriorityscore=0 spamscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009100018
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,155 +102,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: tyreld@linux.ibm.com, linux-scsi@vger.kernel.org,
+ martin.petersen@oracle.com, jejb@linux.ibm.com, linux-kernel@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 4b552a4cbf286ff9dcdab19153f3c1c7d1680fab  Automatic merge of 'master', 'next' and 'fixes' (2020-09-09 22:40)
 
-elapsed time: 726m
+Jing,
 
-configs tested: 129
-configs skipped: 11
+> Fix to return error code PTR_ERR() from the error handling case instead
+> of 0.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Applied to 5.10/scsi-staging. Thanks!
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                            zeus_defconfig
-powerpc                 linkstation_defconfig
-sparc64                             defconfig
-h8300                       h8s-sim_defconfig
-mips                      fuloong2e_defconfig
-sh                         apsh4a3a_defconfig
-arm                      footbridge_defconfig
-sh                         ecovec24_defconfig
-mips                malta_kvm_guest_defconfig
-sh                            shmin_defconfig
-powerpc                        cell_defconfig
-powerpc                     powernv_defconfig
-powerpc                      mgcoge_defconfig
-arm                        neponset_defconfig
-m68k                        stmark2_defconfig
-arm                       mainstone_defconfig
-mips                           mtx1_defconfig
-sh                          r7785rp_defconfig
-arc                           tb10x_defconfig
-arm                        spear3xx_defconfig
-arm                           sama5_defconfig
-arm                       netwinder_defconfig
-microblaze                      mmu_defconfig
-sh                           se7721_defconfig
-arm                         lpc18xx_defconfig
-mips                           jazz_defconfig
-m68k                       m5249evb_defconfig
-parisc                generic-32bit_defconfig
-arm                         assabet_defconfig
-arm                            dove_defconfig
-arc                          axs101_defconfig
-mips                       bmips_be_defconfig
-powerpc                     mpc83xx_defconfig
-m68k                           sun3_defconfig
-powerpc                     mpc512x_defconfig
-sh                        sh7757lcr_defconfig
-s390                             allyesconfig
-arm                        cerfcube_defconfig
-sh                             shx3_defconfig
-arm                        clps711x_defconfig
-arc                        vdk_hs38_defconfig
-openrisc                         alldefconfig
-sh                         ap325rxa_defconfig
-arm                        mvebu_v7_defconfig
-arm                       spear13xx_defconfig
-openrisc                 simple_smp_defconfig
-arm                          collie_defconfig
-sh                           se7750_defconfig
-arm                         hackkit_defconfig
-arm                          gemini_defconfig
-sh                         microdev_defconfig
-arm                          ixp4xx_defconfig
-sh                          landisk_defconfig
-arc                     haps_hs_smp_defconfig
-arm                           tegra_defconfig
-sh                           se7206_defconfig
-xtensa                    xip_kc705_defconfig
-mips                          rb532_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20200909
-x86_64               randconfig-a006-20200909
-x86_64               randconfig-a003-20200909
-x86_64               randconfig-a001-20200909
-x86_64               randconfig-a005-20200909
-x86_64               randconfig-a002-20200909
-i386                 randconfig-a004-20200909
-i386                 randconfig-a005-20200909
-i386                 randconfig-a006-20200909
-i386                 randconfig-a002-20200909
-i386                 randconfig-a001-20200909
-i386                 randconfig-a003-20200909
-i386                 randconfig-a016-20200909
-i386                 randconfig-a015-20200909
-i386                 randconfig-a011-20200909
-i386                 randconfig-a013-20200909
-i386                 randconfig-a014-20200909
-i386                 randconfig-a012-20200909
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a013-20200909
-x86_64               randconfig-a016-20200909
-x86_64               randconfig-a011-20200909
-x86_64               randconfig-a012-20200909
-x86_64               randconfig-a015-20200909
-x86_64               randconfig-a014-20200909
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+-- 
+Martin K. Petersen	Oracle Linux Engineering
