@@ -2,115 +2,115 @@ Return-Path: <SRS0=I40Z=CT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EDF2C43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:42:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A4C9C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:51:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 852B720829
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:42:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 30E1620829
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 09:51:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="JnI3+HuS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 852B720829
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="m+S0uISl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30E1620829
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnDSY6SvNzDqcm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 19:42:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnDg34YbszDqfF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 19:51:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=maier@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=JnI3+HuS; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=m+S0uISl; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnDQJ3FVrzDqYP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 19:40:24 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08A9Vt6b119469; Thu, 10 Sep 2020 05:39:36 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnCxY3mfNzDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 19:18:54 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 08A92VZj043273; Thu, 10 Sep 2020 05:18:39 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=41BJsvawiBO1ghr06VQIrffJCPHY4UzVo4fvKE+7RMs=;
- b=JnI3+HuSFQICzixnbEr3lD/KU407bMni7V5mL/H47oPLaomhPs6t57kI2sBNlnitleWU
- Ljv2tAQ6Y00VBu0RV7fJV/uOYIaFn2+L3EVF73PBzpDn0xMhXi4S9uZF+n3tyogr9cL8
- ytPNf7pxi3XLZLzrvhLCPhCFdXv9qVuX2Is4ueWpwdN5VmTvJ7ZPUFIC/eAC2eqsGvRz
- 0ArbCVZIdHdWjs4nUhCUUciXheJ/YGqiDnhHtZPbG7C2gBZK+PQzRO1oEWokDf3RJaPK
- qEdPrU10FoZR5nshuEVIEbRP9lZ8x2Pm0AWZdo3HKCBJEvEDjwjaM3Kk9J6p8hBlCJ8m ng== 
+ h=from : subject : to : cc
+ : references : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=lbijph5Taiyv+LvsJ/sM7F9hRJYgXJ1/OeIBGv1V4zI=;
+ b=m+S0uISl4zEUpQGOdqBmign+zGpGsKWZr0M8gyz4QB85tpAWWy9P9TsdEALPMOQc3bzS
+ HTmLUO+a8FzA6nkFFUM33SJxJVALimBUdqlyOa2QZAPtF+c5k3tdLE9Ja5lY/NITAiC6
+ 7HCRwKAifhDAW7efbtBkvvOJ9noreWSpBIsRvblR2Hd6QlL3Ql+0LiOJ/5ZV1/0dyGOl
+ ERG9aDbHT//+EVNVz7T31D+HrD6qNbB+7sB3Bj+uKnN/s2x03LNnlPZVOOElWWQIxfaC
+ VUv4NZ3PEML96IaUY9CGtxDOOL3o1HTtA4I8YY6eO/McXjX1bfFSSUd+pDdF2Re/VmW7 tg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 33fg9ejw18-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33fh5s0eur-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 05:39:36 -0400
-Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08A9WV5v121274;
- Thu, 10 Sep 2020 05:39:35 -0400
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.70])
- by mx0b-001b2d01.pphosted.com with ESMTP id 33fg9ejvxx-1
+ Thu, 10 Sep 2020 05:18:39 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08A92b39043665;
+ Thu, 10 Sep 2020 05:18:37 -0400
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33fh5s0etk-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 05:39:35 -0400
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
- by ppma01fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08A9c3QB011125;
- Thu, 10 Sep 2020 09:39:32 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by ppma01fra.de.ibm.com with ESMTP id 33c2a81b0c-1
+ Thu, 10 Sep 2020 05:18:37 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08A9DDHx028675;
+ Thu, 10 Sep 2020 09:18:34 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com
+ (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+ by ppma03fra.de.ibm.com with ESMTP id 33c2a8bckn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 09:39:32 +0000
+ Thu, 10 Sep 2020 09:18:34 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 08A9dTSv34800078
+ by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 08A9GxlP65470906
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Sep 2020 09:39:29 GMT
+ Thu, 10 Sep 2020 09:16:59 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2EE38AE04D;
- Thu, 10 Sep 2020 09:39:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6C217AE055;
+ Thu, 10 Sep 2020 09:18:32 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7BD21AE053;
- Thu, 10 Sep 2020 09:39:27 +0000 (GMT)
-Received: from oc3871087118.ibm.com (unknown [9.145.67.15])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu, 10 Sep 2020 09:39:27 +0000 (GMT)
-Date: Thu, 10 Sep 2020 11:39:25 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
- folding
-Message-ID: <20200910093925.GB29166@oc3871087118.ibm.com>
-References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
- <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
- <0dbc6ec8-45ea-0853-4856-2bc1e661a5a5@intel.com>
- <20200909142904.00b72921@thinkpad>
- <aacad1b7-f121-44a5-f01d-385cb0f6351e@intel.com>
- <20200909192534.442f8984@thinkpad>
- <20200909180324.GI87483@ziepe.ca>
+ by IMSVA (Postfix) with ESMTP id 299C6AE04D;
+ Thu, 10 Sep 2020 09:18:30 +0000 (GMT)
+Received: from oc4120165700.ibm.com (unknown [9.145.14.177])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Sep 2020 09:18:30 +0000 (GMT)
+From: Steffen Maier <maier@linux.ibm.com>
+Subject: Re: [trivial PATCH] treewide: Convert switch/case fallthrough; to
+ break;
+To: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
+ Jiri Kosina <trivial@kernel.org>, Benjamin Block <bblock@linux.ibm.com>
+References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+Message-ID: <0c66fbe5-c48b-7dc1-f7fe-1498da9cc1a3@linux.ibm.com>
+Date: Thu, 10 Sep 2020 11:18:29 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200909180324.GI87483@ziepe.ca>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-09-10_01:2020-09-10,
  2020-09-10 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 mlxscore=0 suspectscore=0 clxscore=1011 adultscore=0
- spamscore=0 phishscore=0 mlxlogscore=999 bulkscore=0 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009100085
+ lowpriorityscore=0
+ phishscore=0 suspectscore=0 impostorscore=0 priorityscore=1501 spamscore=0
+ mlxlogscore=940 adultscore=0 bulkscore=0 clxscore=1011 mlxscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009100080
+X-Mailman-Approved-At: Thu, 10 Sep 2020 19:49:35 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,72 +122,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>,
- Paul Mackerras <paulus@samba.org>, linux-sparc <sparclinux@vger.kernel.org>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
- Richard Weinberger <richard@nod.at>, linux-x86 <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
- Heiko Carstens <hca@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- John Hubbard <jhubbard@nvidia.com>, Jeff Dike <jdike@addtoit.com>,
- linux-um <linux-um@lists.infradead.org>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm <linux-arm-kernel@lists.infradead.org>,
- linux-mm <linux-mm@kvack.org>, linux-power <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Mike Rapoport <rppt@kernel.org>
+Cc: linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ oss-drivers@netronome.com, nouveau@lists.freedesktop.org,
+ alsa-devel <alsa-devel@alsa-project.org>, dri-devel@lists.freedesktop.org,
+ linux-ide@vger.kernel.org, dm-devel@redhat.com, linux-mtd@lists.infradead.org,
+ linux-i2c@vger.kernel.org, sparclinux@vger.kernel.org,
+ kvmarm@lists.cs.columbia.edu, linux-rtc@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, dccp@vger.kernel.org,
+ linux-rdma@vger.kernel.org, linux-atm-general@lists.sourceforge.net,
+ linux-afs@lists.infradead.org, coreteam@netfilter.org,
+ intel-wired-lan@lists.osuosl.org, linux-serial@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
+ Kees Cook <kees.cook@canonical.com>, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+ linux-sctp@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-nvme@lists.infradead.org, storagedev@microchip.com,
+ ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netfilter-devel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 09, 2020 at 03:03:24PM -0300, Jason Gunthorpe wrote:
-> On Wed, Sep 09, 2020 at 07:25:34PM +0200, Gerald Schaefer wrote:
-> > I actually had to draw myself a picture to get some hold of
-> > this, or rather a walk-through with a certain pud-crossing
-> > range in a folded 3-level scenario. Not sure if I would have
-> > understood my explanation above w/o that, but I hope you can
-> > make some sense out of it. Or draw yourself a picture :-)
+On 9/9/20 10:06 PM, Joe Perches wrote:
+> fallthrough to a separate case/default label break; isn't very readable.
 > 
-> What I don't understand is how does anything work with S390 today?
+> Convert pseudo-keyword fallthrough; statements to a simple break; when
+> the next label is case or default and the only statement in the next
+> label block is break;
 > 
-> If the fix is only to change pxx_addr_end() then than generic code
-> like mm/pagewalk.c will iterate over a *different list* of page table
-> entries. 
+> Found using:
 > 
-> It's choice of entries to look at is entirely driven by pxx_addr_end().
+> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
 > 
-> Which suggest to me that mm/pagewalk.c also doesn't work properly
-> today on S390 and this issue is not really about stack variables?
+> Miscellanea:
 > 
-> Fundamentally if pXX_offset() and pXX_addr_end() must be consistent
-> together, if pXX_offset() is folded then pXX_addr_end() must cause a
-> single iteration of that level.
+> o Move or coalesce a couple label blocks above a default: block.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Compiled allyesconfig x86-64 only.
+> A few files for other arches were not compiled.
 
-Your observation is correct.
+>   drivers/s390/scsi/zfcp_fsf.c                              |  2 +-
 
-Another way to describe the problem is existing pXd_addr_end helpers
-could be applied to mismatching levels on s390 (e.g p4d_addr_end
-applied to pud or pgd_addr_end applied to p4d). As you noticed,
-all *_pXd_range iterators could be called with address ranges that
-exceed single pXd table.
+>   82 files changed, 109 insertions(+), 112 deletions(-)
 
-However, when it happens with pointers to real page tables (passed to
-*_pXd_range iterators) we still operate on valid tables, which just
-(lucky for us) happened to be folded. Thus we still reference correct
-table entries.
+> diff --git a/drivers/s390/scsi/zfcp_fsf.c b/drivers/s390/scsi/zfcp_fsf.c
+> index 140186fe1d1e..2741a07df692 100644
+> --- a/drivers/s390/scsi/zfcp_fsf.c
+> +++ b/drivers/s390/scsi/zfcp_fsf.c
+> @@ -2105,7 +2105,7 @@ static void zfcp_fsf_open_lun_handler(struct zfcp_fsf_req *req)
+>   
+>   	case FSF_PORT_HANDLE_NOT_VALID:
+>   		zfcp_erp_adapter_reopen(adapter, 0, "fsouh_1");
+> -		fallthrough;
+> +		break;
+>   	case FSF_LUN_ALREADY_OPEN:
+>   		break;
+>   	case FSF_PORT_BOXED:
 
-It is only gup_fast case that exposes the issue. It hits because
-pointers to stack copies are passed to gup_pXd_range iterators, not
-pointers to real page tables itself.
+Acked-by: Steffen Maier <maier@linux.ibm.com> # for zfcp
 
-As Gerald mentioned, it is very difficult to explain in a clear way.
-Hopefully, one could make sense ot of it.
 
-> Jason
+-- 
+Mit freundlichen Gruessen / Kind regards
+Steffen Maier
+
+Linux on IBM Z Development
+
+https://www.ibm.com/privacy/us/en/
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Matthias Hartmann
+Geschaeftsfuehrung: Dirk Wittkopp
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
