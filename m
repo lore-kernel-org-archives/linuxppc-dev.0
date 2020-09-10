@@ -4,124 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 930E4C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02D32C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:43:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B669C207EA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:30:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 52B0D21D7E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Sep 2020 18:43:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="YOeIhX8p"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B669C207EA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="KlHKM3kh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52B0D21D7E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnS9q4bnTzDqWG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 04:30:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BnS7X2nL4zDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 04:28:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=YOeIhX8p; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4BnS7W5dMCz8tZc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 04:28:23 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4BnS7W3s2wz9sTv; Fri, 11 Sep 2020 04:28:23 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=cheloha@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnSSM32KnzDqQn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 04:42:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::242;
+ helo=mail-lj1-x242.google.com; envelope-from=torvalds@linuxfoundation.org;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=YOeIhX8p; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.a=rsa-sha256 header.s=google header.b=KlHKM3kh; 
+ dkim-atps=neutral
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
+ [IPv6:2a00:1450:4864:20::242])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4BnS7V4JZgz9sT6;
- Fri, 11 Sep 2020 04:28:22 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08AI1hkE058774; Thu, 10 Sep 2020 14:28:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- content-transfer-encoding : in-reply-to; s=pp1;
- bh=pUHHpPpPvuprvafhzdfQXQjaHmFyOTOMIryJiXQhgVg=;
- b=YOeIhX8p1iNw8ONs6DKPMMHMrKybcGJWceoo7NxZ29ANlurZx0rMn+9iIM04XkhFS9gs
- MBPVTuAh4u1V/bJYqRz8hiO8xbn57PPKzWGOsRW6NOITt+KhHRvYRYZrU3gV65qoQ6sF
- E7GlmS8jMSr5yU82awxHB0SR7Sj6VYvz+yCBfrIPZtG8bDuCxLozM6TbFMeqoTDCYzOh
- EI7GZLMbBRXi/fOdHgSG08I2pjGVE7663kB5DfuCLhL5c36ev7l3yo7cmcbppcnNSZcU
- GoY4XsFx+c8ScH3Z2AayzZAXMwfLYgPKg8oUObCuIza8cwZrhhlWxVuxcMgRf4sBZ/dT /g== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33fqts37vp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 14:28:20 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08AI1xC1060471;
- Thu, 10 Sep 2020 14:28:20 -0400
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com
- [169.55.91.170])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33fqts37sy-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 14:28:20 -0400
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
- by ppma02wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08AIHmhO011278;
- Thu, 10 Sep 2020 18:28:14 GMT
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by ppma02wdc.us.ibm.com with ESMTP id 33c2a9hqjj-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 10 Sep 2020 18:28:14 +0000
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 08AIS7Yg21889368
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 10 Sep 2020 18:28:08 GMT
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1CA8F6A04F;
- Thu, 10 Sep 2020 18:28:13 +0000 (GMT)
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F234B6A054;
- Thu, 10 Sep 2020 18:28:12 +0000 (GMT)
-Received: from localhost (unknown [9.41.179.32])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 10 Sep 2020 18:28:12 +0000 (GMT)
-Date: Thu, 10 Sep 2020 13:28:12 -0500
-From: Scott Cheloha <cheloha@linux.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] pseries/drmem: don't cache node id in drmem_lmb struct
-Message-ID: <20200910182812.bsjjh4x45hwannor@rascal.austin.ibm.com>
-References: <20200811015115.63677-1-cheloha@linux.ibm.com>
- <2704bebf-8c7b-7912-5e03-ddcc57acf8d1@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnSPR0ppnzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 04:40:25 +1000 (AEST)
+Received: by mail-lj1-x242.google.com with SMTP id k25so9544076ljk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 11:40:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=qxUvMosCQmqJOT3+XnukK6QXCPsj7s8SUCtblFuQCtk=;
+ b=KlHKM3khaRQUhJpR9UdzFB5LWAQF17Brw1Ft7CKtiriIUBpvA7+djFgchHKossZjUO
+ VhqJr4lFUYp9ylSJpdlZ0hFaIz/Ssta/iioJv0jWuQQR7zk9LpCYLPwRfEoZmfrs0FFc
+ eJ9cpxyshw+kFNXrIvj9XAnDrbJSgUK0YSwsk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=qxUvMosCQmqJOT3+XnukK6QXCPsj7s8SUCtblFuQCtk=;
+ b=NEPBf2pAnHwaGfH7+WbAed5iFth/fQ3kCTR4JnYeOMKFFANLUv2kX/xZsxWaAressJ
+ EF6p3KX90qJ1u75vdWDg4UbR5pPhTqVCFGyiNVSiM+NulCUOedNZHZXkuC7AWB+aXC1b
+ iF9eixUyXoOfNXan2YJdSFWn7DlYZkNqcOZs4kb2HNe6BoDK+Sslq+pwyxko9XHzMHpn
+ 3v/96XpDXL1ecp4e8x7jW+qkaIoxYcR+4mSFHjGAhrnEBLXCmkyhBzi1C6hIITqpQgzM
+ x4hGE3ojUVZJF8CXVdklqJLFeiLEWm/M0HdCX5DeV5P55oaJb7RIrPphQLGNLhGCQcjw
+ Gn5A==
+X-Gm-Message-State: AOAM532QnE77HgK9INLOg7W0zYmiZoxGf1F8tLVeuVq9cHHBrDZikgId
+ 6B1yF3jRxEvoHpyTspJDJjxosFXGyfftyg==
+X-Google-Smtp-Source: ABdhPJxBdzz1KiiK6EuszvR31t5pQiXGEXuOeKH7pXLtTG6f9DrOKJzM85RFG0HwpdFz4rFG4IjHKQ==
+X-Received: by 2002:a05:651c:209:: with SMTP id
+ y9mr4995420ljn.398.1599763219847; 
+ Thu, 10 Sep 2020 11:40:19 -0700 (PDT)
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com.
+ [209.85.167.44])
+ by smtp.gmail.com with ESMTPSA id 25sm1799150lji.130.2020.09.10.11.40.19
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 10 Sep 2020 11:40:19 -0700 (PDT)
+Received: by mail-lf1-f44.google.com with SMTP id z19so4155818lfr.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2020 11:40:19 -0700 (PDT)
+X-Received: by 2002:a05:651c:104c:: with SMTP id
+ x12mr5572300ljm.285.1599762813344; 
+ Thu, 10 Sep 2020 11:33:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2704bebf-8c7b-7912-5e03-ddcc57acf8d1@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-10_05:2020-09-10,
- 2020-09-10 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 mlxscore=0
- phishscore=0 clxscore=1011 mlxlogscore=957 spamscore=0 malwarescore=0
- impostorscore=0 adultscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009100162
+References: <20200907180058.64880-1-gerald.schaefer@linux.ibm.com>
+ <20200907180058.64880-2-gerald.schaefer@linux.ibm.com>
+ <0dbc6ec8-45ea-0853-4856-2bc1e661a5a5@intel.com>
+ <20200909142904.00b72921@thinkpad>
+ <aacad1b7-f121-44a5-f01d-385cb0f6351e@intel.com>
+ <20200909192534.442f8984@thinkpad> <20200909180324.GI87483@ziepe.ca>
+ <20200910093925.GB29166@oc3871087118.ibm.com>
+ <CAHk-=wh4SuNvThq1nBiqk0N-fW6NsY5w=VawC=rJs7ekmjAhjA@mail.gmail.com>
+ <20200910181319.GO87483@ziepe.ca>
+In-Reply-To: <20200910181319.GO87483@ziepe.ca>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 10 Sep 2020 11:33:17 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wh3SjOE2r4WCfagL5Zq4Oj4Jsu1=1jTTi2GxGDTxP-J0Q@mail.gmail.com>
+Message-ID: <CAHk-=wh3SjOE2r4WCfagL5Zq4Oj4Jsu1=1jTTi2GxGDTxP-J0Q@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 1/3] mm/gup: fix gup_fast with dynamic page table
+ folding
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -133,61 +105,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, David Hildenbrand <david@redhat.com>,
- linuxppc-dev@ozlabs.org, Michal Suchanek <msuchanek@suse.de>,
- Rick Lindsley <ricklind@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>,
+ Paul Mackerras <paulus@samba.org>, linux-sparc <sparclinux@vger.kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, Will Deacon <will@kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
+ Richard Weinberger <richard@nod.at>, linux-x86 <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ John Hubbard <jhubbard@nvidia.com>, Jeff Dike <jdike@addtoit.com>,
+ linux-um <linux-um@lists.infradead.org>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm <linux-arm-kernel@lists.infradead.org>,
+ linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-power <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Aug 21, 2020 at 10:33:10AM +0200, Laurent Dufour wrote:
-> Le 11/08/2020 à 03:51, Scott Cheloha a écrit :
-> > 
-> > [...]
-> > 
-> > @@ -631,7 +638,7 @@ static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index)
-> >   static int dlpar_add_lmb(struct drmem_lmb *lmb)
-> >   {
-> >   	unsigned long block_sz;
-> > -	int rc;
-> > +	int nid, rc;
-> > 
-> >   	if (lmb->flags & DRCONF_MEM_ASSIGNED)
-> >   		return -EINVAL;
-> > @@ -642,11 +649,13 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
-> >   		return rc;
-> >   	}
-> > 
-> > -	lmb_set_nid(lmb);
-> >   	block_sz = memory_block_size_bytes();
-> > 
-> > +	/* Find the node id for this address. */
-> > +	nid = memory_add_physaddr_to_nid(lmb->base_addr);
-> 
-> I think we could be more efficient here.
-> Here is the call stack behind memory_add_physaddr_to_nid():
-> 
->   memory_add_physaddr_to_nid(lmb->base_addr)
->     hot_add_scn_to_nid()
->       if (of_find_node_by_path("/ibm,dynamic-reconfiguration-memory")) == true*
->       then
-> 	  hot_add_drconf_scn_to_nid()
-> 	    for_each_drmem_lmb() to find the LMB based on lmb->base_addr
-> 	      of_drconf_to_nid_single(found LMB)
-> 		use lmb->aa_index to get the nid.
-> 
-> * that test is necessarily true when called from dlpar_add_lmb()
-> otherwise the call to update_lmb_associativity_index() would have
-> failed earlier.
-> 
-> Basically, we have a LMB and we later walk all the LMBs to find that lmb
-> again.  In the case of dlpar_add_lmb(), it would be more efficient to
-> directly call of_drconf_to_nid_single(). That function is not exported
-> from arch/powerpc/mm/numa.c but it may be good to export it through that
-> patch.
+On Thu, Sep 10, 2020 at 11:13 AM Jason Gunthorpe <jgg@ziepe.ca> wrote:
+>
+> So.. To change away from the stack option I think we'd have to pass
+> the READ_ONCE value to pXX_offset() as an extra argument instead of it
+> derefing the pointer internally.
 
-I've posted a patch for this:
+Yeah, but I think that would actually be the better model than passing
+an address to a random stack location.
 
-https://lore.kernel.org/linuxppc-dev/20200910175637.2865160-1-cheloha@linux.ibm.com/T/#u
+It's also effectively what we do in some other places, eg the whole
+logic with "orig" in the regular pte fault handling is basically doing
+unlocked loads of the pte, various decisions on that, and then doing a
+final "is this still the same pte" after it has gotten the page table
+lock.
 
-The speedup is nice, especially for LMBs at the end of the array.
+(And yes, those other pte fault handling cases are different, since
+they _do_ hold the mmap lock, so they know the page *tables* are
+stable, and it's only the last level that then gets re-checked against
+the pte once the pte itself has also been stabilized with the page
+table lock).
+
+So I think it would actually be a better conceptual match to make the
+page table walking interface be "here, this is the value I read once
+carefully, and this is the address, now give me the next address".
+
+The folded case would then just return the address it was given, and
+the non-folded case would return the inner page table based on the
+value.
+
+I dunno. I don't actually feel all that strongly about this, so
+whatever works, I guess.
+
+                Linus
