@@ -2,24 +2,24 @@ Return-Path: <SRS0=VWG1=CU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C98A5C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 09:57:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1450C43461
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 10:31:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A8182078B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 09:57:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A8182078B
+	by mail.kernel.org (Postfix) with ESMTPS id 252B92076C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 10:31:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 252B92076C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BnrlL6B90zDqqD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 19:57:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BnsW44fvVzDqrN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 20:31:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,43 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bnrhs39RqzDqTb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 19:55:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BnsSP51qlzDqlf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 20:29:20 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bnrhf3d4Qz9v1Z1;
- Fri, 11 Sep 2020 11:54:58 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4BnsSC5dcFz9tyJN;
+ Fri, 11 Sep 2020 12:29:15 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 1uQtGWb0214J; Fri, 11 Sep 2020 11:54:58 +0200 (CEST)
+ with ESMTP id C32n8GzIk62W; Fri, 11 Sep 2020 12:29:15 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bnrhf2VxJz9v1Yd;
- Fri, 11 Sep 2020 11:54:58 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4BnsSC4g1Hz9tyJM;
+ Fri, 11 Sep 2020 12:29:15 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D49728B83B;
- Fri, 11 Sep 2020 11:54:58 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A2C268B840;
+ Fri, 11 Sep 2020 12:29:16 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 71B-b_lCudje; Fri, 11 Sep 2020 11:54:58 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AF0128B838;
- Fri, 11 Sep 2020 11:54:55 +0200 (CEST)
-Subject: Re: [PATCH] powerpc/traps: fix recoverability of machine check
- handling on book3s/32
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-References: <1c804764d38fb084b420b12ca13e8c1b2dea075e.1548166189.git.christophe.leroy@c-s.fr>
- <20200911091542.GE29521@kitsune.suse.cz>
+ with ESMTP id E2SU-7mFh_ih; Fri, 11 Sep 2020 12:29:16 +0200 (CEST)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EC96A8B837;
+ Fri, 11 Sep 2020 12:29:15 +0200 (CEST)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id C29D465DCA; Fri, 11 Sep 2020 10:29:15 +0000 (UTC)
+Message-Id: <21b05f7298c1b18f73e6e5b4cd5005aafa24b6da.1599820109.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <69e1863a-468d-55d7-f2b2-e700b22609a3@csgroup.eu>
-Date: Fri, 11 Sep 2020 11:54:49 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
-MIME-Version: 1.0
-In-Reply-To: <20200911091542.GE29521@kitsune.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v2] powerpc/powermac: Fix low_sleep_handler with KUAP and KUEP
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 11 Sep 2020 10:29:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,66 +69,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+low_sleep_handler() has an hardcoded restore of segment registers
+that doesn't take KUAP and KUEP into account.
 
-Le 11/09/2020 à 11:15, Michal Suchánek a écrit :
-> Hello,
-> 
-> does this logic apply to "Unrecoverable System Reset" as well?
+Use head_32's load_segment_registers() routine instead.
 
-I don't know, I don't think I have any way the generate a System Reset 
-on my board to check it.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Fixes: a68c31fc01ef ("powerpc/32s: Implement Kernel Userspace Access Protection")
+Fixes: 31ed2b13c48d ("powerpc/32s: Implement Kernel Userspace Execution Prevention.")
+Cc: stable@vger.kernel.org
+---
+v2: Added missing _GLOBAL() to load_segment_registers in head_32.S
+---
+ arch/powerpc/kernel/head_32.S           | 2 +-
+ arch/powerpc/platforms/powermac/sleep.S | 9 +--------
+ 2 files changed, 2 insertions(+), 9 deletions(-)
 
-Christophe
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 5624db0e09a1..0f60743474a2 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -1002,7 +1002,7 @@ BEGIN_MMU_FTR_SECTION
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	blr
+ 
+-load_segment_registers:
++_GLOBAL(load_segment_registers)
+ 	li	r0, NUM_USER_SEGMENTS /* load up user segment register values */
+ 	mtctr	r0		/* for context 0 */
+ 	li	r3, 0		/* Kp = 0, Ks = 0, VSID = 0 */
+diff --git a/arch/powerpc/platforms/powermac/sleep.S b/arch/powerpc/platforms/powermac/sleep.S
+index f9a680fdd9c4..51bfdfe85058 100644
+--- a/arch/powerpc/platforms/powermac/sleep.S
++++ b/arch/powerpc/platforms/powermac/sleep.S
+@@ -294,14 +294,7 @@ grackle_wake_up:
+ 	 * we do any r1 memory access as we are not sure they
+ 	 * are in a sane state above the first 256Mb region
+ 	 */
+-	li	r0,16		/* load up segment register values */
+-	mtctr	r0		/* for context 0 */
+-	lis	r3,0x2000	/* Ku = 1, VSID = 0 */
+-	li	r4,0
+-3:	mtsrin	r3,r4
+-	addi	r3,r3,0x111	/* increment VSID */
+-	addis	r4,r4,0x1000	/* address of next segment */
+-	bdnz	3b
++	bl	load_segment_registers
+ 	sync
+ 	isync
+ 
+-- 
+2.25.0
 
-> 
-> Thanks
-> 
-> Michal
-> 
-> On Tue, Jan 22, 2019 at 02:11:24PM +0000, Christophe Leroy wrote:
->> Looks like book3s/32 doesn't set RI on machine check, so
->> checking RI before calling die() will always be fatal
->> allthought this is not an issue in most cases.
->>
->> Fixes: b96672dd840f ("powerpc: Machine check interrupt is a non-maskable interrupt")
->> Fixes: daf00ae71dad ("powerpc/traps: restore recoverability of machine_check interrupts")
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> Cc: stable@vger.kernel.org
->> ---
->>   arch/powerpc/kernel/traps.c | 8 ++++----
->>   1 file changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
->> index 64936b60d521..c740f8bfccc9 100644
->> --- a/arch/powerpc/kernel/traps.c
->> +++ b/arch/powerpc/kernel/traps.c
->> @@ -763,15 +763,15 @@ void machine_check_exception(struct pt_regs *regs)
->>   	if (check_io_access(regs))
->>   		goto bail;
->>   
->> -	/* Must die if the interrupt is not recoverable */
->> -	if (!(regs->msr & MSR_RI))
->> -		nmi_panic(regs, "Unrecoverable Machine check");
->> -
->>   	if (!nested)
->>   		nmi_exit();
->>   
->>   	die("Machine check", regs, SIGBUS);
->>   
->> +	/* Must die if the interrupt is not recoverable */
->> +	if (!(regs->msr & MSR_RI))
->> +		nmi_panic(regs, "Unrecoverable Machine check");
->> +
->>   	return;
->>   
->>   bail:
->> -- 
->> 2.13.3
->>
