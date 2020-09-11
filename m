@@ -8,71 +8,70 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ECA6C2D0E1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 17:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7923C43461
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 17:34:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BF36221E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 17:34:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0A1EF221E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Sep 2020 17:34:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZzHcKMJi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BF36221E7
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c7a0s/Pg"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A1EF221E7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bp2gk11xmzDrJl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2020 03:24:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bp2vH0ChMzDrFb
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Sep 2020 03:34:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::742;
- helo=mail-qk1-x742.google.com; envelope-from=leobras.c@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::741;
+ helo=mail-qk1-x741.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=ZzHcKMJi; dkim-atps=neutral
-Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
- [IPv6:2607:f8b0:4864:20::742])
+ header.s=20161025 header.b=c7a0s/Pg; dkim-atps=neutral
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bp2PF1k3jzDqsG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2020 03:12:17 +1000 (AEST)
-Received: by mail-qk1-x742.google.com with SMTP id n133so10519352qkn.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 10:12:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bp2PW36lnzDqsp
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2020 03:12:31 +1000 (AEST)
+Received: by mail-qk1-x741.google.com with SMTP id q63so9791064qkf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2020 10:12:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=Xng8svM9Eh5Z3BaPcOszpffmw6LZiUDzRk3rGDgeXJQ=;
- b=ZzHcKMJi9pwr/Zy6BjV00f5Nod/y9TU303NdKciwIMZciPgjutelWMtKilQW3yuCe9
- XltW2t6P9EH70o4N323QlSSu40KrMYwqfSIHQ0T+HGlXDg7uvWDIKaC4+i6dPLbiK17A
- C7AHCKHaey+5flvVIkhPVO82CaJR11cfneZ69nrlr3EcdM1lqC551z2RhRV2NOmByxa8
- mguLB5mN/fZiQQGAvyNfFlkZWx2vNFYL9wVdlDuRkaYuGnSuW8NMWD/6Ame2ddk3g20+
- IXk2ZM/HNTu69XRZqnIci1dtclYRWHjFgD7tdAcNa2XHpSJVMcEUsSFQtkZbE1T/C0kS
- xAdA==
+ bh=shfKO2FG9d5ahnlk4//07u62jXq/fOaSmlpn8ouFUCQ=;
+ b=c7a0s/PgQQ4CMZzul/Frz+ithoWWTIpnydqOAcI3dnqaGue6LNJm6T/AEaSjyzO20p
+ A9vERT4jA+7qHwApW5C3My4MdrP9rrSpUlvJSS0jCp2uetRuI9cqTwKV7w3q6J8eSJRt
+ LkGhWDRuLaUfrUyP0DSK5J9+eegvNRbclKUrzEL4P34H+xAwHKIejEqeRGiUa+grioX3
+ QbqET+Jgjb7UyGjelF+xm6xw4qWybtz6BleL1gtU5F0bnB/SoJQ4Sb0wCSOsyJGLZ3y9
+ mH3jexm6Zdpbsa2GmReVDZHfWO6l8RQMW3kRdeaN1xUATV05WlKvnUtnxO5dlInSE4Qh
+ l2NQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=Xng8svM9Eh5Z3BaPcOszpffmw6LZiUDzRk3rGDgeXJQ=;
- b=A2mJmkcKl34ojH4kvwRu8ZoLPcqi0JUQtVnNDhub4+Gn31MpbuRioQoRcHdUdNcerH
- Mn3/l8K1VmUrfVRgRofw5SjO4DrB1QQHq0bkEw75BQmuUKHfz6fePMzSZJZGAl+OqTXg
- VQcNFrTQtRsx7Ge1Dl/RPPTE0hrBZi727RlWZQCcSi0jaVfm72IKjzvqeIe15AfQdOsD
- 2YU1sdjTq3z3MQE5qnPDUra8VWz2c6nYaM57SkBidOLMb+1kyIulOlYQSKqlAqODFZaR
- kTH7PycHtAUM2kyDgX6sj2658Pru9ps2Q63R4hH1qRbOPU3O3W+GwVZSdSsbr1zOZu5c
- qVXg==
-X-Gm-Message-State: AOAM530jvWTk2wwskOiPS7CJ7W8g7f6+TIJ1y284aIpZZ40zELCFKKcq
- liG/22M0o8al0dvCOW9bT40=
-X-Google-Smtp-Source: ABdhPJwn6JC+Yw1MGV3lt6tuwN5FK34IBCXU+5paWWD73COztRmOeFU/JI7Ch/YOqUrH02homQiJ4Q==
-X-Received: by 2002:a05:620a:1657:: with SMTP id
- c23mr2331070qko.382.1599844333415; 
- Fri, 11 Sep 2020 10:12:13 -0700 (PDT)
+ bh=shfKO2FG9d5ahnlk4//07u62jXq/fOaSmlpn8ouFUCQ=;
+ b=Ns0MwgN5GfkaX2XElSZ+bJEyl8injMZ5So7Yd4cTd1UHiqZATqG+wZVnQy3OHr4h6n
+ JP0Wirpb6ha/+h8Oe0aK/00en7Q9/s3z6YoT/WFb6z+3Teahm8lsatTvrQEiZlo6vdfm
+ U1f0ZDRgsnb8zhqHOyo61okcPdXV3f5sYe84URgg9h8Xr0K5U01qjlw+wSPBJnAc0H1d
+ tcOA1bcrpLwHb3zsnRxa6a2UfPvv2SvuVaP0VB3KQM3taPl+rW77kewPW9HmDJYSOGaA
+ QuXeulT5vJ1ANs6ZYWcBZXO3vV6/ZsJFOUpVW1i/tjHYoOnvuEsJ5XXm8+IcU9rU1cVg
+ fHFw==
+X-Gm-Message-State: AOAM531D6D3Eu4ojADfwDGNfT36EIvXc3hFQ1KZqXK58yz+XunSLfkzY
+ Ce/SzUXrdUkSuhyT4bsVQW8=
+X-Google-Smtp-Source: ABdhPJzM13dVx+EGEh0GHIBPGz+IWDdyketW0/Ra8ym50c3sxqD4ocM+G9zOovpnFHgbHxHEVyvSEQ==
+X-Received: by 2002:a37:a881:: with SMTP id r123mr2305114qke.335.1599844349299; 
+ Fri, 11 Sep 2020 10:12:29 -0700 (PDT)
 Received: from LeoBras.ibmuc.com (179-125-254-96.dynamic.desktop.com.br.
  [179.125.254.96])
- by smtp.gmail.com with ESMTPSA id l5sm3533330qtc.28.2020.09.11.10.12.09
+ by smtp.gmail.com with ESMTPSA id l5sm3533330qtc.28.2020.09.11.10.12.25
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 11 Sep 2020 10:12:12 -0700 (PDT)
+ Fri, 11 Sep 2020 10:12:28 -0700 (PDT)
 From: Leonardo Bras <leobras.c@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -83,10 +82,10 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Ram Pai <linuxram@us.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
  Murilo Fossa Vicentini <muvic@linux.ibm.com>,
  David Dai <zdai@linux.vnet.ibm.com>
-Subject: [PATCH v2 05/14] powerpc/kernel/iommu: Add new iommu_table_in_use()
- helper
-Date: Fri, 11 Sep 2020 14:07:30 -0300
-Message-Id: <20200911170738.82818-6-leobras.c@gmail.com>
+Subject: [PATCH v2 09/14] powerpc/pseries/iommu: Add ddw_property_create() and
+ refactor enable_ddw()
+Date: Fri, 11 Sep 2020 14:07:34 -0300
+Message-Id: <20200911170738.82818-10-leobras.c@gmail.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200911170738.82818-1-leobras.c@gmail.com>
 References: <20200911170738.82818-1-leobras.c@gmail.com>
@@ -110,142 +109,217 @@ Sender: "Linuxppc-dev"
 
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
 
-Having a function to check if the iommu table has any allocation helps
-deciding if a tbl can be reset for using a new DMA window.
+Code used to create a ddw property that was previously scattered in
+enable_ddw() is now gathered in ddw_property_create(), which deals with
+allocation and filling the property, letting it ready for
+of_property_add(), which now occurs in sequence.
 
-It should be enough to replace all instances of !bitmap_empty(tbl...).
+This created an opportunity to reorganize the second part of enable_ddw():
 
-iommu_table_in_use() skips reserved memory, so we don't need to worry about
-releasing it before testing. This causes iommu_table_release_pages() to
-become unnecessary, given it is only used to remove reserved memory for
-testing.
+Without this patch enable_ddw() does, in order:
+kzalloc() property & members, create_ddw(), fill ddwprop inside property,
+ddw_list_new_entry(), do tce_setrange_multi_pSeriesLP_walk in all memory,
+of_add_property(), and list_add().
 
-Also, only allow storing reserved memory values in tbl if they are valid
-in the table, so there is no need to check it in the new helper.
+With this patch enable_ddw() does, in order:
+create_ddw(), ddw_property_create(), of_add_property(),
+ddw_list_new_entry(), do tce_setrange_multi_pSeriesLP_walk in all memory,
+and list_add().
+
+This change requires of_remove_property() in case anything fails after
+of_add_property(), but we get to do tce_setrange_multi_pSeriesLP_walk
+in all memory, which looks the most expensive operation, only if
+everything else succeeds.
 
 Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
 ---
- arch/powerpc/include/asm/iommu.h |  1 +
- arch/powerpc/kernel/iommu.c      | 61 +++++++++++++++-----------------
- 2 files changed, 30 insertions(+), 32 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 106 +++++++++++++++----------
+ 1 file changed, 63 insertions(+), 43 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 5032f1593299..2913e5c8b1f8 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -154,6 +154,7 @@ extern int iommu_tce_table_put(struct iommu_table *tbl);
-  */
- extern struct iommu_table *iommu_init_table(struct iommu_table *tbl,
- 		int nid, unsigned long res_start, unsigned long res_end);
-+bool iommu_table_in_use(struct iommu_table *tbl);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index bba8584a8f9d..510ccb0521af 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -177,7 +177,7 @@ static int tce_build_pSeriesLP(unsigned long liobn, long tcenum, long tceshift,
+ 		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
+ 			ret = (int)rc;
+ 			tce_free_pSeriesLP(liobn, tcenum_start, tceshift,
+-			                   (npages_start - (npages + 1)));
++					   (npages_start - (npages + 1)));
+ 			break;
+ 		}
  
- #define IOMMU_TABLE_GROUP_MAX_TABLES	2
+@@ -215,7 +215,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_PUT_TCE_IND)) {
+ 		return tce_build_pSeriesLP(tbl->it_index, tcenum,
+ 					   tceshift, npages, uaddr,
+-		                           direction, attrs);
++					   direction, attrs);
+ 	}
  
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index ffb2637dc82b..c838da3d8f32 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -655,34 +655,21 @@ static void iommu_table_reserve_pages(struct iommu_table *tbl,
- 	if (tbl->it_offset == 0)
- 		set_bit(0, tbl->it_map);
+ 	local_irq_save(flags);	/* to protect tcep and the page behind it */
+@@ -269,7 +269,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 	if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
+ 		ret = (int)rc;
+ 		tce_freemulti_pSeriesLP(tbl, tcenum_start,
+-		                        (npages_start - (npages + limit)));
++					(npages_start - (npages + limit)));
+ 		return ret;
+ 	}
  
-+	/* Check if res_start..res_end is a valid range in the table */
-+	if (res_start >= res_end || res_start < tbl->it_offset ||
-+	    res_end > (tbl->it_offset + tbl->it_size)) {
-+		tbl->it_reserved_start = tbl->it_offset;
-+		tbl->it_reserved_end = tbl->it_offset;
-+		return;
+@@ -1121,6 +1121,35 @@ static void reset_dma_window(struct pci_dev *dev, struct device_node *par_dn)
+ 			 ret);
+ }
+ 
++static struct property *ddw_property_create(const char *propname, u32 liobn, u64 dma_addr,
++					    u32 page_shift, u32 window_shift)
++{
++	struct dynamic_dma_window_prop *ddwprop;
++	struct property *win64;
++
++	win64 = kzalloc(sizeof(*win64), GFP_KERNEL);
++	if (!win64)
++		return NULL;
++
++	win64->name = kstrdup(propname, GFP_KERNEL);
++	ddwprop = kzalloc(sizeof(*ddwprop), GFP_KERNEL);
++	win64->value = ddwprop;
++	win64->length = sizeof(*ddwprop);
++	if (!win64->name || !win64->value) {
++		kfree(win64);
++		kfree(win64->name);
++		kfree(win64->value);
++		return NULL;
 +	}
 +
- 	tbl->it_reserved_start = res_start;
- 	tbl->it_reserved_end = res_end;
- 
--	/* Check if res_start..res_end isn't empty and overlaps the table */
--	if (res_start && res_end &&
--			(tbl->it_offset + tbl->it_size < res_start ||
--			 res_end < tbl->it_offset))
--		return;
--
- 	for (i = tbl->it_reserved_start; i < tbl->it_reserved_end; ++i)
- 		set_bit(i - tbl->it_offset, tbl->it_map);
- }
- 
--static void iommu_table_release_pages(struct iommu_table *tbl)
--{
--	int i;
--
--	/*
--	 * In case we have reserved the first bit, we should not emit
--	 * the warning below.
--	 */
--	if (tbl->it_offset == 0)
--		clear_bit(0, tbl->it_map);
--
--	for (i = tbl->it_reserved_start; i < tbl->it_reserved_end; ++i)
--		clear_bit(i - tbl->it_offset, tbl->it_map);
--}
--
- /*
-  * Build a iommu_table structure.  This contains a bit map which
-  * is used to manage allocation of the tce space.
-@@ -743,6 +730,23 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid,
- 	return tbl;
- }
- 
-+bool iommu_table_in_use(struct iommu_table *tbl)
-+{
-+	unsigned long start = 0, end;
++	ddwprop->liobn = cpu_to_be32(liobn);
++	ddwprop->dma_base = cpu_to_be64(dma_addr);
++	ddwprop->tce_shift = cpu_to_be32(page_shift);
++	ddwprop->window_shift = cpu_to_be32(window_shift);
 +
-+	/* ignore reserved bit0 */
-+	if (tbl->it_offset == 0)
-+		start = 1;
-+	end = tbl->it_reserved_start - tbl->it_offset;
-+	if (find_next_bit(tbl->it_map, end, start) != end)
-+		return true;
-+
-+	start = tbl->it_reserved_end - tbl->it_offset;
-+	end = tbl->it_size;
-+	return find_next_bit(tbl->it_map, end, start) != end;
-+
++	return win64;
 +}
 +
- static void iommu_table_free(struct kref *kref)
- {
- 	unsigned long bitmap_sz;
-@@ -759,10 +763,8 @@ static void iommu_table_free(struct kref *kref)
- 		return;
+ /*
+  * If the PE supports dynamic dma windows, and there is space for a table
+  * that can map all pages in a linear offset, then setup such a table,
+@@ -1138,12 +1167,11 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	struct ddw_query_response query;
+ 	struct ddw_create_response create;
+ 	int page_shift;
+-	u64 max_addr;
++	u64 max_addr, win_addr;
+ 	struct device_node *dn;
+ 	u32 ddw_avail[DDW_APPLICABLE_SIZE];
+ 	struct direct_window *window;
+-	struct property *win64;
+-	struct dynamic_dma_window_prop *ddwprop;
++	struct property *win64 = NULL;
+ 	struct failed_ddw_pdn *fpdn;
+ 	bool default_win_removed = false;
+ 
+@@ -1245,72 +1273,64 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 		goto out_failed;
  	}
+ 	len = order_base_2(max_addr);
+-	win64 = kzalloc(sizeof(struct property), GFP_KERNEL);
+-	if (!win64) {
+-		dev_info(&dev->dev,
+-			"couldn't allocate property for 64bit dma window\n");
+-		goto out_failed;
+-	}
+-	win64->name = kstrdup(DIRECT64_PROPNAME, GFP_KERNEL);
+-	win64->value = ddwprop = kmalloc(sizeof(*ddwprop), GFP_KERNEL);
+-	win64->length = sizeof(*ddwprop);
+-	if (!win64->name || !win64->value) {
+-		dev_info(&dev->dev,
+-			"couldn't allocate property name and value\n");
+-		goto out_free_prop;
+-	}
  
--	iommu_table_release_pages(tbl);
+ 	ret = create_ddw(dev, ddw_avail, &create, page_shift, len);
+ 	if (ret != 0)
+-		goto out_free_prop;
 -
- 	/* verify that table contains no entries */
--	if (!bitmap_empty(tbl->it_map, tbl->it_size))
-+	if (iommu_table_in_use(tbl))
- 		pr_warn("%s: Unexpected TCEs\n", __func__);
+-	ddwprop->liobn = cpu_to_be32(create.liobn);
+-	ddwprop->dma_base = cpu_to_be64(((u64)create.addr_hi << 32) |
+-			create.addr_lo);
+-	ddwprop->tce_shift = cpu_to_be32(page_shift);
+-	ddwprop->window_shift = cpu_to_be32(len);
++		goto out_failed;
  
- 	/* calculate bitmap size in bytes */
-@@ -1068,18 +1070,13 @@ int iommu_take_ownership(struct iommu_table *tbl)
- 	for (i = 0; i < tbl->nr_pools; i++)
- 		spin_lock(&tbl->pools[i].lock);
+ 	dev_dbg(&dev->dev, "created tce table LIOBN 0x%x for %pOF\n",
+-		  create.liobn, dn);
++		create.liobn, dn);
  
--	iommu_table_release_pages(tbl);
--
--	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
-+	if (iommu_table_in_use(tbl)) {
- 		pr_err("iommu_tce: it_map is not empty");
- 		ret = -EBUSY;
--		/* Undo iommu_table_release_pages, i.e. restore bit#0, etc */
--		iommu_table_reserve_pages(tbl, tbl->it_reserved_start,
--				tbl->it_reserved_end);
--	} else {
--		memset(tbl->it_map, 0xff, sz);
- 	}
- 
-+	memset(tbl->it_map, 0xff, sz);
+-	window = ddw_list_new_entry(pdn, ddwprop);
++	win_addr = ((u64)create.addr_hi << 32) | create.addr_lo;
++	win64 = ddw_property_create(DIRECT64_PROPNAME, create.liobn, win_addr,
++				    page_shift, len);
++	if (!win64) {
++		dev_info(&dev->dev,
++			 "couldn't allocate property, property name, or value\n");
++		goto out_win_del;
++	}
 +
- 	for (i = 0; i < tbl->nr_pools; i++)
- 		spin_unlock(&tbl->pools[i].lock);
- 	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
++	ret = of_add_property(pdn, win64);
++	if (ret) {
++		dev_err(&dev->dev, "unable to add dma window property for %pOF: %d",
++			pdn, ret);
++		goto out_prop_free;
++	}
++
++	window = ddw_list_new_entry(pdn, win64->value);
+ 	if (!window)
+-		goto out_clear_window;
++		goto out_prop_del;
+ 
+ 	ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
+ 			win64->value, tce_setrange_multi_pSeriesLP_walk);
+ 	if (ret) {
+ 		dev_info(&dev->dev, "failed to map direct window for %pOF: %d\n",
+ 			 dn, ret);
+-		goto out_free_window;
+-	}
+-
+-	ret = of_add_property(pdn, win64);
+-	if (ret) {
+-		dev_err(&dev->dev, "unable to add dma window property for %pOF: %d",
+-			 pdn, ret);
+-		goto out_free_window;
++		goto out_list_del;
+ 	}
+ 
+ 	spin_lock(&direct_window_list_lock);
+ 	list_add(&window->list, &direct_window_list);
+ 	spin_unlock(&direct_window_list_lock);
+ 
+-	dev->dev.archdata.dma_offset = be64_to_cpu(ddwprop->dma_base);
++	dev->dev.archdata.dma_offset = win_addr;
+ 	goto out_unlock;
+ 
+-out_free_window:
++out_list_del:
+ 	kfree(window);
+ 
+-out_clear_window:
+-	remove_ddw(pdn, true);
++out_prop_del:
++	of_remove_property(pdn, win64);
+ 
+-out_free_prop:
++out_prop_free:
+ 	kfree(win64->name);
+ 	kfree(win64->value);
+ 	kfree(win64);
+ 	win64 = NULL;
+ 
++out_win_del:
++	remove_ddw(pdn, true);
++
+ out_failed:
+ 	if (default_win_removed)
+ 		reset_dma_window(dev, pdn);
 -- 
 2.25.4
 
