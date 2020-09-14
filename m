@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 921A3C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E82DC43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BAE3208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:17:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BAE3208B3
+	by mail.kernel.org (Postfix) with ESMTPS id A23CC208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:19:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A23CC208B3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqzj83D5KzDqR7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:17:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqzl95zFTzDqRN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:19:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
+ helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from smtpout1.mo529.mail-out.ovh.net
- (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+Received: from smtpout1.mo804.mail-out.ovh.net
+ (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXV66XgzDqQD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXW0lyMzDqQG
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:18 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.51])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 751555B1318B;
- Mon, 14 Sep 2020 23:10:13 +0200 (CEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.20.7])
+ by mo804.mail-out.ovh.net (Postfix) with ESMTPS id ADC016192E9A;
+ Mon, 14 Sep 2020 23:10:15 +0200 (CEST)
 Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 14 Sep
- 2020 23:10:11 +0200
+ 2020 23:10:14 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-105G00661ad5da6-87ea-45f7-a2d9-ea6cbb76bc25,
+ (GARM-105G006efc5e924-5fbe-4737-a182-293eb6884393,
  D669A8CAADBA69FE96853FFB68FF36F34E8DD5E5) smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 3/7] powerpc/sstep: Remove empty if statement checking for
- invalid form
-Date: Mon, 14 Sep 2020 23:10:03 +0200
-Message-ID: <20200914211007.2285999-4-clg@kaod.org>
+Subject: [PATCH v2 5/7] powerpc/powernv/pci: Remove unused variable 'parent'
+ in pnv_ioda_configure_pe()
+Date: Mon, 14 Sep 2020 23:10:05 +0200
+Message-ID: <20200914211007.2285999-6-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200914211007.2285999-1-clg@kaod.org>
 References: <20200914211007.2285999-1-clg@kaod.org>
@@ -57,11 +57,11 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.105]
 X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: b6dbbc6a-c586-4abe-a0b3-d32dbd45bdc7
-X-Ovh-Tracer-Id: 15867588866209713059
+X-Ovh-Tracer-GUID: 960e9d83-80fa-4093-b570-87a759713cfd
+X-Ovh-Tracer-Id: 15868151815293733670
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedvnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,47 +74,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The check should be performed by the caller. This fixes a compile
-error with W=1.
+This fixes a compile error with W=1.
 
-../arch/powerpc/lib/sstep.c: In function ‘mlsd_8lsd_ea’:
-../arch/powerpc/lib/sstep.c:225:3: error: suggest braces around empty body in an ‘if’ statement [-Werror=empty-body]
-   ; /* Invalid form. Should already be checked for by caller! */
-   ^
+CC      arch/powerpc/platforms/powernv/pci-ioda.o
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function ‘pnv_ioda_configure_pe’:
+../arch/powerpc/platforms/powernv/pci-ioda.c:897:18: error: variable ‘parent’ set but not used [-Werror=unused-but-set-variable]
+  struct pci_dev *parent;
+                  ^~~~~~
 
-Cc: Jordan Niethe <jniethe5@gmail.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/lib/sstep.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index caee8cc77e19..e9dcaba9a4f8 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -219,10 +219,13 @@ static nokprobe_inline unsigned long mlsd_8lsd_ea(unsigned int instr,
- 		ea += regs->gpr[ra];
- 	else if (!prefix_r && !ra)
- 		; /* Leave ea as is */
--	else if (prefix_r && !ra)
-+	else if (prefix_r)
- 		ea += regs->nip;
--	else if (prefix_r && ra)
--		; /* Invalid form. Should already be checked for by caller! */
-+
-+	/*
-+	 * (prefix_r && ra) is an invalid form. Should already be
-+	 * checked for by caller!
-+	 */
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 023a4f987bb2..2b4ceb5e6ce4 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -894,7 +894,6 @@ int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
  
- 	return ea;
- }
+ int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ {
+-	struct pci_dev *parent;
+ 	uint8_t bcomp, dcomp, fcomp;
+ 	long rc, rid_end, rid;
+ 
+@@ -904,7 +903,6 @@ int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 
+ 		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
+ 		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
+-		parent = pe->pbus->self;
+ 		if (pe->flags & PNV_IODA_PE_BUS_ALL)
+ 			count = resource_size(&pe->pbus->busn_res);
+ 		else
+@@ -925,12 +923,6 @@ int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 		}
+ 		rid_end = pe->rid + (count << 8);
+ 	} else {
+-#ifdef CONFIG_PCI_IOV
+-		if (pe->flags & PNV_IODA_PE_VF)
+-			parent = pe->parent_dev;
+-		else
+-#endif /* CONFIG_PCI_IOV */
+-			parent = pe->pdev->bus->self;
+ 		bcomp = OpalPciBusAll;
+ 		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
+ 		fcomp = OPAL_COMPARE_RID_FUNCTION_NUMBER;
 -- 
 2.25.4
 
