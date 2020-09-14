@@ -2,59 +2,88 @@ Return-Path: <SRS0=ST+l=CX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5917C43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 06:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5793C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 07:02:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 961FC207EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 06:58:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D6369208DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 07:02:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Ftgfaqro"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 961FC207EA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SPsvJsoO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6369208DB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BqcdM2ZzyzDqbG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 16:58:15 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BqckK0syszDqXZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 17:02:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1043;
+ helo=mail-pj1-x1043.google.com; envelope-from=npiggin@gmail.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=SPsvJsoO; dkim-atps=neutral
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com
+ [IPv6:2607:f8b0:4864:20::1043])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqcbM5zyqzDqP1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2020 16:56:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.a=rsa-sha256 header.s=201602 header.b=Ftgfaqro; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 4BqcbM2jVCz9sTR; Mon, 14 Sep 2020 16:56:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1600066591;
- bh=SGU/LuMnvZSnkG9vJfLlt+Wvxs5Gak6K2cHY2kAf4SQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=FtgfaqrowCuQaTnU+UYe224haTQ7zoC69BD+31ZNH3cghRiE27JxJVtaLvwxY+F1N
- jK4dNprdG+D0K27cWyLOYaAJ9smFhQiGFHD7Ns2RDC+hFG76/sksgqNmeguHK7KPvE
- 7tpCecFppHo6oT4E1a6l+Dq7iTr42un/GXzBNhz8=
-Date: Mon, 14 Sep 2020 16:12:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Fabiano Rosas <farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Do not allocate HPT for a nested
- guest
-Message-ID: <20200914061233.GA5306@yekko.fritz.box>
-References: <20200911041607.198092-1-farosas@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bqch55trhzDqRS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2020 17:00:37 +1000 (AEST)
+Received: by mail-pj1-x1043.google.com with SMTP id jw11so4856603pjb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2020 00:00:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :message-id:content-transfer-encoding;
+ bh=Y2wlAqtXNyefQseZpanYLfJq3N5RvjaF5iCZEQXKmek=;
+ b=SPsvJsoOJGWCNz0MqiQxw/0yRCr5888lfA3TYTSv87ufnSkUZYEsSA86+seIOVYE/Y
+ sEsXwdezlw4T7/8lmU7BopeUocyx8Wa6xwC9agje45+MBpLMpwWv97C8P//JYAbRAGs3
+ RMmdIo20tOL6WZzNu7HBBNTUuknLwntruhux56ilu09Rfw4I8shyVWz/6m63EEJ+2snF
+ +epCklQ4IYAAnNg7MixSMBYM1fXZ+nXjSTYll1bQtE6q+nwWRrZrh+whLeyFq0aW0EYf
+ K1k/F/sraohhvQlS7WMZtC4lA8lFxZZTPqySYZ/mADZFg1s3OkMfGyw5Am2EyNN2yrYJ
+ NFdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:message-id:content-transfer-encoding;
+ bh=Y2wlAqtXNyefQseZpanYLfJq3N5RvjaF5iCZEQXKmek=;
+ b=ZANkSLj/4K6blrQHFpFUusp2i/f6o3r+E2cJVH61900FxfAqKPR4jE3dtyEb5bH3sQ
+ lV6TstSJ8+VtsHoOEZB7Dxcu8TUicpwjSm4T0zHfAgnInDEfWgc09ipzPe4odyNXI6za
+ lkKFzLxpv3xyQ3+7/0yhrWEpNZYLpgABCw2MEjnc22tm2FUxYFIGRhex9bhjqabHhvfA
+ mOviEYg/+BrTTLJ2tFqwfSdWtDF5nWXHyM3D/PG3w/LMdfXHsCGXPOLgF3f3PJqoGVb7
+ vDoHIJ4V9NIu2uJxkZXRxxG2/CLwuVXPkE7FmaIGntASzufezzd2C9zNqAZurE2Put/T
+ VsxA==
+X-Gm-Message-State: AOAM533ftfTuEZMRmyUo+MuV9q/9tjy6gjuhf+WlPzCoE3THyV46oO/2
+ cCaMETw/pDcBTFy7P+4P5rs=
+X-Google-Smtp-Source: ABdhPJxSdvNhMAY02DXO75GE5ykb8GoCQd5VlSAXulERBIog4wwB9uSCtbBQFfL7CZp4YQqpVBmMZw==
+X-Received: by 2002:a17:90a:930e:: with SMTP id
+ p14mr13005911pjo.49.1600066835157; 
+ Mon, 14 Sep 2020 00:00:35 -0700 (PDT)
+Received: from localhost ([203.185.249.227])
+ by smtp.gmail.com with ESMTPSA id e2sm7536325pgl.38.2020.09.14.00.00.34
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 14 Sep 2020 00:00:34 -0700 (PDT)
+Date: Mon, 14 Sep 2020 17:00:29 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 3/4] sparc64: remove mm_cpumask clearing to fix
+ kthread_use_mm race
+To: linux-mm@kvack.org
+References: <20200914045219.3736466-1-npiggin@gmail.com>
+ <20200914045219.3736466-4-npiggin@gmail.com>
+In-Reply-To: <20200914045219.3736466-4-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
-Content-Disposition: inline
-In-Reply-To: <20200911041607.198092-1-farosas@linux.ibm.com>
+Message-Id: <1600066040.vnmz9nxhwt.astroid@bobo.none>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,154 +95,160 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>, linux-arch@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Excerpts from Nicholas Piggin's message of September 14, 2020 2:52 pm:
 
---qMm9M+Fa2AknHoGS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[...]
 
-On Fri, Sep 11, 2020 at 01:16:07AM -0300, Fabiano Rosas wrote:
-> The current nested KVM code does not support HPT guests. This is
-> informed/enforced in some ways:
->=20
-> - Hosts < P9 will not be able to enable the nested HV feature;
->=20
-> - The nested hypervisor MMU capabilities will not contain
->   KVM_CAP_PPC_MMU_HASH_V3;
->=20
-> - QEMU reflects the MMU capabilities in the
->   'ibm,arch-vec-5-platform-support' device-tree property;
->=20
-> - The nested guest, at 'prom_parse_mmu_model' ignores the
->   'disable_radix' kernel command line option if HPT is not supported;
->=20
-> - The KVM_PPC_CONFIGURE_V3_MMU ioctl will fail if trying to use HPT.
->=20
-> There is, however, still a way to start a HPT guest by using
-> max-compat-cpu=3Dpower8 at the QEMU machine options. This leads to the
-> guest being set to use hash after QEMU calls the KVM_PPC_ALLOCATE_HTAB
-> ioctl.
->=20
-> With the guest set to hash, the nested hypervisor goes through the
-> entry path that has no knowledge of nesting (kvmppc_run_vcpu) and
-> crashes when it tries to execute an hypervisor-privileged (mtspr
-> HDEC) instruction at __kvmppc_vcore_entry:
->=20
-> root@L1:~ $ qemu-system-ppc64 -machine pseries,max-cpu-compat=3Dpower8 ...
->=20
-> <snip>
-> [  538.543303] CPU: 83 PID: 25185 Comm: CPU 0/KVM Not tainted 5.9.0-rc4 #1
-> [  538.543355] NIP:  c00800000753f388 LR: c00800000753f368 CTR: c00000000=
-01e5ec0
-> [  538.543417] REGS: c0000013e91e33b0 TRAP: 0700   Not tainted  (5.9.0-rc=
-4)
-> [  538.543470] MSR:  8000000002843033 <SF,VEC,VSX,FP,ME,IR,DR,RI,LE>  CR:=
- 22422882  XER: 20040000
-> [  538.543546] CFAR: c00800000753f4b0 IRQMASK: 3
->                GPR00: c0080000075397a0 c0000013e91e3640 c00800000755e600 =
-0000000080000000
->                GPR04: 0000000000000000 c0000013eab19800 c000001394de0000 =
-00000043a054db72
->                GPR08: 00000000003b1652 0000000000000000 0000000000000000 =
-c0080000075502e0
->                GPR12: c0000000001e5ec0 c0000007ffa74200 c0000013eab19800 =
-0000000000000008
->                GPR16: 0000000000000000 c00000139676c6c0 c000000001d23948 =
-c0000013e91e38b8
->                GPR20: 0000000000000053 0000000000000000 0000000000000001 =
-0000000000000000
->                GPR24: 0000000000000001 0000000000000001 0000000000000000 =
-0000000000000001
->                GPR28: 0000000000000001 0000000000000053 c0000013eab19800 =
-0000000000000001
-> [  538.544067] NIP [c00800000753f388] __kvmppc_vcore_entry+0x90/0x104 [kv=
-m_hv]
-> [  538.544121] LR [c00800000753f368] __kvmppc_vcore_entry+0x70/0x104 [kvm=
-_hv]
-> [  538.544173] Call Trace:
-> [  538.544196] [c0000013e91e3640] [c0000013e91e3680] 0xc0000013e91e3680 (=
-unreliable)
-> [  538.544260] [c0000013e91e3820] [c0080000075397a0] kvmppc_run_core+0xbc=
-8/0x19d0 [kvm_hv]
-> [  538.544325] [c0000013e91e39e0] [c00800000753d99c] kvmppc_vcpu_run_hv+0=
-x404/0xc00 [kvm_hv]
-> [  538.544394] [c0000013e91e3ad0] [c0080000072da4fc] kvmppc_vcpu_run+0x34=
-/0x48 [kvm]
-> [  538.544472] [c0000013e91e3af0] [c0080000072d61b8] kvm_arch_vcpu_ioctl_=
-run+0x310/0x420 [kvm]
-> [  538.544539] [c0000013e91e3b80] [c0080000072c7450] kvm_vcpu_ioctl+0x298=
-/0x778 [kvm]
-> [  538.544605] [c0000013e91e3ce0] [c0000000004b8c2c] sys_ioctl+0x1dc/0xc90
-> [  538.544662] [c0000013e91e3dc0] [c00000000002f9a4] system_call_exceptio=
-n+0xe4/0x1c0
-> [  538.544726] [c0000013e91e3e20] [c00000000000d140] system_call_common+0=
-xf0/0x27c
-> [  538.544787] Instruction dump:
-> [  538.544821] f86d1098 60000000 60000000 48000099 e8ad0fe8 e8c500a0 e926=
-4140 75290002
-> [  538.544886] 7d1602a6 7cec42a6 40820008 7d0807b4 <7d164ba6> 7d083a14 f9=
-0d10a0 480104fd
-> [  538.544953] ---[ end trace 74423e2b948c2e0c ]---
->=20
-> This patch makes the KVM_PPC_ALLOCATE_HTAB ioctl fail when running in
-> the nested hypervisor, causing QEMU to abort.
->=20
-> Reported-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-> Signed-off-by: Fabiano Rosas <farosas@linux.ibm.com>
+> The basic fix for sparc64 is to remove its mm_cpumask clearing code. The
+> optimisation could be effectively restored by sending IPIs to mm_cpumask
+> members and having them remove themselves from mm_cpumask. This is more
+> tricky so I leave it as an exercise for someone with a sparc64 SMP.
+> powerpc has a (currently similarly broken) example.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+So this compiles and boots on qemu, but qemu does not support any
+sparc64 machines with SMP. Attempting some simple hacks doesn't get
+me far because openbios isn't populating an SMP device tree, which
+blows up everywhere.
 
+The patch is _relatively_ simple, hopefully it shouldn't explode, so
+it's probably ready for testing on real SMP hardware, if someone has
+a few cycles.
+
+Thanks,
+Nick
+
+>=20
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/powerpc/kvm/book3s_hv.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  arch/sparc/kernel/smp_64.c | 65 ++++++++------------------------------
+>  1 file changed, 14 insertions(+), 51 deletions(-)
 >=20
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 4ba06a2a306c..764b6239ef72 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -5250,6 +5250,12 @@ static long kvm_arch_vm_ioctl_hv(struct file *filp,
->  	case KVM_PPC_ALLOCATE_HTAB: {
->  		u32 htab_order;
+> diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+> index e286e2badc8a..e38d8bf454e8 100644
+> --- a/arch/sparc/kernel/smp_64.c
+> +++ b/arch/sparc/kernel/smp_64.c
+> @@ -1039,38 +1039,9 @@ void smp_fetch_global_pmu(void)
+>   * are flush_tlb_*() routines, and these run after flush_cache_*()
+>   * which performs the flushw.
+>   *
+> - * The SMP TLB coherency scheme we use works as follows:
+> - *
+> - * 1) mm->cpu_vm_mask is a bit mask of which cpus an address
+> - *    space has (potentially) executed on, this is the heuristic
+> - *    we use to avoid doing cross calls.
+> - *
+> - *    Also, for flushing from kswapd and also for clones, we
+> - *    use cpu_vm_mask as the list of cpus to make run the TLB.
+> - *
+> - * 2) TLB context numbers are shared globally across all processors
+> - *    in the system, this allows us to play several games to avoid
+> - *    cross calls.
+> - *
+> - *    One invariant is that when a cpu switches to a process, and
+> - *    that processes tsk->active_mm->cpu_vm_mask does not have the
+> - *    current cpu's bit set, that tlb context is flushed locally.
+> - *
+> - *    If the address space is non-shared (ie. mm->count =3D=3D 1) we avo=
+id
+> - *    cross calls when we want to flush the currently running process's
+> - *    tlb state.  This is done by clearing all cpu bits except the curre=
+nt
+> - *    processor's in current->mm->cpu_vm_mask and performing the
+> - *    flush locally only.  This will force any subsequent cpus which run
+> - *    this task to flush the context from the local tlb if the process
+> - *    migrates to another cpu (again).
+> - *
+> - * 3) For shared address spaces (threads) and swapping we bite the
+> - *    bullet for most cases and perform the cross call (but only to
+> - *    the cpus listed in cpu_vm_mask).
+> - *
+> - *    The performance gain from "optimizing" away the cross call for thr=
+eads is
+> - *    questionable (in theory the big win for threads is the massive sha=
+ring of
+> - *    address space state across processors).
+> + * mm->cpu_vm_mask is a bit mask of which cpus an address
+> + * space has (potentially) executed on, this is the heuristic
+> + * we use to limit cross calls.
+>   */
 > =20
-> +		/* If we're a nested hypervisor, we currently only support radix */
-> +		if (kvmhv_on_pseries()) {
-> +			r =3D -EOPNOTSUPP;
-> +			break;
-> +		}
+>  /* This currently is only used by the hugetlb arch pre-fault
+> @@ -1080,18 +1051,13 @@ void smp_fetch_global_pmu(void)
+>  void smp_flush_tlb_mm(struct mm_struct *mm)
+>  {
+>  	u32 ctx =3D CTX_HWBITS(mm->context);
+> -	int cpu =3D get_cpu();
+> =20
+> -	if (atomic_read(&mm->mm_users) =3D=3D 1) {
+> -		cpumask_copy(mm_cpumask(mm), cpumask_of(cpu));
+> -		goto local_flush_and_out;
+> -	}
+> +	get_cpu();
+> =20
+>  	smp_cross_call_masked(&xcall_flush_tlb_mm,
+>  			      ctx, 0, 0,
+>  			      mm_cpumask(mm));
+> =20
+> -local_flush_and_out:
+>  	__flush_tlb_mm(ctx, SECONDARY_CONTEXT);
+> =20
+>  	put_cpu();
+> @@ -1114,17 +1080,15 @@ void smp_flush_tlb_pending(struct mm_struct *mm, =
+unsigned long nr, unsigned long
+>  {
+>  	u32 ctx =3D CTX_HWBITS(mm->context);
+>  	struct tlb_pending_info info;
+> -	int cpu =3D get_cpu();
 > +
->  		r =3D -EFAULT;
->  		if (get_user(htab_order, (u32 __user *)argp))
->  			break;
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---qMm9M+Fa2AknHoGS
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAl9fCdEACgkQbDjKyiDZ
-s5JvSRAA2vv7fzuSyMEHLqw7yUGIPoACyPfFV8UXheokBWjhwdnjw/gk58iWTBqI
-dY2DSOH/jwyd61fX5SxpLO0lbODpi8hNOSY9EKCFKMPuu27vOJVJx4ionKaqbpJE
-lSF897IJhQ0AXhzOflZOfQsYBFHbS1tCiDzBxXi1IA7bLIUOUM7ocjyv+u6Zyy/7
-lYBOf38wQ4iX9jMBnl6+ANas65fRNEMb+PtnwSEUi9BKSHD+jCbj7Mb/c6xHH+KZ
-CkkPMwlwjHvlyMt6E+fCZT5n8jWb+mdsQzaFoa4H8OOKLrsIgEtAwzPIm/el+doa
-B1ucZSNgnlRrh+1L65ooh1oZha7D/W6P36/DtkT9tXyyHvzWD1+3vPvyZPRgV4H9
-QYYxvKDtPwFuRWR1m0TLgDrANs7IX2GF2KHNcGM4VcZtPFIXXCtCWA9JhVvmcsdK
-LoUlFE12ndKadng/FNYAAs3p2149WTJ7N7T3wORJYvqJLi4irZ7QEyNj9J+/RpFR
-IpxuUrHzZ7AFfPyboMums1//PEK29O/c9Z+t6vZZC6WEiIGiTX57KCh22ClHdcTL
-XyX7r3pHSzP1g9tFTIa5CLoRh2eI6vPUzZ0MzmlEi/SeOtvCdilYYZ2J6Bv4n9Sg
-HxO2+REEvH149GF2xKszzhTU5+Q4gzD/9HtbmtNL5aG2k0sGhbM=
-=Bn/M
------END PGP SIGNATURE-----
-
---qMm9M+Fa2AknHoGS--
+> +	get_cpu();
+> =20
+>  	info.ctx =3D ctx;
+>  	info.nr =3D nr;
+>  	info.vaddrs =3D vaddrs;
+> =20
+> -	if (mm =3D=3D current->mm && atomic_read(&mm->mm_users) =3D=3D 1)
+> -		cpumask_copy(mm_cpumask(mm), cpumask_of(cpu));
+> -	else
+> -		smp_call_function_many(mm_cpumask(mm), tlb_pending_func,
+> -				       &info, 1);
+> +	smp_call_function_many(mm_cpumask(mm), tlb_pending_func,
+> +			       &info, 1);
+> =20
+>  	__flush_tlb_pending(ctx, nr, vaddrs);
+> =20
+> @@ -1134,14 +1098,13 @@ void smp_flush_tlb_pending(struct mm_struct *mm, =
+unsigned long nr, unsigned long
+>  void smp_flush_tlb_page(struct mm_struct *mm, unsigned long vaddr)
+>  {
+>  	unsigned long context =3D CTX_HWBITS(mm->context);
+> -	int cpu =3D get_cpu();
+> =20
+> -	if (mm =3D=3D current->mm && atomic_read(&mm->mm_users) =3D=3D 1)
+> -		cpumask_copy(mm_cpumask(mm), cpumask_of(cpu));
+> -	else
+> -		smp_cross_call_masked(&xcall_flush_tlb_page,
+> -				      context, vaddr, 0,
+> -				      mm_cpumask(mm));
+> +	get_cpu();
+> +
+> +	smp_cross_call_masked(&xcall_flush_tlb_page,
+> +			      context, vaddr, 0,
+> +			      mm_cpumask(mm));
+> +
+>  	__flush_tlb_page(context, vaddr);
+> =20
+>  	put_cpu();
+> --=20
+> 2.23.0
+>=20
+>=20
