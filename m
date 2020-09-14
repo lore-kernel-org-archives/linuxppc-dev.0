@@ -2,57 +2,83 @@ Return-Path: <SRS0=ST+l=CX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC283C43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 20:02:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19795C43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 20:22:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04844207EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 20:02:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04844207EA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 48861208DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 20:22:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="oF8La/id"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48861208DB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqy1q2LtQzDqLP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 06:02:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BqyTf3X95zDqQS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 06:22:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::444;
+ helo=mail-pf1-x444.google.com; envelope-from=keescook@chromium.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=none (no SPF record) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=oF8La/id; dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqxzQ0fkBzDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 05:59:56 +1000 (AEST)
-Received: from localhost (unknown [IPv6:2601:601:9f00:477::3d5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 0A5F912354CAC;
- Mon, 14 Sep 2020 12:42:57 -0700 (PDT)
-Date: Mon, 14 Sep 2020 12:59:42 -0700 (PDT)
-Message-Id: <20200914.125942.5644261129883859.davem@davemloft.net>
-To: npiggin@gmail.com
-Subject: Re: [PATCH v2 3/4] sparc64: remove mm_cpumask clearing to fix
- kthread_use_mm race
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20200914045219.3736466-4-npiggin@gmail.com>
-References: <20200914045219.3736466-1-npiggin@gmail.com>
- <20200914045219.3736466-4-npiggin@gmail.com>
-X-Mailer: Mew version 6.8 on Emacs 27.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [2620:137:e000::1:9]);
- Mon, 14 Sep 2020 12:42:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BqyRF0YMdzDqNT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 06:20:39 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id d6so519697pfn.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2020 13:20:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to;
+ bh=qEpgx25Jil12k55o2aeOued7nizFpjWJtIRv7RIrrgA=;
+ b=oF8La/idpVXp4VfUhwPPRt9IR/o1RPig2nmeyh8YrhsmHCRvroMtluVJ4o5U4K8AFY
+ VbIWbH4IFHNJ2TFc1OFb1H1xtGH98TXoNvfhyYpAj/BvKsAp8ayWj8ANKhK3ots4YK+n
+ 3o6kijVtSkUUK+lTSVOjqNR35ksbqN8yyS7c8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=qEpgx25Jil12k55o2aeOued7nizFpjWJtIRv7RIrrgA=;
+ b=sKkoH89lSTFq5SjMEy2bQcpXRRemFFPmZcuUotky5t9PM+4Z7e8nzHsvwbjyctav3o
+ FWLpYoQAu7pOHaihwXe6qxMf3KP8eIGKFPYgieJ2ACIpmGLCtWVwAo8LucIh10lpnC67
+ JZdRheMCiWdsuEd6YUPfqFv6YnocV3Ngd3P+R2Q7OvFy9ZfcxGD3gudE54bFtB9+Rcfk
+ 1RaMGvKhgN0siX3dd/13nVfzPAKt5Xh9uF6i6k8PWAXmtZDoS+WUGKJiotQSZ5RY/aGv
+ okJwXldj48gvlhSsuawwGMd2Gnb4hCUoKmpGwaqjZzpc9Okav7GGQzeJUnzpYJ0YQtxz
+ rN+g==
+X-Gm-Message-State: AOAM532ZT477+YWwvzA/P9EiCTEZqkW5qiCMA2d47ag5t4ukIiga6gzO
+ w8NZ05z3pPiSXiT3Z87GocxqEg==
+X-Google-Smtp-Source: ABdhPJwzC+6nA3eNHS7MaPMnpM3EiFR22Z/iXFg5GeiL+THEWa6N+D4e+5+NMXy6erXWVC35l1hZ8Q==
+X-Received: by 2002:a63:471b:: with SMTP id u27mr12121165pga.139.1600114835739; 
+ Mon, 14 Sep 2020 13:20:35 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id u6sm10068865pjy.37.2020.09.14.13.20.34
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Mon, 14 Sep 2020 13:20:34 -0700 (PDT)
+Date: Mon, 14 Sep 2020 13:20:34 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 13/15] selftests/seccomp: powerpc: Set syscall return
+ during ptrace syscall exit
+Message-ID: <202009141319.FC017B0DB@keescook>
+References: <20200912110820.597135-1-keescook@chromium.org>
+ <20200912110820.597135-14-keescook@chromium.org>
+ <87zh5sq59a.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87zh5sq59a.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,26 +90,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, axboe@kernel.dk, peterz@infradead.org,
- aneesh.kumar@linux.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
+ Will Drewry <wad@chromium.org>, linux-xtensa@linux-xtensa.org,
+ linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
+ Max Filippov <jcmvbkbc@gmail.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kselftest@vger.kernel.org, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Christian Brauner <christian@brauner.io>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Mon, 14 Sep 2020 14:52:18 +1000
-
- ...
-> The basic fix for sparc64 is to remove its mm_cpumask clearing code. The
-> optimisation could be effectively restored by sending IPIs to mm_cpumask
-> members and having them remove themselves from mm_cpumask. This is more
-> tricky so I leave it as an exercise for someone with a sparc64 SMP.
-> powerpc has a (currently similarly broken) example.
+On Mon, Sep 14, 2020 at 03:47:13PM +1000, Michael Ellerman wrote:
+> Kees Cook <keescook@chromium.org> writes:
+> > Some archs (like ppc) only support changing the return code during
+> > syscall exit when ptrace is used. As the syscall number might not
+> > be available anymore during syscall exit, it needs to be saved
+> > during syscall enter. Adjust the ptrace tests to do this.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> I'm not that across all the fixture stuff, but if I'm reading it right
+> you're now calling change_syscall() on both entry and exit for all
+> arches.
 
-Sad to see this optimization go away, but what can I do:
+Correct.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+> That should work, but it no longer tests changing the return code on
+> entry on the arches that support it, which seems like a backward step?
+
+That's a good point. I wouldn't be in a position to notice a regression
+for the other architectures. I will refactor this one...
+
+-- 
+Kees Cook
