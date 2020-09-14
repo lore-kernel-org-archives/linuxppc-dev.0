@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E82DC43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2B94C43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:21:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A23CC208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:19:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A23CC208B3
+	by mail.kernel.org (Postfix) with ESMTPS id 0EB3120759
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:21:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EB3120759
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqzl95zFTzDqRN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:19:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BqznC0K2SzDqMV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:21:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
  helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
@@ -30,24 +30,24 @@ Received: from smtpout1.mo804.mail-out.ovh.net
  (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXW0lyMzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:18 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.20.7])
- by mo804.mail-out.ovh.net (Postfix) with ESMTPS id ADC016192E9A;
- Mon, 14 Sep 2020 23:10:15 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXV2QvTzDqQ9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:16 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.146.68])
+ by mo804.mail-out.ovh.net (Postfix) with ESMTPS id D03736192E8E;
+ Mon, 14 Sep 2020 23:10:10 +0200 (CEST)
 Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 14 Sep
- 2020 23:10:14 +0200
+ 2020 23:10:09 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-105G006efc5e924-5fbe-4737-a182-293eb6884393,
+ (GARM-105G006f72a8c5c-23f5-4da1-8976-47af3fc101b1,
  D669A8CAADBA69FE96853FFB68FF36F34E8DD5E5) smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 5/7] powerpc/powernv/pci: Remove unused variable 'parent'
- in pnv_ioda_configure_pe()
-Date: Mon, 14 Sep 2020 23:10:05 +0200
-Message-ID: <20200914211007.2285999-6-clg@kaod.org>
+Subject: [PATCH v2 1/7] powerpc/sysfs: Remove unused 'err' variable in
+ sysfs_create_dscr_default()
+Date: Mon, 14 Sep 2020 23:10:01 +0200
+Message-ID: <20200914211007.2285999-2-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200914211007.2285999-1-clg@kaod.org>
 References: <20200914211007.2285999-1-clg@kaod.org>
@@ -57,11 +57,11 @@ Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.105]
 X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: 960e9d83-80fa-4093-b570-87a759713cfd
-X-Ovh-Tracer-Id: 15868151815293733670
+X-Ovh-Tracer-GUID: 70c9d168-f6f4-45d2-bb61-9ef151fca934
+X-Ovh-Tracer-Id: 15866462963652725667
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedvnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,7 +74,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
@@ -82,53 +82,39 @@ Sender: "Linuxppc-dev"
 
 This fixes a compile error with W=1.
 
-CC      arch/powerpc/platforms/powernv/pci-ioda.o
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function ‘pnv_ioda_configure_pe’:
-../arch/powerpc/platforms/powernv/pci-ioda.c:897:18: error: variable ‘parent’ set but not used [-Werror=unused-but-set-variable]
-  struct pci_dev *parent;
-                  ^~~~~~
+arch/powerpc/kernel/sysfs.c: In function ‘sysfs_create_dscr_default’:
+arch/powerpc/kernel/sysfs.c:228:7: error: variable ‘err’ set but not used [-Werror=unused-but-set-variable]
+   int err = 0;
+       ^~~
+cc1: all warnings being treated as errors
 
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 8 --------
- 1 file changed, 8 deletions(-)
+ arch/powerpc/kernel/sysfs.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 023a4f987bb2..2b4ceb5e6ce4 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -894,7 +894,6 @@ int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 
- int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 46b4ebc33db7..821a3dc4c924 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -225,14 +225,13 @@ static DEVICE_ATTR(dscr_default, 0600,
+ static void sysfs_create_dscr_default(void)
  {
--	struct pci_dev *parent;
- 	uint8_t bcomp, dcomp, fcomp;
- 	long rc, rid_end, rid;
+ 	if (cpu_has_feature(CPU_FTR_DSCR)) {
+-		int err = 0;
+ 		int cpu;
  
-@@ -904,7 +903,6 @@ int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 		dscr_default = spr_default_dscr;
+ 		for_each_possible_cpu(cpu)
+ 			paca_ptrs[cpu]->dscr_default = dscr_default;
  
- 		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
- 		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
--		parent = pe->pbus->self;
- 		if (pe->flags & PNV_IODA_PE_BUS_ALL)
- 			count = resource_size(&pe->pbus->busn_res);
- 		else
-@@ -925,12 +923,6 @@ int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 		}
- 		rid_end = pe->rid + (count << 8);
- 	} else {
--#ifdef CONFIG_PCI_IOV
--		if (pe->flags & PNV_IODA_PE_VF)
--			parent = pe->parent_dev;
--		else
--#endif /* CONFIG_PCI_IOV */
--			parent = pe->pdev->bus->self;
- 		bcomp = OpalPciBusAll;
- 		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
- 		fcomp = OPAL_COMPARE_RID_FUNCTION_NUMBER;
+-		err = device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
++		device_create_file(cpu_subsys.dev_root, &dev_attr_dscr_default);
+ 	}
+ }
+ #endif /* CONFIG_PPC64 */
 -- 
 2.25.4
 
