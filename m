@@ -2,65 +2,62 @@ Return-Path: <SRS0=ST+l=CX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3F40C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DB29C43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:14:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B0D5208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:12:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B0D5208B3
+	by mail.kernel.org (Postfix) with ESMTPS id 01CD7208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:14:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01CD7208B3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BqzZn49TvzDqQ9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:12:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqzcl4p5hzDqQX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:13:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=178.32.125.2;
- helo=smtpout1.mo529.mail-out.ovh.net; envelope-from=clg@kaod.org;
+ smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
+ helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from smtpout1.mo529.mail-out.ovh.net
- (smtpout1.mo529.mail-out.ovh.net [178.32.125.2])
+Received: from smtpout1.mo804.mail-out.ovh.net
+ (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXW01k4zDqQF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:18 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.16.145])
- by mo529.mail-out.ovh.net (Postfix) with ESMTPS id 0E32B5B1318F;
- Mon, 14 Sep 2020 23:10:15 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXV2PQXzDqQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:16 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.146.68])
+ by mo804.mail-out.ovh.net (Postfix) with ESMTPS id E1E596192E8D;
+ Mon, 14 Sep 2020 23:10:09 +0200 (CEST)
 Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 14 Sep
- 2020 23:10:13 +0200
+ 2020 23:10:08 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-105G0069d2b711e-b9c5-4053-b857-495bc219fef8,
+ (GARM-105G006021c09b0-42e0-4a5b-a777-5bfb7f5a8969,
  D669A8CAADBA69FE96853FFB68FF36F34E8DD5E5) smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 4/7] powerpc/xive: Make debug routines static
-Date: Mon, 14 Sep 2020 23:10:04 +0200
-Message-ID: <20200914211007.2285999-5-clg@kaod.org>
+Subject: [PATCH v2 0/7] powerpc: Fix a few W=1 compile warnings
+Date: Mon, 14 Sep 2020 23:10:00 +0200
+Message-ID: <20200914211007.2285999-1-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200914211007.2285999-1-clg@kaod.org>
-References: <20200914211007.2285999-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.105]
 X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: aacfb2f9-5e91-48d9-806e-dfaf43ba92fb
-X-Ovh-Tracer-Id: 15867870337874824099
+X-Ovh-Tracer-GUID: d7fd643f-d40c-4316-b2f7-b58d7d4c3f2e
+X-Ovh-Tracer-Id: 15866462963657640928
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefvdeutddvieekkeeuhfekudejjefggffghfetgfelgfevveefgefhvdegtdelveenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,45 +75,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This fixes a compile error with W=1.
+Hello,
 
-CC      arch/powerpc/sysdev/xive/common.o
-../arch/powerpc/sysdev/xive/common.c:1568:6: error: no previous prototype for ‘xive_debug_show_cpu’ [-Werror=missing-prototypes]
- void xive_debug_show_cpu(struct seq_file *m, int cpu)
-      ^~~~~~~~~~~~~~~~~~~
-../arch/powerpc/sysdev/xive/common.c:1602:6: error: no previous prototype for ‘xive_debug_show_irq’ [-Werror=missing-prototypes]
- void xive_debug_show_irq(struct seq_file *m, u32 hw_irq, struct irq_data *d)
-      ^~~~~~~~~~~~~~~~~~~
+Here is a small contribution improving compile with W=1.	
 
-Fixes: 930914b7d528 ("powerpc/xive: Add a debugfs file to dump internal XIVE state")
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/sysdev/xive/common.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks,
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index f591be9f01f4..a80440af491a 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1565,7 +1565,7 @@ static int __init xive_off(char *arg)
- }
- __setup("xive=off", xive_off);
- 
--void xive_debug_show_cpu(struct seq_file *m, int cpu)
-+static void xive_debug_show_cpu(struct seq_file *m, int cpu)
- {
- 	struct xive_cpu *xc = per_cpu(xive_cpu, cpu);
- 
-@@ -1599,7 +1599,7 @@ void xive_debug_show_cpu(struct seq_file *m, int cpu)
- 	seq_puts(m, "\n");
- }
- 
--void xive_debug_show_irq(struct seq_file *m, u32 hw_irq, struct irq_data *d)
-+static void xive_debug_show_irq(struct seq_file *m, u32 hw_irq, struct irq_data *d)
- {
- 	struct irq_chip *chip = irq_data_get_irq_chip(d);
- 	int rc;
+C.
+
+Changes in v2:
+
+ - Better commit logs
+ - Reworked early_reserve_mem() in prom
+ - Remove if statement in sstep
+
+Cédric Le Goater (7):
+  powerpc/sysfs: Remove unused 'err' variable in
+    sysfs_create_dscr_default()
+  powerpc/prom: Introduce early_reserve_mem_old()
+  powerpc/sstep: Remove empty if statement checking for invalid form
+  powerpc/xive: Make debug routines static
+  powerpc/powernv/pci: Remove unused variable 'parent' in
+    pnv_ioda_configure_pe()
+  powerpc/perf: Remove unused variable 'target' in
+    trace_imc_event_init()
+  powerpc/32: Declare stack_overflow_exception() prototype
+
+ arch/powerpc/include/asm/asm-prototypes.h |  1 +
+ arch/powerpc/kernel/prom.c                | 37 ++++++++++++-----------
+ arch/powerpc/kernel/sysfs.c               |  3 +-
+ arch/powerpc/lib/sstep.c                  |  9 ++++--
+ arch/powerpc/perf/imc-pmu.c               |  3 --
+ arch/powerpc/platforms/powernv/pci-ioda.c |  8 -----
+ arch/powerpc/sysdev/xive/common.c         |  4 +--
+ 7 files changed, 30 insertions(+), 35 deletions(-)
+
 -- 
 2.25.4
 
