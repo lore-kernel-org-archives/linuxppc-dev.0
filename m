@@ -2,23 +2,24 @@ Return-Path: <SRS0=ST+l=CX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DB29C43461
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10138C43461
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:16:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01CD7208B3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:14:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01CD7208B3
+	by mail.kernel.org (Postfix) with ESMTPS id 5274F208B3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Sep 2020 21:16:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5274F208B3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bqzcl4p5hzDqQX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:13:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BqzgC01TmzDqJq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 07:16:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
  helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=clg@kaod.org;
@@ -29,35 +30,37 @@ Received: from smtpout1.mo804.mail-out.ovh.net
  (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXV2PQXzDqQ8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BqzXV42FGzDqQC
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 07:10:16 +1000 (AEST)
-Received: from mxplan5.mail.ovh.net (unknown [10.109.146.68])
- by mo804.mail-out.ovh.net (Postfix) with ESMTPS id E1E596192E8D;
- Mon, 14 Sep 2020 23:10:09 +0200 (CEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.138.194])
+ by mo804.mail-out.ovh.net (Postfix) with ESMTPS id 7EFBA6192E92;
+ Mon, 14 Sep 2020 23:10:11 +0200 (CEST)
 Received: from kaod.org (37.59.142.105) by DAG4EX1.mxp5.local (172.16.2.31)
  with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 14 Sep
- 2020 23:10:08 +0200
+ 2020 23:10:09 +0200
 Authentication-Results: garm.ovh; auth=pass
- (GARM-105G006021c09b0-42e0-4a5b-a777-5bfb7f5a8969,
+ (GARM-105G006457ec02e-4141-404b-bda1-b7e52dec9d1c,
  D669A8CAADBA69FE96853FFB68FF36F34E8DD5E5) smtp.auth=clg@kaod.org
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 0/7] powerpc: Fix a few W=1 compile warnings
-Date: Mon, 14 Sep 2020 23:10:00 +0200
-Message-ID: <20200914211007.2285999-1-clg@kaod.org>
+Subject: [PATCH v2 2/7] powerpc/prom: Introduce early_reserve_mem_old()
+Date: Mon, 14 Sep 2020 23:10:02 +0200
+Message-ID: <20200914211007.2285999-3-clg@kaod.org>
 X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200914211007.2285999-1-clg@kaod.org>
+References: <20200914211007.2285999-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 X-Originating-IP: [37.59.142.105]
 X-ClientProxiedBy: DAG1EX2.mxp5.local (172.16.2.2) To DAG4EX1.mxp5.local
  (172.16.2.31)
-X-Ovh-Tracer-GUID: d7fd643f-d40c-4316-b2f7-b58d7d4c3f2e
-X-Ovh-Tracer-Id: 15866462963657640928
+X-Ovh-Tracer-GUID: 4ae79c46-b72a-46c4-a7dc-6adcf5551cad
+X-Ovh-Tracer-Id: 15867025913806162912
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeefvdeutddvieekkeeuhfekudejjefggffghfetgfelgfevveefgefhvdegtdelveenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduiedrudeiiedgudeiudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgjfhggtgfgihesthekredtredtjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeehheefgeejiedtffefteejudevjeeufeeugfdtfeeuleeuteevleeihffhgfdtleenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheptghlgheskhgrohgurdhorhhg
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,41 +78,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+and condition its call with IS_ENABLED(CONFIG_PPC32). This fixes a
+compile error with W=1.
 
-Here is a small contribution improving compile with W=1.	
+arch/powerpc/kernel/prom.c: In function ‘early_reserve_mem’:
+arch/powerpc/kernel/prom.c:625:10: error: variable ‘reserve_map’ set but not used [-Werror=unused-but-set-variable]
+  __be64 *reserve_map;
+          ^~~~~~~~~~~
+cc1: all warnings being treated as errors
 
-Thanks,
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
+ arch/powerpc/kernel/prom.c | 37 ++++++++++++++++++++-----------------
+ 1 file changed, 20 insertions(+), 17 deletions(-)
 
-C.
-
-Changes in v2:
-
- - Better commit logs
- - Reworked early_reserve_mem() in prom
- - Remove if statement in sstep
-
-Cédric Le Goater (7):
-  powerpc/sysfs: Remove unused 'err' variable in
-    sysfs_create_dscr_default()
-  powerpc/prom: Introduce early_reserve_mem_old()
-  powerpc/sstep: Remove empty if statement checking for invalid form
-  powerpc/xive: Make debug routines static
-  powerpc/powernv/pci: Remove unused variable 'parent' in
-    pnv_ioda_configure_pe()
-  powerpc/perf: Remove unused variable 'target' in
-    trace_imc_event_init()
-  powerpc/32: Declare stack_overflow_exception() prototype
-
- arch/powerpc/include/asm/asm-prototypes.h |  1 +
- arch/powerpc/kernel/prom.c                | 37 ++++++++++++-----------
- arch/powerpc/kernel/sysfs.c               |  3 +-
- arch/powerpc/lib/sstep.c                  |  9 ++++--
- arch/powerpc/perf/imc-pmu.c               |  3 --
- arch/powerpc/platforms/powernv/pci-ioda.c |  8 -----
- arch/powerpc/sysdev/xive/common.c         |  4 +--
- 7 files changed, 30 insertions(+), 35 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index d8a2fb87ba0c..c958b67cf1a5 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -620,27 +620,14 @@ static void __init early_reserve_mem_dt(void)
+ 	}
+ }
+ 
+-static void __init early_reserve_mem(void)
++static void __init early_reserve_mem_old(void)
+ {
+ 	__be64 *reserve_map;
+ 
+ 	reserve_map = (__be64 *)(((unsigned long)initial_boot_params) +
+ 			fdt_off_mem_rsvmap(initial_boot_params));
+ 
+-	/* Look for the new "reserved-regions" property in the DT */
+-	early_reserve_mem_dt();
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	/* Then reserve the initrd, if any */
+-	if (initrd_start && (initrd_end > initrd_start)) {
+-		memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
+-			ALIGN(initrd_end, PAGE_SIZE) -
+-			ALIGN_DOWN(initrd_start, PAGE_SIZE));
+-	}
+-#endif /* CONFIG_BLK_DEV_INITRD */
+-
+-#ifdef CONFIG_PPC32
+-	/* 
++	/*
+ 	 * Handle the case where we might be booting from an old kexec
+ 	 * image that setup the mem_rsvmap as pairs of 32-bit values
+ 	 */
+@@ -658,9 +645,25 @@ static void __init early_reserve_mem(void)
+ 			DBG("reserving: %x -> %x\n", base_32, size_32);
+ 			memblock_reserve(base_32, size_32);
+ 		}
+-		return;
+ 	}
+-#endif
++}
++
++static void __init early_reserve_mem(void)
++{
++	/* Look for the new "reserved-regions" property in the DT */
++	early_reserve_mem_dt();
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	/* Then reserve the initrd, if any */
++	if (initrd_start && (initrd_end > initrd_start)) {
++		memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
++			ALIGN(initrd_end, PAGE_SIZE) -
++			ALIGN_DOWN(initrd_start, PAGE_SIZE));
++	}
++#endif /* CONFIG_BLK_DEV_INITRD */
++
++	if (IS_ENABLED(CONFIG_PPC32))
++		early_reserve_mem_old();
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
 -- 
 2.25.4
 
