@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E019CC43461
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:53:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E577BC43461
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:55:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5580208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:53:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5580208E4
+	by mail.kernel.org (Postfix) with ESMTPS id 3F527206A4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:55:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F527206A4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSSx5t15zDqTQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 01:53:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSW335xqzDqW3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 01:55:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,25 +29,25 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSR13Tl0zDqM5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 01:52:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSSP1CWMzDqQr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 01:53:25 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kIDFF-0005NH-1g; Tue, 15 Sep 2020 15:51:49 +0000
-Date: Tue, 15 Sep 2020 17:51:48 +0200
+ id 1kIDGb-0005SV-UL; Tue, 15 Sep 2020 15:53:14 +0000
+Date: Tue, 15 Sep 2020 17:53:13 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 01/15] selftests/seccomp: Refactor arch register macros
- to avoid xtensa special case
-Message-ID: <20200915155148.ujvgr5o6apls7rob@wittgenstein>
+Subject: Re: [PATCH 02/15] selftests/seccomp: Provide generic syscall setting
+ macro
+Message-ID: <20200915155313.s5a3gxmjb2da6762@wittgenstein>
 References: <20200912110820.597135-1-keescook@chromium.org>
- <20200912110820.597135-2-keescook@chromium.org>
+ <20200912110820.597135-3-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200912110820.597135-2-keescook@chromium.org>
+In-Reply-To: <20200912110820.597135-3-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,13 +69,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 12, 2020 at 04:08:06AM -0700, Kees Cook wrote:
-> To avoid an xtensa special-case, refactor all arch register macros to
-> take the register variable instead of depending on the macro expanding
-> as a struct member name.
+On Sat, Sep 12, 2020 at 04:08:07AM -0700, Kees Cook wrote:
+> In order to avoid "#ifdef"s in the main function bodies, create a new
+> macro, SYSCALL_NUM_SET(), where arch-specific logic can live.
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
 
-Looks good!
+SYSCALL_SWITCH(_regs, nr)?
+
+But looks good either way!
 Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
