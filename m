@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A596C43461
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 983DBC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:06:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98D1D20756
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:03:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98D1D20756
+	by mail.kernel.org (Postfix) with ESMTPS id ED67D21D1B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:06:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED67D21D1B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSgV1fqTzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:03:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSl534nCzDqQm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:06:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,25 +29,24 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSZL6ZlDzDqSs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 01:58:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrScp0BvnzDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 02:00:42 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kIDLP-0005nY-4d; Tue, 15 Sep 2020 15:58:11 +0000
-Date: Tue, 15 Sep 2020 17:58:10 +0200
+ id 1kIDNS-0005wg-Oh; Tue, 15 Sep 2020 16:00:18 +0000
+Date: Tue, 15 Sep 2020 18:00:18 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 05/15] selftests/seccomp: arm64: Define SYSCALL_NUM_SET
- macro
-Message-ID: <20200915155810.iviwgb47alajagvt@wittgenstein>
+Subject: Re: [PATCH 06/15] selftests/seccomp: mips: Remove O32-specific macro
+Message-ID: <20200915160018.fstuxjp5mkwieweq@wittgenstein>
 References: <20200912110820.597135-1-keescook@chromium.org>
- <20200912110820.597135-6-keescook@chromium.org>
+ <20200912110820.597135-7-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200912110820.597135-6-keescook@chromium.org>
+In-Reply-To: <20200912110820.597135-7-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,13 +68,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 12, 2020 at 04:08:10AM -0700, Kees Cook wrote:
-> Remove the arm64 special-case in change_syscall().
+On Sat, Sep 12, 2020 at 04:08:11AM -0700, Kees Cook wrote:
+> Instead of having the mips O32 macro special-cased, pull the logic into
+> the SYSCALL_NUM() macro. Additionally include the ABI headers, since
+> these appear to have been missing, leaving __NR_O32_Linux undefined.
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
-
-We're using iovecs in ptrace()??
 
 Looks good!
 Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
