@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3388BC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20572C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:19:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9689120936
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:17:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9689120936
+	by mail.kernel.org (Postfix) with ESMTPS id 8A6942068D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:19:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A6942068D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrT0N39nZzDqTD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:17:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrT2S2lWSzDqTT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:19:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -27,27 +27,24 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ubuntu.com
 Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSl70KqLzDqN7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 02:06:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4BrSpN3RgszDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 02:09:00 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kIDSo-0006Xe-Jb; Tue, 15 Sep 2020 16:05:50 +0000
-Date: Tue, 15 Sep 2020 18:05:49 +0200
+ id 1kIDVY-0006rA-V3; Tue, 15 Sep 2020 16:08:41 +0000
+Date: Tue, 15 Sep 2020 18:08:40 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 09/15] selftests/seccomp: Convert REGSET calls into
- ARCH_GETREG/ARCH_SETREG
-Message-ID: <20200915160549.5ct5lpwvdzzm7cvn@wittgenstein>
+Subject: Re: [PATCH 10/15] selftests/seccomp: Avoid redundant register flushes
+Message-ID: <20200915160840.6ybm67gowqeqyms2@wittgenstein>
 References: <20200912110820.597135-1-keescook@chromium.org>
- <20200912110820.597135-10-keescook@chromium.org>
+ <20200912110820.597135-11-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200912110820.597135-10-keescook@chromium.org>
+In-Reply-To: <20200912110820.597135-11-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,9 +66,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 12, 2020 at 04:08:14AM -0700, Kees Cook wrote:
-> Consolidate the REGSET logic into the new ARCH_GETREG() and
-> ARCH_SETREG() macros, avoiding more #ifdef code in function bodies.
+On Sat, Sep 12, 2020 at 04:08:15AM -0700, Kees Cook wrote:
+> When none of the registers have changed, don't flush them back. This can
+> happen if the architecture uses a non-register way to change the syscall
+> (e.g. arm64) , and a return value hasn't been written.
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
