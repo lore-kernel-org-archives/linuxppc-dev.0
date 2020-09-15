@@ -8,76 +8,77 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17FE2C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A15DC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:52:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26B52208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:50:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9995620732
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:52:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="utnhRpgd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26B52208E4
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VSfKAg4b"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9995620732
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrM3z6rJvzDqTT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 21:50:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrM5x2lb6zDqWl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 21:52:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
- helo=mail-pl1-x643.google.com; envelope-from=npiggin@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=npiggin@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=utnhRpgd; dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+ header.s=20161025 header.b=VSfKAg4b; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrM0B0nR0zDqKq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 21:47:04 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id u9so1203025plk.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 04:47:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrM0F34PrzDqKq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 21:47:09 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id z19so1770935pfn.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 04:47:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=nNR2nUPpshbBtiLbdPt+k9Y54mJJ6xBG5qbPOnQ15oI=;
- b=utnhRpgd80UQxHJNhJf5hburzxP9UrVjYGG04qiSszzhdatBCpN8TUCYgWGZa0Rc0O
- 8/FoZBlEVuRp4BuyZMb25EHhZZ0hdCm+peil1eXiDzzEGFqIS5W2h7sg9HSivVDXTDob
- C4yJOYHNnQ8W/h3WT7a6f0da2Gd7L5TgyvVxVlnzsBB9EwZOzHKS/mqoMn6dAoFli8jx
- ZhBBf3pQ5758Jy50LQETlrA/oF4r90CZds6NDFSGzvCiyVoiA51FZ7KyROwwAx+3V00P
- J2zC+xFQ+HNB3G25ntc0+QO2kznzmIo2o9QG2WR5rnvpqwgy+WEDsp0T/g6LuQBfJV8v
- ekuw==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=dZhCp6L3XlZLXkfJVf2m77bSCdGj5gQScX4QSDH6zCw=;
+ b=VSfKAg4bLs221QGTVWMS9ZjX5G3ekT6lomq1vCPknPoovi2VGTfbMSKU3B9eEx/deR
+ bDiT2fHRg6o6u2NxlDdaMd0aqtQqXNch39v557cunQByly4AxbsSwnCYsrmF6JaKZew2
+ NAvtUs1np7iKsdOx7WFBsO/iO4VTERnpqPUpaXcwFIf9bdA3sZ9S8SdVVRia3ZMizaIC
+ S7qrEmA2bkYLN4I9R/+mMM1mu3Cg0E1qKmFcrY1peKP1X/5lmuVA20Pftzh5I3sseGtq
+ iHu8ZoUQr1n89EqxYuEFGaljoHd3VdPq3eJVsJEMBXmuQgWW0WzsxL450xD8xh/Y4vyr
+ +LyQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=nNR2nUPpshbBtiLbdPt+k9Y54mJJ6xBG5qbPOnQ15oI=;
- b=BnnrGFiFEb/dNIi8rQQqFtUtT5naONmz9nQ1mMHqdMm7hSSnz0j1wxxJiRedLa+2fN
- KIyKkNk0x/c6E8cY4fRAwdE7PRdIZmdytCvxbFQ7T1RFe3koN5TXf8Ag7wJmRgmR3Jfs
- um93fMZ9abiXURjU8j4N5X/PvqEbQlUWR49a1vi1B53+dZcErtzlc/y5KSA0CTS0ch/P
- 3QB4QTPYYldPGp47Ddu2j2kZFNlbXPKupQytBWir8/6DXnWLoVPeQbRDlIb1lcgLJzK2
- 3XzezCk6q0XtIVTg2aaCxGZ1ZjpTqm3JrAoBxjMr69CKAYIE+bcSoO/jz53F4oVPDWb3
- +ZKA==
-X-Gm-Message-State: AOAM531kxpRpozQ+vA6MQCZxwIkxxpENCgr0gfMMiq62K/hGtbVzuzAO
- XfUM/h9LAWBKZTCoJWspKR6s6g6tT9JU5Q==
-X-Google-Smtp-Source: ABdhPJxyLsmIz6gu2nDF7gxvzhJHtTsNOrg0f/LlLmy6BuDbHmDs3wm1W/ZtrjaZoaHI4L/xUxqjxQ==
-X-Received: by 2002:a17:902:ed4c:b029:d1:e5f8:81df with SMTP id
- y12-20020a170902ed4cb02900d1e5f881dfmr1250893plb.60.1600170419425; 
- Tue, 15 Sep 2020 04:46:59 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=dZhCp6L3XlZLXkfJVf2m77bSCdGj5gQScX4QSDH6zCw=;
+ b=O73SO8bO0/H/zo8GmFSSYzNIXU+oWyrv6p41xSFUhzBGwb5JlA6uJQRhIpNTYyvOGD
+ wTqERn+niC/J4A18cGfwNOOUAdxY+s7kpW1sFRSxPoyjZphBid1pe253nZgQAjueMVpJ
+ L/dqqqr0tsWbXGhPkxBxlcpsMIujVvrbqJARzOL9Wge0BRY7xhpyqVKbp5A8kakqN4Q7
+ liY1svwoVXs+jyLuYHXJ/zAE8Uon9Y/ljTqZvuBvygwZwnO6cc37IBzcXdh7R7hcVXyg
+ B/AEct+G8dX/LVio2K6LwfE4bLXYXuKLtTcBc0JEV3Buh9V/ngaMEB/pA9GUkS04tM6b
+ Osvw==
+X-Gm-Message-State: AOAM5312LLaYA1WTkoaVKG1N7CG0rMlQ2BRHrtzKI17/WzLXGDCbX/+m
+ hRsJ/wyNQ3zhyokt9Hvs2G8Kdf1phWlaSw==
+X-Google-Smtp-Source: ABdhPJyZjS2jhAHXI+wzdH9KFTjpThjppn+BWuFjV/1diuM98E/dGSfcGs20RwFxD+UvcoAl8rJUbQ==
+X-Received: by 2002:a63:f606:: with SMTP id m6mr14453565pgh.193.1600170426352; 
+ Tue, 15 Sep 2020 04:47:06 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com ([203.185.249.227])
- by smtp.gmail.com with ESMTPSA id u2sm12118077pji.50.2020.09.15.04.46.57
+ by smtp.gmail.com with ESMTPSA id u2sm12118077pji.50.2020.09.15.04.47.04
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 15 Sep 2020 04:46:59 -0700 (PDT)
+ Tue, 15 Sep 2020 04:47:06 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/6] powerpc/64: fix irq replay missing preempt
-Date: Tue, 15 Sep 2020 21:46:45 +1000
-Message-Id: <20200915114650.3980244-1-npiggin@gmail.com>
+Subject: [PATCH 3/6] powerpc/64e: remove PACA_IRQ_EE_EDGE
+Date: Tue, 15 Sep 2020 21:46:47 +1000
+Message-Id: <20200915114650.3980244-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20200915114650.3980244-1-npiggin@gmail.com>
+References: <20200915114650.3980244-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -96,46 +97,84 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Prior to commit 3282a3da25bd ("powerpc/64: Implement soft interrupt
-replay in C"), replayed interrupts returned by the regular interrupt
-exit code, which performs preemption in case an interrupt had set
-need_resched.
+This is not used anywhere.
 
-This logic was missed by the conversion. Adding preempt_disable/enable
-around the interrupt replay and final irq enable will reschedule if
-needed.
-
-Fixes: 3282a3da25bd ("powerpc/64: Implement soft interrupt replay in C")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/irq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/include/asm/hw_irq.h    |  5 ++---
+ arch/powerpc/kernel/exceptions-64e.S |  1 -
+ arch/powerpc/kernel/irq.c            | 23 -----------------------
+ 3 files changed, 2 insertions(+), 27 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 35060be09073..50dc35711db3 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -25,9 +25,8 @@
+ #define PACA_IRQ_DBELL		0x02
+ #define PACA_IRQ_EE		0x04
+ #define PACA_IRQ_DEC		0x08 /* Or FIT */
+-#define PACA_IRQ_EE_EDGE	0x10 /* BookE only */
+-#define PACA_IRQ_HMI		0x20
+-#define PACA_IRQ_PMI		0x40
++#define PACA_IRQ_HMI		0x10
++#define PACA_IRQ_PMI		0x20
+ 
+ /*
+  * Some soft-masked interrupts must be hard masked until they are replayed
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index d9ed79415100..ca444ca82b8d 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -988,7 +988,6 @@ kernel_dbg_exc:
+ .endm
+ 
+ masked_interrupt_book3e_0x500:
+-	// XXX When adding support for EPR, use PACA_IRQ_EE_EDGE
+ 	masked_interrupt_book3e PACA_IRQ_EE 1
+ 
+ masked_interrupt_book3e_0x900:
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index bf21ebd36190..77019699606a 100644
+index 3fdad9336885..736a6b56e7d6 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -368,6 +368,12 @@ notrace void arch_local_irq_restore(unsigned long mask)
- 		}
+@@ -181,16 +181,6 @@ notrace unsigned int __check_irq_replay(void)
+ 		return 0x500;
  	}
  
-+	/*
-+	 * Disable preempt here, so that the below preempt_enable will
-+	 * perform resched if required (a replayed interrupt may set
-+	 * need_resched).
-+	 */
-+	preempt_disable();
- 	irq_soft_mask_set(IRQS_ALL_DISABLED);
- 	trace_hardirqs_off();
+-	/*
+-	 * Check if an EPR external interrupt happened this bit is typically
+-	 * set if we need to handle another "edge" interrupt from within the
+-	 * MPIC "EPR" handler.
+-	 */
+-	if (happened & PACA_IRQ_EE_EDGE) {
+-		local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
+-		return 0x500;
+-	}
+-
+ 	if (happened & PACA_IRQ_DBELL) {
+ 		local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+ 		return 0x280;
+@@ -270,19 +260,6 @@ void replay_soft_interrupts(void)
+ 			hard_irq_disable();
+ 	}
  
-@@ -377,6 +383,7 @@ notrace void arch_local_irq_restore(unsigned long mask)
- 	trace_hardirqs_on();
- 	irq_soft_mask_set(IRQS_ENABLED);
- 	__hard_irq_enable();
-+	preempt_enable();
- }
- EXPORT_SYMBOL(arch_local_irq_restore);
- 
+-	/*
+-	 * Check if an EPR external interrupt happened this bit is typically
+-	 * set if we need to handle another "edge" interrupt from within the
+-	 * MPIC "EPR" handler.
+-	 */
+-	if (IS_ENABLED(CONFIG_PPC_BOOK3E) && (happened & PACA_IRQ_EE_EDGE)) {
+-		local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
+-		regs.trap = 0x500;
+-		do_IRQ(&regs);
+-		if (!(local_paca->irq_happened & PACA_IRQ_HARD_DIS))
+-			hard_irq_disable();
+-	}
+-
+ 	if (IS_ENABLED(CONFIG_PPC_DOORBELL) && (happened & PACA_IRQ_DBELL)) {
+ 		local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+ 		if (IS_ENABLED(CONFIG_PPC_BOOK3E))
 -- 
 2.23.0
 
