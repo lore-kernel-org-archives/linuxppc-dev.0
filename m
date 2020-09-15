@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F7D2C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:09:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6090BC43461
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:13:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B311521D1B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:09:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B311521D1B
+	by mail.kernel.org (Postfix) with ESMTPS id BEE0E21D41
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 16:13:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEE0E21D41
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSpT2s4zzDqMB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:09:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSv943y4zDqTq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 02:13:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,24 +29,25 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSdh2bV6zDqN7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 02:01:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrShS4rsPzDqRJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 02:03:52 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kIDOE-00061Q-NV; Tue, 15 Sep 2020 16:01:06 +0000
-Date: Tue, 15 Sep 2020 18:01:05 +0200
+ id 1kIDQX-0006I7-VU; Tue, 15 Sep 2020 16:03:30 +0000
+Date: Tue, 15 Sep 2020 18:03:29 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 07/15] selftests/seccomp: Remove syscall setting #ifdefs
-Message-ID: <20200915160105.sqo7x2qyt6uwzphx@wittgenstein>
+Subject: Re: [PATCH 08/15] selftests/seccomp: Convert HAVE_GETREG into
+ ARCH_GETREG/ARCH_SETREG
+Message-ID: <20200915160329.e7wotngcsyschbwo@wittgenstein>
 References: <20200912110820.597135-1-keescook@chromium.org>
- <20200912110820.597135-8-keescook@chromium.org>
+ <20200912110820.597135-9-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200912110820.597135-8-keescook@chromium.org>
+In-Reply-To: <20200912110820.597135-9-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,9 +69,9 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 12, 2020 at 04:08:12AM -0700, Kees Cook wrote:
-> With all architectures now using the common SYSCALL_NUM_SET() macro, the
-> arch-specific #ifdef can be removed from change_syscall() itself.
+On Sat, Sep 12, 2020 at 04:08:13AM -0700, Kees Cook wrote:
+> Instead of special-casing the get/set-registers routines, move the
+> HAVE_GETREG logic into the new ARCH_GETREG() and ARCH_SETREG() macros.
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
