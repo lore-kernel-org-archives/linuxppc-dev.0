@@ -2,23 +2,24 @@ Return-Path: <SRS0=6Pj3=CY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E577BC43461
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43199C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:58:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F527206A4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:55:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F527206A4
+	by mail.kernel.org (Postfix) with ESMTPS id 948C22074B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 15:58:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 948C22074B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSW335xqzDqW3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 01:55:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrSYg44KNzDqT4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 01:57:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,25 +30,25 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSSP1CWMzDqQr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 01:53:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrSWY05glzDqLg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 01:56:09 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kIDGb-0005SV-UL; Tue, 15 Sep 2020 15:53:14 +0000
-Date: Tue, 15 Sep 2020 17:53:13 +0200
+ id 1kIDJ4-0005bW-Pu; Tue, 15 Sep 2020 15:55:46 +0000
+Date: Tue, 15 Sep 2020 17:55:46 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 02/15] selftests/seccomp: Provide generic syscall setting
+Subject: Re: [PATCH 03/15] selftests/seccomp: mips: Define SYSCALL_NUM_SET
  macro
-Message-ID: <20200915155313.s5a3gxmjb2da6762@wittgenstein>
+Message-ID: <20200915155546.ht4vo7nqswxrgymb@wittgenstein>
 References: <20200912110820.597135-1-keescook@chromium.org>
- <20200912110820.597135-3-keescook@chromium.org>
+ <20200912110820.597135-4-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200912110820.597135-3-keescook@chromium.org>
+In-Reply-To: <20200912110820.597135-4-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,14 +70,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 12, 2020 at 04:08:07AM -0700, Kees Cook wrote:
-> In order to avoid "#ifdef"s in the main function bodies, create a new
-> macro, SYSCALL_NUM_SET(), where arch-specific logic can live.
+On Sat, Sep 12, 2020 at 04:08:08AM -0700, Kees Cook wrote:
+> Remove the mips special-case in change_syscall().
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
+>  tools/testing/selftests/seccomp/seccomp_bpf.c | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> index 1c83e743bfb1..02a9a6599746 100644
+> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
+> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> @@ -1742,6 +1742,13 @@ TEST_F(TRACE_poke, getpid_runs_normally)
+>  # define ARCH_REGS		struct pt_regs
+>  # define SYSCALL_NUM(_regs)	(_regs).regs[2]
+>  # define SYSCALL_SYSCALL_NUM	regs[4]
+> +# define SYSCALL_NUM_SET(_regs, _nr)			\
+> +	do {						\
+> +		if ((_regs).regs[2] == __NR_O32_Linux)	\
+> +			(_regs).regs[4] = _nr;		\
+> +		else					\
+> +			(_regs).regs[2] = _nr;		\
+> +	} while (0)
 
-SYSCALL_SWITCH(_regs, nr)?
+I think that
 
-But looks good either way!
+# define SYSCALL_NUM_SET(_regs, _nr)				\
+	do {							\
+		if (SYSCALL_NUM(_regs) == __NR_O32_Linux)	\
+			(_regs).regs[4] = _nr;			\
+		else						\
+			(_regs).regs[2] = _nr;			\
+	} while (0)
+
+would read better but that's just a matter of taste. :)
+
+Looks good!
 Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
