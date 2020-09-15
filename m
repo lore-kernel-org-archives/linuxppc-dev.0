@@ -2,65 +2,62 @@ Return-Path: <SRS0=6Pj3=CY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73960C43461
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:31:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2A5EC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:32:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B064220872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:31:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CBFBC20872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 11:32:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="EqW4ku7Y"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B064220872
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="Kt+4Q+i+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBFBC20872
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrLdg3pbpzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 21:31:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrLgr2X2WzDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Sep 2020 21:32:56 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrLXT1Y2HzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 21:26:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrLcf06s8zDqWR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2020 21:30:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=EqW4ku7Y; 
+ header.a=rsa-sha256 header.s=201909 header.b=Kt+4Q+i+; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BrLXQ46X3z9sTN;
- Tue, 15 Sep 2020 21:26:30 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BrLcd2lksz9sVM;
+ Tue, 15 Sep 2020 21:30:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1600169192;
- bh=4esK02AyElAnyDXkxcmOZ58SrlxD5sLeYfaYLnFksAA=;
+ s=201909; t=1600169409;
+ bh=OQ8ZlDy64ei4/T3Jt7Yt/gqzJpjsR9iZH/wbYSEEXi4=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=EqW4ku7Y8V1CrYGyOReTmatCQO246pQi3XD9hK8QImXa+8kAvrroYZZVLIhB5Cv/L
- 1HEJZtQS+acKXCy5mMNetAonLI2gIKpEbZxxPKtbRyxAhp7DbXfXGjBEQew0/9IUzn
- uRXbt4CCQ1FGVyJHUik+SPO4pM7Ori2zZ2q8Sd+rd7hSHtcrPmjcbc39dwb8ouGs30
- Ogk0REO3vpcreFt7pS/TdkFGqXscY4gN+KJ+bOxq48bkRgo6e0daxPDJKsbboli0bK
- vt48IMrpUsOzMpDaqIlp3QryBj7HBTRa4U3hJ9O+w+fwBRbfp40WWPlE48hxMPs7KN
- n614Pr2VN9Jeg==
+ b=Kt+4Q+i+95pHJ2GUXntDEfvXikdxYELoaEDu8K4QLKvBA3NlsKSvdzQ54SUoHIqVg
+ CSXhc9s33UMWUYMFds1IRNb6TZOEq1WxKSn9Kt6XUVzPW8e2Jh8L0abkdt12A8KB3h
+ 3T0gtjXya5WbpHRnLCNy5k2ObQjXQNjs40wJCmAQ5fH6AiZifOf2dbeSFnQpTtEQ6z
+ DpZeuwezpM83zT9UOEhX8yJKsrQk7cUW6fFMDJe2h8OZoKzWWh57PC4IJfxHcTSTJH
+ X/QEX9dIzv5JKDq2SB9Px4TF5RbrSlgRfm645iBnBOupNtkjBe5sUFLuVpY+AO5TU9
+ voPe9UbNcG0lg==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, peterz@infradead.org
-Subject: Re: [PATCH v2 1/4] mm: fix exec activate_mm vs TLB shootdown and lazy
- tlb switching race
-In-Reply-To: <1600137586.nypnz3sbcl.astroid@bobo.none>
-References: <20200914045219.3736466-1-npiggin@gmail.com>
- <20200914045219.3736466-2-npiggin@gmail.com>
- <20200914105617.GP1362448@hirez.programming.kicks-ass.net>
- <1600137586.nypnz3sbcl.astroid@bobo.none>
-Date: Tue, 15 Sep 2020 21:26:29 +1000
-Message-ID: <87lfhbp9ga.fsf@mpe.ellerman.id.au>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-nvdimm@lists.01.org
+Subject: Re: [PATCH v2] powerpc/papr_scm: Fix warning triggered by
+ perf_stats_show()
+In-Reply-To: <20200912081451.66225-1-vaibhav@linux.ibm.com>
+References: <20200912081451.66225-1-vaibhav@linux.ibm.com>
+Date: Tue, 15 Sep 2020 21:30:08 +1000
+Message-ID: <87imcfp9a7.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,37 +71,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-arch@vger.kernel.org,
- Dave Hansen <dave.hansen@intel.com>,
+Cc: Santosh Sivaraj <santosh@fossix.org>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
- "linux-mm @ kvack . org" <linux-mm@kvack.org>, sparclinux@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>
+ Oliver O'Halloran <oohall@gmail.com>, Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> Excerpts from peterz@infradead.org's message of September 14, 2020 8:56 pm:
->> On Mon, Sep 14, 2020 at 02:52:16PM +1000, Nicholas Piggin wrote:
->>> Reading and modifying current->mm and current->active_mm and switching
->>> mm should be done with irqs off, to prevent races seeing an intermediate
->>> state.
-...
->>> 
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> 
->> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->> 
->> I'm thinking we want this selected on x86 as well. Andy?
+Vaibhav Jain <vaibhav@linux.ibm.com> writes:
+> A warning is reported by the kernel in case perf_stats_show() returns
+> an error code. The warning is of the form below:
 >
-> Thanks for the ack. The plan was to take it through the powerpc tree,
-> but if you'd want x86 to select it, maybe a topic branch? Although
-> Michael will be away during the next merge window so I don't want to
-> get too fancy. Would you mind doing it in a follow up merge after
-> powerpc, being that it's (I think) a small change?
+>  papr_scm ibm,persistent-memory:ibm,pmemory@44100001:
+>  	  Failed to query performance stats, Err:-10
+>  dev_attr_show: perf_stats_show+0x0/0x1c0 [papr_scm] returned bad count
+>  fill_read_buffer: dev_attr_show+0x0/0xb0 returned bad count
+>
+> On investigation it looks like that the compiler is silently truncating the
+> return value of drc_pmem_query_stats() from 'long' to 'int', since the
+> variable used to store the return code 'rc' is an 'int'. This
+> truncated value is then returned back as a 'ssize_t' back from
+> perf_stats_show() to 'dev_attr_show()' which thinks of it as a large
+> unsigned number and triggers this warning..
+>
+> To fix this we update the type of variable 'rc' from 'int' to
+> 'ssize_t' that prevents the compiler from truncating the return value
+> of drc_pmem_query_stats() and returning correct signed value back from
+> perf_stats_show().
+>
+> Fixes: 2d02bf835e573 ('powerpc/papr_scm: Fetch nvdimm performance
+>        stats from PHYP')
 
-Or get akpm to take the series, including the x86 change.
+Please don't word wrap the Fixes tag it breaks b4.
+
+I've fixed it up this time.
 
 cheers
