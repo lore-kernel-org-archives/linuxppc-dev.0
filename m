@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8FF9C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:24:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B1AC43461
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:26:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3755F206A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:24:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3755F206A4
+	by mail.kernel.org (Postfix) with ESMTPS id 7B7D220684
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:26:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B7D220684
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrqnT6d7PzDqFK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 16:24:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Brqr21YzQzDqDh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 16:26:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=huawei.com (client-ip=45.249.212.32; helo=huawei.com;
  envelope-from=miaoqinglang@huawei.com; receiver=<UNKNOWN>)
@@ -28,20 +28,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrqjN639PzDqDL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 16:20:56 +1000 (AEST)
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 055E765D4C38A2940654;
- Wed, 16 Sep 2020 14:20:48 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrqjP517fzDqMW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 16:20:57 +1000 (AEST)
+Received: from DGGEMS403-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 9333F9C127C521A72810;
+ Wed, 16 Sep 2020 14:20:54 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
- 14.3.487.0; Wed, 16 Sep 2020 14:20:41 +0800
+ DGGEMS403-HUB.china.huawei.com (10.3.19.203) with Microsoft SMTP Server id
+ 14.3.487.0; Wed, 16 Sep 2020 14:20:46 +0800
 From: Qinglang Miao <miaoqinglang@huawei.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH -next] drivers/macintosh/smu.c: use for_each_child_of_node()
- macro
-Date: Wed, 16 Sep 2020 14:21:22 +0800
-Message-ID: <20200916062122.190586-1-miaoqinglang@huawei.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Tyrel Datwyler
+ <tyreld@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH -next] PCI: rpadlpar: use for_each_child_of_node() and
+ for_each_node_by_name
+Date: Wed, 16 Sep 2020 14:21:28 +0800
+Message-ID: <20200916062128.190819-1-miaoqinglang@huawei.com>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -59,32 +61,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Qinglang Miao <miaoqinglang@huawei.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Qinglang Miao <miaoqinglang@huawei.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use for_each_child_of_node() macro instead of open coding it.
+Use for_each_child_of_node() and for_each_node_by_name macro
+instead of open coding it.
 
 Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 ---
- drivers/macintosh/smu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/hotplug/rpadlpar_core.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index 96684581a..45875e8c6 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -638,7 +638,7 @@ static void smu_expose_childs(struct work_struct *unused)
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index f979b7098..0a3c80ba6 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -40,13 +40,13 @@ static DEFINE_MUTEX(rpadlpar_mutex);
+ static struct device_node *find_vio_slot_node(char *drc_name)
  {
- 	struct device_node *np;
+ 	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
+-	struct device_node *dn = NULL;
++	struct device_node *dn;
+ 	int rc;
  
--	for (np = NULL; (np = of_get_next_child(smu->of_node, np)) != NULL;)
-+	for_each_child_of_node(smu->of_node, np)
- 		if (of_device_is_compatible(np, "smu-sensors"))
- 			of_platform_device_create(np, "smu-sensors",
- 						  &smu->of_dev->dev);
+ 	if (!parent)
+ 		return NULL;
+ 
+-	while ((dn = of_get_next_child(parent, dn))) {
++	for_each_child_of_node(parent, dn) {
+ 		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
+ 		if (rc == 0)
+ 			break;
+@@ -60,10 +60,10 @@ static struct device_node *find_vio_slot_node(char *drc_name)
+ static struct device_node *find_php_slot_pci_node(char *drc_name,
+ 						  char *drc_type)
+ {
+-	struct device_node *np = NULL;
++	struct device_node *np;
+ 	int rc;
+ 
+-	while ((np = of_find_node_by_name(np, "pci"))) {
++	for_each_node_by_name(np, "pci") {
+ 		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
+ 		if (rc == 0)
+ 			break;
 -- 
 2.23.0
 
