@@ -7,41 +7,42 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D759C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:28:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2512CC35257
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:30:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C0DB206A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:28:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C0DB206A4
+	by mail.kernel.org (Postfix) with ESMTPS id 5D0BA206DB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 06:30:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D0BA206DB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BrqtC473qzDqTV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 16:28:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BrqwL6SwMzDqG0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 16:30:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
  envelope-from=miaoqinglang@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrqjT0ncmzDq9L
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 16:21:00 +1000 (AEST)
-Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.59])
- by Forcepoint Email with ESMTP id 941A61B18CA26962224C;
- Wed, 16 Sep 2020 14:20:53 +0800 (CST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BrqjY3JRPzDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 16:21:05 +1000 (AEST)
+Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 5B41814F3F1F731B005E;
+ Wed, 16 Sep 2020 14:20:58 +0800 (CST)
 Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS413-HUB.china.huawei.com (10.3.19.213) with Microsoft SMTP Server id
- 14.3.487.0; Wed, 16 Sep 2020 14:20:44 +0800
+ DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
+ 14.3.487.0; Wed, 16 Sep 2020 14:20:48 +0800
 From: Qinglang Miao <miaoqinglang@huawei.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH -next] macintosh: smu_sensors: use for_each_child_of_node()
- macro
-Date: Wed, 16 Sep 2020 14:21:25 +0800
-Message-ID: <20200916062125.190729-1-miaoqinglang@huawei.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH -next] powerpc/powernv: fix wrong warning message in
+ opalcore_config_init()
+Date: Wed, 16 Sep 2020 14:21:29 +0800
+Message-ID: <20200916062129.190864-1-miaoqinglang@huawei.com>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -65,27 +66,27 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use for_each_child_of_node() macro instead of open coding it.
+The logic of the warn output is incorrect. The two args should be
+exchanged.
 
 Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 ---
- drivers/macintosh/windfarm_smu_sensors.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/opal-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/windfarm_smu_sensors.c b/drivers/macintosh/windfarm_smu_sensors.c
-index 3e6059eaa..c8706cfb8 100644
---- a/drivers/macintosh/windfarm_smu_sensors.c
-+++ b/drivers/macintosh/windfarm_smu_sensors.c
-@@ -421,8 +421,7 @@ static int __init smu_sensors_init(void)
- 		return -ENODEV;
- 
- 	/* Look for sensors subdir */
--	for (sensors = NULL;
--	     (sensors = of_get_next_child(smu, sensors)) != NULL;)
-+	for_each_child_of_node(smu, sensors)
- 		if (of_node_name_eq(sensors, "sensors"))
- 			break;
- 
+diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
+index 6dba3b622..23571f0b5 100644
+--- a/arch/powerpc/platforms/powernv/opal-core.c
++++ b/arch/powerpc/platforms/powernv/opal-core.c
+@@ -510,7 +510,7 @@ static void __init opalcore_config_init(void)
+ 	idx = be32_to_cpu(opalc_metadata->region_cnt);
+ 	if (idx > MAX_PT_LOAD_CNT) {
+ 		pr_warn("WARNING: OPAL regions count (%d) adjusted to limit (%d)",
+-			MAX_PT_LOAD_CNT, idx);
++			idx, MAX_PT_LOAD_CNT);
+ 		idx = MAX_PT_LOAD_CNT;
+ 	}
+ 	for (i = 0; i < idx; i++) {
 -- 
 2.23.0
 
