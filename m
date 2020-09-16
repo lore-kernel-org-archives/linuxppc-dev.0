@@ -2,133 +2,79 @@ Return-Path: <SRS0=+K1p=CZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDE88C43461
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:20:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44CCDC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:23:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F3482222B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:20:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A8B632223D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:23:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=web.de header.i=@web.de header.b="VVh4lZYP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F3482222B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=web.de
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rU44eXu9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8B632223D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Brzgs0xcDzDqVQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 22:20:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Brzl72FBMzDqXq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 22:22:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::144;
+ helo=mail-lf1-x144.google.com; envelope-from=festevam@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=web.de
- (client-ip=217.72.192.78; helo=mout.web.de;
- envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=web.de header.i=@web.de header.a=rsa-sha256
- header.s=dbaedf251592 header.b=VVh4lZYP; 
- dkim-atps=neutral
-X-Greylist: delayed 359 seconds by postgrey-1.36 at bilbo;
- Wed, 16 Sep 2020 22:18:04 AEST
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=rU44eXu9; dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BrzdS1yWPzDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 22:18:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
- s=dbaedf251592; t=1600258672;
- bh=qScRLO8kLseMI6NKcnB6M674mdhaDUEHqHLxLBJsQMk=;
- h=X-UI-Sender-Class:To:Cc:Subject:From:Date;
- b=VVh4lZYPIDR9n4nuLWYe1oGRyuSwRr+brrzNdmJnFTCn4XSnxWBEhaVxCiNyFChsz
- XNVGv3cVCBKd9B7DTmxtNy4By+8mAaeFakYkSFtTZVIN0Zz3Jk/uJXsZyK+2m174Xn
- g3icCh8MWv+F7ymhbCBMgGcsLO+6y1zihHDo/j0Y=
-X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
-Received: from [192.168.1.2] ([93.131.146.165]) by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MNOQy-1k74CG0ldi-00OydJ; Wed, 16
- Sep 2020 14:10:50 +0200
-To: Xu Wang <vulab@iscas.ac.cn>, alsa-devel@alsa-project.org,
- linux-arm-kernel@lists.infradead.org, linux-imx@nxp.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] fsl: imx-audmix: Use devm_kcalloc() in imx_audmix_probe()
-From: Markus Elfring <Markus.Elfring@web.de>
-Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
- 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 FEE=
-Message-ID: <de79bd45-aba0-e497-4f33-5153ecebc6be@web.de>
-Date: Wed, 16 Sep 2020 14:10:39 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BryzB70ZqzDqVL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 21:48:19 +1000 (AEST)
+Received: by mail-lf1-x144.google.com with SMTP id d15so6603719lfq.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 04:48:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=8EqraEW4q0BQREzcz7DOOl5CowgKAV1RWSkOPCRavNE=;
+ b=rU44eXu9IYnr41wxdt6v9T2BK23fXOMiYHbuvJ4fBvbIhQJevbN9DCu7zeoSzO1b7r
+ XNnu+btJPV045o+iwfbkQjbyUDrAOjfp6elbTCasVlluLFW5gIHT1X4yyVMsJJSLCNAC
+ w19tIW8BZ6o4Laen2U7uJnAps2VyVw0pZtsvyenkUx/e0PJjbGpRc5c+UKkDiRuxNx1Z
+ Vy/jgkfhkbKz8hoq4Z7JSgBxGLEoMUrX6gT9NxbIf/7NGcZQYxDnj5nAaqPkHAqpqUgG
+ xl042OMDHACLbpwLg253ADTbCnsM8kZMCesIY07WiMgcAcKlZT0dgv668gr+5Rz4V3QD
+ N2QA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=8EqraEW4q0BQREzcz7DOOl5CowgKAV1RWSkOPCRavNE=;
+ b=IY3oa0f+JHHzRseaZe/9WS/bIMxH5wtEdnZ1L1w7P6JDw804G9l2u/nUOEz5DySRNc
+ FWCl3PahUMUE8UTtG5YjJ7wVV3qIO0Rbm7d9GoH6z17RGybWHGDnerrSkZbCl1KCn4SM
+ QmH5jG00MJ0EMWtdK94SY75N8he/83bERcB/ePCFUBz6Mz7VBqh6lCUj2mJXccmjiOlF
+ DY4QPu7641ai+0TMgrySnrsDN0VU2hILBqebOC01Y1i3Ga8LfId12kUrD7wO0Olhov7K
+ m/uTMackGpfwStt1pegcZhcHlV4WVaV7vRr7s/+S7yWmpzKhQJ2ohgJAckGsSvGdJ2qb
+ GeqQ==
+X-Gm-Message-State: AOAM533/AlEx+mMtEl74TLro0r8pv6iJp199687NKUnkunqjRcIJUeTO
+ FJd+bEIYyAQMaCigtBStW/+W/4qttSeKvJEtblo=
+X-Google-Smtp-Source: ABdhPJyLQQjbAn1PyXukvYJe9+/3BtvyQn2weWT99qvd4/rq7/DfXmAyofM4kYWfrGNcNfdwXWq2A9YgjXkIDgtp/SM=
+X-Received: by 2002:a19:820c:: with SMTP id e12mr7282855lfd.215.1600256894436; 
+ Wed, 16 Sep 2020 04:48:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-X-Provags-ID: V03:K1:J57nP3tFLxyk+UVxx/ZboHnjdtnZ1yXL0hVwQmeo26SqzPMGxDp
- y0AVxTFgM3QPQQ1yysikky+kKNLfXlkt+Pkmprxl9NgTbknD4wUvKOpaAM3UFIBgc0MV0Rd
- q7ij9wypdUNt/VnTVMNbyTjjP65Id2rBh3pTHPAswbLUkeJBnygCe0wtwzRFNv0Y9o4K4vw
- sLld04YUZjThucQPqyqPw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:bACKaonxlj0=:VXW44eN4nTEF8lytUzPu8M
- faEtZzBEdJDH3iwMwhM4v9V7ob1eYygLpvd7dPqsBWuvrDKzzgSHoNUchiAhvoxwvcDNhfuST
- 9qXrOLZFmm4Hkdg4TUhPufshW5GFeeJa8+9AM28GLtx4b9WHtGkaERClE2cF4Rpvo8iGxOICf
- KAs/akYgONAibLlBfNNuSPwy8T34aEIaPXW4k5N22PKrA3fQKbwHDe4IzxXywg9ke+i0vP/8L
- yXP+GqIrXNxp2awR1rnDnztl9lL5rUk77ShgGrZAcgmvT7Y3YNec1B7bn/IHGBaMfnPOc7/9c
- 0ZgVEg2NcfzUnTG5V91zy9YRsYjecdmeEqrlkxCtJ0rjhMPsD8UZOr/hRhCRgzKHlbz/6GR2U
- iVpX7hfousd2OAiTLABEpESwLzAuqopLvQJnC0HVLvCBitDdVy1rFj0X+FIP6GjsE5WG4IL5Q
- pgWVi/yrmB0XYNYD1Zqq7A76ouXD4xY6LFVefIlE0nlu3tvJ4Sd5qgIX7ApaxgbuNmC7bfIJQ
- Sbl/So/TEURPtu3nDCxyKdJ2JmfWxIFT7KJFn6cpF/l/eWGuFuq7OyakLX43neQfmYgjC+Gud
- CcyMCNDwTGoDW5w/mGkf10MZ9v/2aV3q8XGq9leSdzxJ8iMYJrZCPGgp9sDxqgQltn7dBynFb
- uTgZXp12+pl+GbTnQTbxPpnstsqrDrN7iLuuYiLfKBWtQ2Wzsc4FgxIJ6ySA555aF6nViKL+7
- FsRucQ50I0B/wR7D9SsRUWq6xONfYwvWMLrnrVUaNxG+oFkLuzBNrefwwSf6oMt2iiTwu2D62
- ZbxDUQhHLIx3Dmacyq82FWq/cUu+lxf70CccNNl0ncB6WnV04u3b8BH5JZkIUdw6wZtvpCfii
- XXusYXl+Gj8Hy+mUBD3Jtgw58RyikwXXHoP2ResNi5Uo75BUly++0G/fdZjuMHhPpqmo2JbhQ
- E+ygGAwS3YMStSfMh7j7d/ALtPQa01L/lEjF4CKEcJsvNLKwBVftoyFzb0Rd+t9CEAy4LNhFG
- fqusfOPvLCX5YhWejCXiRgFIZjkZQU6dZS+Cw1tlSttGFiy4FwZH0Am5Qe5aU4e4Ievt2xWSF
- Fx5XPv6qdE9XLki1+7jAYj3urPtwyn8NC9xoGEqGAsln92tWEZvTmS1td/qL+CckyF9vTvpRU
- Vv86Y7KQNh2U/jVkKm7QL7mWxkuicYmQWsSiZOvezTtSwlO8T7CyRlWN2YMRkggZ6u7/vql1H
- nKjYQVUQKAoS3Bn55bqGflP8PZXiBmFiFzD6nmw==
+References: <1600251387-1863-1-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <1600251387-1863-1-git-send-email-shengjiu.wang@nxp.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Wed, 16 Sep 2020 08:47:59 -0300
+Message-ID: <CAOMZO5Dyo5J8SRWYLyh3bxwtcuAH=r6pcQg7-vtXfO2H6n4Exg@mail.gmail.com>
+Subject: Re: [PATCH 0/3] ASoC: fsl_sai: update the register list
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Content-Type: multipart/alternative; boundary="000000000000be0d6805af6cd7a1"
+X-Mailman-Approved-At: Wed, 16 Sep 2020 22:20:58 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -140,23 +86,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Shengjiu Wang <shengjiu.wang@gmail.com>, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Shawn Guo <shawnguo@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
- kernel-janitors@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>,
- linux-kernel@vger.kernel.org, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, kernel@pengutronix.de,
- Jaroslav Kysela <perex@perex.cz>, Fabio Estevam <festevam@gmail.com>
+Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
+ Xiubo.Lee@gmail.com, lgirdwood@gmail.com, tiwai@suse.com, perex@perex.cz,
+ Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> A multiplication for the size determination of a memory allocation
-> indicated that an array data structure should be processed.
-> Thus use the corresponding function "devm_kcalloc".
+--000000000000be0d6805af6cd7a1
+Content-Type: text/plain; charset="UTF-8"
 
-I find the previous patch subject inappropriate.
-Would you like to choose an alternative?
+Knob kmg
 
-Regards,
-Markus
+On Wed, Sep 16, 2020, 07:23 Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+
+> As sai ip is upgraded, so update sai register list.
+>
+> Shengjiu Wang (3):
+>   ASoC: fsl_sai: Add new added registers and new bit definition
+>   ASoC: fsl_sai: Add fsl_sai_check_version function
+>   ASoC: fsl_sai: Set MCLK input or output direction
+>
+>  sound/soc/fsl/fsl_sai.c | 77 ++++++++++++++++++++++++++++++++++++
+>  sound/soc/fsl/fsl_sai.h | 87 +++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 164 insertions(+)
+>
+> --
+> 2.27.0
+>
+>
+
+--000000000000be0d6805af6cd7a1
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto">Knob kmg</div><br><div class=3D"gmail_quote"><div dir=3D"=
+ltr" class=3D"gmail_attr">On Wed, Sep 16, 2020, 07:23 Shengjiu Wang &lt;<a =
+href=3D"mailto:shengjiu.wang@nxp.com">shengjiu.wang@nxp.com</a>&gt; wrote:<=
+br></div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;borde=
+r-left:1px #ccc solid;padding-left:1ex">As sai ip is upgraded, so update sa=
+i register list.<br>
+<br>
+Shengjiu Wang (3):<br>
+=C2=A0 ASoC: fsl_sai: Add new added registers and new bit definition<br>
+=C2=A0 ASoC: fsl_sai: Add fsl_sai_check_version function<br>
+=C2=A0 ASoC: fsl_sai: Set MCLK input or output direction<br>
+<br>
+=C2=A0sound/soc/fsl/fsl_sai.c | 77 ++++++++++++++++++++++++++++++++++++<br>
+=C2=A0sound/soc/fsl/fsl_sai.h | 87 ++++++++++++++++++++++++++++++++++++++++=
++<br>
+=C2=A02 files changed, 164 insertions(+)<br>
+<br>
+-- <br>
+2.27.0<br>
+<br>
+</blockquote></div>
+
+--000000000000be0d6805af6cd7a1--
