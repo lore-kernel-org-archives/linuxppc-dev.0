@@ -2,87 +2,96 @@ Return-Path: <SRS0=KYNf=C2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F301EC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11F88C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:44:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E50A20771
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:38:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2138520665
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:44:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JC1Ik0dT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E50A20771
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Fk0tpQDS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2138520665
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsJ475CF0zDqvZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 10:38:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.221.195;
- helo=mail-vk1-f195.google.com; envelope-from=nicoleotsuka@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsJBp3GRGzDqw9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 10:44:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=JC1Ik0dT; dkim-atps=neutral
-Received: from mail-vk1-f195.google.com (mail-vk1-f195.google.com
- [209.85.221.195])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=Fk0tpQDS; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsHj24146zDqmJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 10:22:12 +1000 (AEST)
-Received: by mail-vk1-f195.google.com with SMTP id t189so22876vka.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 17:22:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=+L8r3i/llwp2Lmso2SJhe/RRr10LqwB0/nAV4JJW3s0=;
- b=JC1Ik0dTH25FUvJr+6hQ7ANFLhd84ikfThn/lnDI9H6v+KmSh8y0R5+6RDmpkXDNoS
- jrGyTNd/bMGzTyUALXM20m2tIv1i0eg2jUdFyK5P1SP0X1eKadn1e53/JCTcczHht8Z8
- 3SgmdZ3PDrm1nhNNjoy0+mbFThR122+YFS83dknywKFKv9eft48bVcHo97iDUnvKjQzR
- 9mhS4X/C3QT5FAPN8Vu0N7pwTZrrKxsQucrlMVaMsKXNWbHHWnymjZPby2YiyH2JGA1k
- GqL1mt9mdVOg/XNUiV/CMMVIOl0qCHSxIAn2tPIQLJ8fcW/pLs6o8WW1cpDbaV85nNVI
- Qe4Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=+L8r3i/llwp2Lmso2SJhe/RRr10LqwB0/nAV4JJW3s0=;
- b=Cp2N4tri/p6mDTxRbTVFVUSQlkVk3SfTcvpnxJq/HtD+U+Ni9mxP22SYcRXzN7gRLB
- 0ESNA/ZxjE9MELgsIIZvraU8nXjX8GFTy67ixSNzDeDyPmo1mQ8aA3ezWXXpxP3Mv9Tg
- UwPu1euZKhf6CQM5hoP9B2fu2VTb4qyFmsChshbplifqvzBor5uZlOD2L5iGxBJjf4U4
- QXs+KJGr5GvVK5zB+rrTkj3wOMMXdwZ+ocdCG5f8xn46ICUISrFoeuJA0j4KV9yGQ+Zq
- cdDTXiO2xOYDFr5r0pH/hzOejq9VdIZbJ8ssx2h0DwSrJY6fcoqztzta6o2ulju9FrtM
- TNyQ==
-X-Gm-Message-State: AOAM5312/GFghCUPhmijbLPsw3dnkxjhIwdmqXnvjXqkipLaT9RiynPf
- pfIZ9GjLDziMJ4ug+Q16juMqd11wHHo=
-X-Google-Smtp-Source: ABdhPJwyRANoUnW2/ZYlnK9c+pZ3xu+Veuc7MK+f2qzGVSCXe5EsIqJOkORlG6/DMUY0bn9nyBY02g==
-X-Received: by 2002:a62:10a:0:b029:142:2501:39e1 with SMTP id
- 10-20020a62010a0000b0290142250139e1mr8640542pfb.48.1600301600950; 
- Wed, 16 Sep 2020 17:13:20 -0700 (PDT)
-Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id z4sm18491615pfr.197.2020.09.16.17.13.20
- (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 16 Sep 2020 17:13:20 -0700 (PDT)
-Date: Wed, 16 Sep 2020 17:10:08 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_audmix: make clock and output src write only
-Message-ID: <20200917001007.GA22566@Asurada-Nvidia>
-References: <1600104274-13110-1-git-send-email-viorel.suman@oss.nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1600104274-13110-1-git-send-email-viorel.suman@oss.nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsHvX41ZZzDqL2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 10:31:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 08GK1h3P078967; Wed, 16 Sep 2020 16:10:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject : date : message-id; s=pp1;
+ bh=Hx1VXKQgy3Nm6HDgt3hWtGCgJ6pw/owXli8uNzyQmSE=;
+ b=Fk0tpQDS1r+wOAQH4julULdyVJFO2tWqJABO3WPhIh+QcIxhElWcpgrrN+vbPVUy1P+H
+ AK7993/b8CVrT+VwAbZkR+cF1+g5CVl0ETqIPMsYmTRquK1Mkxg+ml9oIxJmhtCPnYWR
+ BIwxtuAX0nsoJTT0nHqrVeN0nYMMiddUk6h4+AzQQgtHETcaupMzK234cVFT7tQkqKWR
+ A3gioaBjWEfwpxCZl8JaNCE4s4rQ99x4IKwkNbKP4L/+05y2W4GHKsNvkQXMptfLaRj/
+ WLuCW8AiFg9M3pPFX21gLqm6jxaA3yUPberE0oAIZ+oY8nTrT0FGvK3+xwBWmO5mr/WP fg== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.10])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33kqb93jse-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Sep 2020 16:10:06 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+ by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08GK6hW2022173;
+ Wed, 16 Sep 2020 20:10:05 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by ppma02dal.us.ibm.com with ESMTP id 33k5v992cx-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Sep 2020 20:10:05 +0000
+Received: from b03ledav003.gho.boulder.ibm.com
+ (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 08GKA4IB983758
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 16 Sep 2020 20:10:04 GMT
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0C8236A04F;
+ Wed, 16 Sep 2020 20:10:04 +0000 (GMT)
+Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 54BC76A051;
+ Wed, 16 Sep 2020 20:10:03 +0000 (GMT)
+Received: from oc6034535106.ibm.com (unknown [9.160.112.131])
+ by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 16 Sep 2020 20:10:03 +0000 (GMT)
+From: Brian King <brking@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org
+Subject: [PATCH] ibmvfc: Protect vhost->task_set increment by the host lock
+Date: Wed, 16 Sep 2020 15:09:59 -0500
+Message-Id: <1600286999-22059-1-git-send-email-brking@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-09-16_12:2020-09-16,
+ 2020-09-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0
+ suspectscore=1 priorityscore=1501 phishscore=0 mlxlogscore=999 spamscore=0
+ lowpriorityscore=0 clxscore=1015 impostorscore=0 mlxscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2009160138
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,60 +103,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
- Viorel Suman <viorel.suman@gmail.com>, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>, Viorel Suman <viorel.suman@nxp.com>,
- Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel@vger.kernel.org
+Cc: Brian King <brking@linux.vnet.ibm.com>, tyreld@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, martin.petersen@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 14, 2020 at 08:24:34PM +0300, Viorel Suman (OSS) wrote:
-> From: Viorel Suman <viorel.suman@nxp.com>
-> 
-> "alsactl -f state.conf store/restore" sequence fails because setting
-> "mixing clock source" and "output source" requires active TDM clock
-> being started for configuration propagation. Make these two controls
-> write only so that their values are not stored at "alsactl store".
-> 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+In the discovery thread, ibmvfc does a vhost->task_set++ without
+any lock held. This could result in two targets getting the same
+cancel key, which could have strange effects in error recovery.
+The actual probability of this occurring should be extremely
+small, since this should all be done in a single threaded loop
+from the discovery thread, but let's fix it up anyway to be safe.
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvfc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> ---
->  sound/soc/fsl/fsl_audmix.c | 16 ++++++++++++----
->  1 file changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
-> index a447baf..7ad5925 100644
-> --- a/sound/soc/fsl/fsl_audmix.c
-> +++ b/sound/soc/fsl/fsl_audmix.c
-> @@ -199,10 +199,18 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
->  
->  static const struct snd_kcontrol_new fsl_audmix_snd_controls[] = {
->  	/* FSL_AUDMIX_CTR controls */
-> -	SOC_ENUM_EXT("Mixing Clock Source", fsl_audmix_enum[0],
-> -		     snd_soc_get_enum_double, fsl_audmix_put_mix_clk_src),
-> -	SOC_ENUM_EXT("Output Source", fsl_audmix_enum[1],
-> -		     snd_soc_get_enum_double, fsl_audmix_put_out_src),
-> +	{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-> +		.name = "Mixing Clock Source",
-> +		.info = snd_soc_info_enum_double,
-> +		.access = SNDRV_CTL_ELEM_ACCESS_WRITE,
-> +		.put = fsl_audmix_put_mix_clk_src,
-> +		.private_value = (unsigned long)&fsl_audmix_enum[0] },
-> +	{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-> +		.name = "Output Source",
-> +		.info = snd_soc_info_enum_double,
-> +		.access = SNDRV_CTL_ELEM_ACCESS_WRITE,
-> +		.put = fsl_audmix_put_out_src,
-> +		.private_value = (unsigned long)&fsl_audmix_enum[1] },
->  	SOC_ENUM("Output Width", fsl_audmix_enum[2]),
->  	SOC_ENUM("Frame Rate Diff Error", fsl_audmix_enum[3]),
->  	SOC_ENUM("Clock Freq Diff Error", fsl_audmix_enum[4]),
-> -- 
-> 2.7.4
-> 
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 322bb30..b393587 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -4169,11 +4169,11 @@ static int ibmvfc_alloc_target(struct ibmvfc_host *vhost,struct ibmvfc_discover_
+ 	tgt->wwpn = wwpn;
+ 	tgt->vhost = vhost;
+ 	tgt->need_login = 1;
+-	tgt->cancel_key = vhost->task_set++;
+ 	timer_setup(&tgt->timer, ibmvfc_adisc_timeout, 0);
+ 	kref_init(&tgt->kref);
+ 	ibmvfc_init_tgt(tgt, ibmvfc_tgt_implicit_logout);
+ 	spin_lock_irqsave(vhost->host->host_lock, flags);
++	tgt->cancel_key = vhost->task_set++;
+ 	list_add_tail(&tgt->queue, &vhost->targets);
+ 
+ unlock_out:
+-- 
+1.8.3.1
+
