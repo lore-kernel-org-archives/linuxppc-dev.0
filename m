@@ -2,79 +2,106 @@ Return-Path: <SRS0=+K1p=CZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44CCDC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57259C35263
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:44:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8B632223D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:23:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3C8DD22272
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 12:44:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rU44eXu9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8B632223D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="VXsecECl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C8DD22272
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Brzl72FBMzDqXq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 22:22:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::144;
- helo=mail-lf1-x144.google.com; envelope-from=festevam@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bs0D24M66zDqT1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 22:44:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=rU44eXu9; dkim-atps=neutral
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
- [IPv6:2a00:1450:4864:20::144])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=VXsecECl; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BryzB70ZqzDqVL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 21:48:19 +1000 (AEST)
-Received: by mail-lf1-x144.google.com with SMTP id d15so6603719lfq.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 04:48:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=8EqraEW4q0BQREzcz7DOOl5CowgKAV1RWSkOPCRavNE=;
- b=rU44eXu9IYnr41wxdt6v9T2BK23fXOMiYHbuvJ4fBvbIhQJevbN9DCu7zeoSzO1b7r
- XNnu+btJPV045o+iwfbkQjbyUDrAOjfp6elbTCasVlluLFW5gIHT1X4yyVMsJJSLCNAC
- w19tIW8BZ6o4Laen2U7uJnAps2VyVw0pZtsvyenkUx/e0PJjbGpRc5c+UKkDiRuxNx1Z
- Vy/jgkfhkbKz8hoq4Z7JSgBxGLEoMUrX6gT9NxbIf/7NGcZQYxDnj5nAaqPkHAqpqUgG
- xl042OMDHACLbpwLg253ADTbCnsM8kZMCesIY07WiMgcAcKlZT0dgv668gr+5Rz4V3QD
- N2QA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=8EqraEW4q0BQREzcz7DOOl5CowgKAV1RWSkOPCRavNE=;
- b=IY3oa0f+JHHzRseaZe/9WS/bIMxH5wtEdnZ1L1w7P6JDw804G9l2u/nUOEz5DySRNc
- FWCl3PahUMUE8UTtG5YjJ7wVV3qIO0Rbm7d9GoH6z17RGybWHGDnerrSkZbCl1KCn4SM
- QmH5jG00MJ0EMWtdK94SY75N8he/83bERcB/ePCFUBz6Mz7VBqh6lCUj2mJXccmjiOlF
- DY4QPu7641ai+0TMgrySnrsDN0VU2hILBqebOC01Y1i3Ga8LfId12kUrD7wO0Olhov7K
- m/uTMackGpfwStt1pegcZhcHlV4WVaV7vRr7s/+S7yWmpzKhQJ2ohgJAckGsSvGdJ2qb
- GeqQ==
-X-Gm-Message-State: AOAM533/AlEx+mMtEl74TLro0r8pv6iJp199687NKUnkunqjRcIJUeTO
- FJd+bEIYyAQMaCigtBStW/+W/4qttSeKvJEtblo=
-X-Google-Smtp-Source: ABdhPJyLQQjbAn1PyXukvYJe9+/3BtvyQn2weWT99qvd4/rq7/DfXmAyofM4kYWfrGNcNfdwXWq2A9YgjXkIDgtp/SM=
-X-Received: by 2002:a19:820c:: with SMTP id e12mr7282855lfd.215.1600256894436; 
- Wed, 16 Sep 2020 04:48:14 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bs09d3mfWzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 22:42:28 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 08GCXRn6058426; Wed, 16 Sep 2020 08:42:26 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=PHmzFkuHlJWCB1nF/p+CXC+ip4WF97xYqq0N19t1ats=;
+ b=VXsecECliMgVo3zmw/z8KwiGm3l4WuxO3Rrh+ZpsmrP51gnoZMdgj1khOYmZ1fU+ZuK6
+ 3z4OPzoLuuxyUqAZKCsgULbl90MiEQdfVXn7ljvLQ5GUIWyj+GGdV66IPTGllA1DOzLe
+ fRzj8oEu5tvL/JSoy8uIPeG8vFF5LkoboAMqRRPW0Yh0bHc1d0dTFTD821LTO0oQs3+O
+ XYl1f2Ke5kvTPSq2iUbO/KIUfC4MJ6eMbPym+gjyMcB0bBHQsela6xkyuCSbl+DVWRJk
+ FPk5LVaIBsAibUWXxmY/khBIOfX8fyquchll65gC5ucqy5RegrJMLJu3zjK1L9cB9wbM DQ== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33kjmgghw3-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Sep 2020 08:42:26 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08GCWGT4030746;
+ Wed, 16 Sep 2020 12:42:24 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by ppma01dal.us.ibm.com with ESMTP id 33k658nnxj-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 16 Sep 2020 12:42:24 +0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 08GCgNuE29753612
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 16 Sep 2020 12:42:23 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8B6EA136051;
+ Wed, 16 Sep 2020 12:42:23 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E5F7613604F;
+ Wed, 16 Sep 2020 12:42:22 +0000 (GMT)
+Received: from oc6034535106.ibm.com (unknown [9.160.112.131])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 16 Sep 2020 12:42:22 +0000 (GMT)
+Subject: Re: [PATCH] ibmvfc: Avoid link down on FS9100 canister reboot
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1599859706-8505-1-git-send-email-brking@linux.vnet.ibm.com>
+ <yq1o8m61r87.fsf@ca-mkp.ca.oracle.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <530af937-2f42-4bc5-a00c-4c236656c7fa@linux.vnet.ibm.com>
+Date: Wed, 16 Sep 2020 07:42:22 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-References: <1600251387-1863-1-git-send-email-shengjiu.wang@nxp.com>
-In-Reply-To: <1600251387-1863-1-git-send-email-shengjiu.wang@nxp.com>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Wed, 16 Sep 2020 08:47:59 -0300
-Message-ID: <CAOMZO5Dyo5J8SRWYLyh3bxwtcuAH=r6pcQg7-vtXfO2H6n4Exg@mail.gmail.com>
-Subject: Re: [PATCH 0/3] ASoC: fsl_sai: update the register list
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Content-Type: multipart/alternative; boundary="000000000000be0d6805af6cd7a1"
-X-Mailman-Approved-At: Wed, 16 Sep 2020 22:20:58 +1000
+In-Reply-To: <yq1o8m61r87.fsf@ca-mkp.ca.oracle.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-09-16_07:2020-09-16,
+ 2020-09-16 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ mlxlogscore=975
+ priorityscore=1501 lowpriorityscore=0 mlxscore=0 suspectscore=0
+ adultscore=0 impostorscore=0 clxscore=1015 malwarescore=0 bulkscore=0
+ spamscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009160094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,61 +113,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
- Xiubo.Lee@gmail.com, lgirdwood@gmail.com, tiwai@suse.com, perex@perex.cz,
- Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: tyreld@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-scsi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000be0d6805af6cd7a1
-Content-Type: text/plain; charset="UTF-8"
+On 9/15/20 7:49 PM, Martin K. Petersen wrote:
+> 
+> Brian,
+> 
+>> When a canister on a FS9100, or similar storage, running in NPIV mode,
+>> is rebooted, its WWPNs will fail over to another canister.
+> 
+> [...]
+> 
+> Applied to 5.10/scsi-staging, thanks! I fixed a bunch of checkpatch
+> warnings.
 
-Knob kmg
+Sorry about the checkpatch issues. Thanks for pulling this in.
 
-On Wed, Sep 16, 2020, 07:23 Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
+-Brian
 
-> As sai ip is upgraded, so update sai register list.
->
-> Shengjiu Wang (3):
->   ASoC: fsl_sai: Add new added registers and new bit definition
->   ASoC: fsl_sai: Add fsl_sai_check_version function
->   ASoC: fsl_sai: Set MCLK input or output direction
->
->  sound/soc/fsl/fsl_sai.c | 77 ++++++++++++++++++++++++++++++++++++
->  sound/soc/fsl/fsl_sai.h | 87 +++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 164 insertions(+)
->
-> --
-> 2.27.0
->
->
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
 
---000000000000be0d6805af6cd7a1
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"auto">Knob kmg</div><br><div class=3D"gmail_quote"><div dir=3D"=
-ltr" class=3D"gmail_attr">On Wed, Sep 16, 2020, 07:23 Shengjiu Wang &lt;<a =
-href=3D"mailto:shengjiu.wang@nxp.com">shengjiu.wang@nxp.com</a>&gt; wrote:<=
-br></div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;borde=
-r-left:1px #ccc solid;padding-left:1ex">As sai ip is upgraded, so update sa=
-i register list.<br>
-<br>
-Shengjiu Wang (3):<br>
-=C2=A0 ASoC: fsl_sai: Add new added registers and new bit definition<br>
-=C2=A0 ASoC: fsl_sai: Add fsl_sai_check_version function<br>
-=C2=A0 ASoC: fsl_sai: Set MCLK input or output direction<br>
-<br>
-=C2=A0sound/soc/fsl/fsl_sai.c | 77 ++++++++++++++++++++++++++++++++++++<br>
-=C2=A0sound/soc/fsl/fsl_sai.h | 87 ++++++++++++++++++++++++++++++++++++++++=
-+<br>
-=C2=A02 files changed, 164 insertions(+)<br>
-<br>
--- <br>
-2.27.0<br>
-<br>
-</blockquote></div>
-
---000000000000be0d6805af6cd7a1--
