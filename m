@@ -2,93 +2,94 @@ Return-Path: <SRS0=KYNf=C2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 366ADC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 01:03:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D406C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 01:07:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5ACAF206C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 01:02:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 22AC4206CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 01:06:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="c2WuzvVM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5ACAF206C9
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="iEvv//+a"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22AC4206CA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsJc12FVyzDrRx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:02:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsJhc0cRqzDrfx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:06:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=c2WuzvVM; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=iEvv//+a; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsJ3W4Tw9zDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 10:38:15 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08GHIGsS158966; Wed, 16 Sep 2020 13:22:54 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsJ5w32tvzDqhS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 10:40:20 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 08GH1mNQ032592; Wed, 16 Sep 2020 13:23:03 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=azyaOr5Lq/me5OfQm/l6sKOfvixnWLNqziniHUcvlro=;
- b=c2WuzvVMpz/HvGWaNWPcH8I4TBMQh/MkZQ5Y0weXO2WW28Nh8hpKYzLf+qXWA8omITCS
- 9JMeQS/UwyBBelQnw4lrkiTAktEMXqTdB2vzHT/wtcZUBTC3Vjcp6X0kMWvFT0Q/bHHc
- 0ft0K7IErg+esf/WsfR5GafCxgQFlfBgu0qwDdGN+mVJhbvC+CzmumtlC9hSJo+rdHSE
- 8+HBis9TIkI4DJrJ8oj3A7puEGXCLO7k6tJbk6ej+I6R5QDG1G6pn/Ug2vWB+UEq0R2s
- gV4yfznC4CE6pgmJiGFXSznHPpcEaV6w1Ap29Je/y38yojTXShdDYy/viIMlqGaw1mtz OA== 
+ bh=JVwnq5kZfCkqHhizo7s8mEadeTEXx1dVrrlhgtYtO0I=;
+ b=iEvv//+aHtpFe7GuS6MZ8LQ2Hi8wvekUyP5dODs1kpT9mmF3iQHzCK2jgoH7OOwR9pUI
+ h7zqxNBdgpzF5jAR/j51nlWeSS5oU8V5wdE4MWBcz5vjSJ7bcmxQXfdVuwrLcZTMVyWi
+ tNaZOYj8BYko6rt8dIbhvZCkhh1JrhtpduOFLg4uSTb1EPb9nlUhFi8tzSYoE2Om38Ap
+ J8a4PcinJZ+pnLT93rjG/AEiihRJ+Vn+u8q9iI5Ho3/zY/U1US2rF0hqhgOWolYRFLeh
+ vpFROi7JjtzuPQSx9Eb4RCSotC8sScMduQEOqsZ624ui0b44Vn1R1YgcrZvcgF2g+ADV Gg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33kq04g3mf-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 33kp301vxg-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 13:22:54 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08GHIUQV159674;
- Wed, 16 Sep 2020 13:22:54 -0400
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33kq04g3m2-1
+ Wed, 16 Sep 2020 13:23:03 -0400
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08GHE0Uo076679;
+ Wed, 16 Sep 2020 13:23:03 -0400
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com
+ [159.122.73.70])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 33kp301vwy-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 13:22:54 -0400
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
- by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08GHMLjZ010833;
- Wed, 16 Sep 2020 17:22:52 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03ams.nl.ibm.com with ESMTP id 33k6esgvqj-1
+ Wed, 16 Sep 2020 13:23:03 -0400
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+ by ppma01fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08GHN1L7003239;
+ Wed, 16 Sep 2020 17:23:01 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma01fra.de.ibm.com with ESMTP id 33k5v98ffn-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 17:22:52 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 08GHLFWF25231830
+ Wed, 16 Sep 2020 17:23:01 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 08GHMxTW26935616
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 16 Sep 2020 17:21:16 GMT
+ Wed, 16 Sep 2020 17:22:59 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0CD6B42042;
- Wed, 16 Sep 2020 17:22:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 04F9242047;
+ Wed, 16 Sep 2020 17:22:59 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 095944204B;
- Wed, 16 Sep 2020 17:22:48 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6FC3E42041;
+ Wed, 16 Sep 2020 17:22:57 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.102.2.13])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 16 Sep 2020 17:22:47 +0000 (GMT)
+ Wed, 16 Sep 2020 17:22:57 +0000 (GMT)
 From: Ganesh Goudar <ganeshgr@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH 1/3] powerpc/mce: remove nmi_enter/exit from real mode handler
-Date: Wed, 16 Sep 2020 22:52:26 +0530
-Message-Id: <20200916172228.83271-2-ganeshgr@linux.ibm.com>
+Subject: [PATCH 3/3] selftest/powerpc: Add slb multihit selftest
+Date: Wed, 16 Sep 2020 22:52:28 +0530
+Message-Id: <20200916172228.83271-4-ganeshgr@linux.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200916172228.83271-1-ganeshgr@linux.ibm.com>
 References: <20200916172228.83271-1-ganeshgr@linux.ibm.com>
@@ -99,12 +100,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-09-16_11:2020-09-16,
  2020-09-16 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0
- priorityscore=1501 malwarescore=0 suspectscore=0 spamscore=0
- impostorscore=0 adultscore=0 clxscore=1015 lowpriorityscore=0
- mlxlogscore=774 mlxscore=0 phishscore=0 classifier=spam adjust=0
- reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009160118
+ adultscore=0 mlxscore=0
+ lowpriorityscore=0 suspectscore=0 clxscore=1015 mlxlogscore=965
+ phishscore=0 priorityscore=1501 malwarescore=0 spamscore=0 bulkscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009160118
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,41 +122,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use of nmi_enter/exit in real mode handler causes the kernel to panic
-and reboot on injecting slb mutihit on pseries machine running in hash
-mmu mode, As these calls try to accesses memory outside RMO region in
-real mode handler where translation is disabled.
+Add selftest to check if the system recovers from slb multihit
+errors.
 
-Add check to not to use these calls on pseries machine running in hash
-mmu mode.
-
-Fixes: 116ac378bb3f ("powerpc/64s: machine check interrupt update NMI accounting")
 Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
 ---
- arch/powerpc/kernel/mce.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ tools/testing/selftests/powerpc/Makefile             | 3 ++-
+ tools/testing/selftests/powerpc/mces/Makefile        | 6 ++++++
+ tools/testing/selftests/powerpc/mces/slb_multihit.sh | 9 +++++++++
+ 3 files changed, 17 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/mces/Makefile
+ create mode 100755 tools/testing/selftests/powerpc/mces/slb_multihit.sh
 
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index ada59f6c4298..1d42fe0f5f9c 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -591,10 +591,15 @@ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
- long notrace machine_check_early(struct pt_regs *regs)
- {
- 	long handled = 0;
--	bool nested = in_nmi();
-+	bool nested;
-+	bool is_pseries_hpt_guest;
- 	u8 ftrace_enabled = this_cpu_get_ftrace_enabled();
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 0830e63818c1..3c900b30da79 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -31,7 +31,8 @@ SUB_DIRS = alignment		\
+ 	   vphn         \
+ 	   math		\
+ 	   ptrace	\
+-	   security
++	   security	\
++	   mces
  
- 	this_cpu_set_ftrace_enabled(0);
-+	is_pseries_hpt_guest = machine_is(pseries) &&
-+			       mmu_has_feature(MMU_FTR_HPTE_TABLE);
-+	/* Do not use nmi_enter/exit for pseries hpte guest */
-+	nested = is_pseries_hpt_guest ? true : in_nmi();
+ endif
  
- 	if (!nested)
- 		nmi_enter();
+diff --git a/tools/testing/selftests/powerpc/mces/Makefile b/tools/testing/selftests/powerpc/mces/Makefile
+new file mode 100644
+index 000000000000..5a356295e952
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mces/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++# Makefile for machine check exceptions selftests
++
++TEST_PROGS := slb_multihit.sh
++
++include ../../lib.mk
+diff --git a/tools/testing/selftests/powerpc/mces/slb_multihit.sh b/tools/testing/selftests/powerpc/mces/slb_multihit.sh
+new file mode 100755
+index 000000000000..35c17c619d0a
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mces/slb_multihit.sh
+@@ -0,0 +1,9 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0
++
++if [ ! -e "/sys/kernel/debug/powerpc/mce_error_inject/inject_slb_multihit" ] ; then
++        exit 0;
++fi
++
++echo 1 > /sys/kernel/debug/powerpc/mce_error_inject/inject_slb_multihit
++exit 0
 -- 
 2.26.2
 
