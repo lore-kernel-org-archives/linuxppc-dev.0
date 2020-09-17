@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAC97C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:51:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A78BC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:53:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14102206E6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:51:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14102206E6
+	by mail.kernel.org (Postfix) with ESMTPS id 647E9208DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:53:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 647E9208DB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsb0G0rG7zDqKD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:51:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsb2m0c0xzDqGF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:53:36 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSW73CTzDqWl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSX1hQjzDqX7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSW22w3z9sVN; Thu, 17 Sep 2020 21:27:23 +1000 (AEST)
+ id 4BsZSW73Czz9sVT; Thu, 17 Sep 2020 21:27:23 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <ac8da0e3baa91dda805e1e492fd65aecd90c1fb5.1597643156.git.christophe.leroy@csgroup.eu>
-References: <ac8da0e3baa91dda805e1e492fd65aecd90c1fb5.1597643156.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1] powerpc/process: Replace an #ifdef CONFIG_PPC_47x by
- IS_ENABLED()
-Message-Id: <160034201470.3339803.3613969304863849846.b4-ty@ellerman.id.au>
+In-Reply-To: <d31506ca9bac9def68cf7424eded63fdc4fb6660.1597643167.git.christophe.leroy@csgroup.eu>
+References: <d31506ca9bac9def68cf7424eded63fdc4fb6660.1597643167.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1] powerpc/process: Replace an #ifdef
+ CONFIG_PPC_BOOK3S_64 by IS_ENABLED()
+Message-Id: <160034201489.3339803.3277112055562212653.b4-ty@ellerman.id.au>
 Date: Thu, 17 Sep 2020 21:27:23 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,14 +56,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Aug 2020 05:46:41 +0000 (UTC), Christophe Leroy wrote:
-> isync() is always defined, no need for an #ifdef.
+On Mon, 17 Aug 2020 05:46:42 +0000 (UTC), Christophe Leroy wrote:
+> This #ifdef CONFIG_PPC_BOOK3S_64 calls preload_new_slb_context()
+> when radix is not enabled.
 > 
-> Replace it by IS_ENABLED(CONFIG_PPC_47x).
+> radix_enabled() is always defined, and the prototype for
+> preload_new_slb_context() is always present, so the #ifdef
+> is unneeded.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/process: Replace an #ifdef CONFIG_PPC_47x by IS_ENABLED()
-      https://git.kernel.org/powerpc/c/04d476bfbb06426fef2985c8e53578bb04596a6f
+[1/1] powerpc/process: Replace an #ifdef CONFIG_PPC_BOOK3S_64 by IS_ENABLED()
+      https://git.kernel.org/powerpc/c/bfac2799301c19d81122af04a8a3ad5ecae3737e
 
 cheers
