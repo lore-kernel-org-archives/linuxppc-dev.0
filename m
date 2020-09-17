@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DA9C433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:37:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86273C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:39:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9251220663
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:37:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9251220663
+	by mail.kernel.org (Postfix) with ESMTPS id C2CBA21D7F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:39:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2CBA21D7F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZhT5HJqzDqSN
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:37:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZkd5zL7zDqQf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:39:37 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSP2sKvzDqWW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSQ00mZzDqWW
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSP0kmbz9sTq; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
+ id 4BsZSP52cjz9sTs; Thu, 17 Sep 2020 21:27:17 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <f6ea2483c2c389567b007945948f704d18cfaeea.1598862623.git.christophe.leroy@csgroup.eu>
-References: <f6ea2483c2c389567b007945948f704d18cfaeea.1598862623.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/8xx: Refactor calculation of number of
- entries per PTE in page tables
-Message-Id: <160034201341.3339803.11663256745878554872.b4-ty@ellerman.id.au>
-Date: Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
+In-Reply-To: <94ba5a5138f99522e1562dbcdb38d31aa790dc89.1599216721.git.christophe.leroy@csgroup.eu>
+References: <94ba5a5138f99522e1562dbcdb38d31aa790dc89.1599216721.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/3] powerpc/uaccess: Switch __put_user_size_allowed() to
+ __put_user_asm_goto()
+Message-Id: <160034201413.3339803.2260455102175755865.b4-ty@ellerman.id.au>
+Date: Thu, 17 Sep 2020 21:27:17 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,22 +56,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 31 Aug 2020 08:30:43 +0000 (UTC), Christophe Leroy wrote:
-> On 8xx, the number of entries occupied by a PTE in the page tables
-> depends on the size of the page. At the time being, this calculation
-> is done in two places: in pte_update() and in set_huge_pte_at()
+On Fri, 4 Sep 2020 11:01:30 +0000 (UTC), Christophe Leroy wrote:
+> __put_user_asm_goto() provides more flexibility to GCC and avoids using
+> a local variable to tell if the write succeeded or not.
+> GCC can then avoid implementing a cmp in the fast path.
 > 
-> Refactor this calculation into a helper called
-> number_of_cells_per_pte(). For the time being, the val param is
-> unused. It will be used by following patch.
+> See the difference for a small function like the PPC64 version of
+> save_general_regs() in arch/powerpc/kernel/signal_32.c:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/8xx: Refactor calculation of number of entries per PTE in page tables
-      https://git.kernel.org/powerpc/c/175a99991511fed16108dcb823f0af8e72325a1f
-[2/2] powerpc/8xx: Support 16k hugepages with 4k pages
-      https://git.kernel.org/powerpc/c/e47168f3d1b14af5281cf50c59561d59d28201f9
+[1/3] powerpc/uaccess: Switch __put_user_size_allowed() to __put_user_asm_goto()
+      https://git.kernel.org/powerpc/c/ee0a49a6870ea75e25b4d4984c1bb6b3b7c65f2b
+[2/3] powerpc/uaccess: Switch __patch_instruction() to __put_user_asm_goto()
+      https://git.kernel.org/powerpc/c/e64ac41ab0c510b3f85199a585eb886cad92fb19
+[3/3] powerpc/uaccess: Remove __put_user_asm() and __put_user_asm2()
+      https://git.kernel.org/powerpc/c/7fdf966bed155b214f4f1f9b67825a40b2e9b998
 
 cheers
