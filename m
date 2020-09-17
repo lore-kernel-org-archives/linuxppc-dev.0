@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B6FC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:42:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E5AC43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:43:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBEAE206BE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:42:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBEAE206BE
+	by mail.kernel.org (Postfix) with ESMTPS id 9B9F4206BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:43:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B9F4206BE
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZnV4HVCzDqPS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:42:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZqX11nJzDqD0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:43:52 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSQ5kTqzDqWg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSS1LxRzDqWn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSQ31nsz9sTv; Thu, 17 Sep 2020 21:27:18 +1000 (AEST)
+ id 4BsZSR0Sg2z9sTQ; Thu, 17 Sep 2020 21:27:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <f0cb2a5477cd87d1eaadb128042e20aeb2bc2859.1598860677.git.christophe.leroy@csgroup.eu>
-References: <f0cb2a5477cd87d1eaadb128042e20aeb2bc2859.1598860677.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Fix random segfault when freeing hugetlb range
-Message-Id: <160034201310.3339803.17054626930223445609.b4-ty@ellerman.id.au>
+In-Reply-To: <8ae4554357da4882612644a74387ae05525b2aaa.1599800716.git.christophe.leroy@csgroup.eu>
+References: <8ae4554357da4882612644a74387ae05525b2aaa.1599800716.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/kasan: Fix CONFIG_KASAN_VMALLOC for 8xx
+Message-Id: <160034201660.3339803.1270264630243029470.b4-ty@ellerman.id.au>
 Date: Thu, 17 Sep 2020 21:27:18 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,20 +55,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 31 Aug 2020 07:58:19 +0000 (UTC), Christophe Leroy wrote:
-> The following random segfault is observed from time to time with
-> map_hugetlb selftest:
-> 
-> root@localhost:~# ./map_hugetlb 1 19
-> 524288 kB hugepages
-> Mapping 1 Mbytes
-> Segmentation fault
+On Fri, 11 Sep 2020 05:05:38 +0000 (UTC), Christophe Leroy wrote:
+> Before the commit identified below, pages tables allocation was
+> performed after the allocation of final shadow area for linear memory.
+> But that commit switched the order, leading to page tables being
+> already allocated at the time 8xx kasan_init_shadow_8M() is called.
+> Due to this, kasan_init_shadow_8M() doesn't map the needed
+> shadow entries because there are already page tables.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Fix random segfault when freeing hugetlb range
-      https://git.kernel.org/powerpc/c/542db12a9c42d1ce70c45091765e02f74c129f43
+[1/1] powerpc/kasan: Fix CONFIG_KASAN_VMALLOC for 8xx
+      https://git.kernel.org/powerpc/c/4c42dc5c69a8f24c467a6c997909d2f1d4efdc7f
 
 cheers
