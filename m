@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8697FC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DA9C433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:37:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DFCF820663
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:35:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFCF820663
+	by mail.kernel.org (Postfix) with ESMTPS id 9251220663
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:37:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9251220663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZfP3vcmzDqXS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:35:57 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZhT5HJqzDqSN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:37:45 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSN69lFzDqSK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSP2sKvzDqWW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSN2x0wz9sTp; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
+ id 4BsZSP0kmbz9sTq; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <a027d447022a006c9c4958ac734128e577a3c5c1.1599486108.git.christophe.leroy@csgroup.eu>
-References: <a027d447022a006c9c4958ac734128e577a3c5c1.1599486108.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/32: Fix vmap stack - Do not activate MMU
- before reading task struct
-Message-Id: <160034201451.3339803.5588442310335772695.b4-ty@ellerman.id.au>
+In-Reply-To: <f6ea2483c2c389567b007945948f704d18cfaeea.1598862623.git.christophe.leroy@csgroup.eu>
+References: <f6ea2483c2c389567b007945948f704d18cfaeea.1598862623.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/8xx: Refactor calculation of number of
+ entries per PTE in page tables
+Message-Id: <160034201341.3339803.11663256745878554872.b4-ty@ellerman.id.au>
 Date: Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,21 +56,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 7 Sep 2020 13:42:09 +0000 (UTC), Christophe Leroy wrote:
-> We need r1 to be properly set before activating MMU, so
-> reading task_struct->stack must be done with MMU off.
+On Mon, 31 Aug 2020 08:30:43 +0000 (UTC), Christophe Leroy wrote:
+> On 8xx, the number of entries occupied by a PTE in the page tables
+> depends on the size of the page. At the time being, this calculation
+> is done in two places: in pte_update() and in set_huge_pte_at()
 > 
-> This means we need an additional register to play with MSR
-> bits while r11 now points to the stack. For that, move r10
-> back to CR (As is already done for hash MMU) and use r10.
+> Refactor this calculation into a helper called
+> number_of_cells_per_pte(). For the time being, the val param is
+> unused. It will be used by following patch.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/32: Fix vmap stack - Do not activate MMU before reading task struct
-      https://git.kernel.org/powerpc/c/c118c7303ad528be8ff2aea8cd1ee15452c763f0
-[2/2] powerpc/32: Fix vmap stack - Properly set r1 before activating MMU
-      https://git.kernel.org/powerpc/c/da7bb43ab9da39bcfed0d146ce94e1f0cbae4ca0
+[1/2] powerpc/8xx: Refactor calculation of number of entries per PTE in page tables
+      https://git.kernel.org/powerpc/c/175a99991511fed16108dcb823f0af8e72325a1f
+[2/2] powerpc/8xx: Support 16k hugepages with 4k pages
+      https://git.kernel.org/powerpc/c/e47168f3d1b14af5281cf50c59561d59d28201f9
 
 cheers
