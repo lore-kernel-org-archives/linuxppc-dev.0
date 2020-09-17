@@ -1,123 +1,88 @@
-Return-Path: <SRS0=+K1p=CZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=KYNf=C2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AE80C2BB84
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 14:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F301EC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:38:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3310222283
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Sep 2020 14:56:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0E50A20771
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:38:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="sS0JRnZs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3310222283
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JC1Ik0dT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E50A20771
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bs3864pGFzDqcQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 00:56:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bs32T5y5VzDqY4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 00:51:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=sS0JRnZs; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4Bs32S4lhsz8t62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 00:51:28 +1000 (AEST)
-Received: by ozlabs.org (Postfix)
- id 4Bs32S2wCCz9sTs; Thu, 17 Sep 2020 00:51:28 +1000 (AEST)
-Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=cheloha@linux.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsJ475CF0zDqvZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 10:38:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.221.195;
+ helo=mail-vk1-f195.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=sS0JRnZs; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=JC1Ik0dT; dkim-atps=neutral
+Received: from mail-vk1-f195.google.com (mail-vk1-f195.google.com
+ [209.85.221.195])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4Bs32R5gtwz9sPB
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Sep 2020 00:51:27 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08GEWiHA132209; Wed, 16 Sep 2020 10:51:25 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=9xvcbyMcZwmx5JBtU70Wo2sAzkc31K87SxXmT3Q+byU=;
- b=sS0JRnZsxy1dqSMJZilTEx4xsCTvDcCkXr1dWKlHHXL1Bm7POga3HEEKwHUFwuD5tXm3
- Euoz79tpJFCz3hVV5DGpgeO5/I2lHffDi1ivBR8dwHV2qgtsNxSoJWAWrXWJpFHPBJEw
- ZcXb8GNFDr5m2libp1yXM95QOEuQn/bM1ofXcVICzaJt866EC4u95RqG9BorU40NbuJS
- 5mR4/ybnzYpxCUx/OdplThvEkmqoOtRoKTEel/+9NInm//YiuTJhBtGNKfWD1otY4sWR
- T2Ht+B53mrI9A4BC3akMUsyoYFi2eQnYa3YKt0DeGf08HGVNurlqOGc1bzl/xCRztPmG ug== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33kk59420x-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 10:51:25 -0400
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08GEXML1135098;
- Wed, 16 Sep 2020 10:51:25 -0400
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33kk59420p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 10:51:24 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08GEmHNq013380;
- Wed, 16 Sep 2020 14:51:24 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma01dal.us.ibm.com with ESMTP id 33k658ppp9-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 16 Sep 2020 14:51:24 +0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 08GEpJ8P35062158
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 16 Sep 2020 14:51:19 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C07726E052;
- Wed, 16 Sep 2020 14:51:22 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 785736E04E;
- Wed, 16 Sep 2020 14:51:22 +0000 (GMT)
-Received: from rascal.austin.ibm.com (unknown [9.41.179.32])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 16 Sep 2020 14:51:22 +0000 (GMT)
-From: Scott Cheloha <cheloha@linux.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4] pseries/hotplug-memory: hot-add: skip redundant LMB lookup
-Date: Wed, 16 Sep 2020 09:51:22 -0500
-Message-Id: <20200916145122.3408129-1-cheloha@linux.ibm.com>
-X-Mailer: git-send-email 2.24.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsHj24146zDqmJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 10:22:12 +1000 (AEST)
+Received: by mail-vk1-f195.google.com with SMTP id t189so22876vka.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2020 17:22:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=+L8r3i/llwp2Lmso2SJhe/RRr10LqwB0/nAV4JJW3s0=;
+ b=JC1Ik0dTH25FUvJr+6hQ7ANFLhd84ikfThn/lnDI9H6v+KmSh8y0R5+6RDmpkXDNoS
+ jrGyTNd/bMGzTyUALXM20m2tIv1i0eg2jUdFyK5P1SP0X1eKadn1e53/JCTcczHht8Z8
+ 3SgmdZ3PDrm1nhNNjoy0+mbFThR122+YFS83dknywKFKv9eft48bVcHo97iDUnvKjQzR
+ 9mhS4X/C3QT5FAPN8Vu0N7pwTZrrKxsQucrlMVaMsKXNWbHHWnymjZPby2YiyH2JGA1k
+ GqL1mt9mdVOg/XNUiV/CMMVIOl0qCHSxIAn2tPIQLJ8fcW/pLs6o8WW1cpDbaV85nNVI
+ Qe4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=+L8r3i/llwp2Lmso2SJhe/RRr10LqwB0/nAV4JJW3s0=;
+ b=Cp2N4tri/p6mDTxRbTVFVUSQlkVk3SfTcvpnxJq/HtD+U+Ni9mxP22SYcRXzN7gRLB
+ 0ESNA/ZxjE9MELgsIIZvraU8nXjX8GFTy67ixSNzDeDyPmo1mQ8aA3ezWXXpxP3Mv9Tg
+ UwPu1euZKhf6CQM5hoP9B2fu2VTb4qyFmsChshbplifqvzBor5uZlOD2L5iGxBJjf4U4
+ QXs+KJGr5GvVK5zB+rrTkj3wOMMXdwZ+ocdCG5f8xn46ICUISrFoeuJA0j4KV9yGQ+Zq
+ cdDTXiO2xOYDFr5r0pH/hzOejq9VdIZbJ8ssx2h0DwSrJY6fcoqztzta6o2ulju9FrtM
+ TNyQ==
+X-Gm-Message-State: AOAM5312/GFghCUPhmijbLPsw3dnkxjhIwdmqXnvjXqkipLaT9RiynPf
+ pfIZ9GjLDziMJ4ug+Q16juMqd11wHHo=
+X-Google-Smtp-Source: ABdhPJwyRANoUnW2/ZYlnK9c+pZ3xu+Veuc7MK+f2qzGVSCXe5EsIqJOkORlG6/DMUY0bn9nyBY02g==
+X-Received: by 2002:a62:10a:0:b029:142:2501:39e1 with SMTP id
+ 10-20020a62010a0000b0290142250139e1mr8640542pfb.48.1600301600950; 
+ Wed, 16 Sep 2020 17:13:20 -0700 (PDT)
+Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id z4sm18491615pfr.197.2020.09.16.17.13.20
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 16 Sep 2020 17:13:20 -0700 (PDT)
+Date: Wed, 16 Sep 2020 17:10:08 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_audmix: make clock and output src write only
+Message-ID: <20200917001007.GA22566@Asurada-Nvidia>
+References: <1600104274-13110-1-git-send-email-viorel.suman@oss.nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-16_07:2020-09-16,
- 2020-09-16 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=0 impostorscore=0 priorityscore=1501 adultscore=0
- malwarescore=0 phishscore=0 mlxlogscore=999 spamscore=0 mlxscore=0
- bulkscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009160106
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1600104274-13110-1-git-send-email-viorel.suman@oss.nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,163 +94,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Michal Suchanek <msuchanek@suse.de>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- David Hildenbrand <david@redhat.com>,
- Rick Lindsley <ricklind@linux.vnet.ibm.com>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Viorel Suman <viorel.suman@gmail.com>, Mark Brown <broonie@kernel.org>,
+ NXP Linux Team <linux-imx@nxp.com>, Viorel Suman <viorel.suman@nxp.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-During memory hot-add, dlpar_add_lmb() calls memory_add_physaddr_to_nid()
-to determine which node id (nid) to use when later calling __add_memory().
+On Mon, Sep 14, 2020 at 08:24:34PM +0300, Viorel Suman (OSS) wrote:
+> From: Viorel Suman <viorel.suman@nxp.com>
+> 
+> "alsactl -f state.conf store/restore" sequence fails because setting
+> "mixing clock source" and "output source" requires active TDM clock
+> being started for configuration propagation. Make these two controls
+> write only so that their values are not stored at "alsactl store".
+> 
+> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
 
-This is wasteful.  On pseries, memory_add_physaddr_to_nid() finds an
-appropriate nid for a given address by looking up the LMB containing the
-address and then passing that LMB to of_drconf_to_nid_single() to get the
-nid.  In dlpar_add_lmb() we get this address from the LMB itself.
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-In short, we have a pointer to an LMB and then we are searching for
-that LMB *again* in order to find its nid.
-
-If we call of_drconf_to_nid_single() directly from dlpar_add_lmb() we
-can skip the redundant lookup.  The only error handling we need to
-duplicate from memory_add_physaddr_to_nid() is the fallback to the
-default nid when drconf_to_nid_single() returns -1 (NUMA_NO_NODE) or
-an invalid nid.
-
-Skipping the extra lookup makes hot-add operations faster, especially
-on machines with many LMBs.
-
-Consider an LPAR with 126976 LMBs.  In one test, hot-adding 126000
-LMBs on an upatched kernel took ~3.5 hours while a patched kernel
-completed the same operation in ~2 hours:
-
-Unpatched (12450 seconds):
-Sep  9 04:06:31 ltc-brazos1 drmgr[810169]: drmgr: -c mem -a -q 126000
-Sep  9 04:06:31 ltc-brazos1 kernel: pseries-hotplug-mem: Attempting to hot-add 126000 LMB(s)
-[...]
-Sep  9 07:34:01 ltc-brazos1 kernel: pseries-hotplug-mem: Memory at 20000000 (drc index 80000002) was hot-added
-
-Patched (7065 seconds):
-Sep  8 21:49:57 ltc-brazos1 drmgr[877703]: drmgr: -c mem -a -q 126000
-Sep  8 21:49:57 ltc-brazos1 kernel: pseries-hotplug-mem: Attempting to hot-add 126000 LMB(s)
-[...]
-Sep  8 23:27:42 ltc-brazos1 kernel: pseries-hotplug-mem: Memory at 20000000 (drc index 80000002) was hot-added
-
-It should be noted that the speedup grows more substantial when
-hot-adding LMBs at the end of the drconf range.  This is because we
-are skipping a linear LMB search.
-
-To see the distinction, consider smaller hot-add test on the same
-LPAR.  A perf-stat run with 10 iterations showed that hot-adding 4096
-LMBs completed less than 1 second faster on a patched kernel:
-
-Unpatched:
- Performance counter stats for 'drmgr -c mem -a -q 4096' (10 runs):
-
-        104,753.42 msec task-clock                #    0.992 CPUs utilized            ( +-  0.55% )
-             4,708      context-switches          #    0.045 K/sec                    ( +-  0.69% )
-             2,444      cpu-migrations            #    0.023 K/sec                    ( +-  1.25% )
-               394      page-faults               #    0.004 K/sec                    ( +-  0.22% )
-   445,902,503,057      cycles                    #    4.257 GHz                      ( +-  0.55% )  (66.67%)
-     8,558,376,740      stalled-cycles-frontend   #    1.92% frontend cycles idle     ( +-  0.88% )  (49.99%)
-   300,346,181,651      stalled-cycles-backend    #   67.36% backend cycles idle      ( +-  0.76% )  (50.01%)
-   258,091,488,691      instructions              #    0.58  insn per cycle
-                                                  #    1.16  stalled cycles per insn  ( +-  0.22% )  (66.67%)
-    70,568,169,256      branches                  #  673.660 M/sec                    ( +-  0.17% )  (50.01%)
-     3,100,725,426      branch-misses             #    4.39% of all branches          ( +-  0.20% )  (49.99%)
-
-           105.583 +- 0.589 seconds time elapsed  ( +-  0.56% )
-
-Patched:
- Performance counter stats for 'drmgr -c mem -a -q 4096' (10 runs):
-
-        104,055.69 msec task-clock                #    0.993 CPUs utilized            ( +-  0.32% )
-             4,606      context-switches          #    0.044 K/sec                    ( +-  0.20% )
-             2,463      cpu-migrations            #    0.024 K/sec                    ( +-  0.93% )
-               394      page-faults               #    0.004 K/sec                    ( +-  0.25% )
-   442,951,129,921      cycles                    #    4.257 GHz                      ( +-  0.32% )  (66.66%)
-     8,710,413,329      stalled-cycles-frontend   #    1.97% frontend cycles idle     ( +-  0.47% )  (50.06%)
-   299,656,905,836      stalled-cycles-backend    #   67.65% backend cycles idle      ( +-  0.39% )  (50.02%)
-   252,731,168,193      instructions              #    0.57  insn per cycle
-                                                  #    1.19  stalled cycles per insn  ( +-  0.20% )  (66.66%)
-    68,902,851,121      branches                  #  662.173 M/sec                    ( +-  0.13% )  (49.94%)
-     3,100,242,882      branch-misses             #    4.50% of all branches          ( +-  0.15% )  (49.98%)
-
-           104.829 +- 0.325 seconds time elapsed  ( +-  0.31% )
-
-This is consistent.  An add-by-count hot-add operation adds LMBs
-greedily, so LMBs near the start of the drconf range are considered
-first.  On an otherwise idle LPAR with so many LMBs we would expect to
-find the LMBs we need near the start of the drconf range, hence the
-smaller speedup.
-
-Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
----
-Changelog:
-
-v1: https://lore.kernel.org/linuxppc-dev/20200910175637.2865160-1-cheloha@linux.ibm.com/
-
-v2:
-- Move prototype for of_drconf_to_nid_single() to topology.h.
-  Requested by Michael Ellerman.
-
-v3:
-- Send the right patch.  v2 is from the wrong branch, my mistake.
-
-v4:
-- Fix checkpatch.pl warnings.  Reported by Laurent Dufour.
-
- arch/powerpc/include/asm/topology.h             | 3 +++
- arch/powerpc/mm/numa.c                          | 2 +-
- arch/powerpc/platforms/pseries/hotplug-memory.c | 6 ++++--
- 3 files changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index f0b6300e7dd3..ae19b19f9d44 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -86,6 +86,9 @@ static inline int cpu_distance(__be32 *cpu1_assoc, __be32 *cpu2_assoc)
- 
- #endif /* CONFIG_NUMA */
- 
-+struct drmem_lmb;
-+int of_drconf_to_nid_single(struct drmem_lmb *lmb);
-+
- #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
- extern int find_and_online_cpu_nid(int cpu);
- #else
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 1f61fa2148b5..63507b47164d 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -430,7 +430,7 @@ static int of_get_assoc_arrays(struct assoc_arrays *aa)
-  * This is like of_node_to_nid_single() for memory represented in the
-  * ibm,dynamic-reconfiguration-memory node.
-  */
--static int of_drconf_to_nid_single(struct drmem_lmb *lmb)
-+int of_drconf_to_nid_single(struct drmem_lmb *lmb)
- {
- 	struct assoc_arrays aa = { .arrays = NULL };
- 	int default_nid = NUMA_NO_NODE;
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 0ea976d1cac4..9a533acf8ad0 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -611,8 +611,10 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
- 
- 	block_sz = memory_block_size_bytes();
- 
--	/* Find the node id for this address. */
--	nid = memory_add_physaddr_to_nid(lmb->base_addr);
-+	/* Find the node id for this LMB.  Fake one if necessary. */
-+	nid = of_drconf_to_nid_single(lmb);
-+	if (nid < 0 || !node_possible(nid))
-+		nid = first_online_node;
- 
- 	/* Add the memory */
- 	rc = __add_memory(nid, lmb->base_addr, block_sz);
--- 
-2.24.1
-
+> ---
+>  sound/soc/fsl/fsl_audmix.c | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+> index a447baf..7ad5925 100644
+> --- a/sound/soc/fsl/fsl_audmix.c
+> +++ b/sound/soc/fsl/fsl_audmix.c
+> @@ -199,10 +199,18 @@ static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
+>  
+>  static const struct snd_kcontrol_new fsl_audmix_snd_controls[] = {
+>  	/* FSL_AUDMIX_CTR controls */
+> -	SOC_ENUM_EXT("Mixing Clock Source", fsl_audmix_enum[0],
+> -		     snd_soc_get_enum_double, fsl_audmix_put_mix_clk_src),
+> -	SOC_ENUM_EXT("Output Source", fsl_audmix_enum[1],
+> -		     snd_soc_get_enum_double, fsl_audmix_put_out_src),
+> +	{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+> +		.name = "Mixing Clock Source",
+> +		.info = snd_soc_info_enum_double,
+> +		.access = SNDRV_CTL_ELEM_ACCESS_WRITE,
+> +		.put = fsl_audmix_put_mix_clk_src,
+> +		.private_value = (unsigned long)&fsl_audmix_enum[0] },
+> +	{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+> +		.name = "Output Source",
+> +		.info = snd_soc_info_enum_double,
+> +		.access = SNDRV_CTL_ELEM_ACCESS_WRITE,
+> +		.put = fsl_audmix_put_out_src,
+> +		.private_value = (unsigned long)&fsl_audmix_enum[1] },
+>  	SOC_ENUM("Output Width", fsl_audmix_enum[2]),
+>  	SOC_ENUM("Frame Rate Diff Error", fsl_audmix_enum[3]),
+>  	SOC_ENUM("Clock Freq Diff Error", fsl_audmix_enum[4]),
+> -- 
+> 2.7.4
+> 
