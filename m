@@ -2,63 +2,63 @@ Return-Path: <SRS0=KYNf=C2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3FFFC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:35:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 717B8C43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:38:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A6702087D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:34:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 56A632087D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:38:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="M0AuMmfN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A6702087D
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="K1UY89jC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56A632087D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsbyS2zGbzDq5b
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:34:56 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsc1x0dytzDqH6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:37:57 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bsb4Y27GTzDqZX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:55:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsbCM44lSzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 22:01:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=M0AuMmfN; 
+ header.a=rsa-sha256 header.s=201909 header.b=K1UY89jC; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4Bsb4W64ffz9ryj;
- Thu, 17 Sep 2020 21:55:07 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BsbCK5G3Rz9sS8;
+ Thu, 17 Sep 2020 22:01:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1600343708;
- bh=fCZj5obSeQ0Pnfx7QT/+Bd2NhEwGjy1covQLImy2inM=;
- h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=M0AuMmfNOc4Sj4HwQTeyWwU8R87iUeiYI16Mt2mqmT1v8mMuSYPJr+VnwbXwsaDO1
- RwoexPoAbMlS0r69j+UXjfqdfJ30qJfra9JHVQtj88QRmvrgc4tzccFkmRTdaorgHh
- lpAH1djxWDTphKNnCsGaRoM1ELZupeBx1lxfW326H2vh6Ll3CTkgIrjLfwAjveD6mK
- TIXNVlfS5igZS4eReH+W2lv4lSoR0T6GzD13rnc1pwcO229aw6kR40rDULn5LQ6/A9
- dcQAU1yC1wv1MnRGU0q4T/MB/xLh2HnsiB5V6rs+O3oDKwsQ+WqRkzqDP8836U/o9x
- NDSS+lmizEQuQ==
+ s=201909; t=1600344062;
+ bh=drKiJPh6uUahqNiKyElUeAZk2wIXu3ZhA3NKB9nCYcw=;
+ h=From:To:Subject:In-Reply-To:References:Date:From;
+ b=K1UY89jCixp72jlWeIPSfpOB7vyiQ2pwGnUFVvsf0B2FOmy7/yaCzh6UCT7p5W/Yw
+ 70F9JkRP1E9jKlutDTKywLjjzj6Z7rg+8fYmE/G3k7D7HgEbb3MZ+NwOlLDgTRQYUZ
+ 1EkTImlGWMYYzoDYOlmr87dXl+80hpg4SFZC85Sh4waowIocEYUUT+DLl8FpyH4Lg3
+ 7gvv3s+HIp1yRZ6pXo3wGCKVhpn7poXOIMnY9q3+HVTGh4Fj4eGnUUF3YyPN+AEAHi
+ HPh+GRDX7d+HzQwYacuaSKo1D3gk/4OVThEvPTzsv/53OHblkyoZq4enad7HsrK5Ys
+ CKSIckbWyg/Gw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tony Ambardar <tony.ambardar@gmail.com>
-Subject: Re: [PATCH v2] powerpc: fix EDEADLOCK redefinition error in
- uapi/asm/errno.h
-In-Reply-To: <20200917000757.1232850-1-Tony.Ambardar@gmail.com>
-References: <20200916074214.995128-1-Tony.Ambardar@gmail.com>
- <20200917000757.1232850-1-Tony.Ambardar@gmail.com>
-Date: Thu, 17 Sep 2020 21:55:04 +1000
-Message-ID: <87363gpqhz.fsf@mpe.ellerman.id.au>
+To: Wang Wensheng <wangwensheng4@huawei.com>, davem@davemloft.net,
+ benh@kernel.crashing.org, paulus@samba.org, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] ide: Fix symbol undeclared warnings
+In-Reply-To: <20200916092333.77158-1-wangwensheng4@huawei.com>
+References: <20200916092333.77158-1-wangwensheng4@huawei.com>
+Date: Thu, 17 Sep 2020 22:01:00 +1000
+Message-ID: <87zh5oobnn.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,105 +72,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Tony Ambardar <Tony.Ambardar@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Rosen Penev <rosenp@gmail.com>,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[ Cc += linux-arch & Arnd ]
-
-Hi Tony,
-
-This looks OK to me, but I'm always a bit nervous about changes in uapi.
-I've Cc'ed linux-arch and Arnd who look after the asm-generic headers,
-which this is slightly related to, just in case.
-
-One minor comment below.
-
-Tony Ambardar <tony.ambardar@gmail.com> writes:
-> A few archs like powerpc have different errno.h values for macros
-> EDEADLOCK and EDEADLK. In code including both libc and linux versions of
-> errno.h, this can result in multiple definitions of EDEADLOCK in the
-> include chain. Definitions to the same value (e.g. seen with mips) do
-> not raise warnings, but on powerpc there are redefinitions changing the
-> value, which raise warnings and errors (if using "-Werror").
+Wang Wensheng <wangwensheng4@huawei.com> writes:
+> Build the object file with `C=2` and get the following warnings:
+> make allmodconfig ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
+> make C=2 drivers/ide/pmac.o ARCH=powerpc64
+> CROSS_COMPILE=powerpc64-linux-gnu-
 >
-> Guard against these redefinitions to avoid build errors like the following,
-> first seen cross-compiling libbpf v5.8.9 for powerpc using GCC 8.4.0 with
-> musl 1.1.24:
+> drivers/ide/pmac.c:228:23: warning: symbol 'mdma_timings_33' was not
+> declared. Should it be static?
+> drivers/ide/pmac.c:241:23: warning: symbol 'mdma_timings_33k' was not
+> declared. Should it be static?
+> drivers/ide/pmac.c:254:23: warning: symbol 'mdma_timings_66' was not
+> declared. Should it be static?
+> drivers/ide/pmac.c:272:3: warning: symbol 'kl66_udma_timings' was not
+> declared. Should it be static?
+> drivers/ide/pmac.c:1418:12: warning: symbol 'pmac_ide_probe' was not
+> declared. Should it be static?
 >
->   In file included from ../../arch/powerpc/include/uapi/asm/errno.h:5,
->                    from ../../include/linux/err.h:8,
->                    from libbpf.c:29:
->   ../../include/uapi/asm-generic/errno.h:40: error: "EDEADLOCK" redefined [-Werror]
->    #define EDEADLOCK EDEADLK
->
->   In file included from toolchain-powerpc_8540_gcc-8.4.0_musl/include/errno.h:10,
->                    from libbpf.c:26:
->   toolchain-powerpc_8540_gcc-8.4.0_musl/include/bits/errno.h:58: note: this is the location of the previous definition
->    #define EDEADLOCK       58
->
->   cc1: all warnings being treated as errors
->
-> Fixes: 95f28190aa01 ("tools include arch: Grab a copy of errno.h for arch's supported by perf")
-> Fixes: c3617f72036c ("UAPI: (Scripted) Disintegrate arch/powerpc/include/asm")
+> Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
+> ---
+>  drivers/ide/pmac.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-I suspect that's not the right commit to tag. It just moved errno.h from
-arch/powerpc/include/asm to arch/powerpc/include/uapi/asm. It's content
-was almost identical, and entirely identical as far as EDEADLOCK was
-concerned.
+TIL davem maintains IDE?
 
-Prior to that the file lived in asm-powerpc/errno.h, eg:
-
-$ git cat-file -p b8b572e1015f^:include/asm-powerpc/errno.h
-
-Before that it was include/asm-ppc64/errno.h, content still the same.
-
-To go back further we'd have to look at the historical git trees, which
-is probably overkill. I'm pretty sure it's always had this problem.
-
-So we should probably drop the Fixes tags and just Cc: stable, that
-means please backport it as far back as possible.
+But I suspect he isn't that interested in this powerpc only driver, so
+I'll grab this.
 
 cheers
 
 
-> Reported-by: Rosen Penev <rosenp@gmail.com>
-> Signed-off-by: Tony Ambardar <Tony.Ambardar@gmail.com>
-> ---
-> v1 -> v2:
->  * clean up commit description formatting
-> ---
->  arch/powerpc/include/uapi/asm/errno.h       | 1 +
->  tools/arch/powerpc/include/uapi/asm/errno.h | 1 +
->  2 files changed, 2 insertions(+)
->
-> diff --git a/arch/powerpc/include/uapi/asm/errno.h b/arch/powerpc/include/uapi/asm/errno.h
-> index cc79856896a1..4ba87de32be0 100644
-> --- a/arch/powerpc/include/uapi/asm/errno.h
-> +++ b/arch/powerpc/include/uapi/asm/errno.h
-> @@ -2,6 +2,7 @@
->  #ifndef _ASM_POWERPC_ERRNO_H
->  #define _ASM_POWERPC_ERRNO_H
+> diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
+> index ea0b064b5f56..6bb2fc6755c2 100644
+> --- a/drivers/ide/pmac.c
+> +++ b/drivers/ide/pmac.c
+> @@ -225,7 +225,7 @@ struct mdma_timings_t {
+>  	int	cycleTime;
+>  };
 >  
-> +#undef	EDEADLOCK
->  #include <asm-generic/errno.h>
+> -struct mdma_timings_t mdma_timings_33[] =
+> +static struct mdma_timings_t mdma_timings_33[] =
+>  {
+>      { 240, 240, 480 },
+>      { 180, 180, 360 },
+> @@ -238,7 +238,7 @@ struct mdma_timings_t mdma_timings_33[] =
+>      {   0,   0,   0 }
+>  };
 >  
->  #undef	EDEADLOCK
-> diff --git a/tools/arch/powerpc/include/uapi/asm/errno.h b/tools/arch/powerpc/include/uapi/asm/errno.h
-> index cc79856896a1..4ba87de32be0 100644
-> --- a/tools/arch/powerpc/include/uapi/asm/errno.h
-> +++ b/tools/arch/powerpc/include/uapi/asm/errno.h
-> @@ -2,6 +2,7 @@
->  #ifndef _ASM_POWERPC_ERRNO_H
->  #define _ASM_POWERPC_ERRNO_H
+> -struct mdma_timings_t mdma_timings_33k[] =
+> +static struct mdma_timings_t mdma_timings_33k[] =
+>  {
+>      { 240, 240, 480 },
+>      { 180, 180, 360 },
+> @@ -251,7 +251,7 @@ struct mdma_timings_t mdma_timings_33k[] =
+>      {   0,   0,   0 }
+>  };
 >  
-> +#undef	EDEADLOCK
->  #include <asm-generic/errno.h>
+> -struct mdma_timings_t mdma_timings_66[] =
+> +static struct mdma_timings_t mdma_timings_66[] =
+>  {
+>      { 240, 240, 480 },
+>      { 180, 180, 360 },
+> @@ -265,7 +265,7 @@ struct mdma_timings_t mdma_timings_66[] =
+>  };
 >  
->  #undef	EDEADLOCK
+>  /* KeyLargo ATA-4 Ultra DMA timings (rounded) */
+> -struct {
+> +static struct {
+>  	int	addrSetup; /* ??? */
+>  	int	rdy2pause;
+>  	int	wrDataSetup;
+> @@ -1415,7 +1415,7 @@ static struct pci_driver pmac_ide_pci_driver = {
+>  };
+>  MODULE_DEVICE_TABLE(pci, pmac_ide_pci_match);
+>  
+> -int __init pmac_ide_probe(void)
+> +static int __init pmac_ide_probe(void)
+>  {
+>  	int error;
+>  
 > -- 
-> 2.25.1
+> 2.25.0
