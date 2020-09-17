@@ -2,63 +2,62 @@ Return-Path: <SRS0=KYNf=C2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 717B8C43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:38:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F9AC433E2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:41:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56A632087D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:38:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D6FEC2087D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:41:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="K1UY89jC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56A632087D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="mxAs7mDv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6FEC2087D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsc1x0dytzDqH6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:37:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsc620KYTzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:41:30 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsbCM44lSzDqLK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 22:01:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsbV95lkFzDqMx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 22:13:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=K1UY89jC; 
+ header.a=rsa-sha256 header.s=201909 header.b=mxAs7mDv; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4BsbCK5G3Rz9sS8;
- Thu, 17 Sep 2020 22:01:01 +1000 (AEST)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BsbV903Vgz9sPB;
+ Thu, 17 Sep 2020 22:13:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1600344062;
- bh=drKiJPh6uUahqNiKyElUeAZk2wIXu3ZhA3NKB9nCYcw=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=K1UY89jCixp72jlWeIPSfpOB7vyiQ2pwGnUFVvsf0B2FOmy7/yaCzh6UCT7p5W/Yw
- 70F9JkRP1E9jKlutDTKywLjjzj6Z7rg+8fYmE/G3k7D7HgEbb3MZ+NwOlLDgTRQYUZ
- 1EkTImlGWMYYzoDYOlmr87dXl+80hpg4SFZC85Sh4waowIocEYUUT+DLl8FpyH4Lg3
- 7gvv3s+HIp1yRZ6pXo3wGCKVhpn7poXOIMnY9q3+HVTGh4Fj4eGnUUF3YyPN+AEAHi
- HPh+GRDX7d+HzQwYacuaSKo1D3gk/4OVThEvPTzsv/53OHblkyoZq4enad7HsrK5Ys
- CKSIckbWyg/Gw==
+ s=201909; t=1600344833;
+ bh=QWo3xwLQS+VBRllq+upIybe85CQnXyLuqiZ4DVpiiK8=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=mxAs7mDv7Ar4iX8zhJPE/FIxuM1ZUOdJ4AHUqD1D38oLQxLbLC1+IYevbBkC++j8F
+ 66R2Q4H3aKIsilMY2GO5XV7kPerOQprP4yBwOJQrncb+O0KhOYLMLC08w6TDU+y05Q
+ vvsX8NUKM7vHwqTzWFjsXO0vUHNFOlgXB6njvanh297OcVvbogUKAnLD8ftHq20NOj
+ znm3qjAMhU+vgxE0Ot4HVG03d9reEHafRUcDyOo9Bm66RK2KYsWcMPVKqF3Z6QXio0
+ Hndgam7ZhNo+EGqYWTyMfa6OQNUGcJHN2mo5TU2DlJaXrB8pIyq5V7o2GdZYijd6pH
+ hGpeVHaX82H8A==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Wang Wensheng <wangwensheng4@huawei.com>, davem@davemloft.net,
- benh@kernel.crashing.org, paulus@samba.org, linux-ide@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next] ide: Fix symbol undeclared warnings
-In-Reply-To: <20200916092333.77158-1-wangwensheng4@huawei.com>
-References: <20200916092333.77158-1-wangwensheng4@huawei.com>
-Date: Thu, 17 Sep 2020 22:01:00 +1000
-Message-ID: <87zh5oobnn.fsf@mpe.ellerman.id.au>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Exclude pmc5/6 from the irrelevant PMU
+ group constraints
+In-Reply-To: <1600257900-2043-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+References: <1600257900-2043-1-git-send-email-atrajeev@linux.vnet.ibm.com>
+Date: Thu, 17 Sep 2020 22:13:51 +1000
+Message-ID: <87wo0sob28.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,88 +71,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Wang Wensheng <wangwensheng4@huawei.com> writes:
-> Build the object file with `C=2` and get the following warnings:
-> make allmodconfig ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
-> make C=2 drivers/ide/pmac.o ARCH=powerpc64
-> CROSS_COMPILE=powerpc64-linux-gnu-
+Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
+> PMU counter support functions enforces event constraints for group of
+> events to check if all events in a group can be monitored. Incase of
+> event codes using PMC5 and PMC6 ( 500fa and 600f4 respectively ),
+> not all constraints are applicable, say the threshold or sample bits.
+> But current code includes pmc5 and pmc6 in some group constraints (like
+> IC_DC Qualifier bits) which is actually not applicable and hence results
+> in those events not getting counted when scheduled along with group of
+> other events. Patch fixes this by excluding PMC5/6 from constraints
+> which are not relevant for it.
 >
-> drivers/ide/pmac.c:228:23: warning: symbol 'mdma_timings_33' was not
-> declared. Should it be static?
-> drivers/ide/pmac.c:241:23: warning: symbol 'mdma_timings_33k' was not
-> declared. Should it be static?
-> drivers/ide/pmac.c:254:23: warning: symbol 'mdma_timings_66' was not
-> declared. Should it be static?
-> drivers/ide/pmac.c:272:3: warning: symbol 'kl66_udma_timings' was not
-> declared. Should it be static?
-> drivers/ide/pmac.c:1418:12: warning: symbol 'pmac_ide_probe' was not
-> declared. Should it be static?
->
-> Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
+> Fixes: 7ffd948 ('powerpc/perf: factor out power8 pmu functions')
+> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 > ---
->  drivers/ide/pmac.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  arch/powerpc/perf/isa207-common.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+> index 964437a..186fad8 100644
+> --- a/arch/powerpc/perf/isa207-common.c
+> +++ b/arch/powerpc/perf/isa207-common.c
+> @@ -288,6 +288,9 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
+>  
+>  		mask  |= CNST_PMC_MASK(pmc);
+>  		value |= CNST_PMC_VAL(pmc);
+> +
+> +		if (pmc >= 5)
+> +			goto ebb_bhrb;
 
-TIL davem maintains IDE?
-
-But I suspect he isn't that interested in this powerpc only driver, so
-I'll grab this.
+This is fairly subtle. Can you please put a block comment above the if
+explaining in a few lines what's going on.
 
 cheers
-
-
-> diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
-> index ea0b064b5f56..6bb2fc6755c2 100644
-> --- a/drivers/ide/pmac.c
-> +++ b/drivers/ide/pmac.c
-> @@ -225,7 +225,7 @@ struct mdma_timings_t {
->  	int	cycleTime;
->  };
->  
-> -struct mdma_timings_t mdma_timings_33[] =
-> +static struct mdma_timings_t mdma_timings_33[] =
->  {
->      { 240, 240, 480 },
->      { 180, 180, 360 },
-> @@ -238,7 +238,7 @@ struct mdma_timings_t mdma_timings_33[] =
->      {   0,   0,   0 }
->  };
->  
-> -struct mdma_timings_t mdma_timings_33k[] =
-> +static struct mdma_timings_t mdma_timings_33k[] =
->  {
->      { 240, 240, 480 },
->      { 180, 180, 360 },
-> @@ -251,7 +251,7 @@ struct mdma_timings_t mdma_timings_33k[] =
->      {   0,   0,   0 }
->  };
->  
-> -struct mdma_timings_t mdma_timings_66[] =
-> +static struct mdma_timings_t mdma_timings_66[] =
->  {
->      { 240, 240, 480 },
->      { 180, 180, 360 },
-> @@ -265,7 +265,7 @@ struct mdma_timings_t mdma_timings_66[] =
->  };
->  
->  /* KeyLargo ATA-4 Ultra DMA timings (rounded) */
-> -struct {
-> +static struct {
->  	int	addrSetup; /* ??? */
->  	int	rdy2pause;
->  	int	wrDataSetup;
-> @@ -1415,7 +1415,7 @@ static struct pci_driver pmac_ide_pci_driver = {
->  };
->  MODULE_DEVICE_TABLE(pci, pmac_ide_pci_match);
->  
-> -int __init pmac_ide_probe(void)
-> +static int __init pmac_ide_probe(void)
->  {
->  	int error;
->  
-> -- 
-> 2.25.0
