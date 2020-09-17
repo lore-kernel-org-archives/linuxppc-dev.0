@@ -6,37 +6,37 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6C2FC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABDFEC43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:19:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 10AFA21D7F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:17:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10AFA21D7F
+	by mail.kernel.org (Postfix) with ESMTPS id DC1FA2087D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 12:19:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC1FA2087D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsbZN3knbzDqc2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:17:32 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsbcq2C9mzDqbt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 22:19:39 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSn4C30zDqWr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSp1rWBzDqWZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSl0HLFz9sVf; Thu, 17 Sep 2020 21:27:34 +1000 (AEST)
+ id 4BsZSl4Jkgz9sVN; Thu, 17 Sep 2020 21:27:35 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-In-Reply-To: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
-References: <20200810071834.92514-1-srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 00/10] Coregroup support on Powerpc
-Message-Id: <160034201134.3339803.10634582499637013510.b4-ty@ellerman.id.au>
-Date: Thu, 17 Sep 2020 21:27:34 +1000 (AEST)
+In-Reply-To: <20200818081104.57888-1-srikar@linux.vnet.ibm.com>
+References: <20200818081104.57888-1-srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 0/3] Offline memoryless cpuless node 0
+Message-Id: <160034200804.3339803.1749893588789945413.b4-ty@ellerman.id.au>
+Date: Thu, 17 Sep 2020 21:27:35 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,52 +48,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Oliver OHalloran <oliveroh@au1.ibm.com>, Michael Neuling <mikey@linux.ibm.com>,
- Michael Ellerman <michaele@au1.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
- Jordan Niethe <jniethe5@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Nick Piggin <npiggin@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Valentin Schneider <valentin.schneider@arm.com>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michal Hocko <mhocko@suse.com>,
+ David Hildenbrand <david@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-mm@kvack.org,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>, Mel Gorman <mgorman@suse.de>,
+ Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Christopher Lameter <cl@linux.com>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 10 Aug 2020 12:48:24 +0530, Srikar Dronamraju wrote:
-> Changelog v4->v5:
-> v4: http://lore.kernel.org/lkml/20200727053230.19753-1-srikar@linux.vnet.ibm.com/t/#u
+On Tue, 18 Aug 2020 13:41:01 +0530, Srikar Dronamraju wrote:
+> Changelog v5:->v6:
+> - Now the fix is Powerpc specific.
+> 	(David Hildenbrand, Michal Hocko, Christopher Lamater)
+> - rebased to v5.8
+> link v5: https://lore.kernel.org/linuxppc-dev/20200624092846.9194-1-srikar@linux.vnet.ibm.com/t/#u
 > 
-> Changelog v4 ->v5:
-> powerpc/smp: Optimize start_secondary
-> 	Retain cache domain, no need for generalization
-> 		 (Michael Ellerman, Peter Zijlstra,
-> 		 Valentin Schneider, Gautham R. Shenoy)
+> Changelog v4:->v5:
+> - rebased to v5.8
+> link v4: http://lore.kernel.org/lkml/20200512132937.19295-1-srikar@linux.vnet.ibm.com/t/#u
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[01/10] powerpc/smp: Fix a warning under !NEED_MULTIPLE_NODES
-        https://git.kernel.org/powerpc/c/d0fd24bbd27619d7b8d4da26a19a2027931ae9fc
-[02/10] powerpc/smp: Merge Power9 topology with Power topology
-        https://git.kernel.org/powerpc/c/2ef0ca54d97f40f7621d595ac5479bd7fa076bfa
-[03/10] powerpc/smp: Move powerpc_topology above
-        https://git.kernel.org/powerpc/c/5e93f16ae48b728775496429c6db53d0bf8cdd9b
-[04/10] powerpc/smp: Move topology fixups into a new function
-        https://git.kernel.org/powerpc/c/3c6032a8fe99547d31b2b57715e303a67d1b0c66
-[05/10] powerpc/smp: Dont assume l2-cache to be superset of sibling
-        https://git.kernel.org/powerpc/c/f6606cfdfbcda00ce8a6e63c8fc13c93e73ac059
-[06/10] powerpc/smp: Optimize start_secondary
-        https://git.kernel.org/powerpc/c/caa8e29da59926bef099b46ab6280333d583e944
-[07/10] powerpc/numa: Detect support for coregroup
-        https://git.kernel.org/powerpc/c/f9f130ff2ec93c5949576bbfb168cc9530c23649
-[08/10] powerpc/smp: Allocate cpumask only after searching thread group
-        https://git.kernel.org/powerpc/c/6e086302816b2ced602bc99641eb0189c05f018a
-[09/10] powerpc/smp: Create coregroup domain
-        https://git.kernel.org/powerpc/c/72730bfc2a2b91a525f38dfc830f598bdb95f216
-[10/10] powerpc/smp: Implement cpu_to_coregroup_id
-        https://git.kernel.org/powerpc/c/fa35e868f9ddcbb7984fd5ab7f91aef924fa8543
+[1/3] powerpc/numa: Set numa_node for all possible cpus
+      https://git.kernel.org/powerpc/c/a874f1005ef5dfe53dfd8cda59a6600e89986ecd
+[2/3] powerpc/numa: Prefer node id queried from vphn
+      https://git.kernel.org/powerpc/c/6398eaa268168b528dd1d3d0e70e61e9c13bea23
+[3/3] powerpc/numa: Offline memoryless cpuless node 0
+      https://git.kernel.org/powerpc/c/e75130f20b1f48e04ccc806aea01f0a361f9cb6b
 
 cheers
