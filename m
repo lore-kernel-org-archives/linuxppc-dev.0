@@ -6,38 +6,40 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DFEDC43461
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:34:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8697FC43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:36:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE9F1208DB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:34:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE9F1208DB
+	by mail.kernel.org (Postfix) with ESMTPS id DFCF820663
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:35:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DFCF820663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZcB3MtNzDqSK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:34:02 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BsZfP3vcmzDqXS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:35:57 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSN2WbLzDqSK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSN69lFzDqSK
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSM4Dglz9sTW; Thu, 17 Sep 2020 21:27:15 +1000 (AEST)
+ id 4BsZSN2x0wz9sTp; Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- iommu@lists.linux-foundation.org
-In-Reply-To: <20200818221126.391073-1-bauerman@linux.ibm.com>
-References: <20200818221126.391073-1-bauerman@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/pseries/svm: Allocate SWIOTLB buffer anywhere
- in memory
-Message-Id: <160034200698.3339803.12661483575080905618.b4-ty@ellerman.id.au>
-Date: Thu, 17 Sep 2020 21:27:15 +1000 (AEST)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <a027d447022a006c9c4958ac734128e577a3c5c1.1599486108.git.christophe.leroy@csgroup.eu>
+References: <a027d447022a006c9c4958ac734128e577a3c5c1.1599486108.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/32: Fix vmap stack - Do not activate MMU
+ before reading task struct
+Message-Id: <160034201451.3339803.5588442310335772695.b4-ty@ellerman.id.au>
+Date: Thu, 17 Sep 2020 21:27:16 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,29 +51,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Ram Pai <linuxram@us.ibm.com>, Robin Murphy <robin.murphy@arm.com>,
- linux-kernel@vger.kernel.org, Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 18 Aug 2020 19:11:26 -0300, Thiago Jung Bauermann wrote:
-> POWER secure guests (i.e., guests which use the Protection Execution
-> Facility) need to use SWIOTLB to be able to do I/O with the hypervisor, but
-> they don't need the SWIOTLB memory to be in low addresses since the
-> hypervisor doesn't have any addressing limitation.
+On Mon, 7 Sep 2020 13:42:09 +0000 (UTC), Christophe Leroy wrote:
+> We need r1 to be properly set before activating MMU, so
+> reading task_struct->stack must be done with MMU off.
 > 
-> This solves a SWIOTLB initialization problem we are seeing in secure guests
-> with 128 GB of RAM: they are configured with 4 GB of crashkernel reserved
-> memory, which leaves no space for SWIOTLB in low addresses.
+> This means we need an additional register to play with MSR
+> bits while r11 now points to the stack. For that, move r10
+> back to CR (As is already done for hash MMU) and use r10.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/svm: Allocate SWIOTLB buffer anywhere in memory
-      https://git.kernel.org/powerpc/c/eae9eec476d13fad9af6da1f44a054ee02b7b161
+[1/2] powerpc/32: Fix vmap stack - Do not activate MMU before reading task struct
+      https://git.kernel.org/powerpc/c/c118c7303ad528be8ff2aea8cd1ee15452c763f0
+[2/2] powerpc/32: Fix vmap stack - Properly set r1 before activating MMU
+      https://git.kernel.org/powerpc/c/da7bb43ab9da39bcfed0d146ce94e1f0cbae4ca0
 
 cheers
