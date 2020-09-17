@@ -6,39 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAE0FC433E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:57:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6FCAC43461
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:59:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5359D2072E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:57:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5359D2072E
+	by mail.kernel.org (Postfix) with ESMTPS id 080322072E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 11:59:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 080322072E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsb7H0V39zDqZX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:57:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bsb9F08gyzDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Sep 2020 21:59:13 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSY4LQjzDqX7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BsZSZ2MHNzDqSK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2020 21:27:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BsZSY1vLWz9sVV; Thu, 17 Sep 2020 21:27:25 +1000 (AEST)
+ id 4BsZSZ0jw0z9sVX; Thu, 17 Sep 2020 21:27:25 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <3612a8f8aaca16de3fc414a7e66293319d6e213c.1597643147.git.christophe.leroy@csgroup.eu>
-References: <3612a8f8aaca16de3fc414a7e66293319d6e213c.1597643147.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v1] powerpc/process: Tag an #endif to help locate the
- matching #ifdef.
-Message-Id: <160034201546.3339803.1252084823343319379.b4-ty@ellerman.id.au>
+In-Reply-To: <21b05f7298c1b18f73e6e5b4cd5005aafa24b6da.1599820109.git.christophe.leroy@csgroup.eu>
+References: <21b05f7298c1b18f73e6e5b4cd5005aafa24b6da.1599820109.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/powermac: Fix low_sleep_handler with KUAP and
+ KUEP
+Message-Id: <160034201640.3339803.9937170940797362812.b4-ty@ellerman.id.au>
 Date: Thu, 17 Sep 2020 21:27:25 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,16 +56,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Aug 2020 05:46:45 +0000 (UTC), Christophe Leroy wrote:
-> That #endif is more than 100 lines after the matching #ifdef,
-> and there are several #ifdef/#else/#endif inbetween.
+On Fri, 11 Sep 2020 10:29:15 +0000 (UTC), Christophe Leroy wrote:
+> low_sleep_handler() has an hardcoded restore of segment registers
+> that doesn't take KUAP and KUEP into account.
 > 
-> Tag it as /* CONFIG_PPC_BOOK3S_64 */ to help locate the
-> matching #ifdef.
+> Use head_32's load_segment_registers() routine instead.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/process: Tag an #endif to help locate the matching #ifdef.
-      https://git.kernel.org/powerpc/c/60d62bfd24efce1a595d259100b8a4e7a489e834
+[1/1] powerpc/powermac: Fix low_sleep_handler with KUAP and KUEP
+      https://git.kernel.org/powerpc/c/2c637d2df4ee4830e9d3eb2bd5412250522ce96e
 
 cheers
