@@ -2,112 +2,65 @@ Return-Path: <SRS0=QDwo=C3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B21C43464
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:06:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF9AC43464
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:09:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C94C21582
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:06:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9395621582
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:09:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="HawmHELL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C94C21582
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="DXtFxE/G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9395621582
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BtCHV65hqzDqpf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:06:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=HawmHELL; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BtCLZ3TrNzDqpp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:09:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BtCDt6bgbzDqnW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:04:30 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08IC1rnL079186; Fri, 18 Sep 2020 08:04:25 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=dpEECxRtUjdSBys3ANpeENejJFB07seGA5Dg7OprAHc=;
- b=HawmHELLxANGJmflqxQeSNQ8feG8kRJnPuFv3+Na7pMDrFiRtQ2Jo/psH2El5X8EYQ8O
- JBQOpRYrSSgjD9IJSVNiTEcUVO/63q09gqTgrk/ZZmH1fcsfhzYphLT5Hk7xMso8UrY2
- Ar4XqpvWSThYZqn7zfyxHnQKRIYUoapeDzeX17RQv/738VlylCx6qPgPYmEhfSqGHR0J
- 0LEN+dAaNbhQhLuF0aug/2f5/YzUSmQL8sqSjEoNweK2Ura5UH7i/G1Axumk1rQVZJdK
- VkX/srfeRpaN8fO97eNpj0Xh4pkOobK5YJONJkMgBiDDhhJos9o8PzpTdqMH9QBid2q8 Ag== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33muxt93kg-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 08:04:25 -0400
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08IC1whL079805;
- Fri, 18 Sep 2020 08:04:24 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33muxt93hx-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 08:04:24 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08IBwB8G016345;
- Fri, 18 Sep 2020 12:04:22 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 33ku33t1d7-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 12:04:22 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 08IC2jBW30998944
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 18 Sep 2020 12:02:45 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B9B95204F;
- Fri, 18 Sep 2020 12:04:20 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.79.209.154])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 00AA95204E;
- Fri, 18 Sep 2020 12:04:17 +0000 (GMT)
-Subject: Re: [PATCH 1/3] powerpc/mce: remove nmi_enter/exit from real mode
- handler
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>, npiggin@gmail.com
-References: <20200916172228.83271-1-ganeshgr@linux.ibm.com>
- <20200916172228.83271-2-ganeshgr@linux.ibm.com>
- <20200917122028.GP29778@kitsune.suse.cz>
-From: Ganesh <ganeshgr@linux.ibm.com>
-Message-ID: <37edc6de-d55a-ec9e-a6f1-ae4535a3bfd9@linux.ibm.com>
-Date: Fri, 18 Sep 2020 17:34:16 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtCHS4M5lzDqlc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:06:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=DXtFxE/G; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4BtCHR24Zdz9sT5;
+ Fri, 18 Sep 2020 22:06:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1600430803;
+ bh=CckFhTiAY9p2fL9SHrEPSEQYcrMlYVwd3Fpe4jdFLOY=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=DXtFxE/GA3Ys+kjV0l3jkOVh16ObDMSB/Mwmut664uaGt8gzy1WVquYOTejB2wHho
+ iECcZk8++eRwSwv6a+7UlSvVFBkQPI2YVW3jWtV1Z8fxCFbvbIldCYAUHMOdCFOnDg
+ rvBbo+zswGMqENQLXTXy/gfX/BM931t0alBTfojFFAjPuN7+0U0sWjfzuGUZfs7zdi
+ zMAOOzVm82BfEGMnWW9Zml3MLSHvWae0+2NyEGUC6xv5XUumW7B4/ghcn+VjT3Qth2
+ ijaZeXRviyqDlXz+3xubLfYhYD3tKpXcFRMUPbr11gBJ+xC7Tt6Z9P+lSlxL13qcdg
+ 7a6vB84NTB8Dw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 6/6] powerpc/64: irq replay remove decrementer overflow
+ check
+In-Reply-To: <20200915114650.3980244-6-npiggin@gmail.com>
+References: <20200915114650.3980244-1-npiggin@gmail.com>
+ <20200915114650.3980244-6-npiggin@gmail.com>
+Date: Fri, 18 Sep 2020 22:06:37 +1000
+Message-ID: <87eemz70he.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20200917122028.GP29778@kitsune.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-18_14:2020-09-16,
- 2020-09-18 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 mlxscore=0
- malwarescore=0 phishscore=0 clxscore=1015 priorityscore=1501 adultscore=0
- lowpriorityscore=0 suspectscore=0 spamscore=0 bulkscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2009180096
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,57 +72,159 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, mahesh@linux.vnet.ibm.com
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/17/20 5:50 PM, Michal Suchánek wrote:
+Nicholas Piggin <npiggin@gmail.com> writes:
+> This is an ad-hoc way to catch some cases of decrementer overflow. It
+> won't catch cases where interrupts were hard disabled before any soft
+> masked interrupts fired, for example. And it doesn't catch cases that
+> have overflowed an even number of times.
+>
+> It's not clear what exactly what problem s being solved here. A lost
+> timer when we have an IRQ off latency of more than ~4.3 seconds could
+> be avoided (so long as it's also less than ~8.6s) but this is already
+> a hard lockup order of magnitude event, and the decrementer will wrap
+> again and provide a timer interrupt within the same latency magnitdue.
+>
+> So the test catches some cases of lost decrementers in very exceptional
+> (buggy) latency event cases, reducing timer interrupt latency in that
+> case by up to 4.3 seconds. And for large decrementer, it's useless. It
+> is performed in potentially quite a hot path, reading the TB can be
+> a noticable overhead.
+>
+> Perhaps more importantly it allows the clunky MSR[EE] vs
+> PACA_IRQ_HARD_DIS incoherency to be removed.
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kernel/irq.c | 50 +--------------------------------------
+>  1 file changed, 1 insertion(+), 49 deletions(-)
 
-> Hello,
->
-> On Wed, Sep 16, 2020 at 10:52:26PM +0530, Ganesh Goudar wrote:
->> Use of nmi_enter/exit in real mode handler causes the kernel to panic
->> and reboot on injecting slb mutihit on pseries machine running in hash
->> mmu mode, As these calls try to accesses memory outside RMO region in
->> real mode handler where translation is disabled.
->>
->> Add check to not to use these calls on pseries machine running in hash
->> mmu mode.
->>
->> Fixes: 116ac378bb3f ("powerpc/64s: machine check interrupt update NMI accounting")
->> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
->> ---
->>   arch/powerpc/kernel/mce.c | 7 ++++++-
->>   1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
->> index ada59f6c4298..1d42fe0f5f9c 100644
->> --- a/arch/powerpc/kernel/mce.c
->> +++ b/arch/powerpc/kernel/mce.c
->> @@ -591,10 +591,15 @@ EXPORT_SYMBOL_GPL(machine_check_print_event_info);
->>   long notrace machine_check_early(struct pt_regs *regs)
->>   {
->>   	long handled = 0;
->> -	bool nested = in_nmi();
->> +	bool nested;
->> +	bool is_pseries_hpt_guest;
->>   	u8 ftrace_enabled = this_cpu_get_ftrace_enabled();
->>   
->>   	this_cpu_set_ftrace_enabled(0);
->> +	is_pseries_hpt_guest = machine_is(pseries) &&
->> +			       mmu_has_feature(MMU_FTR_HPTE_TABLE);
->> +	/* Do not use nmi_enter/exit for pseries hpte guest */
->> +	nested = is_pseries_hpt_guest ? true : in_nmi();
-> As pointed out already in another comment nesting is supported natively
-> since 69ea03b56ed2c7189ccd0b5910ad39f3cad1df21. You can simply do
-> nmi_enter and nmi_exit unconditionally - or only based on
-> is_pseries_hpt_guest.
-ok
-> The other question is what is the value of calling nmi_enter here at
-> all. It crashes in one case, we simply skip it for that case, and we are
-> good. Maybe we could skip it altogether?
-Not sure why nmi_enter/exit is needed here, Again, Nick may have a reason.
-> Thanks
->
-> Michal
+Seems to be unhappy on qemu ppc64e:
+
+  kernel BUG at arch/powerpc/kernel/irq.c:153!
+
+Which is:
+
+notrace unsigned int __check_irq_replay(void)
+{
+...
+
+	/* There should be nothing left ! */
+	BUG_ON(local_paca->irq_happened != 0);
+
+	return 0;
+}
+
+Full log below.
+
+cheers
+
+
+spawn qemu-system-ppc64 -nographic -M ppce500 -cpu e5500 -m 2G -kernel /home/michael/build/adhoc/ci_output/build/corenet64_smp_defconfig@ppc64@korg@10.1.0/uImage -initrd ppc64-novsx-rootfs.cpio.gz -append noreboot
+MMU: Supported page sizes
+         4 KB as direct
+      4096 KB as direct
+     16384 KB as direct
+     65536 KB as direct
+    262144 KB as direct
+   1048576 KB as direct
+MMU: Book3E HW tablewalk not supported
+Linux version 5.9.0-rc2-00187-gf523995cc1ee (linuxppc@e054daee57c9) (powerpc64-linux-gnu-gcc (GCC) 10.1.0, GNU ld (GNU Binutils) 2.34) #1 SMP Fri Sep 18 11:52:25 Australia 2020
+Found initrd at 0xc000000005000000:0xc0000000051e9a47
+Using QEMU e500 machine description
+ioremap() called early from .find_legacy_serial_ports+0x6cc/0x7bc. Use early_ioremap() instead
+printk: bootconsole [udbg0] enabled
+CPU maps initialized for 1 thread per core
+-----------------------------------------------------
+phys_mem_size     = 0x80000000
+dcache_bsize      = 0x40
+icache_bsize      = 0x40
+cpu_features      = 0x00000003008001b4
+  possible        = 0x00000003009003b6
+  always          = 0x00000003008003b4
+cpu_user_features = 0xcc008000 0x08000000
+mmu_features      = 0x000a0010
+firmware_features = 0x0000000000000000
+-----------------------------------------------------
+qemu_e500_setup_arch()
+barrier-nospec: using isync; sync as speculation barrier
+Zone ranges:
+  DMA      [mem 0x0000000000000000-0x000000007fffffff]
+  Normal   empty
+Movable zone start for each node
+Early memory node ranges
+  node   0: [mem 0x0000000000000000-0x000000007fffffff]
+Initmem setup node 0 [mem 0x0000000000000000-0x000000007fffffff]
+MMU: Allocated 2112 bytes of context maps for 255 contexts
+percpu: Embedded 28 pages/cpu s77400 r0 d37288 u1048576
+Built 1 zonelists, mobility grouping on.  Total pages: 517120
+Kernel command line: noreboot
+Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+mem auto-init: stack:off, heap alloc:off, heap free:off
+Memory: 1977432K/2097152K available (12048K kernel code, 2204K rwdata, 3788K rodata, 460K init, 321K bss, 119720K reserved, 0K cma-reserved)
+SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+rcu: Hierarchical RCU implementation.
+rcu:    RCU event tracing is enabled.
+rcu:    RCU restricting CPUs from NR_CPUS=24 to nr_cpu_ids=1.
+rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+NR_IRQS: 512, nr_irqs: 512, preallocated irqs: 16
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at fe0040000, max 1 CPUs
+mpic: ISU size: 256, shift: 8, mask: ff
+mpic: Initializing for 256 sources
+random: get_random_u64 called from .start_kernel+0x498/0x70c with crng_init=0
+clocksource: timebase: mask: 0xffffffffffffffff max_cycles: 0x5c4093a7d1, max_idle_ns: 440795210635 ns
+clocksource: timebase mult[2800000] shift[24] registered
+Console: colour dummy device 80x25
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 4096 (order: 3, 32768 bytes, linear)
+Mountpoint-cache hash table entries: 4096 (order: 3, 32768 bytes, linear)
+e500 family performance monitor hardware support registered
+rcu: Hierarchical SRCU implementation.
+smp: Bringing up secondary CPUs ...
+smp: Brought up 1 node, 1 CPU
+devtmpfs: initialized
+clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+futex hash table entries: 256 (order: 2, 16384 bytes, linear)
+------------[ cut here ]------------
+kernel BUG at arch/powerpc/kernel/irq.c:153!
+Oops: Exception in kernel mode, sig: 5 [#1]
+BE PAGE_SIZE=4K SMP NR_CPUS=24 QEMU e500
+Modules linked in:
+CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.9.0-rc2-00187-gf523995cc1ee #1
+NIP:  c0000000000039d4 LR: c00000000001a634 CTR: c000000000594d00
+REGS: c00000007d0df5e0 TRAP: 0700   Not tainted  (5.9.0-rc2-00187-gf523995cc1ee)
+MSR:  0000000080021000 <CE,ME>  CR: 28000242  XER: 20000000
+IRQMASK: 1
+GPR00: 0000000000000001 c00000007d0df870 c0000000011e2200 0000000000000000
+GPR04: 0000000000000800 0000000000000000 0000000000000001 c00000000116eec0
+GPR08: 0000000000000000 0000000000000001 0000000000000000 0000000000000300
+GPR12: 0000000028000242 c000000001263000 c000000000002434 0000000000000000
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+GPR24: c00000000110b248 c000000000fd3728 c000000000fc1ef8 c000000000f715f8
+GPR28: c0000000010c8700 0000000000000000 0000000000000002 0000000000000001
+NIP [c0000000000039d4] .__check_irq_replay+0x24/0x60
+LR [c00000000001a634] fast_exception_return+0xe0/0x140
+Call Trace:
+[c00000007d0df870] [c00000000001a37c] storage_fault_common+0x40/0x44 (unreliable)
+--- interrupt: 300 at .__se_sys_futex_time32+0x1fc/0x2c8
+    LR = .futex_init+0xbc/0x144
+[c00000007d0dfb70] [c000000000f8af88] .futex_init+0x88/0x144 (unreliable)
+[c00000007d0dfc10] [c000000000001ed8] .do_one_initcall+0x6c/0x28c
+[c00000007d0dfcf0] [c000000000f79258] .kernel_init_freeable+0x298/0x314
+[c00000007d0dfda0] [c000000000002450] .kernel_init+0x1c/0x138
+[c00000007d0dfe20] [c00000000000082c] .ret_from_kernel_thread+0x58/0x60
+Instruction dump:
+4bffff64 48bb8a49 60000000 892d067b 71280008 40820028 71280004 40820040
+71280002 40820028 3149ffff 7d2a4910 <0b090000> 38600000 4e800020 55290776
+---[ end trace 276324e35afb2c5e ]---
+
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000005
+Rebooting in 180 seconds..
+System Halted, OK to tu
