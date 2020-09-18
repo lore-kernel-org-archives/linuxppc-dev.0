@@ -2,26 +2,26 @@ Return-Path: <SRS0=QDwo=C3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED872C43463
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDEFBC43463
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:15:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCF0F21973
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:12:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C630B21973
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:14:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="tLrAiXCk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCF0F21973
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="HFDeNB+/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C630B21973
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BtCPp1xnMzDqdn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:12:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BtCSx2TB4zDqd2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:14:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com;
@@ -30,83 +30,83 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=tLrAiXCk; dkim-atps=neutral
+ header.s=pp1 header.b=HFDeNB+/; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BtCHb2DlszDqlc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:06:51 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtCK24jmGzDqll
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:08:06 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08IC2oTj085716; Fri, 18 Sep 2020 08:06:45 -0400
+ 08IC1qJe079056; Fri, 18 Sep 2020 08:08:00 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=subject : to : cc :
  references : from : message-id : date : mime-version : in-reply-to :
  content-type : content-transfer-encoding; s=pp1;
- bh=8dAp+xPZq2wMoSYVE3hv9INo0SLN6oTrYHCMssIhcrs=;
- b=tLrAiXCkQlgzn28mKFSQqzps5TQVnwDNuEkisnQGW785EaHICjVb9hzJl0QxGDJiAvlR
- Xdsa5fdQoMk4z+/20dplQFFx07g4ZXm0uVT/ttURY5IU5O68QJ99kR4S/9/u037DBnrq
- x1UE8vkT96D9dHst8/IabZFxkJTceIcwoLY4z59JjEU/XPGQcRX5pPo2IZCY/vvuwour
- torP7UA/fSM2wj0toZJ/tOv933ODQTI7JdYVN4ZSZ6bojUYP1aRHnRUva3MdJd5CO1Cu
- gkzIwveWErjw6nzBIgHsqQMBAhrqxw5GRWkTB8vsL0rX97R3Opyi+aLoBusMz6TDRq4d iw== 
+ bh=bcys/Q15Z6jcYyMt3W4fSFj50TJngtiLt+yy0hXBazc=;
+ b=HFDeNB+/G94BHr7OYoOk7QK9HEVpMdwB3n/eA1lWhS0zPIdMM72bh1gNUCyODjVVewuW
+ 6vf3uvmOt4g/nvOLVw6EW57tNLyKOhSvaM+tSoA5Ikc0HdL5DBdwiH0AWWZ92gp4uiLD
+ sGxwaQlAPRVV2mGyHlOu++NmBKFltaAYkTCYBrcPcOfVTe05ycZHmPRF+/UulkU3j5ds
+ 2IMExCLaGA6clx5D3Lm8FzP+GIEy/7I9HF3jjcAszT5e4EnneM60537mxO5tjKSXUZ8k
+ KLalqqkAoORW7oDsGILnBI1SJizM+rczPeYFu1+/h3DKZVpJJFGGMcp1EfEgau9He1f7 AA== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33msjsdy8q-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33muxt97ng-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 08:06:45 -0400
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08IC5NhX093922;
- Fri, 18 Sep 2020 08:06:45 -0400
+ Fri, 18 Sep 2020 08:08:00 -0400
+Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08IC3jiJ087837;
+ Fri, 18 Sep 2020 08:08:00 -0400
 Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
  [149.81.74.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33msjsdy7k-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 33muxt97m9-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 08:06:44 -0400
+ Fri, 18 Sep 2020 08:08:00 -0400
 Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
- by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08IBwEJe000577;
- Fri, 18 Sep 2020 12:06:42 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma03fra.de.ibm.com with ESMTP id 33k65v1kyw-1
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08IC7vXC009021;
+ Fri, 18 Sep 2020 12:07:57 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03fra.de.ibm.com with ESMTP id 33k65v1m10-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Fri, 18 Sep 2020 12:06:42 +0000
+ Fri, 18 Sep 2020 12:07:57 +0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
  [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 08IC559L22675778
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 08IC7tgd26739134
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 18 Sep 2020 12:05:05 GMT
+ Fri, 18 Sep 2020 12:07:55 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 396E752057;
- Fri, 18 Sep 2020 12:06:40 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6530052051;
+ Fri, 18 Sep 2020 12:07:55 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.79.209.154])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 03E5C5204E;
- Fri, 18 Sep 2020 12:06:37 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9F7EE5204E;
+ Fri, 18 Sep 2020 12:07:53 +0000 (GMT)
 Subject: Re: [PATCH 2/3] powerpc/mce: Add debugfs interface to inject MCE
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
 References: <20200916172228.83271-1-ganeshgr@linux.ibm.com>
  <20200916172228.83271-3-ganeshgr@linux.ibm.com>
- <20200917122348.GQ29778@kitsune.suse.cz>
+ <87a6xnoadk.fsf@mpe.ellerman.id.au>
 From: Ganesh <ganeshgr@linux.ibm.com>
-Message-ID: <81ae9861-e80a-5bf8-bcab-d8fb4730e277@linux.ibm.com>
-Date: Fri, 18 Sep 2020 17:36:35 +0530
+Message-ID: <5f28c634-d2a8-380a-2ca4-99530ef8d15c@linux.ibm.com>
+Date: Fri, 18 Sep 2020 17:37:52 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <20200917122348.GQ29778@kitsune.suse.cz>
+In-Reply-To: <87a6xnoadk.fsf@mpe.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Language: en-US
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-09-18_14:2020-09-16,
  2020-09-18 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999
- suspectscore=0 bulkscore=0 phishscore=0 spamscore=0 clxscore=1015
- adultscore=0 malwarescore=0 impostorscore=0 lowpriorityscore=0
- priorityscore=1501 mlxscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2006250000 definitions=main-2009180100
+ mlxlogscore=999 mlxscore=0
+ malwarescore=0 phishscore=0 clxscore=1011 priorityscore=1501 adultscore=0
+ lowpriorityscore=0 suspectscore=0 spamscore=0 bulkscore=0 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2009180096
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,25 +118,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, mahesh@linux.vnet.ibm.com
+Cc: mahesh@linux.vnet.ibm.com, msuchanek@suse.de,
+ Kees Cook <keescook@chromium.org>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
-On 9/17/20 5:53 PM, Michal Suchánek wrote:
-> Hello,
+On 9/18/20 12:10 PM, Michael Ellerman wrote:
+> Hi Ganesh,
 >
-> On Wed, Sep 16, 2020 at 10:52:27PM +0530, Ganesh Goudar wrote:
+> Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
 >> To test machine check handling, add debugfs interface to inject
 >> slb multihit errors.
 >>
 >> To inject slb multihit:
 >>   #echo 1 > /sys/kernel/debug/powerpc/mce_error_inject/inject_slb_multihit
->>
->> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
+> Rather than creating a new ad-hoc way to trigger this, can you please
+> integrate it into drivers/misc/lkdtm.
+>
+> There's enough code here that I think you should create
+> drivers/misc/lkdtm/powerpc.c and put the code in there. Then add an
+> LKDTM entry point for this, maybe called PPC_SLB_MULTIHIT.
+>
+> Please Cc Kees when you repost.
+Sure, Thanks
+> cheers
+>
+>
 >>   arch/powerpc/Kconfig.debug             |   9 ++
 >>   arch/powerpc/sysdev/Makefile           |   2 +
 >>   arch/powerpc/sysdev/mce_error_inject.c | 148 +++++++++++++++++++++++++
@@ -234,8 +243,6 @@ On 9/17/20 5:53 PM, Michal Suchánek wrote:
 >> +	preempt_disable();
 >> +
 >> +	paca = get_paca();
-> This seems unused?
-Thanks, ill remove it.
 >> +
 >> +	entry = get_slb_index();
 >> +	asm volatile("slbmte %0,%1" :
@@ -291,12 +298,6 @@ Thanks, ill remove it.
 >> +
 >> +	inject_vmalloc_slb_multihit();
 >> +	inject_kmalloc_slb_multihit();
-> This is missing the test of multihit in paca which is for some reason
-> special.
-I will add it, Thanks
-> Thanks
->
-> Michal
 >> +	return count;
 >> +}
 >> +
@@ -334,4 +335,3 @@ I will add it, Thanks
 >> +device_initcall(mce_error_inject_setup);
 >> -- 
 >> 2.26.2
->>
