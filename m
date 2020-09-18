@@ -2,25 +2,26 @@ Return-Path: <SRS0=QDwo=C3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41BDBC43464
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 13:03:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA653C43464
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 13:07:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45ED1235FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 13:03:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2517C235FD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 13:07:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vJlif4OD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45ED1235FA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="sY+q9nG0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2517C235FD
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BtDYK4fwFzDqfd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 23:03:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BtDd24RKmzDqM5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 23:07:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -28,36 +29,35 @@ Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=vJlif4OD; 
- dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BtD8m0wtGzDqlf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:45:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtD8k2nRqzDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:45:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
- Content-Description:In-Reply-To:References;
- bh=V3X+nIZPxUoB2BOajjqXji1hFeXgDyeXoEcOBeTEcjY=; b=vJlif4ODGlFSaA/X96y95TBxaJ
- n1vQfWDy9aeQQz/QfN88AtyhJjnDQw4iBBxB3dOINUYSWIDVuarqzmR0pZ51u4RNdWq3xd56/l+oR
- 5GEDqjcn7bBB3CNVKgHN2a9wCcAG8SVe7T2vZu1M3dI0BtwzjwiuqLtNf9Jp3kLrAw46KAsyjal9/
- QoDWN5trBS3vHnHgnjwv02AJsET1D7F4cR807vr6jIEUKZP+oBkLuggklbUB1OR5q/LzveCjsdCRd
- XkzH7AWVhPje1BKWsGUA6phSyo6a5kaSlGjDsD4kHaEc69ADj0ykAyKUBp48wXzsnb2cVPD/Usdlf
- ivQpFJ1w==;
+ References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+ Content-Type:Content-ID:Content-Description;
+ bh=JS63/rqkwUNTXwLowQfzdacfYjAtRcLXlr++78o/BT4=; b=sY+q9nG0cOiCMUx60dsbMGVPCz
+ LVrYVhlOm2U0rDRkmCim2mpUjwSFA6xVzz7XwcQDo4SGRAVwynXQreWP6XBiVGi0g8W953f/N5oAl
+ fMg12npyy16DCpLmH5VyXk669QwmnN85j6R0RkgK4f6gMcC3WoQ2pca3RMQOVsobTRfwuN1EThzdb
+ jmGzqX9W6pU1MU4WfYmm+VGPkudgq8nJGWoYHdACNbyNatdhwXgx392LSabw4WcTao2KVrdLM7tlC
+ iBsImmimlsk8J7PE28Q6ManmOx7kcJttWHAavkEleNAMRyHiwRuRenktDL1zD4kI4xDUsqKE4hm8M
+ JLB9Xxjg==;
 Received: from [80.122.85.238] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kJFle-0008SE-9Z; Fri, 18 Sep 2020 12:45:36 +0000
+ id 1kJFlk-0008T4-DQ; Fri, 18 Sep 2020 12:45:40 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: let import_iovec deal with compat_iovecs as well
-Date: Fri, 18 Sep 2020 14:45:24 +0200
-Message-Id: <20200918124533.3487701-1-hch@lst.de>
+Subject: [PATCH 3/9] fs: explicitly check for CHECK_IOVEC_ONLY in
+ rw_copy_check_uvector
+Date: Fri, 18 Sep 2020 14:45:27 +0200
+Message-Id: <20200918124533.3487701-4-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200918124533.3487701-1-hch@lst.de>
+References: <20200918124533.3487701-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -88,47 +88,37 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Al,
+Explicitly check for the magic value insted of implicitly relying on
+its number representation.
 
-this series changes import_iovec to transparently deal with comat iovec
-structures, and then cleanups up a lot of code dupliation.  But to get
-there it first has to fix the pre-existing bug that io_uring compat
-contexts don't trigger the in_compat_syscall() check.  This has so far
-been relatively harmless as very little code callable from io_uring used
-the check, and even that code that could be called usually wasn't.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ fs/read_write.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Diffstat
- arch/arm64/include/asm/unistd32.h                  |   10 
- arch/mips/kernel/syscalls/syscall_n32.tbl          |   10 
- arch/mips/kernel/syscalls/syscall_o32.tbl          |   10 
- arch/parisc/kernel/syscalls/syscall.tbl            |   10 
- arch/powerpc/kernel/syscalls/syscall.tbl           |   10 
- arch/s390/kernel/syscalls/syscall.tbl              |   10 
- arch/sparc/include/asm/compat.h                    |    3 
- arch/sparc/kernel/syscalls/syscall.tbl             |   10 
- arch/x86/entry/syscall_x32.c                       |    5 
- arch/x86/entry/syscalls/syscall_32.tbl             |   10 
- arch/x86/entry/syscalls/syscall_64.tbl             |   10 
- arch/x86/include/asm/compat.h                      |    2 
- block/scsi_ioctl.c                                 |   12 
- drivers/scsi/sg.c                                  |    9 
- fs/aio.c                                           |   38 --
- fs/io_uring.c                                      |   21 -
- fs/read_write.c                                    |  307 ++++-----------------
- fs/splice.c                                        |   57 ---
- include/linux/compat.h                             |   29 -
- include/linux/fs.h                                 |    7 
- include/linux/sched.h                              |    1 
- include/linux/uio.h                                |    7 
- include/uapi/asm-generic/unistd.h                  |   12 
- lib/iov_iter.c                                     |   30 --
- mm/process_vm_access.c                             |   69 ----
- net/compat.c                                       |    4 
- security/keys/compat.c                             |   37 --
- security/keys/internal.h                           |    5 
- security/keys/keyctl.c                             |    2 
- tools/include/uapi/asm-generic/unistd.h            |   12 
- tools/perf/arch/powerpc/entry/syscalls/syscall.tbl |   10 
- tools/perf/arch/s390/entry/syscalls/syscall.tbl    |   10 
- tools/perf/arch/x86/entry/syscalls/syscall_64.tbl  |   10 
- 33 files changed, 207 insertions(+), 582 deletions(-)
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 5db58b8c78d0dd..f153116bc5399b 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -840,8 +840,7 @@ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
+ 			ret = -EINVAL;
+ 			goto out;
+ 		}
+-		if (type >= 0
+-		    && unlikely(!access_ok(buf, len))) {
++		if (type != CHECK_IOVEC_ONLY && unlikely(!access_ok(buf, len))) {
+ 			ret = -EFAULT;
+ 			goto out;
+ 		}
+@@ -911,7 +910,7 @@ ssize_t compat_rw_copy_check_uvector(int type,
+ 		}
+ 		if (len < 0)	/* size_t not fitting in compat_ssize_t .. */
+ 			goto out;
+-		if (type >= 0 &&
++		if (type != CHECK_IOVEC_ONLY &&
+ 		    !access_ok(compat_ptr(buf), len)) {
+ 			ret = -EFAULT;
+ 			goto out;
+-- 
+2.28.0
+
