@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7F55C43463
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:56:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9C3AC43463
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:58:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27F3F207D3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:55:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4B085207D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 12:58:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mMGkNJJA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27F3F207D3
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="s9ZOEgea"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B085207D3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BtDND0hsLzDqVx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:55:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BtDR00M14zDqsQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Sep 2020 22:58:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,33 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=mMGkNJJA; 
+ header.s=casper.20170209 header.b=s9ZOEgea; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BtD8l4W2ZzDqlD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:45:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtD8k4hG8zDqjV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2020 22:45:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=3SESYGKtB1lpc64/bkwR7aGDVPB4F1Qu4U+uxvJgV7U=; b=mMGkNJJAEzq6gANYqzQ5ad9xCD
- SQskSBvnbopLh2079ZKH8Zc6v2V8SB28pkjxEr5BehWEEJPfiyKimTe5Yi8IDRWGcgn6AitpCXFi1
- Y3mqMoWAP6xV6EUNA7BHZfd7a5fV25mI0/Ty5sctiYrlv20M0cRgIrVkkAIwo7Ps9VpOZ9JgAGHb7
- GJn/46UHkUWZydBvlQhwkQtJgvX5jM9u1pAdAb+XYBXJ5BTOH/jkcFZeFA9nJ2bbEb4wo0Or+ZQfU
- /EPhL12gs9eOyqCaIzbFdlpJy7YLTP5XCoBi1+qw8iHufWUKnEpUBgD7S5fyoehHNLUgHvhyTfAvN
- HTf5y1zQ==;
+ bh=9yRRDQwct1JF6ZjH1ZNHGCkZ32QJgvqPcvKB0dar+RA=; b=s9ZOEgeausCRzTAIKECqvkUxtU
+ mBy6UNf6RRm6AlyFjmIkQ3cVDdDYzfwSdhLijuDrQUI+A78+ZqGwh62ALTJTxP+Hb8b83fxY6Qyi6
+ isvS5QdYE1J4kBdCQWs+MMQ4aSFmky4TbtL3CMmkNu1/mGKdA0TuWf6yx7Uk0Ps1g7r1gKN2xuwhK
+ HRHNr25lHpABcK0AvSVrpaODyp1+JRO4exW0ZmPuLFmNoS3AjrOgbDe3M4ZooZEY0dg3iws/po7YP
+ mnoC1b0zsP8OSDeJX3yk3JwikUwzt2CQzpFw1N1+BKD+glSDIGYYTqxd9FdthshAjsDRO8EDuc8gB
+ 68Zuo9Zg==;
 Received: from [80.122.85.238] (helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kJFlm-0008TR-No; Fri, 18 Sep 2020 12:45:42 +0000
+ id 1kJFlh-0008Sq-JK; Fri, 18 Sep 2020 12:45:37 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 5/9] fs: remove various compat readv/writev helpers
-Date: Fri, 18 Sep 2020 14:45:29 +0200
-Message-Id: <20200918124533.3487701-6-hch@lst.de>
+Subject: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+Date: Fri, 18 Sep 2020 14:45:25 +0200
+Message-Id: <20200918124533.3487701-2-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200918124533.3487701-1-hch@lst.de>
 References: <20200918124533.3487701-1-hch@lst.de>
@@ -91,276 +91,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that import_iovec handles compat iovecs as well, all the duplicated
-code in the compat readv/writev helpers is not needed.  Remove them
-and switch the compat syscall handlers to use the native helpers.
+Add a flag to force processing a syscall as a compat syscall.  This is
+required so that in_compat_syscall() works for I/O submitted by io_uring
+helper threads on behalf of compat syscalls.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/read_write.c | 179 ++++++++----------------------------------------
- 1 file changed, 30 insertions(+), 149 deletions(-)
+ arch/sparc/include/asm/compat.h | 3 ++-
+ arch/x86/include/asm/compat.h   | 2 +-
+ fs/io_uring.c                   | 9 +++++++++
+ include/linux/compat.h          | 5 ++++-
+ include/linux/sched.h           | 1 +
+ 5 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 2f961c653ce561..9eb63c53da78f2 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -1211,226 +1211,107 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
- 	return do_pwritev(fd, vec, vlen, pos, flags);
+diff --git a/arch/sparc/include/asm/compat.h b/arch/sparc/include/asm/compat.h
+index 40a267b3bd5208..fee6c51d36e869 100644
+--- a/arch/sparc/include/asm/compat.h
++++ b/arch/sparc/include/asm/compat.h
+@@ -211,7 +211,8 @@ static inline int is_compat_task(void)
+ static inline bool in_compat_syscall(void)
+ {
+ 	/* Vector 0x110 is LINUX_32BIT_SYSCALL_TRAP */
+-	return pt_regs_trap_type(current_pt_regs()) == 0x110;
++	return pt_regs_trap_type(current_pt_regs()) == 0x110 ||
++		(current->flags & PF_FORCE_COMPAT);
  }
- 
-+/*
-+ * Various compat syscalls.  Note that they all pretend to take a native
-+ * iovec - import_iovec will properly treat those as compat_iovecs based on
-+ * in_compat_syscall().
-+ */
+ #define in_compat_syscall in_compat_syscall
+ #endif
+diff --git a/arch/x86/include/asm/compat.h b/arch/x86/include/asm/compat.h
+index d4edf281fff49d..fbab072d4e5b31 100644
+--- a/arch/x86/include/asm/compat.h
++++ b/arch/x86/include/asm/compat.h
+@@ -208,7 +208,7 @@ static inline bool in_32bit_syscall(void)
  #ifdef CONFIG_COMPAT
--static size_t compat_readv(struct file *file,
--			   const struct compat_iovec __user *vec,
--			   unsigned long vlen, loff_t *pos, rwf_t flags)
--{
--	struct iovec iovstack[UIO_FASTIOV];
--	struct iovec *iov = iovstack;
--	struct iov_iter iter;
--	ssize_t ret;
--
--	ret = import_iovec(READ, (const struct iovec __user *)vec, vlen,
--			   UIO_FASTIOV, &iov, &iter);
--	if (ret >= 0) {
--		ret = do_iter_read(file, &iter, pos, flags);
--		kfree(iov);
--	}
--	if (ret > 0)
--		add_rchar(current, ret);
--	inc_syscr(current);
--	return ret;
--}
--
--static size_t do_compat_readv(compat_ulong_t fd,
--				 const struct compat_iovec __user *vec,
--				 compat_ulong_t vlen, rwf_t flags)
--{
--	struct fd f = fdget_pos(fd);
--	ssize_t ret;
--	loff_t pos;
--
--	if (!f.file)
--		return -EBADF;
--	pos = f.file->f_pos;
--	ret = compat_readv(f.file, vec, vlen, &pos, flags);
--	if (ret >= 0)
--		f.file->f_pos = pos;
--	fdput_pos(f);
--	return ret;
--
--}
--
- COMPAT_SYSCALL_DEFINE3(readv, compat_ulong_t, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		compat_ulong_t, vlen)
+ static inline bool in_compat_syscall(void)
  {
--	return do_compat_readv(fd, vec, vlen, 0);
--}
--
--static long do_compat_preadv64(unsigned long fd,
--				  const struct compat_iovec __user *vec,
--				  unsigned long vlen, loff_t pos, rwf_t flags)
--{
--	struct fd f;
--	ssize_t ret;
--
--	if (pos < 0)
--		return -EINVAL;
--	f = fdget(fd);
--	if (!f.file)
--		return -EBADF;
--	ret = -ESPIPE;
--	if (f.file->f_mode & FMODE_PREAD)
--		ret = compat_readv(f.file, vec, vlen, &pos, flags);
--	fdput(f);
--	return ret;
-+	return do_readv(fd, vec, vlen, 0);
+-	return in_32bit_syscall();
++	return in_32bit_syscall() || (current->flags & PF_FORCE_COMPAT);
+ }
+ #define in_compat_syscall in_compat_syscall	/* override the generic impl */
+ #endif
+diff --git a/fs/io_uring.c b/fs/io_uring.c
+index 3790c7fe9fee22..5755d557c3f7bc 100644
+--- a/fs/io_uring.c
++++ b/fs/io_uring.c
+@@ -5449,6 +5449,9 @@ static int io_req_defer_prep(struct io_kiocb *req,
+ 	if (unlikely(ret))
+ 		return ret;
+ 
++	if (req->ctx->compat)
++		current->flags |= PF_FORCE_COMPAT;
++
+ 	switch (req->opcode) {
+ 	case IORING_OP_NOP:
+ 		break;
+@@ -5546,6 +5549,7 @@ static int io_req_defer_prep(struct io_kiocb *req,
+ 		break;
+ 	}
+ 
++	current->flags &= ~PF_FORCE_COMPAT;
+ 	return ret;
  }
  
- #ifdef __ARCH_WANT_COMPAT_SYS_PREADV64
- COMPAT_SYSCALL_DEFINE4(preadv64, unsigned long, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		unsigned long, vlen, loff_t, pos)
- {
--	return do_compat_preadv64(fd, vec, vlen, pos, 0);
-+	return do_preadv(fd, vec, vlen, pos, 0);
- }
+@@ -5669,6 +5673,9 @@ static int io_issue_sqe(struct io_kiocb *req, const struct io_uring_sqe *sqe,
+ 	struct io_ring_ctx *ctx = req->ctx;
+ 	int ret;
+ 
++	if (ctx->compat)
++		current->flags |= PF_FORCE_COMPAT;
++
+ 	switch (req->opcode) {
+ 	case IORING_OP_NOP:
+ 		ret = io_nop(req, cs);
+@@ -5898,6 +5905,8 @@ static int io_issue_sqe(struct io_kiocb *req, const struct io_uring_sqe *sqe,
+ 		break;
+ 	}
+ 
++	current->flags &= ~PF_FORCE_COMPAT;
++
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index b354ce58966e2d..685066f7ad325f 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -891,7 +891,10 @@ asmlinkage long compat_sys_socketcall(int call, u32 __user *args);
+  */
+ 
+ #ifndef in_compat_syscall
+-static inline bool in_compat_syscall(void) { return is_compat_task(); }
++static inline bool in_compat_syscall(void)
++{
++	return is_compat_task() || (current->flags & PF_FORCE_COMPAT);
++}
  #endif
  
- COMPAT_SYSCALL_DEFINE5(preadv, compat_ulong_t, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		compat_ulong_t, vlen, u32, pos_low, u32, pos_high)
- {
- 	loff_t pos = ((loff_t)pos_high << 32) | pos_low;
- 
--	return do_compat_preadv64(fd, vec, vlen, pos, 0);
-+	return do_preadv(fd, vec, vlen, pos, 0);
- }
- 
- #ifdef __ARCH_WANT_COMPAT_SYS_PREADV64V2
- COMPAT_SYSCALL_DEFINE5(preadv64v2, unsigned long, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		unsigned long, vlen, loff_t, pos, rwf_t, flags)
- {
- 	if (pos == -1)
--		return do_compat_readv(fd, vec, vlen, flags);
--
--	return do_compat_preadv64(fd, vec, vlen, pos, flags);
-+		return do_readv(fd, vec, vlen, flags);
-+	return do_preadv(fd, vec, vlen, pos, flags);
- }
- #endif
- 
- COMPAT_SYSCALL_DEFINE6(preadv2, compat_ulong_t, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		compat_ulong_t, vlen, u32, pos_low, u32, pos_high,
- 		rwf_t, flags)
- {
- 	loff_t pos = ((loff_t)pos_high << 32) | pos_low;
- 
- 	if (pos == -1)
--		return do_compat_readv(fd, vec, vlen, flags);
--
--	return do_compat_preadv64(fd, vec, vlen, pos, flags);
--}
--
--static size_t compat_writev(struct file *file,
--			    const struct compat_iovec __user *vec,
--			    unsigned long vlen, loff_t *pos, rwf_t flags)
--{
--	struct iovec iovstack[UIO_FASTIOV];
--	struct iovec *iov = iovstack;
--	struct iov_iter iter;
--	ssize_t ret;
--
--	ret = import_iovec(WRITE, (const struct iovec __user *)vec, vlen,
--			   UIO_FASTIOV, &iov, &iter);
--	if (ret >= 0) {
--		file_start_write(file);
--		ret = do_iter_write(file, &iter, pos, flags);
--		file_end_write(file);
--		kfree(iov);
--	}
--	if (ret > 0)
--		add_wchar(current, ret);
--	inc_syscw(current);
--	return ret;
--}
--
--static size_t do_compat_writev(compat_ulong_t fd,
--				  const struct compat_iovec __user* vec,
--				  compat_ulong_t vlen, rwf_t flags)
--{
--	struct fd f = fdget_pos(fd);
--	ssize_t ret;
--	loff_t pos;
--
--	if (!f.file)
--		return -EBADF;
--	pos = f.file->f_pos;
--	ret = compat_writev(f.file, vec, vlen, &pos, flags);
--	if (ret >= 0)
--		f.file->f_pos = pos;
--	fdput_pos(f);
--	return ret;
-+		return do_readv(fd, vec, vlen, flags);
-+	return do_preadv(fd, vec, vlen, pos, flags);
- }
- 
- COMPAT_SYSCALL_DEFINE3(writev, compat_ulong_t, fd,
--		const struct compat_iovec __user *, vec,
-+		const struct iovec __user *, vec,
- 		compat_ulong_t, vlen)
- {
--	return do_compat_writev(fd, vec, vlen, 0);
--}
--
--static long do_compat_pwritev64(unsigned long fd,
--				   const struct compat_iovec __user *vec,
--				   unsigned long vlen, loff_t pos, rwf_t flags)
--{
--	struct fd f;
--	ssize_t ret;
--
--	if (pos < 0)
--		return -EINVAL;
--	f = fdget(fd);
--	if (!f.file)
--		return -EBADF;
--	ret = -ESPIPE;
--	if (f.file->f_mode & FMODE_PWRITE)
--		ret = compat_writev(f.file, vec, vlen, &pos, flags);
--	fdput(f);
--	return ret;
-+	return do_writev(fd, vec, vlen, 0);
- }
- 
- #ifdef __ARCH_WANT_COMPAT_SYS_PWRITEV64
- COMPAT_SYSCALL_DEFINE4(pwritev64, unsigned long, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		unsigned long, vlen, loff_t, pos)
- {
--	return do_compat_pwritev64(fd, vec, vlen, pos, 0);
-+	return do_pwritev(fd, vec, vlen, pos, 0);
- }
- #endif
- 
- COMPAT_SYSCALL_DEFINE5(pwritev, compat_ulong_t, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *,vec,
- 		compat_ulong_t, vlen, u32, pos_low, u32, pos_high)
- {
- 	loff_t pos = ((loff_t)pos_high << 32) | pos_low;
- 
--	return do_compat_pwritev64(fd, vec, vlen, pos, 0);
-+	return do_pwritev(fd, vec, vlen, pos, 0);
- }
- 
- #ifdef __ARCH_WANT_COMPAT_SYS_PWRITEV64V2
- COMPAT_SYSCALL_DEFINE5(pwritev64v2, unsigned long, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *, vec,
- 		unsigned long, vlen, loff_t, pos, rwf_t, flags)
- {
- 	if (pos == -1)
--		return do_compat_writev(fd, vec, vlen, flags);
--
--	return do_compat_pwritev64(fd, vec, vlen, pos, flags);
-+		return do_writev(fd, vec, vlen, flags);
-+	return do_pwritev(fd, vec, vlen, pos, flags);
- }
- #endif
- 
- COMPAT_SYSCALL_DEFINE6(pwritev2, compat_ulong_t, fd,
--		const struct compat_iovec __user *,vec,
-+		const struct iovec __user *,vec,
- 		compat_ulong_t, vlen, u32, pos_low, u32, pos_high, rwf_t, flags)
- {
- 	loff_t pos = ((loff_t)pos_high << 32) | pos_low;
- 
- 	if (pos == -1)
--		return do_compat_writev(fd, vec, vlen, flags);
--
--	return do_compat_pwritev64(fd, vec, vlen, pos, flags);
-+		return do_writev(fd, vec, vlen, flags);
-+	return do_pwritev(fd, vec, vlen, pos, flags);
- }
--
--#endif
-+#endif /* CONFIG_COMPAT */
- 
- static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
- 		  	   size_t count, loff_t max)
+ /**
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index afe01e232935fa..c8b183b5655a1e 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1491,6 +1491,7 @@ extern struct pid *cad_pid;
+  */
+ #define PF_IDLE			0x00000002	/* I am an IDLE thread */
+ #define PF_EXITING		0x00000004	/* Getting shut down */
++#define PF_FORCE_COMPAT		0x00000008	/* acting as compat task */
+ #define PF_VCPU			0x00000010	/* I'm a virtual CPU */
+ #define PF_WQ_WORKER		0x00000020	/* I'm a workqueue worker */
+ #define PF_FORKNOEXEC		0x00000040	/* Forked but didn't exec */
 -- 
 2.28.0
 
