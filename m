@@ -2,77 +2,79 @@ Return-Path: <SRS0=LfhS=C4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA51EC43464
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:11:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F7CBC43463
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:13:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 40A152100A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:11:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4910321481
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:13:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="VliAdCAK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40A152100A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="f0OFDsET"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4910321481
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Btk236McdzDqwj
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 18:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Btk3r02d7zDqyZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 18:13:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::442;
- helo=mail-pf1-x442.google.com; envelope-from=keescook@chromium.org;
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::543;
+ helo=mail-pg1-x543.google.com; envelope-from=keescook@chromium.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
- header.s=google header.b=VliAdCAK; dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ header.s=google header.b=f0OFDsET; dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BtjwC1F2DzDqc6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 18:06:49 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id b124so4953430pfg.13
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 01:06:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtjwD2KS7zDqrn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 18:06:51 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id g29so4866475pgl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 01:06:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9iH7lg3YkHOWr7NTqH/dXox+CFNwDp9U5uBDltp9opg=;
- b=VliAdCAKA8262/f1rFGSxP8xylGXaZO4FcA+nCHPcdNqzcUPuWcsjFUnaLb/PJdGDc
- 77LDfBN6skG3zcIHXXKVxcVAm5eMB9le2+2lsMUje1wbpOCIZh2A4ZLSie9ILwBOpC9K
- 4vvx0i4xKcWt+EOoZlwSsPar86nskR8syAyuE=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=4mjAsO6i14BLDGSTSdDKCE/ErMpri2AIzn0P8gVWa8M=;
+ b=f0OFDsETa78EaeXMDCZ1RlCfxiwXc9SrnugxfxtZMcxjpwzsQZOe/tYIDistENL+3n
+ 8aJ8UY7gOEmoL3ldEcxG/KpWw2K2lmPViEdyK2GebPCprnlzSQiPqZqOPp3m2hjzte7U
+ XTdyC+J3wSoKeBaYrzyy/kuZdk1+t7cxQEEzc=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=9iH7lg3YkHOWr7NTqH/dXox+CFNwDp9U5uBDltp9opg=;
- b=TSL9RqTwdlrLGY8RsiQnkjio/do3nneUitiDOtyMJTGxDN9wbdIAkTJnzCNLbmpFwL
- SB6Zk/Qr0j7AYC4gzMEne65phIX46CuiPmjFQUqvleElu2AMy7cG11ZnA7slG3MX5C6A
- 6fACnwylM8khUrSMXO5oNyVlfPm+Iomd4a1mx/sg+IxUsfZdc32dl7G2nYCz4F1mVkSd
- ei1lhzAVq+x+n52Sys8H245HsKsDvgLmGYVqXpdQ8jFxRHAV04VpHmZFtn8eewOi1c0Q
- S6QNLPB1USXqJISzUqxGVWOa3G3y14nYQ0+EROe5h57uum0mXi/aQrW68TX1n7c4uH0I
- 1N0A==
-X-Gm-Message-State: AOAM532EAyKB5i538EPd9g0sVmqGqDZQOFrA5TSpA6Er+7cuKljQ03fC
- 12jVvB+BPc59pYj1ewxvJysuUg==
-X-Google-Smtp-Source: ABdhPJxqwI/NRVwSlA1Y4+c6UzNBZYDGK/U+ZUNMSqUez01WLw6CEsVrOzXeoFKh2YifcS+xdf+aPg==
-X-Received: by 2002:aa7:87da:0:b029:13c:1611:66bf with SMTP id
- i26-20020aa787da0000b029013c161166bfmr35672458pfo.10.1600502806153; 
- Sat, 19 Sep 2020 01:06:46 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=4mjAsO6i14BLDGSTSdDKCE/ErMpri2AIzn0P8gVWa8M=;
+ b=XolilUAZ+c7B/0Vq6Fyf3Fvf9FsGjk8U0b9bECR07Ogab7NBg5vSMhvfElopiAwWdk
+ WUSyZJwhsGH5dBcQR16GzUGHdbVtI4v/p6BGs+V+iqOX1wTWRXrxOvdKzOrlDQPVjKOv
+ JeNIPDjgjtHNPy607Tl+eWDAe1/9IN0GrP7UbcL5iFkTIv1T2H8vtdvDVJdE4vA5uM7G
+ uOCUM0jMp4vPuo76Em1njxeMtdtYcY+Arw5u8Z+8S/qCydP37fTMazpowtjA4+G4ZeNu
+ Hn9ABwtXgQOWHQQT256XDQUZ8dSv3ZSrDu68DXrFbWHgFFJ2nDVCce8Xv7l0jU0Ccacf
+ dE1w==
+X-Gm-Message-State: AOAM530EJHdsfpHcOJq+oBM6L3bCCflabSlUuUlHZMwnxK4AOIuOmQ9E
+ r3zTziRM1MEKpdFe/wAiGnloUQ==
+X-Google-Smtp-Source: ABdhPJzoDBiiDd/qwVg2H2idKKM+EA63R2fRTH/k5PeOCGXyrSeLjPAUUIbnlIzg8EvmDnpbjiiFuA==
+X-Received: by 2002:a63:491:: with SMTP id 139mr13312846pge.147.1600502808858; 
+ Sat, 19 Sep 2020 01:06:48 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id gj6sm4896682pjb.10.2020.09.19.01.06.44
+ by smtp.gmail.com with ESMTPSA id s3sm5443116pgc.61.2020.09.19.01.06.44
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Sat, 19 Sep 2020 01:06:45 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/4] selftests/seccomp: Refactor change_syscall()
-Date: Sat, 19 Sep 2020 01:06:33 -0700
-Message-Id: <20200919080637.259478-1-keescook@chromium.org>
+Subject: [PATCH v2 4/4] selftests/clone3: Avoid OS-defined clone_args
+Date: Sat, 19 Sep 2020 01:06:37 -0700
+Message-Id: <20200919080637.259478-5-keescook@chromium.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200919080637.259478-1-keescook@chromium.org>
+References: <20200919080637.259478-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -96,38 +98,273 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v1: https://lore.kernel.org/lkml/20200912110820.597135-1-keescook@chromium.org
-v2:
-- Took Acked patches into -next
-- refactored powerpc syscall setting implementation
-- refactored clone3 args implementation
+As the UAPI headers start to appear in distros, we need to avoid outdated
+versions of struct clone_args to be able to test modern features;
+rename to "struct __clone_args". Additionally update the struct size
+macro names to match UAPI names.
 
-Hi,
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ tools/testing/selftests/clone3/clone3.c       | 45 ++++++++-----------
+ .../clone3/clone3_cap_checkpoint_restore.c    |  4 +-
+ .../selftests/clone3/clone3_clear_sighand.c   |  2 +-
+ .../selftests/clone3/clone3_selftests.h       | 24 +++++-----
+ .../testing/selftests/clone3/clone3_set_tid.c |  4 +-
+ tools/testing/selftests/seccomp/seccomp_bpf.c |  4 +-
+ 6 files changed, 40 insertions(+), 43 deletions(-)
 
-This finishes the refactoring of the seccomp selftest logic used in
-for ptrace syscall number/return handling for powerpc. Additionally
-fixes clone3 (which seccomp depends on for testing) to run under MIPS
-where an old struct clone_args has become visible.
-
-(FWIW, I expect to take these via the seccomp tree.)
-
-Thanks,
-
-Kees Cook (4):
-  selftests/seccomp: Record syscall during ptrace entry
-  selftests/seccomp: Allow syscall nr and ret value to be set separately
-  selftests/seccomp: powerpc: Set syscall return during ptrace syscall
-    exit
-  selftests/clone3: Avoid OS-defined clone_args
-
- tools/testing/selftests/clone3/clone3.c       |  45 +++----
- .../clone3/clone3_cap_checkpoint_restore.c    |   4 +-
- .../selftests/clone3/clone3_clear_sighand.c   |   2 +-
- .../selftests/clone3/clone3_selftests.h       |  24 ++--
- .../testing/selftests/clone3/clone3_set_tid.c |   4 +-
- tools/testing/selftests/seccomp/seccomp_bpf.c | 120 ++++++++++++++----
- 6 files changed, 131 insertions(+), 68 deletions(-)
-
+diff --git a/tools/testing/selftests/clone3/clone3.c b/tools/testing/selftests/clone3/clone3.c
+index b7e6dec36173..42be3b925830 100644
+--- a/tools/testing/selftests/clone3/clone3.c
++++ b/tools/testing/selftests/clone3/clone3.c
+@@ -20,13 +20,6 @@
+ #include "../kselftest.h"
+ #include "clone3_selftests.h"
+ 
+-/*
+- * Different sizes of struct clone_args
+- */
+-#ifndef CLONE3_ARGS_SIZE_V0
+-#define CLONE3_ARGS_SIZE_V0 64
+-#endif
+-
+ enum test_mode {
+ 	CLONE3_ARGS_NO_TEST,
+ 	CLONE3_ARGS_ALL_0,
+@@ -38,13 +31,13 @@ enum test_mode {
+ 
+ static int call_clone3(uint64_t flags, size_t size, enum test_mode test_mode)
+ {
+-	struct clone_args args = {
++	struct __clone_args args = {
+ 		.flags = flags,
+ 		.exit_signal = SIGCHLD,
+ 	};
+ 
+ 	struct clone_args_extended {
+-		struct clone_args args;
++		struct __clone_args args;
+ 		__aligned_u64 excess_space[2];
+ 	} args_ext;
+ 
+@@ -52,11 +45,11 @@ static int call_clone3(uint64_t flags, size_t size, enum test_mode test_mode)
+ 	int status;
+ 
+ 	memset(&args_ext, 0, sizeof(args_ext));
+-	if (size > sizeof(struct clone_args))
++	if (size > sizeof(struct __clone_args))
+ 		args_ext.excess_space[1] = 1;
+ 
+ 	if (size == 0)
+-		size = sizeof(struct clone_args);
++		size = sizeof(struct __clone_args);
+ 
+ 	switch (test_mode) {
+ 	case CLONE3_ARGS_ALL_0:
+@@ -77,9 +70,9 @@ static int call_clone3(uint64_t flags, size_t size, enum test_mode test_mode)
+ 		break;
+ 	}
+ 
+-	memcpy(&args_ext.args, &args, sizeof(struct clone_args));
++	memcpy(&args_ext.args, &args, sizeof(struct __clone_args));
+ 
+-	pid = sys_clone3((struct clone_args *)&args_ext, size);
++	pid = sys_clone3((struct __clone_args *)&args_ext, size);
+ 	if (pid < 0) {
+ 		ksft_print_msg("%s - Failed to create new process\n",
+ 				strerror(errno));
+@@ -144,14 +137,14 @@ int main(int argc, char *argv[])
+ 	else
+ 		ksft_test_result_skip("Skipping clone3() with CLONE_NEWPID\n");
+ 
+-	/* Do a clone3() with CLONE3_ARGS_SIZE_V0. */
+-	test_clone3(0, CLONE3_ARGS_SIZE_V0, 0, CLONE3_ARGS_NO_TEST);
++	/* Do a clone3() with CLONE_ARGS_SIZE_VER0. */
++	test_clone3(0, CLONE_ARGS_SIZE_VER0, 0, CLONE3_ARGS_NO_TEST);
+ 
+-	/* Do a clone3() with CLONE3_ARGS_SIZE_V0 - 8 */
+-	test_clone3(0, CLONE3_ARGS_SIZE_V0 - 8, -EINVAL, CLONE3_ARGS_NO_TEST);
++	/* Do a clone3() with CLONE_ARGS_SIZE_VER0 - 8 */
++	test_clone3(0, CLONE_ARGS_SIZE_VER0 - 8, -EINVAL, CLONE3_ARGS_NO_TEST);
+ 
+ 	/* Do a clone3() with sizeof(struct clone_args) + 8 */
+-	test_clone3(0, sizeof(struct clone_args) + 8, 0, CLONE3_ARGS_NO_TEST);
++	test_clone3(0, sizeof(struct __clone_args) + 8, 0, CLONE3_ARGS_NO_TEST);
+ 
+ 	/* Do a clone3() with exit_signal having highest 32 bits non-zero */
+ 	test_clone3(0, 0, -EINVAL, CLONE3_ARGS_INVAL_EXIT_SIGNAL_BIG);
+@@ -165,31 +158,31 @@ int main(int argc, char *argv[])
+ 	/* Do a clone3() with NSIG < exit_signal < CSIG */
+ 	test_clone3(0, 0, -EINVAL, CLONE3_ARGS_INVAL_EXIT_SIGNAL_NSIG);
+ 
+-	test_clone3(0, sizeof(struct clone_args) + 8, 0, CLONE3_ARGS_ALL_0);
++	test_clone3(0, sizeof(struct __clone_args) + 8, 0, CLONE3_ARGS_ALL_0);
+ 
+-	test_clone3(0, sizeof(struct clone_args) + 16, -E2BIG,
++	test_clone3(0, sizeof(struct __clone_args) + 16, -E2BIG,
+ 			CLONE3_ARGS_ALL_0);
+ 
+-	test_clone3(0, sizeof(struct clone_args) * 2, -E2BIG,
++	test_clone3(0, sizeof(struct __clone_args) * 2, -E2BIG,
+ 			CLONE3_ARGS_ALL_0);
+ 
+ 	/* Do a clone3() with > page size */
+ 	test_clone3(0, getpagesize() + 8, -E2BIG, CLONE3_ARGS_NO_TEST);
+ 
+-	/* Do a clone3() with CLONE3_ARGS_SIZE_V0 in a new PID NS. */
++	/* Do a clone3() with CLONE_ARGS_SIZE_VER0 in a new PID NS. */
+ 	if (uid == 0)
+-		test_clone3(CLONE_NEWPID, CLONE3_ARGS_SIZE_V0, 0,
++		test_clone3(CLONE_NEWPID, CLONE_ARGS_SIZE_VER0, 0,
+ 				CLONE3_ARGS_NO_TEST);
+ 	else
+ 		ksft_test_result_skip("Skipping clone3() with CLONE_NEWPID\n");
+ 
+-	/* Do a clone3() with CLONE3_ARGS_SIZE_V0 - 8 in a new PID NS */
+-	test_clone3(CLONE_NEWPID, CLONE3_ARGS_SIZE_V0 - 8, -EINVAL,
++	/* Do a clone3() with CLONE_ARGS_SIZE_VER0 - 8 in a new PID NS */
++	test_clone3(CLONE_NEWPID, CLONE_ARGS_SIZE_VER0 - 8, -EINVAL,
+ 			CLONE3_ARGS_NO_TEST);
+ 
+ 	/* Do a clone3() with sizeof(struct clone_args) + 8 in a new PID NS */
+ 	if (uid == 0)
+-		test_clone3(CLONE_NEWPID, sizeof(struct clone_args) + 8, 0,
++		test_clone3(CLONE_NEWPID, sizeof(struct __clone_args) + 8, 0,
+ 				CLONE3_ARGS_NO_TEST);
+ 	else
+ 		ksft_test_result_skip("Skipping clone3() with CLONE_NEWPID\n");
+diff --git a/tools/testing/selftests/clone3/clone3_cap_checkpoint_restore.c b/tools/testing/selftests/clone3/clone3_cap_checkpoint_restore.c
+index 9562425aa0a9..55bd387ce7ec 100644
+--- a/tools/testing/selftests/clone3/clone3_cap_checkpoint_restore.c
++++ b/tools/testing/selftests/clone3/clone3_cap_checkpoint_restore.c
+@@ -44,13 +44,13 @@ static int call_clone3_set_tid(struct __test_metadata *_metadata,
+ 	int status;
+ 	pid_t pid = -1;
+ 
+-	struct clone_args args = {
++	struct __clone_args args = {
+ 		.exit_signal = SIGCHLD,
+ 		.set_tid = ptr_to_u64(set_tid),
+ 		.set_tid_size = set_tid_size,
+ 	};
+ 
+-	pid = sys_clone3(&args, sizeof(struct clone_args));
++	pid = sys_clone3(&args, sizeof(args));
+ 	if (pid < 0) {
+ 		TH_LOG("%s - Failed to create new process", strerror(errno));
+ 		return -errno;
+diff --git a/tools/testing/selftests/clone3/clone3_clear_sighand.c b/tools/testing/selftests/clone3/clone3_clear_sighand.c
+index db5fc9c5edcf..47a8c0fc3676 100644
+--- a/tools/testing/selftests/clone3/clone3_clear_sighand.c
++++ b/tools/testing/selftests/clone3/clone3_clear_sighand.c
+@@ -47,7 +47,7 @@ static void test_clone3_clear_sighand(void)
+ {
+ 	int ret;
+ 	pid_t pid;
+-	struct clone_args args = {};
++	struct __clone_args args = {};
+ 	struct sigaction act;
+ 
+ 	/*
+diff --git a/tools/testing/selftests/clone3/clone3_selftests.h b/tools/testing/selftests/clone3/clone3_selftests.h
+index 91c1a78ddb39..e81ffaaee02b 100644
+--- a/tools/testing/selftests/clone3/clone3_selftests.h
++++ b/tools/testing/selftests/clone3/clone3_selftests.h
+@@ -19,13 +19,11 @@
+ #define CLONE_INTO_CGROUP 0x200000000ULL /* Clone into a specific cgroup given the right permissions. */
+ #endif
+ 
+-#ifndef CLONE_ARGS_SIZE_VER0
+-#define CLONE_ARGS_SIZE_VER0 64
+-#endif
+-
+ #ifndef __NR_clone3
+ #define __NR_clone3 -1
+-struct clone_args {
++#endif
++
++struct __clone_args {
+ 	__aligned_u64 flags;
+ 	__aligned_u64 pidfd;
+ 	__aligned_u64 child_tid;
+@@ -34,15 +32,21 @@ struct clone_args {
+ 	__aligned_u64 stack;
+ 	__aligned_u64 stack_size;
+ 	__aligned_u64 tls;
+-#define CLONE_ARGS_SIZE_VER1 80
++#ifndef CLONE_ARGS_SIZE_VER0
++#define CLONE_ARGS_SIZE_VER0 64	/* sizeof first published struct */
++#endif
+ 	__aligned_u64 set_tid;
+ 	__aligned_u64 set_tid_size;
+-#define CLONE_ARGS_SIZE_VER2 88
++#ifndef CLONE_ARGS_SIZE_VER1
++#define CLONE_ARGS_SIZE_VER1 80	/* sizeof second published struct */
++#endif
+ 	__aligned_u64 cgroup;
++#ifndef CLONE_ARGS_SIZE_VER2
++#define CLONE_ARGS_SIZE_VER2 88	/* sizeof third published struct */
++#endif
+ };
+-#endif /* __NR_clone3 */
+ 
+-static pid_t sys_clone3(struct clone_args *args, size_t size)
++static pid_t sys_clone3(struct __clone_args *args, size_t size)
+ {
+ 	fflush(stdout);
+ 	fflush(stderr);
+@@ -52,7 +56,7 @@ static pid_t sys_clone3(struct clone_args *args, size_t size)
+ static inline void test_clone3_supported(void)
+ {
+ 	pid_t pid;
+-	struct clone_args args = {};
++	struct __clone_args args = {};
+ 
+ 	if (__NR_clone3 < 0)
+ 		ksft_exit_skip("clone3() syscall is not supported\n");
+diff --git a/tools/testing/selftests/clone3/clone3_set_tid.c b/tools/testing/selftests/clone3/clone3_set_tid.c
+index 5831c1082d6d..0229e9ebb995 100644
+--- a/tools/testing/selftests/clone3/clone3_set_tid.c
++++ b/tools/testing/selftests/clone3/clone3_set_tid.c
+@@ -46,14 +46,14 @@ static int call_clone3_set_tid(pid_t *set_tid,
+ 	int status;
+ 	pid_t pid = -1;
+ 
+-	struct clone_args args = {
++	struct __clone_args args = {
+ 		.flags = flags,
+ 		.exit_signal = SIGCHLD,
+ 		.set_tid = ptr_to_u64(set_tid),
+ 		.set_tid_size = set_tid_size,
+ 	};
+ 
+-	pid = sys_clone3(&args, sizeof(struct clone_args));
++	pid = sys_clone3(&args, sizeof(args));
+ 	if (pid < 0) {
+ 		ksft_print_msg("%s - Failed to create new process\n",
+ 			       strerror(errno));
+diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+index 894c2404d321..4a180439ee9e 100644
+--- a/tools/testing/selftests/seccomp/seccomp_bpf.c
++++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+@@ -3817,7 +3817,7 @@ TEST(user_notification_filter_empty)
+ 	long ret;
+ 	int status;
+ 	struct pollfd pollfd;
+-	struct clone_args args = {
++	struct __clone_args args = {
+ 		.flags = CLONE_FILES,
+ 		.exit_signal = SIGCHLD,
+ 	};
+@@ -3871,7 +3871,7 @@ TEST(user_notification_filter_empty_threaded)
+ 	long ret;
+ 	int status;
+ 	struct pollfd pollfd;
+-	struct clone_args args = {
++	struct __clone_args args = {
+ 		.flags = CLONE_FILES,
+ 		.exit_signal = SIGCHLD,
+ 	};
 -- 
 2.25.1
 
