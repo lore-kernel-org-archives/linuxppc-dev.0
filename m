@@ -6,50 +6,53 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6E77C43463
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 14:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1848CC43463
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 14:55:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 79C5220874
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 14:31:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 79C5220874
+	by mail.kernel.org (Postfix) with ESMTPS id 23D762098B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 14:55:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23D762098B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BttSL3s16zDqlP
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 00:31:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bttzb4L5xzDqtR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 00:55:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=aculab.com (client-ip=207.82.80.151;
+ smtp.mailfrom=aculab.com (client-ip=185.58.86.151;
  helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ACULAB.COM
 Received: from eu-smtp-delivery-151.mimecast.com
- (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
+ (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BttKs5Gl4zDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 00:26:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bttx954xqzDqrW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 00:53:15 +1000 (AEST)
 Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
  TLS) by relay.mimecast.com with ESMTP id
- uk-mta-281-bAjbsE6rN1eTAY15huzJqA-1; Sat, 19 Sep 2020 15:24:11 +0100
-X-MC-Unique: bAjbsE6rN1eTAY15huzJqA-1
+ uk-mta-123-Q8cAoOVtN9-3ia4vwC15wg-1; Sat, 19 Sep 2020 15:53:09 +0100
+X-MC-Unique: Q8cAoOVtN9-3ia4vwC15wg-1
 Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
  AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
- Server (TLS) id 15.0.1347.2; Sat, 19 Sep 2020 15:24:10 +0100
+ Server (TLS) id 15.0.1347.2; Sat, 19 Sep 2020 15:53:08 +0100
 Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
  AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
- Sat, 19 Sep 2020 15:24:10 +0100
+ Sat, 19 Sep 2020 15:53:08 +0100
 From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christoph Hellwig' <hch@lst.de>, Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: RE: let import_iovec deal with compat_iovecs as well
-Thread-Topic: let import_iovec deal with compat_iovecs as well
-Thread-Index: AQHWjbnKEn35LxofhEeT1lmdzdUiWqlwBNiw
-Date: Sat, 19 Sep 2020 14:24:10 +0000
-Message-ID: <2c7bf42ee4314484ae0177280cd8f5f3@AcuMS.aculab.com>
+To: 'Al Viro' <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>
+Subject: RE: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+Thread-Topic: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+Thread-Index: AQHWjcPPLxbJUITJXkeWJwtHmAdwxKlwCErw
+Date: Sat, 19 Sep 2020 14:53:08 +0000
+Message-ID: <6d064d8688324279af89152a8da22d69@AcuMS.aculab.com>
 References: <20200918124533.3487701-1-hch@lst.de>
-In-Reply-To: <20200918124533.3487701-1-hch@lst.de>
+ <20200918124533.3487701-2-hch@lst.de>
+ <20200918134012.GY3421308@ZenIV.linux.org.uk> <20200918134406.GA17064@lst.de>
+ <20200918135822.GZ3421308@ZenIV.linux.org.uk>
+In-Reply-To: <20200918135822.GZ3421308@ZenIV.linux.org.uk>
 Accept-Language: en-GB, en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
@@ -99,21 +102,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christoph Hellwig
-> Sent: 18 September 2020 13:45
+From: Al Viro
+> Sent: 18 September 2020 14:58
 >=20
-> this series changes import_iovec to transparently deal with comat iovec
-> structures, and then cleanups up a lot of code dupliation.  But to get
-> there it first has to fix the pre-existing bug that io_uring compat
-> contexts don't trigger the in_compat_syscall() check.  This has so far
-> been relatively harmless as very little code callable from io_uring used
-> the check, and even that code that could be called usually wasn't.
+> On Fri, Sep 18, 2020 at 03:44:06PM +0200, Christoph Hellwig wrote:
+> > On Fri, Sep 18, 2020 at 02:40:12PM +0100, Al Viro wrote:
+> > > >  =09/* Vector 0x110 is LINUX_32BIT_SYSCALL_TRAP */
+> > > > -=09return pt_regs_trap_type(current_pt_regs()) =3D=3D 0x110;
+> > > > +=09return pt_regs_trap_type(current_pt_regs()) =3D=3D 0x110 ||
+> > > > +=09=09(current->flags & PF_FORCE_COMPAT);
+> > >
+> > > Can't say I like that approach ;-/  Reasoning about the behaviour is =
+much
+> > > harder when it's controlled like that - witness set_fs() shite...
+> >
+> > I don't particularly like it either.  But do you have a better idea
+> > how to deal with io_uring vs compat tasks?
+>=20
+> <wry> git rm fs/io_uring.c would make a good starting point </wry>
+> Yes, I know it's not going to happen, but one can dream...
 
-I thought about that change while writing my import_iovec() =3D> iovec_impo=
-rt()
-patch - and thought that the io_uring code would (as usual) cause grief.
+Maybe the io_uring code needs some changes to make it vaguely safe.
+- No support for 32-bit compat mixed working (or at all?).
+  Plausibly a special worker could do 32bit work.
+- ring structure (I'm assuming mapped by mmap()) never mapped
+  in more than one process (not cloned by fork()).
+- No implicit handover of files to another process.
+  Would need an munmap, handover, mmap sequence.
 
-Christoph - did you see those patches?
+In any case the io_ring rather abuses the import_iovec() interface.
+
+The canonical sequence is (types from memory):
+=09struct iovec cache[8], *iov =3D cache;
+=09struct iter iter;
+=09...
+=09rval =3D import_iovec(..., &iov, 8, &iter);
+=09// Do read/write user using 'iter'
+=09free(iov);
+
+I don't think there is any strict requirement that iter.iov
+is set to either 'cache' or 'iov' (it probably must point
+into one of them.)
+But the io_uring code will make that assumption because the
+actual copies can be done much later and it doesn't save 'iter'.
+It gets itself in a right mess because it doesn't separate
+the 'address I need to free' from 'the iov[] for any transfers'.
+
+io_uring is also the only code that relies on import_iovec()
+returning the iter.count on success.
+It would be much better to have:
+=09iov =3D import_iovec(..., &cache, ...);
+=09free(iov);
+and use ERR_PTR() et al for error detectoion.
+
 =09David
 
 -
