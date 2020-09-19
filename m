@@ -2,52 +2,82 @@ Return-Path: <SRS0=LfhS=C4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E5B9C43464
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 07:14:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BF8EC43463
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:08:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0370720888
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 07:14:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0370720888
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1C56A21741
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 08:08:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="NPIiKYAr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C56A21741
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BthlD1089zDqwN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 17:14:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BtjyK4F32zDqvr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Sep 2020 18:08:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=jingxiangfeng@huawei.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::541;
+ helo=mail-pg1-x541.google.com; envelope-from=keescook@chromium.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256
+ header.s=google header.b=NPIiKYAr; dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BthjQ6qHLzDqsG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 17:12:19 +1000 (AEST)
-Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 064361527795F6012CE4;
- Sat, 19 Sep 2020 15:12:16 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
- 14.3.487.0; Sat, 19 Sep 2020 15:12:07 +0800
-From: Jing Xiangfeng <jingxiangfeng@huawei.com>
-To: <paulus@ozlabs.org>, <mpe@ellerman.id.au>, <benh@kernel.crashing.org>
-Subject: [PATCH] KVM: PPC: Book3S: Remove redundant initialization of variable
- ret
-Date: Sat, 19 Sep 2020 15:12:30 +0800
-Message-ID: <20200919071230.125798-1-jingxiangfeng@huawei.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BtjwC1jv7zDqrW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 18:06:50 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id g29so4866451pgl.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2020 01:06:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=35YzUlNbVtiet2PZ45LS5yY7R0/2AJJr6WQjB9kb9DQ=;
+ b=NPIiKYArpLnpWfZp2HXxYn+rhNR6sHO84+EVXiHS/T9DNxwqVpJsTgJu6e6UOqIac5
+ bDkvvguK356n60RctscGCaXQ5NOApiENU+nr9wKDX2+G6Dwk6/Kt2ohTlILyR4XhG7Vd
+ EmOtzDVI6LSIRYyfxPFLa8F7JELTXGEK7gbOM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=35YzUlNbVtiet2PZ45LS5yY7R0/2AJJr6WQjB9kb9DQ=;
+ b=t8ZWovlY+nS+DbILgYsGyHn8ldU4mjJqqofon5/6kzVEZ5WfJhj6JdwrmWOm0HcCjt
+ +0Zrm0MylqCqk5fZEAi4jzRHGOMZImjTaZKywhh+JR5mZ1Mx8nI4aQOAoyCpCWidKQsf
+ XORsm3RDsORDrpJieUvZiq3sI/+B9uk0Vd/ATVtyIS+SaSVjh1IFMBVr+wYah/6J98I/
+ 8b3+pAolv7ex7Yl0bsVkARnJlKAjlvkTHpPHkBGKSJHox9CdIdZCJ94HgtPmABfl5HXG
+ 7N4aBU1lmcYDzMLZVQJeLoSMYVhAEdvX2vDewtcI5UawQCPIydJCVzRXRw+FA6Kn+rb3
+ 0pBg==
+X-Gm-Message-State: AOAM5331AQwokz/KxqDgIbpEoo29Rpa07ODzJP6cRSWbd9xU1LNXd25h
+ 2389pjzxfVdskNioDL+mlPtreg==
+X-Google-Smtp-Source: ABdhPJyNRXL2Utm2uMp6p2aTrp/bIX0uxScQD/cHSmnwCqXqPd9T4QRySA1oqwyg3Lqotd99libtWg==
+X-Received: by 2002:a65:6449:: with SMTP id s9mr21340653pgv.388.1600502806814; 
+ Sat, 19 Sep 2020 01:06:46 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+ by smtp.gmail.com with ESMTPSA id e27sm5744480pfj.62.2020.09.19.01.06.44
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 19 Sep 2020 01:06:45 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 3/4] selftests/seccomp: powerpc: Set syscall return during
+ ptrace syscall exit
+Date: Sat, 19 Sep 2020 01:06:36 -0700
+Message-Id: <20200919080637.259478-4-keescook@chromium.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200919080637.259478-1-keescook@chromium.org>
+References: <20200919080637.259478-1-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.113.25]
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,33 +89,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, jingxiangfeng@huawei.com
+Cc: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>,
+ Will Drewry <wad@chromium.org>, Kees Cook <keescook@chromium.org>,
+ linux-xtensa@linux-xtensa.org, linux-mips@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kselftest@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Christian Brauner <christian@brauner.io>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The variable ret is being initialized with '-ENOMEM' that is meaningless.
-So remove it.
+Some archs (like powerpc) only support changing the return code during
+syscall exit when ptrace is used. Test entry vs exit phases for which
+portions of the syscall number and return values need to be set at which
+different phases. For non-powerpc, all changes are made during ptrace
+syscall entry, as before. For powerpc, the syscall number is changed at
+ptrace syscall entry and the syscall return value is changed on ptrace
+syscall exit.
 
-Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
+Reported-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+Suggested-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
+Link: https://lore.kernel.org/linux-kselftest/20200911181012.171027-1-cascardo@canonical.com/
+Fixes: 58d0a862f573 ("seccomp: add tests for ptrace hole")
+Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/kvm/book3s_64_vio.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/testing/selftests/seccomp/seccomp_bpf.c | 25 ++++++++++++++++---
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 1a529df0ab44..b277a75cd1be 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -283,7 +283,7 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	struct kvmppc_spapr_tce_table *siter;
- 	struct mm_struct *mm = kvm->mm;
- 	unsigned long npages, size = args->size;
--	int ret = -ENOMEM;
-+	int ret;
+diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+index 98ce5e8a6398..894c2404d321 100644
+--- a/tools/testing/selftests/seccomp/seccomp_bpf.c
++++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+@@ -1765,6 +1765,7 @@ TEST_F(TRACE_poke, getpid_runs_normally)
+ 			(_regs).ccr &= ~0x10000000;		\
+ 		}						\
+ 	} while (0)
++# define SYSCALL_RET_SET_ON_PTRACE_EXIT
+ #elif defined(__s390__)
+ # define ARCH_REGS		s390_regs
+ # define SYSCALL_NUM(_regs)	(_regs).gprs[2]
+@@ -1853,6 +1854,18 @@ TEST_F(TRACE_poke, getpid_runs_normally)
+ 	} while (0)
+ #endif
  
- 	if (!args->size || args->page_shift < 12 || args->page_shift > 34 ||
- 		(args->offset + args->size > (ULLONG_MAX >> args->page_shift)))
++/*
++ * Some architectures (e.g. powerpc) can only set syscall
++ * return values on syscall exit during ptrace.
++ */
++const bool ptrace_entry_set_syscall_nr = true;
++const bool ptrace_entry_set_syscall_ret =
++#ifndef SYSCALL_RET_SET_ON_PTRACE_EXIT
++	true;
++#else
++	false;
++#endif
++
+ /*
+  * Use PTRACE_GETREGS and PTRACE_SETREGS when available. This is useful for
+  * architectures without HAVE_ARCH_TRACEHOOK (e.g. User-mode Linux).
+@@ -2006,11 +2019,15 @@ void tracer_ptrace(struct __test_metadata *_metadata, pid_t tracee,
+ 	 */
+ 	if (entry)
+ 		self->syscall_nr = get_syscall(_metadata, tracee);
+-	else
+-		return;
+ 
+-	syscall_nr = &syscall_nr_val;
+-	syscall_ret = &syscall_ret_val;
++	/*
++	 * Depending on the architecture's syscall setting abilities, we
++	 * pick which things to set during this phase (entry or exit).
++	 */
++	if (entry == ptrace_entry_set_syscall_nr)
++		syscall_nr = &syscall_nr_val;
++	if (entry == ptrace_entry_set_syscall_ret)
++		syscall_ret = &syscall_ret_val;
+ 
+ 	/* Now handle the actual rewriting cases. */
+ 	switch (self->syscall_nr) {
 -- 
-2.17.1
+2.25.1
 
