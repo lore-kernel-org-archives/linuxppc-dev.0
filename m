@@ -2,87 +2,50 @@ Return-Path: <SRS0=1NAR=C5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79502C43463
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D241CC43463
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:44:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A5F6C20870
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:22:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="j4uRAT2E"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5F6C20870
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id C865B207BB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:44:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C865B207BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BvbX65j28zDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 04:22:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::744;
- helo=mail-qk1-x744.google.com; envelope-from=kucharsk@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bvc1d2bGtzDqQY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 04:44:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
+ helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=j4uRAT2E; dkim-atps=neutral
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=zeniv.linux.org.uk
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BvXGv6QkVzDqgV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 01:55:47 +1000 (AEST)
-Received: by mail-qk1-x744.google.com with SMTP id o5so12373204qke.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 08:55:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=content-transfer-encoding:from:mime-version:subject:date:message-id
- :references:cc:in-reply-to:to;
- bh=wK83tl6Aps7O/Nyle+fjor+3BT0ZPHQ73i72gH6haeo=;
- b=j4uRAT2E8fdr2YaqrsiSPOPm8SjiSJMcVFWHVJQhudY7AjMagOuTaPaUrJZNB/DBxT
- RsSoXPsH0OZD1fdr6pAc+sedSbMtOJwM9dBbGX8EN9WBkRUekzOQnQi4yezBjIKvjoxp
- 4pTmIYXjTwfM8Ld7eN31Snn3HDl+xaBbxHqYulOMGjuIpzvi82ZxqqNXiPf1uBPbl0mW
- R3NIOxISkFL7B3tRSyYt+xnjnX4aUHUa0CKdIWEe71XW1d+175gN1d4Ezj+1k468etjw
- /p5aXBL9ieWXzE65cwKlIMBtQsaHBRTVaj0KGV3HN1O35ptGSjHCYh1Za9qlu8Ia58/F
- 0ILw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:content-transfer-encoding:from:mime-version
- :subject:date:message-id:references:cc:in-reply-to:to;
- bh=wK83tl6Aps7O/Nyle+fjor+3BT0ZPHQ73i72gH6haeo=;
- b=DHYQuQ9LgFnoYvJ3ieEByQRre8zOrGkf6hL7q16hf9v614beyvG/uP7VxcWpTyJHLm
- AhP6uxQxKsEikxomSaaN+LBekVMqEHroi6qQo4qAW28Wgy+n1aCff9aEx2gYVAzcCgqO
- kp3RoXulUY/qQ5+OhhghzQ6LHYRe1J9r0qCtq9aXyqVK7/exbSzAq+GPWC47mrZmjd9y
- +e2S/F8iTafvnEceO8NDfolWtcAVIfm5n1xLYuTN/5L/4fdIiJJYqm8Q/bDIr66F6tXw
- LgdELQLXYBMSKMPKf7Tj6nDoyT+Mxln23FzBYCzEmEqBCyxrtBWR8LGHYRXnNDAIi4Id
- SwDQ==
-X-Gm-Message-State: AOAM533/Lk5eu6fP7n2KgFGkwHRRBpxngPBoNkCyF3InfVySgvvKTF8E
- qe5Hom4b1IJh+PiwRhDojrY=
-X-Google-Smtp-Source: ABdhPJy0BhskiTDfvD8MBwip85dcX1wIsXPWtdth0juyqPe/DUqb3tBX97TvqdwX16zuipDqY5+Gyg==
-X-Received: by 2002:a05:620a:c10:: with SMTP id
- l16mr40194491qki.245.1600617343577; 
- Sun, 20 Sep 2020 08:55:43 -0700 (PDT)
-Received: from localhost.localdomain ([65.140.37.34])
- by smtp.gmail.com with ESMTPSA id v30sm7605819qtj.52.2020.09.20.08.55.42
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sun, 20 Sep 2020 08:55:42 -0700 (PDT)
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-From: William Kucharski <kucharsk@gmail.com>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
-Date: Sun, 20 Sep 2020 09:55:40 -0600
-Message-Id: <76A432F3-4532-42A4-900E-16C0AC2D21D8@gmail.com>
-References: <20200920151510.GS32101@casper.infradead.org>
-In-Reply-To: <20200920151510.GS32101@casper.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bvbym5VYXzDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 04:42:08 +1000 (AEST)
+Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
+ Linux)) id 1kK4Hd-002cE4-T4; Sun, 20 Sep 2020 18:41:58 +0000
+Date: Sun, 20 Sep 2020 19:41:57 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
 To: Matthew Wilcox <willy@infradead.org>
-X-Mailer: iPhone Mail (18B5052h)
-X-Mailman-Approved-At: Mon, 21 Sep 2020 04:19:54 +1000
+Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+Message-ID: <20200920184157.GP3421308@ZenIV.linux.org.uk>
+References: <20200918124533.3487701-1-hch@lst.de>
+ <20200918124533.3487701-2-hch@lst.de>
+ <20200920151510.GS32101@casper.infradead.org>
+ <20200920180742.GN3421308@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200920180742.GN3421308@ZenIV.linux.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,28 +63,50 @@ Cc: linux-aio@kvack.org, linux-mips@vger.kernel.org,
  Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org,
  Arnd Bergmann <arnd@arndb.de>, linux-block@vger.kernel.org,
- Alexander Viro <viro@zeniv.linux.org.uk>, io-uring@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+ io-uring@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Jens Axboe <axboe@kernel.dk>, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I really like that as it=E2=80=99s self-documenting and anyone debugging it c=
-an see what is actually being used at a glance.
+On Sun, Sep 20, 2020 at 07:07:42PM +0100, Al Viro wrote:
 
-> On Sep 20, 2020, at 09:15, Matthew Wilcox <willy@infradead.org> wrote:
->=20
-> =EF=BB=BFOn Fri, Sep 18, 2020 at 02:45:25PM +0200, Christoph Hellwig wrote=
-:
->> Add a flag to force processing a syscall as a compat syscall.  This is
->> required so that in_compat_syscall() works for I/O submitted by io_uring
->> helper threads on behalf of compat syscalls.
->=20
-> Al doesn't like this much, but my suggestion is to introduce two new
-> opcodes -- IORING_OP_READV32 and IORING_OP_WRITEV32.  The compat code
-> can translate IORING_OP_READV to IORING_OP_READV32 and then the core
-> code can know what that user pointer is pointing to.
+> /proc/bus/input/devices (fucked bitmap-to-text representation)
+
+To illustrate the, er, beauty of that stuff:
+
+; cat32 /proc/bus/input/devices >/tmp/a
+; cat /proc/bus/input/devices >/tmp/b
+; diff -u /tmp/a /tmp/b|grep '^[-+]'
+--- /tmp/a      2020-09-20 14:28:43.442560691 -0400
++++ /tmp/b      2020-09-20 14:28:49.018543230 -0400
+-B: KEY=1100f 2902000 8380307c f910f001 feffffdf ffefffff ffffffff fffffffe
++B: KEY=1100f02902000 8380307cf910f001 feffffdfffefffff fffffffffffffffe
+-B: KEY=70000 0 0 0 0 0 0 0 0
++B: KEY=70000 0 0 0 0
+-B: KEY=420 0 70000 0 0 0 0 0 0 0 0
++B: KEY=420 70000 0 0 0 0
+-B: KEY=100000 0 0 0
++B: KEY=10000000000000 0
+-B: KEY=4000 0 0 0 0
++B: KEY=4000 0 0
+-B: KEY=8000 0 0 0 0 0 1100b 800 2 200000 0 0 0 0
++B: KEY=800000000000 0 0 1100b00000800 200200000 0 0
+-B: KEY=3e000b 0 0 0 0 0 0 0
++B: KEY=3e000b00000000 0 0 0
+-B: KEY=ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fffffffe
++B: KEY=ffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffe
+; 
+(cat32 being a 32bit binary of cat)
+All the differences are due to homegrown bitmap-to-text conversion.
+
+Note that feeding that into a pipe leaves the recepient with a lovely problem -
+you can't go by the width of words (they are not zero-padded) and you can't
+go by the number of words either - it varies from device to device.
+
+And there's nothing we can do with that - it's a userland ABI, can't be
+changed without breaking stuff.  I would prefer to avoid additional examples
+like that, TYVM...
