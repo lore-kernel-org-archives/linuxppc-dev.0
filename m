@@ -6,73 +6,73 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A84BC43465
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 17:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A79C43463
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:02:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF8DC20866
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 17:50:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 990BC20789
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Sep 2020 18:02:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="cBDZkiv4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF8DC20866
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="aTcZkpnk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 990BC20789
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BvZqP6jf7zDqcQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 03:50:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bvb5N6H7dzDqgd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 04:02:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::541;
- helo=mail-ed1-x541.google.com; envelope-from=torvalds@linuxfoundation.org;
+ smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::543;
+ helo=mail-ed1-x543.google.com; envelope-from=torvalds@linuxfoundation.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=google header.b=cBDZkiv4; 
+ header.a=rsa-sha256 header.s=google header.b=aTcZkpnk; 
  dkim-atps=neutral
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
- [IPv6:2a00:1450:4864:20::541])
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
+ [IPv6:2a00:1450:4864:20::543])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BvZmm2D4TzDqbx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 03:48:21 +1000 (AEST)
-Received: by mail-ed1-x541.google.com with SMTP id a12so10594842eds.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 10:48:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bvb1J4hrLzDqWH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 03:59:12 +1000 (AEST)
+Received: by mail-ed1-x543.google.com with SMTP id k14so10733574edo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 10:59:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=linux-foundation.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=ejz/GOVvBNgiciatH4EjBRwlfy2MnL1tDSObr2BrKeg=;
- b=cBDZkiv4uiqeUChUbmqRPD8tkvllq4angLGjbI6fcWbyt0pYNQ1SGMQdEdmcewXaXT
- IE5S9J/GFuNXr/rpY1dC/0Yf7uyzIPTs0u+8f3gLaQ3BI+ak5trluGhkQvuTa+ZLZ3HS
- UcueGtftJ4Q3p1fqvR6MgwdAfAMUTTFhAr56U=
+ :cc; bh=10vFh59zX+qrXR+btNd9keaZllR85H50W0pZVqW9mvg=;
+ b=aTcZkpnkgiAVVoqRXBCAnYw8B8YS7QD0nmh7mtbe8Dtb85AdAYIiPcbXVjdrb/fbX9
+ 3yTs920flMKnlnbAGz7q1CYoJs0994Dvfor1DakKOqSDUOemiqgeakXoqfK/+swxI5fB
+ 0DUfGVYXrHTR7XO61iz2Eybc+W0Ekg5v+dkh0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=ejz/GOVvBNgiciatH4EjBRwlfy2MnL1tDSObr2BrKeg=;
- b=RkMZno5Yd+NlkHnu4pLqANR80U8zpIbfjerujIC+cJ8cI4Hvrf50BLNxEth/85a/zq
- BVxACML8ngEVnWmShXaPFxylxeAe3B9Q6gSWOObYkays20Dof5TXKnr2arC5g2cAhmgg
- wjo2fvtAHYX2LW1xsIrUSKvmZDq8lVYp6Sy76ZADAPWs6YA1G1ONNKbX8wyadk89OxcL
- GKxdDUDbF29JQINT5wxcOI38VjlXTLQJ2tBDzfXLgZiEmeT11B7BRNIaMUiU1gFPRcHJ
- XR3yE3zQSChidQlY0JGZiNEeMVIaGgHw/B5oJn5yFKvHk6ohuWd9+VK0aQwB6vh5dO3z
- w7mw==
-X-Gm-Message-State: AOAM533xtYFnk+T0INDnIy9QboHWqzQqKVpgjmo1F57WVSczLP9np5zE
- +FQkKFCjy+qibPMclkSce9nlwrKOyYKk8Q==
-X-Google-Smtp-Source: ABdhPJxaN2zy6HbrRGtt8remzYFIMMVol3rUK8FTQ2eALJAfJw9AJ1xhcOv7/C3NOzigFontBCMQWQ==
-X-Received: by 2002:aa7:d6c6:: with SMTP id x6mr49225254edr.338.1600624098111; 
- Sun, 20 Sep 2020 10:48:18 -0700 (PDT)
-Received: from mail-ed1-f47.google.com (mail-ed1-f47.google.com.
- [209.85.208.47])
- by smtp.gmail.com with ESMTPSA id js16sm7007159ejb.67.2020.09.20.10.48.17
+ bh=10vFh59zX+qrXR+btNd9keaZllR85H50W0pZVqW9mvg=;
+ b=ijkpqAToa/UKZnbvEqWhTCzGs82LknRTAAyH/y88Emr/J6+gwx/i4jDiOpXMYy8Zag
+ ck9p7Ss8COiUpszeLU/EhynXnPNdDR0waBe+6ijUfccG00u0BmBz6U1pfAXLeVjOrscc
+ 4u0jiBVfTRQnR1KrdMkyIZUTa9v79aGEFVL5URWK+Nz1RFASis4k7xGYfoC9q5AmqfHI
+ SZnlKSyD4kIh4tDpyGBzQ4hBti31ngcHgIzuKt+oQm7OhUFmMpKdHa32IbLTNgBJREOi
+ /HPqlcGmdPoPXAvJ/UK3S7c4irHPA+fGs4KnZCEK6IVPRkCvduIitXoXd1Djq7oQLpL1
+ BWHA==
+X-Gm-Message-State: AOAM530TNyL9Dp2saVbahaMpjHGu4sUk6zZC83l8nbpbM+QMkDKcb2yG
+ L37uOyz8FUXQpTBSt4+rqcldk4X8MpaTRQ==
+X-Google-Smtp-Source: ABdhPJyWiGk5HvqiPvMQCSunJZww+Zj9n5y88jEv8S9XHYJpkjzjGgY8LJ9U6mU0/6T6/URfaYArqQ==
+X-Received: by 2002:a50:f418:: with SMTP id r24mr49004044edm.295.1600624749717; 
+ Sun, 20 Sep 2020 10:59:09 -0700 (PDT)
+Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com.
+ [209.85.218.46])
+ by smtp.gmail.com with ESMTPSA id j3sm6918110edy.7.2020.09.20.10.59.08
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sun, 20 Sep 2020 10:48:17 -0700 (PDT)
-Received: by mail-ed1-f47.google.com with SMTP id k14so10719378edo.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 10:48:17 -0700 (PDT)
-X-Received: by 2002:a2e:84d6:: with SMTP id q22mr13708479ljh.70.1600623791519; 
- Sun, 20 Sep 2020 10:43:11 -0700 (PDT)
+ Sun, 20 Sep 2020 10:59:09 -0700 (PDT)
+Received: by mail-ej1-f46.google.com with SMTP id z23so14584495ejr.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2020 10:59:08 -0700 (PDT)
+X-Received: by 2002:ac2:4ec7:: with SMTP id p7mr12591149lfr.352.1600624746105; 
+ Sun, 20 Sep 2020 10:59:06 -0700 (PDT)
 MIME-Version: 1.0
 References: <20200919091751.011116649@linutronix.de>
  <CAHk-=wiYGyrFRbA1cc71D2-nc5U9LM9jUJesXGqpPnB7E4X1YQ@mail.gmail.com>
@@ -80,11 +80,12 @@ References: <20200919091751.011116649@linutronix.de>
  <87k0wode9a.fsf@nanos.tec.linutronix.de>
  <CAHk-=wgbmwsTOKs23Z=71EBTrULoeaH2U3TNqT2atHEWvkBKdw@mail.gmail.com>
  <87eemwcpnq.fsf@nanos.tec.linutronix.de>
-In-Reply-To: <87eemwcpnq.fsf@nanos.tec.linutronix.de>
+ <CAHk-=wgF-upZVpqJWK=TK7MS9H-Rp1ZxGfOG+dDW=JThtxAzVQ@mail.gmail.com>
+In-Reply-To: <CAHk-=wgF-upZVpqJWK=TK7MS9H-Rp1ZxGfOG+dDW=JThtxAzVQ@mail.gmail.com>
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 20 Sep 2020 10:42:55 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wgF-upZVpqJWK=TK7MS9H-Rp1ZxGfOG+dDW=JThtxAzVQ@mail.gmail.com>
-Message-ID: <CAHk-=wgF-upZVpqJWK=TK7MS9H-Rp1ZxGfOG+dDW=JThtxAzVQ@mail.gmail.com>
+Date: Sun, 20 Sep 2020 10:58:50 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wh_iVgA3H7CVvAzDoYC1gC1AKbLmv_mCeUnVxg79_9y8A@mail.gmail.com>
+Message-ID: <CAHk-=wh_iVgA3H7CVvAzDoYC1gC1AKbLmv_mCeUnVxg79_9y8A@mail.gmail.com>
 Subject: Re: [patch RFC 00/15] mm/highmem: Provide a preemptible variant of
  kmap_atomic & friends
 To: Thomas Gleixner <tglx@linutronix.de>
@@ -134,19 +135,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Sep 20, 2020 at 10:40 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+On Sun, Sep 20, 2020 at 10:42 AM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> I think the more obvious solution is to split the whole exercise:
->
->   schedule()
->      prepare_switch()
->         unmap()
->
->     switch_to()
->
->     finish_switch()
->         map()
+> Yeah, that looks much easier to explain. Ack.
 
-Yeah, that looks much easier to explain. Ack.
+Btw, one thing that might be a good idea at least initially is to add
+a check for p->kmap_ctrl.idx being zero at fork, exit and maybe
+syscall return time (but that last one may be too cumbersome to really
+worry about).
 
-               Linus
+The kmap_atomic() interface basically has a lot of coverage for leaked
+as part of all the "might_sleep()" checks sprinkled around,  The new
+kmap_temporary/local/whatever wouldn't have that kind of incidental
+debug checking, and any leaked kmap indexes would be rather hard to
+debug (much) later when they cause index overflows or whatever.
+
+                Linus
