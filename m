@@ -8,74 +8,76 @@ X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6619EC43465
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:00:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBAE0C43465
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:05:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 850C22084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:00:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E09A62073A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:05:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KSBzV2lo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 850C22084C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o5WTk1UZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E09A62073A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw9g03sS1zDqH1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 03:00:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw9n426fbzDqL5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 03:05:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::444;
- helo=mail-wr1-x444.google.com; envelope-from=asml.silence@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::341;
+ helo=mail-wm1-x341.google.com; envelope-from=asml.silence@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=KSBzV2lo; dkim-atps=neutral
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+ header.s=20161025 header.b=o5WTk1UZ; dkim-atps=neutral
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw8cJ0gyqzDqRc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 02:12:57 +1000 (AEST)
-Received: by mail-wr1-x444.google.com with SMTP id t10so13415889wrv.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 09:12:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw8gf6ZvyzDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 02:15:57 +1000 (AEST)
+Received: by mail-wm1-x341.google.com with SMTP id y15so95892wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 09:15:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=to:cc:references:from:autocrypt:subject:message-id:date:user-agent
+ h=subject:from:to:cc:references:autocrypt:message-id:date:user-agent
  :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=k5RgKONYESk5WvaDyXPiSm78/qDZHfPWmfVg3ttgBfg=;
- b=KSBzV2lo8cnmuvyEaOkVa90ube9JyAwhNzQ6SjrJ8mWdOMU0ZcGzdq+vT6njSGIvE2
- UslULTxRFp0Q9zf28wwjuZmlCnDz2zJEjMripFnDNBw+v97xIQqQqpf9Fo/O/SHKE1QO
- 8/S2ZC/i9ShJMf3wE5z1T9QKE60kJV1amAByt13tTiGSE85p563qJ96uTzRDOmRqneJE
- Fm1XdGjqmUpffhzagblNlbPlh6LG5u/1y914H/bKUL0ATY/LA5C8y5G9ZYMgCoH1IFYj
- eIUhKZiRHMK7kxwnM7yfPBCHpsKjhQOHg+bVaj2lteMmcTOGsXhTsEUshtpby23/oJIp
- DORA==
+ bh=IB9k0GNgZmyeui619LmhiuHHd6yar3Mfgh2t1QFPN8A=;
+ b=o5WTk1UZfk1TyHURvBVCz8H5doIjITvqxet0vb/7Jn5Ek5JVkYAIT7uTL6czL5JTnI
+ 1pWEAB5YOvUOFDLPO2MPBYUEoFCX1SksfbAF8h7T6IdtFdDN0h2JxTisi8tLNUYNooFS
+ UXrk0MaaeNmAt66weqIgINDKKLf5f7fcDdxgopa+x6ygtbO0tjn3byK79joTXZiR4zDI
+ 9Vf3gas0sRIjHJx25ZKX0zU3GuObQU8YGS8iMKku/0H+ZOBlUfnr+d0WlgNmCL3SbqM0
+ unLyen6sfN6RmieATBFjwwzJt1v4kEb6uHAAO8Ruf9udqWdElDqJyEgIFoXNcTb+FCng
+ UHoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:to:cc:references:from:autocrypt:subject
+ h=x-gm-message-state:subject:from:to:cc:references:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=k5RgKONYESk5WvaDyXPiSm78/qDZHfPWmfVg3ttgBfg=;
- b=Xg7YxyyaCujNwY2P/YZDDqR62uoDMnsAMORjfDYhWtzRWpDlckaGP0EYoO0NWMBXSw
- uSmFRbxxxHcC0rP30moCwTky5THOB5yBm8OL0+CkpsDCjNKBi24ORY+z2B7nRz14IONJ
- jEoFc8sc7pmdf5iCnoJP1KA2mR2q69x9yCQoxDZIO02z439IW5LQiEYO5Esfm8ireJMR
- 8I2b6sWdT8FyVHnduLW8jVidnZYzlZJGAauRJ9p55YyG/MN3yGA+xMp1/POFiePsSrdp
- 59FrGFYgfa4is5b66C/cZHv73PXvYOB1XG7UiPLLZ8f6lAOnzRtexiPls3044Oj+zPVQ
- MsNw==
-X-Gm-Message-State: AOAM532gp3L1UJBgb1ELkRyeGbwGye88dStXZT144NeaTmnvYp6+LC2U
- ixwSb5C6LbrvIJQ4ZdsNxzk=
-X-Google-Smtp-Source: ABdhPJwep7p3WKBoCBxJxiupB/7FZsxW6Ld/QPB+qZnLfoEMIt0xJkj549/omV4mOkMT/3+xHRa8ig==
-X-Received: by 2002:a5d:4a0e:: with SMTP id m14mr518600wrq.313.1600704773004; 
- Mon, 21 Sep 2020 09:12:53 -0700 (PDT)
+ bh=IB9k0GNgZmyeui619LmhiuHHd6yar3Mfgh2t1QFPN8A=;
+ b=T4KHEypNUy3NaeA4XCqDIGa6xyx6Tq+V1heWh4cOO+lNS3/Z6d8o74IW+J5sVUUdKo
+ TJkqigcApAPhoYOpvdSqSt79GZqOuWQCrqZbo1B5KnLZwQu+VvMtchgVtjb+rOJj+sus
+ SnUWoezrcksFxs8mtLHTJ/6Q0ewhpr8RZTba+7R1Fjb9FonHu1/13vQdIMAZ7TEsxEr+
+ 13Hgxww50AiJOWOJFLFLDgmU0H8Oiozsbsxf1NhpXV+RGD7MLBtZybkU3qcI417BAyMR
+ iV/y3jOT72zTaK+0xPFPUIIFbQwuNVYqw/Zp/vA1P3YPfk5XbV7yeWctcEpDsj/QKkU7
+ YiEQ==
+X-Gm-Message-State: AOAM530gX6mJ6d3N32L3+rswZQ+5GBQ+LBfVP6DKCuljMBbym7Rg07/u
+ 1TkpCt5ueTQOvVPqVEWPHfM=
+X-Google-Smtp-Source: ABdhPJy9exEsnJtsmYxTAyV818PBVT675Xt53QpLu9nxHWgGo6HH3OgaNUZSXnduzaBPPyFce3z+AA==
+X-Received: by 2002:a7b:cd93:: with SMTP id y19mr153145wmj.112.1600704950688; 
+ Mon, 21 Sep 2020 09:15:50 -0700 (PDT)
 Received: from [192.168.43.240] ([5.100.192.97])
- by smtp.gmail.com with ESMTPSA id b18sm22480621wrn.21.2020.09.21.09.12.50
+ by smtp.gmail.com with ESMTPSA id c25sm75687wml.31.2020.09.21.09.15.47
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 21 Sep 2020 09:12:52 -0700 (PDT)
+ Mon, 21 Sep 2020 09:15:50 -0700 (PDT)
+Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+From: Pavel Begunkov <asml.silence@gmail.com>
 To: Andy Lutomirski <luto@amacapital.net>, Arnd Bergmann <arnd@arndb.de>
 References: <CAK8P3a2Mi+1yttyGk4k7HxRVrMtmFqJewouVhynqUL0PJycmog@mail.gmail.com>
  <D0791499-1190-4C3F-A984-0A313ECA81C7@amacapital.net>
-From: Pavel Begunkov <asml.silence@gmail.com>
+ <563138b5-7073-74bc-f0c5-b2bad6277e87@gmail.com>
 Autocrypt: addr=asml.silence@gmail.com; prefer-encrypt=mutual; keydata=
  mQINBFmKBOQBEAC76ZFxLAKpDw0bKQ8CEiYJRGn8MHTUhURL02/7n1t0HkKQx2K1fCXClbps
  bdwSHrhOWdW61pmfMbDYbTj6ZvGRvhoLWfGkzujB2wjNcbNTXIoOzJEGISHaPf6E2IQx1ik9
@@ -119,13 +121,12 @@ Autocrypt: addr=asml.silence@gmail.com; prefer-encrypt=mutual; keydata=
  UVMKkOCdFhutRmYp0mbv2e87IK4erwNHQRkHUkzbsuym8RVpAZbLzLPIYK/J3RTErL6Z99N2
  m3J6pjwSJY/zNwuFPs9zGEnRO4g0BUbwGdbuvDzaq6/3OJLKohr5eLXNU3JkT+3HezydWm3W
  OPhauth7W0db74Qd49HXK0xe/aPrK+Cp+kU1HRactyNtF8jZQbhMCC8vMGukZtWaAwpjWiiH bA==
-Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
-Message-ID: <563138b5-7073-74bc-f0c5-b2bad6277e87@gmail.com>
-Date: Mon, 21 Sep 2020 19:10:20 +0300
+Message-ID: <486c92d0-0f2e-bd61-1ab8-302524af5e08@gmail.com>
+Date: Mon, 21 Sep 2020 19:13:18 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.3.0
 MIME-Version: 1.0
-In-Reply-To: <D0791499-1190-4C3F-A984-0A313ECA81C7@amacapital.net>
+In-Reply-To: <563138b5-7073-74bc-f0c5-b2bad6277e87@gmail.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -161,47 +162,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 20/09/2020 01:22, Andy Lutomirski wrote:
+On 21/09/2020 19:10, Pavel Begunkov wrote:
+> On 20/09/2020 01:22, Andy Lutomirski wrote:
+>>
+>>> On Sep 19, 2020, at 2:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>>>
+>>> ﻿On Sat, Sep 19, 2020 at 6:21 PM Andy Lutomirski <luto@kernel.org> wrote:
+>>>>> On Fri, Sep 18, 2020 at 8:16 AM Christoph Hellwig <hch@lst.de> wrote:
+>>>>> On Fri, Sep 18, 2020 at 02:58:22PM +0100, Al Viro wrote:
+>>>>>> Said that, why not provide a variant that would take an explicit
+>>>>>> "is it compat" argument and use it there?  And have the normal
+>>>>>> one pass in_compat_syscall() to that...
+>>>>>
+>>>>> That would help to not introduce a regression with this series yes.
+>>>>> But it wouldn't fix existing bugs when io_uring is used to access
+>>>>> read or write methods that use in_compat_syscall().  One example that
+>>>>> I recently ran into is drivers/scsi/sg.c.
+>>>
+>>> Ah, so reading /dev/input/event* would suffer from the same issue,
+>>> and that one would in fact be broken by your patch in the hypothetical
+>>> case that someone tried to use io_uring to read /dev/input/event on x32...
+>>>
+>>> For reference, I checked the socket timestamp handling that has a
+>>> number of corner cases with time32/time64 formats in compat mode,
+>>> but none of those appear to be affected by the problem.
+>>>
+>>>> Aside from the potentially nasty use of per-task variables, one thing
+>>>> I don't like about PF_FORCE_COMPAT is that it's one-way.  If we're
+>>>> going to have a generic mechanism for this, shouldn't we allow a full
+>>>> override of the syscall arch instead of just allowing forcing compat
+>>>> so that a compat syscall can do a non-compat operation?
+>>>
+>>> The only reason it's needed here is that the caller is in a kernel
+>>> thread rather than a system call. Are there any possible scenarios
+>>> where one would actually need the opposite?
+>>>
+>>
+>> I can certainly imagine needing to force x32 mode from a kernel thread.
+>>
+>> As for the other direction: what exactly are the desired bitness/arch semantics of io_uring?  Is the operation bitness chosen by the io_uring creation or by the io_uring_enter() bitness?
 > 
->> On Sep 19, 2020, at 2:16 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->>
->> ﻿On Sat, Sep 19, 2020 at 6:21 PM Andy Lutomirski <luto@kernel.org> wrote:
->>>> On Fri, Sep 18, 2020 at 8:16 AM Christoph Hellwig <hch@lst.de> wrote:
->>>> On Fri, Sep 18, 2020 at 02:58:22PM +0100, Al Viro wrote:
->>>>> Said that, why not provide a variant that would take an explicit
->>>>> "is it compat" argument and use it there?  And have the normal
->>>>> one pass in_compat_syscall() to that...
->>>>
->>>> That would help to not introduce a regression with this series yes.
->>>> But it wouldn't fix existing bugs when io_uring is used to access
->>>> read or write methods that use in_compat_syscall().  One example that
->>>> I recently ran into is drivers/scsi/sg.c.
->>
->> Ah, so reading /dev/input/event* would suffer from the same issue,
->> and that one would in fact be broken by your patch in the hypothetical
->> case that someone tried to use io_uring to read /dev/input/event on x32...
->>
->> For reference, I checked the socket timestamp handling that has a
->> number of corner cases with time32/time64 formats in compat mode,
->> but none of those appear to be affected by the problem.
->>
->>> Aside from the potentially nasty use of per-task variables, one thing
->>> I don't like about PF_FORCE_COMPAT is that it's one-way.  If we're
->>> going to have a generic mechanism for this, shouldn't we allow a full
->>> override of the syscall arch instead of just allowing forcing compat
->>> so that a compat syscall can do a non-compat operation?
->>
->> The only reason it's needed here is that the caller is in a kernel
->> thread rather than a system call. Are there any possible scenarios
->> where one would actually need the opposite?
->>
-> 
-> I can certainly imagine needing to force x32 mode from a kernel thread.
-> 
-> As for the other direction: what exactly are the desired bitness/arch semantics of io_uring?  Is the operation bitness chosen by the io_uring creation or by the io_uring_enter() bitness?
+> It's rather the second one. Even though AFAIR it wasn't discussed
+> specifically, that how it works now (_partially_).
 
-It's rather the second one. Even though AFAIR it wasn't discussed
-specifically, that how it works now (_partially_).
+Double checked -- I'm wrong, that's the former one. Most of it is based
+on a flag that was set an creation.
 
 -- 
 Pavel Begunkov
