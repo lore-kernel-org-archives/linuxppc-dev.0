@@ -2,135 +2,53 @@ Return-Path: <SRS0=a2eB=C6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81E4AC43465
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:09:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EA5CC43466
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:15:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D895F2073A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:09:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Sc96S6lf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D895F2073A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2105F20C09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:15:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2105F20C09
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw9sN5yW4zDqpr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 03:09:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::343;
- helo=mail-wm1-x343.google.com; envelope-from=asml.silence@gmail.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw9zt5BHKzDqnV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 03:15:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
+ helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=Sc96S6lf; dkim-atps=neutral
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com
- [IPv6:2a00:1450:4864:20::343])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=zeniv.linux.org.uk
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw8rB4pQyzDqRC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 02:23:22 +1000 (AEST)
-Received: by mail-wm1-x343.google.com with SMTP id w2so115144wmi.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 09:23:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=IvRIyYO3t2SUgu0arXiDBfv6J5V0f2K0pu+NF0qCX5w=;
- b=Sc96S6lfmurSpfOzVka44PHPQYNuWoG7JxCB4XIUf9HPO88rqJ+GWaU7/Y9y20Ow8M
- Di7TJYVba9SsbXwHrsQvQvoBR2Nnm2mDgusw9rNGcnvKI4lT7c8atlnPUkT8nbzGd/E7
- MKgVHJkc+3wIQtro6A/DqbjOOTLY92BDRoYn0lM3n9CiOUzTJK/Gn2dgL4adn1jdQqgE
- GNxDUaobxhydr/wUBBdueva2w+Wf6ylcpl7wzPsamNhCaU6uo6ck2Wb1uRgTUuOUO+bU
- HGFzFO1HgQxb8gSQefH7PcwwxXwudPQ8DWavTZ9E2fjqDXcxcFOe//Zso6LpQiW58B+x
- UucA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=IvRIyYO3t2SUgu0arXiDBfv6J5V0f2K0pu+NF0qCX5w=;
- b=LQhfU+b/VLbFUOaBdYqyF+Bu/U0dW9irWo9eeY/E4REy+gmlxTZwnedY27jAlJLQuw
- k124/wkC0YilWWJh7dDRm1ip0ZGkWdX+ppBVOX/8jTGvNMIy7VDU/b7Hkx6gKoskEUAD
- QIXeQvyJ0qld4DvUhjU2Y1OM3RWXcUAuqueLOKRhHAo8VSAL9hHpXoP0raQFJ+JEH/vl
- jHD4GRqA6OIDIROabyUEgK3pvRhRllt+YWI7aw3Ao5QNqQE6CTq1KIoQNfzHpeXPaW8z
- 5V8AejdLlry4wd8waElp0yBxR3tQIO2iVzk8CXjC2wHxRwHNF4P9VCj+J4/rAjWNxh/j
- QV7g==
-X-Gm-Message-State: AOAM531YJKLHqPFnKNy/XXA/6B2qMz8QV0nJNXtwDE62ELozhlP/KNIs
- mdySR0XnX0wy8OvVnsDPZiI=
-X-Google-Smtp-Source: ABdhPJyYfk+EzbFnRftaSb6O/4j5H92Q+rKsLnOqJxPSmwFSmKmQaK8gbExjV0xQhTxCqhQoZcucgw==
-X-Received: by 2002:a05:600c:4142:: with SMTP id
- h2mr184584wmm.128.1600705395307; 
- Mon, 21 Sep 2020 09:23:15 -0700 (PDT)
-Received: from [192.168.43.240] ([5.100.192.97])
- by smtp.gmail.com with ESMTPSA id t6sm23571512wre.30.2020.09.21.09.23.11
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Mon, 21 Sep 2020 09:23:14 -0700 (PDT)
-Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
-To: William Kucharski <kucharsk@gmail.com>,
- Matthew Wilcox <willy@infradead.org>
-References: <20200920151510.GS32101@casper.infradead.org>
- <76A432F3-4532-42A4-900E-16C0AC2D21D8@gmail.com>
-From: Pavel Begunkov <asml.silence@gmail.com>
-Autocrypt: addr=asml.silence@gmail.com; prefer-encrypt=mutual; keydata=
- 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 bA==
-Message-ID: <2f2ee014-688e-8835-369b-61deb0688c73@gmail.com>
-Date: Mon, 21 Sep 2020 19:20:42 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw8xh2lnHzDqTv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 02:28:07 +1000 (AEST)
+Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
+ Linux)) id 1kKOfR-003EDr-FT; Mon, 21 Sep 2020 16:27:53 +0000
+Date: Mon, 21 Sep 2020 17:27:53 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH 02/11] mm: call import_iovec() instead of
+ rw_copy_check_uvector() in process_vm_rw()
+Message-ID: <20200921162753.GY3421308@ZenIV.linux.org.uk>
+References: <20200921143434.707844-1-hch@lst.de>
+ <20200921143434.707844-3-hch@lst.de>
+ <20200921150211.GS3421308@ZenIV.linux.org.uk>
+ <ef67787edb2f48548d69caaaff6997ba@AcuMS.aculab.com>
+ <20200921152937.GX3421308@ZenIV.linux.org.uk>
+ <226e03bf941844eba4d64af31633c177@AcuMS.aculab.com>
 MIME-Version: 1.0
-In-Reply-To: <76A432F3-4532-42A4-900E-16C0AC2D21D8@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <226e03bf941844eba4d64af31633c177@AcuMS.aculab.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -142,40 +60,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-mips@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- keyrings@vger.kernel.org, sparclinux@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-block@vger.kernel.org,
- Alexander Viro <viro@zeniv.linux.org.uk>, io-uring@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linux-aio@kvack.org" <linux-aio@kvack.org>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Christoph Hellwig <hch@lst.de>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ "io-uring@vger.kernel.org" <io-uring@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Jens Axboe <axboe@kernel.dk>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 20/09/2020 18:55, William Kucharski wrote:
-> I really like that as it’s self-documenting and anyone debugging it can see what is actually being used at a glance.
-
-Also creates special cases for things that few people care about,
-and makes it a pain for cross-platform (cross-bitness) development.
-
+On Mon, Sep 21, 2020 at 03:44:00PM +0000, David Laight wrote:
+> From: Al Viro
+> > Sent: 21 September 2020 16:30
+> > 
+> > On Mon, Sep 21, 2020 at 03:21:35PM +0000, David Laight wrote:
+> > 
+> > > You really don't want to be looping through the array twice.
+> > 
+> > Profiles, please.
 > 
->> On Sep 20, 2020, at 09:15, Matthew Wilcox <willy@infradead.org> wrote:
->>
->> ﻿On Fri, Sep 18, 2020 at 02:45:25PM +0200, Christoph Hellwig wrote:
->>> Add a flag to force processing a syscall as a compat syscall.  This is
->>> required so that in_compat_syscall() works for I/O submitted by io_uring
->>> helper threads on behalf of compat syscalls.
->>
->> Al doesn't like this much, but my suggestion is to introduce two new
->> opcodes -- IORING_OP_READV32 and IORING_OP_WRITEV32.  The compat code
->> can translate IORING_OP_READV to IORING_OP_READV32 and then the core
->> code can know what that user pointer is pointing to.
+> I did some profiling of send() v sendmsg() much earlier in the year.
+> I can't remember the exact details but the extra cost of sendmsg()
+> is far more than you might expect.
+> (I was timing sending fully built IPv4 UDP packets using a raw socket.)
+> 
+> About half the difference does away if you change the
+> copy_from_user() to __copy_from_user() when reading the struct msghdr
+> and iov[] from userspace (user copy hardening is expensive).
 
--- 
-Pavel Begunkov
+Wha...?  So the difference is within 4 times the overhead of the
+hardening checks done for one call of copy_from_user()?
+
+> The rest is just code path, my gut feeling is that a lot of that
+> is in import_iovec().
+> 
+> Remember semdmsg() is likely to be called with an iov count of 1.
+
+... which makes that loop unlikely to be noticable in the entire
+mess, whether you pass it once or twice.  IOW, unless you can show
+profiles where that loop is sufficiently hot or if you can show
+the timings change from splitting it in two, I'll remain very
+sceptical about that assertion.
