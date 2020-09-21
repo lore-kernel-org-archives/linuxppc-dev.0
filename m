@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24F3EC43464
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 07:55:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCEF3C43464
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 07:56:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A3C02085B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 07:55:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A3C02085B
+	by mail.kernel.org (Postfix) with ESMTPS id 2AA0F2085B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 07:56:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AA0F2085B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ubuntu.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BvxYb026vzDqbg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:54:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bvxbp2bnZzDqPy
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 17:56:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=none (no SPF record) smtp.mailfrom=ubuntu.com
  (client-ip=91.189.89.112; helo=youngberry.canonical.com;
@@ -29,25 +29,24 @@ Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BvxWV6dZqzDqMV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 17:53:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BvxYG5RX6zDqMV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 17:54:42 +1000 (AEST)
 Received: from ip5f5af089.dynamic.kabel-deutschland.de ([95.90.240.137]
  helo=wittgenstein) by youngberry.canonical.com with esmtpsa
  (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.86_2)
  (envelope-from <christian.brauner@ubuntu.com>)
- id 1kKGdA-0001tZ-U9; Mon, 21 Sep 2020 07:53:01 +0000
-Date: Mon, 21 Sep 2020 09:53:00 +0200
+ id 1kKGee-0001xR-V7; Mon, 21 Sep 2020 07:54:33 +0000
+Date: Mon, 21 Sep 2020 09:54:32 +0200
 From: Christian Brauner <christian.brauner@ubuntu.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v2 3/4] selftests/seccomp: powerpc: Set syscall return
- during ptrace syscall exit
-Message-ID: <20200921075300.7iylzof2w5vrutah@wittgenstein>
+Subject: Re: [PATCH v2 4/4] selftests/clone3: Avoid OS-defined clone_args
+Message-ID: <20200921075432.u4gis3s2o5qrsb5g@wittgenstein>
 References: <20200919080637.259478-1-keescook@chromium.org>
- <20200919080637.259478-4-keescook@chromium.org>
+ <20200919080637.259478-5-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200919080637.259478-4-keescook@chromium.org>
+In-Reply-To: <20200919080637.259478-5-keescook@chromium.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,21 +68,14 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 19, 2020 at 01:06:36AM -0700, Kees Cook wrote:
-> Some archs (like powerpc) only support changing the return code during
-> syscall exit when ptrace is used. Test entry vs exit phases for which
-> portions of the syscall number and return values need to be set at which
-> different phases. For non-powerpc, all changes are made during ptrace
-> syscall entry, as before. For powerpc, the syscall number is changed at
-> ptrace syscall entry and the syscall return value is changed on ptrace
-> syscall exit.
+On Sat, Sep 19, 2020 at 01:06:37AM -0700, Kees Cook wrote:
+> As the UAPI headers start to appear in distros, we need to avoid outdated
+> versions of struct clone_args to be able to test modern features;
+> rename to "struct __clone_args". Additionally update the struct size
+> macro names to match UAPI names.
 > 
-> Reported-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-> Suggested-by: Thadeu Lima de Souza Cascardo <cascardo@canonical.com>
-> Link: https://lore.kernel.org/linux-kselftest/20200911181012.171027-1-cascardo@canonical.com/
-> Fixes: 58d0a862f573 ("seccomp: add tests for ptrace hole")
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
 
-Looks good!
+Looks good, thanks!
 Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
