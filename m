@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E1ADC43465
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:02:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15F10C43466
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:07:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92EDD20758
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:01:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B74BC2075E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:07:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="GRkfTBxW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92EDD20758
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="h5C0cP74"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B74BC2075E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw72D22rdzDqC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 01:01:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw78w12QpzDqGL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 01:07:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,34 +31,33 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=GRkfTBxW; 
+ header.s=casper.20170209 header.b=h5C0cP74; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw6Qr0jdLzDqbC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 00:34:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw6Qq2llqzDqfH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 00:34:41 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
  References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
  Content-Type:Content-ID:Content-Description;
- bh=puJFCdMF2FXbv89uAHf/KkyLCkpGKdSCiHzE06eX0/Y=; b=GRkfTBxWaYN59mWczbVBJZ/J4z
- kVM8Nphlbf3FY02zkGWWBVM283NPs2K9y+IDVdwyxNN1Q6a4B7YoCyWtJodiottCcy6XpP96dRyGn
- JHkp6fow0Ism2aY5WYKFck/rP6z+BMXBmYaJqqKRA5DWZwKptXaUZhs1y+Gx9Hcs78ge5sNfRyKIN
- h2HYTgdyzISCw5GbBnBiQ0zAOMx4TZdmJQTPfx5COcVblaZe9D1Cqm0YVjyEpK04tgDaqtazmJ5UR
- ftg8Mk3Zj7g+8AAriBQApIZOIJYX0rTvWCnxH8RgTXNwePT8RLDRBDPDY+Cv19f1nEHzB8vcryJzp
- d7oTPRIQ==;
+ bh=tfXqHGtFwgmM6UcSRx58+EM7ODTSdMOtwKoRg1u1yAY=; b=h5C0cP745frGI6LFd4dq0v1VC6
+ dlre8+k7vu02YmAZ8W+aYC7/KFVYWpjVw4xuvxDaZNd2Z6QBa9oiL0Wj/Hkv5xYC2wYLt9KCBe8bl
+ TYAoN6sz7hdDgHMalPgUQTr+fLk7AIcfJFZomtrhfeUIwlk6hulwAl1drU0/fuTNP7wSa0Q5YwXJV
+ epTQJexY9j8oJJFTiE4IOj814WqvBV14TzUclzJplEScbfbnyXCkjYiSnhMOe79Hf9o1hSteR7Rvm
+ SSHXMAUvLZDteiCW+SEwO+/7lrFRnDtCQ8YijeIlpmrJacTqjMfI2M+KPH2OSNdgKTyq62UNZlM0b
+ PcBfcm0Q==;
 Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kKMtZ-0007rC-EL; Mon, 21 Sep 2020 14:34:21 +0000
+ id 1kKMtY-0007qo-Gk; Mon, 21 Sep 2020 14:34:20 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 02/11] mm: call import_iovec() instead of
- rw_copy_check_uvector() in process_vm_rw()
-Date: Mon, 21 Sep 2020 16:34:25 +0200
-Message-Id: <20200921143434.707844-3-hch@lst.de>
+Subject: [PATCH 01/11] compat.h: fix a spelling error in <linux/compat.h>
+Date: Mon, 21 Sep 2020 16:34:24 +0200
+Message-Id: <20200921143434.707844-2-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200921143434.707844-1-hch@lst.de>
 References: <20200921143434.707844-1-hch@lst.de>
@@ -86,127 +85,33 @@ Cc: linux-aio@kvack.org, linux-mips@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
  linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <david.laight@aculab.com>, linux-fsdevel@vger.kernel.org,
+ David Laight <David.Laight@aculab.com>, linux-fsdevel@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: David Laight <David.Laight@ACULAB.COM>
+There is no compat_sys_readv64v2 syscall, only a compat_sys_preadv64v2
+one.
 
-This is the only direct call of rw_copy_check_uvector().  Removing it
-will allow rw_copy_check_uvector() to be inlined into import_iovec(),
-while only paying a minor price by setting up an otherwise unused
-iov_iter in the process_vm_readv/process_vm_writev syscalls that aren't
-in a super hot path.
-
-Signed-off-by: David Laight <david.laight@aculab.com>
-[hch: expanded the commit log, pass CHECK_IOVEC_ONLY instead of 0 for the
-      compat case, handle CHECK_IOVEC_ONLY in iov_iter_init]
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- lib/iov_iter.c         |  2 +-
- mm/process_vm_access.c | 33 ++++++++++++++++++---------------
- 2 files changed, 19 insertions(+), 16 deletions(-)
+ include/linux/compat.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/lib/iov_iter.c b/lib/iov_iter.c
-index 5e40786c8f1232..db54588406dfae 100644
---- a/lib/iov_iter.c
-+++ b/lib/iov_iter.c
-@@ -443,7 +443,7 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
- 			const struct iovec *iov, unsigned long nr_segs,
- 			size_t count)
- {
--	WARN_ON(direction & ~(READ | WRITE));
-+	WARN_ON(direction & ~(READ | WRITE | CHECK_IOVEC_ONLY));
- 	direction &= READ | WRITE;
- 
- 	/* It will get better.  Eventually... */
-diff --git a/mm/process_vm_access.c b/mm/process_vm_access.c
-index 29c052099affdc..40cd502c337534 100644
---- a/mm/process_vm_access.c
-+++ b/mm/process_vm_access.c
-@@ -264,7 +264,7 @@ static ssize_t process_vm_rw(pid_t pid,
- 	struct iovec iovstack_r[UIO_FASTIOV];
- 	struct iovec *iov_l = iovstack_l;
- 	struct iovec *iov_r = iovstack_r;
--	struct iov_iter iter;
-+	struct iov_iter iter_l, iter_r;
- 	ssize_t rc;
- 	int dir = vm_write ? WRITE : READ;
- 
-@@ -272,23 +272,25 @@ static ssize_t process_vm_rw(pid_t pid,
- 		return -EINVAL;
- 
- 	/* Check iovecs */
--	rc = import_iovec(dir, lvec, liovcnt, UIO_FASTIOV, &iov_l, &iter);
-+	rc = import_iovec(dir, lvec, liovcnt, UIO_FASTIOV, &iov_l, &iter_l);
- 	if (rc < 0)
- 		return rc;
--	if (!iov_iter_count(&iter))
-+	if (!iov_iter_count(&iter_l))
- 		goto free_iovecs;
- 
--	rc = rw_copy_check_uvector(CHECK_IOVEC_ONLY, rvec, riovcnt, UIO_FASTIOV,
--				   iovstack_r, &iov_r);
-+	rc = import_iovec(CHECK_IOVEC_ONLY, rvec, riovcnt, UIO_FASTIOV, &iov_r,
-+			  &iter_r);
- 	if (rc <= 0)
- 		goto free_iovecs;
- 
--	rc = process_vm_rw_core(pid, &iter, iov_r, riovcnt, flags, vm_write);
-+	rc = process_vm_rw_core(pid, &iter_l, iter_r.iov, iter_r.nr_segs,
-+				flags, vm_write);
- 
- free_iovecs:
- 	if (iov_r != iovstack_r)
- 		kfree(iov_r);
--	kfree(iov_l);
-+	if (iov_l != iovstack_l)
-+		kfree(iov_l);
- 
- 	return rc;
- }
-@@ -322,30 +324,31 @@ compat_process_vm_rw(compat_pid_t pid,
- 	struct iovec iovstack_r[UIO_FASTIOV];
- 	struct iovec *iov_l = iovstack_l;
- 	struct iovec *iov_r = iovstack_r;
--	struct iov_iter iter;
-+	struct iov_iter iter_l, iter_r;
- 	ssize_t rc = -EFAULT;
- 	int dir = vm_write ? WRITE : READ;
- 
- 	if (flags != 0)
- 		return -EINVAL;
- 
--	rc = compat_import_iovec(dir, lvec, liovcnt, UIO_FASTIOV, &iov_l, &iter);
-+	rc = compat_import_iovec(dir, lvec, liovcnt, UIO_FASTIOV, &iov_l, &iter_l);
- 	if (rc < 0)
- 		return rc;
--	if (!iov_iter_count(&iter))
-+	if (!iov_iter_count(&iter_l))
- 		goto free_iovecs;
--	rc = compat_rw_copy_check_uvector(CHECK_IOVEC_ONLY, rvec, riovcnt,
--					  UIO_FASTIOV, iovstack_r,
--					  &iov_r);
-+	rc = compat_import_iovec(CHECK_IOVEC_ONLY, rvec, riovcnt, UIO_FASTIOV,
-+				 &iov_r, &iter_r);
- 	if (rc <= 0)
- 		goto free_iovecs;
- 
--	rc = process_vm_rw_core(pid, &iter, iov_r, riovcnt, flags, vm_write);
-+	rc = process_vm_rw_core(pid, &iter_l, iter_r.iov, iter_r.nr_segs,
-+				flags, vm_write);
- 
- free_iovecs:
- 	if (iov_r != iovstack_r)
- 		kfree(iov_r);
--	kfree(iov_l);
-+	if (iov_l != iovstack_l)
-+		kfree(iov_l);
- 	return rc;
- }
- 
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index b354ce58966e2d..654c1ec36671a4 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -812,7 +812,7 @@ asmlinkage ssize_t compat_sys_pwritev2(compat_ulong_t fd,
+ 		const struct compat_iovec __user *vec,
+ 		compat_ulong_t vlen, u32 pos_low, u32 pos_high, rwf_t flags);
+ #ifdef __ARCH_WANT_COMPAT_SYS_PREADV64V2
+-asmlinkage long  compat_sys_readv64v2(unsigned long fd,
++asmlinkage long  compat_sys_preadv64v2(unsigned long fd,
+ 		const struct compat_iovec __user *vec,
+ 		unsigned long vlen, loff_t pos, rwf_t flags);
+ #endif
 -- 
 2.28.0
 
