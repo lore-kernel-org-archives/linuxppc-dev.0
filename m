@@ -2,26 +2,25 @@ Return-Path: <SRS0=a2eB=C6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66598C43466
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:13:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8D0FC43466
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:18:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C50A2075E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:13:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2142C20756
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 15:18:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Fj58CJcp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C50A2075E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OtPsbytG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2142C20756
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw7HS2TTZzDqTF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 01:13:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw7Nz1V1qzDqhC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 01:18:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
  helo=casper.infradead.org;
@@ -31,37 +30,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=Fj58CJcp; 
+ header.s=casper.20170209 header.b=OtPsbytG; 
  dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org
  [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw6Qp46PHzDqf5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw6Qp1yNKzDqbY
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 00:34:41 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=Go9jhNaIOowAS6zneWVKxUnX9eeQI4Dg/fB924GqFYE=; b=Fj58CJcpE4sDehkNalXnmTWxw3
- DGiFYIP4alu/yNV8DzWwojGGHVbkvpmKEO7O+v0+KEtvpmTaC/8+AUg0vCnlW8Wpv+pAOL+TIHAXs
- Lf9zgvzv0nGbJApTt23suPBMJYvD/I52+eYKa80lYKU2kYmiupntzgNpmlacjuZmaAb/jexwc15yY
- OjMhbL124H+1M/SLeR2CIAEo+Lf9JqavRm3CepjlI3zAdY9MdM0FPRHh4OAXo3OG8B1/qJAe/+KNI
- w2LkgoRumDCz5RSjK0Fm3jjyQE6KRkOn4CicLrA3zvg0nRNU1GqT3jtXECzFud20JC5Wb2no3nlLO
- 4ZZEkf/w==;
+ Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+ Content-Description:In-Reply-To:References;
+ bh=8Kz1DGu4Y1npvsQfjeR0IuDoooJXN+7G6DfyjI+HLNA=; b=OtPsbytGKDJDCuQypN2pYiSnoe
+ WW9gEK1h3pS7c+IQZpnzc0Z2syR2DXQhQvIG69gs0m4gIsYDKdpbqTPoJY0KAH/4RpKbeW8iZ1mRX
+ vxkW+18T3nFRDMLa0nVyDIB3SOH1V3r9kDVBdzpbv9bxb4RAEG9axuO1VhoVIBGbmODrrzwl7s4B2
+ WjgXwnbcnEwkrtq0pGDN05iXhBJjZM95u3BbE1Q7EZKpepfhIa4lsQpYT8cI9u/NrdyqDlTS9j0PA
+ aPYsG/HabbUElCCwrUATgfMpg2D12Ceg09o3ge7xKDfkMLp5samCXpvbTzXxzUTh1yaGtXuT5+Efi
+ QKoS47JA==;
 Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
  by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kKMtd-0007rg-Jy; Mon, 21 Sep 2020 14:34:25 +0000
+ id 1kKMtW-0007qY-0E; Mon, 21 Sep 2020 14:34:19 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 05/11] iov_iter: merge the compat case into
- rw_copy_check_uvector
-Date: Mon, 21 Sep 2020 16:34:28 +0200
-Message-Id: <20200921143434.707844-6-hch@lst.de>
+Subject: let import_iovec deal with compat_iovecs as well v2
+Date: Mon, 21 Sep 2020 16:34:23 +0200
+Message-Id: <20200921143434.707844-1-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200921143434.707844-1-hch@lst.de>
-References: <20200921143434.707844-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -92,279 +88,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Stop duplicating the iovec verify code, and instead add add a
-__import_iovec helper that does the whole verify and import, but takes
-a bool compat to decided on the native or compat layout.  This also
-ends up massively simplifying the calling conventions.
+Hi Al,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- lib/iov_iter.c | 195 ++++++++++++++++++-------------------------------
- 1 file changed, 70 insertions(+), 125 deletions(-)
+this series changes import_iovec to transparently deal with comat iovec
+structures, and then cleanups up a lot of code dupliation.
 
-diff --git a/lib/iov_iter.c b/lib/iov_iter.c
-index a64867501a7483..8bfa47b63d39aa 100644
---- a/lib/iov_iter.c
-+++ b/lib/iov_iter.c
-@@ -10,6 +10,7 @@
- #include <net/checksum.h>
- #include <linux/scatterlist.h>
- #include <linux/instrumented.h>
-+#include <linux/compat.h>
- 
- #define PIPE_PARANOIA /* for now */
- 
-@@ -1650,43 +1651,76 @@ const void *dup_iter(struct iov_iter *new, struct iov_iter *old, gfp_t flags)
- }
- EXPORT_SYMBOL(dup_iter);
- 
--static ssize_t rw_copy_check_uvector(int type,
--		const struct iovec __user *uvector, unsigned long nr_segs,
--		unsigned long fast_segs, struct iovec *fast_pointer,
--		struct iovec **ret_pointer)
-+static int compat_copy_iovecs_from_user(struct iovec *iov,
-+		const struct iovec __user *uvector, unsigned long nr_segs)
-+{
-+	const struct compat_iovec __user *uiov =
-+		(const struct compat_iovec __user *)uvector;
-+	unsigned long i;
-+	int ret = -EFAULT;
-+
-+	if (!user_access_begin(uvector, nr_segs * sizeof(*uvector)))
-+		return -EFAULT;
-+
-+	for (i = 0; i < nr_segs; i++) {
-+		compat_uptr_t buf;
-+		compat_ssize_t len;
-+
-+		unsafe_get_user(len, &uiov[i].iov_len, out);
-+		unsafe_get_user(buf, &uiov[i].iov_base, out);
-+
-+		/* check for compat_size_t not fitting in compat_ssize_t .. */
-+		if (len < 0) {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		iov[i].iov_base = compat_ptr(buf);
-+		iov[i].iov_len = len;
-+	}
-+	ret = 0;
-+out:
-+	user_access_end();
-+	return ret;
-+}
-+
-+static ssize_t __import_iovec(int type, const struct iovec __user *uvector,
-+		unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
-+		struct iov_iter *i, bool compat)
- {
-+	struct iovec *iov = *iovp;
- 	unsigned long seg;
--	ssize_t ret;
--	struct iovec *iov = fast_pointer;
-+	ssize_t ret = 0;
- 
- 	/*
- 	 * SuS says "The readv() function *may* fail if the iovcnt argument
- 	 * was less than or equal to 0, or greater than {IOV_MAX}.  Linux has
- 	 * traditionally returned zero for zero segments, so...
- 	 */
--	if (nr_segs == 0) {
--		ret = 0;
--		goto out;
--	}
-+	if (nr_segs == 0)
-+		goto done;
- 
- 	/*
- 	 * First get the "struct iovec" from user memory and
- 	 * verify all the pointers
- 	 */
--	if (nr_segs > UIO_MAXIOV) {
--		ret = -EINVAL;
--		goto out;
--	}
-+	ret = -EINVAL;
-+	if (nr_segs > UIO_MAXIOV)
-+		goto fail;
- 	if (nr_segs > fast_segs) {
-+		ret = -ENOMEM;
- 		iov = kmalloc_array(nr_segs, sizeof(struct iovec), GFP_KERNEL);
--		if (iov == NULL) {
--			ret = -ENOMEM;
--			goto out;
--		}
-+		if (!iov)
-+			goto fail;
- 	}
--	if (copy_from_user(iov, uvector, nr_segs*sizeof(*uvector))) {
-+
-+	if (compat) {
-+		ret = compat_copy_iovecs_from_user(iov, uvector, nr_segs);
-+		if (ret)
-+			goto fail;
-+	} else {
- 		ret = -EFAULT;
--		goto out;
-+		if (copy_from_user(iov, uvector, nr_segs * sizeof(*uvector)))
-+			goto fail;
- 	}
- 
- 	/*
-@@ -1707,11 +1741,11 @@ static ssize_t rw_copy_check_uvector(int type,
- 		 * it's about to overflow ssize_t */
- 		if (len < 0) {
- 			ret = -EINVAL;
--			goto out;
-+			goto fail;
- 		}
- 		if (type != CHECK_IOVEC_ONLY && !access_ok(buf, len)) {
- 			ret = -EFAULT;
--			goto out;
-+			goto fail;
- 		}
- 		if (len > MAX_RW_COUNT - ret) {
- 			len = MAX_RW_COUNT - ret;
-@@ -1719,8 +1753,17 @@ static ssize_t rw_copy_check_uvector(int type,
- 		}
- 		ret += len;
- 	}
--out:
--	*ret_pointer = iov;
-+done:
-+	iov_iter_init(i, type, iov, nr_segs, ret);
-+	if (iov == *iovp)
-+		*iovp = NULL;
-+	else
-+		*iovp = iov;
-+	return ret;
-+fail:
-+	if (iov != *iovp)
-+		kfree(iov);
-+	*iovp = NULL;
- 	return ret;
- }
- 
-@@ -1750,116 +1793,18 @@ ssize_t import_iovec(int type, const struct iovec __user * uvector,
- 		 unsigned nr_segs, unsigned fast_segs,
- 		 struct iovec **iov, struct iov_iter *i)
- {
--	ssize_t n;
--	struct iovec *p;
--	n = rw_copy_check_uvector(type, uvector, nr_segs, fast_segs,
--				  *iov, &p);
--	if (n < 0) {
--		if (p != *iov)
--			kfree(p);
--		*iov = NULL;
--		return n;
--	}
--	iov_iter_init(i, type, p, nr_segs, n);
--	*iov = p == *iov ? NULL : p;
--	return n;
-+	return __import_iovec(type, uvector, nr_segs, fast_segs, iov, i, false);
- }
- EXPORT_SYMBOL(import_iovec);
- 
- #ifdef CONFIG_COMPAT
--#include <linux/compat.h>
--
--static ssize_t compat_rw_copy_check_uvector(int type,
--		const struct compat_iovec __user *uvector, unsigned long nr_segs,
--		unsigned long fast_segs, struct iovec *fast_pointer,
--		struct iovec **ret_pointer)
--{
--	compat_ssize_t tot_len;
--	struct iovec *iov = *ret_pointer = fast_pointer;
--	ssize_t ret = 0;
--	int seg;
--
--	/*
--	 * SuS says "The readv() function *may* fail if the iovcnt argument
--	 * was less than or equal to 0, or greater than {IOV_MAX}.  Linux has
--	 * traditionally returned zero for zero segments, so...
--	 */
--	if (nr_segs == 0)
--		goto out;
--
--	ret = -EINVAL;
--	if (nr_segs > UIO_MAXIOV)
--		goto out;
--	if (nr_segs > fast_segs) {
--		ret = -ENOMEM;
--		iov = kmalloc_array(nr_segs, sizeof(struct iovec), GFP_KERNEL);
--		if (iov == NULL)
--			goto out;
--	}
--	*ret_pointer = iov;
--
--	ret = -EFAULT;
--	if (!access_ok(uvector, nr_segs*sizeof(*uvector)))
--		goto out;
--
--	/*
--	 * Single unix specification:
--	 * We should -EINVAL if an element length is not >= 0 and fitting an
--	 * ssize_t.
--	 *
--	 * In Linux, the total length is limited to MAX_RW_COUNT, there is
--	 * no overflow possibility.
--	 */
--	tot_len = 0;
--	ret = -EINVAL;
--	for (seg = 0; seg < nr_segs; seg++) {
--		compat_uptr_t buf;
--		compat_ssize_t len;
--
--		if (__get_user(len, &uvector->iov_len) ||
--		   __get_user(buf, &uvector->iov_base)) {
--			ret = -EFAULT;
--			goto out;
--		}
--		if (len < 0)	/* size_t not fitting in compat_ssize_t .. */
--			goto out;
--		if (type != CHECK_IOVEC_ONLY &&
--		    !access_ok(compat_ptr(buf), len)) {
--			ret = -EFAULT;
--			goto out;
--		}
--		if (len > MAX_RW_COUNT - tot_len)
--			len = MAX_RW_COUNT - tot_len;
--		tot_len += len;
--		iov->iov_base = compat_ptr(buf);
--		iov->iov_len = (compat_size_t) len;
--		uvector++;
--		iov++;
--	}
--	ret = tot_len;
--
--out:
--	return ret;
--}
--
- ssize_t compat_import_iovec(int type,
- 		const struct compat_iovec __user * uvector,
- 		unsigned nr_segs, unsigned fast_segs,
- 		struct iovec **iov, struct iov_iter *i)
- {
--	ssize_t n;
--	struct iovec *p;
--	n = compat_rw_copy_check_uvector(type, uvector, nr_segs, fast_segs,
--				  *iov, &p);
--	if (n < 0) {
--		if (p != *iov)
--			kfree(p);
--		*iov = NULL;
--		return n;
--	}
--	iov_iter_init(i, type, p, nr_segs, n);
--	*iov = p == *iov ? NULL : p;
--	return n;
-+	return __import_iovec(type, (const struct iovec __user *)uvector,
-+			      nr_segs, fast_segs, iov, i, true);
- }
- EXPORT_SYMBOL(compat_import_iovec);
- #endif
--- 
-2.28.0
+Changes since v1:
+ - improve a commit message
+ - drop a pointless unlikely
+ - drop the PF_FORCE_COMPAT flag
+ - add a few more cleanups (including two from David Laight)
 
+Diffstat:
+ arch/arm64/include/asm/unistd32.h                  |   10 
+ arch/mips/kernel/syscalls/syscall_n32.tbl          |   10 
+ arch/mips/kernel/syscalls/syscall_o32.tbl          |   10 
+ arch/parisc/kernel/syscalls/syscall.tbl            |   10 
+ arch/powerpc/kernel/syscalls/syscall.tbl           |   10 
+ arch/s390/kernel/syscalls/syscall.tbl              |   10 
+ arch/sparc/kernel/syscalls/syscall.tbl             |   10 
+ arch/x86/entry/syscall_x32.c                       |    5 
+ arch/x86/entry/syscalls/syscall_32.tbl             |   10 
+ arch/x86/entry/syscalls/syscall_64.tbl             |   10 
+ block/scsi_ioctl.c                                 |   12 
+ drivers/scsi/sg.c                                  |    9 
+ fs/aio.c                                           |   38 --
+ fs/io_uring.c                                      |   20 -
+ fs/read_write.c                                    |  362 +--------------------
+ fs/splice.c                                        |   57 ---
+ include/linux/compat.h                             |   24 -
+ include/linux/fs.h                                 |   11 
+ include/linux/uio.h                                |   10 
+ include/uapi/asm-generic/unistd.h                  |   12 
+ lib/iov_iter.c                                     |  161 +++++++--
+ mm/process_vm_access.c                             |   85 ----
+ net/compat.c                                       |    4 
+ security/keys/compat.c                             |   37 --
+ security/keys/internal.h                           |    5 
+ security/keys/keyctl.c                             |    2 
+ tools/include/uapi/asm-generic/unistd.h            |   12 
+ tools/perf/arch/powerpc/entry/syscalls/syscall.tbl |   10 
+ tools/perf/arch/s390/entry/syscalls/syscall.tbl    |   10 
+ tools/perf/arch/x86/entry/syscalls/syscall_64.tbl  |   10 
+ 30 files changed, 280 insertions(+), 706 deletions(-)
