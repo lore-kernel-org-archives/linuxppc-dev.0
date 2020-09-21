@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1977BC43464
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 11:34:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A8E4C43465
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 11:36:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33D5320874
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 11:34:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33D5320874
+	by mail.kernel.org (Postfix) with ESMTPS id 8F05D2071A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 11:36:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F05D2071A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw2R92jLCzDqgb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 21:34:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bw2TN0QY2zDqSd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Sep 2020 21:36:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=huawei.com;
+ smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=huawei.com;
  envelope-from=wangwensheng4@huawei.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw2JN09yjzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 21:28:52 +1000 (AEST)
-Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id 907C930B26541FB099A8;
- Mon, 21 Sep 2020 19:28:46 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by DGGEMS413-HUB.china.huawei.com
- (10.3.19.213) with Microsoft SMTP Server id 14.3.487.0; Mon, 21 Sep 2020
- 19:28:36 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bw2LS2xBLzDqZB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2020 21:30:40 +1000 (AEST)
+Received: from DGGEMS414-HUB.china.huawei.com (unknown [172.30.72.58])
+ by Forcepoint Email with ESMTP id 7D983B3294659409B620;
+ Mon, 21 Sep 2020 19:30:33 +0800 (CST)
+Received: from huawei.com (10.175.112.208) by DGGEMS414-HUB.china.huawei.com
+ (10.3.19.214) with Microsoft SMTP Server id 14.3.487.0; Mon, 21 Sep 2020
+ 19:30:24 +0800
 From: Wang Wensheng <wangwensheng4@huawei.com>
 To: <mpe@ellerman.id.au>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <atrajeev@linux.vnet.ibm.com>, <wangwensheng4@huawei.com>,
- <maddy@linux.ibm.com>, <kjain@linux.ibm.com>, <anju@linux.vnet.ibm.com>,
+ <npiggin@gmail.com>, <gwalbon@linux.ibm.com>, <renesas@glider.be>,
+ <wangwensheng4@huawei.com>, <jniethe5@gmail.com>, <yuehaibing@huawei.com>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] powerpc/perf: Fix symbol undeclared warning
-Date: Mon, 21 Sep 2020 11:25:57 +0000
-Message-ID: <20200921112557.85471-1-wangwensheng4@huawei.com>
+Subject: [PATCH -next] powerpc/security: Fix symbol undeclared warning
+Date: Mon, 21 Sep 2020 11:27:45 +0000
+Message-ID: <20200921112745.85968-1-wangwensheng4@huawei.com>
 X-Mailer: git-send-email 2.25.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -66,54 +66,27 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Build kernel with `C=2`:
-arch/powerpc/perf/isa207-common.c:24:18: warning: symbol
-'isa207_pmu_format_attr' was not declared. Should it be static?
-arch/powerpc/perf/power9-pmu.c:101:5: warning: symbol 'p9_dd21_bl_ev'
-was not declared. Should it be static?
-arch/powerpc/perf/power9-pmu.c:115:5: warning: symbol 'p9_dd22_bl_ev'
-was not declared. Should it be static?
+arch/powerpc/kernel/security.c:253:6: warning: symbol 'stf_barrier' was
+not declared. Should it be static?
 
 Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
 ---
- arch/powerpc/perf/isa207-common.c | 2 +-
- arch/powerpc/perf/power9-pmu.c    | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/security.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 964437adec18..85dc860b265b 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -21,7 +21,7 @@ PMU_FORMAT_ATTR(thresh_stop,	"config:32-35");
- PMU_FORMAT_ATTR(thresh_start,	"config:36-39");
- PMU_FORMAT_ATTR(thresh_cmp,	"config:40-49");
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index c9876aab3142..fbcd5611a67e 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -250,7 +250,7 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
  
--struct attribute *isa207_pmu_format_attr[] = {
-+static struct attribute *isa207_pmu_format_attr[] = {
- 	&format_attr_event.attr,
- 	&format_attr_pmcxsel.attr,
- 	&format_attr_mark.attr,
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 2a57e93a79dc..4a315fad1f99 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -98,7 +98,7 @@ extern u64 PERF_REG_EXTENDED_MASK;
- /* PowerISA v2.07 format attribute structure*/
- extern struct attribute_group isa207_pmu_format_group;
+ static enum stf_barrier_type stf_enabled_flush_types;
+ static bool no_stf_barrier;
+-bool stf_barrier;
++static bool stf_barrier;
  
--int p9_dd21_bl_ev[] = {
-+static int p9_dd21_bl_ev[] = {
- 	PM_MRK_ST_DONE_L2,
- 	PM_RADIX_PWC_L1_HIT,
- 	PM_FLOP_CMPL,
-@@ -112,7 +112,7 @@ int p9_dd21_bl_ev[] = {
- 	PM_DISP_HELD_SYNC_HOLD,
- };
- 
--int p9_dd22_bl_ev[] = {
-+static int p9_dd22_bl_ev[] = {
- 	PM_DTLB_MISS_16G,
- 	PM_DERAT_MISS_2M,
- 	PM_DTLB_MISS_2M,
+ static int __init handle_no_stf_barrier(char *p)
+ {
 -- 
 2.25.0
 
