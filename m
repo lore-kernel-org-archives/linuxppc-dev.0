@@ -2,72 +2,88 @@ Return-Path: <SRS0=QuHT=C7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D710DC2D0E2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 12:56:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C4B1C4363D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 16:24:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 638632399A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 12:56:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 638632399A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 663492395C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 16:24:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=amacapital-net.20150623.gappssmtp.com header.i=@amacapital-net.20150623.gappssmtp.com header.b="vkrTbtOH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 663492395C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=amacapital.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BwhCS47QFzDqZT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Sep 2020 22:56:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BwmqV3hd9zDqWn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 02:24:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33;
- helo=metis.ext.pengutronix.de; envelope-from=pza@pengutronix.de;
+ smtp.mailfrom=amacapital.net (client-ip=2607:f8b0:4864:20::544;
+ helo=mail-pg1-x544.google.com; envelope-from=luto@amacapital.net;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=pengutronix.de
-X-Greylist: delayed 1071 seconds by postgrey-1.36 at bilbo;
- Tue, 22 Sep 2020 22:27:30 AEST
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ header.from=amacapital.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=amacapital-net.20150623.gappssmtp.com
+ header.i=@amacapital-net.20150623.gappssmtp.com header.a=rsa-sha256
+ header.s=20150623 header.b=vkrTbtOH; dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BwgYZ59TnzDqT3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 22:27:23 +1000 (AEST)
-Received: from dude02.hi.pengutronix.de ([2001:67c:670:100:1d::28])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <pza@pengutronix.de>)
- id 1kKh6P-0007EV-MR; Tue, 22 Sep 2020 14:08:57 +0200
-Received: from pza by dude02.hi.pengutronix.de with local (Exim 4.92)
- (envelope-from <pza@pengutronix.de>)
- id 1kKh6M-0003wj-DL; Tue, 22 Sep 2020 14:08:54 +0200
-Date: Tue, 22 Sep 2020 14:08:54 +0200
-From: Philipp Zabel <pza@pengutronix.de>
-To: "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
-Subject: Re: [PATCH v2 1/2] ASoC: fsl_xcvr: Add XCVR ASoC CPU DAI driver
-Message-ID: <20200922120854.GA15104@pengutronix.de>
-References: <1600715292-28529-1-git-send-email-viorel.suman@oss.nxp.com>
- <1600715292-28529-2-git-send-email-viorel.suman@oss.nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1600715292-28529-2-git-send-email-viorel.suman@oss.nxp.com>
-X-Sent-From: Pengutronix Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Uptime: 14:07:31 up 213 days, 23:24, 242 users,  load average: 0.15, 0.91,
- 2.62
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::28
-X-SA-Exim-Mail-From: pza@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
-X-Mailman-Approved-At: Tue, 22 Sep 2020 22:54:27 +1000
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BwmkF308xzDqW3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 02:20:16 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id o25so7424788pgm.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2020 09:20:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amacapital-net.20150623.gappssmtp.com; s=20150623;
+ h=content-transfer-encoding:from:mime-version:subject:date:message-id
+ :references:cc:in-reply-to:to;
+ bh=OuYZ36WnxwIp9b6camA1INonBCd7PS5F7n5lbvDtQoE=;
+ b=vkrTbtOH4vHnR/84aYqVDHrQ5AGvI5gJZ+epaaRbPDginNWZ7IQOaHp0KiQGLoRIqK
+ lCtpCBfEppwh5xdm5Fg2E09yGBsQ1omUh0FsVnB0AGbc0KabsZevsMs5kdugIv8CVE5/
+ WA4g4A2X6yhuybhLsZ26G3b/9jK9koGpq3H8xumPWJXJrnSzbLUYbfDR++IgN0bKoBQq
+ n0DG/oDelKPnE35WpGCvEELD66Jz17cs7lC56sr6mITihQA1DVJ1mt9BGhniHUyWF6Lh
+ zzYPOu4uBf4nQ34xtWqSlA6XpnJ8NFviCNNpjE2H0nhrpatshwJ5hPmeTiRqtrX3VMpc
+ QmhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:content-transfer-encoding:from:mime-version
+ :subject:date:message-id:references:cc:in-reply-to:to;
+ bh=OuYZ36WnxwIp9b6camA1INonBCd7PS5F7n5lbvDtQoE=;
+ b=rkWYaLex2PBCiJkWNZ/TQQ433hpqxw/iy1UwdgZiycLs/i9o5JHpNEEglomBHR9wee
+ b3mvc4Vq6hCvuPy9LiGR6puOPDvV3vQcmA60bujCtNPujDu3NHoXUHf7UHkw2wO/CE2s
+ DtfGH40BYR3srpk5AEtxmJPralNYEXksUOmT+5DaOQDtl9n3L0C1yUFPCYn3QfyxGeL2
+ EmOthA8mC6RerJhgaThZl48thZQrxQqNrd0/gkkiUrgSQmNfwez5PcgujBIaH4OEWqFR
+ RQFO1QDqrvJyhz1LWVA2IxfU1hb0r1RxfYyyhNlu6hvFD37YrDP8lWhdgcGkXdVvrKHy
+ ppIA==
+X-Gm-Message-State: AOAM531epeXYG2arc62hkED66M655wAn/3zCbjrM44R0sxfz3d74fcHI
+ H1nqIF0TCXZAVHM7RFqvIHc+cA==
+X-Google-Smtp-Source: ABdhPJzVdW+N5Ufbpna8vjsXyt2h2YPelrT15cDlhJa791IGnC+04vroQZTdEBrKNKjccVmTF6OthA==
+X-Received: by 2002:a17:902:fe88:b029:d2:2a16:254 with SMTP id
+ x8-20020a170902fe88b02900d22a160254mr5598643plm.23.1600791613205; 
+ Tue, 22 Sep 2020 09:20:13 -0700 (PDT)
+Received: from localhost.localdomain ([2601:646:c200:1ef2:f4bd:fe2:85ed:ea92])
+ by smtp.gmail.com with ESMTPSA id
+ gk14sm2982522pjb.41.2020.09.22.09.20.09
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 22 Sep 2020 09:20:12 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Andy Lutomirski <luto@amacapital.net>
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH 1/9] kernel: add a PF_FORCE_COMPAT flag
+Date: Tue, 22 Sep 2020 09:20:07 -0700
+Message-Id: <446566DF-ECBC-449C-92A1-A7D5AEBE9935@amacapital.net>
+References: <CAK8P3a39jN+t2hhLg0oKZnbYATQXmYE2-Z1JkmFyc1EPdg1HXw@mail.gmail.com>
+In-Reply-To: <CAK8P3a39jN+t2hhLg0oKZnbYATQXmYE2-Z1JkmFyc1EPdg1HXw@mail.gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+X-Mailer: iPhone Mail (18A373)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,193 +95,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
- Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shengjiu Wang <shengjiu.wang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Takashi Iwai <tiwai@suse.com>, Rob Herring <robh+dt@kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
- Viorel Suman <viorel.suman@nxp.com>, Viorel Suman <viorel.suman@gmail.com>,
- Cosmin-Gabriel Samoila <cosmin.samoila@nxp.com>,
- Jaroslav Kysela <perex@perex.cz>, Fabio Estevam <festevam@gmail.com>,
- linux-kernel@vger.kernel.org
+Cc: linux-aio <linux-aio@kvack.org>,
+ "open list:MIPS" <linux-mips@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ keyrings@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ Christoph Hellwig <hch@lst.de>, linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux SCSI List <linux-scsi@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linux-block <linux-block@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Andy Lutomirski <luto@kernel.org>, io-uring@vger.kernel.org,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Jens Axboe <axboe@kernel.dk>, Parisc List <linux-parisc@vger.kernel.org>,
+ Network Development <netdev@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ LSM List <linux-security-module@vger.kernel.org>,
+ Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Pavel Begunkov <asml.silence@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 21, 2020 at 10:08:11PM +0300, Viorel Suman (OSS) wrote:
-> From: Viorel Suman <viorel.suman@nxp.com>
-> 
-> XCVR (Audio Transceiver) is a on-chip functional module found
-> on i.MX8MP. It support HDMI2.1 eARC, HDMI1.4 ARC and SPDIF.
-> 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-> ---
->  sound/soc/fsl/Kconfig    |   10 +
->  sound/soc/fsl/Makefile   |    2 +
->  sound/soc/fsl/fsl_xcvr.c | 1343 ++++++++++++++++++++++++++++++++++++++++++++++
->  sound/soc/fsl/fsl_xcvr.h |  266 +++++++++
->  4 files changed, 1621 insertions(+)
->  create mode 100644 sound/soc/fsl/fsl_xcvr.c
->  create mode 100644 sound/soc/fsl/fsl_xcvr.h
-> 
-> diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-> index 3f76ff7..d04b64d 100644
-> --- a/sound/soc/fsl/Kconfig
-> +++ b/sound/soc/fsl/Kconfig
-> @@ -95,6 +95,16 @@ config SND_SOC_FSL_EASRC
->  	  destination sample rate. It is a new design module compare with the
->  	  old ASRC.
->  
-> +config SND_SOC_FSL_XCVR
-> +	tristate "NXP Audio Transceiver (XCVR) module support"
-> +	select REGMAP_MMIO
-> +	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
-> +	select SND_SOC_GENERIC_DMAENGINE_PCM
-> +	help
-> +	  Say Y if you want to add Audio Transceiver (XCVR) support for NXP
-> +	  iMX CPUs. XCVR is a digital module that supports HDMI2.1 eARC,
-> +	  HDMI1.4 ARC and SPDIF.
-> +
->  config SND_SOC_FSL_UTILS
->  	tristate
->  
-> diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-> index b835eeb..1d2231f 100644
-> --- a/sound/soc/fsl/Makefile
-> +++ b/sound/soc/fsl/Makefile
-> @@ -25,6 +25,7 @@ snd-soc-fsl-utils-objs := fsl_utils.o
->  snd-soc-fsl-dma-objs := fsl_dma.o
->  snd-soc-fsl-mqs-objs := fsl_mqs.o
->  snd-soc-fsl-easrc-objs := fsl_easrc.o
-> +snd-soc-fsl-xcvr-objs := fsl_xcvr.o
->  
->  obj-$(CONFIG_SND_SOC_FSL_AUDMIX) += snd-soc-fsl-audmix.o
->  obj-$(CONFIG_SND_SOC_FSL_ASOC_CARD) += snd-soc-fsl-asoc-card.o
-> @@ -38,6 +39,7 @@ obj-$(CONFIG_SND_SOC_FSL_UTILS) += snd-soc-fsl-utils.o
->  obj-$(CONFIG_SND_SOC_FSL_MQS) += snd-soc-fsl-mqs.o
->  obj-$(CONFIG_SND_SOC_FSL_EASRC) += snd-soc-fsl-easrc.o
->  obj-$(CONFIG_SND_SOC_POWERPC_DMA) += snd-soc-fsl-dma.o
-> +obj-$(CONFIG_SND_SOC_FSL_XCVR) += snd-soc-fsl-xcvr.o
->  
->  # MPC5200 Platform Support
->  obj-$(CONFIG_SND_MPC52xx_DMA) += mpc5200_dma.o
-> diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-> new file mode 100644
-> index 00000000..7391bca
-> --- /dev/null
-> +++ b/sound/soc/fsl/fsl_xcvr.c
-> @@ -0,0 +1,1343 @@
-[...]
-> +static int fsl_xcvr_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = dev->of_node;
-> +	const struct of_device_id *of_id;
-> +	struct fsl_xcvr *xcvr;
-> +	struct resource *ram_res, *regs_res, *rx_res, *tx_res;
-> +	void __iomem *regs;
-> +	int ret, irq;
-> +
-> +	of_id = of_match_device(fsl_xcvr_dt_ids, dev);
-> +	if (!of_id)
-> +		return -EINVAL;
-> +
-> +	xcvr = devm_kzalloc(dev, sizeof(*xcvr), GFP_KERNEL);
-> +	if (!xcvr)
-> +		return -ENOMEM;
-> +
-> +	xcvr->pdev = pdev;
-> +	xcvr->ipg_clk = devm_clk_get(dev, "ipg");
-> +	if (IS_ERR(xcvr->ipg_clk)) {
-> +		dev_err(dev, "failed to get ipg clock\n");
-> +		return PTR_ERR(xcvr->ipg_clk);
-> +	}
-> +
-> +	xcvr->phy_clk = devm_clk_get(dev, "phy");
-> +	if (IS_ERR(xcvr->phy_clk)) {
-> +		dev_err(dev, "failed to get phy clock\n");
-> +		return PTR_ERR(xcvr->phy_clk);
-> +	}
-> +
-> +	xcvr->spba_clk = devm_clk_get(dev, "spba");
-> +	if (IS_ERR(xcvr->spba_clk)) {
-> +		dev_err(dev, "failed to get spba clock\n");
-> +		return PTR_ERR(xcvr->spba_clk);
-> +	}
-> +
-> +	xcvr->pll_ipg_clk = devm_clk_get(dev, "pll_ipg");
-> +	if (IS_ERR(xcvr->pll_ipg_clk)) {
-> +		dev_err(dev, "failed to get pll_ipg clock\n");
-> +		return PTR_ERR(xcvr->pll_ipg_clk);
-> +	}
-> +
-> +	ram_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "ram");
-> +	xcvr->ram_addr = devm_ioremap_resource(dev, ram_res);
-> +	if (IS_ERR(xcvr->ram_addr))
-> +		return PTR_ERR(xcvr->ram_addr);
-> +
-> +	regs_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-> +	regs = devm_ioremap_resource(dev, regs_res);
-> +	if (IS_ERR(regs))
-> +		return PTR_ERR(regs);
-> +
-> +	xcvr->regmap = devm_regmap_init_mmio_clk(dev, NULL, regs,
-> +						 &fsl_xcvr_regmap_cfg);
-> +	if (IS_ERR(xcvr->regmap)) {
-> +		dev_err(dev, "failed to init XCVR regmap: %ld\n",
-> +			PTR_ERR(xcvr->regmap));
-> +		return PTR_ERR(xcvr->regmap);
-> +	}
-> +
-> +	xcvr->reset = of_reset_control_get(np, NULL);
 
-Please use devm_reset_control_get_exclusive().
 
-[...]
-> +static __maybe_unused int fsl_xcvr_runtime_resume(struct device *dev)
-> +{
-> +	struct fsl_xcvr *xcvr = dev_get_drvdata(dev);
-> +	int ret;
-> +
-> +	ret = clk_prepare_enable(xcvr->ipg_clk);
-> +	if (ret) {
-> +		dev_err(dev, "failed to start IPG clock.\n");
-> +		return ret;
-> +	}
-> +
-> +	ret = clk_prepare_enable(xcvr->pll_ipg_clk);
-> +	if (ret) {
-> +		dev_err(dev, "failed to start PLL IPG clock.\n");
-> +		goto stop_ipg_clk;
-> +	}
-> +
-> +	ret = clk_prepare_enable(xcvr->phy_clk);
-> +	if (ret) {
-> +		dev_err(dev, "failed to start PHY clock: %d\n", ret);
-> +		goto stop_pll_ipg_clk;
-> +	}
-> +
-> +	ret = clk_prepare_enable(xcvr->spba_clk);
-> +	if (ret) {
-> +		dev_err(dev, "failed to start SPBA clock.\n");
-> +		goto stop_phy_clk;
-> +	}
-> +
-> +	regcache_cache_only(xcvr->regmap, false);
-> +	regcache_mark_dirty(xcvr->regmap);
-> +	ret = regcache_sync(xcvr->regmap);
-> +
-> +	if (ret) {
-> +		dev_err(dev, "failed to sync regcache.\n");
-> +		goto stop_spba_clk;
-> +	}
-> +
-> +	reset_control_assert(xcvr->reset);
-> +	reset_control_deassert(xcvr->reset);
+> On Sep 22, 2020, at 2:01 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>=20
+> =EF=BB=BFOn Tue, Sep 22, 2020 at 9:59 AM Pavel Begunkov <asml.silence@gmai=
+l.com> wrote:
+>>> On 22/09/2020 10:23, Arnd Bergmann wrote:
+>>> On Tue, Sep 22, 2020 at 8:32 AM Pavel Begunkov <asml.silence@gmail.com> w=
+rote:
+>>>> On 22/09/2020 03:58, Andy Lutomirski wrote:
+>>>>> On Mon, Sep 21, 2020 at 5:24 PM Pavel Begunkov <asml.silence@gmail.com=
+> wrote:
+>>>>> I may be looking at a different kernel than you, but aren't you
+>>>>> preventing creating an io_uring regardless of whether SQPOLL is
+>>>>> requested?
+>>>>=20
+>>>> I diffed a not-saved file on a sleepy head, thanks for noticing.
+>>>> As you said, there should be an SQPOLL check.
+>>>>=20
+>>>> ...
+>>>> if (ctx->compat && (p->flags & IORING_SETUP_SQPOLL))
+>>>>        goto err;
+>>>=20
+>>> Wouldn't that mean that now 32-bit containers behave differently
+>>> between compat and native execution?
+>>>=20
+>>> I think if you want to prevent 32-bit applications from using SQPOLL,
+>>> it needs to be done the same way on both to be consistent:
+>>=20
+>> The intention was to disable only compat not native 32-bit.
+>=20
+> I'm not following why that would be considered a valid option,
+> as that clearly breaks existing users that update from a 32-bit
+> kernel to a 64-bit one.
+>=20
+> Taking away the features from users that are still on 32-bit kernels
+> already seems questionable to me, but being inconsistent
+> about it seems much worse, in particular when the regression
+> is on the upgrade path.
+>=20
+>>> Can we expect all existing and future user space to have a sane
+>>> fallback when IORING_SETUP_SQPOLL fails?
+>>=20
+>> SQPOLL has a few differences with non-SQPOLL modes, but it's easy
+>> to convert between them. Anyway, SQPOLL is a privileged special
+>> case that's here for performance/latency reasons, I don't think
+>> there will be any non-accidental users of it.
+>=20
+> Ok, so the behavior of 32-bit tasks would be the same as running
+> the same application as unprivileged 64-bit tasks, with applications
+> already having to implement that fallback, right?
+>=20
+>=20
 
-No delay required between the two?
+I don=E2=80=99t have any real preference wrt SQPOLL, and it may be that we h=
+ave a problem even without SQPOLL when IO gets punted without one of the fix=
+es discussed.
 
-regards
-Philipp
+But banning the mismatched io_uring and io_uring_enter seems like it may be w=
+orthwhile regardless.=
