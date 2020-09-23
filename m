@@ -4,22 +4,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D904CC4363D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 245F9C4363D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:39:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01062221E8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:37:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01062221E8
+	by mail.kernel.org (Postfix) with ESMTPS id 734D421D43
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:39:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 734D421D43
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bx7lP19JbzDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 16:37:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bx7nF0wjxzDqSt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 16:39:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,26 +29,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bx7ft25SvzDq9j
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 16:33:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bx7ft37mMzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 16:33:42 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7D3E22014BC;
- Wed, 23 Sep 2020 08:33:37 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6A8702010BF;
+ Wed, 23 Sep 2020 08:33:39 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BBEC62010BF;
- Wed, 23 Sep 2020 08:33:33 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B30812010C3;
+ Wed, 23 Sep 2020 08:33:35 +0200 (CEST)
 Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id CCF3D402BE;
- Wed, 23 Sep 2020 08:33:28 +0200 (CEST)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BEA9B402D0;
+ Wed, 23 Sep 2020 08:33:30 +0200 (CEST)
 From: Ran Wang <ran.wang_1@nxp.com>
 To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
  Shawn Guo <shawnguo@kernel.org>
-Subject: [PATCH v2 1/5] Documentation: dt: binding: fsl: Add 'fsl,
- ippdexpcr1-alt-addr' property
-Date: Wed, 23 Sep 2020 14:25:06 +0800
-Message-Id: <20200923062510.38253-1-ran.wang_1@nxp.com>
+Subject: [PATCH v2 3/5] arm: dts: ls1021a: enable RCPM workaround for erratum
+ A-008646
+Date: Wed, 23 Sep 2020 14:25:08 +0800
+Message-Id: <20200923062510.38253-3-ran.wang_1@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200923062510.38253-1-ran.wang_1@nxp.com>
+References: <20200923062510.38253-1-ran.wang_1@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,55 +72,30 @@ Sender: "Linuxppc-dev"
 
 From: Biwen Li <biwen.li@nxp.com>
 
-The 'fsl,ippdexpcr1-alt-addr' property is used to handle an errata A-008646
-on LS1021A
+The patch fixes a bug that FlexTimer cannot
+wakeup system in deep sleep.
 
 Signed-off-by: Biwen Li <biwen.li@nxp.com>
 Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
 Change in v2:
- - None
+ - Change subject of commit message to be consistent with other related patches.
 
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm/boot/dts/ls1021a.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-index 5a33619..1be58a3 100644
---- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-@@ -34,6 +34,11 @@ Chassis Version		Example Chips
- Optional properties:
-  - little-endian : RCPM register block is Little Endian. Without it RCPM
-    will be Big Endian (default case).
-+ - fsl,ippdexpcr1-alt-addr : The property is related to a hardware issue
-+   on SoC LS1021A and only needed on SoC LS1021A.
-+   Must include 2 entries:
-+   The first entry must be a link to the SCFG device node.
-+   The 2nd entry must be offset of register IPPDEXPCR1 in SCFG.
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 827373e..089fe86 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -1007,6 +1007,7 @@
+ 			compatible = "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-2.1+";
+ 			reg = <0x0 0x1ee2140 0x0 0x8>;
+ 			#fsl,rcpm-wakeup-cells = <2>;
++			fsl,ippdexpcr1-alt-addr = <&scfg 0x51c>;
+ 		};
  
- Example:
- The RCPM node for T4240:
-@@ -43,6 +48,20 @@ The RCPM node for T4240:
- 		#fsl,rcpm-wakeup-cells = <2>;
- 	};
- 
-+The RCPM node for LS1021A:
-+	rcpm: rcpm@1ee2140 {
-+		compatible = "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-2.1+";
-+		reg = <0x0 0x1ee2140 0x0 0x8>;
-+		#fsl,rcpm-wakeup-cells = <2>;
-+
-+		/*
-+		 * The second and third entry compose an alt offset
-+		 * address for IPPDEXPCR1(SCFG_SPARECR8)
-+		 */
-+		fsl,ippdexpcr1-alt-addr = <&scfg 0x51c>;
-+	};
-+
-+
- * Freescale RCPM Wakeup Source Device Tree Bindings
- -------------------------------------------
- Required fsl,rcpm-wakeup property should be added to a device node if the device
+ 		ftm_alarm0: timer0@29d0000 {
 -- 
 2.7.4
 
