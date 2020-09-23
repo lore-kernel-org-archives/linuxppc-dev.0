@@ -7,53 +7,54 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC1E5C2D0E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 00:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83946C4727D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 00:15:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 051EE2076B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 00:13:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 935462076B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 00:15:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="NWfNdS/J"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 051EE2076B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="JxiasQgk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 935462076B
 Authentication-Results: mail.kernel.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BwzD16GGyzDqTW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 10:13:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BwzGD6rJkzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 10:15:16 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bwz9m5z49zDqQV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bwz9m2d50zDqMM
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 10:11:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256
- header.s=201707 header.b=NWfNdS/J; dkim-atps=neutral
+ header.s=201707 header.b=JxiasQgk; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 4Bwz9m4kHZz9sTh; Wed, 23 Sep 2020 10:11:24 +1000 (AEST)
+ id 4Bwz9m0BF2z9sTC; Wed, 23 Sep 2020 10:11:23 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1600819884; bh=qxuvilfoTnyNq+tBA0iFeUPCv77I+0VTd8cXq4bIGDs=;
+ t=1600819884; bh=m9GHPNW/2K3Mjvs2CsrXbfRUodKWSPQ095s2qLR2VpQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=NWfNdS/JTWDcyBku0m3+xPTR5aINhEBrBGiXkZYxihUsfRyEAx8YYXQfSIbuYukYJ
- oUAvy5xWbDlrXOR7+jkKHKKUAPMXVxjmahCCpSd7nrM8GeMCBldurDO67GdaJeAhof
- Q8U2KQAgohzYIPGQ9tDpKD10mineXmYVJ7cfwYIhE0rgruCv3GBZaaiYJdQ+IASBYy
- 1BXRkbz/08ecQaEC2NfTKnEVtX80f+wWddpwSF4AV6VNMhlokatZ1obdr/LQfzOuLa
- WfpmD5ZzB2NrdZgCzmiK0R7dH5XcqJInPe7JTaft7Xo42VRE5tB+UjR8rKWgqDSdwK
- ym2fRbUP7tUTw==
-Date: Wed, 23 Sep 2020 10:08:00 +1000
+ b=JxiasQgk2Gc0tHgASYaAjH9YcNwSlENF2bedN0m/hNvUQ4nh1PLeMl8IJFFcBe9T+
+ T6uIdkVEupvrvzoJcsqIC4wUOsJCdW5BwhOhmPYuDTczeSJofcrlRyGEJieedte9d2
+ 7bDtvUX2LV6MzYLX+VDzrkHOqRgALIrhNABqG9cCAdExw0MfrZDTYz2oYoEQAWX8mq
+ 12zvrJtvh+2wbTPQeejoUZVtPzsdP1Ga8Isrk2xk95FTy2Nf7l4WBMpIqB6no92tfE
+ qM/8MXmTYst/0Tz9sLQtOLZU7ZiBVtamNJ00F8IiYojbpA413Yy6SzOWIDsLu6MVp2
+ hJpGCP03732wg==
+Date: Wed, 23 Sep 2020 10:08:32 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Wang Wensheng <wangwensheng4@huawei.com>
-Subject: Re: [PATCH -next] powerpc/kvm/books: Fix symbol undeclared warnings
-Message-ID: <20200923000800.GB531519@thinks.paulus.ozlabs.org>
-References: <20200921112211.82830-1-wangwensheng4@huawei.com>
+To: Jing Xiangfeng <jingxiangfeng@huawei.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S: Remove redundant initialization of
+ variable ret
+Message-ID: <20200923000832.GC531519@thinks.paulus.ozlabs.org>
+References: <20200919071230.125798-1-jingxiangfeng@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200921112211.82830-1-wangwensheng4@huawei.com>
+In-Reply-To: <20200919071230.125798-1-jingxiangfeng@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,27 +72,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 21, 2020 at 11:22:11AM +0000, Wang Wensheng wrote:
-> Build the kernel with `C=2`:
-> arch/powerpc/kvm/book3s_hv_nested.c:572:25: warning: symbol
-> 'kvmhv_alloc_nested' was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_64_mmu_radix.c:350:6: warning: symbol
-> 'kvmppc_radix_set_pte_at' was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_hv.c:3568:5: warning: symbol
-> 'kvmhv_p9_guest_entry' was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_hv_rm_xics.c:767:15: warning: symbol 'eoi_rc'
-> was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_64_vio_hv.c:240:13: warning: symbol
-> 'iommu_tce_kill_rm' was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_64_vio.c:492:6: warning: symbol
-> 'kvmppc_tce_iommu_do_map' was not declared. Should it be static?
-> arch/powerpc/kvm/book3s_pr.c:572:6: warning: symbol 'kvmppc_set_pvr_pr'
-> was not declared. Should it be static?
+On Sat, Sep 19, 2020 at 03:12:30PM +0800, Jing Xiangfeng wrote:
+> The variable ret is being initialized with '-ENOMEM' that is meaningless.
+> So remove it.
 > 
-> Those symbols are used only in the files that define them so make them
-> static to fix the warnings.
-> 
-> Signed-off-by: Wang Wensheng <wangwensheng4@huawei.com>
+> Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
 
 Thanks, applied.
 
