@@ -2,70 +2,55 @@ Return-Path: <SRS0=wj8a=DA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B892FC4363D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:24:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8911BC4363D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:35:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 387AA21D43
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:24:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="T3FOU5xN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 387AA21D43
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 02A9821D43
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 06:35:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 02A9821D43
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bx7Rk1QL0zDqRX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 16:24:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+f986b76a317b29d19e9e+6240+infradead.org+hch@casper.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bx7jQ5fGlzDqLr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Sep 2020 16:35:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=T3FOU5xN; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bx73B5hcDzDqD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 16:06:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=h2A4fGEZQy5AWNTCiW/VH969+KfLhA3tamD7pUUjWw0=; b=T3FOU5xNTo0TVcx7aEv6ki1rbo
- ZJ1CwS7IMRkZAGnrdzYktPmwjbR1TxAgYUZ8Pzh6l/h6LUJviVpDC84XkO/sLyhFV89ffpl+DelgU
- 8cgn5boqrUvExlqfWGMcK3jc7lo8lICnMOKjHUdkTdrY0uu8ZUZtWMFs+K4CrsYl16B8geR167Q3s
- nlKr4EAKDRvVO1fdYKkmX9hzb6KDGVgTVeVSoj9Bii9UkE1XHGw5mzvanoXWMgaDEqu5QtyRQHLlW
- Xbfd/AaBIDtUTMSoddNaOCZv5qfozYvWvlnLjJX1cOX2iBxyGHn09t/gNArG+UNWeeVCcGYNcMxOK
- v4jS70kA==;
-Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kKxud-0003Tb-QI; Wed, 23 Sep 2020 06:05:56 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 4/9] iov_iter: transparently handle compat iovecs in
- import_iovec
-Date: Wed, 23 Sep 2020 08:05:42 +0200
-Message-Id: <20200923060547.16903-5-hch@lst.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200923060547.16903-1-hch@lst.de>
-References: <20200923060547.16903-1-hch@lst.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bx7ft2QGxzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 16:33:41 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 68D1A1A02B4;
+ Wed, 23 Sep 2020 08:33:38 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B05DF1A02C5;
+ Wed, 23 Sep 2020 08:33:34 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C60684029F;
+ Wed, 23 Sep 2020 08:33:29 +0200 (CEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Shawn Guo <shawnguo@kernel.org>
+Subject: [PATCH v2 2/5] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
+Date: Wed, 23 Sep 2020 14:25:07 +0800
+Message-Id: <20200923062510.38253-2-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200923062510.38253-1-ran.wang_1@nxp.com>
+References: <20200923062510.38253-1-ran.wang_1@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,279 +62,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-mips@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- keyrings@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-block@vger.kernel.org, io-uring@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <David.Laight@aculab.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, Biwen Li <biwen.li@nxp.com>,
+ linux-kernel@vger.kernel.org, Ran Wang <ran.wang_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use in compat_syscall to import either native or the compat iovecs, and
-remove the now superflous compat_import_iovec.
+From: Biwen Li <biwen.li@nxp.com>
 
-This removes the need for special compat logic in most callers, and
-the remaining ones can still be simplified by using __import_iovec
-with a bool compat parameter.
+Hardware issue:
+- Reading register RCPM_IPPDEXPCR1 always return zero, this causes
+  system firmware could not get correct information and wrongly do
+  clock gating for all wakeup source IP during system suspend. Then
+  those IPs will never get chance to wake system.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Workaround:
+- Duplicate register RCPM_IPPDEXPCR1's setting to register SCFG_SPARECR8
+  to allow system firmware's psci method read it and do things accordingly.
+
+Signed-off-by: Biwen Li <biwen.li@nxp.com>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- block/scsi_ioctl.c     | 12 ++----------
- drivers/scsi/sg.c      |  9 +--------
- fs/aio.c               |  8 ++------
- fs/io_uring.c          | 20 ++++++++------------
- fs/read_write.c        |  6 ++++--
- fs/splice.c            |  2 +-
- include/linux/uio.h    |  8 --------
- lib/iov_iter.c         | 14 ++------------
- mm/process_vm_access.c |  3 ++-
- net/compat.c           |  4 ++--
- security/keys/compat.c |  5 ++---
- 11 files changed, 26 insertions(+), 65 deletions(-)
+Change in v2:
+ - Update commit message to be more clear.
+ - Replace device_property_read_u32_array() with syscon_regmap_lookup_by_phandle_args()
+   to make code simpler.
 
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index ef722f04f88a93..e08df86866ee5d 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -333,16 +333,8 @@ static int sg_io(struct request_queue *q, struct gendisk *bd_disk,
- 		struct iov_iter i;
- 		struct iovec *iov = NULL;
+ drivers/soc/fsl/rcpm.c | 31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
+index a093dbe..6e37777 100644
+--- a/drivers/soc/fsl/rcpm.c
++++ b/drivers/soc/fsl/rcpm.c
+@@ -2,7 +2,7 @@
+ //
+ // rcpm.c - Freescale QorIQ RCPM driver
+ //
+-// Copyright 2019 NXP
++// Copyright 2019-2020 NXP
+ //
+ // Author: Ran Wang <ran.wang_1@nxp.com>
  
--#ifdef CONFIG_COMPAT
--		if (in_compat_syscall())
--			ret = compat_import_iovec(rq_data_dir(rq),
--				   hdr->dxferp, hdr->iovec_count,
--				   0, &iov, &i);
--		else
--#endif
--			ret = import_iovec(rq_data_dir(rq),
--				   hdr->dxferp, hdr->iovec_count,
--				   0, &iov, &i);
-+		ret = import_iovec(rq_data_dir(rq), hdr->dxferp,
-+				   hdr->iovec_count, 0, &iov, &i);
- 		if (ret < 0)
- 			goto out_free_cdb;
+@@ -13,6 +13,9 @@
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/kernel.h>
++#include <linux/acpi.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
  
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index 20472aaaf630a4..bfa8d77322d732 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1820,14 +1820,7 @@ sg_start_req(Sg_request *srp, unsigned char *cmd)
- 		struct iovec *iov = NULL;
- 		struct iov_iter i;
+ #define RCPM_WAKEUP_CELL_MAX_SIZE	7
  
--#ifdef CONFIG_COMPAT
--		if (in_compat_syscall())
--			res = compat_import_iovec(rw, hp->dxferp, iov_count,
--						  0, &iov, &i);
--		else
--#endif
--			res = import_iovec(rw, hp->dxferp, iov_count,
--					   0, &iov, &i);
-+		res = import_iovec(rw, hp->dxferp, iov_count, 0, &iov, &i);
- 		if (res < 0)
- 			return res;
+@@ -37,6 +40,9 @@ static int rcpm_pm_prepare(struct device *dev)
+ 	struct device_node	*np = dev->of_node;
+ 	u32 value[RCPM_WAKEUP_CELL_MAX_SIZE + 1];
+ 	u32 setting[RCPM_WAKEUP_CELL_MAX_SIZE] = {0};
++	struct regmap *scfg_addr_regmap = NULL;
++	u32 reg_offset = 0;
++	u32 reg_value = 0;
  
-diff --git a/fs/aio.c b/fs/aio.c
-index d5ec303855669d..c45c20d875388c 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -1489,12 +1489,8 @@ static ssize_t aio_setup_rw(int rw, const struct iocb *iocb,
- 		*iovec = NULL;
- 		return ret;
- 	}
--#ifdef CONFIG_COMPAT
--	if (compat)
--		return compat_import_iovec(rw, buf, len, UIO_FASTIOV, iovec,
--				iter);
--#endif
--	return import_iovec(rw, buf, len, UIO_FASTIOV, iovec, iter);
-+
-+	return __import_iovec(rw, buf, len, UIO_FASTIOV, iovec, iter, compat);
- }
- 
- static inline void aio_rw_done(struct kiocb *req, ssize_t ret)
-diff --git a/fs/io_uring.c b/fs/io_uring.c
-index 3790c7fe9fee22..ba84ecea7cb1a4 100644
---- a/fs/io_uring.c
-+++ b/fs/io_uring.c
-@@ -2837,13 +2837,8 @@ static ssize_t __io_import_iovec(int rw, struct io_kiocb *req,
- 		return ret;
+ 	rcpm = dev_get_drvdata(dev);
+ 	if (!rcpm)
+@@ -90,6 +96,29 @@ static int rcpm_pm_prepare(struct device *dev)
+ 			tmp |= ioread32be(address);
+ 			iowrite32be(tmp, address);
+ 		}
++		/*
++		 * Workaround of errata A-008646 on SoC LS1021A:
++		 * There is a bug of register ippdexpcr1.
++		 * Reading configuration register RCPM_IPPDEXPCR1
++		 * always return zero. So save ippdexpcr1's value
++		 * to register SCFG_SPARECR8.And the value of
++		 * ippdexpcr1 will be read from SCFG_SPARECR8.
++		 */
++		if (dev_of_node(dev) && (i == 1)) {
++			scfg_addr_regmap = syscon_regmap_lookup_by_phandle_args(np,
++					"fsl,ippdexpcr1-alt-addr",
++					1,
++					&reg_offset);
++			if (!IS_ERR_OR_NULL(scfg_addr_regmap)) {
++				/* Update value on register SCFG_SPARECR8 */
++				regmap_read(scfg_addr_regmap,
++						reg_offset,
++						&reg_value);
++				regmap_write(scfg_addr_regmap,
++						reg_offset,
++						tmp | reg_value);
++			}
++		}
  	}
  
--#ifdef CONFIG_COMPAT
--	if (req->ctx->compat)
--		return compat_import_iovec(rw, buf, sqe_len, UIO_FASTIOV,
--						iovec, iter);
--#endif
--
--	return import_iovec(rw, buf, sqe_len, UIO_FASTIOV, iovec, iter);
-+	return __import_iovec(rw, buf, sqe_len, UIO_FASTIOV, iovec, iter,
-+			      req->ctx->compat);
- }
- 
- static ssize_t io_import_iovec(int rw, struct io_kiocb *req,
-@@ -4179,8 +4174,9 @@ static int __io_recvmsg_copy_hdr(struct io_kiocb *req,
- 				sr->len);
- 		iomsg->iov = NULL;
- 	} else {
--		ret = import_iovec(READ, uiov, iov_len, UIO_FASTIOV,
--					&iomsg->iov, &iomsg->msg.msg_iter);
-+		ret = __import_iovec(READ, uiov, iov_len, UIO_FASTIOV,
-+				     &iomsg->iov, &iomsg->msg.msg_iter,
-+				     false);
- 		if (ret > 0)
- 			ret = 0;
- 	}
-@@ -4220,9 +4216,9 @@ static int __io_compat_recvmsg_copy_hdr(struct io_kiocb *req,
- 		sr->len = iomsg->iov[0].iov_len;
- 		iomsg->iov = NULL;
- 	} else {
--		ret = compat_import_iovec(READ, uiov, len, UIO_FASTIOV,
--						&iomsg->iov,
--						&iomsg->msg.msg_iter);
-+		ret = __import_iovec(READ, (struct iovec __user *)uiov, len,
-+				   UIO_FASTIOV, &iomsg->iov,
-+				   &iomsg->msg.msg_iter, true);
- 		if (ret < 0)
- 			return ret;
- 	}
-diff --git a/fs/read_write.c b/fs/read_write.c
-index e5e891a88442ef..0a68037580b455 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -1078,7 +1078,8 @@ static size_t compat_readv(struct file *file,
- 	struct iov_iter iter;
- 	ssize_t ret;
- 
--	ret = compat_import_iovec(READ, vec, vlen, UIO_FASTIOV, &iov, &iter);
-+	ret = import_iovec(READ, (const struct iovec __user *)vec, vlen,
-+			   UIO_FASTIOV, &iov, &iter);
- 	if (ret >= 0) {
- 		ret = do_iter_read(file, &iter, pos, flags);
- 		kfree(iov);
-@@ -1186,7 +1187,8 @@ static size_t compat_writev(struct file *file,
- 	struct iov_iter iter;
- 	ssize_t ret;
- 
--	ret = compat_import_iovec(WRITE, vec, vlen, UIO_FASTIOV, &iov, &iter);
-+	ret = import_iovec(WRITE, (const struct iovec __user *)vec, vlen,
-+			   UIO_FASTIOV, &iov, &iter);
- 	if (ret >= 0) {
- 		file_start_write(file);
- 		ret = do_iter_write(file, &iter, pos, flags);
-diff --git a/fs/splice.c b/fs/splice.c
-index d7c8a7c4db07ff..132d42b9871f9b 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1387,7 +1387,7 @@ COMPAT_SYSCALL_DEFINE4(vmsplice, int, fd, const struct compat_iovec __user *, io
- 	if (error)
- 		return error;
- 
--	error = compat_import_iovec(type, iov32, nr_segs,
-+	error = import_iovec(type, (struct iovec __user *)iov32, nr_segs,
- 			     ARRAY_SIZE(iovstack), &iov, &iter);
- 	if (error >= 0) {
- 		error = do_vmsplice(f.file, &iter, flags);
-diff --git a/include/linux/uio.h b/include/linux/uio.h
-index 92c11fe41c6228..daedc61ad3706e 100644
---- a/include/linux/uio.h
-+++ b/include/linux/uio.h
-@@ -275,14 +275,6 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
- ssize_t __import_iovec(int type, const struct iovec __user *uvec,
- 		 unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
- 		 struct iov_iter *i, bool compat);
--
--#ifdef CONFIG_COMPAT
--struct compat_iovec;
--ssize_t compat_import_iovec(int type, const struct compat_iovec __user * uvector,
--		 unsigned nr_segs, unsigned fast_segs,
--		 struct iovec **iov, struct iov_iter *i);
--#endif
--
- int import_single_range(int type, void __user *buf, size_t len,
- 		 struct iovec *iov, struct iov_iter *i);
- 
-diff --git a/lib/iov_iter.c b/lib/iov_iter.c
-index d5d8afe31fca16..8c51e1b03814a3 100644
---- a/lib/iov_iter.c
-+++ b/lib/iov_iter.c
-@@ -1806,21 +1806,11 @@ ssize_t import_iovec(int type, const struct iovec __user *uvec,
- 		 unsigned nr_segs, unsigned fast_segs,
- 		 struct iovec **iovp, struct iov_iter *i)
- {
--	return __import_iovec(type, uvec, nr_segs, fast_segs, iovp, i, false);
-+	return __import_iovec(type, uvec, nr_segs, fast_segs, iovp, i,
-+			      in_compat_syscall());
- }
- EXPORT_SYMBOL(import_iovec);
- 
--#ifdef CONFIG_COMPAT
--ssize_t compat_import_iovec(int type, const struct compat_iovec __user *uvec,
--		unsigned nr_segs, unsigned fast_segs, struct iovec **iovp,
--		struct iov_iter *i)
--{
--	return __import_iovec(type, (const struct iovec __user *)uvec, nr_segs,
--			     fast_segs, iovp, i, true);
--}
--EXPORT_SYMBOL(compat_import_iovec);
--#endif
--
- int import_single_range(int rw, void __user *buf, size_t len,
- 		 struct iovec *iov, struct iov_iter *i)
- {
-diff --git a/mm/process_vm_access.c b/mm/process_vm_access.c
-index 5e728c20c2bead..3f2156aab44263 100644
---- a/mm/process_vm_access.c
-+++ b/mm/process_vm_access.c
-@@ -326,7 +326,8 @@ compat_process_vm_rw(compat_pid_t pid,
- 	if (flags != 0)
- 		return -EINVAL;
- 
--	rc = compat_import_iovec(dir, lvec, liovcnt, UIO_FASTIOV, &iov_l, &iter);
-+	rc = import_iovec(dir, (const struct iovec __user *)lvec, liovcnt,
-+			  UIO_FASTIOV, &iov_l, &iter);
- 	if (rc < 0)
- 		return rc;
- 	if (!iov_iter_count(&iter))
-diff --git a/net/compat.c b/net/compat.c
-index 95ce707a30a31d..ddd15af3a2837b 100644
---- a/net/compat.c
-+++ b/net/compat.c
-@@ -98,8 +98,8 @@ int get_compat_msghdr(struct msghdr *kmsg,
- 	if (err)
- 		return err;
- 
--	err = compat_import_iovec(save_addr ? READ : WRITE, compat_ptr(ptr),
--				   len, UIO_FASTIOV, iov, &kmsg->msg_iter);
-+	err = import_iovec(save_addr ? READ : WRITE, compat_ptr(ptr), len,
-+			   UIO_FASTIOV, iov, &kmsg->msg_iter);
- 	return err < 0 ? err : 0;
- }
- 
-diff --git a/security/keys/compat.c b/security/keys/compat.c
-index 6ee9d8f6a4a5bb..7ae531db031cf8 100644
---- a/security/keys/compat.c
-+++ b/security/keys/compat.c
-@@ -33,9 +33,8 @@ static long compat_keyctl_instantiate_key_iov(
- 	if (!_payload_iov)
- 		ioc = 0;
- 
--	ret = compat_import_iovec(WRITE, _payload_iov, ioc,
--				  ARRAY_SIZE(iovstack), &iov,
--				  &from);
-+	ret = import_iovec(WRITE, (const struct iovec __user *)_payload_iov,
-+			   ioc, ARRAY_SIZE(iovstack), &iov, &from);
- 	if (ret < 0)
- 		return ret;
- 
+ 	return 0;
 -- 
-2.28.0
+2.7.4
 
