@@ -2,97 +2,102 @@ Return-Path: <SRS0=a6W3=DB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCD34C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:13:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 578B0C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:42:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7282A2311A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:13:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8476F235FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:42:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FkkyUKYx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7282A2311A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="UYh/ZggZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8476F235FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bxjql5KllzDqdZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 15:13:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::1041;
- helo=mail-pj1-x1041.google.com; envelope-from=aik@ozlabs.ru;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BxkT74vzFzDqcF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 15:42:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.a=rsa-sha256
- header.s=20150623 header.b=FkkyUKYx; dkim-atps=neutral
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com
- [IPv6:2607:f8b0:4864:20::1041])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=UYh/ZggZ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bxjnw08lszDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 15:11:43 +1000 (AEST)
-Received: by mail-pj1-x1041.google.com with SMTP id bw23so1027104pjb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 22:11:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=IbzPox5jnfS/DQmh8djlNye1AT0DWj0P7hHtIMKDwWQ=;
- b=FkkyUKYxCpfoJ2ecMoGh6ROu3M69X5VALvn5grx2GvyJL0d0IvLBVhOrEDy7CW2CDO
- 1nUK7ocrk2L91TMbHmwE3MKp0UdP/SpWzKk1dLhCxLvrQtpYBlcYbiMlrOToGJ7wZCfr
- kK43FF2/8yP3ieU98Uj5+BfguC5S22hL5AQ6DJzjqy6WnYWEgW3ou5/374se6TooKhN/
- Yd/Wyrs+ay97YO3xhzcawwaNrtXWcTU/nq1JGCOD793yt47DkyVh/ATuUx15F3D59Xe6
- Y6Z0h07so/a9YQdQEYfhzjeWo8oPYGEHWobYZCQ6uhcNG/eJWPuH7YSoAMjkZgOFE4jK
- oGVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=IbzPox5jnfS/DQmh8djlNye1AT0DWj0P7hHtIMKDwWQ=;
- b=AyGV4IYaTVhFcfIxDdquw01hsNhD8P7jQGTWSDdwBQwmikzIzkmEzaUuAXLNYGeF3R
- Sba6cL1oBdExLRUmH+K7LIhssQAE52JlcOn/PFnCCe02dzFb/PJ8DHYDF9idJJBIzImH
- esOml1/fKAViCg274NutifqIO2ySSLj3RLSIiqeuMjDQMAsCUm7ioifMDnu8B8TbZy9H
- 2vU+pyHkEW7AXh55LLMr4qH42GGxZEh/Tpsrm2focmyAyR3NGkw4QYs6IiDR/KryVv5r
- IN01AGzrc/t29ejuKvDAsrFTMZXL9ixAbciXin6Xd9uCk6lQibUpKpDj8wbb+I+GJ/gh
- 6Rfg==
-X-Gm-Message-State: AOAM5300Xx61lA1TaowA4KdIlyiyNSsM87VbohjmANVzxlHRzMyWH926
- q/RZ4OZut7VUTk5oMOY3yltszQ==
-X-Google-Smtp-Source: ABdhPJxDqx2cNvY5ZYZXAj3yz7pPa4YrB0VaL8i1aMei83D4I+xii9AnLbYiY+iyOBht0JR1Fz4+UA==
-X-Received: by 2002:a17:90a:ead5:: with SMTP id
- ev21mr2241627pjb.188.1600924300494; 
- Wed, 23 Sep 2020 22:11:40 -0700 (PDT)
-Received: from [192.168.10.94] (124-171-83-152.dyn.iinet.net.au.
- [124.171.83.152])
- by smtp.gmail.com with ESMTPSA id a2sm1225190pfk.201.2020.09.23.22.11.36
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Wed, 23 Sep 2020 22:11:39 -0700 (PDT)
-Subject: Re: [PATCH v2] powerpc/pci: unmap legacy INTx interrupts when a PHB
- is removed
-To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
- Qian Cai <cai@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20200807101854.844619-1-clg@kaod.org>
- <9c5eca863c63e360662fae7597213e8927c2a885.camel@redhat.com>
- <fce8ffe1-521c-8344-c7ad-53550e408cdc@kaod.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <6716add0-9244-4da1-a578-f7faeb529e77@ozlabs.ru>
-Date: Thu, 24 Sep 2020 15:11:34 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.2.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BxkRD4hq2zDqYL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 15:40:40 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 08O5ZH57090571; Thu, 24 Sep 2020 01:40:33 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=nlwBonxtZMpoYHM+tvJvtjGsmQbgQe3Bxw1hbWpYQ3A=;
+ b=UYh/ZggZIkcPg16BzSJVOQb2lS+DXHkYpg5w08s8W3IZgjpEV8iVFx5IigD1BIBen+99
+ AxFdABzSe4gdjCOln/39qj9Jitb4a5w0WCeXdLmwL/qaBZ4cuGF2fhj87Av50PMoIkC0
+ YxhNKqTzG8qQDVmHimxpoZ45Hlu7eMu1cPDAoVrrts9kz5H2KIXcOhh7ITFFtRvp46fq
+ afQVm9v2G9PH2e3Ty9OZ3a77y4LvHVcZbEXMAd6mUzRwzOZAgdyEyWhnCU+Vt4KRoGe6
+ fSIdjfUssMvKSO2PG0TPkkayIQ/X++9JGyK+trsm7MDwZA8862uZyc36xQC1IP1Rl7ru mw== 
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 33rj1m4gnm-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 24 Sep 2020 01:40:33 -0400
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08O5T0xn023432;
+ Thu, 24 Sep 2020 05:40:31 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by ppma03fra.de.ibm.com with ESMTP id 33p1f3t2y4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Thu, 24 Sep 2020 05:40:31 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 08O5eT3s23527726
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 24 Sep 2020 05:40:29 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 073A5AE045;
+ Thu, 24 Sep 2020 05:40:29 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0A42CAE051;
+ Thu, 24 Sep 2020 05:40:28 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Thu, 24 Sep 2020 05:40:27 +0000 (GMT)
+Date: Thu, 24 Sep 2020 11:10:27 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH] cpufreq: powernv: Fix frame-size-overflow in
+ powernv_cpufreq_reboot_notifier
+Message-ID: <20200924054027.GI12031@linux.vnet.ibm.com>
+References: <20200922080254.41497-1-srikar@linux.vnet.ibm.com>
+ <87wo0joqau.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <fce8ffe1-521c-8344-c7ad-53550e408cdc@kaod.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <87wo0joqau.fsf@dja-thinkpad.axtens.net>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-09-24_01:2020-09-24,
+ 2020-09-24 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 adultscore=0
+ lowpriorityscore=0 priorityscore=1501 mlxscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 impostorscore=0 mlxlogscore=999
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009240041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,63 +109,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-next@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, linux-kernel@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Pratik Rajesh Sampat <psampat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+* Daniel Axtens <dja@axtens.net> [2020-09-24 12:35:05]:
 
-
-On 23/09/2020 17:06, Cédric Le Goater wrote:
-> On 9/23/20 2:33 AM, Qian Cai wrote:
->> On Fri, 2020-08-07 at 12:18 +0200, Cédric Le Goater wrote:
->>> When a passthrough IO adapter is removed from a pseries machine using
->>> hash MMU and the XIVE interrupt mode, the POWER hypervisor expects the
->>> guest OS to clear all page table entries related to the adapter. If
->>> some are still present, the RTAS call which isolates the PCI slot
->>> returns error 9001 "valid outstanding translations" and the removal of
->>> the IO adapter fails. This is because when the PHBs are scanned, Linux
->>> maps automatically the INTx interrupts in the Linux interrupt number
->>> space but these are never removed.
->>>
->>> To solve this problem, we introduce a PPC platform specific
->>> pcibios_remove_bus() routine which clears all interrupt mappings when
->>> the bus is removed. This also clears the associated page table entries
->>> of the ESB pages when using XIVE.
->>>
->>> For this purpose, we record the logical interrupt numbers of the
->>> mapped interrupt under the PHB structure and let pcibios_remove_bus()
->>> do the clean up.
->>>
->>> Since some PCI adapters, like GPUs, use the "interrupt-map" property
->>> to describe interrupt mappings other than the legacy INTx interrupts,
->>> we can not restrict the size of the mapping array to PCI_NUM_INTX. The
->>> number of interrupt mappings is computed from the "interrupt-map"
->>> property and the mapping array is allocated accordingly.
->>>
->>> Cc: "Oliver O'Halloran" <oohall@gmail.com>
->>> Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->>
->> Some syscall fuzzing will trigger this on POWER9 NV where the traces pointed to
->> this patch.
->>
->> .config: https://gitlab.com/cailca/linux-mm/-/blob/master/powerpc.config
+> Hi Srikar,
 > 
-> OK. The patch is missing a NULL assignement after kfree() and that
-> might be the issue. 
 > 
-> I did try PHB removal under PowerNV, so I would like to understand 
-> how we managed to remove twice the PCI bus and possibly reproduce. 
-> Any chance we could grab what the syscall fuzzer (syzkaller) did ? 
+> This looks a lot like commit d95fe371ecd2 ("cpufreq: powernv: Fix frame-size-overflow in powernv_cpufreq_work_fn").
+> 
 
+Yes, very very similar.
 
+> As with that patch, I have checked for matching puts/gets and that all
+> uses of '&' check out.
+> 
+> I tried to look at the snowpatch tests: they apparently reported a
+> checkpatch warning but the file has since disappeared so I can't see
+> what it was. Running checkpatch locally:
+> 
+> $ scripts/checkpatch.pl -g HEAD -strict
+> WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
+> #15: 
+> make[3]: *** [./scripts/Makefile.build:316: drivers/cpufreq/powernv-cpufreq.o] Error 1
+> 
+> This is benign and you shouldn't wrap that line anyway.
+> 
+> On that basis:
+> 
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> 
 
-My guess would be it is doing this in parallel to provoke races.
+Thanks Daniel.
 
-
-
+> Kind regards,
+> Daniel
+> 
 -- 
-Alexey
+Thanks and Regards
+Srikar Dronamraju
