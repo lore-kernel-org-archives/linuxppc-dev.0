@@ -6,38 +6,39 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 477A6C4363D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 12:43:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F036C4727E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 12:45:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B4E5206D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 12:43:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B4E5206D9
+	by mail.kernel.org (Postfix) with ESMTPS id BF6D920708
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 12:45:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF6D920708
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BxvpX0FFjzDqdw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 22:43:00 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BxvsP3njFzDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 22:45:29 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BxvSs1XtRzDqZG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 22:27:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BxvSv1bRHzDqZm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 22:27:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4BxvSr5Jxgz9sTq; Thu, 24 Sep 2020 22:27:40 +1000 (AEST)
+ id 4BxvSt6PMDz9sTr; Thu, 24 Sep 2020 22:27:42 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Qinglang Miao <miaoqinglang@huawei.com>
-In-Reply-To: <20200916062125.190729-1-miaoqinglang@huawei.com>
-References: <20200916062125.190729-1-miaoqinglang@huawei.com>
-Subject: Re: [PATCH -next] macintosh: smu_sensors: use
- for_each_child_of_node() macro
-Message-Id: <160095000128.26280.16257030830649068184.b4-ty@ellerman.id.au>
-Date: Thu, 24 Sep 2020 22:27:40 +1000 (AEST)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Qinglang Miao <miaoqinglang@huawei.com>
+In-Reply-To: <20200916062129.190864-1-miaoqinglang@huawei.com>
+References: <20200916062129.190864-1-miaoqinglang@huawei.com>
+Subject: Re: [PATCH -next] powerpc/powernv: fix wrong warning message in
+ opalcore_config_init()
+Message-Id: <160095000251.26280.17374547912907976550.b4-ty@ellerman.id.au>
+Date: Thu, 24 Sep 2020 22:27:42 +1000 (AEST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,12 +55,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 16 Sep 2020 14:21:25 +0800, Qinglang Miao wrote:
-> Use for_each_child_of_node() macro instead of open coding it.
+On Wed, 16 Sep 2020 14:21:29 +0800, Qinglang Miao wrote:
+> The logic of the warn output is incorrect. The two args should be
+> exchanged.
 
 Applied to powerpc/next.
 
-[1/1] macintosh: smu_sensors: use for_each_child_of_node() macro
-      https://git.kernel.org/powerpc/c/acff5e6c37fa4bf8d002c917a762c4f7615f6eaf
+[1/1] powerpc/powernv: fix wrong warning message in opalcore_config_init()
+      https://git.kernel.org/powerpc/c/8ec5cb12cd957e59b0470b75d26c901aaf645bc3
 
 cheers
