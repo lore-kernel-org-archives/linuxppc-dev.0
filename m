@@ -8,74 +8,75 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60D5BC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:02:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD75FC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:04:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F33FA2388A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:02:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0020D2388A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:04:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qBFz4n8s"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F33FA2388A
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JchFOeU0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0020D2388A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BxmFR6QfSzDr2y
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 17:02:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BxmHh6LsTzDqtS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 17:04:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::644;
+ helo=mail-pl1-x644.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=qBFz4n8s; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ header.s=20161025 header.b=JchFOeU0; dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BxlkZ59lkzDqbC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 16:39:02 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id f2so1310366pgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 23:39:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bxlkj4gRrzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 16:39:09 +1000 (AEST)
+Received: by mail-pl1-x644.google.com with SMTP id s19so1156199plp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 23:39:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=zZPqzei1Fv+qLr1ovU3GS5sWwxVaLo335Z4KS7ZGWxs=;
- b=qBFz4n8soV3KT7AsHKyExwxxzw1uY+Xma4R+1bN92XZpatp1yNNLqNcJQXkT7uWvlF
- aQvQwJZYx9eCSB5brM0DnpzxRzWTndNmojJMDaEwYaZoy4TRDY7E3w3qXcELpikXPr5A
- dWf3BVHpwJ8NR1NFCCWuNJTw50jm2MzOCaLoHjPeH2kbjeduYHWd2HNVgQRfwXyFZRzH
- voZ9b8jnWcABHjov7Ln9vEdFERRgnX3R55ww51+mdZCJCD/+K688Ip76TTDEmv/c6jHd
- A4JbRE2WwFHyrQlOFmr1BqcGiUiI2hrHpxP2lY1vfeYukRDWX9rQxmQeq1bOErdb4OKZ
- Hw7w==
+ bh=GX8TB1JQMQXMDXdTDV+dtMxz0fEHDVFigA2RzLzUcxQ=;
+ b=JchFOeU09GsLc2VCiYZsmIIiOL8kZZjK/r36Vgfe4DF1g590PZS1adzu+pkAF2yy97
+ uKNOoXGlrafnfQS0nKekdQYMYVQgd3VD70M+vcR2jGJOFC9j9tshfj77gR6qMkuBqBum
+ 0nLeNv9+yzmsUN/JoAK5jBaeI9S82gX1n4FHPH867MMPm64nCCiOqIj4+O/O4jupJqv+
+ Zj935kHB+XXBk0+AzDfv3y0OHDWzsZUD6xPNbi1krwcxCdByERuiqvK9wOJmZ7P37p00
+ fX1W21yd+E7chJpewAEbCOYITLs/p+/gRWdtvjDIODqoNvf+hJLGmD/6RijiWERpcjLY
+ Tn2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=zZPqzei1Fv+qLr1ovU3GS5sWwxVaLo335Z4KS7ZGWxs=;
- b=B4cmFe0qt7t/8N/7ZvaTMkekireYtH+Ay5nKUdJL8foqz23wYtCwWysvBpzl6immnf
- cQxFnbdYa4YBpgQIL2M6v2afDDicJUjDE9aAqEqxP3giYAEq/Ga43IbVBEZoewBp9+kj
- 26/AZbC2p0VpILCz5GtB+5bjsWqXZ7SuhyOuunrIPKiVWKXsNbviw9YNm27S4iAGXRoN
- K8VWqt3Kk8iNv1jUTZ+HYHC5I70+gQUxESpsibIqjknj+hk3AriyaYTmshnBrB73atPx
- TKwT6D2AprgIDz0QHyEa5+8xoM+9l7xHBcs1nq00TYdN+G+PPS6f8eZVssXZKtCaoquA
- V7kQ==
-X-Gm-Message-State: AOAM530upVKV+jjgYDX9gMD3hf6bDV+GbhkEtka8g/XqVL6ZTS2FOWZa
- LMQdh0WQsQWOmK7vNslE3dsA3Ud6nCCk+A==
-X-Google-Smtp-Source: ABdhPJwS0xHMYqkl1R0fj/1fRAPKMw6HuL/M0ngsZJsqhyprwo/9+vIdj2ZpAyA3nPE29aRebbVzZQ==
-X-Received: by 2002:a65:45c5:: with SMTP id m5mr2872122pgr.252.1600929538784; 
- Wed, 23 Sep 2020 23:38:58 -0700 (PDT)
+ bh=GX8TB1JQMQXMDXdTDV+dtMxz0fEHDVFigA2RzLzUcxQ=;
+ b=qTJcgP4957Zcy0xIXMA0MN2yk1uHoqN4DI5pTDZd71r9gqP6kXcrbsn9f0ip5b7f8u
+ M2yuI9/kbDEYwrnLpR3NIwltM55xzmxyY/eGJltpPDdkAJH8IpONegTawPDmRYWglyrz
+ 9gThzisgH7c5q8/PVttVHjnkTTm8B4YRzeMH8Rq1MADe+YBLk+f9GJov2ASZumpdroS4
+ erJbxCDrs293u3fDme0lgTDjR9+6r+T3WwJXCllxlZ53ZaOU3XmKD7egD8tRMzpFBsFw
+ vDFBLY0doep1NrB4WebdWJsPCjLOPujyufM0iARDljy0fS7K0pS1cY1pzRhUGi428ZyY
+ C82Q==
+X-Gm-Message-State: AOAM530S0CVLJIIsz5G3AnGFGW4JnrGPbCU7nceV9FsvZYK4pato9sAU
+ VnL/5OMVBKaVk1XisMyKNZNRkszWffx4FQ==
+X-Google-Smtp-Source: ABdhPJzXjskAsznSwT96h46kOqWGL02Is22NYPiA3kEF+STkPS/mCUPBWltie7EnhCPA0Yvcg3LU2A==
+X-Received: by 2002:a17:902:7c90:b029:d2:2503:f72e with SMTP id
+ y16-20020a1709027c90b02900d22503f72emr3308726pll.55.1600929543276; 
+ Wed, 23 Sep 2020 23:39:03 -0700 (PDT)
 Received: from localhost.ibm.com (194-193-34-182.tpgi.com.au. [194.193.34.182])
- by smtp.gmail.com with ESMTPSA id y1sm1662930pgr.3.2020.09.23.23.38.56
+ by smtp.gmail.com with ESMTPSA id y1sm1662930pgr.3.2020.09.23.23.39.01
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 23 Sep 2020 23:38:58 -0700 (PDT)
+ Wed, 23 Sep 2020 23:39:02 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 12/18] powerpc/chrp: Move PHB discovery
-Date: Thu, 24 Sep 2020 16:38:13 +1000
-Message-Id: <20200924063819.262830-12-oohall@gmail.com>
+Subject: [RFC PATCH 14/18] powerpc/embedded6xx/linkstation: Move PHB discovery
+Date: Thu, 24 Sep 2020 16:38:15 +1000
+Message-Id: <20200924063819.262830-14-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200924063819.262830-1-oohall@gmail.com>
 References: <20200924063819.262830-1-oohall@gmail.com>
@@ -99,66 +100,45 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-compile tested with chrp32_defconfig
+compile tested with linkstation_defconfig
 ---
- arch/powerpc/platforms/chrp/pci.c   |  8 ++++++++
- arch/powerpc/platforms/chrp/setup.c | 12 +-----------
- 2 files changed, 9 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/embedded6xx/linkstation.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/pci.c b/arch/powerpc/platforms/chrp/pci.c
-index b2c2bf35b76c..8c421dc78b28 100644
---- a/arch/powerpc/platforms/chrp/pci.c
-+++ b/arch/powerpc/platforms/chrp/pci.c
-@@ -314,6 +314,14 @@ chrp_find_bridges(void)
- 		}
- 	}
- 	of_node_put(root);
-+
-+	/*
-+	 *  "Temporary" fixes for PCI devices.
-+	 *  -- Geert
-+	 */
-+	hydra_init();		/* Mac I/O */
-+
-+	pci_create_OF_bus_map();
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index f514d5d28cd4..eb8342e7f84e 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -63,15 +63,18 @@ static int __init linkstation_add_bridge(struct device_node *dev)
  }
  
- /* SL82C105 IDE Control/Status Register */
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index c45435aa5e36..3cfc382841e5 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -334,22 +334,11 @@ static void __init chrp_setup_arch(void)
- 	/* On pegasos, enable the L2 cache if not already done by OF */
- 	pegasos_set_l2cr();
+ static void __init linkstation_setup_arch(void)
++{
++	printk(KERN_INFO "BUFFALO Network Attached Storage Series\n");
++	printk(KERN_INFO "(C) 2002-2005 BUFFALO INC.\n");
++}
++
++static void __init linkstation_setup_pci(void)
+ {
+ 	struct device_node *np;
  
--	/* Lookup PCI host bridges */
--	chrp_find_bridges();
+ 	/* Lookup PCI host bridges */
+ 	for_each_compatible_node(np, "pci", "mpc10x-pci")
+ 		linkstation_add_bridge(np);
 -
--	/*
--	 *  Temporary fixes for PCI devices.
--	 *  -- Geert
--	 */
--	hydra_init();		/* Mac I/O */
--
- 	/*
- 	 *  Fix the Super I/O configuration
- 	 */
- 	sio_init();
+-	printk(KERN_INFO "BUFFALO Network Attached Storage Series\n");
+-	printk(KERN_INFO "(C) 2002-2005 BUFFALO INC.\n");
+ }
  
--	pci_create_OF_bus_map();
--
- 	/*
- 	 * Print the banner, then scroll down so boot progress
- 	 * can be printed.  -- Cort
-@@ -582,6 +571,7 @@ define_machine(chrp) {
- 	.name			= "CHRP",
- 	.probe			= chrp_probe,
- 	.setup_arch		= chrp_setup_arch,
-+	.discover_phbs		= chrp_find_bridges,
- 	.init			= chrp_init2,
- 	.show_cpuinfo		= chrp_show_cpuinfo,
- 	.init_IRQ		= chrp_init_IRQ,
+ /*
+@@ -153,6 +156,7 @@ define_machine(linkstation){
+ 	.name 			= "Buffalo Linkstation",
+ 	.probe 			= linkstation_probe,
+ 	.setup_arch 		= linkstation_setup_arch,
++	.discover_phbs		= linkstation_setup_pci,
+ 	.init_IRQ 		= linkstation_init_IRQ,
+ 	.show_cpuinfo 		= linkstation_show_cpuinfo,
+ 	.get_irq 		= mpic_get_irq,
 -- 
 2.26.2
 
