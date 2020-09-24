@@ -8,74 +8,75 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9633FC2D0E2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:06:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CE2FC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9442F235F7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:06:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A0E322376F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 07:08:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qscSdzyR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9442F235F7
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PvAwg4xb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0E322376F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BxmLY3Qb7zDqqJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 17:06:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BxmNH5SR6zDqnK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 17:08:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
- helo=mail-pg1-x542.google.com; envelope-from=oohall@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044;
+ helo=mail-pj1-x1044.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=qscSdzyR; dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ header.s=20161025 header.b=PvAwg4xb; dkim-atps=neutral
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com
+ [IPv6:2607:f8b0:4864:20::1044])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bxlkg1HbYzDqZ9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 16:39:07 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id d13so1299152pgl.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 23:39:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bxlkk53p1zDqZk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 16:39:10 +1000 (AEST)
+Received: by mail-pj1-x1044.google.com with SMTP id mn7so1072066pjb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 23:39:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=WePGWSemMFXgajsFMe7cKUHtaA9xMjkK6ByOLy1nU4Q=;
- b=qscSdzyRGcajP6h156Sb/xn8QcBA8Y68v8YN5uv3pBVB0nhSvyKMto1hNwyBhR0rHb
- eQPfhAa55ja945Qvfs/msdfK+Li85IThlWjsrKHSQSi1hrI+6+ZY1sOv/oGMxtVv5BDk
- VGDWmnfGK76cYSILgGg7ty3R4YjU8pIMS4YKPhGKEfiF3cRDcSdFYOLgW7aVJTW4Wkgl
- 0u9EvlXVD9fQWyOAABdcful0+RPtpHeVUjaLt2uSwfErx2ki+zMU8CrzaOvwuXWbPGZA
- g04BZS0uXEK6GeseIcMWoRECXqx07wDvXPDI1IAcjGWVwTU7VOmcGWRXSQiPmwkg952R
- KqOQ==
+ bh=5t1oqeJTdmTDIFhaXJivPBTTrbZGolePOo9vp9IXGm4=;
+ b=PvAwg4xbFfy9BrDgDOs9qn8XeG+MSI+PTQvItEEmYh+WKLD+cSCHZP1j3dvo1RdM+H
+ kvRLWfl5T7mT49GkvrJdFJhXpWOVJTl3ToUy/uITVEHcfw33ZZTo7w+9a4cvjHWvmaBP
+ tXwl3H7KHA3Jak7NKPrjVL+GphP6Lm2s0NQkovr8LMt7YefJfFMLVgrN6Lsc5l+wrA+z
+ 37UCGNueWwC4kvRxb0SI5VLZ4Lign5zMzfa3oJCbZ3kvk8rv+GugFio2OjMzhIh50VMM
+ y3QB9W7bMpSRw1HRvXWhzQ2umVCH4xZax16GEopF+nBnMbldV46+Qk2cjyLWa3y9zbvV
+ J0lQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=WePGWSemMFXgajsFMe7cKUHtaA9xMjkK6ByOLy1nU4Q=;
- b=kcHGuicv7hBjoxNlxqTaghPfFN8mMNCm2XmXyRYurNVNS2pyNePNuFGYE/o5QPi+75
- 3JbbwTEd5OLo2eS8k5BJrcaq+OH8R/AfTpsCOyGWc9YcILPfcUf3mEjVkWUbH1Hw8x54
- PkHBk41zIkBIwqID/PBRwDZ2BW/HHS7cDY+9dmgRMoYnJ+8kRo8KILjvuy0HM5Z449iY
- cJX/yxmkLTvrHPCgiuiTTltu94tpLWZ4TLecfYy8zEdAYg2Pninu80HPvrj6PmVFFfrL
- 5ogS+Ip8wpv6sEEOpb2OtH7RkNUzVICiA5KxE/ZjU37Bj+9QyVcbEcQ+M/EmZKv/91dg
- lN9Q==
-X-Gm-Message-State: AOAM5328u3ORdOUfc8e8j4HLe3JmdYu2pEQOuG2rfu41zxCGmxby2Mm9
- vm5mn1VmZZWTv2otaXPkxqR8vt1RQ+TiaQ==
-X-Google-Smtp-Source: ABdhPJwNmjQd9Ota9qu7tHoLec70rx3Ep5TCFZynpHfeuvCqHbt3sQHcd321Uob0nk0ltqvLlGR0Jw==
-X-Received: by 2002:a63:5566:: with SMTP id f38mr2916449pgm.9.1600929541206;
- Wed, 23 Sep 2020 23:39:01 -0700 (PDT)
+ bh=5t1oqeJTdmTDIFhaXJivPBTTrbZGolePOo9vp9IXGm4=;
+ b=cGejj+Egd9Bvkz9HC6pAmQ37iRReOvSGPfIn0yOvtt1qHP6sjMO9dasExli2IKLKaV
+ ySwKLD8R93/ZJdjOVnT95v9JNfUYSeXIlWm7OEg1wG4ekaFkvucswltFXBIXyaBrnaJG
+ tlwyHHTuldftHKAnJlXqhmcjthrIFVNQZSNSku4DcPcbW1EiVgBZXpwN2JZ/w/pfEM8L
+ NKKh3ybZPE7Aj/l8JB/51yjwRTwT5agXK7jDrfnDJpu+FNDr86ErL9MDnWAD6XXvy0Hs
+ 4j5SXyf5qxwpDMkQUAfQQOAQmVS/HD3As1Hj+2DSZUus9jCvFJKS6GBdpxl2f9cCpkeI
+ pufw==
+X-Gm-Message-State: AOAM532bOsq8vniQKl3rtO1/2hQSi9d7GrHQyisoEsNSlf1KhLI58HVW
+ TkIzBmH7TZOqF4N8KpmX1xWwBZ38HeACPQ==
+X-Google-Smtp-Source: ABdhPJxsTWhGu+IZeMGpw5r4rwb7mm3za+dDFLQyH0/fXJUtPRVxbYR6sUbjkWzGLQNILdCB7D/uTQ==
+X-Received: by 2002:a17:902:8548:b029:d0:cbe1:e70b with SMTP id
+ d8-20020a1709028548b02900d0cbe1e70bmr3181411plo.25.1600929545321; 
+ Wed, 23 Sep 2020 23:39:05 -0700 (PDT)
 Received: from localhost.ibm.com (194-193-34-182.tpgi.com.au. [194.193.34.182])
- by smtp.gmail.com with ESMTPSA id y1sm1662930pgr.3.2020.09.23.23.38.59
+ by smtp.gmail.com with ESMTPSA id y1sm1662930pgr.3.2020.09.23.23.39.03
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 23 Sep 2020 23:39:00 -0700 (PDT)
+ Wed, 23 Sep 2020 23:39:04 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 13/18] powerpc/embedded6xx/holly: Move PHB discovery
-Date: Thu, 24 Sep 2020 16:38:14 +1000
-Message-Id: <20200924063819.262830-13-oohall@gmail.com>
+Subject: [RFC PATCH 15/18] powerpc/embedded6xx/mpc7448: Move PHB discovery
+Date: Thu, 24 Sep 2020 16:38:16 +1000
+Message-Id: <20200924063819.262830-15-oohall@gmail.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200924063819.262830-1-oohall@gmail.com>
 References: <20200924063819.262830-1-oohall@gmail.com>
@@ -99,52 +100,55 @@ Sender: "Linuxppc-dev"
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
-compile tested with holly_defconfig
+compile tested with mpc7448_hpc2_defconfig
 ---
- arch/powerpc/platforms/embedded6xx/holly.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index d8f2e2c737bb..53065d564161 100644
---- a/arch/powerpc/platforms/embedded6xx/holly.c
-+++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -108,15 +108,13 @@ static void holly_remap_bridge(void)
- 	tsi108_write_reg(TSI108_PCI_P2O_BAR2, 0x0);
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+index 15437abe1f6d..20b727584e40 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
++++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
+@@ -58,16 +58,14 @@ int mpc7448_hpc2_exclude_device(struct pci_controller *hose,
+ 		return PCIBIOS_SUCCESSFUL;
  }
  
--static void __init holly_setup_arch(void)
-+static void __init holly_init_pci(void)
+-static void __init mpc7448_hpc2_setup_arch(void)
++static void __init mpc7448_hpc2_setup_pci(void)
  {
++#ifdef CONFIG_PCI
  	struct device_node *np;
- 
  	if (ppc_md.progress)
- 		ppc_md.progress("holly_setup_arch():set_bridge", 0);
- 
--	tsi108_csr_vir_base = get_vir_csrbase();
+-		ppc_md.progress("mpc7448_hpc2_setup_arch():set_bridge", 0);
 -
- 	/* setup PCI host bridge */
- 	holly_remap_bridge();
+-	tsi108_csr_vir_base = get_vir_csrbase();
++		ppc_md.progress("mpc7448_hpc2_setup_pci():set_bridge", 0);
  
-@@ -127,6 +125,11 @@ static void __init holly_setup_arch(void)
- 	ppc_md.pci_exclude_device = holly_exclude_device;
+ 	/* setup PCI host bridge */
+-#ifdef CONFIG_PCI
+ 	for_each_compatible_node(np, "pci", "tsi108-pci")
+ 		tsi108_setup_pci(np, MPC7448HPC2_PCI_CFG_PHYS, 0);
+ 
+@@ -75,6 +73,11 @@ static void __init mpc7448_hpc2_setup_arch(void)
  	if (ppc_md.progress)
  		ppc_md.progress("tsi108: resources set", 0x100);
+ #endif
 +}
 +
-+static void __init holly_setup_arch(void)
++static void __init mpc7448_hpc2_setup_arch(void)
 +{
 +	tsi108_csr_vir_base = get_vir_csrbase();
  
- 	printk(KERN_INFO "PPC750GX/CL Platform\n");
- }
-@@ -259,6 +262,7 @@ define_machine(holly){
- 	.name                   	= "PPC750 GX/CL TSI",
- 	.probe                  	= holly_probe,
- 	.setup_arch             	= holly_setup_arch,
-+	.discover_phbs			= holly_init_pci,
- 	.init_IRQ               	= holly_init_IRQ,
- 	.show_cpuinfo           	= holly_show_cpuinfo,
- 	.get_irq                	= mpic_get_irq,
+ 	printk(KERN_INFO "MPC7448HPC2 (TAIGA) Platform\n");
+ 	printk(KERN_INFO
+@@ -180,6 +183,7 @@ define_machine(mpc7448_hpc2){
+ 	.name 			= "MPC7448 HPC2",
+ 	.probe 			= mpc7448_hpc2_probe,
+ 	.setup_arch 		= mpc7448_hpc2_setup_arch,
++	.discover_phbs		= mpc7448_hpc2_setup_pci,
+ 	.init_IRQ 		= mpc7448_hpc2_init_IRQ,
+ 	.show_cpuinfo 		= mpc7448_hpc2_show_cpuinfo,
+ 	.get_irq 		= mpic_get_irq,
 -- 
 2.26.2
 
