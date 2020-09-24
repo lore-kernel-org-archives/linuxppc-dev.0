@@ -2,109 +2,84 @@ Return-Path: <SRS0=a6W3=DB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66169C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:46:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3314C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 06:41:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 331C5235FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 05:46:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B3C6F2311A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 06:41:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="D+qEBAGz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 331C5235FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LjYpxsFz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3C6F2311A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BxkZ76JBwzDqTP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 15:46:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=mamatha4@linux.vnet.ibm.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bxlmy6JVgzDqbp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Sep 2020 16:41:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::542;
+ helo=mail-pg1-x542.google.com; envelope-from=oohall@gmail.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=D+qEBAGz; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=LjYpxsFz; dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BxjsV4sZvzDqYb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 15:14:51 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08O52VTV092817; Thu, 24 Sep 2020 01:14:46 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : from : to : cc
- : date : message-id : mime-version : content-type :
- content-transfer-encoding; s=pp1;
- bh=lh13OQH20WYkAvF82qQ30CMf0+MM9LtINKRcfdztWMI=;
- b=D+qEBAGzMJ2TGyOO9VzCuILJe9DtF3tWQSOAmDH4lukbMBcEFlM2dyhNf1ZpDfh6he0W
- Hnk9XO9yJy+6nG8pi8Bjt2vNSsSUAj1cicSpRYINjOdv6YlDr3xM9oeeP85Zqk+nWpvs
- JSKrUdoV8hIq2LJquHIMHbUmkF+aKiNCi7+CS+EXcsCjNlN9V8n7aFGmRrF5JKOoDmyb
- +Zvt1iZaFv5eDU/YqRNrGbjS1CUyDhxrflFYK0XVOyPN0SFbW3JExw5ixXY96UKjwv1k
- n22fRXvstUuf3OVkDdDkq0cQhI/E4lJ5ydbABruQFjFb1nXZFxXnBMwdcgbzFxee0Eia FA== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33rjwgartr-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Sep 2020 01:14:45 -0400
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08O52vcB093840;
- Thu, 24 Sep 2020 01:14:45 -0400
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.71])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33rjwgarmu-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Sep 2020 01:14:45 -0400
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
- by ppma02fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08O5CeLf007209;
- Thu, 24 Sep 2020 05:14:23 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by ppma02fra.de.ibm.com with ESMTP id 33n9m82h75-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 24 Sep 2020 05:14:23 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 08O5ELXa28639680
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 24 Sep 2020 05:14:21 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 663FD4C050;
- Thu, 24 Sep 2020 05:14:21 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9173A4C040;
- Thu, 24 Sep 2020 05:14:18 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.84.181.82])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 24 Sep 2020 05:14:18 +0000 (GMT)
-Subject: [PATCH] rpadlpar_io:Add MODULE_DESCRIPTION entries to kernel modules
-From: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Date: Thu, 24 Sep 2020 10:44:16 +0530
-Message-ID: <20200924051343.16052.9571.stgit@localhost.localdomain>
-User-Agent: StGit/0.19
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bxlk63jhPzDqZD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2020 16:38:38 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id u24so1316621pgi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2020 23:38:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=vTL3VSWWE/BCPK9LdtJdZaureTQRofLUceddSqPsA3Y=;
+ b=LjYpxsFzxZlCtdOdkgzVLd+vn5qHQdD7AureT/w3lmOsN0Bdljj9PGH2tGyBsoEQSg
+ yybCK6hqoAxbniTnWBV7XX29esVbYyiRADUQklApF+CK/jGolqtuTwD9b+dQux0Po02J
+ w7M7wbmYEpk46rsF65/CyTu6GM54OCw9reTbs7NaHj1B8u7cYrctXxyFypVu1Za3fwfh
+ Zi03eI4zHL3KUhUHwgpLIavM3cWZgLUkPEIGLNB98Jf/aKFFfclbFKndLC8VdAep3DSv
+ Wj5hYGesStEuZxeADd3feZnpqIRVL3/tqmPR0vhhMaRSAk5OOHFt3XsmM/MCk5IsNDyH
+ BjBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=vTL3VSWWE/BCPK9LdtJdZaureTQRofLUceddSqPsA3Y=;
+ b=bgiz+oEBECDORACWuNe4DqrabMDd/guc9Txq3C3jiQQ8h/m2DOt0zyn82eqVNaudby
+ 6j871aA9y5AgMDyesjwzN5DWnBCms19QKcF1JU5wq7GCNzC0PeBVYJpbreFnT74vyk8b
+ qHyIAhed8dkXLNbL/qcJaBq61Cs9G6KcrJ4idGzWF6/dZ4+e8Bmo7xI8YPvrGM6XkCfp
+ UbXw86Wl857Z4uCrLaygTD+hxN3jOTtw20TgCRCaniKbJA8pHRgLi/8CSafkN6jWrPQ4
+ guCmSaW2aaMl9DcZELG+4ts4xwXqZ06HMvz9+r5ftRjmr9Qqq6vVjS4p2miJi5SziOXZ
+ zmTg==
+X-Gm-Message-State: AOAM532Xth/t3bfHtVucj/hBELWT+CB0MAOAW8+ii9TddJpu1etgve+N
+ ecC/REhGNg7nsU0tWh1o/2qKDyMjz94WVg==
+X-Google-Smtp-Source: ABdhPJxY6OfVAMz8bc+ccxtbwI344hTNWx7elaSdCiX/Wlx7eJqkugOWi2NlweCvcSBur/HwaZGuCw==
+X-Received: by 2002:aa7:96af:0:b029:142:6a8f:c04b with SMTP id
+ g15-20020aa796af0000b02901426a8fc04bmr3281144pfk.30.1600929514491; 
+ Wed, 23 Sep 2020 23:38:34 -0700 (PDT)
+Received: from localhost.ibm.com (194-193-34-182.tpgi.com.au. [194.193.34.182])
+ by smtp.gmail.com with ESMTPSA id y1sm1662930pgr.3.2020.09.23.23.38.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 23 Sep 2020 23:38:33 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 01/18] powerpc/pci: Add ppc_md.discover_phbs()
+Date: Thu, 24 Sep 2020 16:38:02 +1000
+Message-Id: <20200924063819.262830-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-24_01:2020-09-24,
- 2020-09-24 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0
- lowpriorityscore=0 mlxscore=0 clxscore=1011 impostorscore=0 bulkscore=0
- spamscore=0 malwarescore=0 suspectscore=1 phishscore=0 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009240036
-X-Mailman-Approved-At: Thu, 24 Sep 2020 15:44:55 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,27 +91,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bhelgaas@google.com, tyreld@linux.ibm.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds a brief MODULE_DESCRIPTION to rpadlpar_io kernel modules
-(descriptions taken from Kconfig file)
+On many powerpc platforms the discovery and initalisation of
+pci_controllers (PHBs) happens inside of setup_arch(). This is very early
+in boot (pre-initcalls) and means that we're initialising the PHB long
+before many basic kernel services (slab allocator, debugfs, a real ioremap)
+are available.
 
-Signed-off-by: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
+On PowerNV this causes an additional problem since we map the PHB registers
+with ioremap(). As of commit d538aadc2718 ("powerpc/ioremap: warn on early
+use of ioremap()") a warning is printed because we're using the "incorrect"
+API to setup and MMIO mapping in searly boot. The kernel does provide
+early_ioremap(), but that is not intended to create long-lived MMIO
+mappings and a seperate warning is printed by generic code if
+early_ioremap() mappings are "leaked."
+
+This is all fixable with dumb hacks like using early_ioremap() to setup
+the initial mapping then replacing it with a real ioremap later on in
+boot, but it does raise the question: Why the hell are we setting up the
+PHB's this early in boot?
+
+The old and wise claim it's due to "hysterical rasins." Aside from amused
+grapes there doesn't appear to be any real reason to maintain the current
+behaviour. Already most of the newer embedded platforms perform PHB
+discovery in an arch_initcall and between the end of setup_arch() and the
+start of initcalls none of the generic kernel code does anything PCI
+related. On powerpc scanning PHBs occurs in a subsys_initcall so it should
+be possible to move the PHB discovery to a core, postcore or arch initcall.
+
+This patch adds the ppc_md.discover_phbs hook and a core_initcall stub that
+calls it. The core_initcalls are the earliest to be called so this will
+any possibly issues with dependency between initcalls. This isn't just an
+academic issue either since on pseries and PowerNV EEH init occurs in an
+arch_initcall and depends on the pci_controllers being available, similarly
+the creation of pci_dns occurs at core_initcall_sync (i.e. between core and
+postcore initcalls). These problems need to be addressed seperately.
+
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- drivers/pci/hotplug/rpadlpar_core.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/include/asm/machdep.h |  3 +++
+ arch/powerpc/kernel/pci-common.c   | 10 ++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index f979b70..bac65ed 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -478,3 +478,4 @@ static void __exit rpadlpar_io_exit(void)
- module_init(rpadlpar_io_init);
- module_exit(rpadlpar_io_exit);
- MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("RPA Dynamic Logical Partitioning driver for I/O slots");
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index a90b892f0bfe..b732dd5722aa 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -59,6 +59,9 @@ struct machdep_calls {
+ 	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
+ 				*bridge);
+ 
++	/* finds all the pci_controllers present at boot */
++	void 		(*discover_phbs)(void);
++
+ 	/* To setup PHBs when using automatic OF platform driver for PCI */
+ 	int		(*pci_setup_phb)(struct pci_controller *host);
+ 
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index be108616a721..6265e7d1c697 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1625,3 +1625,13 @@ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_MOTOROLA, PCI_ANY_ID, fixup_hide_host_resource_fsl);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, PCI_ANY_ID, fixup_hide_host_resource_fsl);
++
++
++int __init discover_phbs(void)
++{
++	if (ppc_md.discover_phbs)
++		ppc_md.discover_phbs();
++
++	return 0;
++}
++core_initcall(discover_phbs);
+-- 
+2.26.2
 
