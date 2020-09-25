@@ -2,69 +2,56 @@ Return-Path: <SRS0=vHfa=DC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41A33C4363D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 05:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8073EC4363D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 05:13:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CB3C208B6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 05:09:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Pu6N7lQC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CB3C208B6
+	by mail.kernel.org (Postfix) with ESMTPS id B16C5208B6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 05:13:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B16C5208B6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ByKhh1rmXzDqQw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 15:09:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1;
- helo=casper.infradead.org;
- envelope-from=batv+158bd042e2069d5d3a43+6242+infradead.org+hch@casper.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ByKnG3f34zDr2j
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 15:13:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256
- header.s=casper.20170209 header.b=Pu6N7lQC; 
- dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:8b0:10b:1236::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ByKJq50gSzDqfB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2020 14:52:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
- References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
- Content-Type:Content-ID:Content-Description;
- bh=tfXqHGtFwgmM6UcSRx58+EM7ODTSdMOtwKoRg1u1yAY=; b=Pu6N7lQCb1Rzn/vuEAM+5KPGjX
- BkFo8T9dzxv/0bLMSXXve2AJx7GLCk5CC3R4Ai3QXXAsQD0Esc5mldBbPrIULY45pPbpDbvoDrrU5
- 0y/rZt3NdsMe0g/YSE/jtyenAi2xicarompLKMm3oxiJQBJl3sVJebhfDzjP4rb2MDDW6NJFyk043
- bn005DtQkC0IcvqnCKWfSkFaGle8WWvJyIl1xKl1G7YhMMOzx5EoA1Ngf8NCwxfsbgxynDDaCVTgh
- BNKEdqs8oHltVqpj2BB8Ry/WCaQYj1FyeT/89FBsvMGDD1Te4BzMLY8sgN68ceoHuYqHSSvbf9L6H
- RjKlFFzQ==;
-Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
- by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
- id 1kLfi1-0002pi-5S; Fri, 25 Sep 2020 04:51:49 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ByKPs2z8SzDqTV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2020 14:56:30 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 88A7868AFE; Fri, 25 Sep 2020 06:56:25 +0200 (CEST)
+Date: Fri, 25 Sep 2020 06:56:25 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 1/9] compat.h: fix a spelling error in <linux/compat.h>
-Date: Fri, 25 Sep 2020 06:51:38 +0200
-Message-Id: <20200925045146.1283714-2-hch@lst.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200925045146.1283714-1-hch@lst.de>
-References: <20200925045146.1283714-1-hch@lst.de>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel] powerpc/dma: Fix dma_map_ops::get_required_mask
+Message-ID: <20200925045625.GB9966@lst.de>
+References: <20200908054416.GA13585@lst.de>
+ <94353228-2262-cfa1-7177-7eed2288ca63@ozlabs.ru>
+ <20200908121937.GA31559@lst.de>
+ <1746dd66810.27bb.1ca38dd7e845b990cd13d431eb58563d@ozlabs.ru>
+ <20200909075849.GA12282@lst.de>
+ <0a7a992f-ad2e-e76a-7bee-1ed4ed607748@ozlabs.ru>
+ <20200915065022.GA19658@lst.de>
+ <93424419-3476-fc07-8a83-8d9d39062810@ozlabs.ru>
+ <20200923141020.GA12374@lst.de>
+ <1acaab45-1796-7420-b4fd-b6add7f0d28f@ozlabs.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- casper.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1acaab45-1796-7420-b4fd-b6add7f0d28f@ozlabs.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,42 +63,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-mips@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- keyrings@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- linux-block@vger.kernel.org, io-uring@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
- David Laight <David.Laight@aculab.com>, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Oliver OHalloran <oliveroh@au1.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Christoph Hellwig <hch@lst.de>,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no compat_sys_readv64v2 syscall, only a compat_sys_preadv64v2
-one.
+On Thu, Sep 24, 2020 at 05:03:11PM +1000, Alexey Kardashevskiy wrote:
+> May be... The current behavior is not wrong (after the fix) but not
+> optimal either. Even with legacy PCI it should just result in failing
+> attempt to set 64bit mask which drivers should still handle, i.e. choose
+> a shorter mask.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- include/linux/compat.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Err, no.
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index b354ce58966e2d..654c1ec36671a4 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -812,7 +812,7 @@ asmlinkage ssize_t compat_sys_pwritev2(compat_ulong_t fd,
- 		const struct compat_iovec __user *vec,
- 		compat_ulong_t vlen, u32 pos_low, u32 pos_high, rwf_t flags);
- #ifdef __ARCH_WANT_COMPAT_SYS_PREADV64V2
--asmlinkage long  compat_sys_readv64v2(unsigned long fd,
-+asmlinkage long  compat_sys_preadv64v2(unsigned long fd,
- 		const struct compat_iovec __user *vec,
- 		unsigned long vlen, loff_t pos, rwf_t flags);
- #endif
--- 
-2.28.0
+> Why not ditch the whole dma_get_required_mask() and just fail on setting
+> a bigger mask? Are these failures not handled in some drivers? Or there
+> are cases when a shorter mask is better? Thanks,
 
+Because that is a complete pain.  Think of it, the device/driver knows
+what it supports.  For 98% of the modern devices that means all 64-bit
+bits, and for most others this means 32-bits, with a few wackos that
+support 48 bits or something like that.  The 98% just take any address
+thrown at them, and the others just care that they never see an
+address larger than what they support.  They could not care any less
+if the systems supports 31, 36, 41, 48, 52, 55, 61 or 63-bit addressing,
+an they most certainly should not implement stupid boilerplate code to
+guess what addressing mode the system implements.  They just declare
+what they support.
+
+Then you have the 12 drivers for devices that can do optimizations if
+they never see large DMA addresses.  They use the somewhat misnamed
+dma_get_required_mask API to query what the largest address they might
+see is and act based on that, while not putting any burden on all the
+sane devices/drivers.
