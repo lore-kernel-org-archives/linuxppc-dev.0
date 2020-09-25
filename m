@@ -2,25 +2,25 @@ Return-Path: <SRS0=vHfa=DC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C421C4727E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 20:49:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89008C4741F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 20:51:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 372C920838
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 20:49:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 10F882086A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Sep 2020 20:51:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pCkDikzI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 372C920838
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="urarfz8P"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10F882086A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BykY217glzDqjk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2020 06:49:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bykc03DC4zDqdr
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Sep 2020 06:51:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
@@ -28,34 +28,36 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=pCkDikzI; dkim-atps=neutral
+ header.s=default header.b=urarfz8P; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4BykPK12l9zDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2020 06:42:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BykPt6bd9zDqfs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2020 06:42:58 +1000 (AEST)
 Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0D35B2086A;
- Fri, 25 Sep 2020 20:42:25 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D5C7421D42;
+ Fri, 25 Sep 2020 20:42:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1601066546;
- bh=nepMzFSaNIWGuxvkPkhRS9U2GlxbM0iL0eqO6N+HKLo=;
+ s=default; t=1601066576;
+ bh=QSevX1flL8R5A+fqYXDssSpKP80IyBfwUR79zCY1bHU=;
  h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=pCkDikzIhtdTP4bvGUomx/0wLSWLHpejHeU9wZDVmmVFwi0x5oGbLBVcwGk0iMpVt
- ku0xZbRNup/A5AmlFXRsv1WQeAfr4A6qsYh6qFxXNunPENqlaT+VuoRFcZS/fgwNO8
- /lYvczd0vvSyHDN9i0YSPq6ulBXZbN/sTGkqYtuY=
-Date: Fri, 25 Sep 2020 21:41:31 +0100
+ b=urarfz8PuyF+GFxvTcJYGPU6CbYQ8EubrmxlSDW9MN3ATbi+2rDYcNTjBeE48/ruw
+ crrsbsCFqMnUqSLnZQTb0cnZqgn/dcxsCC/GFG10dW40H5dXz45Mdu4W9z6BfPF+ok
+ YKR556UJKd7h3q8k7lWpnMA3X9s5YP8+egymxK/I=
+Date: Fri, 25 Sep 2020 21:42:01 +0100
 From: Mark Brown <broonie@kernel.org>
-To: lgirdwood@gmail.com, tiwai@suse.com, festevam@gmail.com,
- nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- Shengjiu Wang <shengjiu.wang@nxp.com>, perex@perex.cz,
- alsa-devel@alsa-project.org, timur@kernel.org
-In-Reply-To: <1600424760-32071-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1600424760-32071-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Instantiate snd_soc_dai_driver
-Message-Id: <160106647646.2866.2202767097591123725.b4-ty@kernel.org>
+To: lgirdwood@gmail.com, tiwai@suse.com, linux-arm-kernel@lists.infradead.org,
+ festevam@gmail.com, Xiubo.Lee@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ nicoleotsuka@gmail.com, shawnguo@kernel.org, perex@perex.cz, linux-imx@nxp.com,
+ s.hauer@pengutronix.de, Xu Wang <vulab@iscas.ac.cn>, shengjiu.wang@gmail.com,
+ alsa-devel@alsa-project.org, kernel@pengutronix.de, timur@kernel.org
+In-Reply-To: <20200921015918.24157-1-vulab@iscas.ac.cn>
+References: <20200921015918.24157-1-vulab@iscas.ac.cn>
+Subject: Re: [PATCH] fsl: imx-audmix : Use devm_kcalloc() instead of
+ devm_kzalloc()
+Message-Id: <160106647647.2866.12055149870190769449.b4-ty@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,15 +69,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Sep 2020 18:26:00 +0800, Shengjiu Wang wrote:
-> Instantiate snd_soc_dai_driver for independent symmetric control.
-> Otherwise the symmetric setting may be overwritten by other
-> instance.
+On Mon, 21 Sep 2020 01:59:18 +0000, Xu Wang wrote:
+> A multiplication for the size determination of a memory allocation
+> indicated that an array data structure should be processed.
+> Thus use the corresponding function "devm_kcalloc".
 
 Applied to
 
@@ -83,8 +85,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl_sai: Instantiate snd_soc_dai_driver
-      commit: 22a16145af824f91014d07f8664114859900b9e6
+[1/1] ASoC: fsl: imx-audmix: Use devm_kcalloc() instead of devm_kzalloc()
+      commit: f95cc5c18c15a425c3dceec48df6b4e27a202dda
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
