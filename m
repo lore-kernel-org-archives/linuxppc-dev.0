@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D195C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B6AFC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:56:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF0D223899
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:54:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF0D223899
+	by mail.kernel.org (Postfix) with ESMTPS id B3DE523899
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:56:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3DE523899
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzgwz74b3zDqjg
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:54:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzgyt3Lw2zDqVR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:56:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg571XtszDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg581VcSzDqGl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:44 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bzg4x5rCxz9vCxy;
- Sun, 27 Sep 2020 11:16:33 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4Bzg505c7lz9vCy3;
+ Sun, 27 Sep 2020 11:16:36 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id APsk_Z7i4VV2; Sun, 27 Sep 2020 11:16:33 +0200 (CEST)
+ with ESMTP id ycrO_zL4KMmK; Sun, 27 Sep 2020 11:16:36 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4x5589z9vCxw;
- Sun, 27 Sep 2020 11:16:33 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg504sqjz9vCxw;
+ Sun, 27 Sep 2020 11:16:36 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 482C38B771;
- Sun, 27 Sep 2020 11:16:38 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 399028B771;
+ Sun, 27 Sep 2020 11:16:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id MOK71eOw7Q0I; Sun, 27 Sep 2020 11:16:38 +0200 (CEST)
+ with ESMTP id ydxZ6QZJN0_M; Sun, 27 Sep 2020 11:16:41 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D84AF8B75B;
- Sun, 27 Sep 2020 11:16:37 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 03E2C8B75B;
+ Sun, 27 Sep 2020 11:16:41 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BB88865DE8; Sun, 27 Sep 2020 09:16:37 +0000 (UTC)
-Message-Id: <ddb5c746bec4e1a026d7c85243213a1876ef844f.1601197618.git.christophe.leroy@csgroup.eu>
+ id DB91F65DE8; Sun, 27 Sep 2020 09:16:40 +0000 (UTC)
+Message-Id: <f53dcc9bb1946a7854d15b34d03d3d2e2003848c.1601197618.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 References: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 20/30] powerpc/vdso: Remove __kernel_datapage_offset
+Subject: [PATCH v1 23/30] powerpc/vdso: Remove unused text member in struct
+ lib32/64_elfinfo
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun, 27 Sep 2020 09:16:37 +0000 (UTC)
+Date: Sun, 27 Sep 2020 09:16:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,134 +76,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__kernel_datapage_offset is not used anymore, remove it.
+The text member in struct lib32_elfinfo and struct lib64_elfinfo
+is not used, remove it.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/vdso.c              | 39 -------------------------
- arch/powerpc/kernel/vdso32/datapage.S   |  3 --
- arch/powerpc/kernel/vdso32/vdso32.lds.S |  5 ----
- arch/powerpc/kernel/vdso64/datapage.S   |  3 --
- arch/powerpc/kernel/vdso64/vdso64.lds.S |  5 ----
- 5 files changed, 55 deletions(-)
+ arch/powerpc/kernel/vdso.c | 16 ----------------
+ 1 file changed, 16 deletions(-)
 
 diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index e732776bac0a..611977010e2d 100644
+index 5e4e3546f034..fa1cbddfb978 100644
 --- a/arch/powerpc/kernel/vdso.c
 +++ b/arch/powerpc/kernel/vdso.c
-@@ -494,42 +494,6 @@ static __init void vdso_setup_trampolines(struct lib32_elfinfo *v32,
- 	vdso32_rt_sigtramp = find_function32(v32, "__kernel_sigtramp_rt32");
- }
+@@ -73,7 +73,6 @@ struct lib32_elfinfo
+ 	Elf32_Sym	*dynsym;	/* ptr to .dynsym section */
+ 	unsigned long	dynsymsize;	/* size of .dynsym section */
+ 	char		*dynstr;	/* ptr to .dynstr section */
+-	unsigned long	text;		/* offset of .text section in .so */
+ };
  
--static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
--				       struct lib64_elfinfo *v64)
--{
--#ifdef CONFIG_VDSO32
--	Elf32_Sym *sym32;
--#endif
--#ifdef CONFIG_PPC64
--	Elf64_Sym *sym64;
+ struct lib64_elfinfo
+@@ -82,7 +81,6 @@ struct lib64_elfinfo
+ 	Elf64_Sym	*dynsym;
+ 	unsigned long	dynsymsize;
+ 	char		*dynstr;
+-	unsigned long	text;
+ };
+ 
+ static int vdso_mremap(const struct vm_special_mapping *sm, struct vm_area_struct *new_vma,
+@@ -273,8 +271,6 @@ static void * __init find_section64(Elf64_Ehdr *ehdr, const char *secname,
+ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
+ 					struct lib64_elfinfo *v64)
+ {
+-	void *sect;
 -
--       	sym64 = find_symbol64(v64, "__kernel_datapage_offset");
--	if (sym64 == NULL) {
--		printk(KERN_ERR "vDSO64: Can't find symbol "
--		       "__kernel_datapage_offset !\n");
+ 	/*
+ 	 * Locate symbol tables & text section
+ 	 */
+@@ -286,12 +282,6 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
+ 		printk(KERN_ERR "vDSO32: required symbol section not found\n");
+ 		return -1;
+ 	}
+-	sect = find_section32(v32->hdr, ".text", NULL);
+-	if (sect == NULL) {
+-		printk(KERN_ERR "vDSO32: the .text section was not found\n");
 -		return -1;
 -	}
--	*((int *)(vdso64_kbase + sym64->st_value - VDSO64_LBASE)) =
--		-PAGE_SIZE -
--		(sym64->st_value - VDSO64_LBASE);
--#endif /* CONFIG_PPC64 */
--
--#ifdef CONFIG_VDSO32
--	sym32 = find_symbol32(v32, "__kernel_datapage_offset");
--	if (sym32 == NULL) {
--		printk(KERN_ERR "vDSO32: Can't find symbol "
--		       "__kernel_datapage_offset !\n");
+-	v32->text = sect - vdso32_kbase;
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+@@ -301,12 +291,6 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
+ 		printk(KERN_ERR "vDSO64: required symbol section not found\n");
+ 		return -1;
+ 	}
+-	sect = find_section64(v64->hdr, ".text", NULL);
+-	if (sect == NULL) {
+-		printk(KERN_ERR "vDSO64: the .text section was not found\n");
 -		return -1;
 -	}
--	*((int *)(vdso32_kbase + (sym32->st_value - VDSO32_LBASE))) =
--		-PAGE_SIZE -
--		(sym32->st_value - VDSO32_LBASE);
--#endif
--
--	return 0;
--}
--
--
- static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 				      struct lib64_elfinfo *v64)
- {
-@@ -595,9 +559,6 @@ static __init int vdso_setup(void)
- 	if (vdso_do_find_sections(&v32, &v64))
- 		return -1;
+-	v64->text = sect - vdso64_kbase;
+ #endif /* CONFIG_PPC64 */
  
--	if (vdso_fixup_datapage(&v32, &v64))
--		return -1;
--
- 	if (vdso_fixup_features(&v32, &v64))
- 		return -1;
- 
-diff --git a/arch/powerpc/kernel/vdso32/datapage.S b/arch/powerpc/kernel/vdso32/datapage.S
-index 91a153b34714..0513a2eabec8 100644
---- a/arch/powerpc/kernel/vdso32/datapage.S
-+++ b/arch/powerpc/kernel/vdso32/datapage.S
-@@ -13,9 +13,6 @@
- #include <asm/vdso_datapage.h>
- 
- 	.text
--	.global	__kernel_datapage_offset;
--__kernel_datapage_offset:
--	.long	0
- 
- /*
-  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
-diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-index c70f5dac8c98..7b476a6f2dba 100644
---- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-@@ -148,11 +148,6 @@ VERSION
- {
- 	VDSO_VERSION_STRING {
- 	global:
--		/*
--		 * Has to be there for the kernel to find
--		 */
--		__kernel_datapage_offset;
--
- 		__kernel_get_syscall_map;
- #ifndef CONFIG_PPC_BOOK3S_601
- 		__kernel_gettimeofday;
-diff --git a/arch/powerpc/kernel/vdso64/datapage.S b/arch/powerpc/kernel/vdso64/datapage.S
-index 941b735df069..00760dc69d68 100644
---- a/arch/powerpc/kernel/vdso64/datapage.S
-+++ b/arch/powerpc/kernel/vdso64/datapage.S
-@@ -13,9 +13,6 @@
- #include <asm/vdso_datapage.h>
- 
- 	.text
--.global	__kernel_datapage_offset;
--__kernel_datapage_offset:
--	.long	0
- 
- /*
-  * void *__kernel_get_syscall_map(unsigned int *syscall_count) ;
-diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-index a049000eacfe..a543826cd857 100644
---- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-@@ -148,11 +148,6 @@ VERSION
- {
- 	VDSO_VERSION_STRING {
- 	global:
--		/*
--		 * Has to be there for the kernel to find
--		 */
--		__kernel_datapage_offset;
--
- 		__kernel_get_syscall_map;
- 		__kernel_gettimeofday;
- 		__kernel_clock_gettime;
+ 	return 0;
 -- 
 2.25.0
 
