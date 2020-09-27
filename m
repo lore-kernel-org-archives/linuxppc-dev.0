@@ -2,23 +2,24 @@ Return-Path: <SRS0=BKCT=DE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F311EC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 07:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1529EC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:19:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F9BF23977
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 07:45:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F9BF23977
+	by mail.kernel.org (Postfix) with ESMTPS id D1AA82389F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:19:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1AA82389F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzd3Q689FzDqQJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 17:45:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzg8211r2zDqQR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:19:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,49 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzd1S5VJDzDqND
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 17:43:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg4p6HqlzDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:25 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bzd1C397tz9vCyd;
- Sun, 27 Sep 2020 09:43:11 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4Bzg4d3jxbz9vCy3;
+ Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 2rpLFY2yYYd0; Sun, 27 Sep 2020 09:43:11 +0200 (CEST)
+ with ESMTP id YnL7fQKgnr5O; Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzd1C1xLgz9vCyc;
- Sun, 27 Sep 2020 09:43:11 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4d2GF7z9vCxw;
+ Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9C23F8B771;
- Sun, 27 Sep 2020 09:43:15 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 99B168B771;
+ Sun, 27 Sep 2020 11:16:21 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 8dPWckrkFTns; Sun, 27 Sep 2020 09:43:15 +0200 (CEST)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E510A8B75B;
- Sun, 27 Sep 2020 09:43:13 +0200 (CEST)
-Subject: Re: [PATCH v8 2/8] powerpc/vdso: Remove __kernel_datapage_offset and
- simplify __get_datapage()
-To: Will Deacon <will@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1588079622.git.christophe.leroy@c-s.fr>
- <0d2201efe3c7727f2acc718aefd7c5bb22c66c57.1588079622.git.christophe.leroy@c-s.fr>
- <87wo34tbas.fsf@mpe.ellerman.id.au>
- <2f9b7d02-9e2f-4724-2608-c5573f6507a2@csgroup.eu>
- <6862421a-5a14-2e38-b825-e39e6ad3d51d@csgroup.eu>
- <87imd5h5kb.fsf@mpe.ellerman.id.au>
- <CAJwJo6ZANqYkSHbQ+3b+Fi_VT80MtrzEV5yreQAWx-L8j8x2zA@mail.gmail.com>
- <87a6yf34aj.fsf@mpe.ellerman.id.au> <20200921112638.GC2139@willie-the-truck>
+ with ESMTP id 03abVDqyohdV; Sun, 27 Sep 2020 11:16:21 +0200 (CEST)
+Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 499CC8B75B;
+ Sun, 27 Sep 2020 11:16:21 +0200 (CEST)
+Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 2EB8665DE8; Sun, 27 Sep 2020 09:16:21 +0000 (UTC)
+Message-Id: <9d14540bd10832b6c9519d74fb5728fdc4974b36.1601197618.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1601197618.git.christophe.leroy@csgroup.eu>
+References: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <ad72ffd3-a552-cc98-7545-d30285fd5219@csgroup.eu>
-Date: Sun, 27 Sep 2020 09:43:06 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
-MIME-Version: 1.0
-In-Reply-To: <20200921112638.GC2139@willie-the-truck>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v1 04/30] powerpc/vdso: Remove get_page() in vdso_pagelist
+ initialization
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Sun, 27 Sep 2020 09:16:21 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,103 +72,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linux-arch <linux-arch@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>, Dmitry Safonov <0x7f454c46@gmail.com>,
- open list <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Partly copied from commit 16fb1a9bec61 ("arm64: vdso: clean up
+vdso_pagelist initialization").
 
+No need to get_page() the vdso text/data - these are part of the
+kernel image.
 
-Le 21/09/2020 à 13:26, Will Deacon a écrit :
-> On Fri, Aug 28, 2020 at 12:14:28PM +1000, Michael Ellerman wrote:
->> Dmitry Safonov <0x7f454c46@gmail.com> writes:
->>> On Wed, 26 Aug 2020 at 15:39, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
->>>> We added a test for vdso unmap recently because it happened to trigger a
->>>> KAUP failure, and someone actually hit it & reported it.
->>>
->>> You right, CRIU cares much more about moving vDSO.
->>> It's done for each restoree and as on most setups vDSO is premapped and
->>> used by the application - it's actively tested.
->>> Speaking about vDSO unmap - that's concerning only for heterogeneous C/R,
->>> i.e when an application is migrated from a system that uses vDSO to the one
->>> which doesn't - it's much rare scenario.
->>> (for arm it's !CONFIG_VDSO, for x86 it's `vdso=0` boot parameter)
->>
->> Ah OK that explains it.
->>
->> The case we hit of VDSO unmapping was some strange "library OS" thing
->> which had explicitly unmapped the VDSO, so also very rare.
->>
->>> Looking at the code, it seems quite easy to provide/maintain .close() for
->>> vm_special_mapping. A bit harder to add a test from CRIU side
->>> (as glibc won't know on restore that it can't use vdso anymore),
->>> but totally not impossible.
->>>
->>>> Running that test on arm64 segfaults:
->>>>
->>>>    # ./sigreturn_vdso
->>>>    VDSO is at 0xffff8191f000-0xffff8191ffff (4096 bytes)
->>>>    Signal delivered OK with VDSO mapped
->>>>    VDSO moved to 0xffff8191a000-0xffff8191afff (4096 bytes)
->>>>    Signal delivered OK with VDSO moved
->>>>    Unmapped VDSO
->>>>    Remapped the stack executable
->>>>    [   48.556191] potentially unexpected fatal signal 11.
->>>>    [   48.556752] CPU: 0 PID: 140 Comm: sigreturn_vdso Not tainted 5.9.0-rc2-00057-g2ac69819ba9e #190
->>>>    [   48.556990] Hardware name: linux,dummy-virt (DT)
->>>>    [   48.557336] pstate: 60001000 (nZCv daif -PAN -UAO BTYPE=--)
->>>>    [   48.557475] pc : 0000ffff8191a7bc
->>>>    [   48.557603] lr : 0000ffff8191a7bc
->>>>    [   48.557697] sp : 0000ffffc13c9e90
->>>>    [   48.557873] x29: 0000ffffc13cb0e0 x28: 0000000000000000
->>>>    [   48.558201] x27: 0000000000000000 x26: 0000000000000000
->>>>    [   48.558337] x25: 0000000000000000 x24: 0000000000000000
->>>>    [   48.558754] x23: 0000000000000000 x22: 0000000000000000
->>>>    [   48.558893] x21: 00000000004009b0 x20: 0000000000000000
->>>>    [   48.559046] x19: 0000000000400ff0 x18: 0000000000000000
->>>>    [   48.559180] x17: 0000ffff817da300 x16: 0000000000412010
->>>>    [   48.559312] x15: 0000000000000000 x14: 000000000000001c
->>>>    [   48.559443] x13: 656c626174756365 x12: 7865206b63617473
->>>>    [   48.559625] x11: 0000000000000003 x10: 0101010101010101
->>>>    [   48.559828] x9 : 0000ffff818afda8 x8 : 0000000000000081
->>>>    [   48.559973] x7 : 6174732065687420 x6 : 64657070616d6552
->>>>    [   48.560115] x5 : 000000000e0388bd x4 : 000000000040135d
->>>>    [   48.560270] x3 : 0000000000000000 x2 : 0000000000000001
->>>>    [   48.560412] x1 : 0000000000000003 x0 : 00000000004120b8
->>>>    Segmentation fault
->>>>    #
->>>>
->>>> So I think we need to keep the unmap hook. Maybe it should be handled by
->>>> the special_mapping stuff generically.
->>>
->>> I'll cook a patch for vm_special_mapping if you don't mind :-)
->>
->> That would be great, thanks!
-> 
-> I lost track of this one. Is there a patch kicking around to resolve this,
-> or is the segfault expected behaviour?
-> 
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/vdso.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-IIUC dmitry said he will cook a patch. I have not seen any patch yet.
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 6d106fcafb9e..dfaa4be258d2 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -748,7 +748,7 @@ static int __init vdso_init(void)
+ 	BUG_ON(vdso32_pagelist == NULL);
+ 	for (i = 0; i < vdso32_pages; i++) {
+ 		struct page *pg = virt_to_page(vdso32_kbase + i*PAGE_SIZE);
+-		get_page(pg);
++
+ 		vdso32_pagelist[i] = pg;
+ 	}
+ 	vdso32_pagelist[i++] = virt_to_page(vdso_data);
+@@ -761,15 +761,13 @@ static int __init vdso_init(void)
+ 	BUG_ON(vdso64_pagelist == NULL);
+ 	for (i = 0; i < vdso64_pages; i++) {
+ 		struct page *pg = virt_to_page(vdso64_kbase + i*PAGE_SIZE);
+-		get_page(pg);
++
+ 		vdso64_pagelist[i] = pg;
+ 	}
+ 	vdso64_pagelist[i++] = virt_to_page(vdso_data);
+ 	vdso64_pagelist[i] = NULL;
+ #endif /* CONFIG_PPC64 */
+ 
+-	get_page(virt_to_page(vdso_data));
+-
+ 	smp_wmb();
+ 	vdso_ready = 1;
+ 
+-- 
+2.25.0
 
-AFAIKS, among the architectures having VDSO sigreturn trampolines, only SH, X86 and POWERPC provide 
-alternative trampoline on stack when VDSO is not there.
-
-All other architectures just having a VDSO don't expect VDSO to not be mapped.
-
-As far as nowadays stacks are mapped non-executable, getting a segfaut is expected behaviour. 
-However, I think we should really make it cleaner. Today it segfaults because it is still pointing 
-to the VDSO trampoline that has been unmapped. But should the user map some other code at the same 
-address, we'll run in the weed on signal return instead of segfaulting.
-
-So VDSO unmapping should really be properly managed, the reference should be properly cleared in 
-order to segfault in a controllable manner.
-
-Only powerpc has a hook to properly clear the VDSO pointer when VDSO is unmapped.
-
-Christophe
