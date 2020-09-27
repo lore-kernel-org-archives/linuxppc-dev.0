@@ -2,23 +2,23 @@ Return-Path: <SRS0=BKCT=DE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2A8C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB985C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:23:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 634B92389F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:21:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 634B92389F
+	by mail.kernel.org (Postfix) with ESMTPS id 00B962389F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:23:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00B962389F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4BzgBq02NVzDqRL
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:21:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BzgDk1TBCzDqRd
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:23:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,39 +27,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg4p6G4dzDqPj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg4p6rvNzDqPv
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:23 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bzg4b26vdz9vCy1;
- Sun, 27 Sep 2020 11:16:15 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4Bzg4Y1mbTz9vCxx;
+ Sun, 27 Sep 2020 11:16:13 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id fBPNQ09o0oCt; Sun, 27 Sep 2020 11:16:15 +0200 (CEST)
+ with ESMTP id U2cG5DDVaODT; Sun, 27 Sep 2020 11:16:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4b10Pfz9vCxw;
- Sun, 27 Sep 2020 11:16:15 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4Y10LJz9vCxw;
+ Sun, 27 Sep 2020 11:16:13 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 709238B771;
- Sun, 27 Sep 2020 11:16:19 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A1D118B771;
+ Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id m7iUBLyHQ6Us; Sun, 27 Sep 2020 11:16:19 +0200 (CEST)
+ with ESMTP id aMYHOO3LHzx1; Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C9DD8B75B;
- Sun, 27 Sep 2020 11:16:19 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F3DE8B75B;
+ Sun, 27 Sep 2020 11:16:17 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2260265DE8; Sun, 27 Sep 2020 09:16:19 +0000 (UTC)
-Message-Id: <b4afedce748ed2858299ceab5ae29b52109263ef.1601197618.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1601197618.git.christophe.leroy@csgroup.eu>
-References: <cover.1601197618.git.christophe.leroy@csgroup.eu>
+ id 1D5FA65DE8; Sun, 27 Sep 2020 09:16:16 +0000 (UTC)
+Message-Id: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 02/30] powerpc/vdso: Add missing includes and clean
- vdso_setup_syscall_map()
+Subject: [PATCH v1 00/30] Modernise VDSO setup
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun, 27 Sep 2020 09:16:19 +0000 (UTC)
+Date: Sun, 27 Sep 2020 09:16:16 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,74 +73,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of including extern references locally in
-vdso_setup_syscall_map(), add the missing headers.
+This series modernises the setup of VDSO:
+- Switch to using _install_special_mapping() which has replaced install_special_mapping()
+- Move datapage in front of text like most other architectures to simplify its localisation
+- Perform link time symbol resolution instead of runtime
 
-sys_ni_syscall() being a function, cast its address to
-an unsigned long instead of declaring it as a fake
-unsigned long object.
+This leads to a huge size reduction of vdso.c
 
-At the same time, remove a comment which paraphrases the
-function name.
+Replaces the two following series:
+ [v1,1/9] powerpc/vdso: Remove BUG_ON() in vdso_init()
+ [v2,1/5] powerpc/vdso: Remove DBG()
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/vdso.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+This series is based on top of the series to the C generic VDSO.
+It is functionnaly independant but some trivial merge conflict
+occurs in some files. I may rebase it on top of merge if the
+C generic VDSO series cannot be merged soon.
 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 23208a051af5..b0332c609104 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -17,8 +17,10 @@
- #include <linux/elf.h>
- #include <linux/security.h>
- #include <linux/memblock.h>
-+#include <linux/syscalls.h>
- #include <vdso/datapage.h>
- 
-+#include <asm/syscall.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/mmu_context.h>
-@@ -639,24 +641,18 @@ static __init int vdso_setup(void)
- static void __init vdso_setup_syscall_map(void)
- {
- 	unsigned int i;
--	extern unsigned long *sys_call_table;
--#ifdef CONFIG_PPC64
--	extern unsigned long *compat_sys_call_table;
--#endif
--	extern unsigned long sys_ni_syscall;
--
- 
- 	for (i = 0; i < NR_syscalls; i++) {
- #ifdef CONFIG_PPC64
--		if (sys_call_table[i] != sys_ni_syscall)
-+		if (sys_call_table[i] != (unsigned long)&sys_ni_syscall)
- 			vdso_data->syscall_map_64[i >> 5] |=
- 				0x80000000UL >> (i & 0x1f);
- 		if (IS_ENABLED(CONFIG_COMPAT) &&
--		    compat_sys_call_table[i] != sys_ni_syscall)
-+		    compat_sys_call_table[i] != (unsigned long)&sys_ni_syscall)
- 			vdso_data->syscall_map_32[i >> 5] |=
- 				0x80000000UL >> (i & 0x1f);
- #else /* CONFIG_PPC64 */
--		if (sys_call_table[i] != sys_ni_syscall)
-+		if (sys_call_table[i] != (unsigned long)&sys_ni_syscall)
- 			vdso_data->syscall_map_32[i >> 5] |=
- 				0x80000000UL >> (i & 0x1f);
- #endif /* CONFIG_PPC64 */
-@@ -738,9 +734,6 @@ static int __init vdso_init(void)
- #endif
- 
- 
--	/*
--	 * Setup the syscall map in the vDOS
--	 */
- 	vdso_setup_syscall_map();
- 
- 	/*
+Christophe Leroy (30):
+  powerpc/vdso: Stripped VDSO is not needed, don't build it
+  powerpc/vdso: Add missing includes and clean vdso_setup_syscall_map()
+  powerpc/vdso: Rename syscall_map_32/64 to simplify
+    vdso_setup_syscall_map()
+  powerpc/vdso: Remove get_page() in vdso_pagelist initialization
+  powerpc/vdso: Remove NULL termination element in vdso_pagelist
+  powerpc/vdso: Refactor 32 bits and 64 bits pages setup
+  powerpc/vdso: Remove unnecessary ifdefs in vdso_pagelist
+    initialization
+  powerpc/vdso: Use VDSO size in arch_setup_additional_pages()
+  powerpc/vdso: Simplify arch_setup_additional_pages() exit
+  powerpc/vdso: Move to _install_special_mapping() and remove
+    arch_vma_name()
+  powerpc/vdso: Provide vdso_remap()
+  powerpc/vdso: Replace vdso_base by vdso
+  powerpc/vdso: Move vdso datapage up front
+  powerpc/vdso: Simplify __get_datapage()
+  powerpc/vdso: Remove unused \tmp param in __get_datapage()
+  powerpc/vdso: Retrieve sigtramp offsets at buildtime
+  powerpc/vdso: Use builtin symbols to locate fixup section
+  powerpc/vdso: Merge __kernel_sync_dicache_p5() into
+    __kernel_sync_dicache()
+  powerpc/vdso: Remove vdso32_pages and vdso64_pages
+  powerpc/vdso: Remove __kernel_datapage_offset
+  powerpc/vdso: Remove runtime generated sigtramp offsets
+  powerpc/vdso: Remove vdso_patches[] and associated functions
+  powerpc/vdso: Remove unused text member in struct lib32/64_elfinfo
+  powerpc/vdso: Remove symbol section information in struct
+    lib32/64_elfinfo
+  powerpc/vdso: Remove lib32_elfinfo and lib64_elfinfo
+  powerpc/vdso: Remove vdso_setup()
+  powerpc/vdso: Remove vdso_ready
+  powerpc/vdso: Remove DBG()
+  powerpc/vdso: Remove VDSO32_LBASE and VDSO64_LBASE
+  powerpc/vdso: Cleanup vdso.h
+
+ arch/powerpc/Makefile                         |  24 +-
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   2 +-
+ arch/powerpc/include/asm/book3s/64/mmu.h      |   2 +-
+ arch/powerpc/include/asm/elf.h                |   2 +-
+ arch/powerpc/include/asm/mm-arch-hooks.h      |  25 -
+ arch/powerpc/include/asm/mmu_context.h        |   6 +-
+ arch/powerpc/include/asm/nohash/32/mmu-40x.h  |   2 +-
+ arch/powerpc/include/asm/nohash/32/mmu-44x.h  |   2 +-
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   2 +-
+ arch/powerpc/include/asm/nohash/mmu-book3e.h  |   2 +-
+ arch/powerpc/include/asm/vdso.h               |  29 +-
+ arch/powerpc/include/asm/vdso/gettimeofday.h  |   4 +-
+ arch/powerpc/include/asm/vdso_datapage.h      |  17 +-
+ arch/powerpc/kernel/asm-offsets.c             |   6 +-
+ arch/powerpc/kernel/signal_32.c               |   8 +-
+ arch/powerpc/kernel/signal_64.c               |   4 +-
+ arch/powerpc/kernel/vdso.c                    | 682 +++---------------
+ arch/powerpc/kernel/vdso32/Makefile           |  27 +-
+ arch/powerpc/kernel/vdso32/cacheflush.S       |  19 +-
+ arch/powerpc/kernel/vdso32/datapage.S         |   7 +-
+ .../powerpc/kernel/vdso32/gen_vdso_offsets.sh |  16 +
+ arch/powerpc/kernel/vdso32/vdso32.lds.S       |  24 +-
+ arch/powerpc/kernel/vdso64/Makefile           |  25 +-
+ arch/powerpc/kernel/vdso64/cacheflush.S       |  18 +-
+ arch/powerpc/kernel/vdso64/datapage.S         |   7 +-
+ .../powerpc/kernel/vdso64/gen_vdso_offsets.sh |  16 +
+ arch/powerpc/kernel/vdso64/vdso64.lds.S       |  23 +-
+ arch/powerpc/perf/callchain_32.c              |   8 +-
+ arch/powerpc/perf/callchain_64.c              |   4 +-
+ 29 files changed, 267 insertions(+), 746 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
+ create mode 100755 arch/powerpc/kernel/vdso32/gen_vdso_offsets.sh
+ create mode 100755 arch/powerpc/kernel/vdso64/gen_vdso_offsets.sh
+
 -- 
 2.25.0
 
