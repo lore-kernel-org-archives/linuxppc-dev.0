@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE4FDC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:59:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3074AC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 10:00:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C47523899
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:59:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C47523899
+	by mail.kernel.org (Postfix) with ESMTPS id 63E9523899
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 10:00:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63E9523899
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzh2360wvzDqSq
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:59:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzh3d5dXzzDqPQ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 20:00:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,39 +27,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg5B4yRxzDq5n
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg5C2qVJzDq9d
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:47 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bzg516rbdz9vCy4;
- Sun, 27 Sep 2020 11:16:37 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4Bzg536sj5z9vCy9;
+ Sun, 27 Sep 2020 11:16:39 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 1PkD_OUD6WZc; Sun, 27 Sep 2020 11:16:37 +0200 (CEST)
+ with ESMTP id lqQ3TzBlVsSM; Sun, 27 Sep 2020 11:16:39 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg515fF5z9vCxw;
- Sun, 27 Sep 2020 11:16:37 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg5367rRz9vCxw;
+ Sun, 27 Sep 2020 11:16:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5686D8B771;
- Sun, 27 Sep 2020 11:16:42 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 524618B771;
+ Sun, 27 Sep 2020 11:16:44 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id CsK6p0TCGpfP; Sun, 27 Sep 2020 11:16:42 +0200 (CEST)
+ with ESMTP id 62pYDYhttMyY; Sun, 27 Sep 2020 11:16:44 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 138DD8B75B;
- Sun, 27 Sep 2020 11:16:42 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1E8EB8B75B;
+ Sun, 27 Sep 2020 11:16:44 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E230F65DE8; Sun, 27 Sep 2020 09:16:41 +0000 (UTC)
-Message-Id: <b779e5b7cc0354e2f87fd407fe5b02f4a8a73825.1601197618.git.christophe.leroy@csgroup.eu>
+ id 00E0B65DE8; Sun, 27 Sep 2020 09:16:43 +0000 (UTC)
+Message-Id: <11522eec6140f510a8c89c63cbb739277d097fdc.1601197618.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 References: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 24/30] powerpc/vdso: Remove symbol section information in
- struct lib32/64_elfinfo
+Subject: [PATCH v1 26/30] powerpc/vdso: Remove vdso_setup()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun, 27 Sep 2020 09:16:41 +0000 (UTC)
+Date: Sun, 27 Sep 2020 09:16:43 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,141 +75,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The members related to the symbol section in struct lib32_elfinfo and
-struct lib64_elfinfo are not used anymore, removed them.
+vdso_fixup_features() cannot fail anymore and that's
+the only function called by vdso_setup().
+
+vdso_setup() has become trivial and can be removed.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/vdso.c | 90 --------------------------------------
- 1 file changed, 90 deletions(-)
+ arch/powerpc/kernel/vdso.c | 21 ++-------------------
+ 1 file changed, 2 insertions(+), 19 deletions(-)
 
 diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index fa1cbddfb978..f7b477da0b8a 100644
+index 0cb320b72923..14fbcc76a629 100644
 --- a/arch/powerpc/kernel/vdso.c
 +++ b/arch/powerpc/kernel/vdso.c
-@@ -70,17 +70,11 @@ struct vdso_arch_data *vdso_data = &vdso_data_store.data;
- struct lib32_elfinfo
- {
- 	Elf32_Ehdr	*hdr;		/* ptr to ELF */
--	Elf32_Sym	*dynsym;	/* ptr to .dynsym section */
--	unsigned long	dynsymsize;	/* size of .dynsym section */
--	char		*dynstr;	/* ptr to .dynstr section */
- };
- 
- struct lib64_elfinfo
- {
- 	Elf64_Ehdr	*hdr;
--	Elf64_Sym	*dynsym;
--	unsigned long	dynsymsize;
--	char		*dynstr;
- };
- 
- static int vdso_mremap(const struct vm_special_mapping *sm, struct vm_area_struct *new_vma,
-@@ -208,59 +202,6 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
- 	return rc;
- }
- 
--#ifdef CONFIG_VDSO32
--static void * __init find_section32(Elf32_Ehdr *ehdr, const char *secname,
--				  unsigned long *size)
--{
--	Elf32_Shdr *sechdrs;
--	unsigned int i;
--	char *secnames;
--
--	/* Grab section headers and strings so we can tell who is who */
--	sechdrs = (void *)ehdr + ehdr->e_shoff;
--	secnames = (void *)ehdr + sechdrs[ehdr->e_shstrndx].sh_offset;
--
--	/* Find the section they want */
--	for (i = 1; i < ehdr->e_shnum; i++) {
--		if (strcmp(secnames+sechdrs[i].sh_name, secname) == 0) {
--			if (size)
--				*size = sechdrs[i].sh_size;
--			return (void *)ehdr + sechdrs[i].sh_offset;
--		}
--	}
--	*size = 0;
--	return NULL;
--}
--#endif /* CONFIG_VDSO32 */
--
--
--#ifdef CONFIG_PPC64
--
--static void * __init find_section64(Elf64_Ehdr *ehdr, const char *secname,
--				  unsigned long *size)
--{
--	Elf64_Shdr *sechdrs;
--	unsigned int i;
--	char *secnames;
--
--	/* Grab section headers and strings so we can tell who is who */
--	sechdrs = (void *)ehdr + ehdr->e_shoff;
--	secnames = (void *)ehdr + sechdrs[ehdr->e_shstrndx].sh_offset;
--
--	/* Find the section they want */
--	for (i = 1; i < ehdr->e_shnum; i++) {
--		if (strcmp(secnames+sechdrs[i].sh_name, secname) == 0) {
--			if (size)
--				*size = sechdrs[i].sh_size;
--			return (void *)ehdr + sechdrs[i].sh_offset;
--		}
--	}
--	if (size)
--		*size = 0;
--	return NULL;
--}
--#endif /* CONFIG_PPC64 */
--
- #define VDSO_DO_FIXUPS(type, value, bits, sec) do {					\
- 	void *__start = (void *)VDSO##bits##_SYMBOL(&vdso##bits##_start, sec##_start);	\
- 	void *__end = (void *)VDSO##bits##_SYMBOL(&vdso##bits##_start, sec##_end);	\
-@@ -268,34 +209,6 @@ static void * __init find_section64(Elf64_Ehdr *ehdr, const char *secname,
+@@ -192,7 +192,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
  	do_##type##_fixups((value), __start, __end);					\
  } while (0)
  
--static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
--					struct lib64_elfinfo *v64)
--{
--	/*
--	 * Locate symbol tables & text section
--	 */
--
--#ifdef CONFIG_VDSO32
--	v32->dynsym = find_section32(v32->hdr, ".dynsym", &v32->dynsymsize);
--	v32->dynstr = find_section32(v32->hdr, ".dynstr", NULL);
--	if (v32->dynsym == NULL || v32->dynstr == NULL) {
--		printk(KERN_ERR "vDSO32: required symbol section not found\n");
--		return -1;
--	}
--#endif
--
--#ifdef CONFIG_PPC64
--	v64->dynsym = find_section64(v64->hdr, ".dynsym", &v64->dynsymsize);
--	v64->dynstr = find_section64(v64->hdr, ".dynstr", NULL);
--	if (v64->dynsym == NULL || v64->dynstr == NULL) {
--		printk(KERN_ERR "vDSO64: required symbol section not found\n");
--		return -1;
--	}
--#endif /* CONFIG_PPC64 */
+-static int __init vdso_fixup_features(void)
++static void __init vdso_fixup_features(void)
+ {
+ #ifdef CONFIG_PPC64
+ 	VDSO_DO_FIXUPS(feature, cur_cpu_spec->cpu_features, 64, ftr_fixup);
+@@ -209,16 +209,6 @@ static int __init vdso_fixup_features(void)
+ #endif /* CONFIG_PPC64 */
+ 	VDSO_DO_FIXUPS(lwsync, cur_cpu_spec->cpu_features, 32, lwsync_fixup);
+ #endif
 -
 -	return 0;
 -}
 -
- static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 				      struct lib64_elfinfo *v64)
- {
-@@ -325,9 +238,6 @@ static __init int vdso_setup(void)
- 
- 	v32.hdr = vdso32_kbase;
- 	v64.hdr = vdso64_kbase;
--	if (vdso_do_find_sections(&v32, &v64))
+-static __init int vdso_setup(void)
+-{
+-	if (vdso_fixup_features())
 -		return -1;
 -
- 	if (vdso_fixup_features(&v32, &v64))
- 		return -1;
+-	return 0;
+ }
  
+ /*
+@@ -313,14 +303,7 @@ static int __init vdso_init(void)
+ 
+ 	vdso_setup_syscall_map();
+ 
+-	/*
+-	 * Initialize the vDSO images in memory, that is do necessary
+-	 * fixups of vDSO symbols, locate trampolines, etc...
+-	 */
+-	if (vdso_setup()) {
+-		printk(KERN_ERR "vDSO setup failure, not enabled !\n");
+-		return 0;
+-	}
++	vdso_fixup_features();
+ 
+ 	if (IS_ENABLED(CONFIG_VDSO32))
+ 		vdso32_spec.pages = vdso_setup_pages(&vdso32_start, &vdso32_end);
 -- 
 2.25.0
 
