@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8CBAC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 449D6C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:51:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2BCC523899
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:50:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2BCC523899
+	by mail.kernel.org (Postfix) with ESMTPS id 4449A23899
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 09:51:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4449A23899
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Bzgqf29tFzDqn4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:50:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4BzgsP1p49zDqPM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Sep 2020 19:51:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,39 +27,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg532XX4zDqQJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4Bzg571ZsbzDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 19:16:43 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4Bzg4v5Bd4z9vCy7;
- Sun, 27 Sep 2020 11:16:31 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4Bzg4z0s0vz9vCy1;
+ Sun, 27 Sep 2020 11:16:35 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id TupNUypj6y0x; Sun, 27 Sep 2020 11:16:31 +0200 (CEST)
+ with ESMTP id uUA0IOy9RpUV; Sun, 27 Sep 2020 11:16:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4v4SbYz9vCxw;
- Sun, 27 Sep 2020 11:16:31 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4Bzg4y6hdJz9vCxw;
+ Sun, 27 Sep 2020 11:16:34 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3664D8B771;
- Sun, 27 Sep 2020 11:16:36 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BD708B771;
+ Sun, 27 Sep 2020 11:16:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id I-YkZQShlrs7; Sun, 27 Sep 2020 11:16:36 +0200 (CEST)
+ with ESMTP id sWw5s0MOzYkz; Sun, 27 Sep 2020 11:16:39 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C796A8B75B;
- Sun, 27 Sep 2020 11:16:35 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DEBDF8B75B;
+ Sun, 27 Sep 2020 11:16:38 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id AC1E565DE8; Sun, 27 Sep 2020 09:16:35 +0000 (UTC)
-Message-Id: <4c7dcc6544882761b2b0249d7a8ec2c3a8088cb5.1601197618.git.christophe.leroy@csgroup.eu>
+ id C231365DE8; Sun, 27 Sep 2020 09:16:38 +0000 (UTC)
+Message-Id: <7c192d35a437151837cf4c48aeccb42380d6daac.1601197618.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 References: <cover.1601197618.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 18/30] powerpc/vdso: Merge __kernel_sync_dicache_p5() into
- __kernel_sync_dicache()
+Subject: [PATCH v1 21/30] powerpc/vdso: Remove runtime generated sigtramp
+ offsets
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun, 27 Sep 2020 09:16:35 +0000 (UTC)
+Date: Sun, 27 Sep 2020 09:16:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,145 +76,141 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__kernel_sync_dicache_p5() is an alternative to
-__kernel_sync_dicache() when cpu has CPU_FTR_COHERENT_ICACHE
+Signal trampoline offsets are now generated at buildtime.
 
-Remove this alternative function and merge
-__kernel_sync_dicache_p5() into __kernel_sync_dicache() using
-standard CPU feature fixup.
+Runtime generated offsets are not used anymore, remove them.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/vdso.c              |  4 ----
- arch/powerpc/kernel/vdso32/cacheflush.S | 17 ++++++-----------
- arch/powerpc/kernel/vdso32/vdso32.lds.S |  1 -
- arch/powerpc/kernel/vdso64/cacheflush.S | 16 ++++++----------
- arch/powerpc/kernel/vdso64/vdso64.lds.S |  1 -
- 5 files changed, 12 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/vdso.h |  5 ---
+ arch/powerpc/kernel/vdso.c      | 59 ---------------------------------
+ 2 files changed, 64 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
+index f5257b7f17d0..a97384909fe5 100644
+--- a/arch/powerpc/include/asm/vdso.h
++++ b/arch/powerpc/include/asm/vdso.h
+@@ -27,11 +27,6 @@
+ 
+ #define VDSO32_SYMBOL(base, name) ((unsigned long)(base) + (vdso32_offset_##name))
+ 
+-/* Offsets relative to thread->vdso_base */
+-extern unsigned long vdso64_rt_sigtramp;
+-extern unsigned long vdso32_sigtramp;
+-extern unsigned long vdso32_rt_sigtramp;
+-
+ int vdso_getcpu_init(void);
+ 
+ #else /* __ASSEMBLY__ */
 diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index ba2b935a67f6..3a4fbcc0d1be 100644
+index 611977010e2d..ec0f1aae0cad 100644
 --- a/arch/powerpc/kernel/vdso.c
 +++ b/arch/powerpc/kernel/vdso.c
-@@ -87,10 +87,6 @@ struct vdso_patch_def
-  * with a coherent icache
-  */
- static struct vdso_patch_def vdso_patches[] = {
--	{
--		CPU_FTR_COHERENT_ICACHE, CPU_FTR_COHERENT_ICACHE,
--		"__kernel_sync_dicache", "__kernel_sync_dicache_p5"
--	},
- };
+@@ -48,15 +48,10 @@
+ #define VDSO_ALIGNMENT	(1 << 16)
  
- /*
-diff --git a/arch/powerpc/kernel/vdso32/cacheflush.S b/arch/powerpc/kernel/vdso32/cacheflush.S
-index 017843bf5382..f340e82d1981 100644
---- a/arch/powerpc/kernel/vdso32/cacheflush.S
-+++ b/arch/powerpc/kernel/vdso32/cacheflush.S
-@@ -24,11 +24,15 @@
-  */
- V_FUNCTION_BEGIN(__kernel_sync_dicache)
-   .cfi_startproc
-+BEGIN_FTR_SECTION
-+	b	3f
-+END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- #ifdef CONFIG_PPC64
- 	mflr	r12
-   .cfi_register lr,r12
- 	get_datapage	r10
- 	mtlr	r12
-+  .cfi_restore	lr
- #endif
+ static void *vdso32_kbase;
+-unsigned long vdso32_sigtramp;
+-unsigned long vdso32_rt_sigtramp;
  
- #ifdef CONFIG_PPC64
-@@ -84,20 +88,11 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
- 	isync
- 	li	r3,0
- 	blr
--  .cfi_endproc
--V_FUNCTION_END(__kernel_sync_dicache)
--
--
--/*
-- * POWER5 version of __kernel_sync_dicache
+ extern char vdso32_start, vdso32_end;
+ extern char vdso64_start, vdso64_end;
+ static void *vdso64_kbase = &vdso64_start;
+-#ifdef CONFIG_PPC64
+-unsigned long vdso64_rt_sigtramp;
+-#endif /* CONFIG_PPC64 */
+ 
+ static int vdso_ready;
+ 
+@@ -278,22 +273,6 @@ static Elf32_Sym * __init find_symbol32(struct lib32_elfinfo *lib,
+ 	return NULL;
+ }
+ 
+-/* Note that we assume the section is .text and the symbol is relative to
+- * the library base
 - */
--V_FUNCTION_BEGIN(__kernel_sync_dicache_p5)
--  .cfi_startproc
-+3:
- 	crclr	cr0*4+so
- 	sync
- 	isync
- 	li	r3,0
- 	blr
-   .cfi_endproc
--V_FUNCTION_END(__kernel_sync_dicache_p5)
+-static unsigned long __init find_function32(struct lib32_elfinfo *lib,
+-					    const char *symname)
+-{
+-	Elf32_Sym *sym = find_symbol32(lib, symname);
 -
-+V_FUNCTION_END(__kernel_sync_dicache)
-diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-index dd9f262e07c6..c70f5dac8c98 100644
---- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-@@ -163,7 +163,6 @@ VERSION
- 		__kernel_get_tbfreq;
- #endif
- 		__kernel_sync_dicache;
--		__kernel_sync_dicache_p5;
- 		__kernel_sigtramp32;
- 		__kernel_sigtramp_rt32;
- #if defined(CONFIG_PPC64) || !defined(CONFIG_SMP)
-diff --git a/arch/powerpc/kernel/vdso64/cacheflush.S b/arch/powerpc/kernel/vdso64/cacheflush.S
-index 61985de5758f..76c3c8cf8ece 100644
---- a/arch/powerpc/kernel/vdso64/cacheflush.S
-+++ b/arch/powerpc/kernel/vdso64/cacheflush.S
-@@ -23,10 +23,14 @@
-  */
- V_FUNCTION_BEGIN(__kernel_sync_dicache)
-   .cfi_startproc
-+BEGIN_FTR_SECTION
-+	b	3f
-+END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- 	mflr	r12
-   .cfi_register lr,r12
- 	get_datapage	r10
- 	mtlr	r12
-+  .cfi_restore lr
+-	if (sym == NULL) {
+-		printk(KERN_WARNING "vDSO32: function %s not found !\n",
+-		       symname);
+-		return 0;
+-	}
+-	return sym->st_value - VDSO32_LBASE;
+-}
+-
+ static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
+ 				       struct lib64_elfinfo *v64,
+ 				       const char *orig, const char *fix)
+@@ -323,12 +302,6 @@ static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
+ 	return 0;
+ }
+ #else /* !CONFIG_VDSO32 */
+-static unsigned long __init find_function32(struct lib32_elfinfo *lib,
+-					    const char *symname)
+-{
+-	return 0;
+-}
+-
+ static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
+ 				       struct lib64_elfinfo *v64,
+ 				       const char *orig, const char *fix)
+@@ -384,22 +357,6 @@ static Elf64_Sym * __init find_symbol64(struct lib64_elfinfo *lib,
+ 	return NULL;
+ }
  
- 	lwz	r7,CFG_DCACHE_BLOCKSZ(r10)
- 	addi	r5,r7,-1
-@@ -61,19 +65,11 @@ V_FUNCTION_BEGIN(__kernel_sync_dicache)
- 	isync
- 	li	r3,0
- 	blr
--  .cfi_endproc
--V_FUNCTION_END(__kernel_sync_dicache)
--
--
--/*
-- * POWER5 version of __kernel_sync_dicache
+-/* Note that we assume the section is .text and the symbol is relative to
+- * the library base
 - */
--V_FUNCTION_BEGIN(__kernel_sync_dicache_p5)
--  .cfi_startproc
-+3:
- 	crclr	cr0*4+so
- 	sync
- 	isync
- 	li	r3,0
- 	blr
-   .cfi_endproc
--V_FUNCTION_END(__kernel_sync_dicache_p5)
-+V_FUNCTION_END(__kernel_sync_dicache)
-diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-index e950bf68783a..a049000eacfe 100644
---- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
-@@ -159,7 +159,6 @@ VERSION
- 		__kernel_clock_getres;
- 		__kernel_get_tbfreq;
- 		__kernel_sync_dicache;
--		__kernel_sync_dicache_p5;
- 		__kernel_sigtramp_rt64;
- 		__kernel_getcpu;
- 		__kernel_time;
+-static unsigned long __init find_function64(struct lib64_elfinfo *lib,
+-					    const char *symname)
+-{
+-	Elf64_Sym *sym = find_symbol64(lib, symname);
+-
+-	if (sym == NULL) {
+-		printk(KERN_WARNING "vDSO64: function %s not found !\n",
+-		       symname);
+-		return 0;
+-	}
+-	return sym->st_value - VDSO64_LBASE;
+-}
+-
+ static int __init vdso_do_func_patch64(struct lib32_elfinfo *v32,
+ 				       struct lib64_elfinfo *v64,
+ 				       const char *orig, const char *fix)
+@@ -480,20 +437,6 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
+ 	return 0;
+ }
+ 
+-static __init void vdso_setup_trampolines(struct lib32_elfinfo *v32,
+-					  struct lib64_elfinfo *v64)
+-{
+-	/*
+-	 * Find signal trampolines
+-	 */
+-
+-#ifdef CONFIG_PPC64
+-	vdso64_rt_sigtramp = find_function64(v64, "__kernel_sigtramp_rt64");
+-#endif
+-	vdso32_sigtramp	   = find_function32(v32, "__kernel_sigtramp32");
+-	vdso32_rt_sigtramp = find_function32(v32, "__kernel_sigtramp_rt32");
+-}
+-
+ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
+ 				      struct lib64_elfinfo *v64)
+ {
+@@ -565,8 +508,6 @@ static __init int vdso_setup(void)
+ 	if (vdso_fixup_alt_funcs(&v32, &v64))
+ 		return -1;
+ 
+-	vdso_setup_trampolines(&v32, &v64);
+-
+ 	return 0;
+ }
+ 
 -- 
 2.25.0
 
