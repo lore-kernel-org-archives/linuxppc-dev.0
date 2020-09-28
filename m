@@ -2,74 +2,74 @@ Return-Path: <SRS0=hRAb=DF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD8B2C2D0A8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 05:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF603C47425
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 06:22:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E1A9207E8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 05:58:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E1A9207E8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 3F42C208FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 06:22:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fwo2d0hr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F42C208FE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0BdN5HV1zDqX3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 15:58:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0C9F2Fl9zDqGY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 16:22:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=fwo2d0hr; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0Bbd5j62zDqV5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 15:56:23 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C0BbG5lCQz9v0fj;
- Mon, 28 Sep 2020 07:56:10 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qrVmKyF7AUkt; Mon, 28 Sep 2020 07:56:10 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C0BbG4mWfz9v0fh;
- Mon, 28 Sep 2020 07:56:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 51D2F8B782;
- Mon, 28 Sep 2020 07:56:17 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DRoorLxFwtMj; Mon, 28 Sep 2020 07:56:17 +0200 (CEST)
-Received: from [10.25.210.27] (unknown [10.25.210.27])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F27AE8B75B;
- Mon, 28 Sep 2020 07:56:16 +0200 (CEST)
-Subject: Re: [PATCH] tpm: of: avoid __va() translation for event log address
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0C7Q1WwnzDqST
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 16:20:34 +1000 (AEST)
+Received: from mail-oo1-f42.google.com (mail-oo1-f42.google.com
+ [209.85.161.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id DDAF821974
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 06:20:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1601274031;
+ bh=qGVBcNhDEEBkJu2At1hZbhtzuUFdZojHwVUCzhbrbsk=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=fwo2d0hrOCh//8fo44sy9fdmRqifZP0dn7TS9wrBuwEgNg5MlIJWliyZ3COaqvDRq
+ Al6gDUapZdFQHeUsuQiWLRuB7CwNRayClrz1kiS+eiCc1qavd/xZFUM5X43bej+UrC
+ BteFArtTe7jsWqhRcm24zVVoELxeF1RLvsXhf0fo=
+Received: by mail-oo1-f42.google.com with SMTP id t3so15695ook.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2020 23:20:30 -0700 (PDT)
+X-Gm-Message-State: AOAM530oatAffFRGIcUxbrr0sl3tculnccxOtUco+boeMaElFy9a0Sau
+ 28LWaZi5/J6oSc3mNSn81UmMRhgaqcDpZ9yfiRw=
+X-Google-Smtp-Source: ABdhPJya6+NUXngiNKxeosaYSdyZVPk+uYtQRGhgdz0kf1DdRjRrFRW4PGdNv65YNWycBUG1REBKMRMNa4ltvRyBeVk=
+X-Received: by 2002:a4a:4910:: with SMTP id z16mr24551ooa.41.1601274030150;
+ Sun, 27 Sep 2020 23:20:30 -0700 (PDT)
+MIME-Version: 1.0
 References: <20200922094128.26245-1-ardb@kernel.org>
  <20200925055626.GC165011@linux.intel.com>
  <CAMj1kXFLWsFz7HV4sHLbwBkuiEu0gT4esSH8umVrvDDrJaOLrQ@mail.gmail.com>
  <20200925102920.GA180915@linux.intel.com> <20200925120018.GH9916@ziepe.ca>
  <20200927234434.GA5283@linux.intel.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <9be9c7e7-c424-d241-2255-ad854221bd2e@csgroup.eu>
-Date: Mon, 28 Sep 2020 07:56:07 +0200
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
-MIME-Version: 1.0
-In-Reply-To: <20200927234434.GA5283@linux.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ <9be9c7e7-c424-d241-2255-ad854221bd2e@csgroup.eu>
+In-Reply-To: <9be9c7e7-c424-d241-2255-ad854221bd2e@csgroup.eu>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Mon, 28 Sep 2020 08:20:18 +0200
+X-Gmail-Original-Message-ID: <CAMj1kXGxNgixUEocma-9F3fYgdJJJADh=bvyrCziXkuArErWdA@mail.gmail.com>
+Message-ID: <CAMj1kXGxNgixUEocma-9F3fYgdJJJADh=bvyrCziXkuArErWdA@mail.gmail.com>
+Subject: Re: [PATCH] tpm: of: avoid __va() translation for event log address
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,76 +81,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-integrity <linux-integrity@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>,
- Peter Huewe <peterhuewe@gmx.de>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Paul Mackerras <paulus@samba.org>,
+ linux-integrity <linux-integrity@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
+ <linuxppc-dev@lists.ozlabs.org>, Peter Huewe <peterhuewe@gmx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, 28 Sep 2020 at 07:56, Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+>
+> Le 28/09/2020 =C3=A0 01:44, Jarkko Sakkinen a =C3=A9crit :
+> > On Fri, Sep 25, 2020 at 09:00:18AM -0300, Jason Gunthorpe wrote:
+> >> On Fri, Sep 25, 2020 at 01:29:20PM +0300, Jarkko Sakkinen wrote:
+> >>> On Fri, Sep 25, 2020 at 09:00:56AM +0200, Ard Biesheuvel wrote:
+> >>>> On Fri, 25 Sep 2020 at 07:56, Jarkko Sakkinen
+> >>>> <jarkko.sakkinen@linux.intel.com> wrote:
+> >>>>>
+> >>>>> On Tue, Sep 22, 2020 at 11:41:28AM +0200, Ard Biesheuvel wrote:
+> >>>>>> The TPM event log is provided to the OS by the firmware, by loadin=
+g
+> >>>>>> it into an area in memory and passing the physical address via a n=
+ode
+> >>>>>> in the device tree.
+> >>>>>>
+> >>>>>> Currently, we use __va() to access the memory via the kernel's lin=
+ear
+> >>>>>> map: however, it is not guaranteed that the linear map covers this
+> >>>>>> particular address, as we may be running under HIGHMEM on a 32-bit
+> >>>>>> architecture, or running firmware that uses a memory type for the
+> >>>>>> event log that is omitted from the linear map (such as EfiReserved=
+).
+> >>>>>
+> >>>>> Makes perfect sense to the level that I wonder if this should have =
+a
+> >>>>> fixes tag and/or needs to be backported to the stable kernels?
+> >>>>>
+> >>>>
+> >>>> AIUI, the code was written specifically for ppc64, which is a
+> >>>> non-highmem, non-EFI architecture. However, when we start reusing th=
+is
+> >>>> driver for ARM, this issue could pop up.
+> >>>>
+> >>>> The code itself has been refactored a couple of times, so I think it
+> >>>> will require different versions of the patch for different generatio=
+ns
+> >>>> of stable kernels.
+> >>>>
+> >>>> So perhaps just add Cc: <stable@vger.kernel.org>, and wait and see h=
+ow
+> >>>> far back it applies cleanly?
+> >>>
+> >>> Yeah, I think I'll cc it with some note before the diffstat.
+> >>>
+> >>> I'm thinking to cap it to only 5.x kernels (at least first) unless it=
+ is
+> >>> dead easy to backport below that.
+> >>
+> >> I have this vauge recollection of pointing at this before and being
+> >> told that it had to be __va for some PPC reason?
+> >>
+> >> Do check with the PPC people first, I see none on the CC list.
+> >>
+> >> Jason
+> >
+> > Thanks, added arch/powerpc maintainers.
+> >
+>
+> As far as I can see, memremap() won't work on PPC32 at least:
+>
+> IIUC, memremap() calls arch_memremap_wb()
+> arch_memremap_wb() calls ioremap_cache()
+> In case of failure, then ioremap_wt() and ioremap_wc() are tried.
+>
+> All ioremap calls end up in __ioremap_caller() which will return NULL in =
+case you try to ioremap RAM.
+>
+> So the statement "So instead, use memremap(), which will reuse the linear=
+ mapping if
+> it is valid, or create another mapping otherwise." seems to be wrong, at =
+least for PPC32.
+>
+> Even for PPC64 which doesn't seem to have the RAM check, I can't see that=
+ it will "reuse the linear
+> mapping".
+>
 
+It is there, please look again. Before any of the above happens,
+memremap() will call try_ram_remap() for regions that are covered by a
+IORESOURCE_SYSTEM_RAM, and map it using __va() if its PFN is valid and
+it is not highmem.
 
-Le 28/09/2020 à 01:44, Jarkko Sakkinen a écrit :
-> On Fri, Sep 25, 2020 at 09:00:18AM -0300, Jason Gunthorpe wrote:
->> On Fri, Sep 25, 2020 at 01:29:20PM +0300, Jarkko Sakkinen wrote:
->>> On Fri, Sep 25, 2020 at 09:00:56AM +0200, Ard Biesheuvel wrote:
->>>> On Fri, 25 Sep 2020 at 07:56, Jarkko Sakkinen
->>>> <jarkko.sakkinen@linux.intel.com> wrote:
->>>>>
->>>>> On Tue, Sep 22, 2020 at 11:41:28AM +0200, Ard Biesheuvel wrote:
->>>>>> The TPM event log is provided to the OS by the firmware, by loading
->>>>>> it into an area in memory and passing the physical address via a node
->>>>>> in the device tree.
->>>>>>
->>>>>> Currently, we use __va() to access the memory via the kernel's linear
->>>>>> map: however, it is not guaranteed that the linear map covers this
->>>>>> particular address, as we may be running under HIGHMEM on a 32-bit
->>>>>> architecture, or running firmware that uses a memory type for the
->>>>>> event log that is omitted from the linear map (such as EfiReserved).
->>>>>
->>>>> Makes perfect sense to the level that I wonder if this should have a
->>>>> fixes tag and/or needs to be backported to the stable kernels?
->>>>>
->>>>
->>>> AIUI, the code was written specifically for ppc64, which is a
->>>> non-highmem, non-EFI architecture. However, when we start reusing this
->>>> driver for ARM, this issue could pop up.
->>>>
->>>> The code itself has been refactored a couple of times, so I think it
->>>> will require different versions of the patch for different generations
->>>> of stable kernels.
->>>>
->>>> So perhaps just add Cc: <stable@vger.kernel.org>, and wait and see how
->>>> far back it applies cleanly?
->>>
->>> Yeah, I think I'll cc it with some note before the diffstat.
->>>
->>> I'm thinking to cap it to only 5.x kernels (at least first) unless it is
->>> dead easy to backport below that.
->>
->> I have this vauge recollection of pointing at this before and being
->> told that it had to be __va for some PPC reason?
->>
->> Do check with the PPC people first, I see none on the CC list.
->>
->> Jason
-> 
-> Thanks, added arch/powerpc maintainers.
-> 
-
-As far as I can see, memremap() won't work on PPC32 at least:
-
-IIUC, memremap() calls arch_memremap_wb()
-arch_memremap_wb() calls ioremap_cache()
-In case of failure, then ioremap_wt() and ioremap_wc() are tried.
-
-All ioremap calls end up in __ioremap_caller() which will return NULL in case you try to ioremap RAM.
-
-So the statement "So instead, use memremap(), which will reuse the linear mapping if
-it is valid, or create another mapping otherwise." seems to be wrong, at least for PPC32.
-
-Even for PPC64 which doesn't seem to have the RAM check, I can't see that it will "reuse the linear 
-mapping".
-
-Christophe
+So as far as I can tell, this change has no effect on PPC at all
+unless its RAM is not described as IORESOURCE_SYSTEM_RAM.
