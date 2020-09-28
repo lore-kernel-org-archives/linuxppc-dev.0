@@ -2,107 +2,71 @@ Return-Path: <SRS0=hRAb=DF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E94BC2D0A8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 13:17:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C63CC4727E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 14:01:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 539442074B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 13:17:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 021A521D46
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 14:01:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="slaYfrxX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 539442074B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="vDmSUBpY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 021A521D46
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0NNm4wcyzDqSL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Sep 2020 23:17:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0PLg6nhyzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 00:00:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=robh@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=slaYfrxX; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=vDmSUBpY; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0NKq4wH1zDqR6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 23:15:11 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 08SD1tpm165959; Mon, 28 Sep 2020 09:15:01 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=bc+PZdnmwDaY+qg5gm8ZyGfTSYe0zIvR7oRiYTPQu2c=;
- b=slaYfrxXRVj28DX0/TdwvrWSF6imYUPec9dIFygFF9frRlD0Zd/cGOH14fqDLPC0wAIp
- 6by21wqsByylSt9aYhcoyAPK9Dgy6SFW0k6SANgnwqnoWKcPH715e74FzV/U6kpV4tKF
- iA0rUO+Q+2aKHcahtYYeoYzAHnSHjbhWdAGN1lSjSDBg8LPQFD70yzDKLm9CIXGzphW2
- fA7QLc58wkXbUdu/o2A2FgIHZ6VBWvCvazYDJxEU/izMAKE+/CXOUa5smff9KYBrqdW0
- ucclraWh4abVlh+uU9mmifYaHDxF/bC1Kq7xyDXduVZMUI/PD2rp18Qbbz7WOwoIUHK2 4w== 
-Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33ufvy1j4f-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Sep 2020 09:15:01 -0400
-Received: from m0098394.ppops.net (m0098394.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 08SD1tJs166016;
- Mon, 28 Sep 2020 09:15:01 -0400
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 33ufvy1j37-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Sep 2020 09:15:00 -0400
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
- by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 08SDCjfS006080;
- Mon, 28 Sep 2020 13:14:58 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com
- (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
- by ppma04ams.nl.ibm.com with ESMTP id 33sw97t5we-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 28 Sep 2020 13:14:58 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 08SDEuiU33423642
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 28 Sep 2020 13:14:56 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6747752051;
- Mon, 28 Sep 2020 13:14:56 +0000 (GMT)
-Received: from vajain21.in.ibm.com (unknown [9.85.68.227])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id 36C4B52050;
- Mon, 28 Sep 2020 13:14:53 +0000 (GMT)
-Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
- Mon, 28 Sep 2020 18:44:52 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-nvdimm@lists.01.org
-Subject: Re: [PATCH] powerpc/papr_scm: Add PAPR command family to
- pass-through command-set
-In-Reply-To: <20200913211904.24472-1-vaibhav@linux.ibm.com>
-References: <20200913211904.24472-1-vaibhav@linux.ibm.com>
-Date: Mon, 28 Sep 2020 18:44:52 +0530
-Message-ID: <87pn662gc3.fsf@vajain21.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0PGC38cBzDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 23:57:07 +1000 (AEST)
+Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com
+ [209.85.167.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 527C621941
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 13:57:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1601301423;
+ bh=jpy86xlaUGPlUxTUN9/FT28T6TJmY9Ad8uRAhplOiLM=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=vDmSUBpYh7JEkaKpuSJodZASpvn5qYNR9WD7Zz+ui1FtxvuddwJe0WaOjmp/axHLo
+ CvGi+htN93Dw+bCHcooMeEmLM6ROMwqzptJbER2UAJzI5Gc0Rbgm9qtlYuoiCTp2kJ
+ kSRDYEYKPRHzv/MBnvBvucpR9bEchfKfyRLFlTYk=
+Received: by mail-oi1-f177.google.com with SMTP id 185so1368846oie.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2020 06:57:03 -0700 (PDT)
+X-Gm-Message-State: AOAM530uJspn5G5ZSCCkNFTNFFZCScu1hvCN+HSKDs3+ipD7TTiDd0IG
+ FE4pAgWpf1V+KTdYXXFUg+b8IPNKI+TEEKIN8Q==
+X-Google-Smtp-Source: ABdhPJyYmZnCW5ClUtpTwg9oOuQczSxGPBFDOMMXF/U6MycG0QqSC1DUS8ybQXFW/wpG74B1ug8+ncnraesKmTdxWF0=
+X-Received: by 2002:aca:7543:: with SMTP id q64mr978362oic.147.1601301422618; 
+ Mon, 28 Sep 2020 06:57:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-09-28_11:2020-09-28,
- 2020-09-28 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 impostorscore=0
- mlxscore=0 lowpriorityscore=0 clxscore=1011 adultscore=0 spamscore=0
- bulkscore=0 mlxlogscore=999 malwarescore=0 priorityscore=1501
- suspectscore=1 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009280102
+References: <20200916081831.24747-1-ran.wang_1@nxp.com>
+ <20200923023234.GA3751572@bogus>
+ <AM6PR04MB5413BB2F8D044B2312DAEC4FF1380@AM6PR04MB5413.eurprd04.prod.outlook.com>
+In-Reply-To: <AM6PR04MB5413BB2F8D044B2312DAEC4FF1380@AM6PR04MB5413.eurprd04.prod.outlook.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 28 Sep 2020 08:56:51 -0500
+X-Gmail-Original-Message-ID: <CAL_Jsq+uzkr7CcvwQTe5vhpMPtdqL9v4EeqH5yZjMoT=JrDtDQ@mail.gmail.com>
+Message-ID: <CAL_Jsq+uzkr7CcvwQTe5vhpMPtdqL9v4EeqH5yZjMoT=JrDtDQ@mail.gmail.com>
+Subject: Re: [PATCH 1/5] Documentation: dt: binding: fsl: Add
+ 'fsl,ippdexpcr1-alt-addr' property
+To: Ran Wang <ran.wang_1@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,54 +78,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Santosh Sivaraj <santosh@fossix.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, "Verma,
- Vishal L" <vishal.l.verma@intel.com>, Oliver O'Halloran <oohall@gmail.com>,
- Dan Williams <dan.j.williams@intel.com>, Ira Weiny <ira.weiny@intel.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Biwen Li <biwen.li@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Dan, Ira and Vishal,
-
-Can you please take a look at this patch. Without it the functionality
-to report nvdimm health via ndctl breaks on 5.9
-
-Thanks,
-~ Vaibhav
-
-Vaibhav Jain <vaibhav@linux.ibm.com> writes:
-
-> Add NVDIMM_FAMILY_PAPR to the list of valid 'dimm_family_mask'
-> acceptable by papr_scm. This is needed as since commit
-> 92fe2aa859f5 ("libnvdimm: Validate command family indices") libnvdimm
-> performs a validation of 'nd_cmd_pkg.nd_family' received as part of
-> ND_CMD_CALL processing to ensure only known command families can use
-> the general ND_CMD_CALL pass-through functionality.
+On Wed, Sep 23, 2020 at 1:44 AM Ran Wang <ran.wang_1@nxp.com> wrote:
 >
-> Without this change the ND_CMD_CALL pass-through targeting
-> NVDIMM_FAMILY_PAPR error out with -EINVAL.
+> Hi Rob,
 >
-> Fixes: 92fe2aa859f5 ("libnvdimm: Validate command family indices")
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/papr_scm.c | 3 +++
->  1 file changed, 3 insertions(+)
+> On Wednesday, September 23, 2020 10:33 AM, Rob Herring wrote:
+> >
+> > On Wed, Sep 16, 2020 at 04:18:27PM +0800, Ran Wang wrote:
+> > > From: Biwen Li <biwen.li@nxp.com>
+> > >
+> > > The 'fsl,ippdexpcr1-alt-addr' property is used to handle an errata
+> > > A-008646 on LS1021A
+> > >
+> > > Signed-off-by: Biwen Li <biwen.li@nxp.com>
+> > > Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+> > > ---
+> > >  Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 19
+> > > +++++++++++++++++++
+> > >  1 file changed, 19 insertions(+)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> > > b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> > > index 5a33619..1be58a3 100644
+> > > --- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> > > +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> > > @@ -34,6 +34,11 @@ Chassis Version          Example Chips
+> > >  Optional properties:
+> > >   - little-endian : RCPM register block is Little Endian. Without it RCPM
+> > >     will be Big Endian (default case).
+> > > + - fsl,ippdexpcr1-alt-addr : The property is related to a hardware issue
+> > > +   on SoC LS1021A and only needed on SoC LS1021A.
+> > > +   Must include 2 entries:
+> > > +   The first entry must be a link to the SCFG device node.
+> > > +   The 2nd entry must be offset of register IPPDEXPCR1 in SCFG.
+> >
+> > You don't need a DT change for this. You can find SCFG node by its compatible
+> > string and then the offset should be known given this issue is only on 1 SoC.
 >
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-> index 5493bc847bd08..27268370dee00 100644
-> --- a/arch/powerpc/platforms/pseries/papr_scm.c
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -898,6 +898,9 @@ static int papr_scm_nvdimm_init(struct papr_scm_priv *p)
->  	p->bus_desc.of_node = p->pdev->dev.of_node;
->  	p->bus_desc.provider_name = kstrdup(p->pdev->name, GFP_KERNEL);
->  
-> +	/* Set the dimm command family mask to accept PDSMs */
-> +	set_bit(NVDIMM_FAMILY_PAPR, &p->bus_desc.dimm_family_mask);
-> +
->  	if (!p->bus_desc.provider_name)
->  		return -ENOMEM;
->  
-> -- 
-> 2.26.2
->
+> Did you mean that RCPM driver just to access IPPDEXPCR1 shadowed register in SCFG
+> directly without fetching it's offset info. from DT?
+
+Yes. There's only 1 possible value of the offset because there's only
+one SoC, so the driver can hardcode the offset. And I assume there's
+only one SCFG node, so you can find it by its compatible string
+(of_find_compatible_node).
+
+Rob
