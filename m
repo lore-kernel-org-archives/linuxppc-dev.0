@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2218AC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1A0AC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:41:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 633CC2075A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:39:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 633CC2075A
+	by mail.kernel.org (Postfix) with ESMTPS id E71D7206A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:41:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E71D7206A2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0t9h07HBzDq63
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:39:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0tD22w2RzDqWK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:41:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.21; helo=inva021.nxp.com;
@@ -29,24 +29,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0szw63Y6zDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 18:31:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0szx3qbQzDqSc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 18:31:25 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6404C201185;
- Tue, 29 Sep 2020 10:31:20 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 94E36201181;
+ Tue, 29 Sep 2020 10:31:22 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id AC477201181;
- Tue, 29 Sep 2020 10:31:16 +0200 (CEST)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3DACC20160F;
+ Tue, 29 Sep 2020 10:31:19 +0200 (CEST)
 Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 21327402FA;
- Tue, 29 Sep 2020 10:31:12 +0200 (CEST)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0F4744030E;
+ Tue, 29 Sep 2020 10:31:14 +0200 (CEST)
 From: Ran Wang <ran.wang_1@nxp.com>
 To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
  Shawn Guo <shawnguo@kernel.org>
-Subject: [PATCH v3 2/5] soc: fsl: handle RCPM errata A-008646 on SoC LS1021A
-Date: Tue, 29 Sep 2020 16:22:31 +0800
-Message-Id: <20200929082234.36619-2-ran.wang_1@nxp.com>
+Subject: [PATCH v3 5/5] arm: dts: ls1021a: fix rcpm failed to claim resource
+Date: Tue, 29 Sep 2020 16:22:34 +0800
+Message-Id: <20200929082234.36619-5-ran.wang_1@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200929082234.36619-1-ran.wang_1@nxp.com>
 References: <20200929082234.36619-1-ran.wang_1@nxp.com>
@@ -62,101 +62,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Biwen Li <biwen.li@nxp.com>,
- linux-kernel@vger.kernel.org, Ran Wang <ran.wang_1@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, Ran Wang <ran.wang_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Biwen Li <biwen.li@nxp.com>
+The range of dcfg reg is wrong, which overlap with other device,
+such as rcpm. This issue causing rcpm driver failed to claim
+reg resource when calling devm_ioremap_resource().
 
-Hardware issue:
-- Reading register RCPM_IPPDEXPCR1 always return zero, this causes
-  system firmware could not get correct information and wrongly do
-  clock gating for all wakeup source IP during system suspend. Then
-  those IPs will never get chance to wake system.
-
-Workaround:
-- Copy register RCPM_IPPDEXPCR1's setting to register SCFG_SPARECR8
-  to allow system firmware's psci method read it and do things accordingly.
-
-Signed-off-by: Biwen Li <biwen.li@nxp.com>
 Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+Acked-by: Li Yang <leoyang.li@nxp.com>
 ---
 Change in v3:
- - Add  copy_ippdexpcr1_setting(), simplize workaournd's implementation
-   according to binding update.
- - Minor update on commit message.
+ - None
 
 Change in v2:
- - Update commit message to be more clear.
- - Replace device_property_read_u32_array() with syscon_regmap_lookup_by_phandle_args()
-   to make code simpler.
+ - None
 
- drivers/soc/fsl/rcpm.c | 35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/ls1021a.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
-index a093dbe..4ac2a77 100644
---- a/drivers/soc/fsl/rcpm.c
-+++ b/drivers/soc/fsl/rcpm.c
-@@ -2,7 +2,7 @@
- //
- // rcpm.c - Freescale QorIQ RCPM driver
- //
--// Copyright 2019 NXP
-+// Copyright 2019-2020 NXP
- //
- // Author: Ran Wang <ran.wang_1@nxp.com>
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index cb95964..9e588ad 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -173,7 +173,7 @@
  
-@@ -22,6 +22,28 @@ struct rcpm {
- 	bool		little_endian;
- };
+ 		dcfg: dcfg@1ee0000 {
+ 			compatible = "fsl,ls1021a-dcfg", "syscon";
+-			reg = <0x0 0x1ee0000 0x0 0x10000>;
++			reg = <0x0 0x1ee0000 0x0 0x1000>;
+ 			big-endian;
+ 		};
  
-+#define  SCFG_SPARECR8	0x051c
-+
-+static void copy_ippdexpcr1_setting(u32 val)
-+{
-+	struct device_node *np;
-+	void __iomem *regs;
-+	u32 reg_val;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,ls1021a-scfg");
-+	if (!np)
-+		return;
-+
-+	regs = of_iomap(np, 0);
-+	if (!regs)
-+		return;
-+
-+	reg_val = ioread32be(regs + SCFG_SPARECR8);
-+	iowrite32be(val | reg_val, regs + SCFG_SPARECR8);
-+
-+	iounmap(regs);
-+}
-+
- /**
-  * rcpm_pm_prepare - performs device-level tasks associated with power
-  * management, such as programming related to the wakeup source control.
-@@ -90,6 +112,17 @@ static int rcpm_pm_prepare(struct device *dev)
- 			tmp |= ioread32be(address);
- 			iowrite32be(tmp, address);
- 		}
-+		/*
-+		 * Workaround of errata A-008646 on SoC LS1021A:
-+		 * There is a bug of register ippdexpcr1.
-+		 * Reading configuration register RCPM_IPPDEXPCR1
-+		 * always return zero. So save ippdexpcr1's value
-+		 * to register SCFG_SPARECR8.And the value of
-+		 * ippdexpcr1 will be read from SCFG_SPARECR8.
-+		 */
-+		if (dev_of_node(dev) && (i == 1))
-+			if (device_property_read_bool(dev, "fsl,ippdexpcr1-alt-reg"))
-+				copy_ippdexpcr1_setting(tmp);
- 	}
- 
- 	return 0;
 -- 
 2.7.4
 
