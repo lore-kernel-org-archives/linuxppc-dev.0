@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E277EC4346E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13459C4727F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 07:01:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D1C920774
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:59:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D1C920774
+	by mail.kernel.org (Postfix) with ESMTPS id D258D207C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 07:01:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D258D207C4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0qxs5VBfzDqX2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 16:59:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0r0F42BszDqXG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 17:01:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0qjP5XmBzDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 16:48:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0qjR2vdvzDqWS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 16:48:43 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C0qjK5L86z9v2cP;
- Tue, 29 Sep 2020 08:48:37 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4C0qjL6l32z9v2cQ;
+ Tue, 29 Sep 2020 08:48:38 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id HxjWnqY8l-RF; Tue, 29 Sep 2020 08:48:37 +0200 (CEST)
+ with ESMTP id F3MwH_Ln5k8e; Tue, 29 Sep 2020 08:48:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C0qjK4dlTz9v2c7;
- Tue, 29 Sep 2020 08:48:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9295A8B79F;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4C0qjL4G8Kz9v2c7;
  Tue, 29 Sep 2020 08:48:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9BD358B79F;
+ Tue, 29 Sep 2020 08:48:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Ra4jW0KpaPAB; Tue, 29 Sep 2020 08:48:38 +0200 (CEST)
+ with ESMTP id Kz0F3K92a1fH; Tue, 29 Sep 2020 08:48:39 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5072B8B76C;
- Tue, 29 Sep 2020 08:48:38 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 541EA8B76C;
+ Tue, 29 Sep 2020 08:48:39 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 30B1865E8A; Tue, 29 Sep 2020 06:48:38 +0000 (UTC)
-Message-Id: <4757e1ed21fe1968c761ae081d1f3d790a9673f8.1601362098.git.christophe.leroy@csgroup.eu>
+ id 3540465E8A; Tue, 29 Sep 2020 06:48:39 +0000 (UTC)
+Message-Id: <3e8a13ee83418630c753c30cb722ae682d5b2d39.1601362098.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601362098.git.christophe.leroy@csgroup.eu>
 References: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601362098.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 7/8] powerpc: Remove __USE_RTC()
+Subject: [PATCH v3 8/8] powerpc: Remove get_tb_or_rtc()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 29 Sep 2020 06:48:38 +0000 (UTC)
+Date: Tue, 29 Sep 2020 06:48:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,180 +76,77 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that PowerPC 601 is gone, __USE_RTC() is never true.
+601 is gone, get_tb_or_rtc() is equivalent to get_tb().
 
-Remove it.
-
-That also leads to removing get_rtc() and get_rtcl()
+Replace the former by the later.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v2: Also remove get_rtc() and get_rtcl()
----
- arch/powerpc/include/asm/time.h | 28 +-----------------
- arch/powerpc/kernel/time.c      | 52 +++++----------------------------
- 2 files changed, 9 insertions(+), 71 deletions(-)
+ arch/powerpc/include/asm/time.h | 5 -----
+ arch/powerpc/kernel/irq.c       | 2 +-
+ arch/powerpc/kernel/time.c      | 6 +++---
+ 3 files changed, 4 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index ce065589192a..caf68a4bc19e 100644
+index caf68a4bc19e..410ed72eef1c 100644
 --- a/arch/powerpc/include/asm/time.h
 +++ b/arch/powerpc/include/asm/time.h
-@@ -38,9 +38,6 @@ struct div_result {
- 	u64 result_low;
- };
- 
--/* Accessor functions for the timebase (RTC on 601) registers. */
--#define __USE_RTC()	(0)
--
- #ifdef CONFIG_PPC64
- 
- /* For compatibility, get_tbl() is defined as get_tb() on ppc64 */
-@@ -59,25 +56,6 @@ static inline unsigned int get_tbu(void)
+@@ -85,11 +85,6 @@ static inline u64 get_tb(void)
  }
  #endif /* !CONFIG_PPC64 */
  
--static inline unsigned int get_rtcl(void)
+-static inline u64 get_tb_or_rtc(void)
 -{
--	unsigned int rtcl;
--
--	asm volatile("mfrtcl %0" : "=r" (rtcl));
--	return rtcl;
+-	return get_tb();
 -}
 -
--static inline u64 get_rtc(void)
--{
--	unsigned int hi, lo, hi2;
--
--	do {
--		asm volatile("mfrtcu %0; mfrtcl %1; mfrtcu %2"
--			     : "=r" (hi), "=r" (lo), "=r" (hi2));
--	} while (hi2 != hi);
--	return (u64)hi * 1000000000 + lo;
--}
--
- static inline u64 get_vtb(void)
- {
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -109,7 +87,7 @@ static inline u64 get_tb(void)
- 
- static inline u64 get_tb_or_rtc(void)
- {
--	return __USE_RTC() ? get_rtc() : get_tb();
-+	return get_tb();
- }
- 
  static inline void set_tb(unsigned int upper, unsigned int lower)
-@@ -153,10 +131,6 @@ static inline void set_dec(u64 val)
- 
- static inline unsigned long tb_ticks_since(unsigned long tstamp)
  {
--	if (__USE_RTC()) {
--		int delta = get_rtcl() - (unsigned int) tstamp;
--		return delta < 0 ? delta + 1000000000 : delta;
--	}
- 	return get_tbl() - tstamp;
- }
+ 	mtspr(SPRN_TBWL, 0);
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index bf21ebd36190..2d188f81ebdb 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -104,7 +104,7 @@ static inline notrace unsigned long get_irq_happened(void)
  
+ static inline notrace int decrementer_check_overflow(void)
+ {
+- 	u64 now = get_tb_or_rtc();
++	u64 now = get_tb();
+ 	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+  
+ 	return now >= *next_tb;
 diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index f85539ebb513..13c820c15d37 100644
+index 13c820c15d37..760ea359a7f7 100644
 --- a/arch/powerpc/kernel/time.c
 +++ b/arch/powerpc/kernel/time.c
-@@ -75,15 +75,6 @@
- #include <linux/clockchips.h>
- #include <linux/timekeeper_internal.h>
+@@ -595,7 +595,7 @@ void timer_interrupt(struct pt_regs *regs)
+ 		irq_work_run();
+ 	}
  
--static u64 rtc_read(struct clocksource *);
--static struct clocksource clocksource_rtc = {
--	.name         = "rtc",
--	.rating       = 400,
--	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
--	.mask         = CLOCKSOURCE_MASK(64),
--	.read         = rtc_read,
--};
--
- static u64 timebase_read(struct clocksource *);
- static struct clocksource clocksource_timebase = {
- 	.name         = "timebase",
-@@ -447,19 +438,9 @@ void vtime_flush(struct task_struct *tsk)
- void __delay(unsigned long loops)
+-	now = get_tb_or_rtc();
++	now = get_tb();
+ 	if (now >= *next_tb) {
+ 		*next_tb = ~(u64)0;
+ 		if (evt->event_handler)
+@@ -937,7 +937,7 @@ static void __init clocksource_init(void)
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev)
  {
- 	unsigned long start;
--	int diff;
+-	__this_cpu_write(decrementers_next_tb, get_tb_or_rtc() + evt);
++	__this_cpu_write(decrementers_next_tb, get_tb() + evt);
+ 	set_dec(evt);
  
- 	spin_begin();
--	if (__USE_RTC()) {
--		start = get_rtcl();
--		do {
--			/* the RTCL register wraps at 1000000000 */
--			diff = get_rtcl() - start;
--			if (diff < 0)
--				diff += 1000000000;
--			spin_cpu_relax();
--		} while (diff < loops);
--	} else if (tb_invalid) {
-+	if (tb_invalid) {
- 		/*
- 		 * TB is in error state and isn't ticking anymore.
- 		 * HMI handler was unable to recover from TB error.
-@@ -696,8 +677,6 @@ EXPORT_SYMBOL_GPL(tb_to_ns);
-  */
- notrace unsigned long long sched_clock(void)
- {
--	if (__USE_RTC())
--		return get_rtc();
- 	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
- }
+ 	/* We may have raced with new irq work */
+@@ -1071,7 +1071,7 @@ void __init time_init(void)
+ 	tb_to_ns_scale = scale;
+ 	tb_to_ns_shift = shift;
+ 	/* Save the current timebase to pretty up CONFIG_PRINTK_TIME */
+-	boot_tb = get_tb_or_rtc();
++	boot_tb = get_tb();
  
-@@ -847,11 +826,6 @@ void read_persistent_clock64(struct timespec64 *ts)
- }
- 
- /* clocksource code */
--static notrace u64 rtc_read(struct clocksource *cs)
--{
--	return (u64)get_rtc();
--}
--
- static notrace u64 timebase_read(struct clocksource *cs)
- {
- 	return (u64)get_tb();
-@@ -948,12 +922,7 @@ void update_vsyscall_tz(void)
- 
- static void __init clocksource_init(void)
- {
--	struct clocksource *clock;
--
--	if (__USE_RTC())
--		clock = &clocksource_rtc;
--	else
--		clock = &clocksource_timebase;
-+	struct clocksource *clock = &clocksource_timebase;
- 
- 	if (clocksource_register_hz(clock, tb_ticks_per_sec)) {
- 		printk(KERN_ERR "clocksource: %s is already registered\n",
-@@ -1071,17 +1040,12 @@ void __init time_init(void)
- 	u64 scale;
- 	unsigned shift;
- 
--	if (__USE_RTC()) {
--		/* 601 processor: dec counts down by 128 every 128ns */
--		ppc_tb_freq = 1000000000;
--	} else {
--		/* Normal PowerPC with timebase register */
--		ppc_md.calibrate_decr();
--		printk(KERN_DEBUG "time_init: decrementer frequency = %lu.%.6lu MHz\n",
--		       ppc_tb_freq / 1000000, ppc_tb_freq % 1000000);
--		printk(KERN_DEBUG "time_init: processor frequency   = %lu.%.6lu MHz\n",
--		       ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
--	}
-+	/* Normal PowerPC with timebase register */
-+	ppc_md.calibrate_decr();
-+	printk(KERN_DEBUG "time_init: decrementer frequency = %lu.%.6lu MHz\n",
-+	       ppc_tb_freq / 1000000, ppc_tb_freq % 1000000);
-+	printk(KERN_DEBUG "time_init: processor frequency   = %lu.%.6lu MHz\n",
-+	       ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
- 
- 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
- 	tb_ticks_per_sec = ppc_tb_freq;
+ 	/* If platform provided a timezone (pmac), we correct the time */
+ 	if (timezone_offset) {
 -- 
 2.25.0
 
