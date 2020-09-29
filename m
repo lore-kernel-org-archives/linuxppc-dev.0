@@ -2,23 +2,24 @@ Return-Path: <SRS0=xLud=DG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52EB2C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:09:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B3C8C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:12:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BC27720897
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:09:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC27720897
+	by mail.kernel.org (Postfix) with ESMTPS id 545E820897
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:12:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 545E820897
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0sVy20rLzDqWG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:09:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0sYc07slzDqTF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:12:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -27,37 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0sFz4PhVzDqS9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 17:58:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0sG11P5WzDqSF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 17:58:33 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C0sFn2p3rz9tyZQ;
- Tue, 29 Sep 2020 09:58:21 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4C0sFt43pNz9v04g;
+ Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id mbEkuZLQQ3B7; Tue, 29 Sep 2020 09:58:21 +0200 (CEST)
+ with ESMTP id bBCL2Vs1tFh2; Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C0sFn1rZYz9tyZP;
- Tue, 29 Sep 2020 09:58:21 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4C0sFt39GRz9v04d;
+ Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 593C48B7A4;
- Tue, 29 Sep 2020 09:58:22 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AE9008B7A4;
+ Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id z5cP4InGEJbW; Tue, 29 Sep 2020 09:58:22 +0200 (CEST)
+ with ESMTP id jX54WFx0YwnC; Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E986A8B76C;
- Tue, 29 Sep 2020 09:58:21 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 43E448B76C;
+ Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 243D065EBA; Tue, 29 Sep 2020 07:58:22 +0000 (UTC)
-Message-Id: <cover.1601365869.git.christophe.leroy@csgroup.eu>
+ id 7CAA165EBA; Tue, 29 Sep 2020 07:58:27 +0000 (UTC)
+Message-Id: <d7c1fd375fbf4b88993eea64e0df085e38117cdc.1601365870.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1601365869.git.christophe.leroy@csgroup.eu>
+References: <cover.1601365869.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v12 0/5] powerpc: switch VDSO to C implementation
+Subject: [PATCH v12 5/5] powerpc/vdso: Provide __kernel_clock_gettime64() on
+ vdso32
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  nathanl@linux.ibm.com, anton@ozlabs.org
-Date: Tue, 29 Sep 2020 07:58:22 +0000 (UTC)
+Date: Tue, 29 Sep 2020 07:58:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,65 +80,82 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a series to switch powerpc VDSO to generic C implementation.
+Provides __kernel_clock_gettime64() on vdso32. This is the
+64 bits version of __kernel_clock_gettime() which is
+y2038 compliant.
 
-Changes in v12:
-- Rebased to today's powerpc/merge branch (Conflicts on VDSO Makefiles)
-- Added missing prototype for __kernel_clock_gettime64()
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v12: Added missing prototype
+---
+ arch/powerpc/include/asm/vdso/gettimeofday.h | 2 ++
+ arch/powerpc/kernel/vdso32/gettimeofday.S    | 9 +++++++++
+ arch/powerpc/kernel/vdso32/vdso32.lds.S      | 1 +
+ arch/powerpc/kernel/vdso32/vgettimeofday.c   | 6 ++++++
+ 4 files changed, 18 insertions(+)
 
-Changes in v11:
-- Rebased to today's powerpc/merge branch
-- Prototype of __arch_get_hw_counter() was modified in mainline (patch 2)
-
-Changes in v10 are:
-- Added a comment explaining the reason for the double stack frame
-- Moved back .cfi_register lr next to mflr
-
-Main changes in v9 are:
-- Dropped the patches which put the VDSO datapage in front of VDSO text in the mapping
-- Adds a second stack frame because the caller doesn't set one, at least on PPC64
-- Saving the TOC pointer on PPC64 (is that really needed ?)
-
-This series applies on today's powerpc/merge branch.
-
-See the last patches for details on changes and performance.
-
-Christophe Leroy (5):
-  powerpc/processor: Move cpu_relax() into asm/vdso/processor.h
-  powerpc/vdso: Prepare for switching VDSO to generic C implementation.
-  powerpc/vdso: Save and restore TOC pointer on PPC64
-  powerpc/vdso: Switch VDSO to generic C implementation.
-  powerpc/vdso: Provide __kernel_clock_gettime64() on vdso32
-
- arch/powerpc/Kconfig                         |   2 +
- arch/powerpc/include/asm/clocksource.h       |   7 +
- arch/powerpc/include/asm/processor.h         |  13 +-
- arch/powerpc/include/asm/vdso/clocksource.h  |   7 +
- arch/powerpc/include/asm/vdso/gettimeofday.h | 200 +++++++++++++
- arch/powerpc/include/asm/vdso/processor.h    |  23 ++
- arch/powerpc/include/asm/vdso/vsyscall.h     |  25 ++
- arch/powerpc/include/asm/vdso_datapage.h     |  40 +--
- arch/powerpc/kernel/asm-offsets.c            |  49 +--
- arch/powerpc/kernel/time.c                   |  91 +-----
- arch/powerpc/kernel/vdso.c                   |   5 +-
- arch/powerpc/kernel/vdso32/Makefile          |  32 +-
- arch/powerpc/kernel/vdso32/config-fake32.h   |  34 +++
- arch/powerpc/kernel/vdso32/gettimeofday.S    | 300 +------------------
- arch/powerpc/kernel/vdso32/vdso32.lds.S      |   1 +
- arch/powerpc/kernel/vdso32/vgettimeofday.c   |  35 +++
- arch/powerpc/kernel/vdso64/Makefile          |  23 +-
- arch/powerpc/kernel/vdso64/gettimeofday.S    | 242 +--------------
- arch/powerpc/kernel/vdso64/vgettimeofday.c   |  29 ++
- 19 files changed, 456 insertions(+), 702 deletions(-)
- create mode 100644 arch/powerpc/include/asm/clocksource.h
- create mode 100644 arch/powerpc/include/asm/vdso/clocksource.h
- create mode 100644 arch/powerpc/include/asm/vdso/gettimeofday.h
- create mode 100644 arch/powerpc/include/asm/vdso/processor.h
- create mode 100644 arch/powerpc/include/asm/vdso/vsyscall.h
- create mode 100644 arch/powerpc/kernel/vdso32/config-fake32.h
- create mode 100644 arch/powerpc/kernel/vdso32/vgettimeofday.c
- create mode 100644 arch/powerpc/kernel/vdso64/vgettimeofday.c
-
+diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h b/arch/powerpc/include/asm/vdso/gettimeofday.h
+index 59a609a48b63..8da84722729b 100644
+--- a/arch/powerpc/include/asm/vdso/gettimeofday.h
++++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
+@@ -186,6 +186,8 @@ int __c_kernel_clock_getres(clockid_t clock_id, struct __kernel_timespec *res,
+ #else
+ int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
+ 			     const struct vdso_data *vd);
++int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
++			       const struct vdso_data *vd);
+ int __c_kernel_clock_getres(clockid_t clock_id, struct old_timespec32 *res,
+ 			    const struct vdso_data *vd);
+ #endif
+diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
+index fd7b01c51281..a6e29f880e0e 100644
+--- a/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
+@@ -35,6 +35,15 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
+ 	cvdso_call __c_kernel_clock_gettime
+ V_FUNCTION_END(__kernel_clock_gettime)
+ 
++/*
++ * Exact prototype of clock_gettime64()
++ *
++ * int __kernel_clock_gettime64(clockid_t clock_id, struct __timespec64 *ts);
++ *
++ */
++V_FUNCTION_BEGIN(__kernel_clock_gettime64)
++	cvdso_call __c_kernel_clock_gettime64
++V_FUNCTION_END(__kernel_clock_gettime64)
+ 
+ /*
+  * Exact prototype of clock_getres()
+diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+index 5206c2eb2a1d..af5812ca5dce 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
++++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
+@@ -147,6 +147,7 @@ VERSION
+ #ifndef CONFIG_PPC_BOOK3S_601
+ 		__kernel_gettimeofday;
+ 		__kernel_clock_gettime;
++		__kernel_clock_gettime64;
+ 		__kernel_clock_getres;
+ 		__kernel_time;
+ 		__kernel_get_tbfreq;
+diff --git a/arch/powerpc/kernel/vdso32/vgettimeofday.c b/arch/powerpc/kernel/vdso32/vgettimeofday.c
+index 0b9ab4c22ef2..f7f71fecf4ed 100644
+--- a/arch/powerpc/kernel/vdso32/vgettimeofday.c
++++ b/arch/powerpc/kernel/vdso32/vgettimeofday.c
+@@ -11,6 +11,12 @@ int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
+ 	return __cvdso_clock_gettime32_data(vd, clock, ts);
+ }
+ 
++int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
++			       const struct vdso_data *vd)
++{
++	return __cvdso_clock_gettime_data(vd, clock, ts);
++}
++
+ int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz,
+ 			    const struct vdso_data *vd)
+ {
 -- 
 2.25.0
 
