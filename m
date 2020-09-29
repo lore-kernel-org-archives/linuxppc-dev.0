@@ -2,64 +2,78 @@ Return-Path: <SRS0=xLud=DG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8857C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:21:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D0CAC4346E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:23:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ED6FE20C09
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:21:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED6FE20C09
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 8F38A20BED
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 06:23:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=jms.id.au header.i=@jms.id.au header.b="ew2tZPZp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F38A20BED
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0q6G0ZJBzDqG6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 16:21:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0q8d6nVtzDqKH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 16:23:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::541;
+ helo=mail-ed1-x541.google.com; envelope-from=joel.stan@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256
+ header.s=google header.b=ew2tZPZp; dkim-atps=neutral
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com
+ [IPv6:2a00:1450:4864:20::541])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0pr75jxSzDqKw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 16:09:27 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C0pr24Nxyz9v05c;
- Tue, 29 Sep 2020 08:09:22 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id VQOIDrb1u-JH; Tue, 29 Sep 2020 08:09:22 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C0pr23ZWsz9v05Z;
- Tue, 29 Sep 2020 08:09:22 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 79C3A8B79F;
- Tue, 29 Sep 2020 08:09:23 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id nHmh5vlI_i4h; Tue, 29 Sep 2020 08:09:23 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4090C8B76C;
- Tue, 29 Sep 2020 08:09:23 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 24F9065E8A; Tue, 29 Sep 2020 06:09:23 +0000 (UTC)
-Message-Id: <31c4cd093963f22831bf388449056ee045533d3b.1601359702.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601359702.git.christophe.leroy@csgroup.eu>
-References: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601359702.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 6/7] powerpc: Tidy up a bit after removal of PowerPC 601.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 29 Sep 2020 06:09:23 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0pyW5jh3zDqVT;
+ Tue, 29 Sep 2020 16:14:59 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id ay8so5034252edb.8;
+ Mon, 28 Sep 2020 23:14:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=jms.id.au; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=0ExX5FIsJQ8KTZLNWngsAePqqvjIirvnQMV0CRsO47c=;
+ b=ew2tZPZp9D5kQDTCshU10JlSO13YhgBlaoh5JEC6n6V/vu99yLehNiutg0khbZQCKR
+ G/+fLLSakk9Cy1DDMqtKTbuDFB1dKbUPlEFBt8t/kQ/oOwJWskoW8F890vef+GcU/Gpn
+ B8IH8WPqMNooY6fPUr4zTvPdxr//DK0mgq69U=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=0ExX5FIsJQ8KTZLNWngsAePqqvjIirvnQMV0CRsO47c=;
+ b=Ux50XmabICtZr8jbv2lmi06z6xkIeiF6a23RWCkiwrYKrOzMqP8860vq2iaYyjXf+5
+ SeVzjzDqYVMshIRDhfIBzspXAQioIIm9byrpvDhT4rGBKnF0tI34XzDj26Vlvmgsve+h
+ vWl79eVGk2oU0e7yYnE7UWOXyGt/gbTml9acufuxG0EAiE0fq2aU5G8S4PAVegYh7IgX
+ JuqtA14LvJuzFSvmi0a89J/5YKYjGLlHeetfI+uz2J8qFdQpE8T6Pw7fSiNU75qvlwpW
+ sNWnPNG7BgWhTesZyhc1LZf2BhZ02381bZ/Yan5s98tpbl3aRQzbSkMWlL8FRTlLqwHI
+ 194Q==
+X-Gm-Message-State: AOAM5331YNU72tWouIPvzWdzDbZgWH5lEzAajj/y/LkM2uJebGuu8tOc
+ j+NZXAoiN1hUUYgQm7oYZWVc4MzVkiReFJNXM2D3nF9eGO4=
+X-Google-Smtp-Source: ABdhPJxaPr7VIciRIGwFH7m+F/yZ8j13H81DzAQglyp6Qe5/Z9XeUWpNIK9uwz9yIFE89HXOQySxcv4ZrE7wXRGCL9w=
+X-Received: by 2002:a05:6402:17b6:: with SMTP id
+ j22mr1437896edy.377.1601360095624; 
+ Mon, 28 Sep 2020 23:14:55 -0700 (PDT)
+MIME-Version: 1.0
+References: <1600885506-18734-1-git-send-email-nayna@linux.ibm.com>
+ <8dc1ad002dcdc02122725dcc3ba27e1fd8c78b78.camel@linux.ibm.com>
+In-Reply-To: <8dc1ad002dcdc02122725dcc3ba27e1fd8c78b78.camel@linux.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 29 Sep 2020 06:14:43 +0000
+Message-ID: <CACPK8XdeAzbXcm2w6kJuAQzckdyFQ2P9h+fC36ZArpkubqC1mg@mail.gmail.com>
+Subject: Re: [PATCH] linux: configure CONFIG_I2C_OPAL as in-built.
+To: Mimi Zohar <zohar@linux.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,108 +85,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: openpower-firmware@lists.ozlabs.org, Nayna Jain <nayna@linux.ibm.com>,
+ klaus@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The removal of the 601 left some standalone blocks from
-former if/else. Drop the { } and re-indent.
+On Fri, 25 Sep 2020 at 18:19, Mimi Zohar <zohar@linux.ibm.com> wrote:
+>
+> Hi Nayna,
+>
+> On Wed, 2020-09-23 at 14:25 -0400, Nayna Jain wrote:
+> > Currently, skiroot_defconfig CONFIG_I2C_OPAL is built as a loadable
+> > module rather than builtin, even if CONFIG_I2C=y is defined. This
+> > results in a delay in the TPM initialization, causing IMA to go into
+> > TPM bypass mode. As a result, the IMA measurements are added to the
+> > measurement list, but do not extend the TPM. Because of this, it is
+> > impossible to verify or attest to the system's integrity, either from
+> > skiroot or the target Host OS.
+>
+> The patch description is good, but perhaps we could provide a bit more
+> context before.
+>
+> The concept of trusted boot requires the measurement to be added to the
+> measurement list and extend the TPM, prior to allowing access to the
+> file. By allowing access to a file before its measurement is included
+> in the measurement list and extended into the TPM PCR, a malicious file
+> could potentially prevent its own measurement from being added. As the
+> PCRs are tamper proof, measuring and extending the TPM prior to giving
+> access to the file, guarantees that all file measurements are included
+> in the measurement list, including the malicious file.
+>
+> IMA needs to be enabled before any files are accessed in order to
+> verify a file's integrity and extend the TPM with the file
+> measurement.  Queueing file measurements breaks the measure and extend,
+> before usage, trusted boot paradigm.
+>
+> The ima-evm-utils package includes a test for walking the IMA
+> measurement list, calculating the expected TPM PCRs, and comparing the
+> calculated PCR values with the physical TPM.  Testing is important to
+> ensure the TPM is initialized prior to IMA.  Failure to validate the
+> IMA measurement list may indicate IMA went into TPM bypass mode, like
+> in this case.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/btext.c    | 11 +++------
- arch/powerpc/mm/book3s32/mmu.c | 45 +++++++++++++++-------------------
- 2 files changed, 24 insertions(+), 32 deletions(-)
+Thanks for the explanation Mimi. It's lucky that the TPM drivers can
+be loaded early enough!
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index b609fb39dba8..c22a8e0dbc93 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -95,13 +95,10 @@ void __init btext_prepare_BAT(void)
- 		boot_text_mapped = 0;
- 		return;
- 	}
--	{
--		/* 603, 604, G3, G4, ... */
--		lowbits = addr & ~0xFF000000UL;
--		addr &= 0xFF000000UL;
--		disp_BAT[0] = vaddr | (BL_16M<<2) | 2;
--		disp_BAT[1] = addr | (_PAGE_NO_CACHE | _PAGE_GUARDED | BPP_RW);	
--	}
-+	lowbits = addr & ~0xFF000000UL;
-+	addr &= 0xFF000000UL;
-+	disp_BAT[0] = vaddr | (BL_16M<<2) | 2;
-+	disp_BAT[1] = addr | (_PAGE_NO_CACHE | _PAGE_GUARDED | BPP_RW);
- 	logicalDisplayBase = (void *) (vaddr + lowbits);
- }
- #endif
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 771d607f1a3d..741e4fc990c7 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -73,16 +73,13 @@ unsigned long p_block_mapped(phys_addr_t pa)
- static int find_free_bat(void)
- {
- 	int b;
-+	int n = mmu_has_feature(MMU_FTR_USE_HIGH_BATS) ? 8 : 4;
- 
--	{
--		int n = mmu_has_feature(MMU_FTR_USE_HIGH_BATS) ? 8 : 4;
-+	for (b = 0; b < n; b++) {
-+		struct ppc_bat *bat = BATS[b];
- 
--		for (b = 0; b < n; b++) {
--			struct ppc_bat *bat = BATS[b];
--
--			if (!(bat[1].batu & 3))
--				return b;
--		}
-+		if (!(bat[1].batu & 3))
-+			return b;
- 	}
- 	return -1;
- }
-@@ -280,24 +277,22 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
- 		flags &= ~_PAGE_COHERENT;
- 
- 	bl = (size >> 17) - 1;
--	{
--		/* Do DBAT first */
--		wimgxpp = flags & (_PAGE_WRITETHRU | _PAGE_NO_CACHE
--				   | _PAGE_COHERENT | _PAGE_GUARDED);
--		wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
--		bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
--		bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
--		if (flags & _PAGE_USER)
--			bat[1].batu |= 1; 	/* Vp = 1 */
--		if (flags & _PAGE_GUARDED) {
--			/* G bit must be zero in IBATs */
--			flags &= ~_PAGE_EXEC;
--		}
--		if (flags & _PAGE_EXEC)
--			bat[0] = bat[1];
--		else
--			bat[0].batu = bat[0].batl = 0;
-+	/* Do DBAT first */
-+	wimgxpp = flags & (_PAGE_WRITETHRU | _PAGE_NO_CACHE
-+			   | _PAGE_COHERENT | _PAGE_GUARDED);
-+	wimgxpp |= (flags & _PAGE_RW)? BPP_RW: BPP_RX;
-+	bat[1].batu = virt | (bl << 2) | 2; /* Vs=1, Vp=0 */
-+	bat[1].batl = BAT_PHYS_ADDR(phys) | wimgxpp;
-+	if (flags & _PAGE_USER)
-+		bat[1].batu |= 1; 	/* Vp = 1 */
-+	if (flags & _PAGE_GUARDED) {
-+		/* G bit must be zero in IBATs */
-+		flags &= ~_PAGE_EXEC;
- 	}
-+	if (flags & _PAGE_EXEC)
-+		bat[0] = bat[1];
-+	else
-+		bat[0].batu = bat[0].batl = 0;
- 
- 	bat_addrs[index].start = virt;
- 	bat_addrs[index].limit = virt + ((bl + 1) << 17) - 1;
--- 
-2.25.0
+Should we add something like this to security/integrity/ima/Kconfig?
 
+select I2C_OPAL if PPC_POWERNV
+
+It's generally frowned upon to select user visible symbols, but IMA
+does this for the TCG options already.
+
+Cheers,
+
+Joel
+
+>
+> thanks,
+>
+> Mimi
+>
+> >
+> > Reported-by: Mimi Zohar <zohar@linux.ibm.com>
+> > Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+> > ---
+> >  openpower/configs/linux/skiroot_defconfig | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/openpower/configs/linux/skiroot_defconfig b/openpower/configs/linux/skiroot_defconfig
+> > index 44309e12..a555adb2 100644
+> > --- a/openpower/configs/linux/skiroot_defconfig
+> > +++ b/openpower/configs/linux/skiroot_defconfig
+> > @@ -216,7 +216,7 @@ CONFIG_I2C=y
+> >  CONFIG_I2C_CHARDEV=y
+> >  # CONFIG_I2C_HELPER_AUTO is not set
+> >  CONFIG_I2C_ALGOBIT=y
+> > -CONFIG_I2C_OPAL=m
+> > +CONFIG_I2C_OPAL=y
+> >  CONFIG_PPS=y
+> >  CONFIG_SENSORS_IBMPOWERNV=m
+> >  CONFIG_DRM=m
+>
+>
