@@ -2,62 +2,98 @@ Return-Path: <SRS0=xLud=DG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F5AAC4727C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 15:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2BF4C4727C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:27:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 51B8F20773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 15:12:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51B8F20773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iogearbox.net
+	by mail.kernel.org (Postfix) with ESMTPS id 818E820936
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:27:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dATiqfln"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 818E820936
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C12tN5MY3zDqYq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2020 01:12:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C17D83KhqzDqZL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2020 04:27:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=iogearbox.net (client-ip=213.133.104.62;
- helo=www62.your-server.de; envelope-from=daniel@iogearbox.net;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::844;
+ helo=mail-qt1-x844.google.com; envelope-from=leobras.c@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iogearbox.net
-X-Greylist: delayed 1423 seconds by postgrey-1.36 at bilbo;
- Wed, 30 Sep 2020 01:05:57 AEST
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=dATiqfln; dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C12lB1TH1zDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2020 01:05:56 +1000 (AEST)
-Received: from sslproxy01.your-server.de ([78.46.139.224])
- by www62.your-server.de with esmtpsa (TLSv1.2:DHE-RSA-AES256-GCM-SHA384:256)
- (Exim 4.89_1) (envelope-from <daniel@iogearbox.net>)
- id 1kNGpB-0001qy-WE; Tue, 29 Sep 2020 16:41:50 +0200
-Received: from [178.196.57.75] (helo=pc-9.home)
- by sslproxy01.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
- (Exim 4.92) (envelope-from <daniel@iogearbox.net>)
- id 1kNGpB-000Res-QS; Tue, 29 Sep 2020 16:41:49 +0200
-Subject: Re: [PATCH] powerpc: net: bpf_jit_comp: Fix misuse of fallthrough
-To: zhe.he@windriver.com, gustavo@embeddedor.com, netdev@vger.kernel.org,
- bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20200928090023.38117-1-zhe.he@windriver.com>
-From: Daniel Borkmann <daniel@iogearbox.net>
-Message-ID: <d73d30b7-6405-3b42-693f-5e16c7a4c6a3@iogearbox.net>
-Date: Tue, 29 Sep 2020 16:41:49 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C179v6hdCzDq94
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2020 04:25:53 +1000 (AEST)
+Received: by mail-qt1-x844.google.com with SMTP id k25so4364123qtu.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 11:25:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=message-id:subject:from:to:cc:date:in-reply-to:references
+ :organization:user-agent:mime-version:content-transfer-encoding;
+ bh=05cLe8W7f65PxgqgOnTUp2uE8/rLO8IRAl4FV6s+OwQ=;
+ b=dATiqflnNbbqjm4fByvH+cqk6xVbnCICTeSqWCAcyhgTpgp4lzZ1as2bi+ul1UGisn
+ SlmMnbU/kt74de166GxUYbcJa+ygQwPOHI3ECv5/48DD1a9gMyuKJpSbbfkGwQlHiDJI
+ 3NF5Tv0YrpWEKmjS6ESDi0rCBWnG6NC9+xaT99xc+CZidc5K/DnmoDeDMeaEJxcRgYe4
+ gUzOfow9BavvXpFm1S1YJRKhzLSOEFK1do2TF9VatE7FunqjH2Imj9RoYxx7573XgWm4
+ Zv+Xb7ye0cHng/u33W0TNgChYXb9jFfhYkW3G0IphaO5v0xTlsE5Lah7XYWUhQC3iMpq
+ kA4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
+ :references:organization:user-agent:mime-version
+ :content-transfer-encoding;
+ bh=05cLe8W7f65PxgqgOnTUp2uE8/rLO8IRAl4FV6s+OwQ=;
+ b=Zh/oDFfwJZyjBOUJJ6K7GKUetmdwOjRfCzl51C31Gp86xkvJwH0cQ1auwZrrIFO6rj
+ e6o1VA40RrvnH1WO3aGEsPmDhPPpmIBs9aS+6TnAERL5QuPgeGIAl0T+86FsYBmEA33f
+ P0hzTWU2iiklLawIwajQzwvfxwH+UhUAEpXnxSV/FoHT/Yv8G8AET6Q7l/UXmlsMnra+
+ s0ut68FkpHKKrUb9udxxnypaLMc2U+2jl8E14pH/S2ukyU2L0mfN06taVZMNzE/EHz/+
+ wdyuUmjQulpfFzOBQx3TGyF/hnJFML6LxvZaZwJGbIhiqqHqxQmRc+WaX5kuNbbbjtY5
+ fI8A==
+X-Gm-Message-State: AOAM532TG/w+zqw/H0FRab21m8gQjS1DrjO+hdkpR5g9MD6DL9LMsibz
+ jBD2ONMmmRMgMffJTHMBjxQ=
+X-Google-Smtp-Source: ABdhPJwOmtBzpslEFduFI0XK8hZxJVbqo2SX3zOX867XVixoamBOBHGwepdLc9VNxarL6IcQzZxwwg==
+X-Received: by 2002:ac8:19e9:: with SMTP id s38mr4764285qtk.248.1601403949638; 
+ Tue, 29 Sep 2020 11:25:49 -0700 (PDT)
+Received: from LeoBras (179-125-141-251.dynamic.desktop.com.br.
+ [179.125.141.251])
+ by smtp.gmail.com with ESMTPSA id m6sm5338544qkh.106.2020.09.29.11.25.44
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 29 Sep 2020 11:25:48 -0700 (PDT)
+Message-ID: <9c24dbb473c1f737f327a2d606f2f93e48019b92.camel@gmail.com>
+Subject: Re: [PATCH v2 01/14] powerpc/pseries/iommu: Replace hard-coded page
+ shift
+From: Leonardo Bras <leobras.c@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, 
+ Christophe Leroy <christophe.leroy@c-s.fr>, Thiago Jung Bauermann
+ <bauerman@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>, Brian King
+ <brking@linux.vnet.ibm.com>, Murilo Fossa Vicentini <muvic@linux.ibm.com>,
+ David Dai <zdai@linux.vnet.ibm.com>
+Date: Tue, 29 Sep 2020 15:25:42 -0300
+In-Reply-To: <5c23f1f9-4cb5-be24-3064-258c0f68c77c@ozlabs.ru>
+References: <20200911170738.82818-1-leobras.c@gmail.com>
+ <20200911170738.82818-2-leobras.c@gmail.com>
+ <5c23f1f9-4cb5-be24-3064-258c0f68c77c@ozlabs.ru>
+Organization: IBM
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
 MIME-Version: 1.0
-In-Reply-To: <20200928090023.38117-1-zhe.he@windriver.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: daniel@iogearbox.net
-X-Virus-Scanned: Clear (ClamAV 0.102.4/25942/Tue Sep 29 15:56:33 2020)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,22 +105,206 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/28/20 11:00 AM, zhe.he@windriver.com wrote:
-> From: He Zhe <zhe.he@windriver.com>
+On Tue, 2020-09-29 at 13:56 +1000, Alexey Kardashevskiy wrote:
 > 
-> The user defined label following "fallthrough" is not considered by GCC
-> and causes build failure.
+> On 12/09/2020 03:07, Leonardo Bras wrote:
+> > Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 > 
-> kernel-source/include/linux/compiler_attributes.h:208:41: error: attribute
-> 'fallthrough' not preceding a case label or default label [-Werror]
->   208   define fallthrough _attribute((fallthrough_))
->                            ^~~~~~~~~~~~~
+> These normally go right before "signed-off-by".
 > 
-> Signed-off-by: He Zhe <zhe.he@windriver.com>
 
-Applied, thanks! I've also added Fixes tag with df561f6688fe ("treewide: Use fallthrough pseudo-keyword")
-which added the bug.
+Yeah, it looks like something went wrong between git format-patch and
+git send-email. I will look for in in the next series.
+
+> 
+> > Some functions assume IOMMU page size can only be 4K (pageshift == 12).
+> > Update them to accept any page size passed, so we can use 64K pages.
+> > 
+> > In the process, some defines like TCE_SHIFT were made obsolete, and then
+> > removed.
+> > 
+> > IODA3 Revision 3.0_prd1 (OpenPowerFoundation), Figures 3.4 and 3.5 show
+> > a RPN of 52-bit, and considers a 12-bit pageshift, so there should be
+> > no need of using TCE_RPN_MASK, which masks out any bit after 40 in rpn.
+> > It's usage removed from tce_build_pSeries(), tce_build_pSeriesLP(), and
+> > tce_buildmulti_pSeriesLP().
+> > 
+> > Most places had a tbl struct, so using tbl->it_page_shift was simple.
+> > tce_free_pSeriesLP() was a special case, since callers not always have a
+> > tbl struct, so adding a tceshift parameter seems the right thing to do.
+> > 
+> > Signed-off-by: Leonardo Bras <leobras.c@gmail.com>
+> 
+> Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+Thanks for reviewing!
+
+> 
+> 
+> > ---
+> >   arch/powerpc/include/asm/tce.h         |  8 ------
+> >   arch/powerpc/platforms/pseries/iommu.c | 39 +++++++++++++++-----------
+> >   2 files changed, 23 insertions(+), 24 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
+> > index db5fc2f2262d..0c34d2756d92 100644
+> > --- a/arch/powerpc/include/asm/tce.h
+> > +++ b/arch/powerpc/include/asm/tce.h
+> > @@ -19,15 +19,7 @@
+> >   #define TCE_VB			0
+> >   #define TCE_PCI			1
+> >   
+> > -/* TCE page size is 4096 bytes (1 << 12) */
+> > -
+> > -#define TCE_SHIFT	12
+> > -#define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
+> > -
+> >   #define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
+> > -
+> > -#define TCE_RPN_MASK		0xfffffffffful  /* 40-bit RPN (4K pages) */
+> > -#define TCE_RPN_SHIFT		12
+> >   #define TCE_VALID		0x800		/* TCE valid */
+> >   #define TCE_ALLIO		0x400		/* TCE valid for all lpars */
+> >   #define TCE_PCI_WRITE		0x2		/* write from PCI allowed */
+> > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > index e4198700ed1a..9db3927607a4 100644
+> > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > @@ -107,6 +107,8 @@ static int tce_build_pSeries(struct iommu_table *tbl, long index,
+> >   	u64 proto_tce;
+> >   	__be64 *tcep;
+> >   	u64 rpn;
+> > +	const unsigned long tceshift = tbl->it_page_shift;
+> > +	const unsigned long pagesize = IOMMU_PAGE_SIZE(tbl);
+> >   
+> >   	proto_tce = TCE_PCI_READ; // Read allowed
+> >   
+> > @@ -117,10 +119,10 @@ static int tce_build_pSeries(struct iommu_table *tbl, long index,
+> >   
+> >   	while (npages--) {
+> >   		/* can't move this out since we might cross MEMBLOCK boundary */
+> > -		rpn = __pa(uaddr) >> TCE_SHIFT;
+> > -		*tcep = cpu_to_be64(proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT);
+> > +		rpn = __pa(uaddr) >> tceshift;
+> > +		*tcep = cpu_to_be64(proto_tce | rpn << tceshift);
+> >   
+> > -		uaddr += TCE_PAGE_SIZE;
+> > +		uaddr += pagesize;
+> >   		tcep++;
+> >   	}
+> >   	return 0;
+> > @@ -146,7 +148,7 @@ static unsigned long tce_get_pseries(struct iommu_table *tbl, long index)
+> >   	return be64_to_cpu(*tcep);
+> >   }
+> >   
+> > -static void tce_free_pSeriesLP(unsigned long liobn, long, long);
+> > +static void tce_free_pSeriesLP(unsigned long liobn, long, long, long);
+> >   static void tce_freemulti_pSeriesLP(struct iommu_table*, long, long);
+> >   
+> >   static int tce_build_pSeriesLP(unsigned long liobn, long tcenum, long tceshift,
+> > @@ -166,12 +168,12 @@ static int tce_build_pSeriesLP(unsigned long liobn, long tcenum, long tceshift,
+> >   		proto_tce |= TCE_PCI_WRITE;
+> >   
+> >   	while (npages--) {
+> > -		tce = proto_tce | (rpn & TCE_RPN_MASK) << tceshift;
+> > +		tce = proto_tce | rpn << tceshift;
+> >   		rc = plpar_tce_put((u64)liobn, (u64)tcenum << tceshift, tce);
+> >   
+> >   		if (unlikely(rc == H_NOT_ENOUGH_RESOURCES)) {
+> >   			ret = (int)rc;
+> > -			tce_free_pSeriesLP(liobn, tcenum_start,
+> > +			tce_free_pSeriesLP(liobn, tcenum_start, tceshift,
+> >   			                   (npages_start - (npages + 1)));
+> >   			break;
+> >   		}
+> > @@ -205,10 +207,11 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+> >   	long tcenum_start = tcenum, npages_start = npages;
+> >   	int ret = 0;
+> >   	unsigned long flags;
+> > +	const unsigned long tceshift = tbl->it_page_shift;
+> >   
+> >   	if ((npages == 1) || !firmware_has_feature(FW_FEATURE_PUT_TCE_IND)) {
+> >   		return tce_build_pSeriesLP(tbl->it_index, tcenum,
+> > -					   tbl->it_page_shift, npages, uaddr,
+> > +					   tceshift, npages, uaddr,
+> >   		                           direction, attrs);
+> >   	}
+> >   
+> > @@ -225,13 +228,13 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+> >   		if (!tcep) {
+> >   			local_irq_restore(flags);
+> >   			return tce_build_pSeriesLP(tbl->it_index, tcenum,
+> > -					tbl->it_page_shift,
+> > +					tceshift,
+> >   					npages, uaddr, direction, attrs);
+> >   		}
+> >   		__this_cpu_write(tce_page, tcep);
+> >   	}
+> >   
+> > -	rpn = __pa(uaddr) >> TCE_SHIFT;
+> > +	rpn = __pa(uaddr) >> tceshift;
+> >   	proto_tce = TCE_PCI_READ;
+> >   	if (direction != DMA_TO_DEVICE)
+> >   		proto_tce |= TCE_PCI_WRITE;
+> > @@ -245,12 +248,12 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+> >   		limit = min_t(long, npages, 4096/TCE_ENTRY_SIZE);
+> >   
+> >   		for (l = 0; l < limit; l++) {
+> > -			tcep[l] = cpu_to_be64(proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT);
+> > +			tcep[l] = cpu_to_be64(proto_tce | rpn << tceshift);
+> >   			rpn++;
+> >   		}
+> >   
+> >   		rc = plpar_tce_put_indirect((u64)tbl->it_index,
+> > -					    (u64)tcenum << 12,
+> > +					    (u64)tcenum << tceshift,
+> >   					    (u64)__pa(tcep),
+> >   					    limit);
+> >   
+> > @@ -277,12 +280,13 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+> >   	return ret;
+> >   }
+> >   
+> > -static void tce_free_pSeriesLP(unsigned long liobn, long tcenum, long npages)
+> > +static void tce_free_pSeriesLP(unsigned long liobn, long tcenum, long tceshift,
+> > +			       long npages)
+> >   {
+> >   	u64 rc;
+> >   
+> >   	while (npages--) {
+> > -		rc = plpar_tce_put((u64)liobn, (u64)tcenum << 12, 0);
+> > +		rc = plpar_tce_put((u64)liobn, (u64)tcenum << tceshift, 0);
+> >   
+> >   		if (rc && printk_ratelimit()) {
+> >   			printk("tce_free_pSeriesLP: plpar_tce_put failed. rc=%lld\n", rc);
+> > @@ -301,9 +305,11 @@ static void tce_freemulti_pSeriesLP(struct iommu_table *tbl, long tcenum, long n
+> >   	u64 rc;
+> >   
+> >   	if (!firmware_has_feature(FW_FEATURE_STUFF_TCE))
+> > -		return tce_free_pSeriesLP(tbl->it_index, tcenum, npages);
+> > +		return tce_free_pSeriesLP(tbl->it_index, tcenum,
+> > +					  tbl->it_page_shift, npages);
+> >   
+> > -	rc = plpar_tce_stuff((u64)tbl->it_index, (u64)tcenum << 12, 0, npages);
+> > +	rc = plpar_tce_stuff((u64)tbl->it_index,
+> > +			     (u64)tcenum << tbl->it_page_shift, 0, npages);
+> >   
+> >   	if (rc && printk_ratelimit()) {
+> >   		printk("tce_freemulti_pSeriesLP: plpar_tce_stuff failed\n");
+> > @@ -319,7 +325,8 @@ static unsigned long tce_get_pSeriesLP(struct iommu_table *tbl, long tcenum)
+> >   	u64 rc;
+> >   	unsigned long tce_ret;
+> >   
+> > -	rc = plpar_tce_get((u64)tbl->it_index, (u64)tcenum << 12, &tce_ret);
+> > +	rc = plpar_tce_get((u64)tbl->it_index,
+> > +			   (u64)tcenum << tbl->it_page_shift, &tce_ret);
+> >   
+> >   	if (rc && printk_ratelimit()) {
+> >   		printk("tce_get_pSeriesLP: plpar_tce_get failed. rc=%lld\n", rc);
+> > 
+
