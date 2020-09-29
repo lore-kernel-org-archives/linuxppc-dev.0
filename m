@@ -2,66 +2,56 @@ Return-Path: <SRS0=xLud=DG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B3C8C4346E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:12:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 403B3C4346E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:33:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 545E820897
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:12:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 545E820897
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id 4BFA120759
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 08:33:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BFA120759
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C0sYc07slzDqTF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:12:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C0t2j5tmmzDqTb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 18:33:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0sG11P5WzDqSF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 17:58:33 +1000 (AEST)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C0sFt43pNz9v04g;
- Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bBCL2Vs1tFh2; Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C0sFt39GRz9v04d;
- Tue, 29 Sep 2020 09:58:26 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AE9008B7A4;
- Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jX54WFx0YwnC; Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 43E448B76C;
- Tue, 29 Sep 2020 09:58:27 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7CAA165EBA; Tue, 29 Sep 2020 07:58:27 +0000 (UTC)
-Message-Id: <d7c1fd375fbf4b88993eea64e0df085e38117cdc.1601365870.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <cover.1601365869.git.christophe.leroy@csgroup.eu>
-References: <cover.1601365869.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v12 5/5] powerpc/vdso: Provide __kernel_clock_gettime64() on
- vdso32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- nathanl@linux.ibm.com, anton@ozlabs.org
-Date: Tue, 29 Sep 2020 07:58:27 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0szw6DSkzDqSx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 18:31:24 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6865B201192;
+ Tue, 29 Sep 2020 10:31:21 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B01242015EB;
+ Tue, 29 Sep 2020 10:31:17 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 1ADF64029A;
+ Tue, 29 Sep 2020 10:31:13 +0200 (CEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Shawn Guo <shawnguo@kernel.org>
+Subject: [PATCH v3 3/5] arm: dts: ls1021a: enable RCPM workaround for erratum
+ A-008646
+Date: Tue, 29 Sep 2020 16:22:32 +0800
+Message-Id: <20200929082234.36619-3-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200929082234.36619-1-ran.wang_1@nxp.com>
+References: <20200929082234.36619-1-ran.wang_1@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,89 +63,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, arnd@arndb.de, linux-kernel@vger.kernel.org,
- luto@kernel.org, tglx@linutronix.de, vincenzo.frascino@arm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, Biwen Li <biwen.li@nxp.com>,
+ linux-kernel@vger.kernel.org, Ran Wang <ran.wang_1@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provides __kernel_clock_gettime64() on vdso32. This is the
-64 bits version of __kernel_clock_gettime() which is
-y2038 compliant.
+From: Biwen Li <biwen.li@nxp.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v12: Added missing prototype
----
- arch/powerpc/include/asm/vdso/gettimeofday.h | 2 ++
- arch/powerpc/kernel/vdso32/gettimeofday.S    | 9 +++++++++
- arch/powerpc/kernel/vdso32/vdso32.lds.S      | 1 +
- arch/powerpc/kernel/vdso32/vgettimeofday.c   | 6 ++++++
- 4 files changed, 18 insertions(+)
+The patch fixes a bug that FlexTimer cannot
+wakeup system in deep sleep.
 
-diff --git a/arch/powerpc/include/asm/vdso/gettimeofday.h b/arch/powerpc/include/asm/vdso/gettimeofday.h
-index 59a609a48b63..8da84722729b 100644
---- a/arch/powerpc/include/asm/vdso/gettimeofday.h
-+++ b/arch/powerpc/include/asm/vdso/gettimeofday.h
-@@ -186,6 +186,8 @@ int __c_kernel_clock_getres(clockid_t clock_id, struct __kernel_timespec *res,
- #else
- int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
- 			     const struct vdso_data *vd);
-+int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
-+			       const struct vdso_data *vd);
- int __c_kernel_clock_getres(clockid_t clock_id, struct old_timespec32 *res,
- 			    const struct vdso_data *vd);
- #endif
-diff --git a/arch/powerpc/kernel/vdso32/gettimeofday.S b/arch/powerpc/kernel/vdso32/gettimeofday.S
-index fd7b01c51281..a6e29f880e0e 100644
---- a/arch/powerpc/kernel/vdso32/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso32/gettimeofday.S
-@@ -35,6 +35,15 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	cvdso_call __c_kernel_clock_gettime
- V_FUNCTION_END(__kernel_clock_gettime)
+Signed-off-by: Biwen Li <biwen.li@nxp.com>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+---
+Change in v3:
+ - Update proterty according to binding and driver change.
+
+Change in v2:
+ - Change subject of commit message to be consistent with other related patches.
+
+ arch/arm/boot/dts/ls1021a.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 827373e..98b597e 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -1007,6 +1007,7 @@
+ 			compatible = "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-2.1+";
+ 			reg = <0x0 0x1ee2140 0x0 0x8>;
+ 			#fsl,rcpm-wakeup-cells = <2>;
++			fsl,ippdexpcr1-alt-reg;
+ 		};
  
-+/*
-+ * Exact prototype of clock_gettime64()
-+ *
-+ * int __kernel_clock_gettime64(clockid_t clock_id, struct __timespec64 *ts);
-+ *
-+ */
-+V_FUNCTION_BEGIN(__kernel_clock_gettime64)
-+	cvdso_call __c_kernel_clock_gettime64
-+V_FUNCTION_END(__kernel_clock_gettime64)
- 
- /*
-  * Exact prototype of clock_getres()
-diff --git a/arch/powerpc/kernel/vdso32/vdso32.lds.S b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-index 5206c2eb2a1d..af5812ca5dce 100644
---- a/arch/powerpc/kernel/vdso32/vdso32.lds.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32.lds.S
-@@ -147,6 +147,7 @@ VERSION
- #ifndef CONFIG_PPC_BOOK3S_601
- 		__kernel_gettimeofday;
- 		__kernel_clock_gettime;
-+		__kernel_clock_gettime64;
- 		__kernel_clock_getres;
- 		__kernel_time;
- 		__kernel_get_tbfreq;
-diff --git a/arch/powerpc/kernel/vdso32/vgettimeofday.c b/arch/powerpc/kernel/vdso32/vgettimeofday.c
-index 0b9ab4c22ef2..f7f71fecf4ed 100644
---- a/arch/powerpc/kernel/vdso32/vgettimeofday.c
-+++ b/arch/powerpc/kernel/vdso32/vgettimeofday.c
-@@ -11,6 +11,12 @@ int __c_kernel_clock_gettime(clockid_t clock, struct old_timespec32 *ts,
- 	return __cvdso_clock_gettime32_data(vd, clock, ts);
- }
- 
-+int __c_kernel_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts,
-+			       const struct vdso_data *vd)
-+{
-+	return __cvdso_clock_gettime_data(vd, clock, ts);
-+}
-+
- int __c_kernel_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz,
- 			    const struct vdso_data *vd)
- {
+ 		ftm_alarm0: timer0@29d0000 {
 -- 
-2.25.0
+2.7.4
 
