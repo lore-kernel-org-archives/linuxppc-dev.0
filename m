@@ -2,115 +2,89 @@ Return-Path: <SRS0=xLud=DG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F02C4727C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 21:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7207C4727C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 21:34:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 455B32075E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 21:32:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1D47920774
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Sep 2020 21:34:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="Q15nMGQb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 455B32075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=inbox.ru header.i=@inbox.ru header.b="XDIw44X3";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=inbox.ru header.i=@inbox.ru header.b="SeIu7i4m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D47920774
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=inbox.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C1CKT5nnczDqV5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2020 07:32:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C1CMK6tZDzDqJq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Sep 2020 07:34:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=inbox.ru (client-ip=94.100.178.50; helo=fallback10.mail.ru;
+ envelope-from=fido_max@inbox.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=40.107.2.41; helo=eur02-ve1-obe.outbound.protection.outlook.com;
- envelope-from=vladimir.oltean@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
+ dmarc=pass (p=reject dis=none) header.from=inbox.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=selector2 header.b=Q15nMGQb; 
- dkim-atps=neutral
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20041.outbound.protection.outlook.com [40.107.2.41])
+ unprotected) header.d=inbox.ru header.i=@inbox.ru header.a=rsa-sha256
+ header.s=mail header.b=XDIw44X3; 
+ dkim=pass (1024-bit key;
+ unprotected) header.d=inbox.ru header.i=@inbox.ru header.a=rsa-sha256
+ header.s=mail3 header.b=SeIu7i4m; dkim-atps=neutral
+Received: from fallback10.mail.ru (fallback10.mail.ru [94.100.178.50])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0y0v1r67zDqYL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 21:32:31 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Reqcky3FzGc8PhDNXif/xczpugQouTMmw4ynix/7kCQbOH6ahInWS2QTRmhN/rYP36i3gmpE2rqqDz7gKux2r2SpQp5INZnb/OTVNSp2keTX9KJnQ8AF81/PF/dur3ntimGJb/7MGF162DbAJ+sSgTqgcy3wTrycXZcXRn6X9WNqrKOr+o3dL1kkC8PwsKrX6tGqWXoAsoEUMbWECeaTZ4FbI1aQHFp3RlS9rZX6C9WVIp2iC9UI489MlOOmKvNZAHykzG0aD8BxuFB5oNykxzDi0MCydBaHwSb9qaX2XWpiKA72+kdVmKLAZ6+jKKT/Y7h5jS+m7+EquzWTdglX3g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lDj2atOl0im16itVrLLdeKpTlXAVvCK71oypg+vqzNU=;
- b=fd5S7HWXjMhZ+J9SEL5nTOOb7nwuyqchMO3weSVH7nmcBMa+sdj2W52z4H3bXpwKxfHhJoR4x3af68tUwjZ2Pgo0FWzpy9SPxyuDCK7l04IuStcG0KWICIdvchuX9TrR4Mvfb0AOAIvY2ewzpuUEh52LCDo33o4yUZI5UxrY+hrppTLc7lMW0YN4eMtFnGntxy6+WgZHSJ55BafGlLYezKxPHf/cdvnwrUnL/9Tz+KqrNLJa3prniwDIT16TUvrxQgLfga2IrguLPh5mVG/43b1fDCe/X0YWyDaP4cbYuD3AOvX1/Upm6fZdbUD6/cXw+8N5r+fqL6/56KQVuieglA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lDj2atOl0im16itVrLLdeKpTlXAVvCK71oypg+vqzNU=;
- b=Q15nMGQb4ZBIBiVupSeDR65VEUSMSzPxorULk9DNBZbmVoQrzBm52PQAXQWmJzbMYzNK64aMf+RnUh8EHgam5zgg3GgCtax9lostiETuYKdZrY2AwaQvQCRMm3QxZneSIPRnlff0FxtrCeaGjgIW5yNz57+orgXNFAcNNdDVzio=
-Authentication-Results: kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=none action=none header.from=nxp.com;
-Received: from VI1PR04MB5696.eurprd04.prod.outlook.com (2603:10a6:803:e7::13)
- by VI1PR04MB5504.eurprd04.prod.outlook.com (2603:10a6:803:d8::29)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3412.20; Tue, 29 Sep
- 2020 11:32:23 +0000
-Received: from VI1PR04MB5696.eurprd04.prod.outlook.com
- ([fe80::983b:73a7:cc93:e63d]) by VI1PR04MB5696.eurprd04.prod.outlook.com
- ([fe80::983b:73a7:cc93:e63d%3]) with mapi id 15.20.3433.032; Tue, 29 Sep 2020
- 11:32:23 +0000
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: robh+dt@kernel.org, shawnguo@kernel.org, mpe@ellerman.id.au,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 devicetree 2/2] powerpc: dts: t1040rdb: add ports for
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C10CW1hLmzDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2020 23:11:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=inbox.ru;
+ s=mail; 
+ h=Content-Transfer-Encoding:Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject;
+ bh=1Gbeh7SqY7rT3UEGpCPe0p3nWax1TiQOmzTpNVejyHg=; 
+ b=XDIw44X3EqM9Pcv7WVXd+ocdDGQvlYan8RtyKmZyBty4DBPgdDkJl+tblSvmyvhlsvz9JU8q7Dol0xcx4ba/zwaSx3cEFjgP2xNtoxSZ39ZQAE3XVSPWaKY6o/3xW+DXEQyJD+jcO1cS6UToDSyyI3IIBfGlEkOeTjaz1iR3Cb0=;
+Received: from [10.161.64.57] (port=35462 helo=smtp49.i.mail.ru)
+ by fallback10.m.smailru.net with esmtp (envelope-from <fido_max@inbox.ru>)
+ id 1kNFQ0-0004Q5-8w; Tue, 29 Sep 2020 16:11:44 +0300
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=inbox.ru;
+ s=mail3; 
+ h=Content-Transfer-Encoding:Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:From:Subject:Content-Type:Content-Transfer-Encoding:To:Cc;
+ bh=1Gbeh7SqY7rT3UEGpCPe0p3nWax1TiQOmzTpNVejyHg=; 
+ b=SeIu7i4mLIpHKwR7w2FQQVHmeWxfwzXx5h0Agg+y196s20GZ581iqHQTNuk0p5qK+Ss7B0ar1zBEKGyj1UYtfvN3nM+/M1YjOcbVCVZ5VSPFJJe9QHecRi06P46AevHRvWJgMKBwhwtyetDMcQ71eqy6KuuENdkeUQYOkEUKRAk=;
+Received: by smtp49.i.mail.ru with esmtpa (envelope-from <fido_max@inbox.ru>)
+ id 1kNFPq-0004Ot-FG; Tue, 29 Sep 2020 16:11:35 +0300
+Subject: Re: [PATCH v2 devicetree 1/2] powerpc: dts: t1040: add bindings for
  Seville Ethernet switch
-Date: Tue, 29 Sep 2020 14:32:09 +0300
-Message-Id: <20200929113209.3767787-3-vladimir.oltean@nxp.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200929113209.3767787-1-vladimir.oltean@nxp.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>, robh+dt@kernel.org,
+ shawnguo@kernel.org, mpe@ellerman.id.au, devicetree@vger.kernel.org
 References: <20200929113209.3767787-1-vladimir.oltean@nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [188.26.229.171]
-X-ClientProxiedBy: AM4PR05CA0008.eurprd05.prod.outlook.com (2603:10a6:205::21)
- To VI1PR04MB5696.eurprd04.prod.outlook.com
- (2603:10a6:803:e7::13)
+ <20200929113209.3767787-2-vladimir.oltean@nxp.com>
+From: Maxim Kochetkov <fido_max@inbox.ru>
+Message-ID: <adfab73d-4073-2f9d-0bad-054ccb4b2534@inbox.ru>
+Date: Tue, 29 Sep 2020 16:12:05 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from localhost.localdomain (188.26.229.171) by
- AM4PR05CA0008.eurprd05.prod.outlook.com (2603:10a6:205::21) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3433.32 via Frontend Transport; Tue, 29 Sep 2020 11:32:21 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 7399e800-0784-4a35-826d-08d8646b5543
-X-MS-TrafficTypeDiagnostic: VI1PR04MB5504:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <VI1PR04MB5504DEEFB635C7AE60F643D5E0320@VI1PR04MB5504.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6790;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: kx4jLjWqz1u6NV1xi5YWeCLXc2bOXihbffNnL0WEehxJAA5LlIgJyQQONo0vquATkKRlGvPBNYnNseLFzMs35GEmqsVb6SCyGeRmsQB83uPo2F+6TEUPlaZYUSS6Jj6DQEFjBXhr+hyCOgSaPN6+IGmE184df6B1Sefsa6jUsN1HHIKQSzAV8Cnh4fg9Xcvk3nhL0T768ZA59F1qBHE31R8Aqnk0LYe6rio4suOM+SaN5acvyWMcP3iQosri1xkVhHxD5tnRLgKkmA1J3V3CRnJVW5scJ3+DIO3dMIb3P6hC38a8JoD7YZtNiGYrS7LWj6pL7rEGm7EdyliXO9igR/kc9h1GkHjao1N65qXAKtG2kap7uHeidu2kfDNj9Uel12zTnfMBEzsF3WkDm4rkreKL7lqmKJfIF3ucceCqTUT1z53rTaRCQMVV6exSymaI
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:VI1PR04MB5696.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(366004)(5660300002)(36756003)(66476007)(66946007)(66556008)(1076003)(6512007)(69590400008)(44832011)(83380400001)(2616005)(6666004)(6486002)(26005)(4326008)(956004)(52116002)(86362001)(186003)(8936002)(16526019)(2906002)(7416002)(6506007)(8676002)(498600001);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData: rhlHLVAf+c8dN5D6a3rDcOvCp9YVR4z1ofYoOmccB2G5eM79L6skwnwVnTb1AYJWIjqcml6Eld4fOroBRMUkQ2GykSngM8renKt40LJ/rOHBeOFieFGFfayT7Kp8Fp1slI0OgKh9IIHPt/01XHtC487x4ft4+/+8LEPgsdOBsInTk3plZzopSbL182dQCgT1+YTLJXJ52jJR7odVI4UzcLOt8HsNFxf5mL61KPykdWgEoCvudRpGnBhvmVbyyAbLlri4ae0RlKhsQ9+mCRsBRDnFAXHjJKxQD5QKftkTYHj6lrpkdjEUZ20RJmzuBIKuXtsyqqC8NCEqHy2/Ku4bFU6kAUltWP6UZtfN8mqdoiYIcTAiKpSGFOxyRxV22lBYbTBxp+0Ps75oKxkNtDsnk/9hoj6iPX9mHrYgi1wTKW9QuEgTC2PnpDc6khcp7yAmygYgBfh7JQ390/EYyCIVuqWDP/pDm0OWAmlffCLEqUDQhMz3Ar+WShQahyk37LGc0ZcmeqAHB7n9qTNoSZWPegF8jv1GLZBSKGbaVMyx8bwV0uUU8Sj/4fJe/z3wjq+EjMyzePFpMShNzIh5DaONJa2qnafJA+T9JW0Sc8gUQF1sdtrwevpnUQDIgTihdPWZyJjwwR405pEQCe4p074+EQ==
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7399e800-0784-4a35-826d-08d8646b5543
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB5696.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Sep 2020 11:32:22.9649 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4vIlkU+GoZ3SPfn3f12U5lgzMdptWnQ3T162NaQTc3WRYNNZ7Wqu2psRHnoHeGynu0sRoDrEReErbKLda3hGzw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5504
+In-Reply-To: <20200929113209.3767787-2-vladimir.oltean@nxp.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-7564579A: 646B95376F6C166E
+X-77F55803: 4F1203BC0FB41BD9943D5126A2FD5EE210091936F975AF0E64B7DFA945D92D76182A05F5380850407CFF446C489D55166B2335417BECA18F5A44BF6B3EE5A16E62FB829C0FED1BDA
+X-7FA49CB5: FF5795518A3D127A4AD6D5ED66289B5278DA827A17800CE78CB87876C5D626D4EA1F7E6F0F101C67BD4B6F7A4D31EC0BCC500DACC3FED6E28638F802B75D45FF8AA50765F79006377E85B0EC44E8FD73EA1F7E6F0F101C674E70A05D1297E1BBC6CDE5D1141D2B1CA653A634B32B94EC035C7183CF53F2460BF327142CA1355A9FA2833FD35BB23D9E625A9149C048EE33AC447995A7AD18C26CFBAC0749D213D2E47CDBA5A96583BD4B6F7A4D31EC0BB23A54CFFDBC96A8389733CBF5DBD5E9D5E8D9A59859A8B68424CA1AAF98A6958941B15DA834481F9449624AB7ADAF372AE38A8E97BAFFB1D8FC6C240DEA76428AA50765F7900637664EAD4E21776A47D81D268191BDAD3DBD4B6F7A4D31EC0B7A15B7713DBEF166D81D268191BDAD3D78DA827A17800CE7744CB235B443BC28EC76A7562686271E8729DE7A884B61D135872C767BF85DA29E625A9149C048EE0A3850AC1BE2E7352686C055BC15B7FB4AD6D5ED66289B524E70A05D1297E1BB35872C767BF85DA227C277FBC8AE2E8B80B9CEB5436E71E375ECD9A6C639B01B4E70A05D1297E1BBC6867C52282FAC85D9B7C4F32B44FF57C2F2A386D11C4599BD9CCCA9EDD067B1EDA766A37F9254B7
+X-C8649E89: 567D3D2427B229D254C52D9E10064720D20B9D7A9BD8640D88F9F4524E0D329BCE2B3B804975FD933675F7A8BF3FBA84
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj50aJSQv4UNZbDLqL0K5aLg==
+X-Mailru-Sender: 11C2EC085EDE56FA9C10FA2967F5AB24E01AC4CE101D31AD14451138C64F667DCA8D1FEBF3F5AE83EE9242D420CFEBFD3DDE9B364B0DF2891A624F84B2C74EDA4239CF2AF0A6D4F80DA7A0AF5A3A8387
+X-Mras: Ok
+X-7564579A: 646B95376F6C166E
+X-77F55803: 6242723A09DB00B4DAC42D0CFF71F59E69E12062FB1270EB7A11868DD32E73FC68F3CF0E9FE49B69332DF44F249B4C8DEA273B3613DBCA359D52113C18D2DD517EE3D9379560A009
+X-7FA49CB5: 0D63561A33F958A5030D96F8C768F745BA30EDD2CA877637D4D1A60F795BD0318941B15DA834481FA18204E546F3947CCE135D2742255B35F6B57BC7E64490618DEB871D839B7333395957E7521B51C2545D4CF71C94A83E9FA2833FD35BB23D27C277FBC8AE2E8BAA867293B0326636D2E47CDBA5A96583CDB5D6C1DA9E2EA8302FCEF25BFAB3454AD6D5ED66289B5278DA827A17800CE7EF7665EA8040F95CD32BA5DBAC0009BE395957E7521B51C20B4866841D68ED3567F23339F89546C55F5C1EE8F4F765FC80B9CEB5436E71E375ECD9A6C639B01BBD4B6F7A4D31EC0BC0CAF46E325F83A522CA9DD8327EE4930A3850AC1BE2E7352686C055BC15B7FBC4224003CC836476C0CAF46E325F83A50BF2EBBBDD9D6B0F8DB212830C5B42F72623479134186CDE6BA297DBC24807EABDAD6C7F3747799A
+X-D57D3AED: 3ZO7eAau8CL7WIMRKs4sN3D3tLDjz0dLbV79QFUyzQ2Ujvy7cMT6pYYqY16iZVKkSc3dCLJ7zSJH7+u4VD18S7Vl4ZUrpaVfd2+vE6kuoey4m4VkSEu530nj6fImhcD4MUrOEAnl0W826KZ9Q+tr5ycPtXkTV4k65bRjmOUUP8cvGozZ33TWg5HZplvhhXbhDGzqmQDTd6OAevLeAnq3Ra9uf7zvY2zzsIhlcp/Y7m53TZgf2aB4JOg4gkr2bioj50aJSQv4UNZPPxuJnJS5uQ==
+X-Mailru-MI: 800
+X-Mailru-Sender: A5480F10D64C9005989B929F85CCF0950E93C467E74FB7AD9ED703FFD30FD10EC8217CE68A9CF838C099ADC76E806A99D50E20E2BC48EF5A30D242760C51EA9CEAB4BC95F72C04283CDA0F3B3F5B9367
+X-Mras: Ok
 X-Mailman-Approved-At: Wed, 30 Sep 2020 07:26:45 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -124,161 +98,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: madalin.bucur@oss.nxp.com, linux-kernel@vger.kernel.org,
- radu-andrei.bulie@nxp.com, fido_max@inbox.ru, paulus@samba.org,
- netdev@vger.kernel.org, Vladimir Oltean <olteanv@gmail.com>,
+ radu-andrei.bulie@nxp.com, paulus@samba.org, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Vladimir Oltean <olteanv@gmail.com>
+Reviewed-by: Maxim Kochetkov <fido_max@inbox.ru>
 
-Define the network interface names for the switch ports and hook them up
-to the 2 QSGMII PHYs that are onboard.
 
-A conscious decision was taken to go along with the numbers that are
-written on the front panel of the board and not with the hardware
-numbers of the switch chip ports. The 2 numbering schemes are
-shifted by 8.
-
-Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
----
-Changes in v2:
-Use the existing way of accessing the mdio bus and not labels.
-
- arch/powerpc/boot/dts/fsl/t1040rdb.dts | 115 +++++++++++++++++++++++++
- 1 file changed, 115 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/fsl/t1040rdb.dts b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-index 65ff34c49025..3fd08a2b6dcb 100644
---- a/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1040rdb.dts
-@@ -64,6 +64,40 @@ mdio@fc000 {
- 				phy_sgmii_2: ethernet-phy@3 {
- 					reg = <0x03>;
- 				};
-+
-+				/* VSC8514 QSGMII PHY */
-+				phy_qsgmii_0: ethernet-phy@4 {
-+					reg = <0x4>;
-+				};
-+
-+				phy_qsgmii_1: ethernet-phy@5 {
-+					reg = <0x5>;
-+				};
-+
-+				phy_qsgmii_2: ethernet-phy@6 {
-+					reg = <0x6>;
-+				};
-+
-+				phy_qsgmii_3: ethernet-phy@7 {
-+					reg = <0x7>;
-+				};
-+
-+				/* VSC8514 QSGMII PHY */
-+				phy_qsgmii_4: ethernet-phy@8 {
-+					reg = <0x8>;
-+				};
-+
-+				phy_qsgmii_5: ethernet-phy@9 {
-+					reg = <0x9>;
-+				};
-+
-+				phy_qsgmii_6: ethernet-phy@a {
-+					reg = <0xa>;
-+				};
-+
-+				phy_qsgmii_7: ethernet-phy@b {
-+					reg = <0xb>;
-+				};
- 			};
- 		};
- 	};
-@@ -76,3 +110,84 @@ cpld@3,0 {
- };
- 
- #include "t1040si-post.dtsi"
-+
-+&seville_switch {
-+	status = "okay";
-+};
-+
-+&seville_port0 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_0>;
-+	phy-mode = "qsgmii";
-+	/* ETH4 written on chassis */
-+	label = "swp4";
-+	status = "okay";
-+};
-+
-+&seville_port1 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_1>;
-+	phy-mode = "qsgmii";
-+	/* ETH5 written on chassis */
-+	label = "swp5";
-+	status = "okay";
-+};
-+
-+&seville_port2 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_2>;
-+	phy-mode = "qsgmii";
-+	/* ETH6 written on chassis */
-+	label = "swp6";
-+	status = "okay";
-+};
-+
-+&seville_port3 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_3>;
-+	phy-mode = "qsgmii";
-+	/* ETH7 written on chassis */
-+	label = "swp7";
-+	status = "okay";
-+};
-+
-+&seville_port4 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_4>;
-+	phy-mode = "qsgmii";
-+	/* ETH8 written on chassis */
-+	label = "swp8";
-+	status = "okay";
-+};
-+
-+&seville_port5 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_5>;
-+	phy-mode = "qsgmii";
-+	/* ETH9 written on chassis */
-+	label = "swp9";
-+	status = "okay";
-+};
-+
-+&seville_port6 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_6>;
-+	phy-mode = "qsgmii";
-+	/* ETH10 written on chassis */
-+	label = "swp10";
-+	status = "okay";
-+};
-+
-+&seville_port7 {
-+	managed = "in-band-status";
-+	phy-handle = <&phy_qsgmii_7>;
-+	phy-mode = "qsgmii";
-+	/* ETH11 written on chassis */
-+	label = "swp11";
-+	status = "okay";
-+};
-+
-+&seville_port8 {
-+	ethernet = <&enet0>;
-+	status = "okay";
-+};
--- 
-2.25.1
-
+29.09.2020 14:32, Vladimir Oltean пишет:
+> Add the description of the embedded L2 switch inside the SoC dtsi file
+> for NXP T1040.
+> 
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> ---
+> Changes in v2:
+> Make switch node disabled by default.
+> 
+>   arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 76 +++++++++++++++++++++
+>   1 file changed, 76 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+> index 315d0557eefc..5cb90c66cd3f 100644
+> --- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+> @@ -628,6 +628,82 @@ mdio@fd000 {
+>   			status = "disabled";
+>   		};
+>   	};
+> +
+> +	seville_switch: ethernet-switch@800000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		compatible = "mscc,vsc9953-switch";
+> +		reg = <0x800000 0x290000>;
+> +		little-endian;
+> +		status = "disabled";
+> +
+> +		ports {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			seville_port0: port@0 {
+> +				reg = <0>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port1: port@1 {
+> +				reg = <1>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port2: port@2 {
+> +				reg = <2>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port3: port@3 {
+> +				reg = <3>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port4: port@4 {
+> +				reg = <4>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port5: port@5 {
+> +				reg = <5>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port6: port@6 {
+> +				reg = <6>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port7: port@7 {
+> +				reg = <7>;
+> +				status = "disabled";
+> +			};
+> +
+> +			seville_port8: port@8 {
+> +				reg = <8>;
+> +				phy-mode = "internal";
+> +				status = "disabled";
+> +
+> +				fixed-link {
+> +					speed = <2500>;
+> +					full-duplex;
+> +				};
+> +			};
+> +
+> +			seville_port9: port@9 {
+> +				reg = <9>;
+> +				phy-mode = "internal";
+> +				status = "disabled";
+> +
+> +				fixed-link {
+> +					speed = <2500>;
+> +					full-duplex;
+> +				};
+> +			};
+> +		};
+> +	};
+>   };
+>   
+>   &qe {
+> 
