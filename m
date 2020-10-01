@@ -2,50 +2,68 @@ Return-Path: <SRS0=1OJO=DI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3321C4727E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CD1FC4727E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:49:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E9062072E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:42:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E9062072E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id A69B72074B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:49:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ayROnTvh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A69B72074B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C2SnP3NJ6zDqcx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2020 08:42:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
- helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=zeniv.linux.org.uk
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C2Sx93k0gzDqdd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Oct 2020 08:49:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=ayROnTvh; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C2SlW0QWXzDqBl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2020 08:41:09 +1000 (AEST)
-Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1kO7Fr-00A5Qh-PX; Thu, 01 Oct 2020 22:40:51 +0000
-Date: Thu, 1 Oct 2020 23:40:51 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: Eric Biggers <ebiggers@kernel.org>
-Subject: Re: [PATCH 05/14] fs: don't allow kernel reads and writes without
- iter ops
-Message-ID: <20201001224051.GI3421308@ZenIV.linux.org.uk>
-References: <20200903142242.925828-1-hch@lst.de>
- <20200903142242.925828-6-hch@lst.de>
- <20201001223852.GA855@sol.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C2StY1nLSzDqXq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2020 08:47:17 +1000 (AEST)
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0BF7C206C1;
+ Thu,  1 Oct 2020 22:47:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1601592434;
+ bh=ucUxa0HaN69q6wpph89IAO8S5XFVyEHctS45bQykTig=;
+ h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+ b=ayROnTvhBaiRXUk5chq6bsV9kiMz6CmC6J9M4Y+6EL41VlQrCGTv6NOoHaQMAZhqN
+ LV5wrGawo78IHdC6pEk+p8Bx2fZd6Fqns30TWnYWqYYWJkIAbyfz8pciiDmEkyROl0
+ 6Ki78KVNUgVkCCYvxJDBNM1+KPxe7X8F0lQkjaVk=
+Date: Thu, 01 Oct 2020 23:46:15 +0100
+From: Mark Brown <broonie@kernel.org>
+To: NXP Linux Team <linux-imx@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Timur Tabi <timur@kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>,
+ Qinglang Miao <miaoqinglang@huawei.com>, Fabio Estevam <festevam@gmail.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+In-Reply-To: <20200929112930.46848-1-miaoqinglang@huawei.com>
+References: <20200929112930.46848-1-miaoqinglang@huawei.com>
+Subject: Re: [PATCH -next] ASoC: fsl: imx-mc13783: use
+ devm_snd_soc_register_card()
+Message-Id: <160159237543.44588.1909303635189216096.b4-ty@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201001223852.GA855@sol.localdomain>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,23 +75,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Kees Cook <keescook@chromium.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>,
- Luis Chamberlain <mcgrof@kernel.org>, linux-fsdevel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 01, 2020 at 03:38:52PM -0700, Eric Biggers wrote:
+On Tue, 29 Sep 2020 19:29:30 +0800, Qinglang Miao wrote:
+> Using devm_snd_soc_register_card() can make the code
+> shorter and cleaner.
 
->  	mutex_lock(&sbi->pipe_mutex);
->  	while (bytes) {
-> -		wr = __kernel_write(file, data, bytes, NULL);
-> +		wr = __kernel_write(file, data, bytes, &file->f_pos);
+Applied to
 
-Better
-	loff_t dummy = 0;
-...
-		wr = __kernel_write(file, data, bytes, &dummy);
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/1] ASoC: fsl: imx-mc13783: use devm_snd_soc_register_card()
+      commit: bc772a46125f344ffabd7596c5b6b8c6ef703ea0
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
