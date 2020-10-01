@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B04DC4727C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:51:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB9CEC4727C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:53:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84B942075F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:51:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84B942075F
+	by mail.kernel.org (Postfix) with ESMTPS id 427DA2075F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:53:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 427DA2075F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C2CgS0pG3zDqXR
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:51:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C2Cjh03JTzDqQb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:53:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,36 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C2CT46rR0zDq61
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C2CT473PPzDqBN
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2020 22:42:45 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C2CSt1kgDz9twnx;
- Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4C2CSw6Lrnz9tx8X;
+ Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Uze5SQgXDq8H; Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
+ with ESMTP id DG2Gqi6lg23E; Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C2CSt0dCxz9twnv;
- Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4C2CSw5338z9twnv;
+ Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D85B98B96F;
- Thu,  1 Oct 2020 14:42:39 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8CFC08B97A;
+ Thu,  1 Oct 2020 14:42:42 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id zzfhcmh3VLXJ; Thu,  1 Oct 2020 14:42:39 +0200 (CEST)
+ with ESMTP id 0LHxUKLwaS-p; Thu,  1 Oct 2020 14:42:42 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E6E58B903;
- Thu,  1 Oct 2020 14:42:39 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 333398B903;
+ Thu,  1 Oct 2020 14:42:42 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2295D65ED8; Thu,  1 Oct 2020 12:42:39 +0000 (UTC)
-Message-Id: <94dc68d3d9ef9eb549796d4b938b6ba0305a049b.1601556145.git.christophe.leroy@csgroup.eu>
+ id 2E63365ED8; Thu,  1 Oct 2020 12:42:41 +0000 (UTC)
+Message-Id: <41573406a4eab98838decaa91649086fef1e6119.1601556145.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <94dc68d3d9ef9eb549796d4b938b6ba0305a049b.1601556145.git.christophe.leroy@csgroup.eu>
+References: <94dc68d3d9ef9eb549796d4b938b6ba0305a049b.1601556145.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 1/6] powerpc/time: Rename mftbl() to mftb()
+Subject: [PATCH 3/6] powerpc/time: Avoid using get_tbl() and get_tbu()
+ internally
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu,  1 Oct 2020 12:42:39 +0000 (UTC)
+Date: Thu,  1 Oct 2020 12:42:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,67 +77,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On PPC64, we have mftb().
-On PPC32, we have mftbl() and an #define mftb() mftbl().
+get_tbl() is confusing as it returns the content of TBL register
+on PPC32 but the concatenation of TBL and TBU on PPC64.
 
-mftb() and mftbl() are equivalent, their purpose is to read the
-content of SPRN_TRBL, as returned by 'mftb' simplified instruction.
+Use mftb() instead.
 
-binutils seems to define 'mftbl' instruction as an equivalent
-of 'mftb'.
-
-However in both 32 bits and 64 bits documentation, only 'mftb' is
-defined, and when performing a disassembly with objdump, the displayed
-instruction is 'mftb'
-
-No need to have two ways to do the same thing with different
-names, rename mftbl() to have only mftb().
+Do the same with get_tbu() for consistency allthough it's name
+is less confusing.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/reg.h  | 5 ++---
- arch/powerpc/include/asm/time.h | 2 +-
- 2 files changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/delay.h | 2 +-
+ arch/powerpc/include/asm/time.h  | 8 ++++----
+ arch/powerpc/kernel/time.c       | 4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 788058af1d44..c66dcdb47c44 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1439,19 +1439,18 @@ static inline void msr_check_and_clear(unsigned long bits)
- #else /* __powerpc64__ */
- 
- #if defined(CONFIG_PPC_8xx)
--#define mftbl()		({unsigned long rval;	\
-+#define mftb()		({unsigned long rval;	\
- 			asm volatile("mftbl %0" : "=r" (rval)); rval;})
- #define mftbu()		({unsigned long rval;	\
- 			asm volatile("mftbu %0" : "=r" (rval)); rval;})
- #else
--#define mftbl()		({unsigned long rval;	\
-+#define mftb()		({unsigned long rval;	\
- 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
- 				"i" (SPRN_TBRL)); rval;})
- #define mftbu()		({unsigned long rval;	\
- 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
- 				"i" (SPRN_TBRU)); rval;})
- #endif
--#define mftb()		mftbl()
- #endif /* !__powerpc64__ */
- 
- #define mttbl(v)	asm volatile("mttbl %0":: "r"(v))
+diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
+index 66963f7d3e64..51bb8c1476c7 100644
+--- a/arch/powerpc/include/asm/delay.h
++++ b/arch/powerpc/include/asm/delay.h
+@@ -54,7 +54,7 @@ extern void udelay(unsigned long usecs);
+ ({                                                                             \
+ 	typeof(condition) __ret;                                               \
+ 	unsigned long __loops = tb_ticks_per_usec * timeout;                   \
+-	unsigned long __start = get_tbl();                                     \
++	unsigned long __start = mftb();                                     \
+                                                                                \
+ 	if (delay) {                                                           \
+ 		while (!(__ret = (condition)) &&                               \
 diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index a80abf64c8a5..b0fb8456305f 100644
+index b0fb8456305f..3ef0f4b3299e 100644
 --- a/arch/powerpc/include/asm/time.h
 +++ b/arch/powerpc/include/asm/time.h
-@@ -50,7 +50,7 @@ struct div_result {
+@@ -97,9 +97,9 @@ static inline u64 get_tb(void)
+ 	unsigned int tbhi, tblo, tbhi2;
  
- static inline unsigned long get_tbl(void)
- {
--	return mftbl();
-+	return mftb();
+ 	do {
+-		tbhi = get_tbu();
+-		tblo = get_tbl();
+-		tbhi2 = get_tbu();
++		tbhi = mftbu();
++		tblo = mftb();
++		tbhi2 = mftbu();
+ 	} while (tbhi != tbhi2);
+ 
+ 	return ((u64)tbhi << 32) | tblo;
+@@ -153,7 +153,7 @@ static inline unsigned long tb_ticks_since(unsigned long tstamp)
+ 		int delta = get_rtcl() - (unsigned int) tstamp;
+ 		return delta < 0 ? delta + 1000000000 : delta;
+ 	}
+-	return get_tbl() - tstamp;
++	return mftb() - tstamp;
  }
  
- static inline unsigned int get_tbu(void)
+ #define mulhwu(x,y) \
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index f85539ebb513..a9cbd5a61585 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -467,8 +467,8 @@ void __delay(unsigned long loops)
+ 		 */
+ 		spin_cpu_relax();
+ 	} else {
+-		start = get_tbl();
+-		while (get_tbl() - start < loops)
++		start = mftb();
++		while (mftb() - start < loops)
+ 			spin_cpu_relax();
+ 	}
+ 	spin_end();
 -- 
 2.25.0
 
