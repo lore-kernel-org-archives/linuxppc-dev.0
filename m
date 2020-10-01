@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A14FCC47420
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 11:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2C0FC4727C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:47:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 96FB52137B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 11:03:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96FB52137B
+	by mail.kernel.org (Postfix) with ESMTPS id F1D9C20B1F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 12:47:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F1D9C20B1F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C29Ft2kLbzDqTD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 21:02:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C2CZ72vvtzDqTK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Oct 2020 22:47:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,36 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C299t2H1hzDqPQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2020 20:59:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C2CT51klszDqCl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2020 22:42:48 +1000 (AEST)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C299h13Mwz9vCyB;
- Thu,  1 Oct 2020 12:59:20 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4C2CSt5lgqz9twyY;
+ Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Co65YBxgPr1k; Thu,  1 Oct 2020 12:59:20 +0200 (CEST)
+ with ESMTP id Ee-S4nOmSyib; Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C299g6XMPz9vCy8;
- Thu,  1 Oct 2020 12:59:19 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4C2CSt4ZHCz9twnv;
+ Thu,  1 Oct 2020 14:42:38 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 350968B96E;
- Thu,  1 Oct 2020 12:59:21 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 852758B97A;
+ Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id PG5kqvtdEvLr; Thu,  1 Oct 2020 12:59:21 +0200 (CEST)
+ with ESMTP id XmSyWz3tLv_U; Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2BAE18B903;
- Thu,  1 Oct 2020 12:59:20 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 434E28B903;
+ Thu,  1 Oct 2020 14:42:40 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EF92D65ED7; Thu,  1 Oct 2020 10:59:19 +0000 (UTC)
-Message-Id: <3c9a6eb0fc040868ac59be66f338d08fd017668d.1601549945.git.christophe.leroy@csgroup.eu>
+ id 283A765ED8; Thu,  1 Oct 2020 12:42:40 +0000 (UTC)
+Message-Id: <6bf23ec744aab4ba63506a011f6a145ea35d620d.1601556145.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <94dc68d3d9ef9eb549796d4b938b6ba0305a049b.1601556145.git.christophe.leroy@csgroup.eu>
+References: <94dc68d3d9ef9eb549796d4b938b6ba0305a049b.1601556145.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] powerpc/time: Remove ifdef in get_dec() and set_dec()
+Subject: [PATCH 2/6] powerpc/time: Make mftb() common to PPC32 and PPC64
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu,  1 Oct 2020 10:59:19 +0000 (UTC)
+Date: Thu,  1 Oct 2020 12:42:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,84 +76,62 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move SPRN_PIT definition in reg.h.
+No need to have two versions that are identical.
 
-This allows to remove ifdef in get_dec() and set_dec() and
-makes them more readable.
+CONFIG_PPC_CELL is only selected by PPC64 targets.
+CONFIG_E500 is the only PPC64 target selecting CONFIG_FSL_BOOK3E.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/reg.h       |  2 ++
- arch/powerpc/include/asm/reg_booke.h |  1 -
- arch/powerpc/include/asm/time.h      | 23 ++++++++++-------------
- 3 files changed, 12 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/reg.h | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index d25c357a873c..788058af1d44 100644
+index c66dcdb47c44..f877a576b338 100644
 --- a/arch/powerpc/include/asm/reg.h
 +++ b/arch/powerpc/include/asm/reg.h
-@@ -521,6 +521,8 @@
- #define SPRN_TSCR	0x399	/* Thread Switch Control Register */
- 
- #define SPRN_DEC	0x016		/* Decrement Register */
-+#define SPRN_PIT	0x3DB		/* Programmable Interval Timer (40x/BOOKE) */
-+
- #define SPRN_DER	0x095		/* Debug Enable Register */
- #define DER_RSTE	0x40000000	/* Reset Interrupt */
- #define DER_CHSTPE	0x20000000	/* Check Stop */
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index ff30f1076162..29a948e0c0f2 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -174,7 +174,6 @@
- #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
- #define SPRN_MMUCSR0	0x3F4	/* MMU Control and Status Register 0 */
- #define SPRN_MMUCFG	0x3F7	/* MMU Configuration Register */
--#define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
- #define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
- #define SPRN_L2CSR0	0x3F9	/* L2 Data Cache Control and Status Register 0 */
- #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1 */
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 6c663a382a75..a80abf64c8a5 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -126,11 +126,10 @@ static inline void set_tb(unsigned int upper, unsigned int lower)
-  */
- static inline u64 get_dec(void)
- {
--#if defined(CONFIG_40x)
--	return (mfspr(SPRN_PIT));
--#else
--	return (mfspr(SPRN_DEC));
--#endif
-+	if (IS_ENABLED(CONFIG_40x))
-+		return mfspr(SPRN_PIT);
-+
-+	return mfspr(SPRN_DEC);
+@@ -1419,8 +1419,7 @@ static inline void msr_check_and_clear(unsigned long bits)
+ 		__msr_check_and_clear(bits);
  }
  
- /*
-@@ -140,14 +139,12 @@ static inline u64 get_dec(void)
-  */
- static inline void set_dec(u64 val)
- {
--#if defined(CONFIG_40x)
--	mtspr(SPRN_PIT, (u32) val);
--#else
--#ifndef CONFIG_BOOKE
--	--val;
--#endif
--	mtspr(SPRN_DEC, val);
--#endif /* not 40x */
-+	if (IS_ENABLED(CONFIG_40x))
-+		mtspr(SPRN_PIT, (u32)val);
-+	else if (IS_ENABLED(CONFIG_BOOKE))
-+		mtspr(SPRN_DEC, val);
-+	else
-+		mtspr(SPRN_DEC, val - 1);
- }
+-#ifdef __powerpc64__
+-#if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
++#if defined(CONFIG_PPC_CELL) || defined(CONFIG_E500)
+ #define mftb()		({unsigned long rval;				\
+ 			asm volatile(					\
+ 				"90:	mfspr %0, %2;\n"		\
+@@ -1430,28 +1429,23 @@ static inline void msr_check_and_clear(unsigned long bits)
+ 			: "=r" (rval) \
+ 			: "i" (CPU_FTR_CELL_TB_BUG), "i" (SPRN_TBRL) : "cr0"); \
+ 			rval;})
++#elif defined(CONFIG_PPC_8xx)
++#define mftb()		({unsigned long rval;	\
++			asm volatile("mftbl %0" : "=r" (rval)); rval;})
+ #else
+ #define mftb()		({unsigned long rval;	\
+ 			asm volatile("mfspr %0, %1" : \
+ 				     "=r" (rval) : "i" (SPRN_TBRL)); rval;})
+ #endif /* !CONFIG_PPC_CELL */
  
- static inline unsigned long tb_ticks_since(unsigned long tstamp)
+-#else /* __powerpc64__ */
+-
+ #if defined(CONFIG_PPC_8xx)
+-#define mftb()		({unsigned long rval;	\
+-			asm volatile("mftbl %0" : "=r" (rval)); rval;})
+ #define mftbu()		({unsigned long rval;	\
+ 			asm volatile("mftbu %0" : "=r" (rval)); rval;})
+ #else
+-#define mftb()		({unsigned long rval;	\
+-			asm volatile("mfspr %0, %1" : "=r" (rval) : \
+-				"i" (SPRN_TBRL)); rval;})
+ #define mftbu()		({unsigned long rval;	\
+ 			asm volatile("mfspr %0, %1" : "=r" (rval) : \
+ 				"i" (SPRN_TBRU)); rval;})
+ #endif
+-#endif /* !__powerpc64__ */
+ 
+ #define mttbl(v)	asm volatile("mttbl %0":: "r"(v))
+ #define mttbu(v)	asm volatile("mttbu %0":: "r"(v))
 -- 
 2.25.0
 
