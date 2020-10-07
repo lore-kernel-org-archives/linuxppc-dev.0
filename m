@@ -6,37 +6,36 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF29C4363C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 03:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18665C4363C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 03:38:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 65DF6208C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 03:36:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65DF6208C3
+	by mail.kernel.org (Postfix) with ESMTPS id 60122208C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 03:38:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60122208C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C5g3c0BZ5zDqQD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 14:36:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C5g5t4dV1zDqSQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 14:38:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C5fkR4GDnzDqFC
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2020 14:21:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C5fkS35NtzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2020 14:21:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4C5fkR1Svxz9sV0; Wed,  7 Oct 2020 14:21:18 +1100 (AEDT)
+ id 4C5fkR6NJRz9sTm; Wed,  7 Oct 2020 14:21:19 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20200825075612.224656-1-npiggin@gmail.com>
-References: <20200825075612.224656-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/pseries: add new branch prediction security bits
- for link stack
-Message-Id: <160204082882.257875.3484166683472347134.b4-ty@ellerman.id.au>
-Date: Wed,  7 Oct 2020 14:21:18 +1100 (AEDT)
+In-Reply-To: <20200916030234.4110379-1-npiggin@gmail.com>
+References: <20200916030234.4110379-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2 1/2] powerpc: untangle cputable mce include
+Message-Id: <160204082841.257875.1230697242563109012.b4-ty@ellerman.id.au>
+Date: Wed,  7 Oct 2020 14:21:19 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,13 +51,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 25 Aug 2020 17:56:12 +1000, Nicholas Piggin wrote:
-> The hypervisor interface has defined branch prediction security bits for
-> handling the link stack. Wire them up.
+On Wed, 16 Sep 2020 13:02:33 +1000, Nicholas Piggin wrote:
+> Having cputable.h include mce.h means it pulls in a bunch of low level
+> headers (e.g., synch.h) which then can't use CPU_FTR_ definitions.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: add new branch prediction security bits for link stack
-      https://git.kernel.org/powerpc/c/cdb1ea0276bd6a225aa1203b4829b8c3c0d4d069
+[1/2] powerpc: untangle cputable mce include
+      https://git.kernel.org/powerpc/c/9983efa83b0a98da33807ccf5c047e204fdcac4c
+[2/2] powerpc/64s: Add cp_abort after tlbiel to invalidate copy-buffer address
+      https://git.kernel.org/powerpc/c/05504b42562066ae27ce3e7dcec37f81dea476cb
 
 cheers
