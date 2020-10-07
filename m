@@ -2,84 +2,109 @@ Return-Path: <SRS0=XBts=DO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34D51C4363D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 14:46:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8390EC4363C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:41:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 290F5208C7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 14:46:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9446C21707
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:41:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="nkOVjFaa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 290F5208C7
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="EAyY1iIK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9446C21707
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C5xxG4FPCzDqQG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2020 01:46:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::643;
- helo=mail-ej1-x643.google.com; envelope-from=jannh@google.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C637q4PG6zDqB2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2020 05:41:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=nkOVjFaa; dkim-atps=neutral
-Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com
- [IPv6:2a00:1450:4864:20::643])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=EAyY1iIK; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C5xsd3ZTTzDqDF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2020 01:43:29 +1100 (AEDT)
-Received: by mail-ej1-x643.google.com with SMTP id a3so3301874ejy.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2020 07:43:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=yaN1rjyLrPsyFHJUcCMRII0CnG4UdUmiNrPeZE3+a2o=;
- b=nkOVjFaap1/yZl4CUDg4K4Ox8KSB9wy9sJrCPdFITMcuwfROhxDXnBr9RlyK9JOwM1
- VEAi9SVibNPsv71oy6nhtbqsusqW+/QiwUIyumUUh6zDmPusa/d38voD+N5QCxtT+5f/
- nCjBDNyPjCzVz7ySiHW+pDlThvHFopXt0tucDzNe3e51j5RFzbT8e7VerZ/62jYKjCVh
- y0cBmyibSPFBSvmMxoM2VWww8R5ehMlVAvmJbE7YH+sLVtXF2ZcP8ulxgyDu8nOH9oZW
- KiircQAwFxmSIXUj/e/0IYDv/uPIpHIPSX+blkBd56Qpag2B3btDwunrD7oqikY7az1J
- /dsA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=yaN1rjyLrPsyFHJUcCMRII0CnG4UdUmiNrPeZE3+a2o=;
- b=GSbisaptG3m2UG15OQH18hR0YIeo82GHc5nlXhhrmu/RjMwNuMhpBqB8NaQOAGxhFI
- ZGMp3QXAoJJN59jPDBIhEoTkqrlpSZWHQbsqHfItn8nuNiFXjMP6Knvz7q9JNl9V2LSN
- qE9Kd1IKBM54tiQHbD1nIJOlf6cyvBLDf9DoniRaLl3TQ+zESxrJ0L2qQWAIeSrVAPoC
- YvBVp/YRYpz4QL6keXsOlGlykpPmTeZjbZrLxi4XgteyjoSR8kfPYSrih/KyD4e5wsAV
- Yduyko0fLNAnpQ6f1z5j8GqNrGdyLULHrySbUQAbRX0E9kyEm4Bn4wpupNmchJQBkw9I
- yFNA==
-X-Gm-Message-State: AOAM531JezI93Vq/W2nmAoLiCxFF8CK4L1sTyVbpZ32M3aRXE+mArtC/
- k1m3nNcBGknUuvCGJwZfbA11AWTYn5zTnQqYfsgEuQ==
-X-Google-Smtp-Source: ABdhPJzcK0C/z7p/R/rO2dkoBnGMVzKrffZV6M0+dNfgCx+3Vi4jT221WFvbiB0KTziaharLk7wRJUaJVTHbRe80EQQ=
-X-Received: by 2002:a17:906:33c8:: with SMTP id
- w8mr3659464eja.233.1602081801820; 
- Wed, 07 Oct 2020 07:43:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C634j6hR8zDq9b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2020 05:38:29 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 097IYjO1044478; Wed, 7 Oct 2020 14:38:16 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=UxeGqtFgPzqae4w6M9h2wkr+xkjeK2zq18FXYqyu5z4=;
+ b=EAyY1iIK3qouVRkfdvh02MythTT8uj31Juma+pQgX1H0rii3CvD13jfbYs5Ov9l2lc6j
+ +zT7u2oqWzVg6jc+pniooukzbvX7RI1YF4peV9BYNBvyY5hDWWClSNCqkRStTj6VM9KN
+ s5kLUTdotNvMgDCXdP6VIl+DSqZwg9w1xu4GKUKiAwEJTTzLUbd++gNANlLB/xigQssm
+ L+76Lrnk4yl8OQA8XdJK0N3g1vsnGUizmXh49nlitTHnvJBRoGGb5sG4ix6jh7sK+4Ys
+ XQpVEOw1WZ9sDWYDOqUpkUSgu4lIK7j67az9L9ivKfNfkUmTwtFo7huxa83B2cE28OLd gw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 341j4yhvdd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 07 Oct 2020 14:38:16 -0400
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 097IYtIE045803;
+ Wed, 7 Oct 2020 14:38:16 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 341j4yhvbw-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 07 Oct 2020 14:38:16 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 097IRYIb012369;
+ Wed, 7 Oct 2020 18:38:14 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com
+ (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+ by ppma06ams.nl.ibm.com with ESMTP id 33xgjh4jrq-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 07 Oct 2020 18:38:14 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
+ id 097IcCGB32113024
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 7 Oct 2020 18:38:12 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 13A94A4065;
+ Wed,  7 Oct 2020 18:38:12 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4C086A4064;
+ Wed,  7 Oct 2020 18:38:08 +0000 (GMT)
+Received: from srikart450.in.ibm.com (unknown [9.85.90.101])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  7 Oct 2020 18:38:08 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3 01/11] powerpc/topology: Update topology_core_cpumask
+Date: Thu,  8 Oct 2020 00:07:50 +0530
+Message-Id: <20201007183800.27415-2-srikar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201007183800.27415-1-srikar@linux.vnet.ibm.com>
+References: <20201007183800.27415-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20201007073932.865218-1-jannh@google.com>
- <20201007123544.GA11433@infradead.org>
-In-Reply-To: <20201007123544.GA11433@infradead.org>
-From: Jann Horn <jannh@google.com>
-Date: Wed, 7 Oct 2020 16:42:55 +0200
-Message-ID: <CAG48ez3kjTeVtQcjQerYYRs7sX5qq3O7SU-FEaYLNXisFmAeOg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mm/mprotect: Call arch_validate_prot under mmap_lock
- and with length
-To: Christoph Hellwig <hch@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-10-07_10:2020-10-07,
+ 2020-10-07 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 mlxscore=0
+ adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
+ mlxlogscore=999 suspectscore=0 impostorscore=0 bulkscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2010070116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,56 +116,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- kernel list <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- Khalid Aziz <khalid.aziz@oracle.com>, sparclinux@vger.kernel.org,
- Anthony Yznaga <anthony.yznaga@oracle.com>,
- Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>,
- "David S. Miller" <davem@davemloft.net>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>,
+ Gautham R Shenoy <ego@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Valentin Schneider <valentin.schneider@arm.com>, Qian Cai <cai@redhat.com>,
+ Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 7, 2020 at 2:35 PM Christoph Hellwig <hch@infradead.org> wrote:
-> On Wed, Oct 07, 2020 at 09:39:31AM +0200, Jann Horn wrote:
-> > diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-> > index 078608ec2e92..b1fabb97d138 100644
-> > --- a/arch/powerpc/kernel/syscalls.c
-> > +++ b/arch/powerpc/kernel/syscalls.c
-> > @@ -43,7 +43,7 @@ static inline long do_mmap2(unsigned long addr, size_t len,
-> >  {
-> >       long ret = -EINVAL;
-> >
-> > -     if (!arch_validate_prot(prot, addr))
-> > +     if (!arch_validate_prot(prot, addr, len))
->
-> This call isn't under mmap lock.  I also find it rather weird as the
-> generic code only calls arch_validate_prot from mprotect, only powerpc
-> also calls it from mmap.
->
-> This seems to go back to commit ef3d3246a0d0
-> ("powerpc/mm: Add Strong Access Ordering support")
+On Power, cpu_core_mask and cpu_cpu_mask refer to the same set of CPUs.
+cpu_cpu_mask is needed by scheduler, hence look at deprecating
+cpu_core_mask. Before deleting the cpu_core_mask, ensure its only user
+is moved to cpu_cpu_mask.
 
-I'm _guessing_ the idea in the generic case might be that mmap()
-doesn't check unknown bits in the protection flags, and therefore
-maybe people wanted to avoid adding new error cases that could be
-caused by random high bits being set? So while the mprotect() case
-checks the flags and refuses unknown values, the mmap() code just lets
-the architecture figure out which bits are actually valid to set (via
-arch_calc_vm_prot_bits()) and silently ignores the rest?
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Anton Blanchard <anton@ozlabs.org>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Nathan Lynch <nathanl@linux.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Valentin Schneider <valentin.schneider@arm.com>
+Cc: Qian Cai <cai@redhat.com>
+---
+ arch/powerpc/include/asm/topology.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-And powerpc apparently decided that they do want to error out on bogus
-prot values passed to their version of mmap(), and in exchange, assume
-in arch_calc_vm_prot_bits() that the protection bits are valid?
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 6609174918ab..e0f232533c9d 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -122,7 +122,7 @@ int get_physical_package_id(int cpu);
+ #endif
+ 
+ #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
+-#define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
++#define topology_core_cpumask(cpu)	(cpu_cpu_mask(cpu))
+ #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
+ 
+ #endif
+-- 
+2.17.1
 
-powerpc's arch_validate_prot() doesn't actually need the mmap lock, so
-I think this is fine-ish for now (as in, while the code is a bit
-unclean, I don't think I'm making it worse, and I don't think it's
-actually buggy). In theory, we could move the arch_validate_prot()
-call over into the mmap guts, where we're holding the lock, and gate
-it on the architecture or on some feature CONFIG that powerpc can
-activate in its Kconfig. But I'm not sure whether that'd be helping or
-making things worse, so when I sent this patch, I deliberately left
-the powerpc stuff as-is.
