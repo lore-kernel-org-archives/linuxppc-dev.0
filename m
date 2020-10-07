@@ -7,89 +7,90 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1D95C4363C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E16C4727E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:53:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B769A2173E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:50:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E3CCF21707
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Oct 2020 18:53:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="tBhsC+3R"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B769A2173E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="DAj++2nf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3CCF21707
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C63Lm2d3lzDqS7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2020 05:50:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C63Pb5HsZzDqG6
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Oct 2020 05:53:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
+ smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=tBhsC+3R; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ header.s=pp1 header.b=DAj++2nf; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C63520M5czDqGn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2020 05:38:45 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C635C02hZzDq9l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2020 05:38:54 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 097IZBgs065924; Wed, 7 Oct 2020 14:38:34 -0400
+ 097IY3W1003173; Wed, 7 Oct 2020 14:38:40 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=rUIV8r7sUW697z8VDjP5PB0O1RnDXNUhy/I58wB1uOo=;
- b=tBhsC+3RL1AEapG6Iv72y6kw8AsZByIuqyijqUVgaIRUIAVgD23PpKG578HCOpShzpRB
- jY18fIwqmfUhC3DgMgJG3j/PVN1j1PKw32irQJ0/jYSaKGknCh9PxzVL51bXF/RChnrr
- xm7e89GT7Afwg0jSk/YLTAWxJXnt9p/Qet4Zp/NWPBOsFZCVRbX0bNV2DhwHOkLjYLl5
- 6CWYjvB8oFmihBM6zeRwQPhVQn+J/dATWoUoJZHjJejTL/pUf1RDhmoI20hQIVOrjUck
- 92+Srd82Ns+FcDEzmnf4jsOv/B0XFKG9tXlq6juyv9xWSXYaygzruPXMj40TcJMHvowg yQ== 
+ bh=xQtWJPWfqC6T6qTymMjr51+uavOIW/PhuyLgjkSZqzc=;
+ b=DAj++2nfDsJ5mlfRrKHerp+/XLsXgts0YFu6G+BI8dNvibpkK+0O0sGltLe4Z66EJjXo
+ Pf0fKcUmcq3nhelIlZeGMyibRoTuseOETsiaBbiTurRdV995AFcBVXX9AxLM7vi9hmJG
+ wjMQisVT04cgywfRCmJeS/jihkqpkFII2OX0ZRyF0+zGObc1aOcE5WV2CUxmY08n+/NF
+ ViDIdV6kSP0dB+UVKT4xTyQHpDYnUmdx88Z4i4Uo6nbxV4hTNhR8VhOfxxq+gQix5n9+
+ UBDUkbDXm6H+zoI4as2O4ydUmJZWK0i82iMv/LvqkeyA9OaThzZok0Gtra7i6WeNclCq ew== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0a-001b2d01.pphosted.com with ESMTP id 341gjdw1hk-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 341hb2udsq-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 07 Oct 2020 14:38:34 -0400
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 097IZWhU068034;
- Wed, 7 Oct 2020 14:38:33 -0400
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com
- [149.81.74.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 341gjdw1gf-1
+ Wed, 07 Oct 2020 14:38:40 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 097IYZJ7005661;
+ Wed, 7 Oct 2020 14:38:40 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 341hb2udrj-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 07 Oct 2020 14:38:33 -0400
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
- by ppma05fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 097IRw95017185;
- Wed, 7 Oct 2020 18:38:31 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma05fra.de.ibm.com with ESMTP id 33xgx82ctm-1
+ Wed, 07 Oct 2020 14:38:39 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 097IRWFY021756;
+ Wed, 7 Oct 2020 18:38:38 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 33xgx84jft-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 07 Oct 2020 18:38:30 +0000
+ Wed, 07 Oct 2020 18:38:38 +0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 097IcSgo30736670
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 097IcaJA31785466
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 7 Oct 2020 18:38:28 GMT
+ Wed, 7 Oct 2020 18:38:36 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B4AEA4064;
- Wed,  7 Oct 2020 18:38:28 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E7BECA4064;
+ Wed,  7 Oct 2020 18:38:35 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 810C7A405B;
- Wed,  7 Oct 2020 18:38:24 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6F971A405C;
+ Wed,  7 Oct 2020 18:38:32 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.85.90.101])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed,  7 Oct 2020 18:38:24 +0000 (GMT)
+ Wed,  7 Oct 2020 18:38:32 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 05/11] powerpc/smp: Limit CPUs traversed to within a node.
-Date: Thu,  8 Oct 2020 00:07:54 +0530
-Message-Id: <20201007183800.27415-6-srikar@linux.vnet.ibm.com>
+Subject: [PATCH v3 07/11] powerpc/smp: Depend on cpu_l1_cache_map when adding
+ CPUs
+Date: Thu,  8 Oct 2020 00:07:56 +0530
+Message-Id: <20201007183800.27415-8-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20201007183800.27415-1-srikar@linux.vnet.ibm.com>
 References: <20201007183800.27415-1-srikar@linux.vnet.ibm.com>
@@ -100,11 +101,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
  definitions=2020-10-07_10:2020-10-07,
  2020-10-07 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 clxscore=1015
- mlxlogscore=999 malwarescore=0 spamscore=0 priorityscore=1501 adultscore=0
- suspectscore=0 impostorscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2010070118
+ adultscore=0 spamscore=0
+ impostorscore=0 suspectscore=0 mlxlogscore=999 malwarescore=0
+ clxscore=1015 bulkscore=0 priorityscore=1501 lowpriorityscore=0 mlxscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2010070116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,12 +130,10 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All the arch specific topology cpumasks are within a node/DIE.
-However when setting these per CPU cpumasks, system traverses through
-all the online CPUs. This is redundant.
-
-Reduce the traversal to only CPUs that are online in the node to which
-the CPU belongs to.
+Currently on hotplug/hotunplug, CPU iterates through all the CPUs in
+its core to find threads in its thread group. However this info is
+already captured in cpu_l1_cache_map. Hence reduce iterations and
+cleanup add_cpu_to_smallcore_masks function.
 
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Tested-by: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
@@ -153,22 +152,33 @@ Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Valentin Schneider <valentin.schneider@arm.com>
 Cc: Qian Cai <cai@redhat.com>
 ---
- arch/powerpc/kernel/smp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/smp.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 2e61a81aad88..c860c4950c9f 100644
+index 441c9c64b1e3..aeb219a4bf7a 100644
 --- a/arch/powerpc/kernel/smp.c
 +++ b/arch/powerpc/kernel/smp.c
-@@ -1241,7 +1241,7 @@ static bool update_mask_by_l2(int cpu, struct cpumask *(*mask_fn)(int))
- 	}
+@@ -1285,16 +1285,15 @@ static void remove_cpu_from_masks(int cpu)
  
- 	cpumask_set_cpu(cpu, mask_fn(cpu));
--	for_each_cpu(i, cpu_online_mask) {
-+	for_each_cpu_and(i, cpu_online_mask, cpu_cpu_mask(cpu)) {
- 		/*
- 		 * when updating the marks the current CPU has not been marked
- 		 * online, but we need to update the cache masks
+ static inline void add_cpu_to_smallcore_masks(int cpu)
+ {
+-	struct cpumask *this_l1_cache_map = per_cpu(cpu_l1_cache_map, cpu);
+-	int i, first_thread = cpu_first_thread_sibling(cpu);
++	int i;
+ 
+ 	if (!has_big_cores)
+ 		return;
+ 
+ 	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
+ 
+-	for (i = first_thread; i < first_thread + threads_per_core; i++) {
+-		if (cpu_online(i) && cpumask_test_cpu(i, this_l1_cache_map))
++	for_each_cpu(i, per_cpu(cpu_l1_cache_map, cpu)) {
++		if (cpu_online(i))
+ 			set_cpus_related(i, cpu, cpu_smallcore_mask);
+ 	}
+ }
 -- 
 2.17.1
 
