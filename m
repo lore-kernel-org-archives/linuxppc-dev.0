@@ -2,61 +2,63 @@ Return-Path: <SRS0=H3od=DQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C625FC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 04:29:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 345F4C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 05:06:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3A3A2223C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 04:29:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A9335215A4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 05:06:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="XDFEAlcD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A3A2223C
+	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="aXi98sUP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9335215A4
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C6w846kCFzDqY6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 15:29:24 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C6wyR467WzDqY0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 16:06:07 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C6w5s22VgzDqVq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2020 15:27:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C6wwb4bwLzDqWt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2020 16:04:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=XDFEAlcD; 
+ header.a=rsa-sha256 header.s=201909 header.b=aXi98sUP; 
  dkim-atps=neutral
+Received: by ozlabs.org (Postfix)
+ id 4C6wwb3JxLz9sTK; Fri,  9 Oct 2020 16:04:31 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4C6w5r33RDz9sRk;
- Fri,  9 Oct 2020 15:27:28 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4C6wwb2Bvnz9sRk;
+ Fri,  9 Oct 2020 16:04:31 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1602217648;
- bh=H2YLiXuGkBSqOqzwg+471E2SZ2wWV5jW7UmnJSOd8cc=;
+ s=201909; t=1602219871;
+ bh=o9XX+VwMKSWMOZWIR1rupQIs61sxxahm7xGxsxm5Kos=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=XDFEAlcD3LRDwyj46ai4x6PWqZs9fNY9RjyeaHa9fWQwwC/fE63SuWxqpth0o5crN
- 7gPntlBH9UKer+B2CFkJrewrzuUAHjd9tfBbLdDHmhTHWQnQaSB82BZD60XJZ6WID4
- yi/0Bb8iKeDd+Z5UPwSBu98qHkoITNoJRGaus3+TRigIHbZfUm07NW/FXZJbkQfygM
- bnNJoYvV+aAaateddOfQvrfPeaiYcTjY/caxHEqaORlIw+h2nBMFe+xqyzHZj739Rt
- 9Sq2USsaTcy/eC8wb8AMiXOJDpA7qbtxBlJJiK+P539Ow6tejrjbUn4wvzZo2D0Swn
- pJvVSPA57aTfA==
+ b=aXi98sUPEZvfOinMGE6D0KHzzKRwf5vng69pHWH0I+/qnu5P+6BUFXEPhs2sG2AK1
+ kLBjHP1cEMY3ZkM534+5L0O9n1K0Iu8ncyKdk+mLXuyMRsM5dV0ilcFsYqeLrEpfLr
+ BkB5PQBCvcwNJ8YgMqVdKPWQJ+BdErNwGeqNCViqx+PvHyKfRglq9msx9p1E7HWo5b
+ FnewEg+2BgQID2aBDQd9XPOHTRr3tBzWdZ4awSFgvXyoayGnu7Ee+5e1itdZWftWPO
+ BgOB7QlfSnTbblH256plgvEpCjeTgXCyY8k1RVYyjNzANtzECgt4hCQd9JlB1qQD61
+ vXKXjuhab2Ahw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: Fixes tag needs some work in the powerpc tree
-In-Reply-To: <20201009075816.0cb5a86f@canb.auug.org.au>
-References: <20201009075816.0cb5a86f@canb.auug.org.au>
-Date: Fri, 09 Oct 2020 15:27:25 +1100
-Message-ID: <87ft6o10sy.fsf@mpe.ellerman.id.au>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv/elog: Reduce elog message severity
+In-Reply-To: <20201007101756.40811-1-hegdevasant@linux.vnet.ibm.com>
+References: <20201007101756.40811-1-hegdevasant@linux.vnet.ibm.com>
+Date: Fri, 09 Oct 2020 16:04:28 +1100
+Message-ID: <87d01s0z37.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,28 +72,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
+> OPAL interrupts kernel whenever it has new error log. Kernel calls
+> interrupt handler (elog_event()) to retrieve event. elog_event makes
+> OPAL API call (opal_get_elog_size()) to retrieve elog info.
+>
+> In some case before kernel makes opal_get_elog_size() call, it gets interrupt
+> again. So second time when elog_event() calls opal_get_elog_size API OPAL
+> returns error.
 
-> Hi all,
->
-> In commit
->
->   a2d0230b91f7 ("cpufreq: powernv: Fix frame-size-overflow in powernv_cpufreq_reboot_notifier")
->
-> Fixes tag
->
->   Fixes: cf30af76 ("cpufreq: powernv: Set the cpus to nominal frequency during reboot/kexec")
+Can you give more detail there? Do you have a stack trace?
 
-Gah.
+We use IRQF_ONESHOT for elog_event(), which (I thought) meant it
+shouldn't be called again until it has completed.
 
-I've changed my scripts to make this a hard error when I'm applying
-patches.
+So I'm unclear how you're seeing the behaviour you describe.
 
 cheers
+
+> Its safe to ignore this error. Hence reduce the severity
+> of log message.
+>
+> CC: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal-elog.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+> index 62ef7ad995da..67f435bb1ec4 100644
+> --- a/arch/powerpc/platforms/powernv/opal-elog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
+> @@ -247,7 +247,7 @@ static irqreturn_t elog_event(int irq, void *data)
+>  
+>  	rc = opal_get_elog_size(&id, &size, &type);
+>  	if (rc != OPAL_SUCCESS) {
+> -		pr_err("ELOG: OPAL log info read failed\n");
+> +		pr_debug("ELOG: OPAL log info read failed\n");
+>  		return IRQ_HANDLED;
+>  	}
+>  
+> -- 
+> 2.26.2
