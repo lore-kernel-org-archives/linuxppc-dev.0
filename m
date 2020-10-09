@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B3AC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 21:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D2FCC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 21:37:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C569622245
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 21:33:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C569622245
+	by mail.kernel.org (Postfix) with ESMTPS id 8830B22247
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 21:37:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8830B22247
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C7LtB1ZLDzDqs3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 08:33:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C7Lxk5BbMzDqcc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 08:36:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Jdy0zcBzDqD8;
- Sat, 10 Oct 2020 06:53:09 +1100 (AEDT)
-IronPort-SDR: Sq8TQ5Gip7q3I1NEUSeHMp19vZ+T5MJIfUpn4qNbvP6A0vweA8BTBWxB1ARONuDQHc2BXonvre
- 65BnepPMMoCA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9769"; a="165592441"
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="165592441"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Jf82tJ8zDqXt;
+ Sat, 10 Oct 2020 06:53:19 +1100 (AEDT)
+IronPort-SDR: mpa8thwzbpvOC4hI3YU9puzcbGPGfbWXMS+TNvI7SJE7tVg9qFkm/o3XxA41rOprABY9GfR4Th
+ zrdOwdi/MJlw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9769"; a="165643267"
+X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="165643267"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:09 -0700
-IronPort-SDR: FciD93oXa6TN5PQF74JzeuCyRYkWBlT2lC/7ncntBELjkiuqMo1u2JSAhMViBtfJLu9YdFEYCB
- Wo/5PMHidIaw==
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="317147397"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2020 12:53:16 -0700
+IronPort-SDR: tpdf2AjeaRc5H+9J2CTgDjuzQWeL2r1NHpqYA6zEYh1sueM+cncDhIB0ZXYbhrsfqtXGL/LVMU
+ w/znFNAZKmjw==
+X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="518801571"
 Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:08 -0700
+ by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2020 12:53:15 -0700
 From: ira.weiny@intel.com
 To: Andrew Morton <akpm@linux-foundation.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH RFC PKS/PMEM 39/58] fs/jffs2: Utilize new kmap_thread()
-Date: Fri,  9 Oct 2020 12:50:14 -0700
-Message-Id: <20201009195033.3208459-40-ira.weiny@intel.com>
+Subject: [PATCH RFC PKS/PMEM 41/58] drivers/target: Utilize new kmap_thread()
+Date: Fri,  9 Oct 2020 12:50:16 -0700
+Message-Id: <20201009195033.3208459-42-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.28.0.rc0.12.gb6a658bd00c9
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
@@ -99,34 +99,73 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-These kmap() calls are localized to a single thread.  To avoid the over head of
-global PKRS updates use the new kmap_thread() call.
+These kmap() calls in this driver are localized to a single thread.  To
+avoid the over head of global PKRS updates use the new kmap_thread()
+call.
 
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- fs/jffs2/file.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/target/target_core_iblock.c    | 4 ++--
+ drivers/target/target_core_rd.c        | 4 ++--
+ drivers/target/target_core_transport.c | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/jffs2/file.c b/fs/jffs2/file.c
-index 3e6d54f9b011..14dd2b18cc16 100644
---- a/fs/jffs2/file.c
-+++ b/fs/jffs2/file.c
-@@ -287,13 +287,13 @@ static int jffs2_write_end(struct file *filp, struct address_space *mapping,
+diff --git a/drivers/target/target_core_iblock.c b/drivers/target/target_core_iblock.c
+index 1c181d31f4c8..df7b1568edb3 100644
+--- a/drivers/target/target_core_iblock.c
++++ b/drivers/target/target_core_iblock.c
+@@ -415,7 +415,7 @@ iblock_execute_zero_out(struct block_device *bdev, struct se_cmd *cmd)
+ 	unsigned char *buf, *not_zero;
+ 	int ret;
  
- 	/* In 2.4, it was already kmapped by generic_file_write(). Doesn't
- 	   hurt to do it again. The alternative is ifdefs, which are ugly. */
--	kmap(pg);
-+	kmap_thread(pg);
+-	buf = kmap(sg_page(sg)) + sg->offset;
++	buf = kmap_thread(sg_page(sg)) + sg->offset;
+ 	if (!buf)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+ 	/*
+@@ -423,7 +423,7 @@ iblock_execute_zero_out(struct block_device *bdev, struct se_cmd *cmd)
+ 	 * incoming WRITE_SAME payload does not contain zeros.
+ 	 */
+ 	not_zero = memchr_inv(buf, 0x00, cmd->data_length);
+-	kunmap(sg_page(sg));
++	kunmap_thread(sg_page(sg));
  
- 	ret = jffs2_write_inode_range(c, f, ri, page_address(pg) + aligned_start,
- 				      (pg->index << PAGE_SHIFT) + aligned_start,
- 				      end - aligned_start, &writtenlen);
+ 	if (not_zero)
+ 		return TCM_LOGICAL_UNIT_COMMUNICATION_FAILURE;
+diff --git a/drivers/target/target_core_rd.c b/drivers/target/target_core_rd.c
+index 408bd975170b..dbbdd39c5bf9 100644
+--- a/drivers/target/target_core_rd.c
++++ b/drivers/target/target_core_rd.c
+@@ -159,9 +159,9 @@ static int rd_allocate_sgl_table(struct rd_dev *rd_dev, struct rd_dev_sg_table *
+ 			sg_assign_page(&sg[j], pg);
+ 			sg[j].length = PAGE_SIZE;
  
--	kunmap(pg);
-+	kunmap_thread(pg);
+-			p = kmap(pg);
++			p = kmap_thread(pg);
+ 			memset(p, init_payload, PAGE_SIZE);
+-			kunmap(pg);
++			kunmap_thread(pg);
+ 		}
  
- 	if (ret) {
- 		/* There was an error writing. */
+ 		page_offset += sg_per_table;
+diff --git a/drivers/target/target_core_transport.c b/drivers/target/target_core_transport.c
+index ff26ab0a5f60..8d0bae5a92e5 100644
+--- a/drivers/target/target_core_transport.c
++++ b/drivers/target/target_core_transport.c
+@@ -1692,11 +1692,11 @@ int target_submit_cmd_map_sgls(struct se_cmd *se_cmd, struct se_session *se_sess
+ 			unsigned char *buf = NULL;
+ 
+ 			if (sgl)
+-				buf = kmap(sg_page(sgl)) + sgl->offset;
++				buf = kmap_thread(sg_page(sgl)) + sgl->offset;
+ 
+ 			if (buf) {
+ 				memset(buf, 0, sgl->length);
+-				kunmap(sg_page(sgl));
++				kunmap_thread(sg_page(sgl));
+ 			}
+ 		}
+ 
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
