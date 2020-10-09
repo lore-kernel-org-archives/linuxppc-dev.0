@@ -6,38 +6,38 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93DBEC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 06:13:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB8EAC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 06:14:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C41D121527
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 06:13:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C41D121527
+	by mail.kernel.org (Postfix) with ESMTPS id CCEA721527
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 06:14:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CCEA721527
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C6yRj19FJzDqc3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 17:13:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C6yTd02hczDqf4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Oct 2020 17:14:45 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C6yFF2mtLzDqWY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2020 17:04:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C6yFG4JLtzDqWY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2020 17:04:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4C6yFD4wxNz9sTK; Fri,  9 Oct 2020 17:04:00 +1100 (AEDT)
+ id 4C6yFF4Xm8z9sVM; Fri,  9 Oct 2020 17:04:01 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <3c9a6eb0fc040868ac59be66f338d08fd017668d.1601549945.git.christophe.leroy@csgroup.eu>
-References: <3c9a6eb0fc040868ac59be66f338d08fd017668d.1601549945.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/time: Remove ifdef in get_dec() and set_dec()
-Message-Id: <160222339270.867048.7781470173395952813.b4-ty@ellerman.id.au>
-Date: Fri,  9 Oct 2020 17:04:00 +1100 (AEDT)
+In-Reply-To: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601362098.git.christophe.leroy@csgroup.eu>
+References: <27951fa6c9a8f80724d1bc81a6117ac32343a55d.1601362098.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v3 1/8] powerpc: Remove SYNC on non 6xx
+Message-Id: <160222339231.867048.15565542201153601563.b4-ty@ellerman.id.au>
+Date: Fri,  9 Oct 2020 17:04:01 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,15 +54,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 1 Oct 2020 10:59:19 +0000 (UTC), Christophe Leroy wrote:
-> Move SPRN_PIT definition in reg.h.
+On Tue, 29 Sep 2020 06:48:31 +0000 (UTC), Christophe Leroy wrote:
+> SYNC is usefull for Powerpc 601 only. On everything else,
+> SYNC is empty.
 > 
-> This allows to remove ifdef in get_dec() and set_dec() and
-> makes them more readable.
+> Remove it from code that is not made to run on 6xx.
 
 Applied to powerpc/next.
 
-[1/1] powerpc/time: Remove ifdef in get_dec() and set_dec()
-      https://git.kernel.org/powerpc/c/63f9d9df5ed0d4f3a2c0cd08730e1cae1edd11bf
+[1/8] powerpc: Remove SYNC on non 6xx
+      https://git.kernel.org/powerpc/c/ca1d3443b4dd1e8f152bd6c881ddb3eb2996179a
+[2/8] powerpc: Remove CONFIG_PPC601_SYNC_FIX
+      https://git.kernel.org/powerpc/c/e42a64002a507bf61e57106ed5323b1854371563
+[3/8] powerpc: Drop SYNC_601() ISYNC_601() and SYNC()
+      https://git.kernel.org/powerpc/c/d2a5cd83ee984c0e9fc172d2df9591c264261a52
+[4/8] powerpc: Remove PowerPC 601
+      https://git.kernel.org/powerpc/c/f0ed73f3fa2cdca65973659689ec9e46d99a5f60
+[5/8] powerpc: Remove support for PowerPC 601
+      https://git.kernel.org/powerpc/c/8b14e1dff067195dca7a42321771437cb33a99e9
+[6/8] powerpc: Tidy up a bit after removal of PowerPC 601.
+      https://git.kernel.org/powerpc/c/2e38ea486615bddbc7a42d002aee93a3a9e7a36f
+[7/8] powerpc: Remove __USE_RTC()
+      https://git.kernel.org/powerpc/c/a4c5a355422920bcbfe3fd1f01aead2d3a2a820c
+[8/8] powerpc: Remove get_tb_or_rtc()
+      https://git.kernel.org/powerpc/c/6601ec1c2ba929430f5585ce7f9d9960b0e0a01d
 
 cheers
