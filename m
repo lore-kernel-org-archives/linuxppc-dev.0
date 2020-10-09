@@ -7,56 +7,57 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD03C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:56:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51938C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:58:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5616B2225B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:56:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5616B2225B
+	by mail.kernel.org (Postfix) with ESMTPS id C5B922225D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:58:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5B922225D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C7Sjg53XYzDqpM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 12:56:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C7SlW3RymzDqxB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 12:58:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com;
+ smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Jf4695dzDq7W;
- Sat, 10 Oct 2020 06:53:16 +1100 (AEDT)
-IronPort-SDR: HV06ngJFRfjgGvU4++YtWcKT/IZ7wgAF4k6L3lDCUcYXh4/2XzOvKRbaGZT/x0tuTlZfsMO1IP
- r6j+xodZ7ZaA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9769"; a="227179124"
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="227179124"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Jft4QMCzDqLZ;
+ Sat, 10 Oct 2020 06:53:58 +1100 (AEDT)
+IronPort-SDR: p99O4VbRQ0AdaLUSLFNtMmG3cmvCkK5hyc26jAq3vbIkKPZt5x+SdgPE5fVk+ALd8Acrn4F3Ti
+ lUdq5TOJYmGw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9769"; a="229715387"
+X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="229715387"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:14 -0700
-IronPort-SDR: kHLawvWt7hk0hVI10Fetwn7tOzYF5yIQvhqqrAQq3flxek1V3ypdWT/2gH8vwQndln/BZvc5kH
- kTRjULDVKoGw==
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="312652948"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2020 12:53:54 -0700
+IronPort-SDR: bZn0Zma13YkX7FJFkNsCYMjMNff2FSiB/MgoUwYT50qMOfu0yRYfZtOtUYx1uwuwPtN+tdFX+r
+ hwly4wq6Ikyg==
+X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="519847271"
 Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:12 -0700
+ by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Oct 2020 12:53:53 -0700
 From: ira.weiny@intel.com
 To: Andrew Morton <akpm@linux-foundation.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
  Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH RFC PKS/PMEM 40/58] net: Utilize new kmap_thread()
-Date: Fri,  9 Oct 2020 12:50:15 -0700
-Message-Id: <20201009195033.3208459-41-ira.weiny@intel.com>
+Subject: [PATCH RFC PKS/PMEM 53/58] lib: Utilize new kmap_thread()
+Date: Fri,  9 Oct 2020 12:50:28 -0700
+Message-Id: <20201009195033.3208459-54-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.28.0.rc0.12.gb6a658bd00c9
 In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
 References: <20201009195033.3208459-1-ira.weiny@intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Sat, 10 Oct 2020 12:49:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,34 +71,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, Aviad Yehezkel <aviadye@nvidia.com>,
- kvm@vger.kernel.org, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org,
- Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org,
- linux-mm@kvack.org, linux-efi@vger.kernel.org, linux-mtd@lists.infradead.org,
+Cc: linux-aio@kvack.org, Song Liu <songliubraving@fb.com>,
+ linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
+ target-devel@vger.kernel.org, linux-mtd@lists.infradead.org,
  linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org,
- linux-f2fs-devel@lists.sourceforge.net, Ira Weiny <ira.weiny@intel.com>,
- ceph-devel@vger.kernel.org, drbd-dev@lists.linbit.com,
- devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org,
- linux-nilfs@vger.kernel.org, xen-devel@lists.xenproject.org,
- Daniel Borkmann <daniel@iogearbox.net>, linux-nvdimm@lists.01.org,
- Boris Pismenny <borisp@nvidia.com>, x86@kernel.org,
+ Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org,
+ drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org,
+ linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org,
+ linux-rdma@vger.kernel.org, x86@kernel.org,
  John Fastabend <john.fastabend@gmail.com>, amd-gfx@lists.freedesktop.org,
- io-uring@vger.kernel.org, cluster-devel@redhat.com, linux-cachefs@redhat.com,
- intel-wired-lan@lists.osuosl.org, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
- linux-ext4@vger.kernel.org, linux-rdma@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, linux-afs@lists.infradead.org,
+ linux-afs@lists.infradead.org, cluster-devel@redhat.com,
+ linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org,
+ Yonghong Song <yhs@fb.com>, linux-ext4@vger.kernel.org,
+ Andrii Nakryiko <andriin@fb.com>, Fenghua Yu <fenghua.yu@intel.com>,
  linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org,
  ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org,
  reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org,
- linux-bcache@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Trond Myklebust <trond.myklebust@hammerspace.com>, linux-nfs@vger.kernel.org,
- linux-scsi@vger.kernel.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, xen-devel@lists.xenproject.org,
+ KP Singh <kpsingh@chromium.org>, Dan Williams <dan.j.williams@intel.com>,
+ io-uring@vger.kernel.org, linux-bcache@vger.kernel.org,
+ linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
  netdev@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- linux-ntfs-dev@lists.sourceforge.net, target-devel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
  linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Anna Schumaker <anna.schumaker@netapp.com>,
+ linuxppc-dev@lists.ozlabs.org, Martin KaFai Lau <kafai@fb.com>,
  linux-btrfs@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
@@ -105,188 +106,123 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-These kmap() calls in these drivers are localized to a single thread.
-To avoid the over head of global PKRS updates use the new kmap_thread()
-call.
+These kmap() calls are localized to a single thread.  To avoid the over
+head of global PKRS updates use the new kmap_thread() call.
 
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
-Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
-Cc: Anna Schumaker <anna.schumaker@netapp.com>
-Cc: Boris Pismenny <borisp@nvidia.com>
-Cc: Aviad Yehezkel <aviadye@nvidia.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: "Jérôme Glisse" <jglisse@redhat.com>
+Cc: Martin KaFai Lau <kafai@fb.com>
+Cc: Song Liu <songliubraving@fb.com>
+Cc: Yonghong Song <yhs@fb.com>
+Cc: Andrii Nakryiko <andriin@fb.com>
 Cc: John Fastabend <john.fastabend@gmail.com>
-Cc: Daniel Borkmann <daniel@iogearbox.net>
+Cc: KP Singh <kpsingh@chromium.org>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- net/ceph/messenger.c | 4 ++--
- net/core/datagram.c  | 4 ++--
- net/core/sock.c      | 8 ++++----
- net/ipv4/ip_output.c | 4 ++--
- net/sunrpc/cache.c   | 4 ++--
- net/sunrpc/xdr.c     | 8 ++++----
- net/tls/tls_device.c | 4 ++--
- 7 files changed, 18 insertions(+), 18 deletions(-)
+ lib/iov_iter.c | 12 ++++++------
+ lib/test_bpf.c |  4 ++--
+ lib/test_hmm.c |  8 ++++----
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/net/ceph/messenger.c b/net/ceph/messenger.c
-index d4d7a0e52491..0c49b8e333da 100644
---- a/net/ceph/messenger.c
-+++ b/net/ceph/messenger.c
-@@ -1535,10 +1535,10 @@ static u32 ceph_crc32c_page(u32 crc, struct page *page,
- {
- 	char *kaddr;
+diff --git a/lib/iov_iter.c b/lib/iov_iter.c
+index 5e40786c8f12..1d47f957cf95 100644
+--- a/lib/iov_iter.c
++++ b/lib/iov_iter.c
+@@ -208,7 +208,7 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
+ 	}
+ 	/* Too bad - revert to non-atomic kmap */
  
 -	kaddr = kmap(page);
 +	kaddr = kmap_thread(page);
- 	BUG_ON(kaddr == NULL);
- 	crc = crc32c(crc, kaddr + page_offset, length);
+ 	from = kaddr + offset;
+ 	left = copyout(buf, from, copy);
+ 	copy -= left;
+@@ -225,7 +225,7 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
+ 		from += copy;
+ 		bytes -= copy;
+ 	}
 -	kunmap(page);
 +	kunmap_thread(page);
  
- 	return crc;
- }
-diff --git a/net/core/datagram.c b/net/core/datagram.c
-index 639745d4f3b9..cbd0a343074a 100644
---- a/net/core/datagram.c
-+++ b/net/core/datagram.c
-@@ -441,14 +441,14 @@ static int __skb_datagram_iter(const struct sk_buff *skb, int offset,
- 		end = start + skb_frag_size(frag);
- 		if ((copy = end - offset) > 0) {
- 			struct page *page = skb_frag_page(frag);
--			u8 *vaddr = kmap(page);
-+			u8 *vaddr = kmap_thread(page);
- 
- 			if (copy > len)
- 				copy = len;
- 			n = INDIRECT_CALL_1(cb, simple_copy_to_iter,
- 					vaddr + skb_frag_off(frag) + offset - start,
- 					copy, data, to);
--			kunmap(page);
-+			kunmap_thread(page);
- 			offset += n;
- 			if (n != copy)
- 				goto short_copy;
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 6c5c6b18eff4..9b46a75cd8c1 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -2846,11 +2846,11 @@ ssize_t sock_no_sendpage(struct socket *sock, struct page *page, int offset, siz
- 	ssize_t res;
- 	struct msghdr msg = {.msg_flags = flags};
- 	struct kvec iov;
--	char *kaddr = kmap(page);
-+	char *kaddr = kmap_thread(page);
- 	iov.iov_base = kaddr + offset;
- 	iov.iov_len = size;
- 	res = kernel_sendmsg(sock, &msg, &iov, 1, size);
--	kunmap(page);
-+	kunmap_thread(page);
- 	return res;
- }
- EXPORT_SYMBOL(sock_no_sendpage);
-@@ -2861,12 +2861,12 @@ ssize_t sock_no_sendpage_locked(struct sock *sk, struct page *page,
- 	ssize_t res;
- 	struct msghdr msg = {.msg_flags = flags};
- 	struct kvec iov;
--	char *kaddr = kmap(page);
-+	char *kaddr = kmap_thread(page);
- 
- 	iov.iov_base = kaddr + offset;
- 	iov.iov_len = size;
- 	res = kernel_sendmsg_locked(sk, &msg, &iov, 1, size);
--	kunmap(page);
-+	kunmap_thread(page);
- 	return res;
- }
- EXPORT_SYMBOL(sock_no_sendpage_locked);
-diff --git a/net/ipv4/ip_output.c b/net/ipv4/ip_output.c
-index e6f2ada9e7d5..05304fb251a4 100644
---- a/net/ipv4/ip_output.c
-+++ b/net/ipv4/ip_output.c
-@@ -949,9 +949,9 @@ csum_page(struct page *page, int offset, int copy)
- {
- 	char *kaddr;
- 	__wsum csum;
--	kaddr = kmap(page);
-+	kaddr = kmap_thread(page);
- 	csum = csum_partial(kaddr + offset, copy, 0);
--	kunmap(page);
-+	kunmap_thread(page);
- 	return csum;
- }
- 
-diff --git a/net/sunrpc/cache.c b/net/sunrpc/cache.c
-index baef5ee43dbb..88193f2a8e6f 100644
---- a/net/sunrpc/cache.c
-+++ b/net/sunrpc/cache.c
-@@ -935,9 +935,9 @@ static ssize_t cache_downcall(struct address_space *mapping,
- 	if (!page)
- 		goto out_slow;
+ done:
+ 	if (skip == iov->iov_len) {
+@@ -292,7 +292,7 @@ static size_t copy_page_from_iter_iovec(struct page *page, size_t offset, size_t
+ 	}
+ 	/* Too bad - revert to non-atomic kmap */
  
 -	kaddr = kmap(page);
 +	kaddr = kmap_thread(page);
- 	ret = cache_do_downcall(kaddr, buf, count, cd);
+ 	to = kaddr + offset;
+ 	left = copyin(to, buf, copy);
+ 	copy -= left;
+@@ -309,7 +309,7 @@ static size_t copy_page_from_iter_iovec(struct page *page, size_t offset, size_t
+ 		to += copy;
+ 		bytes -= copy;
+ 	}
 -	kunmap(page);
 +	kunmap_thread(page);
- 	unlock_page(page);
- 	put_page(page);
- 	return ret;
-diff --git a/net/sunrpc/xdr.c b/net/sunrpc/xdr.c
-index be11d672b5b9..00afbb48fb0a 100644
---- a/net/sunrpc/xdr.c
-+++ b/net/sunrpc/xdr.c
-@@ -1353,7 +1353,7 @@ xdr_xcode_array2(struct xdr_buf *buf, unsigned int base,
- 		base &= ~PAGE_MASK;
- 		avail_page = min_t(unsigned int, PAGE_SIZE - base,
- 					avail_here);
--		c = kmap(*ppages) + base;
-+		c = kmap_thread(*ppages) + base;
  
- 		while (avail_here) {
- 			avail_here -= avail_page;
-@@ -1429,9 +1429,9 @@ xdr_xcode_array2(struct xdr_buf *buf, unsigned int base,
- 				}
- 			}
- 			if (avail_here) {
--				kunmap(*ppages);
-+				kunmap_thread(*ppages);
- 				ppages++;
--				c = kmap(*ppages);
-+				c = kmap_thread(*ppages);
- 			}
+ done:
+ 	if (skip == iov->iov_len) {
+@@ -1742,10 +1742,10 @@ int iov_iter_for_each_range(struct iov_iter *i, size_t bytes,
+ 		return 0;
  
- 			avail_page = min(avail_here,
-@@ -1471,7 +1471,7 @@ xdr_xcode_array2(struct xdr_buf *buf, unsigned int base,
- out:
- 	kfree(elem);
- 	if (ppages)
--		kunmap(*ppages);
-+		kunmap_thread(*ppages);
- 	return err;
- }
+ 	iterate_all_kinds(i, bytes, v, -EINVAL, ({
+-		w.iov_base = kmap(v.bv_page) + v.bv_offset;
++		w.iov_base = kmap_thread(v.bv_page) + v.bv_offset;
+ 		w.iov_len = v.bv_len;
+ 		err = f(&w, context);
+-		kunmap(v.bv_page);
++		kunmap_thread(v.bv_page);
+ 		err;}), ({
+ 		w = v;
+ 		err = f(&w, context);})
+diff --git a/lib/test_bpf.c b/lib/test_bpf.c
+index ca7d635bccd9..441f822f56ba 100644
+--- a/lib/test_bpf.c
++++ b/lib/test_bpf.c
+@@ -6506,11 +6506,11 @@ static void *generate_test_data(struct bpf_test *test, int sub)
+ 		if (!page)
+ 			goto err_kfree_skb;
  
-diff --git a/net/tls/tls_device.c b/net/tls/tls_device.c
-index b74e2741f74f..ead5b1c485f8 100644
---- a/net/tls/tls_device.c
-+++ b/net/tls/tls_device.c
-@@ -576,13 +576,13 @@ int tls_device_sendpage(struct sock *sk, struct page *page,
- 		goto out;
+-		ptr = kmap(page);
++		ptr = kmap_thread(page);
+ 		if (!ptr)
+ 			goto err_free_page;
+ 		memcpy(ptr, test->frag_data, MAX_DATA);
+-		kunmap(page);
++		kunmap_thread(page);
+ 		skb_add_rx_frag(skb, 0, page, 0, MAX_DATA, MAX_DATA);
  	}
  
--	kaddr = kmap(page);
-+	kaddr = kmap_thread(page);
- 	iov.iov_base = kaddr + offset;
- 	iov.iov_len = size;
- 	iov_iter_kvec(&msg_iter, WRITE, &iov, 1, size);
- 	rc = tls_push_data(sk, &msg_iter, size,
- 			   flags, TLS_RECORD_TYPE_DATA);
--	kunmap(page);
-+	kunmap_thread(page);
+diff --git a/lib/test_hmm.c b/lib/test_hmm.c
+index e7dc3de355b7..e40d26f97f45 100644
+--- a/lib/test_hmm.c
++++ b/lib/test_hmm.c
+@@ -329,9 +329,9 @@ static int dmirror_do_read(struct dmirror *dmirror, unsigned long start,
+ 		if (!page)
+ 			return -ENOENT;
  
- out:
- 	release_sock(sk);
+-		tmp = kmap(page);
++		tmp = kmap_thread(page);
+ 		memcpy(ptr, tmp, PAGE_SIZE);
+-		kunmap(page);
++		kunmap_thread(page);
+ 
+ 		ptr += PAGE_SIZE;
+ 		bounce->cpages++;
+@@ -398,9 +398,9 @@ static int dmirror_do_write(struct dmirror *dmirror, unsigned long start,
+ 		if (!page || xa_pointer_tag(entry) != DPT_XA_TAG_WRITE)
+ 			return -ENOENT;
+ 
+-		tmp = kmap(page);
++		tmp = kmap_thread(page);
+ 		memcpy(tmp, ptr, PAGE_SIZE);
+-		kunmap(page);
++		kunmap_thread(page);
+ 
+ 		ptr += PAGE_SIZE;
+ 		bounce->cpages++;
 -- 
 2.28.0.rc0.12.gb6a658bd00c9
 
