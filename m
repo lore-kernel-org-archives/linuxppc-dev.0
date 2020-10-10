@@ -2,84 +2,51 @@ Return-Path: <SRS0=a44y=DR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0245EC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 07:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF017C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 11:12:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB962207FB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 07:00:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="IKFTIVFz";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="BgjiTham"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB962207FB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=HansenPartnership.com
+	by mail.kernel.org (Postfix) with ESMTPS id B44D92222E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 11:12:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B44D92222E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C7bRX5JcSzDqww
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 18:00:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C7j2R4bSmzDqwF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 22:12:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=hansenpartnership.com (client-ip=66.63.167.143;
- helo=bedivere.hansenpartnership.com;
- envelope-from=james.bottomley@hansenpartnership.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=HansenPartnership.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com
- header.a=rsa-sha256 header.s=20151216 header.b=IKFTIVFz; 
- dkim=pass (1024-bit key) header.d=hansenpartnership.com
- header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216
- header.b=BgjiTham; dkim-atps=neutral
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143])
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=arm.com
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C7bPh1nxnzDqv6;
- Sat, 10 Oct 2020 17:58:31 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
- by bedivere.hansenpartnership.com (Postfix) with ESMTP id 2492A8EE25D;
- Fri,  9 Oct 2020 19:43:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=hansenpartnership.com;
- s=20151216; t=1602297797;
- bh=H8TP93foEqN1ktQ8Zvn50X/i2mF1Mo+G3bAPl3laMS8=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=IKFTIVFzGPRTOXbvF4guFV0idy0d2c5GY0pNpauMNCD265o/8xML504AQiHNNKINI
- 03VTbsdpTlx1IvRxmapAuFqbOyRLRkynjYBLceWgnAFSazyacAGjs/kfFiiin3dxCG
- 9/K3u5C/d7R0kHrIFRdMX77E7sQ6OOI7DSaYWfn4=
-Received: from bedivere.hansenpartnership.com ([127.0.0.1])
- by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new,
- port 10024)
- with ESMTP id 3vw63n_vJBCB; Fri,  9 Oct 2020 19:43:16 -0700 (PDT)
-Received: from jarvis (c-73-35-198-56.hsd1.wa.comcast.net [73.35.198.56])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C7hzp29xdzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2020 22:09:58 +1100 (AEDT)
+Received: from gaia (unknown [95.149.105.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id 0DE4F8EE120;
- Fri,  9 Oct 2020 19:43:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=hansenpartnership.com;
- s=20151216; t=1602297796;
- bh=H8TP93foEqN1ktQ8Zvn50X/i2mF1Mo+G3bAPl3laMS8=;
- h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
- b=BgjiThamK3sRChTIWem3VqlcTVcZOY3Z2GNJyIwpezgtDJLGW3IszUxOTE+yoCAWv
- V48K29iXWIdEyZfVjEsU0FSlh3cTrvJt0EqAPo1Ll9Jsfhk5OlUorelNGWOoKpuPOj
- SS1Y94jSiSEug+8lBRnZGZxsf1hZ1ZG8/+ovIeYw=
-Message-ID: <95d137992900152a0453f7ba37771cb9025121fa.camel@HansenPartnership.com>
-Subject: Re: [PATCH RFC PKS/PMEM 22/58] fs/f2fs: Utilize new kmap_thread()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Eric Biggers <ebiggers@kernel.org>, ira.weiny@intel.com
-Date: Fri, 09 Oct 2020 19:43:13 -0700
-In-Reply-To: <20201009213434.GA839@sol.localdomain>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
- <20201009195033.3208459-23-ira.weiny@intel.com>
- <20201009213434.GA839@sol.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 
+ by mail.kernel.org (Postfix) with ESMTPSA id 7E49B22227;
+ Sat, 10 Oct 2020 11:09:52 +0000 (UTC)
+Date: Sat, 10 Oct 2020 12:09:50 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Khalid Aziz <khalid.aziz@oracle.com>
+Subject: Re: [PATCH 1/2] mm/mprotect: Call arch_validate_prot under mmap_lock
+ and with length
+Message-ID: <20201010110949.GA32545@gaia>
+References: <20201007073932.865218-1-jannh@google.com>
+ <d5332a7b-c300-6d28-18b9-4b7d4110ef86@oracle.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d5332a7b-c300-6d28-18b9-4b7d4110ef86@oracle.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,91 +58,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, linux-efi@vger.kernel.org, kvm@vger.kernel.org,
- linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- target-devel@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-kselftest@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org,
- linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org,
- linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org,
- linux-afs@lists.infradead.org, cluster-devel@redhat.com,
- Ingo Molnar <mingo@redhat.com>, intel-wired-lan@lists.osuosl.org,
- kexec@lists.infradead.org, xen-devel@lists.xenproject.org,
- linux-ext4@vger.kernel.org, bpf@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- intel-gfx@lists.freedesktop.org, ecryptfs@vger.kernel.org,
- linux-um@lists.infradead.org, reiserfs-devel@vger.kernel.org,
- linux-block@vger.kernel.org, linux-bcache@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Jaegeuk Kim <jaegeuk@kernel.org>, ceph-devel@vger.kernel.org,
- io-uring@vger.kernel.org, linux-cachefs@redhat.com, linux-nfs@vger.kernel.org,
- linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, samba-technical@lists.samba.org,
- linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linux-erofs@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+Cc: Jann Horn <jannh@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Anthony Yznaga <anthony.yznaga@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2020-10-09 at 14:34 -0700, Eric Biggers wrote:
-> On Fri, Oct 09, 2020 at 12:49:57PM -0700, ira.weiny@intel.com wrote:
-> > From: Ira Weiny <ira.weiny@intel.com>
+Hi Khalid,
+
+On Wed, Oct 07, 2020 at 02:14:09PM -0600, Khalid Aziz wrote:
+> On 10/7/20 1:39 AM, Jann Horn wrote:
+> > arch_validate_prot() is a hook that can validate whether a given set of
+> > protection flags is valid in an mprotect() operation. It is given the set
+> > of protection flags and the address being modified.
 > > 
-> > The kmap() calls in this FS are localized to a single thread.  To
-> > avoid the over head of global PKRS updates use the new
-> > kmap_thread() call.
+> > However, the address being modified can currently not actually be used in
+> > a meaningful way because:
 > > 
-> > Cc: Jaegeuk Kim <jaegeuk@kernel.org>
-> > Cc: Chao Yu <chao@kernel.org>
-> > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-> > ---
-> >  fs/f2fs/f2fs.h | 8 ++++----
-> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> > 1. Only the address is given, but not the length, and the operation can
+> >    span multiple VMAs. Therefore, the callee can't actually tell which
+> >    virtual address range, or which VMAs, are being targeted.
+> > 2. The mmap_lock is not held, meaning that if the callee were to check
+> >    the VMA at @addr, that VMA would be unrelated to the one the
+> >    operation is performed on.
 > > 
-> > diff --git a/fs/f2fs/f2fs.h b/fs/f2fs/f2fs.h
-> > index d9e52a7f3702..ff72a45a577e 100644
-> > --- a/fs/f2fs/f2fs.h
-> > +++ b/fs/f2fs/f2fs.h
-> > @@ -2410,12 +2410,12 @@ static inline struct page
-> > *f2fs_pagecache_get_page(
-> >  
-> >  static inline void f2fs_copy_page(struct page *src, struct page
-> > *dst)
-> >  {
-> > -	char *src_kaddr = kmap(src);
-> > -	char *dst_kaddr = kmap(dst);
-> > +	char *src_kaddr = kmap_thread(src);
-> > +	char *dst_kaddr = kmap_thread(dst);
-> >  
-> >  	memcpy(dst_kaddr, src_kaddr, PAGE_SIZE);
-> > -	kunmap(dst);
-> > -	kunmap(src);
-> > +	kunmap_thread(dst);
-> > +	kunmap_thread(src);
-> >  }
-> 
-> Wouldn't it make more sense to switch cases like this to
-> kmap_atomic()?
-> The pages are only mapped to do a memcpy(), then they're immediately
-> unmapped.
+> > Currently, custom arch_validate_prot() handlers are defined by
+> > arm64, powerpc and sparc.
+> > arm64 and powerpc don't care about the address range, they just check the
+> > flags against CPU support masks.
+> > sparc's arch_validate_prot() attempts to look at the VMA, but doesn't take
+> > the mmap_lock.
+> > 
+> > Change the function signature to also take a length, and move the
+> > arch_validate_prot() call in mm/mprotect.c down into the locked region.
+[...]
+> As Chris pointed out, the call to arch_validate_prot() from do_mmap2()
+> is made without holding mmap_lock. Lock is not acquired until
+> vm_mmap_pgoff(). This variance is uncomfortable but I am more
+> uncomfortable forcing all implementations of validate_prot to require
+> mmap_lock be held when non-sparc implementations do not have such need
+> yet. Since do_mmap2() is in powerpc specific code, for now this patch
+> solves a current problem.
 
-On a VIPT/VIVT architecture, this is horrendously wasteful.  You're
-taking something that was mapped at colour c_src mapping it to a new
-address src_kaddr, which is likely a different colour and necessitates
-flushing the original c_src, then you copy it to dst_kaddr, which is
-also likely a different colour from c_dst, so dst_kaddr has to be
-flushed on kunmap and c_dst has to be invalidated on kmap.  What we
-should have is an architectural primitive for doing this, something
-like kmemcopy_arch(dst, src).  PIPT architectures can implement it as
-the above (possibly losing kmap if they don't need it) but VIPT/VIVT
-architectures can set up a correctly coloured mapping so they can
-simply copy from c_src to c_dst without any need to flush and the data
-arrives cache hot at c_dst.
+I still think sparc should avoid walking the vmas in
+arch_validate_prot(). The core code already has the vmas, though not
+when calling arch_validate_prot(). That's one of the reasons I added
+arch_validate_flags() with the MTE patches. For sparc, this could be
+(untested, just copied the arch_validate_prot() code):
 
-James
+static inline bool arch_validate_flags(unsigned long vm_flags)
+{
+	if (!(vm_flags & VM_SPARC_ADI))
+		return true;
 
+	if (!adi_capable())
+		return false;
 
+	/* ADI can not be enabled on PFN mapped pages */
+	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
+		return false;
+
+	/*
+	 * Mergeable pages can become unmergeable if ADI is enabled on
+	 * them even if they have identical data on them. This can be
+	 * because ADI enabled pages with identical data may still not
+	 * have identical ADI tags on them. Disallow ADI on mergeable
+	 * pages.
+	 */
+	if (vma->vm_flags & VM_MERGEABLE)
+		return false;
+
+	return true;
+}
+
+> That leaves open the question of should
+> generic mmap call arch_validate_prot and return EINVAL for invalid
+> combination of protection bits, but that is better addressed in a
+> separate patch.
+
+The above would cover mmap() as well.
+
+The current sparc_validate_prot() relies on finding the vma for the
+corresponding address. However, if you call this early in the mmap()
+path, there's no such vma. It is only created later in mmap_region()
+which no longer has the original PROT_* flags (all converted to VM_*
+flags).
+
+Calling arch_validate_flags() on mmap() has a small side-effect on the
+user ABI: if the CPU is not adi_capable(), PROT_ADI is currently ignored
+on mmap() but rejected by sparc_validate_prot(). Powerpc already does
+this already and I think it should be fine for arm64 (it needs checking
+though as we have another flag, PROT_BTI, hopefully dynamic loaders
+don't pass this flag unconditionally).
+
+However, as I said above, it doesn't solve the mmap() PROT_ADI checking
+for sparc since there's no vma yet. I'd strongly recommend the
+arch_validate_flags() approach and reverting the "start" parameter added
+to arch_validate_prot() if you go for the flags route.
+
+Thanks.
+
+-- 
+Catalin
