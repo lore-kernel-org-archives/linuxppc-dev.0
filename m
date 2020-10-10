@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CBD7C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 15:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B6A7C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 15:20:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 649FA22280
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 15:18:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 649FA22280
+	by mail.kernel.org (Postfix) with ESMTPS id 5CB9722314
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 15:20:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5CB9722314
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C7pVW6QD5zDqtN
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Oct 2020 02:18:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C7pXK0TQvzDqys
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Oct 2020 02:20:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,37 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C7pQ80QHXzDqsq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2020 02:14:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C7pQ80TQkzDqst
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2020 02:14:37 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C7pPz39mQz9v1Jb;
- Sat, 10 Oct 2020 17:14:31 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4C7pQ038f7z9v1Jc;
+ Sat, 10 Oct 2020 17:14:32 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Uwe96daOGMmu; Sat, 10 Oct 2020 17:14:31 +0200 (CEST)
+ with ESMTP id U2V-ulJSG59x; Sat, 10 Oct 2020 17:14:32 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C7pPz26YDz9v1JX;
- Sat, 10 Oct 2020 17:14:31 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D73B48B77D;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4C7pQ00q7yz9v1JX;
  Sat, 10 Oct 2020 17:14:32 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A14F68B77D;
+ Sat, 10 Oct 2020 17:14:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vVWSgFGYsEqT; Sat, 10 Oct 2020 17:14:32 +0200 (CEST)
+ with ESMTP id SjPvFgJW9Dac; Sat, 10 Oct 2020 17:14:33 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D0E18B75B;
- Sat, 10 Oct 2020 17:14:32 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 41CD38B75B;
+ Sat, 10 Oct 2020 17:14:33 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 18A35663C3; Sat, 10 Oct 2020 15:14:32 +0000 (UTC)
-Message-Id: <3f2386f94fada00b541be76d6bc4b6409746a72d.1602342819.git.christophe.leroy@csgroup.eu>
+ id 20520663C3; Sat, 10 Oct 2020 15:14:33 +0000 (UTC)
+Message-Id: <25afacaa0688695c8c5e9a253ebe77640bf13db7.1602342819.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <3f2386f94fada00b541be76d6bc4b6409746a72d.1602342819.git.christophe.leroy@csgroup.eu>
+References: <3f2386f94fada00b541be76d6bc4b6409746a72d.1602342819.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 1/4] powerpc/8xx: Fix instruction TLB miss exception with perf
- enabled
+Subject: [PATCH 2/4] powerpc/8xx: Fix TLB Miss exceptions with CONFIG_SWAP
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 10 Oct 2020 15:14:32 +0000 (UTC)
+Date: Sat, 10 Oct 2020 15:14:33 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,29 +76,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When perf is enabled, r11 must also be restored when CONFIG_HUGETLBFS
-is selected.
+When CONFIG_SWAP is set, _PAGE_ACCESSED gets ANDed with
+_PAGE_PRESENT. But during several changes of _PAGE_ACCESSED value,
+this operation which is based on bit rotation has been forgotten.
 
-Fixes: a891c43b97d3 ("powerpc/8xx: Prepare handlers for _PAGE_HUGE for 512k pages.")
+As of today it doesn't work.
+
+Update to the rotation to the correct number of bits.
+
+Fixes: 5f356497c384 ("powerpc/8xx: remove unused _PAGE_WRITETHRU")
+Fixes: e0a8e0d90a9f ("powerpc/8xx: Handle PAGE_USER via APG bits")
+Fixes: 5b2753fc3e8a ("powerpc/8xx: Implementation of PAGE_EXEC")
 Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/head_8xx.S | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/head_8xx.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 9f359d3fba74..32d85387bdc5 100644
+index 32d85387bdc5..83101c5888e3 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -268,7 +268,7 @@ InstructionTLBMiss:
- 	addi	r10, r10, 1
- 	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
-+#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP) || defined(CONFIG_HUGETLBFS)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
+@@ -239,7 +239,7 @@ InstructionTLBMiss:
+ 	mtspr	SPRN_MI_TWC, r11
  #endif
- 	rfi
+ #ifdef CONFIG_SWAP
+-	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
++	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
+ 	and	r11, r11, r10
+ 	rlwimi	r10, r11, 0, _PAGE_PRESENT
+ #endif
+@@ -317,7 +317,7 @@ DataStoreTLBMiss:
+ 	 * r10 = (r10 & ~PRESENT) | r11;
+ 	 */
+ #ifdef CONFIG_SWAP
+-	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
++	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
+ 	and	r11, r11, r10
+ 	rlwimi	r10, r11, 0, _PAGE_PRESENT
+ #endif
 -- 
 2.25.0
 
