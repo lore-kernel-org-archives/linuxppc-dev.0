@@ -2,64 +2,111 @@ Return-Path: <SRS0=a44y=DR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51938C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:58:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8587C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 02:00:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5B922225D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 01:58:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5B922225D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 884912225D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 02:00:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="ErMqVof9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 884912225D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C7SlW3RymzDqxB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 12:58:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C7Sp90gtjzDqx4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Oct 2020 13:00:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=40.107.20.77; helo=eur05-db8-obe.outbound.protection.outlook.com;
+ envelope-from=ran.wang_1@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=ErMqVof9; 
+ dkim-atps=neutral
+Received: from EUR05-DB8-obe.outbound.protection.outlook.com
+ (mail-db8eur05on2077.outbound.protection.outlook.com [40.107.20.77])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Jft4QMCzDqLZ;
- Sat, 10 Oct 2020 06:53:58 +1100 (AEDT)
-IronPort-SDR: p99O4VbRQ0AdaLUSLFNtMmG3cmvCkK5hyc26jAq3vbIkKPZt5x+SdgPE5fVk+ALd8Acrn4F3Ti
- lUdq5TOJYmGw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9769"; a="229715387"
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="229715387"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:54 -0700
-IronPort-SDR: bZn0Zma13YkX7FJFkNsCYMjMNff2FSiB/MgoUwYT50qMOfu0yRYfZtOtUYx1uwuwPtN+tdFX+r
- hwly4wq6Ikyg==
-X-IronPort-AV: E=Sophos;i="5.77,355,1596524400"; d="scan'208";a="519847271"
-Received: from iweiny-desk2.sc.intel.com (HELO localhost) ([10.3.52.147])
- by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2020 12:53:53 -0700
-From: ira.weiny@intel.com
-To: Andrew Morton <akpm@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH RFC PKS/PMEM 53/58] lib: Utilize new kmap_thread()
-Date: Fri,  9 Oct 2020 12:50:28 -0700
-Message-Id: <20201009195033.3208459-54-ira.weiny@intel.com>
-X-Mailer: git-send-email 2.28.0.rc0.12.gb6a658bd00c9
-In-Reply-To: <20201009195033.3208459-1-ira.weiny@intel.com>
-References: <20201009195033.3208459-1-ira.weiny@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C7Sjy4BBbzDqnR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2020 12:57:08 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=RMrmQJDSBaExhQmud0gxBcxw6zp/ieyJ5RFn63nPd/GbS0ftNL7RGJzHriSPU627as2h9zZbeJsYm9tyenfjnMk/qOmtiL/XzCiuR2KIVcgxGZRHMVZXNk/xaT1FngTJA/OREWlYGvISzOILjtA3WPVdxAE1E29S124lBT4anU8e/K3tTc/3OMxu1E1Xui/GhsPsvEGzHOHixjdv3LTVnp6Gz1lilFb/G0Ln2arMkWfq2CiPUao7y7TIgxrZwbft4UhTog1M8yy/OCLw+zMUDDlVkQI2amYHx5onx7+B48jSzpkxavVna17AeaisJkzNCrhc2mzankiN0jX6S9AeJQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=g9ZZKBAjLSgLCGu6nSzJAehkzb2h9tX98IkBiB4lvR0=;
+ b=Dk1R6FdkqKXiT2kF5epP0No1nqE4NUl5+wLiyS0hGJW0WyA76USJU1pZpwYyN9sxIOSddkCfDNZ0zC0CYCgKNYUQsJGZTRjX47HE0LK6Som8bezA4F7SS0CXjNJ1kCVKblPlG6Mp2G5EZkX4cz2qOnJcE/PBhw8mIho+L14sz3ky4fCuXTb+8UfUyp49/BJF6la9L/s87kCzu5EQx8uMbkWlRIvlRp2MIe+Drp0tcDTTp8w82vftNRYwisvdv9KA4YmpVWhKleAVn2obTmrMBEViRyCJzmKd3mYQv4OHaFWbvtZEDNnP4DDxPuiXzGSsE1nbLn+Z68ODRWB+PZJU9w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=g9ZZKBAjLSgLCGu6nSzJAehkzb2h9tX98IkBiB4lvR0=;
+ b=ErMqVof9VC/NoW459tM6wAaOfOIanvt9cmE4XW8kLqzDaeDE4mU39pwUXeHkabO5kesqiS+iXWGFugQMimT5Pr7wBK9MGWFBF+x7DKlf+xU35sJF8oGGSN9I22L6AfDBZBOVb/i8jFqSqZBBUQyKwAYGR6dvK5tNzom7qcNoQ3s=
+Received: from AM6PR04MB5413.eurprd04.prod.outlook.com (2603:10a6:20b:96::28)
+ by AM6PR04MB4965.eurprd04.prod.outlook.com (2603:10a6:20b:3::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3455.26; Sat, 10 Oct
+ 2020 01:57:00 +0000
+Received: from AM6PR04MB5413.eurprd04.prod.outlook.com
+ ([fe80::1953:c81a:cca2:60ec]) by AM6PR04MB5413.eurprd04.prod.outlook.com
+ ([fe80::1953:c81a:cca2:60ec%7]) with mapi id 15.20.3455.024; Sat, 10 Oct 2020
+ 01:57:00 +0000
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Rob Herring <robh+dt@kernel.org>
+Subject: RE: [PATCH v3 1/5] Documentation: dt: binding: fsl: Add
+ 'fsl,ippdexpcr1-alt-reg' property
+Thread-Topic: [PATCH v3 1/5] Documentation: dt: binding: fsl: Add
+ 'fsl,ippdexpcr1-alt-reg' property
+Thread-Index: AQHWljrqSTvZaBY98UGNWSX3I/ZV+KmQJBKA
+Date: Sat, 10 Oct 2020 01:57:00 +0000
+Message-ID: <AM6PR04MB54130FE1CC9B6A4C8DF2D538F1090@AM6PR04MB5413.eurprd04.prod.outlook.com>
+References: <20200929082234.36619-1-ran.wang_1@nxp.com>
+In-Reply-To: <20200929082234.36619-1-ran.wang_1@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=none action=none header.from=nxp.com;
+x-originating-ip: [119.31.174.73]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 4ffc9f5f-7d72-4258-fb8d-08d86cbfc705
+x-ms-traffictypediagnostic: AM6PR04MB4965:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <AM6PR04MB4965ABC209C31B861089608CF1090@AM6PR04MB4965.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:7691;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: mMTlQjG5DLlj/Z0op+fNPbkiz08/Ky/Yq32mvILQcCHwzN6iWHdpnUuFPXa3Lt0OWtsRB2swc+H9eAK6Kj4JqDV3SV2AryFdHDv/taLJyWIkDX7oKutV9NmcxzaMm198SIryXlWbHjPIbZg9TxyOpNCap6WU1d6TpHaZrEQRl3Vu/iKNR6uYV4mKIz9LZUwZcivH3OPT05t+CgiU3Jdoth6K8q5iPDR0QsfGhFRXoIEso6t4bWGS3kdzGLFQEx9qHh5UC+zSqk1udjVNKcbmtsAYji513e08Wtip+A2rSwOb1e3iAobUIBSrZe7gRqtthx/F85EJ2xmIAwx9fOs9NQ==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AM6PR04MB5413.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(4636009)(366004)(39850400004)(376002)(346002)(396003)(136003)(8936002)(66946007)(6506007)(64756008)(53546011)(76116006)(186003)(54906003)(4326008)(66556008)(316002)(66476007)(71200400001)(86362001)(55016002)(478600001)(26005)(66446008)(7696005)(33656002)(5660300002)(52536014)(83380400001)(2906002)(8676002)(9686003);
+ DIR:OUT; SFP:1101; 
+x-ms-exchange-antispam-messagedata: vkveVCP1PSVYbKvOFOeEfb+folAydrkLkOEGEhGBO7gdrwT/2kyw3WTzEB49aamjvWlSlmZdywmYr94AbWzyKyVEeMnUHIa/G6hpGLETKeq2hvxEN4MTvZggEjmFiRMczbJHkK7/uyD/9FSuFpql2I5Cn7P+HXnwl9PiU3pWQiVGVqDeqvCWvej/JHrTs/nZe4yyO4UDuzAp7NYRgQz01qbtTXZW+FP+tsyHXFEhJ5hI0XhU0K+FpRARpanRXvXeBr1Z6/d6fRk5NOUNYXPf9mi7fwMuRjf38LeKNONXqcbK/CW4gAb644LDYtHcE6xCCNn9lyGKbTl9/V14Az9j0jVQ+Phie6ILpzNGqCl3CIt+w+mO5QEy1eYfajL3STSg/t3wfNU9R8Y+20RR5r7QyKU7viWk9yrUmGaY45Vsapp+2p88FgOKvHoRJepENc+sK46I/oedSjhKounp7VUHEQEkluUwXAKYXorA+KWGeD/B0IlFJgnc2apAOjtW9tix0Pv6DeypJQX6KRLIS6oM+/6cM+bzAxlG9e5xikF3bHdtCKsBqZKgcHViPZUZv84D0LTfvnqmFIzbmq2kx+HQ0dr0iafSt+PjqDgQf5b0Xu4c2BLlmuRajaGiG9ea3T4oHAmmUSHnpXZ5TGmRL4fyKA==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sat, 10 Oct 2020 12:49:24 +1100
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB5413.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4ffc9f5f-7d72-4258-fb8d-08d86cbfc705
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Oct 2020 01:57:00.5717 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 0UnVgVCXoVdaJe+62QQYjbklA8r57LwLb2tKvpsxcW981SjHZg50IyaPYmSjMo+o7tOKyyF96lN/jR5zIwf6Uw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4965
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,158 +118,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio@kvack.org, Song Liu <songliubraving@fb.com>,
- linux-efi@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-mmc@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- target-devel@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-kselftest@vger.kernel.org, samba-technical@lists.samba.org,
- Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org,
- drbd-dev@lists.linbit.com, devel@driverdev.osuosl.org,
- linux-cifs@vger.kernel.org, linux-nilfs@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-nvdimm@lists.01.org,
- linux-rdma@vger.kernel.org, x86@kernel.org,
- John Fastabend <john.fastabend@gmail.com>, amd-gfx@lists.freedesktop.org,
- linux-afs@lists.infradead.org, cluster-devel@redhat.com,
- linux-cachefs@redhat.com, intel-wired-lan@lists.osuosl.org,
- Yonghong Song <yhs@fb.com>, linux-ext4@vger.kernel.org,
- Andrii Nakryiko <andriin@fb.com>, Fenghua Yu <fenghua.yu@intel.com>,
- linux-um@lists.infradead.org, intel-gfx@lists.freedesktop.org,
- ecryptfs@vger.kernel.org, linux-erofs@lists.ozlabs.org,
- reiserfs-devel@vger.kernel.org, linux-block@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, xen-devel@lists.xenproject.org,
- KP Singh <kpsingh@chromium.org>, Dan Williams <dan.j.williams@intel.com>,
- io-uring@vger.kernel.org, linux-bcache@vger.kernel.org,
- linux-nfs@vger.kernel.org, linux-ntfs-dev@lists.sourceforge.net,
- netdev@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net,
- linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Martin KaFai Lau <kafai@fb.com>,
- linux-btrfs@vger.kernel.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Biwen Li <biwen.li@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Leo Li <leoyang.li@nxp.com>, Ran Wang <ran.wang_1@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ira Weiny <ira.weiny@intel.com>
+Hi Rob,
 
-These kmap() calls are localized to a single thread.  To avoid the over
-head of global PKRS updates use the new kmap_thread() call.
+On Tuesday, September 29, 2020 4:23 PM, Ran Wang wrote:
+>=20
+> From: Biwen Li <biwen.li@nxp.com>
+>=20
+> The 'fsl,ippdexpcr1-alt-reg' property is used to handle an errata A-00864=
+6 on
+> LS1021A.
+>=20
+> Signed-off-by: Biwen Li <biwen.li@nxp.com>
+> Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+> ---
+> Change in v3:
+>  - Simplize related proterty definition and rename it.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: "Jérôme Glisse" <jglisse@redhat.com>
-Cc: Martin KaFai Lau <kafai@fb.com>
-Cc: Song Liu <songliubraving@fb.com>
-Cc: Yonghong Song <yhs@fb.com>
-Cc: Andrii Nakryiko <andriin@fb.com>
-Cc: John Fastabend <john.fastabend@gmail.com>
-Cc: KP Singh <kpsingh@chromium.org>
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
- lib/iov_iter.c | 12 ++++++------
- lib/test_bpf.c |  4 ++--
- lib/test_hmm.c |  8 ++++----
- 3 files changed, 12 insertions(+), 12 deletions(-)
+Could you please comment for this version? Thanks in advance.
 
-diff --git a/lib/iov_iter.c b/lib/iov_iter.c
-index 5e40786c8f12..1d47f957cf95 100644
---- a/lib/iov_iter.c
-+++ b/lib/iov_iter.c
-@@ -208,7 +208,7 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
- 	}
- 	/* Too bad - revert to non-atomic kmap */
- 
--	kaddr = kmap(page);
-+	kaddr = kmap_thread(page);
- 	from = kaddr + offset;
- 	left = copyout(buf, from, copy);
- 	copy -= left;
-@@ -225,7 +225,7 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
- 		from += copy;
- 		bytes -= copy;
- 	}
--	kunmap(page);
-+	kunmap_thread(page);
- 
- done:
- 	if (skip == iov->iov_len) {
-@@ -292,7 +292,7 @@ static size_t copy_page_from_iter_iovec(struct page *page, size_t offset, size_t
- 	}
- 	/* Too bad - revert to non-atomic kmap */
- 
--	kaddr = kmap(page);
-+	kaddr = kmap_thread(page);
- 	to = kaddr + offset;
- 	left = copyin(to, buf, copy);
- 	copy -= left;
-@@ -309,7 +309,7 @@ static size_t copy_page_from_iter_iovec(struct page *page, size_t offset, size_t
- 		to += copy;
- 		bytes -= copy;
- 	}
--	kunmap(page);
-+	kunmap_thread(page);
- 
- done:
- 	if (skip == iov->iov_len) {
-@@ -1742,10 +1742,10 @@ int iov_iter_for_each_range(struct iov_iter *i, size_t bytes,
- 		return 0;
- 
- 	iterate_all_kinds(i, bytes, v, -EINVAL, ({
--		w.iov_base = kmap(v.bv_page) + v.bv_offset;
-+		w.iov_base = kmap_thread(v.bv_page) + v.bv_offset;
- 		w.iov_len = v.bv_len;
- 		err = f(&w, context);
--		kunmap(v.bv_page);
-+		kunmap_thread(v.bv_page);
- 		err;}), ({
- 		w = v;
- 		err = f(&w, context);})
-diff --git a/lib/test_bpf.c b/lib/test_bpf.c
-index ca7d635bccd9..441f822f56ba 100644
---- a/lib/test_bpf.c
-+++ b/lib/test_bpf.c
-@@ -6506,11 +6506,11 @@ static void *generate_test_data(struct bpf_test *test, int sub)
- 		if (!page)
- 			goto err_kfree_skb;
- 
--		ptr = kmap(page);
-+		ptr = kmap_thread(page);
- 		if (!ptr)
- 			goto err_free_page;
- 		memcpy(ptr, test->frag_data, MAX_DATA);
--		kunmap(page);
-+		kunmap_thread(page);
- 		skb_add_rx_frag(skb, 0, page, 0, MAX_DATA, MAX_DATA);
- 	}
- 
-diff --git a/lib/test_hmm.c b/lib/test_hmm.c
-index e7dc3de355b7..e40d26f97f45 100644
---- a/lib/test_hmm.c
-+++ b/lib/test_hmm.c
-@@ -329,9 +329,9 @@ static int dmirror_do_read(struct dmirror *dmirror, unsigned long start,
- 		if (!page)
- 			return -ENOENT;
- 
--		tmp = kmap(page);
-+		tmp = kmap_thread(page);
- 		memcpy(ptr, tmp, PAGE_SIZE);
--		kunmap(page);
-+		kunmap_thread(page);
- 
- 		ptr += PAGE_SIZE;
- 		bounce->cpages++;
-@@ -398,9 +398,9 @@ static int dmirror_do_write(struct dmirror *dmirror, unsigned long start,
- 		if (!page || xa_pointer_tag(entry) != DPT_XA_TAG_WRITE)
- 			return -ENOENT;
- 
--		tmp = kmap(page);
-+		tmp = kmap_thread(page);
- 		memcpy(tmp, ptr, PAGE_SIZE);
--		kunmap(page);
-+		kunmap_thread(page);
- 
- 		ptr += PAGE_SIZE;
- 		bounce->cpages++;
--- 
-2.28.0.rc0.12.gb6a658bd00c9
+Regards,
+Ran
+
+> Change in v2:
+>  - None
+>=20
+>  Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> index 5a33619..62a22fc 100644
+> --- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> @@ -34,6 +34,9 @@ Chassis Version		Example Chips
+>  Optional properties:
+>   - little-endian : RCPM register block is Little Endian. Without it RCPM
+>     will be Big Endian (default case).
+> + - fsl,ippdexpcr1-alt-reg : The property is trying to workaround a
+> +   hardware issue (found on SoC LS1021A only), if pressent, RCPM driver
+> +   will use SCFG_SPARECR8 as a shadow register for RCPM_IPPDEXPCR1.
+>=20
+>  Example:
+>  The RCPM node for T4240:
+> @@ -43,6 +46,15 @@ The RCPM node for T4240:
+>  		#fsl,rcpm-wakeup-cells =3D <2>;
+>  	};
+>=20
+> +The RCPM node for LS1021A:
+> +	rcpm: rcpm@1ee2140 {
+> +		compatible =3D "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-2.1+";
+> +		reg =3D <0x0 0x1ee2140 0x0 0x8>;
+> +		#fsl,rcpm-wakeup-cells =3D <2>;
+> +		fsl,ippdexpcr1-alt-reg;
+> +	};
+> +
+> +
+>  * Freescale RCPM Wakeup Source Device Tree Bindings
+>  -------------------------------------------
+>  Required fsl,rcpm-wakeup property should be added to a device node if th=
+e
+> device
+> --
+> 2.7.4
 
