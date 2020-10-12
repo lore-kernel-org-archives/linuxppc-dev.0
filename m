@@ -2,63 +2,97 @@ Return-Path: <SRS0=fZjV=DT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD02CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 09:00:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA9DC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 10:33:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08B7B20773
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 09:00:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08B7B20773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id AC6BB20790
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 10:33:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="tWHLov0c"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC6BB20790
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C8t1J0nt4zDqsC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 20:00:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C8w545jzCzDqth
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Oct 2020 21:33:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=tWHLov0c; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C8stp6p3dzDqcX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2020 19:54:36 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4C8stX0ccLz9tyQ8;
- Mon, 12 Oct 2020 10:54:28 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Ialckm9zXcR1; Mon, 12 Oct 2020 10:54:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4C8stW4QBYz9tyQ9;
- Mon, 12 Oct 2020 10:54:27 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 613FC8B783;
- Mon, 12 Oct 2020 10:54:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id p8ERK12fs8Fg; Mon, 12 Oct 2020 10:54:32 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.230.100])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0B03B8B788;
- Mon, 12 Oct 2020 10:54:32 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F278166441; Mon, 12 Oct 2020 08:54:31 +0000 (UTC)
-Message-Id: <af834e8a0f1fa97bfae65664950f0984a70c4750.1602492856.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 1/2] powerpc/8xx: Always fault when _PAGE_ACCESSED is not
- set
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 12 Oct 2020 08:54:31 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C8w2z4p4dzDqmq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2020 21:31:55 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09CADvO5179671; Mon, 12 Oct 2020 06:31:47 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=Wc0IAiIxNr30cA1nXrWSq+IkxKZov4iUoMljSASi0Ug=;
+ b=tWHLov0cNbROURRptFIk8RLbBM7b1Wk2MIw6yjkNMXPsQBVTlMmPL7Xq7hC39+ek/Aml
+ fSYT4siSefRI2uYOsYTAW/p2j46R9aeh7MA+5my+ZeZ0QILSEnrJxT00DksbSwOUoQC7
+ KRUoGaO6yaU/A79B/v1u7ysiuS51CDJyaVKpf6v/Av2tHdyDK5udMpW7ofwJukkUDek7
+ N7d9nyW+z1Gu5GKUxDWzp2Cj8BB4s4JPm61ddFiFmR5aM9siLm4aFCpmurYIHKkd+mi1
+ 4E8xY+c+kIl4C8i48/kLNR6aVp9i9fEjv0GBU1uKJy7c/ClSYu3F7vbkykan37fhhZol jQ== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 344n6y0esy-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 12 Oct 2020 06:31:46 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09CAVjSQ000902;
+ Mon, 12 Oct 2020 10:31:45 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma04ams.nl.ibm.com with ESMTP id 3434k7swxe-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Mon, 12 Oct 2020 10:31:45 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09CAVhhj29950244
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 12 Oct 2020 10:31:43 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BCB8E5205A;
+ Mon, 12 Oct 2020 10:31:42 +0000 (GMT)
+Received: from Madhavan.com (unknown [9.102.26.211])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id AF2A75204E;
+ Mon, 12 Oct 2020 10:31:41 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc/perf: fix Threshold Event CounterMultiplier width for
+ P10
+Date: Mon, 12 Oct 2020 16:01:28 +0530
+Message-Id: <20201012103128.53243-1-maddy@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-10-12_08:2020-10-12,
+ 2020-10-12 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound
+ score=100 lowpriorityscore=0
+ priorityscore=1501 mlxscore=0 adultscore=0 spamscore=0 clxscore=1011
+ phishscore=0 impostorscore=0 mlxlogscore=547 malwarescore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010120083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,96 +104,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The kernel expects pte_young() to work regardless of CONFIG_SWAP.
+Power9 and isa v3.1 has 7bit mantissa field for Threshold Event Counter
+Multiplier (TECM). TECM is part of Monitor Mode Control Register A (MMCRA).
+This field along with Threshold Event Counter Exponent (TECE) is used to
+get threshould counter value. In Power10, the width of TECM field is
+increase to 8bits. Patch fixes the current code to modify the MMCRA[TECM]
+extraction macro to handling this changes.
 
-Make sure a minor fault is taken to set _PAGE_ACCESSED when it
-is not already set, regardless of the selection of CONFIG_SWAP.
-
-This adds at least 3 instructions to the TLB miss exception
-handlers fast path. Following patch will reduce this overhead.
-
-Also update the rotation instruction to the correct number of bits
-to reflect all changes done to _PAGE_ACCESSED over time.
-
-Fixes: d069cb4373fe ("powerpc/8xx: Don't touch ACCESSED when no SWAP.")
-Fixes: 5f356497c384 ("powerpc/8xx: remove unused _PAGE_WRITETHRU")
-Fixes: e0a8e0d90a9f ("powerpc/8xx: Handle PAGE_USER via APG bits")
-Fixes: 5b2753fc3e8a ("powerpc/8xx: Implementation of PAGE_EXEC")
-Fixes: a891c43b97d3 ("powerpc/8xx: Prepare handlers for _PAGE_HUGE for 512k pages.")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Fixes: 170a315f41c64 ('powerpc/perf: Support to export MMCRA[TEC*] field to userspace')
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 ---
-v2: Backporting to stable will have to be done manually. Squashed
-    the first 3 patches in order to ease that backporting.
----
- arch/powerpc/kernel/head_8xx.S | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ arch/powerpc/perf/isa207-common.c | 3 +++
+ arch/powerpc/perf/isa207-common.h | 4 ++++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 9f359d3fba74..6f3799a04121 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -202,9 +202,7 @@ SystemCall:
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 964437adec18..5fe129f02290 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -247,6 +247,9 @@ void isa207_get_mem_weight(u64 *weight)
+ 	u64 sier = mfspr(SPRN_SIER);
+ 	u64 val = (sier & ISA207_SIER_TYPE_MASK) >> ISA207_SIER_TYPE_SHIFT;
  
- InstructionTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP) || defined(CONFIG_HUGETLBFS)
- 	mtspr	SPRN_SPRG_SCRATCH1, r11
--#endif
++	if (cpu_has_feature(CPU_FTR_ARCH_31))
++		mantissa = P10_MMCRA_THR_CTR_MANT(mmcra);
++
+ 	if (val == 0 || val == 7)
+ 		*weight = 0;
+ 	else
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 044de65e96b9..71380e854f48 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -219,6 +219,10 @@
+ #define MMCRA_THR_CTR_EXP(v)		(((v) >> MMCRA_THR_CTR_EXP_SHIFT) &\
+ 						MMCRA_THR_CTR_EXP_MASK)
  
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
-@@ -238,11 +236,9 @@ InstructionTLBMiss:
- 	rlwimi	r11, r10, 32 - 9, _PMD_PAGE_512K
- 	mtspr	SPRN_MI_TWC, r11
- #endif
--#ifdef CONFIG_SWAP
--	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
- 	and	r11, r11, r10
- 	rlwimi	r10, r11, 0, _PAGE_PRESENT
--#endif
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 20 and 23 must be clear.
- 	 * Software indicator bits 22, 24, 25, 26, and 27 must be
-@@ -256,9 +252,7 @@ InstructionTLBMiss:
++#define P10_MMCRA_THR_CTR_MANT_MASK	0xFFul
++#define P10_MMCRA_THR_CTR_MANT(v)	(((v) >> MMCRA_THR_CTR_MANT_SHIFT) &\
++						P10_MMCRA_THR_CTR_MANT_MASK)
++
+ /* MMCRA Threshold Compare bit constant for power9 */
+ #define p9_MMCRA_THR_CMP_SHIFT	45
  
- 	/* Restore registers */
- 0:	mfspr	r10, SPRN_SPRG_SCRATCH0
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP) || defined(CONFIG_HUGETLBFS)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
--#endif
- 	rfi
- 	patch_site	0b, patch__itlbmiss_exit_1
- 
-@@ -268,9 +262,7 @@ InstructionTLBMiss:
- 	addi	r10, r10, 1
- 	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--#if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
--#endif
- 	rfi
- #endif
- 
-@@ -316,11 +308,9 @@ DataStoreTLBMiss:
- 	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
- 	 * r10 = (r10 & ~PRESENT) | r11;
- 	 */
--#ifdef CONFIG_SWAP
--	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-+	rlwinm	r11, r10, 32-7, _PAGE_PRESENT
- 	and	r11, r11, r10
- 	rlwimi	r10, r11, 0, _PAGE_PRESENT
--#endif
- 	/* The Linux PTE won't go exactly into the MMU TLB.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
 -- 
-2.25.0
+2.26.2
 
