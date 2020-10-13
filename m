@@ -2,55 +2,63 @@ Return-Path: <SRS0=68fk=DU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 506E5C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 02:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B95A6C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 05:15:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A870D20708
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 02:56:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A870D20708
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5299120872
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 05:15:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="AftGI4GL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5299120872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C9Kth2r1lzDqbq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 13:56:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C9Nyr6lGfzDqlZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Oct 2020 16:15:00 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C9KrQ6WC2zDqZP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2020 13:54:12 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A759C1A1507;
- Tue, 13 Oct 2020 04:54:09 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 69EA91A1516;
- Tue, 13 Oct 2020 04:54:05 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 19B7F40332;
- Tue, 13 Oct 2020 04:53:58 +0200 (CEST)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org
-Subject: [PATCH v2] ASoC: fsl_spdif: Add support for higher sample rates
-Date: Tue, 13 Oct 2020 10:49:20 +0800
-Message-Id: <1602557360-18795-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C9NwT0Y6XzDqg7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2020 16:12:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=neuling.org header.i=@neuling.org header.a=rsa-sha256
+ header.s=201811 header.b=AftGI4GL; dkim-atps=neutral
+Received: from neuling.org (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 4C9NwR6BrTz9sTr;
+ Tue, 13 Oct 2020 16:12:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1602565976;
+ bh=Ffqd4hXCoAPgLS4eS0R3VPQY6UYl3q0HkeF9N/L79fA=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=AftGI4GL1rpdjAz9z/FmlE/fIEAXlkC/Sb+yOzVatsFcalQwePLE0JAx1X4bOPA5t
+ gng55pmi90oRIf7dJFH9Tb4Xbzzuo1xI/zItpmhvsDy3iBFIC4S1Yp3i/brbbWZRqa
+ cTcL4OtOwI470raarNu+UyvWY+GbgL3zpIqJ/ubSqZRzDagePWWs2S6t4KbxoXwWMQ
+ aCjSfTab4we8lBKCcJ+qnNbiXgFZZvFGak25YzxpZtjbGiHh6U41/Jrl7qlHMFURzo
+ Wqm9e+gWCZdAYggtNyE5tpr8TSf4jMuVPuz6FNhDEb3nTT+ghJ+G4tLlZYtZ63HYFQ
+ HmNCOF//D0t2Q==
+Received: by neuling.org (Postfix, from userid 1000)
+ id 2EFEA2C031D; Tue, 13 Oct 2020 15:37:43 +1100 (AEDT)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Subject: [PATCH 2/2] selftests/powerpc: Make alignment handler test P9N DD2.1
+ vector CI load workaround
+Date: Tue, 13 Oct 2020 15:37:41 +1100
+Message-Id: <20201013043741.743413-2-mikey@neuling.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201013043741.743413-1-mikey@neuling.org>
+References: <20201013043741.743413-1-mikey@neuling.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,114 +70,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add 88200Hz and 176400Hz sample rates support for TX.
-Add 88200Hz, 176400Hz, 192000Hz sample rates support for RX.
+alignment_handler currently only tests the unaligned cases but it can
+also be useful for testing the workaround for the P9N DD2.1 vector CI
+load issue fixed by p9_hmi_special_emu(). This workaround was
+introduced in 5080332c2c89 ("powerpc/64s: Add workaround for P9 vector
+CI load issue").
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+This changes the loop to start from offset 0 rather than 1 so that we
+test the kernel emulation in p9_hmi_special_emu().
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-changes in v2
-- reorder the signed-off
-- add acked-by Nicolin
+ .../selftests/powerpc/alignment/alignment_handler.c       | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
- sound/soc/fsl/fsl_spdif.c | 16 +++++++++++++---
- sound/soc/fsl/fsl_spdif.h |  9 ++++++++-
- 2 files changed, 21 insertions(+), 4 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 4d14f4076ead..1c030142556a 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -459,10 +459,18 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
- 		rate = SPDIF_TXRATE_48000;
- 		csfs = IEC958_AES3_CON_FS_48000;
- 		break;
-+	case 88200:
-+		rate = SPDIF_TXRATE_88200;
-+		csfs = IEC958_AES3_CON_FS_88200;
-+		break;
- 	case 96000:
- 		rate = SPDIF_TXRATE_96000;
- 		csfs = IEC958_AES3_CON_FS_96000;
- 		break;
-+	case 176400:
-+		rate = SPDIF_TXRATE_176400;
-+		csfs = IEC958_AES3_CON_FS_176400;
-+		break;
- 	case 192000:
- 		rate = SPDIF_TXRATE_192000;
- 		csfs = IEC958_AES3_CON_FS_192000;
-@@ -857,7 +865,7 @@ static int fsl_spdif_rxrate_info(struct snd_kcontrol *kcontrol,
- 	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
- 	uinfo->count = 1;
- 	uinfo->value.integer.min = 16000;
--	uinfo->value.integer.max = 96000;
-+	uinfo->value.integer.max = 192000;
+diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+index 2a0503bc7e49..cb53a8b777e6 100644
+--- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
++++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
+@@ -266,8 +266,12 @@ int do_test(char *test_name, void (*test_func)(char *, char *))
+ 	}
  
- 	return 0;
- }
-@@ -1175,7 +1183,8 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
- 				struct clk *clk, u64 savesub,
- 				enum spdif_txrate index, bool round)
- {
--	static const u32 rate[] = { 32000, 44100, 48000, 96000, 192000 };
-+	static const u32 rate[] = { 32000, 44100, 48000, 88200, 96000, 176400,
-+				    192000, };
- 	bool is_sysclk = clk_is_match(clk, spdif_priv->sysclk);
- 	u64 rate_ideal, rate_actual, sub;
- 	u32 arate;
-@@ -1235,7 +1244,8 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
- static int fsl_spdif_probe_txclk(struct fsl_spdif_priv *spdif_priv,
- 				enum spdif_txrate index)
- {
--	static const u32 rate[] = { 32000, 44100, 48000, 96000, 192000 };
-+	static const u32 rate[] = { 32000, 44100, 48000, 88200, 96000, 176400,
-+				    192000, };
- 	struct platform_device *pdev = spdif_priv->pdev;
- 	struct device *dev = &pdev->dev;
- 	u64 savesub = 100000, ret;
-diff --git a/sound/soc/fsl/fsl_spdif.h b/sound/soc/fsl/fsl_spdif.h
-index e6c61e07bc1a..d5f1dfd58740 100644
---- a/sound/soc/fsl/fsl_spdif.h
-+++ b/sound/soc/fsl/fsl_spdif.h
-@@ -163,7 +163,9 @@ enum spdif_txrate {
- 	SPDIF_TXRATE_32000 = 0,
- 	SPDIF_TXRATE_44100,
- 	SPDIF_TXRATE_48000,
-+	SPDIF_TXRATE_88200,
- 	SPDIF_TXRATE_96000,
-+	SPDIF_TXRATE_176400,
- 	SPDIF_TXRATE_192000,
- };
- #define SPDIF_TXRATE_MAX		(SPDIF_TXRATE_192000 + 1)
-@@ -177,15 +179,20 @@ enum spdif_txrate {
- #define FSL_SPDIF_RATES_PLAYBACK	(SNDRV_PCM_RATE_32000 |	\
- 					 SNDRV_PCM_RATE_44100 |	\
- 					 SNDRV_PCM_RATE_48000 |	\
-+					 SNDRV_PCM_RATE_88200 | \
- 					 SNDRV_PCM_RATE_96000 |	\
-+					 SNDRV_PCM_RATE_176400 | \
- 					 SNDRV_PCM_RATE_192000)
+ 	rc = 0;
+-	/* offset = 0 no alignment fault, so skip */
+-	for (offset = 1; offset < 16; offset++) {
++	/*
++	 * offset = 0 is aligned but tests the workaround for the P9N
++	 * DD2.1 vector CI load issue (see 5080332c2c89 "powerpc/64s:
++	 * Add workaround for P9 vector CI load issue")
++	 */
++	for (offset = 0; offset < 16; offset++) {
+ 		width = 16; /* vsx == 16 bytes */
+ 		r = 0;
  
- #define FSL_SPDIF_RATES_CAPTURE		(SNDRV_PCM_RATE_16000 | \
- 					 SNDRV_PCM_RATE_32000 |	\
- 					 SNDRV_PCM_RATE_44100 | \
- 					 SNDRV_PCM_RATE_48000 |	\
-+					 SNDRV_PCM_RATE_88200 | \
- 					 SNDRV_PCM_RATE_64000 | \
--					 SNDRV_PCM_RATE_96000)
-+					 SNDRV_PCM_RATE_96000 | \
-+					 SNDRV_PCM_RATE_176400 | \
-+					 SNDRV_PCM_RATE_192000)
- 
- #define FSL_SPDIF_FORMATS_PLAYBACK	(SNDRV_PCM_FMTBIT_S16_LE | \
- 					 SNDRV_PCM_FMTBIT_S20_3LE | \
 -- 
-2.27.0
+2.26.2
 
