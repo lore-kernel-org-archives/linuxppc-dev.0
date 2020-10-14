@@ -6,49 +6,48 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE891C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:37:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD70FC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:39:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 021FA21D7F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:37:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 021FA21D7F
+	by mail.kernel.org (Postfix) with ESMTPS id DB89D21D81
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:39:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB89D21D81
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQk20nvMzDr9W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:37:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQls2TbgzDr5R
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:39:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (mx.baikalelectronics.ru
+Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
  [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBKS26fy2zDqpv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 04:40:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBL8b6BqLzDqqD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 05:11:43 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 44EAE803073E;
- Wed, 14 Oct 2020 17:40:01 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 263C4803073E;
+ Wed, 14 Oct 2020 18:11:42 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id YIjbSdqXSCpp; Wed, 14 Oct 2020 20:39:59 +0300 (MSK)
-Date: Wed, 14 Oct 2020 20:39:59 +0300
+ with ESMTP id Ntl7Ii8wms8a; Wed, 14 Oct 2020 21:11:40 +0300 (MSK)
+Date: Wed, 14 Oct 2020 21:11:36 +0300
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>
-Subject: Re: [PATCH 00/20] dt-bindings: usb: Add generic USB HCD, xHCI, DWC
- USB3 DT schema
-Message-ID: <20201014173959.l3cnybtg55jf3x53@mobilestation>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
+Message-ID: <20201014181136.5hwsu77rv3wbxw7w@mobilestation>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+ <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
+ <ed0221ee-c586-b8f8-a7d1-4a2a190dc41b@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <ed0221ee-c586-b8f8-a7d1-4a2a190dc41b@gmail.com>
 X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:50 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -62,193 +61,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Serge Semin <fancer.lancer@gmail.com>,
+Cc: Neil Armstrong <narmstrong@baylibre.com>,
  Bjorn Andersson <bjorn.andersson@linaro.org>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+ Paul Cercueil <paul@crapouillou.net>, Paul Mackerras <paulus@samba.org>,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ linux-stm32@st-md-mailman.stormreply.com,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ Alexey Brodkin <abrodkin@synopsys.com>, Wei Xu <xuwei5@hisilicon.com>,
+ Andy Gross <agross@kernel.org>, bcm-kernel-feedback-list@broadcom.com,
+ Kevin Hilman <khilman@baylibre.com>, linux-snps-arc@lists.infradead.org,
+ devicetree@vger.kernel.org, Alexandre Torgue <alexandre.torgue@st.com>,
+ Mathias Nyman <mathias.nyman@intel.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Vladimir Zapolskiy <vz@mleia.com>, Rob Herring <robh+dt@kernel.org>,
+ linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Roger Quadros <rogerq@ti.com>
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>,
+ Felipe Balbi <balbi@kernel.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+ Serge Semin <fancer.lancer@gmail.com>, linux-kernel@vger.kernel.org,
+ Manu Gautam <mgautam@codeaurora.org>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Vineet Gupta <vgupta@synopsys.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ah, forgot to mark the series as v2. Sorry about that. The next one will be v3
-then...
+On Wed, Oct 14, 2020 at 11:00:45AM -0700, Florian Fainelli wrote:
+> On 10/14/20 3:14 AM, Serge Semin wrote:
+> > In accordance with the Generic EHCI/OHCI bindings the corresponding node
+> > name is suppose to comply with the Generic USB HCD DT schema, which
+> > requires the USB nodes to have the name acceptable by the regexp:
+> > "^usb(@.*)?" . Let's fix the DTS files, which have the nodes defined with
+> > incompatible names.
+> > 
+> > Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> > 
+> > ---
+> > 
+> > Please, test the patch out to make sure it doesn't brake the dependent DTS
+> > files. I did only a manual grepping of the possible nodes dependencies.
+> 
+
+> Not sure how you envisioned these change to be picked up, but you may
+> need to split these changes between ARM/ARM64, MIPS and PowerPC at
+> least. And within ARM/ARM64 you will most likely have to split according
+> to the various SoC maintainers.
+
+Hmm, I don't really know how it's going to be done in this case, but there must
+be a way to get the cross-platform patches picked up in general. For
+instance, see the patches like:
+714acdbd1c94 arch: rename copy_thread_tls() back to copy_thread()
+140c8180eb7c arch: remove HAVE_COPY_THREAD_TLS
+They touched the files from different files, but still have been merged in.
+Maybe I should have copied these three patches to the "linux-arch@vger.kernel.org"
+list or some other mailing list...
 
 -Sergey
 
-On Wed, Oct 14, 2020 at 01:13:42PM +0300, Serge Semin wrote:
-> We've performed some work on the Generic USB HCD, xHCI and DWC USB3 DT
-> bindings in the framework of the Baikal-T1 SoC support integration into
-> the kernel. This patchset is a result of that work.
-> 
-> First of all we moved the generic USB properties from the legacy text
-> bindings into the USB HCD DT schema. So now the generic USB HCD-compatible
-> DT nodes are validated taking into account the optional properties like:
-> maximum-speed, dr_mode, otg-rev, usb-role-switch, etc. We've fixed these
-> properties a bit so they would correspond to what functionality kernel
-> currently supports.
-> 
-> Secondly we converted generic USB xHCI text bindings file into the DT
-> schema. It had to be split up into two bindings: DT schema with generic
-> xHCI properties and a generic xHCI device DT schema. The later will be
-> used to validate the pure xHCI-based nodes, while the former can be
-> utilized by some vendor-specific versions of xHCI.
-> 
-> Thirdly, what was primarily intended to be done for Baikal-T1 SoC USB we
-> converted the legacy text-based DWC USB3 bindings to DT schema and altered
-> the result a bit so it would be more coherent with what actually
-> controller and its driver support. Since we've now got the DWC USB3 DT
-> schema, we made it used to validate the sub-nodes of the Qualcom, TI and
-> Amlogic DWC3 DT nodes.
-> 
-> Finally we've also fixed all the OHCI/EHCI, xHCI and DW USB3 compatible DT
-> nodes so they would comply with the nodes naming scema declared in the USB
-> HCD DT bindings file.
-> 
-> Link: https://lore.kernel.org/linux-usb/20201010224121.12672-1-Sergey.Semin@baikalelectronics.ru/
-> Changelog v2:
-> - Thanks to Sergei Shtylyov for suggesting the commit logs grammar fixes:
->   [PATCH 04/18] dt-bindings: usb: usb-hcd: Add "ulpi/serial/hsic" PHY types
->   [PATCH 05/18] dt-bindings: usb: usb-hcd: Add "tpl-support" property
->   [PATCH 11/18] dt-bindings: usb: dwc3: Add interrupt-names property support
->   [PATCH 13/18] dt-bindings: usb: dwc3: Add Tx De-emphasis restrictions
->   [PATCH 17/18] dt-bindings: usb: keystone-dwc3: Validate DWC3 sub-node
-> - Set FL-adj of the amlogiv,meson-g12a-usb controller with value 0x20 instead
->   of completely removing the property.
-> - Drop the patch:
->   [PATCH 02/18] dt-bindings: usb: usb-hcd: Add "wireless" maximum-speed
->                 property value
->   since "wireless" speed type is depracated due to lack of the device
->   supporting it.
-> - Drop quotes from around the compat string constant.
-> - Discard '|' from the property descriptions, since we don't need to preserve
->   the text formatting.
-> - Convert abbreviated form of the "maximum-speed" enum constraint into
->   the multi-lined version of the list.
-> - Fix the DW USB3 "clock-names" prop description to be refererring to the
->   enumerated clock-names instead of the ones from the Databook.
-> - Add explicit "additionalProperties: true" to the usb-xhci.yaml schema,
->   since additionalProperties/unevaluatedProperties are going to be mandary
->   for each binding.
-> - Use "oneOf: [dwc2.yaml#, snps,dwc3.yaml#]" instead of the bulky "if:
->   properties: compatibe: ..." statement.
-> - Discard the "^dwc3@[0-9a-f]+$" nodes from being acceptable as sub-nodes
->   of the Qualcomm DWC3 DT nodes.
-> - Add new patches:
->   [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
->   [PATCH 19/20] arch: dts: Fix xHCI DT nodes name
->   [PATCH 20/20] arch: dts: Fix DWC USB3 DT nodes name
-> 
-> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-> Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
-> Cc: Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>
-> Cc: Andy Gross <agross@kernel.org>
-> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Cc: Manu Gautam <mgautam@codeaurora.org>
-> Cc: Roger Quadros <rogerq@ti.com>
-> Cc: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Cc: Neil Armstrong <narmstrong@baylibre.com>
-> Cc: Kevin Hilman <khilman@baylibre.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-snps-arc@lists.infradead.org
-> Cc: linux-mips@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-usb@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> 
-> Serge Semin (20):
->   dt-bindings: usb: usb-hcd: Convert generic USB properties to DT schema
->   dt-bindings: usb: usb-hcd: Add "otg-rev" property restriction
->   dt-bindings: usb: usb-hcd: Add "ulpi/serial/hsic" PHY types
->   dt-bindings: usb: usb-hcd: Add "tpl-support" property
->   dt-bindings: usb: usb-hcd: Add generic "usb-phy" property
->   dt-bindings: usb: Convert xHCI bindings to DT schema
->   dt-bindings: usb: xhci: Add Broadcom STB v2 compatible device
->   dt-bindings: usb: renesas-xhci: Refer to the usb-xhci.yaml file
->   dt-bindings: usb: Convert DWC USB3 bindings to DT schema
->   dt-bindings: usb: dwc3: Add interrupt-names property support
->   dt-bindings: usb: dwc3: Add synopsys,dwc3 compatible string
->   dt-bindings: usb: dwc3: Add Tx De-emphasis restrictions
->   dt-bindings: usb: dwc3: Add Frame Length Adj restrictions
->   dt-bindings: usb: meson-g12a-usb: Fix FL-adj property value
->   dt-bindings: usb: meson-g12a-usb: Validate DWC2/DWC3 sub-nodes
->   dt-bindings: usb: keystone-dwc3: Validate DWC3 sub-node
->   dt-bindings: usb: qcom,dwc3: Validate DWC3 sub-node
->   arch: dts: Fix EHCI/OHCI DT nodes name
->   arch: dts: Fix xHCI DT nodes name
->   arch: dts: Fix DWC USB3 DT nodes name
-> 
->  .../usb/amlogic,meson-g12a-usb-ctrl.yaml      |   6 +-
->  .../devicetree/bindings/usb/dwc3.txt          | 125 -------
->  .../devicetree/bindings/usb/generic-xhci.yaml |  65 ++++
->  .../devicetree/bindings/usb/generic.txt       |  57 ----
->  .../devicetree/bindings/usb/qcom,dwc3.yaml    |   9 +-
->  .../bindings/usb/renesas,usb-xhci.yaml        |   4 +-
->  .../devicetree/bindings/usb/snps,dwc3.yaml    | 315 ++++++++++++++++++
->  .../bindings/usb/ti,keystone-dwc3.yaml        |   4 +-
->  .../devicetree/bindings/usb/usb-hcd.yaml      | 104 ++++++
->  .../devicetree/bindings/usb/usb-xhci.txt      |  41 ---
->  .../devicetree/bindings/usb/usb-xhci.yaml     |  42 +++
->  arch/arc/boot/dts/axs10x_mb.dtsi              |   4 +-
->  arch/arc/boot/dts/hsdk.dts                    |   4 +-
->  arch/arc/boot/dts/vdk_axs10x_mb.dtsi          |   2 +-
->  arch/arm/boot/dts/armada-375.dtsi             |   2 +-
->  arch/arm/boot/dts/bcm5301x.dtsi               |   6 +-
->  arch/arm/boot/dts/bcm53573.dtsi               |   4 +-
->  arch/arm/boot/dts/exynos5250.dtsi             |   2 +-
->  arch/arm/boot/dts/exynos54xx.dtsi             |   4 +-
->  arch/arm/boot/dts/hisi-x5hd2.dtsi             |   4 +-
->  arch/arm/boot/dts/keystone-k2e.dtsi           |   4 +-
->  arch/arm/boot/dts/keystone.dtsi               |   2 +-
->  arch/arm/boot/dts/lpc18xx.dtsi                |   4 +-
->  arch/arm/boot/dts/ls1021a.dtsi                |   2 +-
->  arch/arm/boot/dts/omap5-l4.dtsi               |   2 +-
->  arch/arm/boot/dts/stih407-family.dtsi         |   2 +-
->  arch/arm/boot/dts/stm32mp151.dtsi             |   4 +-
->  arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi  |   2 +-
->  arch/arm64/boot/dts/exynos/exynos5433.dtsi    |   4 +-
->  arch/arm64/boot/dts/exynos/exynos7.dtsi       |   2 +-
->  .../arm64/boot/dts/freescale/fsl-ls1012a.dtsi |   4 +-
->  .../arm64/boot/dts/freescale/fsl-ls1043a.dtsi |   6 +-
->  .../arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   4 +-
->  .../arm64/boot/dts/freescale/fsl-ls208xa.dtsi |   4 +-
->  arch/arm64/boot/dts/hisilicon/hi3660.dtsi     |   2 +-
->  .../arm64/boot/dts/hisilicon/hi3798cv200.dtsi |   4 +-
->  arch/arm64/boot/dts/hisilicon/hip06.dtsi      |   4 +-
->  arch/arm64/boot/dts/hisilicon/hip07.dtsi      |   4 +-
->  arch/arm64/boot/dts/marvell/armada-cp11x.dtsi |   4 +-
->  arch/arm64/boot/dts/qcom/apq8096-db820c.dtsi  |   4 +-
->  arch/arm64/boot/dts/qcom/ipq8074.dtsi         |   4 +-
->  arch/arm64/boot/dts/qcom/msm8996.dtsi         |   4 +-
->  arch/arm64/boot/dts/qcom/msm8998.dtsi         |   2 +-
->  arch/arm64/boot/dts/qcom/qcs404-evb.dtsi      |   2 +-
->  arch/arm64/boot/dts/qcom/qcs404.dtsi          |   4 +-
->  arch/arm64/boot/dts/qcom/sc7180.dtsi          |   2 +-
->  arch/arm64/boot/dts/qcom/sdm845.dtsi          |   4 +-
->  arch/arm64/boot/dts/qcom/sm8150.dtsi          |   2 +-
->  arch/mips/boot/dts/ingenic/jz4740.dtsi        |   2 +-
->  arch/mips/boot/dts/ingenic/jz4770.dtsi        |   2 +-
->  arch/mips/boot/dts/mti/sead3.dts              |   2 +-
->  arch/mips/boot/dts/ralink/mt7628a.dtsi        |   2 +-
->  arch/powerpc/boot/dts/akebono.dts             |   6 +-
->  53 files changed, 605 insertions(+), 305 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/usb/dwc3.txt
->  create mode 100644 Documentation/devicetree/bindings/usb/generic-xhci.yaml
->  delete mode 100644 Documentation/devicetree/bindings/usb/generic.txt
->  create mode 100644 Documentation/devicetree/bindings/usb/snps,dwc3.yaml
->  delete mode 100644 Documentation/devicetree/bindings/usb/usb-xhci.txt
->  create mode 100644 Documentation/devicetree/bindings/usb/usb-xhci.yaml
-> 
 > -- 
-> 2.27.0
-> 
+> Florian
