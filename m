@@ -2,55 +2,52 @@ Return-Path: <SRS0=Si2p=DV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F8C7C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01A19C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:20:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21F38221FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:18:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21F38221FF
+	by mail.kernel.org (Postfix) with ESMTPS id 4CFD9221FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:20:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4CFD9221FF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQJG2Fx0zDrB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:18:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQKr0dDzzDr43
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:20:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQN4LdhzDql2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:16 +1100 (AEDT)
+Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
+ [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBFPN3kWpzDqnV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 01:37:28 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 1FAF580023F4;
- Wed, 14 Oct 2020 10:14:11 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 0C2A5803073E;
+ Wed, 14 Oct 2020 14:37:25 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id VZIHMCMbYz7W; Wed, 14 Oct 2020 13:14:10 +0300 (MSK)
+ with ESMTP id f5w4yWjMzAZv; Wed, 14 Oct 2020 17:37:23 +0300 (MSK)
+Date: Wed, 14 Oct 2020 17:37:20 +0300
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>, Lad Prabhakar
- <prabhakar.mahadev-lad.rj@bp.renesas.com>, Yoshihiro Shimoda
- <yoshihiro.shimoda.uh@renesas.com>
-Subject: [PATCH 08/20] dt-bindings: usb: renesas-xhci: Refer to the
- usb-xhci.yaml file
-Date: Wed, 14 Oct 2020 13:13:50 +0300
-Message-ID: <20201014101402.18271-9-Sergey.Semin@baikalelectronics.ru>
-In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+To: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH 20/20] arch: dts: Fix DWC USB3 DT nodes name
+Message-ID: <20201014143720.yny3jco5pkb7dr4b@mobilestation>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+ <20201014101402.18271-21-Sergey.Semin@baikalelectronics.ru>
+ <878sc8lx0e.fsf@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <878sc8lx0e.fsf@kernel.org>
 X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:49 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,53 +61,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-kernel@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>, linux-usb@vger.kernel.org,
- linux-mips@vger.kernel.org, Serge Semin <fancer.lancer@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Serge Semin <Sergey.Semin@baikalelectronics.ru>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
- Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-usb@vger.kernel.org,
+ Neil Armstrong <narmstrong@baylibre.com>, Tony Lindgren <tony@atomide.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Wei Xu <xuwei5@hisilicon.com>,
+ linux-samsung-soc@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>,
+ Gregory Clement <gregory.clement@bootlin.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+ Kukjin Kim <kgene@kernel.org>, Andy Gross <agross@kernel.org>,
+ linux-arm-msm@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>,
+ Mathias Nyman <mathias.nyman@intel.com>, linux-kernel@vger.kernel.org,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Maxime Ripard <mripard@kernel.org>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Roger Quadros <rogerq@ti.com>
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>, linux-mips@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linuxppc-dev@lists.ozlabs.org, Patrice Chotard <patrice.chotard@st.com>,
+ Serge Semin <fancer.lancer@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ Manu Gautam <mgautam@codeaurora.org>,
+ =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
+ Shawn Guo <shawnguo@kernel.org>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With minor peculiarities (like uploading some vendor-specific firmware)
-these are just Generic xHCI controllers fully compatible with its
-properties. Make sure the Renesas USB xHCI DT nodes are also validated
-against the Generic xHCI DT schema.
+On Wed, Oct 14, 2020 at 05:09:37PM +0300, Felipe Balbi wrote:
+> 
+> Hi Serge,
+> 
+> Serge Semin <Sergey.Semin@baikalelectronics.ru> writes:
+> > In accordance with the DWC USB3 bindings the corresponding node name is
+> > suppose to comply with Generic USB HCD DT schema, which requires the USB
+> 
 
-Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
----
- Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> DWC3 is not a simple HDC, though.
 
-diff --git a/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml b/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-index add9f7b66da0..4491567152a1 100644
---- a/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-+++ b/Documentation/devicetree/bindings/usb/renesas,usb-xhci.yaml
-@@ -11,7 +11,7 @@ maintainers:
-   - Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
- 
- allOf:
--  - $ref: "usb-hcd.yaml"
-+  - $ref: "usb-xhci.yaml"
- 
- properties:
-   compatible:
-@@ -68,7 +68,7 @@ required:
-   - power-domains
-   - resets
- 
--additionalProperties: false
-+unevaluatedProperties: false
- 
- examples:
-   - |
--- 
-2.27.0
+Yeah, strictly speaking it is equipped with a lot of vendor-specific stuff,
+which are tuned by the DWC USB3 driver in the kernel. But after that the
+controller is registered as xhci-hcd device so it's serviced by the xHCI driver,
+which then registers the HCD device so the corresponding DT node is supposed
+to be compatible with the next bindings: usb/usb-hcd.yaml, usb/usb-xhci.yaml
+and usb/snps,dwc3,yaml. I've created the later one so to validate the denoted
+compatibility.
+
+> 
+> > nodes to have the name acceptable by the regexp: "^usb(@.*)?" . But a lot
+> > of the DWC USB3-compatible nodes defined in the ARM/ARM64 DTS files have
+> > name as "^dwc3@.*" or "^usb[1-3]@.*" or even "^dwusb@.*", which will cause
+> > the dtbs_check procedure failure. Let's fix the nodes naming to be
+> > compatible with the DWC USB3 DT schema to make dtbs_check happy.
+> >
+> > Note we don't change the DWC USB3-compatible nodes names of
+> > arch/arm64/boot/dts/apm/{apm-storm.dtsi,apm-shadowcat.dtsi} since the
+> > in-source comment says that the nodes name need to be preserved as
+> > "^dwusb@.*" for some backward compatibility.
+> 
+
+> interesting, compatibility with what? Some debugfs files, perhaps? :-)
+
+Don't really know.) In my experience the worst type of such compatibility is
+connected with some bootloader magic, which may add/remove/modify properties
+to nodes with pre-defined names.
+
+-Sergey
+
+> 
+> In any case, I don't have any problems with this, so I'll let other
+> folks comment.
+> 
+> -- 
+> balbi
+
 
