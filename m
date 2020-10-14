@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96096C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:59:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AC0AC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:01:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6337622248
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:59:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6337622248
+	by mail.kernel.org (Postfix) with ESMTPS id E438322248
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:01:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E438322248
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBPt857sszDqss
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 07:59:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBPwY5LHxzDqtW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:01:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (mx.baikalelectronics.com
- [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQJ6vMdzDqlr
+Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQJ5gzpzDql2
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:12 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 99950800254B;
- Wed, 14 Oct 2020 10:14:16 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id B303C80023F6;
+ Wed, 14 Oct 2020 10:14:14 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id bLgVXv8eo580; Wed, 14 Oct 2020 13:14:16 +0300 (MSK)
+ with ESMTP id AK-aNZa2C8Wr; Wed, 14 Oct 2020 13:14:14 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>, Roger Quadros <rogerq@ti.com>
-Subject: [PATCH 16/20] dt-bindings: usb: keystone-dwc3: Validate DWC3 sub-node
-Date: Wed, 14 Oct 2020 13:13:58 +0300
-Message-ID: <20201014101402.18271-17-Sergey.Semin@baikalelectronics.ru>
+ <robh+dt@kernel.org>
+Subject: [PATCH 13/20] dt-bindings: usb: dwc3: Add Frame Length Adj
+ restrictions
+Date: Wed, 14 Oct 2020 13:13:55 +0300
+Message-ID: <20201014101402.18271-14-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -74,41 +74,35 @@ Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-TI Keystone DWC3 compatible DT node is supposed to have a DWC USB3
-compatible sub-node to describe a fully functioning USB interface.
-Since DWC USB3 has now got a DT schema describing its DT node, let's make
-sure the TI Keystone DWC3 sub-node passes validation against it.
+In accordance with the IP core databook the
+snps,quirk-frame-length-adjustment property can be set within [0, 0x3F].
+Let's make sure the DT schema applies a correct restriction on the
+property.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-
 ---
+ Documentation/devicetree/bindings/usb/snps,dwc3.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Changelog v2:
-- Grammar fix: "s/it'/its"
----
- Documentation/devicetree/bindings/usb/ti,keystone-dwc3.yaml | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/usb/ti,keystone-dwc3.yaml b/Documentation/devicetree/bindings/usb/ti,keystone-dwc3.yaml
-index c1b19fc5d0a2..ca7fbe3ed22e 100644
---- a/Documentation/devicetree/bindings/usb/ti,keystone-dwc3.yaml
-+++ b/Documentation/devicetree/bindings/usb/ti,keystone-dwc3.yaml
-@@ -64,9 +64,7 @@ properties:
+diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+index 307affb669aa..eafd4be03058 100644
+--- a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+@@ -226,6 +226,8 @@ properties:
+       length adjustment when the fladj_30mhz_sdbnd signal is invalid or
+       incorrect.
+     $ref: /schemas/types.yaml#/definitions/uint32
++    minimum: 0
++    maximum: 0x3f
  
- patternProperties:
-   "usb@[a-f0-9]+$":
--    type: object
--    description: This is the node representing the DWC3 controller instance
--      Documentation/devicetree/bindings/usb/dwc3.txt
-+    $ref: snps,dwc3.yaml#
- 
- required:
-   - compatible
+   snps,rx-thr-num-pkt-prd:
+     description:
 -- 
 2.27.0
 
