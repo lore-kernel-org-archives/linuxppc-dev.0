@@ -7,49 +7,59 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EA08C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:03:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B5E2C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:05:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 98A31214D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:03:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 98A31214D8
+	by mail.kernel.org (Postfix) with ESMTPS id 6C36B22268
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:05:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C36B22268
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBPyd2J05zDqfK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:03:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQ0m0PfQzDr0N
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:05:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (unknown [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQK5FJhzDqmq
+Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
+ [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQL1Cg3zDqnV
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:12 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id EBA2A803017E;
- Wed, 14 Oct 2020 10:14:12 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id EA7D780057A8;
+ Wed, 14 Oct 2020 10:14:21 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3lHUodPDGRg7; Wed, 14 Oct 2020 13:14:11 +0300 (MSK)
+ with ESMTP id vflJAOCZxAbc; Wed, 14 Oct 2020 13:14:21 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>
-Subject: [PATCH 09/20] dt-bindings: usb: Convert DWC USB3 bindings to DT schema
-Date: Wed, 14 Oct 2020 13:13:51 +0300
-Message-ID: <20201014101402.18271-10-Sergey.Semin@baikalelectronics.ru>
+ <robh+dt@kernel.org>, Alexey Brodkin <abrodkin@synopsys.com>, Vineet Gupta
+ <vgupta@synopsys.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ <bcm-kernel-feedback-list@broadcom.com>, Wei Xu <xuwei5@hisilicon.com>,
+ Vladimir Zapolskiy <vz@mleia.com>, Maxime Coquelin
+ <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Paul
+ Cercueil <paul@crapouillou.net>, Thomas Bogendoerfer
+ <tsbogend@alpha.franken.de>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
+Date: Wed, 14 Oct 2020 13:14:00 +0300
+Message-ID: <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
-X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:48 +1100
+X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:49 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,474 +81,358 @@ Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  Bjorn Andersson <bjorn.andersson@linaro.org>,
  Serge Semin <Sergey.Semin@baikalelectronics.ru>,
  Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+ linux-mediatek@lists.infradead.org,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Roger Quadros <rogerq@ti.com>
+ linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DWC USB3 DT node is supposed to be compliant with the Generic xHCI
-Controller schema, but with additional vendor-specific properties, the
-controller-specific reference clocks and PHYs. So let's convert the
-currently available legacy text-based DWC USB3 bindings to the DT schema
-and make sure the DWC USB3 nodes are also validated against the
-usb-xhci.yaml schema.
-
-Note we have to discard the nodename restriction of being prefixed with
-"dwc3@" string, since in accordance with the usb-hcd.yaml schema USB nodes
-are supposed to be named as "^usb(@.*)".
+In accordance with the Generic EHCI/OHCI bindings the corresponding node
+name is suppose to comply with the Generic USB HCD DT schema, which
+requires the USB nodes to have the name acceptable by the regexp:
+"^usb(@.*)?" . Let's fix the DTS files, which have the nodes defined with
+incompatible names.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
 ---
 
-Changelog v2:
-- Discard '|' from the descriptions, since we don't need to preserve
-  the text formatting in any of them.
-- Drop quotes from around the string constants.
-- Fix the "clock-names" prop description to be referring the enumerated
-  clock-names instead of the ones from the Databook.
+Please, test the patch out to make sure it doesn't brake the dependent DTS
+files. I did only a manual grepping of the possible nodes dependencies.
 ---
- .../devicetree/bindings/usb/dwc3.txt          | 125 --------
- .../devicetree/bindings/usb/snps,dwc3.yaml    | 295 ++++++++++++++++++
- 2 files changed, 295 insertions(+), 125 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/usb/dwc3.txt
- create mode 100644 Documentation/devicetree/bindings/usb/snps,dwc3.yaml
+ arch/arc/boot/dts/axs10x_mb.dtsi               | 4 ++--
+ arch/arc/boot/dts/hsdk.dts                     | 4 ++--
+ arch/arc/boot/dts/vdk_axs10x_mb.dtsi           | 2 +-
+ arch/arm/boot/dts/bcm5301x.dtsi                | 4 ++--
+ arch/arm/boot/dts/bcm53573.dtsi                | 4 ++--
+ arch/arm/boot/dts/hisi-x5hd2.dtsi              | 4 ++--
+ arch/arm/boot/dts/lpc18xx.dtsi                 | 4 ++--
+ arch/arm/boot/dts/stm32mp151.dtsi              | 4 ++--
+ arch/arm64/boot/dts/hisilicon/hi3798cv200.dtsi | 4 ++--
+ arch/arm64/boot/dts/hisilicon/hip06.dtsi       | 4 ++--
+ arch/arm64/boot/dts/hisilicon/hip07.dtsi       | 4 ++--
+ arch/mips/boot/dts/ingenic/jz4740.dtsi         | 2 +-
+ arch/mips/boot/dts/ingenic/jz4770.dtsi         | 2 +-
+ arch/mips/boot/dts/mti/sead3.dts               | 2 +-
+ arch/mips/boot/dts/ralink/mt7628a.dtsi         | 2 +-
+ arch/powerpc/boot/dts/akebono.dts              | 6 +++---
+ 16 files changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/dwc3.txt b/Documentation/devicetree/bindings/usb/dwc3.txt
-deleted file mode 100644
-index d03edf9d3935..000000000000
---- a/Documentation/devicetree/bindings/usb/dwc3.txt
-+++ /dev/null
-@@ -1,125 +0,0 @@
--synopsys DWC3 CORE
--
--DWC3- USB3 CONTROLLER. Complies to the generic USB binding properties
--      as described in 'usb/generic.txt'
--
--Required properties:
-- - compatible: must be "snps,dwc3"
-- - reg : Address and length of the register set for the device
-- - interrupts: Interrupts used by the dwc3 controller.
-- - clock-names: list of clock names. Ideally should be "ref",
--                "bus_early", "suspend" but may be less or more.
-- - clocks: list of phandle and clock specifier pairs corresponding to
--           entries in the clock-names property.
--
--Exception for clocks:
--  clocks are optional if the parent node (i.e. glue-layer) is compatible to
--  one of the following:
--    "cavium,octeon-7130-usb-uctl"
--    "qcom,dwc3"
--    "samsung,exynos5250-dwusb3"
--    "samsung,exynos5433-dwusb3"
--    "samsung,exynos7-dwusb3"
--    "sprd,sc9860-dwc3"
--    "st,stih407-dwc3"
--    "ti,am437x-dwc3"
--    "ti,dwc3"
--    "ti,keystone-dwc3"
--    "rockchip,rk3399-dwc3"
--    "xlnx,zynqmp-dwc3"
--
--Optional properties:
-- - usb-phy : array of phandle for the PHY device.  The first element
--   in the array is expected to be a handle to the USB2/HS PHY and
--   the second element is expected to be a handle to the USB3/SS PHY
-- - phys: from the *Generic PHY* bindings
-- - phy-names: from the *Generic PHY* bindings; supported names are "usb2-phy"
--	or "usb3-phy".
-- - resets: set of phandle and reset specifier pairs
-- - snps,usb2-lpm-disable: indicate if we don't want to enable USB2 HW LPM
-- - snps,usb3_lpm_capable: determines if platform is USB3 LPM capable
-- - snps,dis-start-transfer-quirk: when set, disable isoc START TRANSFER command
--			failure SW work-around for DWC_usb31 version 1.70a-ea06
--			and prior.
-- - snps,disable_scramble_quirk: true when SW should disable data scrambling.
--	Only really useful for FPGA builds.
-- - snps,has-lpm-erratum: true when DWC3 was configured with LPM Erratum enabled
-- - snps,lpm-nyet-threshold: LPM NYET threshold
-- - snps,u2exit_lfps_quirk: set if we want to enable u2exit lfps quirk
-- - snps,u2ss_inp3_quirk: set if we enable P3 OK for U2/SS Inactive quirk
-- - snps,req_p1p2p3_quirk: when set, the core will always request for
--			P1/P2/P3 transition sequence.
-- - snps,del_p1p2p3_quirk: when set core will delay P1/P2/P3 until a certain
--			amount of 8B10B errors occur.
-- - snps,del_phy_power_chg_quirk: when set core will delay PHY power change
--			from P0 to P1/P2/P3.
-- - snps,lfps_filter_quirk: when set core will filter LFPS reception.
-- - snps,rx_detect_poll_quirk: when set core will disable a 400us delay to start
--			Polling LFPS after RX.Detect.
-- - snps,tx_de_emphasis_quirk: when set core will set Tx de-emphasis value.
-- - snps,tx_de_emphasis: the value driven to the PHY is controlled by the
--			LTSSM during USB3 Compliance mode.
-- - snps,dis_u3_susphy_quirk: when set core will disable USB3 suspend phy.
-- - snps,dis_u2_susphy_quirk: when set core will disable USB2 suspend phy.
-- - snps,dis_enblslpm_quirk: when set clears the enblslpm in GUSB2PHYCFG,
--			disabling the suspend signal to the PHY.
-- - snps,dis-u1-entry-quirk: set if link entering into U1 needs to be disabled.
-- - snps,dis-u2-entry-quirk: set if link entering into U2 needs to be disabled.
-- - snps,dis_rxdet_inp3_quirk: when set core will disable receiver detection
--			in PHY P3 power state.
-- - snps,dis-u2-freeclk-exists-quirk: when set, clear the u2_freeclk_exists
--			in GUSB2PHYCFG, specify that USB2 PHY doesn't provide
--			a free-running PHY clock.
-- - snps,dis-del-phy-power-chg-quirk: when set core will change PHY power
--			from P0 to P1/P2/P3 without delay.
-- - snps,dis-tx-ipgap-linecheck-quirk: when set, disable u2mac linestate check
--			during HS transmit.
-- - snps,parkmode-disable-ss-quirk: when set, all SuperSpeed bus instances in
--			park mode are disabled.
-- - snps,dis_metastability_quirk: when set, disable metastability workaround.
--			CAUTION: use only if you are absolutely sure of it.
-- - snps,is-utmi-l1-suspend: true when DWC3 asserts output signal
--			utmi_l1_suspend_n, false when asserts utmi_sleep_n
-- - snps,hird-threshold: HIRD threshold
-- - snps,hsphy_interface: High-Speed PHY interface selection between "utmi" for
--   UTMI+ and "ulpi" for ULPI when the DWC_USB3_HSPHY_INTERFACE has value 3.
-- - snps,quirk-frame-length-adjustment: Value for GFLADJ_30MHZ field of GFLADJ
--	register for post-silicon frame length adjustment when the
--	fladj_30mhz_sdbnd signal is invalid or incorrect.
-- - snps,rx-thr-num-pkt-prd: periodic ESS RX packet threshold count - host mode
--			only. Set this and rx-max-burst-prd to a valid,
--			non-zero value 1-16 (DWC_usb31 programming guide
--			section 1.2.4) to enable periodic ESS RX threshold.
-- - snps,rx-max-burst-prd: max periodic ESS RX burst size - host mode only. Set
--			this and rx-thr-num-pkt-prd to a valid, non-zero value
--			1-16 (DWC_usb31 programming guide section 1.2.4) to
--			enable periodic ESS RX threshold.
-- - snps,tx-thr-num-pkt-prd: periodic ESS TX packet threshold count - host mode
--			only. Set this and tx-max-burst-prd to a valid,
--			non-zero value 1-16 (DWC_usb31 programming guide
--			section 1.2.3) to enable periodic ESS TX threshold.
-- - snps,tx-max-burst-prd: max periodic ESS TX burst size - host mode only. Set
--			this and tx-thr-num-pkt-prd to a valid, non-zero value
--			1-16 (DWC_usb31 programming guide section 1.2.3) to
--			enable periodic ESS TX threshold.
--
-- - <DEPRECATED> tx-fifo-resize: determines if the FIFO *has* to be reallocated.
-- - snps,incr-burst-type-adjustment: Value for INCR burst type of GSBUSCFG0
--			register, undefined length INCR burst type enable and INCRx type.
--			When just one value, which means INCRX burst mode enabled. When
--			more than one value, which means undefined length INCR burst type
--			enabled. The values can be 1, 4, 8, 16, 32, 64, 128 and 256.
--
-- - in addition all properties from usb-xhci.txt from the current directory are
--   supported as well
--
--
--This is usually a subnode to DWC3 glue to which it is connected.
--
--dwc3@4a030000 {
--	compatible = "snps,dwc3";
--	reg = <0x4a030000 0xcfff>;
--	interrupts = <0 92 4>
--	usb-phy = <&usb2_phy>, <&usb3,phy>;
--	snps,incr-burst-type-adjustment = <1>, <4>, <8>, <16>;
--};
-diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-new file mode 100644
-index 000000000000..994813f2e25f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-@@ -0,0 +1,295 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/usb/snps,dwc3.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Synopsys DesignWare USB3 Controller
-+
-+maintainers:
-+  - Felipe Balbi <balbi@kernel.org>
-+
-+description:
-+  This is usually a subnode to DWC3 glue to which it is connected, but can also
-+  be presented as a standalone DT node with an optional vendor-specific
-+  compatible string.
-+
-+allOf:
-+  - $ref: "usb-xhci.yaml#"
-+
-+properties:
-+  compatible:
-+    contains:
-+      const: snps,dwc3
-+
-+  interrupts:
-+    minItems: 1
-+    maxItems: 3
-+
-+  clocks:
-+    description:
-+      In general the core supports three types of clocks. bus_early is a
-+      SoC Bus Clock (AHB/AXI/Native). ref generates ITP when the UTMI/ULPI
-+      PHY is suspended. suspend clocks a small part of the USB3 core when
-+      SS PHY in P3. But particular cases may differ from that having less
-+      or more clock sources with another names.
-+
-+  clock-names:
-+    contains:
-+      anyOf:
-+        - enum: [bus_early, ref, suspend]
-+        - true
-+
-+  usb-phy:
-+   minItems: 1
-+   items:
-+     - description: USB2/HS PHY
-+     - description: USB3/SS PHY
-+
-+  phys:
-+    minItems: 1
-+    items:
-+      - description: USB2/HS PHY
-+      - description: USB3/SS PHY
-+
-+  phy-names:
-+    minItems: 1
-+    items:
-+      - const: usb2-phy
-+      - const: usb3-phy
-+
-+  resets:
-+    minItems: 1
-+
-+  snps,usb2-lpm-disable:
-+    description: Indicate if we don't want to enable USB2 HW LPM
-+    type: boolean
-+
-+  snps,usb3_lpm_capable:
-+    description: Determines if platform is USB3 LPM capable
-+    type: boolean
-+
-+  snps,dis-start-transfer-quirk:
-+    description:
-+      When set, disable isoc START TRANSFER command failure SW work-around
-+      for DWC_usb31 version 1.70a-ea06 and prior.
-+    type: boolean
-+
-+  snps,disable_scramble_quirk:
-+    description:
-+      True when SW should disable data scrambling. Only really useful for FPGA
-+      builds.
-+    type: boolean
-+
-+  snps,has-lpm-erratum:
-+    description: True when DWC3 was configured with LPM Erratum enabled
-+    type: boolean
-+
-+  snps,lpm-nyet-threshold:
-+    description: LPM NYET threshold
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+
-+  snps,u2exit_lfps_quirk:
-+    description: Set if we want to enable u2exit lfps quirk
-+    type: boolean
-+
-+  snps,u2ss_inp3_quirk:
-+    description: Set if we enable P3 OK for U2/SS Inactive quirk
-+    type: boolean
-+
-+  snps,req_p1p2p3_quirk:
-+    description:
-+      When set, the core will always request for P1/P2/P3 transition sequence.
-+    type: boolean
-+
-+  snps,del_p1p2p3_quirk:
-+    description:
-+      When set core will delay P1/P2/P3 until a certain amount of 8B10B errors
-+      occur.
-+    type: boolean
-+
-+  snps,del_phy_power_chg_quirk:
-+    description: When set core will delay PHY power change from P0 to P1/P2/P3.
-+    type: boolean
-+
-+  snps,lfps_filter_quirk:
-+    description: When set core will filter LFPS reception.
-+    type: boolean
-+
-+  snps,rx_detect_poll_quirk:
-+    description:
-+      when set core will disable a 400us delay to start Polling LFPS after
-+      RX.Detect.
-+    type: boolean
-+
-+  snps,tx_de_emphasis_quirk:
-+    description: When set core will set Tx de-emphasis value
-+    type: boolean
-+
-+  snps,tx_de_emphasis:
-+    description:
-+      The value driven to the PHY is controlled by the LTSSM during USB3
-+      Compliance mode.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+
-+  snps,dis_u3_susphy_quirk:
-+    description: When set core will disable USB3 suspend phy
-+    type: boolean
-+
-+  snps,dis_u2_susphy_quirk:
-+    description: When set core will disable USB2 suspend phy
-+    type: boolean
-+
-+  snps,dis_enblslpm_quirk:
-+    description:
-+      When set clears the enblslpm in GUSB2PHYCFG, disabling the suspend signal
-+      to the PHY.
-+    type: boolean
-+
-+  snps,dis-u1-entry-quirk:
-+    description: Set if link entering into U1 needs to be disabled
-+    type: boolean
-+
-+  snps,dis-u2-entry-quirk:
-+    description: Set if link entering into U2 needs to be disabled
-+    type: boolean
-+
-+  snps,dis_rxdet_inp3_quirk:
-+    description:
-+      When set core will disable receiver detection in PHY P3 power state.
-+    type: boolean
-+
-+  snps,dis-u2-freeclk-exists-quirk:
-+    description:
-+      When set, clear the u2_freeclk_exists in GUSB2PHYCFG, specify that USB2
-+      PHY doesn't provide a free-running PHY clock.
-+    type: boolean
-+
-+  snps,dis-del-phy-power-chg-quirk:
-+    description:
-+      When set core will change PHY power from P0 to P1/P2/P3 without delay.
-+    type: boolean
-+
-+  snps,dis-tx-ipgap-linecheck-quirk:
-+    description: When set, disable u2mac linestate check during HS transmit
-+    type: boolean
-+
-+  snps,parkmode-disable-ss-quirk:
-+    description:
-+      When set, all SuperSpeed bus instances in park mode are disabled.
-+    type: boolean
-+
-+  snps,dis_metastability_quirk:
-+    description:
-+      When set, disable metastability workaround. CAUTION! Use only if you are
-+      absolutely sure of it.
-+    type: boolean
-+
-+  snps,is-utmi-l1-suspend:
-+    description:
-+      True when DWC3 asserts output signal utmi_l1_suspend_n, false when
-+      asserts utmi_sleep_n.
-+    type: boolean
-+
-+  snps,hird-threshold:
-+    description: HIRD threshold
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+
-+  snps,hsphy_interface:
-+    description:
-+      High-Speed PHY interface selection between UTMI+ and ULPI when the
-+      DWC_USB3_HSPHY_INTERFACE has value 3.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    enum: [utmi, ulpi]
-+
-+  snps,quirk-frame-length-adjustment:
-+    description:
-+      Value for GFLADJ_30MHZ field of GFLADJ register for post-silicon frame
-+      length adjustment when the fladj_30mhz_sdbnd signal is invalid or
-+      incorrect.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  snps,rx-thr-num-pkt-prd:
-+    description:
-+      Periodic ESS RX packet threshold count (host mode only). Set this and
-+      snps,rx-max-burst-prd to a valid, non-zero value 1-16 (DWC_usb31
-+      programming guide section 1.2.4) to enable periodic ESS RX threshold.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 16
-+
-+  snps,rx-max-burst-prd:
-+    description:
-+      Max periodic ESS RX burst size (host mode only). Set this and
-+      snps,rx-thr-num-pkt-prd to a valid, non-zero value 1-16 (DWC_usb31
-+      programming guide section 1.2.4) to enable periodic ESS RX threshold.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 16
-+
-+  snps,tx-thr-num-pkt-prd:
-+    description:
-+      Periodic ESS TX packet threshold count (host mode only). Set this and
-+      snps,tx-max-burst-prd to a valid, non-zero value 1-16 (DWC_usb31
-+      programming guide section 1.2.3) to enable periodic ESS TX threshold.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 16
-+
-+  snps,tx-max-burst-prd:
-+    description:
-+      Max periodic ESS TX burst size (host mode only). Set this and
-+      snps,tx-thr-num-pkt-prd to a valid, non-zero value 1-16 (DWC_usb31
-+      programming guide section 1.2.3) to enable periodic ESS TX threshold.
-+    $ref: /schemas/types.yaml#/definitions/uint8
-+    minimum: 1
-+    maximum: 16
-+
-+  tx-fifo-resize:
-+    description: Determines if the FIFO *has* to be reallocated
-+    deprecated: true
-+    type: boolean
-+
-+  snps,incr-burst-type-adjustment:
-+    description:
-+      Value for INCR burst type of GSBUSCFG0 register, undefined length INCR
-+      burst type enable and INCRx type. A single value means INCRX burst mode
-+      enabled. If more than one value specified, undefined length INCR burst
-+      type will be enabled with burst lengths utilized up to the maximum
-+      of the values passed in this property.
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    minItems: 1
-+    maxItems: 8
-+    uniqueItems: true
-+    items:
-+      enum: [1, 4, 8, 16, 32, 64, 128, 256]
-+
-+unevaluatedProperties: false
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+examples:
-+  - |
-+    usb@4a030000 {
-+      compatible = "snps,dwc3";
-+      reg = <0x4a030000 0xcfff>;
-+      interrupts = <0 92 4>;
-+      usb-phy = <&usb2_phy>, <&usb3_phy>;
-+      snps,incr-burst-type-adjustment = <1>, <4>, <8>, <16>;
-+    };
-+  - |
-+    usb@4a000000 {
-+      compatible = "snps,dwc3";
-+      reg = <0x4a000000 0xcfff>;
-+      interrupts = <0 92 4>;
-+      clocks = <&clk 1>, <&clk 2>, <&clk 3>;
-+      clock-names = "bus_early", "ref", "suspend";
-+      phys = <&usb2_phy>, <&usb3_phy>;
-+      phy-names = "usb2-phy", "usb3-phy";
-+      snps,dis_u2_susphy_quirk;
-+      snps,dis_enblslpm_quirk;
-+    };
-+...
+diff --git a/arch/arc/boot/dts/axs10x_mb.dtsi b/arch/arc/boot/dts/axs10x_mb.dtsi
+index 99d3e7175bf7..b64435385304 100644
+--- a/arch/arc/boot/dts/axs10x_mb.dtsi
++++ b/arch/arc/boot/dts/axs10x_mb.dtsi
+@@ -87,13 +87,13 @@ gmac: ethernet@18000 {
+ 			mac-address = [00 00 00 00 00 00]; /* Filled in by U-Boot */
+ 		};
+ 
+-		ehci@40000 {
++		usb@40000 {
+ 			compatible = "generic-ehci";
+ 			reg = < 0x40000 0x100 >;
+ 			interrupts = < 8 >;
+ 		};
+ 
+-		ohci@60000 {
++		usb@60000 {
+ 			compatible = "generic-ohci";
+ 			reg = < 0x60000 0x100 >;
+ 			interrupts = < 8 >;
+diff --git a/arch/arc/boot/dts/hsdk.dts b/arch/arc/boot/dts/hsdk.dts
+index dcaa44e408ac..fdd4f7f635d3 100644
+--- a/arch/arc/boot/dts/hsdk.dts
++++ b/arch/arc/boot/dts/hsdk.dts
+@@ -234,7 +234,7 @@ phy0: ethernet-phy@0 { /* Micrel KSZ9031 */
+ 			};
+ 		};
+ 
+-		ohci@60000 {
++		usb@60000 {
+ 			compatible = "snps,hsdk-v1.0-ohci", "generic-ohci";
+ 			reg = <0x60000 0x100>;
+ 			interrupts = <15>;
+@@ -242,7 +242,7 @@ ohci@60000 {
+ 			dma-coherent;
+ 		};
+ 
+-		ehci@40000 {
++		usb@40000 {
+ 			compatible = "snps,hsdk-v1.0-ehci", "generic-ehci";
+ 			reg = <0x40000 0x100>;
+ 			interrupts = <15>;
+diff --git a/arch/arc/boot/dts/vdk_axs10x_mb.dtsi b/arch/arc/boot/dts/vdk_axs10x_mb.dtsi
+index cbb179770293..90a412026e64 100644
+--- a/arch/arc/boot/dts/vdk_axs10x_mb.dtsi
++++ b/arch/arc/boot/dts/vdk_axs10x_mb.dtsi
+@@ -46,7 +46,7 @@ ethernet@18000 {
+ 			clock-names = "stmmaceth";
+ 		};
+ 
+-		ehci@40000 {
++		usb@40000 {
+ 			compatible = "generic-ehci";
+ 			reg = < 0x40000 0x100 >;
+ 			interrupts = < 8 >;
+diff --git a/arch/arm/boot/dts/bcm5301x.dtsi b/arch/arm/boot/dts/bcm5301x.dtsi
+index 0016720ce530..bf5656d79a55 100644
+--- a/arch/arm/boot/dts/bcm5301x.dtsi
++++ b/arch/arm/boot/dts/bcm5301x.dtsi
+@@ -261,7 +261,7 @@ usb2: usb2@21000 {
+ 
+ 			interrupt-parent = <&gic>;
+ 
+-			ehci: ehci@21000 {
++			ehci: usb@21000 {
+ 				#usb-cells = <0>;
+ 
+ 				compatible = "generic-ehci";
+@@ -283,7 +283,7 @@ ehci_port2: port@2 {
+ 				};
+ 			};
+ 
+-			ohci: ohci@22000 {
++			ohci: usb@22000 {
+ 				#usb-cells = <0>;
+ 
+ 				compatible = "generic-ohci";
+diff --git a/arch/arm/boot/dts/bcm53573.dtsi b/arch/arm/boot/dts/bcm53573.dtsi
+index 4af8e3293cff..51546fccc616 100644
+--- a/arch/arm/boot/dts/bcm53573.dtsi
++++ b/arch/arm/boot/dts/bcm53573.dtsi
+@@ -135,7 +135,7 @@ usb2: usb2@4000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 
+-			ehci: ehci@4000 {
++			ehci: usb@4000 {
+ 				compatible = "generic-ehci";
+ 				reg = <0x4000 0x1000>;
+ 				interrupt-parent = <&gic>;
+@@ -155,7 +155,7 @@ ehci_port2: port@2 {
+ 				};
+ 			};
+ 
+-			ohci: ohci@d000 {
++			ohci: usb@d000 {
+ 				#usb-cells = <0>;
+ 
+ 				compatible = "generic-ohci";
+diff --git a/arch/arm/boot/dts/hisi-x5hd2.dtsi b/arch/arm/boot/dts/hisi-x5hd2.dtsi
+index 3ee7967c202d..693b85b2cc7d 100644
+--- a/arch/arm/boot/dts/hisi-x5hd2.dtsi
++++ b/arch/arm/boot/dts/hisi-x5hd2.dtsi
+@@ -452,14 +452,14 @@ gmac1: ethernet@1841000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb0: ehci@1890000 {
++		usb0: usb@1890000 {
+ 			compatible = "generic-ehci";
+ 			reg = <0x1890000 0x1000>;
+ 			interrupts = <0 66 4>;
+ 			clocks = <&clock HIX5HD2_USB_CLK>;
+ 		};
+ 
+-		usb1: ohci@1880000 {
++		usb1: usb@1880000 {
+ 			compatible = "generic-ohci";
+ 			reg = <0x1880000 0x1000>;
+ 			interrupts = <0 67 4>;
+diff --git a/arch/arm/boot/dts/lpc18xx.dtsi b/arch/arm/boot/dts/lpc18xx.dtsi
+index 10b8249b8ab6..82ffd7b0ad8a 100644
+--- a/arch/arm/boot/dts/lpc18xx.dtsi
++++ b/arch/arm/boot/dts/lpc18xx.dtsi
+@@ -121,7 +121,7 @@ mmcsd: mmcsd@40004000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb0: ehci@40006100 {
++		usb0: usb@40006100 {
+ 			compatible = "nxp,lpc1850-ehci", "generic-ehci";
+ 			reg = <0x40006100 0x100>;
+ 			interrupts = <8>;
+@@ -133,7 +133,7 @@ usb0: ehci@40006100 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb1: ehci@40007100 {
++		usb1: usb@40007100 {
+ 			compatible = "nxp,lpc1850-ehci", "generic-ehci";
+ 			reg = <0x40007100 0x100>;
+ 			interrupts = <9>;
+diff --git a/arch/arm/boot/dts/stm32mp151.dtsi b/arch/arm/boot/dts/stm32mp151.dtsi
+index bfe29023fbd5..576f7da564c5 100644
+--- a/arch/arm/boot/dts/stm32mp151.dtsi
++++ b/arch/arm/boot/dts/stm32mp151.dtsi
+@@ -1404,7 +1404,7 @@ ethernet0: ethernet@5800a000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usbh_ohci: usbh-ohci@5800c000 {
++		usbh_ohci: usb@5800c000 {
+ 			compatible = "generic-ohci";
+ 			reg = <0x5800c000 0x1000>;
+ 			clocks = <&rcc USBH>;
+@@ -1413,7 +1413,7 @@ usbh_ohci: usbh-ohci@5800c000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usbh_ehci: usbh-ehci@5800d000 {
++		usbh_ehci: usb@5800d000 {
+ 			compatible = "generic-ehci";
+ 			reg = <0x5800d000 0x1000>;
+ 			clocks = <&rcc USBH>;
+diff --git a/arch/arm64/boot/dts/hisilicon/hi3798cv200.dtsi b/arch/arm64/boot/dts/hisilicon/hi3798cv200.dtsi
+index 12bc1d3ed424..a4acecb75c89 100644
+--- a/arch/arm64/boot/dts/hisilicon/hi3798cv200.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hi3798cv200.dtsi
+@@ -585,7 +585,7 @@ pcie: pcie@9860000 {
+ 			status = "disabled";
+ 		};
+ 
+-		ohci: ohci@9880000 {
++		ohci: usb@9880000 {
+ 			compatible = "generic-ohci";
+ 			reg = <0x9880000 0x10000>;
+ 			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+@@ -600,7 +600,7 @@ ohci: ohci@9880000 {
+ 			status = "disabled";
+ 		};
+ 
+-		ehci: ehci@9890000 {
++		ehci: usb@9890000 {
+ 			compatible = "generic-ehci";
+ 			reg = <0x9890000 0x10000>;
+ 			interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>;
+diff --git a/arch/arm64/boot/dts/hisilicon/hip06.dtsi b/arch/arm64/boot/dts/hisilicon/hip06.dtsi
+index 50ceaa959bdc..1226440d54ad 100644
+--- a/arch/arm64/boot/dts/hisilicon/hip06.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hip06.dtsi
+@@ -373,7 +373,7 @@ refclk: refclk {
+ 			#clock-cells = <0>;
+ 		};
+ 
+-		usb_ohci: ohci@a7030000 {
++		usb_ohci: usb@a7030000 {
+ 			compatible = "generic-ohci";
+ 			reg = <0x0 0xa7030000 0x0 0x10000>;
+ 			interrupt-parent = <&mbigen_usb>;
+@@ -382,7 +382,7 @@ usb_ohci: ohci@a7030000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb_ehci: ehci@a7020000 {
++		usb_ehci: usb@a7020000 {
+ 			compatible = "generic-ehci";
+ 			reg = <0x0 0xa7020000 0x0 0x10000>;
+ 			interrupt-parent = <&mbigen_usb>;
+diff --git a/arch/arm64/boot/dts/hisilicon/hip07.dtsi b/arch/arm64/boot/dts/hisilicon/hip07.dtsi
+index 4773a533fce5..93f99a5255ac 100644
+--- a/arch/arm64/boot/dts/hisilicon/hip07.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hip07.dtsi
+@@ -1253,7 +1253,7 @@ uart0: uart@602b0000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb_ohci: ohci@a7030000 {
++		usb_ohci: usb@a7030000 {
+ 			compatible = "generic-ohci";
+ 			reg = <0x0 0xa7030000 0x0 0x10000>;
+ 			interrupt-parent = <&mbigen_usb>;
+@@ -1262,7 +1262,7 @@ usb_ohci: ohci@a7030000 {
+ 			status = "disabled";
+ 		};
+ 
+-		usb_ehci: ehci@a7020000 {
++		usb_ehci: usb@a7020000 {
+ 			compatible = "generic-ehci";
+ 			reg = <0x0 0xa7020000 0x0 0x10000>;
+ 			interrupt-parent = <&mbigen_usb>;
+diff --git a/arch/mips/boot/dts/ingenic/jz4740.dtsi b/arch/mips/boot/dts/ingenic/jz4740.dtsi
+index 1520585c235c..b989ff62ffbc 100644
+--- a/arch/mips/boot/dts/ingenic/jz4740.dtsi
++++ b/arch/mips/boot/dts/ingenic/jz4740.dtsi
+@@ -281,7 +281,7 @@ dmac: dma-controller@13020000 {
+ 		clocks = <&cgu JZ4740_CLK_DMA>;
+ 	};
+ 
+-	uhc: uhc@13030000 {
++	uhc: usb@13030000 {
+ 		compatible = "ingenic,jz4740-ohci", "generic-ohci";
+ 		reg = <0x13030000 0x1000>;
+ 
+diff --git a/arch/mips/boot/dts/ingenic/jz4770.dtsi b/arch/mips/boot/dts/ingenic/jz4770.dtsi
+index fa11ac950499..e45c03038826 100644
+--- a/arch/mips/boot/dts/ingenic/jz4770.dtsi
++++ b/arch/mips/boot/dts/ingenic/jz4770.dtsi
+@@ -417,7 +417,7 @@ dmac1: dma-controller@13420100 {
+ 		interrupts = <23>;
+ 	};
+ 
+-	uhc: uhc@13430000 {
++	uhc: usb@13430000 {
+ 		compatible = "generic-ohci";
+ 		reg = <0x13430000 0x1000>;
+ 
+diff --git a/arch/mips/boot/dts/mti/sead3.dts b/arch/mips/boot/dts/mti/sead3.dts
+index 192c26ff1d3d..1cf6728af8fe 100644
+--- a/arch/mips/boot/dts/mti/sead3.dts
++++ b/arch/mips/boot/dts/mti/sead3.dts
+@@ -56,7 +56,7 @@ gic: interrupt-controller@1b1c0000 {
+ 		interrupt-parent = <&cpu_intc>;
+ 	};
+ 
+-	ehci@1b200000 {
++	usb@1b200000 {
+ 		compatible = "generic-ehci";
+ 		reg = <0x1b200000 0x1000>;
+ 
+diff --git a/arch/mips/boot/dts/ralink/mt7628a.dtsi b/arch/mips/boot/dts/ralink/mt7628a.dtsi
+index 892e8ab863c5..45bf96a3d17a 100644
+--- a/arch/mips/boot/dts/ralink/mt7628a.dtsi
++++ b/arch/mips/boot/dts/ralink/mt7628a.dtsi
+@@ -275,7 +275,7 @@ usb_phy: usb-phy@10120000 {
+ 		reset-names = "host", "device";
+ 	};
+ 
+-	ehci@101c0000 {
++	usb@101c0000 {
+ 		compatible = "generic-ehci";
+ 		reg = <0x101c0000 0x1000>;
+ 
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index df18f8dc4642..343326c30380 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -126,7 +126,7 @@ SATA0: sata@30000010000 {
+ 			interrupts = <93 2>;
+ 		};
+ 
+-		EHCI0: ehci@30010000000 {
++		EHCI0: usb@30010000000 {
+ 			compatible = "ibm,476gtr-ehci", "generic-ehci";
+ 			reg = <0x300 0x10000000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+@@ -140,14 +140,14 @@ SD0: sd@30000000000 {
+ 			interrupt-parent = <&MPIC>;
+ 		};
+ 
+-		OHCI0: ohci@30010010000 {
++		OHCI0: usb@30010010000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10010000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
+ 			interrupts = <89 1>;
+ 			};
+ 
+-		OHCI1: ohci@30010020000 {
++		OHCI1: usb@30010020000 {
+ 			compatible = "ibm,476gtr-ohci", "generic-ohci";
+ 			reg = <0x300 0x10020000 0x0 0x10000>;
+ 			interrupt-parent = <&MPIC>;
 -- 
 2.27.0
 
