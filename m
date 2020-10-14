@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0A26C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 00:15:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAE3EC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 00:34:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AFFE20776
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 00:15:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B0D8921D40
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 00:34:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="nS9Y29JA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AFFE20776
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="isquPztE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0D8921D40
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4C9tGF4NwxzDqpC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 11:15:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4C9thL2mF5zDqnZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 11:34:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C9tDS5ZZqzDqKZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2020 11:13:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C9tfj0YJSzDqWN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2020 11:32:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=nS9Y29JA; 
+ header.a=rsa-sha256 header.s=201909 header.b=isquPztE; 
  dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4C9tDS1d3yz9sVS;
- Wed, 14 Oct 2020 11:13:28 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4C9tfh3tJDz9sSs;
+ Wed, 14 Oct 2020 11:32:44 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1602634408;
- bh=kWr8uHYNyFOfUWg35FUMahaQ83JjMGcRXGempu9ybD0=;
+ s=201909; t=1602635564;
+ bh=aaFXn0s8LXNBACeN5QqauoEt7/W0th4b6zZ3+2X5Ur4=;
  h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
- b=nS9Y29JAUsw49i0j0VMBbrzXc3gOqyL1ZeUmGeO5zhOjwIByt6IodOdoXGlbKqs2G
- scFUqq6SMzlbhsiWYpTNgOgYn820EgQY0HllZDzowDwnAqDrmdkQ0r+8C9xU1pFyx9
- HvbXe2cChgNGNBUzqQ1lPlFeFFkX1enc4rJm9Hqq6r0y0QpwFSqBiq2j5o9gV/ZEuM
- NE79wWEmndltYlJpzHNiZls7BKRoepoyXcc9Cb9VptwfoAyZM4xM8QqqDImcnTJ8QZ
- iIqHh73wQCqdWsJ+MeUKagjqQubrihj1LazMNftkDEfNa3CyIEtWwuK1t5Js7fIgBC
- CZzy+b7yHQi5Q==
+ b=isquPztE8yN6BTroYKarHtiWcECSrsds2PfW2N2BXFJ/sMnRyjkAdRn4f2lsifvzP
+ b3Ku6pZMwPgitHT2xtrU9XZ5PtZvri3rfl3IQb5/Y+9CzW6ENl8b5lVCxnv9nxB09j
+ 4ocFGgbyHb3dfSM7SP40ZX0e3Zg9m+xQvvR7syXC6lnMYOjRiDwR5nqwg8HA0qXj02
+ d6j9LprKL/Qvknk5gXlMRSiOy8uNpPR7dU3nf2SB+cpcjTW0SrR7Vl0/7RTxMzfJRq
+ dEQRWxoBMzUXZnQ/aqp3gZLuUBLOBE2+zRGo9BHWS9fKihWaHvsKA5XpfJ5ffMbEbq
+ 4zAcvSHG8fDjw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Michael Neuling <mikey@neuling.org>
 Subject: Re: [PATCH 1/2] powerpc: Fix user data corruption with P9N DD2.1 VSX
  CI load workaround emulation
 In-Reply-To: <20201013043741.743413-1-mikey@neuling.org>
 References: <20201013043741.743413-1-mikey@neuling.org>
-Date: Wed, 14 Oct 2020 11:13:24 +1100
-Message-ID: <87pn5lzmu3.fsf@mpe.ellerman.id.au>
+Date: Wed, 14 Oct 2020 11:32:43 +1100
+Message-ID: <87imbdzlxw.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -93,15 +93,159 @@ Michael Neuling <mikey@neuling.org> writes:
 > particular can change the stack arrangement enough that our luck runs
 > out.
 
-Actually I'm yet to find a kernel with CONFIG_STACKPROTECTOR=n that is
-vulnerable to the bug.
-
-Turning on STACKPROTECTOR changes the order GCC allocates locals on the
-stack, from bottom-up to top-down. That in conjunction with the 8 byte
-stack canary means we end up with 8 bytes of space below the locals,
-which misaligns vbuf.
-
-But obviously other things can change the stack layout too, so no
-guarantees that CONFIG_STACKPROTECTOR=n makes it safe.
+Below is a script which takes a System.map and vmlinux (or objdump
+output) and tries to check if the stack layout is susceptible to the
+bug.
 
 cheers
+
+
+
+#!/usr/bin/python3
+
+import os
+import sys
+import re
+from subprocess import Popen, PIPE
+
+
+# eg: c00000000002ea88:       ce 49 00 7c     stvx    v0,0,r9
+stvx_pattern = re.compile('^c[0-9a-f]{15}:\s+(?:[0-9a-f]{2} ){4}\s+stvx\s+v0,0,(r\d+)\s*')
+
+# eg: c00000000002ea80:       28 00 21 39     addi    r9,r1,40
+addi_pattern = '^c[0-9a-f]{15}:\s+(?:[0-9a-f]{2} ){4}\s+addi\s+%s,r1,(\d+)\s*'
+
+
+def main(args):
+    if len(args) != 2:
+        print('Usage: %s <objdump|vmlinux> <System.map>' % sys.argv[0])
+        return -1
+
+    if os.path.basename(sys.argv[1]).startswith('vmlinu'):
+        dump = Popen(['objdump', '-d', sys.argv[1]], stdout=PIPE, encoding='utf-8').stdout
+    else:
+        dump = open(sys.argv[1])
+
+    syms = read_symbols(sys.argv[2])
+
+    func_lines = extract_func(dump, 'handle_hmi_exception', syms)
+    if func_lines is None:
+        print("Error: couldn't find handle_hmi_exception in objdump output")
+        return -1
+
+    match = None
+    i = 0
+    while i < len(func_lines):
+        match = stvx_pattern.match(func_lines[i])
+        if match:
+            break
+        i += 1
+
+    if match is None:
+        print("Error: couldn't find stvx in handle_hmi_exception")
+        return -1
+
+    stvx_reg = match.group(1)
+    print('stvx found using register %s:\n%s\n' % (stvx_reg, match.group(0).rstrip()))
+
+    match = None
+    i -= 1
+    while i > 0:
+        pattern = re.compile(addi_pattern % stvx_reg)
+        match = pattern.match(func_lines[i])
+        if match:
+            break
+        i -= 1
+
+    if match is None:
+        print("Error: couldn't find addi in handle_hmi_exception")
+        return -1
+
+    stack_offset = int(match.group(1))
+    print('addi found using offset %d:\n%s\n' % (stack_offset, match.group(0).rstrip()))
+
+    if stack_offset & 0xf:
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print('!! Offset is misaligned - bug present !!')
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        return 1
+    else:
+        print('OK - offset is aligned')
+
+    return 0
+
+
+def extract_func(f, func_name, syms):
+    func_addr, func_size = find_symbol_and_size(syms, func_name)
+    num_lines = int(func_size / 4)
+
+    pattern = re.compile('^%016x:' % func_addr)
+
+    match = None
+    line = f.readline()
+    while len(line):
+        match = pattern.match(line)
+        if match:
+            break
+        line = f.readline()
+
+    if match is None:
+        return None
+
+    lines = []
+    for i in range(0, num_lines):
+        lines.append(f.readline())
+
+    return lines
+
+
+def read_symbols(map_path):
+    last_function = ''
+    last_addr = 0
+
+    lines = open(map_path).readlines()
+
+    addrs = []
+    last_addr = 0
+    for line in lines:
+        tokens = line.split()
+        if len(tokens) == 3:
+            addr = int(tokens[0], 16)
+            sym_type = tokens[1]
+            name = tokens[2]
+        elif len(tokens) == 2:
+            addr = last_addr
+            sym_type = tokens[0]
+            name = tokens[1]
+        else:
+            raise Exception("Couldn't grok System.map")
+
+        addrs.append((addr, name, sym_type))
+        last_addr = addr
+
+    return addrs
+
+
+def find_symbol_and_size(symbol_map, name):
+    dot_name = '.%s' % name
+    saddr = None
+    i = 0
+    for addr, cur_name, sym_type in symbol_map:
+        if cur_name == name or cur_name == dot_name:
+            saddr = addr
+            break
+        i += 1
+
+    if saddr is None:
+        return (None, None)
+
+    i += 1
+    if i >= len(symbol_map):
+        size = -1
+    else:
+        size = symbol_map[i][0] - saddr
+
+    return (saddr, size)
+
+
+sys.exit(main(sys.argv[1:]))
