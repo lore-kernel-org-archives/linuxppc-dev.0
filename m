@@ -2,65 +2,57 @@ Return-Path: <SRS0=Si2p=DV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C2DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:37:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8BBFC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:51:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8950D207C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:37:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="YOSWf8zU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8950D207C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id E89782224E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 20:51:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E89782224E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBPP90BpCzDqwC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 07:37:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBPjK26NgzDqth
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 07:51:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux-foundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=akpm@linux-foundation.org;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
+ helo=mail.baikalelectronics.ru;
+ envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=YOSWf8zU; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBPMJ3yjfzDqlY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 07:36:11 +1100 (AEDT)
-Received: from localhost.localdomain (c-73-231-172-41.hsd1.ca.comcast.net
- [73.231.172.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4A69022249;
- Wed, 14 Oct 2020 20:36:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1602707768;
- bh=nDZMRzWG7gYP7mjsXiRsPfXA6cL+zIi6JULaouk468E=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=YOSWf8zUI42En+qWKtnoLC0kblv7jVr5ZG+fS4a+WgjNqRiQx6xikSMctmczqBPsN
- IxEgFLKKRV9H4kRX+chwy6Wa+tahUFGLMgW/jtSHjaVT59wTsP+SnnsEXsYdxk4cTC
- 5FS3TQIJGUlEfMHk+/PnVmZAjbnqlcpaaiFXj3g4=
-Date: Wed, 14 Oct 2020 13:36:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v4 00/13] mm/debug_vm_pgtable fixes
-Message-Id: <20201014133607.fbf63d060e331fcd6007b624@linux-foundation.org>
-In-Reply-To: <034db663-a5bd-fd5e-b7f6-3ec31310e8e5@linux.ibm.com>
-References: <20200902114222.181353-1-aneesh.kumar@linux.ibm.com>
- <20201013135858.f4a7f0c5f3b0a69a2a304cfe@linux-foundation.org>
- <034db663-a5bd-fd5e-b7f6-3ec31310e8e5@linux.ibm.com>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+ header.from=baikalelectronics.ru
+Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQJ6BKlzDqlZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:12 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 0692B803202E;
+ Wed, 14 Oct 2020 10:14:16 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at baikalelectronics.ru
+Received: from mail.baikalelectronics.ru ([127.0.0.1])
+ by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id e4ldnC_N-Ltw; Wed, 14 Oct 2020 13:14:15 +0300 (MSK)
+From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
+ <robh+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Neil Armstrong
+ <narmstrong@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, Martin
+ Blumenstingl <martin.blumenstingl@googlemail.com>
+Subject: [PATCH 15/20] dt-bindings: usb: meson-g12a-usb: Validate DWC2/DWC3
+ sub-nodes
+Date: Wed, 14 Oct 2020 13:13:57 +0300
+Message-ID: <20201014101402.18271-16-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
+X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:48 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,45 +64,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Anshuman Khandual <anshuman.khandual@arm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ linux-amlogic@lists.infradead.org,
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 14 Oct 2020 08:45:16 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+Amlogic G12A USB DT sub-nodes are supposed to be compatible with the
+generic DWC USB2 and USB3 devices. Since now we've got DT schemas for
+both of the later IP cores let's make sure that the Amlogic G12A USB
+DT nodes are fully evaluated including the DWC sub-nodes.
 
-> > Against mm-debug_vm_pgtable-avoid-none-pte-in-pte_clear_test.patch:
-> > 
-> > https://lkml.kernel.org/r/87zh5wx51b.fsf@linux.ibm.com
-> 
-> 
-> yes this one we should get fixed. I was hoping someone familiar with 
-> Riscv pte updates rules would pitch in. IIUC we need to update 
-> RANDON_ORVALUE similar to how we updated it for s390 and ppc64.
-> 
-> 
->   Alternatively we can do this
-> 
-> modified   mm/debug_vm_pgtable.c
-> @@ -548,7 +548,7 @@ static void __init pte_clear_tests(struct mm_struct 
-> *mm, pte_t *ptep,
->   	pte_t pte = pfn_pte(pfn, prot);
-> 
->   	pr_debug("Validating PTE clear\n");
-> -	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
-> +//	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
->   	set_pte_at(mm, vaddr, ptep, pte);
->   	barrier();
->   	pte_clear(mm, vaddr, ptep);
-> 
-> till we get that feedback from RiscV team?
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
 
-Would it be better to do
+---
 
-#ifdef CONFIG_S390
-	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
-#endif
+Changelog v2:
+- Use "oneOf: [dwc2.yaml#, snps,dwc3.yaml#]" instead of the bulky "if:
+  properties: compatibe: ..." statement.
+---
+ .../devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml  | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-?
+diff --git a/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml b/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
+index a4b44a16aaef..7b2dc905c8ce 100644
+--- a/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
++++ b/Documentation/devicetree/bindings/usb/amlogic,meson-g12a-usb-ctrl.yaml
+@@ -78,7 +78,9 @@ properties:
+ 
+ patternProperties:
+   "^usb@[0-9a-f]+$":
+-    type: object
++    oneOf:
++      - $ref: dwc2.yaml#
++      - $ref: snps,dwc3.yaml#
+ 
+ additionalProperties: false
+ 
+-- 
+2.27.0
 
