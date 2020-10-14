@@ -2,57 +2,100 @@ Return-Path: <SRS0=Si2p=DV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4529C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 07:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD680C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 08:47:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F96420878
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 07:39:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F96420878
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 3B7F22080A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 08:47:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="dbB4prEZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B7F22080A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CB46z5jtCzDqgZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 18:39:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CB5dY3MGSzDqZ1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 19:47:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=zte.com.cn (client-ip=202.103.147.172; helo=mxct.zte.com.cn;
- envelope-from=wang.yi59@zte.com.cn; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=zte.com.cn
-X-Greylist: delayed 926 seconds by postgrey-1.36 at bilbo;
- Wed, 14 Oct 2020 18:37:38 AEDT
-Received: from mxct.zte.com.cn (out1.zte.com.cn [202.103.147.172])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=dbB4prEZ; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CB44y1BydzDqXr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2020 18:37:36 +1100 (AEDT)
-Received: from mse-fl2.zte.com.cn (unknown [10.30.14.239])
- by Forcepoint Email with ESMTPS id 317529D58780FE449193;
- Wed, 14 Oct 2020 15:21:55 +0800 (CST)
-Received: from kjyxapp05.zte.com.cn ([10.30.12.204])
- by mse-fl2.zte.com.cn with SMTP id 09E7LrQ3056847;
- Wed, 14 Oct 2020 15:21:53 +0800 (GMT-8)
- (envelope-from wang.yi59@zte.com.cn)
-Received: from fox-host8.localdomain (unknown [10.234.72.110])
- by smtp (Zmail) with SMTP; Wed, 14 Oct 2020 15:21:53 +0800
-X-Zmail-TransId: 3e885f86a710005-b53e2
-From: Yi Wang <wang.yi59@zte.com.cn>
-To: Roy.Pledge@nxp.com
-Subject: [PATCH] soc: fsl: dpio: Change 'cpumask_t mask' to global variable
-Date: Wed, 14 Oct 2020 15:27:33 +0800
-Message-Id: <20201014072733.15175-1-wang.yi59@zte.com.cn>
-X-Mailer: X-Zmail-Txt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CB5Zw5TDMzDqXX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2020 19:45:12 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09E8WiHo062484; Wed, 14 Oct 2020 04:45:05 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=KxAY9x1UVSRIfjZ4HkKwAMXtZHwEybQOdLdsqyqVa/E=;
+ b=dbB4prEZ4gUuhpM6sAcix9pgs5OEy1YK7enek9G/zqnXucn7cwx956zognNjpD33GKmk
+ /pvTnlRhAA//+xqjk6RfJj/+HYp2BWBNsoKCCSzkdcpog/Kax3qh3yykleg127tZy8pt
+ sBt8l5RcBI9/PRoSQn3+SgfKRShny8YIw1qQor/a8ktzVpbw7o03EG/jR9aNwQlBLVBA
+ 6lWhZ2wIAH2rGXwrxdeYqY/ZOA9Ke6qT2LtlB+rifXeBw7iQGAEQvRnfR0vwl0pI75ge
+ fkkWfKOGmwd0/gThnGtCawGxiSMv6DQmX5BeasS5xbgumqGGU4cFjKKopiHOEhL9rm7N KQ== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 345wwq8g8u-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 14 Oct 2020 04:45:04 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+ by ppma03ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09E8gisb009654;
+ Wed, 14 Oct 2020 08:45:03 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by ppma03ams.nl.ibm.com with ESMTP id 3434k83y3c-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Wed, 14 Oct 2020 08:45:02 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09E8ixPr33292650
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 14 Oct 2020 08:45:00 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DDC9B42042;
+ Wed, 14 Oct 2020 08:44:59 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6094242041;
+ Wed, 14 Oct 2020 08:44:58 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.199.34.55])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 14 Oct 2020 08:44:58 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc/perf: Add support for programming of Thresholding in
+ P10
+Date: Wed, 14 Oct 2020 14:14:42 +0530
+Message-Id: <20201014084442.168943-1-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: multipart/mixed;
-	boundary="=====_001_next====="
-X-MAIL: mse-fl2.zte.com.cn 09E7LrQ3056847
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-10-14_06:2020-10-14,
+ 2020-10-14 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 malwarescore=0
+ spamscore=0 suspectscore=1 phishscore=0 mlxlogscore=997 priorityscore=1501
+ impostorscore=0 lowpriorityscore=0 bulkscore=0 mlxscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2010140057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,90 +107,320 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, jiang.xuexin@zte.com.cn, Hao Si <si.hao@zte.com.cn>,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com, xue.zhihong@zte.com.cn,
- Lin Chen <chen.lin5@zte.com.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Thresholding, a performance monitoring unit feature, can be
+used to identify marked instructions which take more than
+expected cycles between start event and end event.
+Threshold compare (thresh_cmp) bits are programmed in MMCRA
+register. In Power9, thresh_cmp bits were part of the
+event code. But in case of P10, thresh_cmp are not part of
+event code due to inclusion of MMCR3 bits.
 
+Patch here adds an option to use attr.config1 variable
+to be used to pass thresh_cmp value to be programmed in
+MMCRA register. A new ppmu flag called PPMU_HAS_ATTR_CONFIG1
+has been added and this flag is used to notify the use of
+attr.config1 variable. Secondly, thresh_cmp bits are not
+part of the group constraints.
 
---=====_001_next=====
-Content-Type: multipart/alternative;
-	boundary="=====_003_next====="
+Patch has extended the parameter list of 'compute_mmcr',
+to include power_pmu's 'flags' element.
 
+command#: cat /sys/devices/cpu/format/thresh_cmp
+config1:0-17
 
---=====_003_next=====
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
+ex. usage:
 
-RnJvbTogSGFvIFNpIDxzaS5oYW9AenRlLmNvbS5jbj4NCg0KVGhlIGxvY2FsIHZhcmlhYmxlICdj
-cHVtYXNrX3QgbWFzaycgaXMgaW4gdGhlIHN0YWNrIG1lbW9yeSwgYW5kIGl0cyBhZGRyZXNzDQpp
-cyBhc3NpZ25lZCB0byAnZGVzYy0+YWZmaW5pdHknIGluICdpcnFfc2V0X2FmZmluaXR5X2hpbnQo
-KScuDQpCdXQgdGhlIG1lbW9yeSBhcmVhIHdoZXJlIHRoaXMgdmFyaWFibGUgaXMgbG9jYXRlZCBp
-cyBhdCByaXNrIG9mIGJlaW5nDQptb2RpZmllZC4NCg0KRHVyaW5nIExUUCB0ZXN0aW5nLCB0aGUg
-Zm9sbG93aW5nIGVycm9yIHdhcyBnZW5lcmF0ZWQ6DQoNClVuYWJsZSB0byBoYW5kbGUga2VybmVs
-IHBhZ2luZyByZXF1ZXN0IGF0IHZpcnR1YWwgYWRkcmVzcyBmZmZmMDAwMDEyZTliNzkwDQpNZW0g
-YWJvcnQgaW5mbzoNCiAgRVNSID0gMHg5NjAwMDAwNw0KICBFeGNlcHRpb24gY2xhc3MgPSBEQUJU
-IChjdXJyZW50IEVMKSwgSUwgPSAzMiBiaXRzDQogIFNFVCA9IDAsIEZuViA9IDANCiAgRUEgPSAw
-LCBTMVBUVyA9IDANCkRhdGEgYWJvcnQgaW5mbzoNCiAgSVNWID0gMCwgSVNTID0gMHgwMDAwMDAw
-Nw0KICBDTSA9IDAsIFduUiA9IDANCnN3YXBwZXIgcGd0YWJsZTogNGsgcGFnZXMsIDQ4LWJpdCBW
-QXMsIHBnZHAgPSAwMDAwMDAwMDc1YWM1ZTA3DQpbZmZmZjAwMDAxMmU5Yjc5MF0gcGdkPTAwMDAw
-MDI3ZGJmZmUwMDMsIHB1ZD0wMDAwMDAyN2RiZmZkMDAzLA0KcG1kPTAwMDAwMDI3YjZkNjEwMDMs
-IHB0ZT0wMDAwMDAwMDAwMDAwMDAwDQpJbnRlcm5hbCBlcnJvcjogT29wczogOTYwMDAwMDcgWyMx
-XSBQUkVFTVBUIFNNUA0KTW9kdWxlcyBsaW5rZWQgaW46IHh0X2Nvbm50cmFjaw0KUHJvY2VzcyBy
-ZWFkX2FsbCAocGlkOiAyMDE3MSwgc3RhY2sgbGltaXQgPSAweDAwMDAwMDAwNDRlYTQwOTUpDQpD
-UFU6IDE0IFBJRDogMjAxNzEgQ29tbTogcmVhZF9hbGwgVGFpbnRlZDogRyAgICBCICAgVw0KSGFy
-ZHdhcmUgbmFtZTogTlhQIExheWVyc2NhcGUgTFgyMTYwQVJEQiAoRFQpDQpwc3RhdGU6IDgwMDAw
-MDg1IChOemN2IGRhSWYgLVBBTiAtVUFPKQ0KcGMgOiBpcnFfYWZmaW5pdHlfaGludF9wcm9jX3No
-b3crMHg1NC8weGIwDQpsciA6IGlycV9hZmZpbml0eV9oaW50X3Byb2Nfc2hvdysweDRjLzB4YjAN
-CnNwIDogZmZmZjAwMDAxMTM4YmMxMA0KeDI5OiBmZmZmMDAwMDExMzhiYzEwIHgyODogMDAwMGZm
-ZmZkMTMxZDFlMA0KeDI3OiAwMDAwMDAwMDAwNzAwMGMwIHgyNjogZmZmZjgwMjViOTQ4MGRjMA0K
-eDI1OiBmZmZmODAyNWI5NDgwZGE4IHgyNDogMDAwMDAwMDAwMDAwMDNmZg0KeDIzOiBmZmZmODAy
-NzMzNGY4MzAwIHgyMjogZmZmZjgwMjcyZTk3ZDAwMA0KeDIxOiBmZmZmODAyNzJlOTdkMGIwIHgy
-MDogZmZmZjgwMjViOTQ4MGQ4MA0KeDE5OiBmZmZmMDAwMDA5YTQ5MDAwIHgxODogMDAwMDAwMDAw
-MDAwMDAwMA0KeDE3OiAwMDAwMDAwMDAwMDAwMDAwIHgxNjogMDAwMDAwMDAwMDAwMDAwMA0KeDE1
-OiAwMDAwMDAwMDAwMDAwMDAwIHgxNDogMDAwMDAwMDAwMDAwMDAwMA0KeDEzOiAwMDAwMDAwMDAw
-MDAwMDAwIHgxMjogMDAwMDAwMDAwMDAwMDA0MA0KeDExOiAwMDAwMDAwMDAwMDAwMDAwIHgxMDog
-ZmZmZjgwMjczNWI3OWI4OA0KeDkgOiAwMDAwMDAwMDAwMDAwMDAwIHg4IDogMDAwMDAwMDAwMDAw
-MDAwMA0KeDcgOiBmZmZmMDAwMDA5YTQ5ODQ4IHg2IDogMDAwMDAwMDAwMDAwMDAwMw0KeDUgOiAw
-MDAwMDAwMDAwMDAwMDAwIHg0IDogZmZmZjAwMDAwODE1N2Q2Yw0KeDMgOiBmZmZmMDAwMDExMzhi
-YzEwIHgyIDogZmZmZjAwMDAxMmU5Yjc5MA0KeDEgOiAwMDAwMDAwMDAwMDAwMDAwIHgwIDogMDAw
-MDAwMDAwMDAwMDAwMA0KQ2FsbCB0cmFjZToNCiBpcnFfYWZmaW5pdHlfaGludF9wcm9jX3Nob3cr
-MHg1NC8weGIwDQogc2VxX3JlYWQrMHgxYjAvMHg0NDANCiBwcm9jX3JlZ19yZWFkKzB4ODAvMHhk
-OA0KIF9fdmZzX3JlYWQrMHg2MC8weDE3OA0KIHZmc19yZWFkKzB4OTQvMHgxNTANCiBrc3lzX3Jl
-YWQrMHg3NC8weGYwDQogX19hcm02NF9zeXNfcmVhZCsweDI0LzB4MzANCiBlbDBfc3ZjX2NvbW1v
-bi5jb25zdHByb3AuMCsweGQ4LzB4MWEwDQogZWwwX3N2Y19oYW5kbGVyKzB4MzQvMHg4OA0KIGVs
-MF9zdmMrMHgxMC8weDE0DQpDb2RlOiBmOTAwMWJiZiA5NDNlMDczMiBmOTQwNjZjMiBiNDAwMDA2
-MiAoZjk0MDAwNDEpDQotLS1bIGVuZCB0cmFjZSBiNDk1YmRjYjBiM2I3MzJiIF0tLS0NCktlcm5l
-bCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBGYXRhbCBleGNlcHRpb24NClNNUDogc3RvcHBpbmcgc2Vj
-b25kYXJ5IENQVXMNClNNUDogZmFpbGVkIHRvIHN0b3Agc2Vjb25kYXJ5IENQVXMgMCwyLTQsNiw4
-LDExLDEzLTE1DQpLZXJuZWwgT2Zmc2V0OiBkaXNhYmxlZA0KQ1BVIGZlYXR1cmVzOiAweDAsMjEw
-MDYwMDgNCk1lbW9yeSBMaW1pdDogbm9uZQ0KLS0tWyBlbmQgS2VybmVsIHBhbmljIC0gbm90IHN5
-bmNpbmc6IEZhdGFsIGV4Y2VwdGlvbiBdLS0tDQoNCkZpeCBpdCBieSBjaGFuZ2luZyAnY3B1bWFz
-a190IG1hc2snIHRvIGdsb2JhbCB2YXJpYWJsZS4NCg0KU2lnbmVkLW9mZi1ieTogSGFvIFNpIDxz
-aS5oYW9AenRlLmNvbS5jbj4NClNpZ25lZC1vZmYtYnk6IExpbiBDaGVuIDxjaGVuLmxpbjVAenRl
-LmNvbS5jbj4NClNpZ25lZC1vZmYtYnk6IFlpIFdhbmcgPHdhbmcueWk1OUB6dGUuY29tLmNuPg0K
-LS0tDQogZHJpdmVycy9zb2MvZnNsL2RwaW8vZHBpby1kcml2ZXIuYyB8IDIgKy0NCiAxIGZpbGUg
-Y2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvc29jL2ZzbC9kcGlvL2RwaW8tZHJpdmVyLmMgYi9kcml2ZXJzL3NvYy9mc2wvZHBpby9k
-cGlvLWRyaXZlci5jDQppbmRleCA3YjY0MmMzLi5iMzFlYzUzIDEwMDY0NA0KLS0tIGEvZHJpdmVy
-cy9zb2MvZnNsL2RwaW8vZHBpby1kcml2ZXIuYw0KKysrIGIvZHJpdmVycy9zb2MvZnNsL2RwaW8v
-ZHBpby1kcml2ZXIuYw0KQEAgLTMxLDYgKzMxLDcgQEAgc3RydWN0IGRwaW9fcHJpdiB7DQogCXN0
-cnVjdCBkcGFhMl9pbyAqaW87DQogfTsNCiANCitzdGF0aWMgY3B1bWFza190IG1hc2s7DQogc3Rh
-dGljIGNwdW1hc2tfdmFyX3QgY3B1c191bnVzZWRfbWFzazsNCiANCiBzdGF0aWMgY29uc3Qgc3Ry
-dWN0IHNvY19kZXZpY2VfYXR0cmlidXRlIGxzMTA4OGFfc29jW10gPSB7DQpAQCAtOTUsNyArOTYs
-NiBAQCBzdGF0aWMgaW50IHJlZ2lzdGVyX2RwaW9faXJxX2hhbmRsZXJzKHN0cnVjdCBmc2xfbWNf
-ZGV2aWNlICpkcGlvX2RldiwgaW50IGNwdSkNCiB7DQogCWludCBlcnJvcjsNCiAJc3RydWN0IGZz
-bF9tY19kZXZpY2VfaXJxICppcnE7DQotCWNwdW1hc2tfdCBtYXNrOw0KIA0KIAlpcnEgPSBkcGlv
-X2Rldi0+aXJxc1swXTsNCiAJZXJyb3IgPSBkZXZtX3JlcXVlc3RfaXJxKCZkcGlvX2Rldi0+ZGV2
-LA0KLS0gDQoyLjE1LjI=
+command#: perf record -I --weight -d  -e
+	 cpu/event=0x67340101EC,thresh_cmp=500/ ./ebizzy -S 2 -t 1 -s 4096
+1826636 records/s
+real  2.00 s
+user  2.00 s
+sys   0.00 s
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.038 MB perf.data (61 samples) ]
 
+Signed-off-by: Kajol Jain<kjain@linux.ibm.com>
+---
+ arch/powerpc/include/asm/perf_event_server.h |  4 +-
+ arch/powerpc/perf/core-book3s.c              |  2 +-
+ arch/powerpc/perf/isa207-common.c            | 54 ++++++++++++++++++--
+ arch/powerpc/perf/isa207-common.h            |  6 ++-
+ arch/powerpc/perf/mpc7450-pmu.c              |  3 +-
+ arch/powerpc/perf/power10-pmu.c              |  4 +-
+ arch/powerpc/perf/power5+-pmu.c              |  3 +-
+ arch/powerpc/perf/power5-pmu.c               |  3 +-
+ arch/powerpc/perf/power6-pmu.c               |  3 +-
+ arch/powerpc/perf/power7-pmu.c               |  3 +-
+ arch/powerpc/perf/ppc970-pmu.c               |  3 +-
+ 11 files changed, 73 insertions(+), 15 deletions(-)
 
---=====_003_next=====--
-
---=====_001_next=====--
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index f6acabb6c9be..566e41d4ff6a 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -34,9 +34,10 @@ struct power_pmu {
+ 	int		max_alternatives;
+ 	unsigned long	add_fields;
+ 	unsigned long	test_adder;
++	/* TODO: parameter list is growing and should consider folding all this to a struct */
+ 	int		(*compute_mmcr)(u64 events[], int n_ev,
+ 				unsigned int hwc[], struct mmcr_regs *mmcr,
+-				struct perf_event *pevents[]);
++				struct perf_event *pevents[], u32 flags);
+ 	int		(*get_constraint)(u64 event_id, unsigned long *mskp,
+ 				unsigned long *valp);
+ 	int		(*get_alternatives)(u64 event_id, unsigned int flags,
+@@ -82,6 +83,7 @@ struct power_pmu {
+ #define PPMU_ARCH_207S		0x00000080 /* PMC is architecture v2.07S */
+ #define PPMU_NO_SIAR		0x00000100 /* Do not use SIAR */
+ #define PPMU_ARCH_31		0x00000200 /* Has MMCR3, SIER2 and SIER3 */
++#define PPMU_HAS_ATTR_CONFIG1	0x00000400 /* Using config1 attribute */
+ 
+ /*
+  * Values for flags to get_alternatives()
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 08643cba1494..e4c817f64566 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1356,7 +1356,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	memset(&cpuhw->mmcr, 0, sizeof(cpuhw->mmcr));
+ 
+ 	if (ppmu->compute_mmcr(cpuhw->events, cpuhw->n_events, hwc_index,
+-			       &cpuhw->mmcr, cpuhw->event)) {
++			       &cpuhw->mmcr, cpuhw->event, ppmu->flags)) {
+ 		/* shouldn't ever get here */
+ 		printk(KERN_ERR "oops compute_mmcr failed\n");
+ 		goto out;
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 964437adec18..cfad88b7ca85 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -110,10 +110,48 @@ static void mmcra_sdar_mode(u64 event, unsigned long *mmcra)
+ 
+ static u64 thresh_cmp_val(u64 value)
+ {
+-	if (cpu_has_feature(CPU_FTR_ARCH_300))
+-		return value << p9_MMCRA_THR_CMP_SHIFT;
++	int exp = 0;
++	u64 result = value;
++
++	if (!value)
++		return value;
++
++	/*
++	 * Incase of P10, thresh_cmp value is not part of raw event code
++	 * and provided via attr.config1 parameter. To program threshold in MMCRA,
++	 * take a 18 bit number N and shift right 2 places and increment
++	 * the exponent E by 1 until the upper 10 bits of N are zero.
++	 * Write E to the threshold exponent and write the lower 8 bits of N
++	 * to the threshold mantissa.
++	 * The max threshold that can be written is 261120.
++	 */
++	if (cpu_has_feature(CPU_FTR_ARCH_31)) {
++		if (value > 261120)
++			value = 261120;
++		while ((64 - __builtin_clzl(value)) > 8) {
++			exp++;
++			value >>= 2;
++		}
++
++		/*
++		 * Note that it is invalid to write a mantissa with the
++		 * upper 2 bits of mantissa being zero, unless the
++		 * exponent is also zero.
++		 */
++		if (!(value & 0xC0) && exp)
++			result = 0;
++		else
++			result = (exp << 8) | value;
++	}
+ 
+-	return value << MMCRA_THR_CMP_SHIFT;
++	/*
++	 * Since location of threshold compare bits in MMCRA
++	 * is different for p8, using different shift value.
++	 */
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
++		return result << p9_MMCRA_THR_CMP_SHIFT;
++	else
++		return result << MMCRA_THR_CMP_SHIFT;
+ }
+ 
+ static unsigned long combine_from_event(u64 event)
+@@ -144,7 +182,9 @@ static bool is_thresh_cmp_valid(u64 event)
+ 	/*
+ 	 * Check the mantissa upper two bits are not zero, unless the
+ 	 * exponent is also zero. See the THRESH_CMP_MANTISSA doc.
+-	 * Power10: thresh_cmp is replaced by l2_l3 event select.
++	 * Power10: thresh_cmp bits are not part of raw event code.
++	 * attr.config1 is used to get thresh_cmp value from user.
++	 * And hence thresh_cmp is not part of group constraint.
+ 	 */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_31))
+ 		return false;
+@@ -386,7 +426,7 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
+ 
+ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 			       unsigned int hwc[], struct mmcr_regs *mmcr,
+-			       struct perf_event *pevents[])
++			       struct perf_event *pevents[], u32 flags)
+ {
+ 	unsigned long mmcra, mmcr1, mmcr2, unit, combine, psel, cache, val;
+ 	unsigned long mmcr3;
+@@ -472,6 +512,10 @@ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 				val = (event[i] >> EVENT_THR_CMP_SHIFT) &
+ 					EVENT_THR_CMP_MASK;
+ 				mmcra |= thresh_cmp_val(val);
++			} else if (flags & PPMU_HAS_ATTR_CONFIG1) {
++				val = (pevents[i]->attr.config1 >> p10_EVENT_THR_CMP_SHIFT) &
++					p10_EVENT_THR_CMP_MASK;
++				mmcra |= thresh_cmp_val(val);
+ 			}
+ 		}
+ 
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 044de65e96b9..8d365dccce50 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -100,6 +100,10 @@
+ #define p10_EVENT_MMCR3_MASK		0x7fffull
+ #define p10_EVENT_MMCR3_SHIFT		45
+ 
++/* Event Threshold Compare bit constant for power10 in config1 attribute */
++#define p10_EVENT_THR_CMP_SHIFT	0
++#define p10_EVENT_THR_CMP_MASK	0x3FFFFull
++
+ #define p10_EVENT_VALID_MASK		\
+ 	((p10_SDAR_MODE_MASK   << p10_SDAR_MODE_SHIFT		|	\
+ 	(p10_EVENT_THRESH_MASK  << EVENT_THRESH_SHIFT)		|	\
+@@ -249,7 +253,7 @@
+ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp);
+ int isa207_compute_mmcr(u64 event[], int n_ev,
+ 				unsigned int hwc[], struct mmcr_regs *mmcr,
+-				struct perf_event *pevents[]);
++				struct perf_event *pevents[], u32 flags);
+ void isa207_disable_pmc(unsigned int pmc, struct mmcr_regs *mmcr);
+ int isa207_get_alternatives(u64 event, u64 alt[], int size, unsigned int flags,
+ 					const unsigned int ev_alt[][MAX_ALT]);
+diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
+index 1919e9df9165..50612b1fafb9 100644
+--- a/arch/powerpc/perf/mpc7450-pmu.c
++++ b/arch/powerpc/perf/mpc7450-pmu.c
+@@ -258,7 +258,8 @@ static const u32 pmcsel_mask[N_COUNTER] = {
+  */
+ static int mpc7450_compute_mmcr(u64 event[], int n_ev, unsigned int hwc[],
+ 				struct mmcr_regs *mmcr,
+-				struct perf_event *pevents[])
++				struct perf_event *pevents[],
++				u32 flags __maybe_unused)
+ {
+ 	u8 event_index[N_CLASSES][N_COUNTER];
+ 	int n_classevent[N_CLASSES];
+diff --git a/arch/powerpc/perf/power10-pmu.c b/arch/powerpc/perf/power10-pmu.c
+index 83148656b524..a838da409570 100644
+--- a/arch/powerpc/perf/power10-pmu.c
++++ b/arch/powerpc/perf/power10-pmu.c
+@@ -176,6 +176,7 @@ PMU_FORMAT_ATTR(src_sel,        "config:45-46");
+ PMU_FORMAT_ATTR(invert_bit,     "config:47");
+ PMU_FORMAT_ATTR(src_mask,       "config:48-53");
+ PMU_FORMAT_ATTR(src_match,      "config:54-59");
++PMU_FORMAT_ATTR(thresh_cmp,     "config1:0-17");
+ 
+ static struct attribute *power10_pmu_format_attr[] = {
+ 	&format_attr_event.attr,
+@@ -195,6 +196,7 @@ static struct attribute *power10_pmu_format_attr[] = {
+ 	&format_attr_invert_bit.attr,
+ 	&format_attr_src_mask.attr,
+ 	&format_attr_src_match.attr,
++	&format_attr_thresh_cmp.attr,
+ 	NULL,
+ };
+ 
+@@ -393,7 +395,7 @@ static struct power_pmu power10_pmu = {
+ 	.get_mem_weight		= isa207_get_mem_weight,
+ 	.disable_pmc		= isa207_disable_pmc,
+ 	.flags			= PPMU_HAS_SIER | PPMU_ARCH_207S |
+-				  PPMU_ARCH_31,
++				  PPMU_ARCH_31 | PPMU_HAS_ATTR_CONFIG1,
+ 	.n_generic		= ARRAY_SIZE(power10_generic_events),
+ 	.generic_events		= power10_generic_events,
+ 	.cache_events		= &power10_cache_events,
+diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
+index a62b2cd7914f..6eeeb4df523d 100644
+--- a/arch/powerpc/perf/power5+-pmu.c
++++ b/arch/powerpc/perf/power5+-pmu.c
+@@ -449,7 +449,8 @@ static int power5p_marked_instr_event(u64 event)
+ 
+ static int power5p_compute_mmcr(u64 event[], int n_ev,
+ 				unsigned int hwc[], struct mmcr_regs *mmcr,
+-				struct perf_event *pevents[])
++				struct perf_event *pevents[],
++				u32 flags __maybe_unused)
+ {
+ 	unsigned long mmcr1 = 0;
+ 	unsigned long mmcra = 0;
+diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
+index 8732b587cf71..190973b2d394 100644
+--- a/arch/powerpc/perf/power5-pmu.c
++++ b/arch/powerpc/perf/power5-pmu.c
+@@ -380,7 +380,8 @@ static int power5_marked_instr_event(u64 event)
+ 
+ static int power5_compute_mmcr(u64 event[], int n_ev,
+ 			       unsigned int hwc[], struct mmcr_regs *mmcr,
+-			       struct perf_event *pevents[])
++			       struct perf_event *pevents[],
++			       u32 flags __maybe_unused)
+ {
+ 	unsigned long mmcr1 = 0;
+ 	unsigned long mmcra = MMCRA_SDAR_DCACHE_MISS | MMCRA_SDAR_ERAT_MISS;
+diff --git a/arch/powerpc/perf/power6-pmu.c b/arch/powerpc/perf/power6-pmu.c
+index 0e318cf87129..579606315b4d 100644
+--- a/arch/powerpc/perf/power6-pmu.c
++++ b/arch/powerpc/perf/power6-pmu.c
+@@ -171,7 +171,8 @@ static int power6_marked_instr_event(u64 event)
+  * Assign PMC numbers and compute MMCR1 value for a set of events
+  */
+ static int p6_compute_mmcr(u64 event[], int n_ev,
+-			   unsigned int hwc[], struct mmcr_regs *mmcr, struct perf_event *pevents[])
++			   unsigned int hwc[], struct mmcr_regs *mmcr, struct perf_event *pevents[],
++			   u32 flags __maybe_unused)
+ {
+ 	unsigned long mmcr1 = 0;
+ 	unsigned long mmcra = MMCRA_SDAR_DCACHE_MISS | MMCRA_SDAR_ERAT_MISS;
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 5e0bf09cf077..a929917f7259 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -243,7 +243,8 @@ static int power7_marked_instr_event(u64 event)
+ 
+ static int power7_compute_mmcr(u64 event[], int n_ev,
+ 			       unsigned int hwc[], struct mmcr_regs *mmcr,
+-			       struct perf_event *pevents[])
++			       struct perf_event *pevents[],
++			       u32 flags __maybe_unused)
+ {
+ 	unsigned long mmcr1 = 0;
+ 	unsigned long mmcra = MMCRA_SDAR_DCACHE_MISS | MMCRA_SDAR_ERAT_MISS;
+diff --git a/arch/powerpc/perf/ppc970-pmu.c b/arch/powerpc/perf/ppc970-pmu.c
+index d35223fb112c..4a0b1eeab643 100644
+--- a/arch/powerpc/perf/ppc970-pmu.c
++++ b/arch/powerpc/perf/ppc970-pmu.c
+@@ -254,7 +254,8 @@ static int p970_get_alternatives(u64 event, unsigned int flags, u64 alt[])
+ 
+ static int p970_compute_mmcr(u64 event[], int n_ev,
+ 			     unsigned int hwc[], struct mmcr_regs *mmcr,
+-			     struct perf_event *pevents[])
++			     struct perf_event *pevents[],
++			     u32 flags __maybe_unused)
+ {
+ 	unsigned long mmcr0 = 0, mmcr1 = 0, mmcra = 0;
+ 	unsigned int pmc, unit, byte, psel;
+-- 
+2.26.2
 
