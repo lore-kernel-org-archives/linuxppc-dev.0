@@ -7,46 +7,43 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F313C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CFECC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:10:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D3482068E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:08:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D3482068E
+	by mail.kernel.org (Postfix) with ESMTPS id 9CF7B2068E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:10:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CF7B2068E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQ4L5m9QzDqg5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:08:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQ6J3WHrzDr85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:10:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.chip.baikal.ru [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQL3QwdzDqpH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:14 +1100 (AEDT)
+Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQN0RP4zDql6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:15 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 049E68002547;
- Wed, 14 Oct 2020 10:14:22 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 1ECCD803073C;
+ Wed, 14 Oct 2020 10:14:09 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GqeoHrezw9FX; Wed, 14 Oct 2020 13:14:21 +0300 (MSK)
+ with ESMTP id jXLq2i-h9V0q; Wed, 14 Oct 2020 13:14:08 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>, Hauke Mehrtens <hauke@hauke-m.de>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
- <bcm-kernel-feedback-list@broadcom.com>, Jason Cooper <jason@lakedaemon.net>, 
- Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: [PATCH 19/20] arch: dts: Fix xHCI DT nodes name
-Date: Wed, 14 Oct 2020 13:14:01 +0300
-Message-ID: <20201014101402.18271-20-Sergey.Semin@baikalelectronics.ru>
+ <robh+dt@kernel.org>
+Subject: [PATCH 05/20] dt-bindings: usb: usb-hcd: Add generic "usb-phy"
+ property
+Date: Wed, 14 Oct 2020 13:13:47 +0300
+Message-ID: <20201014101402.18271-6-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -83,58 +80,43 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In accordance with the Generic xHCI bindings the corresponding node name
-is suppose to comply with the Generic USB HCD DT schema, which requires
-the USB nodes to have the name acceptable by the regexp: "^usb(@.*)?" .
-Let's fix the DTS files, which have the xHCI-nodes defined with
-incompatible names.
+Even though the Generic PHY framework is the more preferable way of
+setting the USB PHY up, there are still many dts-files and DT bindings
+which rely on having the legacy "usb-phy" specified to attach particular
+USB PHYs to USB cores. Let's have the "usb-phy" property described in
+the generic USB HCD binding file so it would be validated against the
+nodes in which it's specified. Mark the property as deprecated to
+discourage the developers from using it.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
 ---
 
-Please, test the patch out to make sure it doesn't brake the dependent DTS
-files. I did only a manual grepping of the possible nodes dependencies.
+Changelog v2:
+- Discard '|' from the property description, since we don't need to preserve
+  the text formatting.
 ---
- arch/arm/boot/dts/bcm5301x.dtsi               | 2 +-
- arch/arm64/boot/dts/marvell/armada-cp11x.dtsi | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/usb/usb-hcd.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/boot/dts/bcm5301x.dtsi b/arch/arm/boot/dts/bcm5301x.dtsi
-index bf5656d79a55..cf89a44673c5 100644
---- a/arch/arm/boot/dts/bcm5301x.dtsi
-+++ b/arch/arm/boot/dts/bcm5301x.dtsi
-@@ -314,7 +314,7 @@ usb3: usb3@23000 {
+diff --git a/Documentation/devicetree/bindings/usb/usb-hcd.yaml b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
+index 1f9b40fdea70..264a660dc6ea 100644
+--- a/Documentation/devicetree/bindings/usb/usb-hcd.yaml
++++ b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
+@@ -22,6 +22,13 @@ properties:
+     description:
+       Name specifier for the USB PHY
  
- 			interrupt-parent = <&gic>;
- 
--			xhci: xhci@23000 {
-+			xhci: usb@23000 {
- 				#usb-cells = <0>;
- 
- 				compatible = "generic-xhci";
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp11x.dtsi b/arch/arm64/boot/dts/marvell/armada-cp11x.dtsi
-index 9dcf16beabf5..1e37ae181acf 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp11x.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp11x.dtsi
-@@ -275,7 +275,7 @@ CP11X_LABEL(thermal): thermal-sensor@70 {
- 			};
- 		};
- 
--		CP11X_LABEL(usb3_0): usb3@500000 {
-+		CP11X_LABEL(usb3_0): usb@500000 {
- 			compatible = "marvell,armada-8k-xhci",
- 			"generic-xhci";
- 			reg = <0x500000 0x4000>;
-@@ -287,7 +287,7 @@ CP11X_LABEL(usb3_0): usb3@500000 {
- 			status = "disabled";
- 		};
- 
--		CP11X_LABEL(usb3_1): usb3@510000 {
-+		CP11X_LABEL(usb3_1): usb@510000 {
- 			compatible = "marvell,armada-8k-xhci",
- 			"generic-xhci";
- 			reg = <0x510000 0x4000>;
++  usb-phy:
++    $ref: /schemas/types.yaml#/definitions/phandle-array
++    description:
++      List of all the USB PHYs on this HCD to be accepted by the legacy USB
++      Physical Layer subsystem.
++    deprecated: true
++
+   maximum-speed:
+    description:
+      Tells USB controllers we want to work up to a certain speed. In case this
 -- 
 2.27.0
 
