@@ -2,66 +2,160 @@ Return-Path: <SRS0=Si2p=DV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A38D1C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 14:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCE0BC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 18:03:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56C7B212CC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 14:33:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56C7B212CC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id B178521D81
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 18:03:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KcfUbJxD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B178521D81
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBFJn6kYXzDqvw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 01:33:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBKyX1Ml0zDqwN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 05:03:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kaod.org (client-ip=79.137.123.220;
- helo=smtpout1.mo804.mail-out.ovh.net; envelope-from=groug@kaod.org;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643;
+ helo=mail-pl1-x643.google.com; envelope-from=f.fainelli@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from smtpout1.mo804.mail-out.ovh.net
- (smtpout1.mo804.mail-out.ovh.net [79.137.123.220])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=KcfUbJxD; dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBFGY2nWXzDqlr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 01:31:31 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.51])
- by mo804.mail-out.ovh.net (Postfix) with ESMTPS id 3D0A36C2DB23;
- Wed, 14 Oct 2020 16:24:19 +0200 (CEST)
-Received: from kaod.org (37.59.142.106) by DAG8EX2.mxp5.local (172.16.2.72)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Wed, 14 Oct
- 2020 16:24:18 +0200
-Authentication-Results: garm.ovh; auth=pass
- (GARM-106R00689b05b96-c54c-41c6-80c0-fcfcc1cbbabc,
- 7756CE0ACB29AF3C5E7C930ECAC39FAF42B28156) smtp.auth=groug@kaod.org
-Date: Wed, 14 Oct 2020 16:24:16 +0200
-From: Greg Kurz <groug@kaod.org>
-To: =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH] powerpc/pci: Fix PHB removal/rescan on PowerNV
-Message-ID: <20201014162416.5e29e477@bahia.lan>
-In-Reply-To: <06bf1b7b-e9b4-44b0-1aad-60b938f8e924@kaod.org>
-References: <20200925092258.525079-1-clg@kaod.org>
- <CAOSf1CGW7ocYm2BXFiy9Nmi+G+xwVcqQzTqPo_nss_tmpG_V=w@mail.gmail.com>
- <06bf1b7b-e9b4-44b0-1aad-60b938f8e924@kaod.org>
-X-Mailer: Claws Mail 3.17.6 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CBKw844VQzDqpy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 05:00:54 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id t18so123794plo.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2020 11:00:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=acmrr5Q4F4fJOzH/Nl4OunqFr3zdA5h95qBboZBJkeQ=;
+ b=KcfUbJxDkf7IrGRmHJdcRrxi/yokfE0mbacV3SI9vgcH2sss+qqshwMzOWDJKtrWTc
+ OmJmEtmIPs60XotHXr1VklMntR6JSzw5qdiu0vEPcuZlFCWE3bdlFHSJJTDPZGz68PcG
+ QtgcjNJS+fgT+QGkmIPv2tTYhbHfNFxdBBaP2LphGXGRrmTpt/X/f96/IYQB1a1tmcdX
+ XDP1Fm0hRiufGA9QWBgeGUCSVqqaUrOu9COQsIUBXW8ZU57VR3sYiHimZPSpBO8Ijhhz
+ MQSxN0RXyOV90NvimypZ/ksJMQWOGwgIKntNXUWySH7kwLpkt2Q2wvmU4IRtARHoqDQK
+ eqIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=acmrr5Q4F4fJOzH/Nl4OunqFr3zdA5h95qBboZBJkeQ=;
+ b=UlEJD6H1XvcnpakRXixAB73N6TdkXaeCN/sQvtGso5j4T5PknHsAQ7WecvRV+JF4Ce
+ P/xNWKqFpgCMU6hGyliGoJui2raMxfWCMNlEvy1Yb/1Bjd2BFdhbprXRI/Ym65v2luIU
+ bZq/vwopOYi5YAgXMtHax+t3nhGgPtsgOCZimW8Zdjp0JTNrxshK4nywAgsyY0x55WXb
+ kM0dcSyJ5qt4aDMxiIr49w9D+MoT0zzCJmPLN9gELZHwseHJubYAsdb6vLxYEd2ONGB4
+ v+4Js5o8oAZ53PSB3s1/SZCfsyHJPsY4wGqVFVZIBRDkS9076psnZk7OpqGpH68rZJx5
+ iN6Q==
+X-Gm-Message-State: AOAM5334OhJWyeKMBk79nlZt3VHJ8hBDc8ISzPYIoHtykdgPCdbyky/s
+ M1HLAlDsmPLng768YaWiw+o=
+X-Google-Smtp-Source: ABdhPJwRN/Puz5cTsRgmsqvXECFGU21103FYK6BxtuGRzWVkcnwoPlO3nDxW53sdi+87eD9xRDib2A==
+X-Received: by 2002:a17:902:74c1:b029:d3:effa:14ac with SMTP id
+ f1-20020a17090274c1b02900d3effa14acmr265816plt.64.1602698447917; 
+ Wed, 14 Oct 2020 11:00:47 -0700 (PDT)
+Received: from [10.67.48.230] ([192.19.223.252])
+ by smtp.googlemail.com with ESMTPSA id r6sm261614pfg.85.2020.10.14.11.00.45
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Wed, 14 Oct 2020 11:00:47 -0700 (PDT)
+Subject: Re: [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Alexey Brodkin <abrodkin@synopsys.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ bcm-kernel-feedback-list@broadcom.com, Wei Xu <xuwei5@hisilicon.com>,
+ Vladimir Zapolskiy <vz@mleia.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Paul Cercueil <paul@crapouillou.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+ <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Autocrypt: addr=f.fainelli@gmail.com; prefer-encrypt=mutual; keydata=
+ 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
+ M5kY0ACeNhCZJvZ5g4C2Lc9fcTHu8jxmEkI=
+Message-ID: <ed0221ee-c586-b8f8-a7d1-4a2a190dc41b@gmail.com>
+Date: Wed, 14 Oct 2020 11:00:45 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Originating-IP: [37.59.142.106]
-X-ClientProxiedBy: DAG9EX2.mxp5.local (172.16.2.82) To DAG8EX2.mxp5.local
- (172.16.2.72)
-X-Ovh-Tracer-GUID: 122b0630-0bca-4820-9f76-70f6754687f5
-X-Ovh-Tracer-Id: 725642493523696035
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedriedugdejiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvuffkjghfofggtgfgihesthhqredtredtjeenucfhrhhomhepifhrvghgucfmuhhriicuoehgrhhouhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepveelhfdtudffhfeiveehhfelgeellefgteffteekudegheejfffghefhfeeuudffnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdeinecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpqdhouhhtpdhhvghlohepmhigphhlrghnhedrmhgrihhlrdhovhhhrdhnvghtpdhinhgvtheptddrtddrtddrtddpmhgrihhlfhhrohhmpehgrhhouhhgsehkrghougdrohhrghdprhgtphhtthhopegtlhhgsehkrghougdrohhrgh
+In-Reply-To: <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,95 +167,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Oliver O'Halloran <oohall@gmail.com>, linux-pci <linux-pci@vger.kernel.org>
+Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Serge Semin <fancer.lancer@gmail.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+ linux-mediatek@lists.infradead.org,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com,
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 8 Oct 2020 06:37:02 +0200
-C=C3=A9dric Le Goater <clg@kaod.org> wrote:
+On 10/14/20 3:14 AM, Serge Semin wrote:
+> In accordance with the Generic EHCI/OHCI bindings the corresponding node
+> name is suppose to comply with the Generic USB HCD DT schema, which
+> requires the USB nodes to have the name acceptable by the regexp:
+> "^usb(@.*)?" . Let's fix the DTS files, which have the nodes defined with
+> incompatible names.
+> 
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> 
+> ---
+> 
+> Please, test the patch out to make sure it doesn't brake the dependent DTS
+> files. I did only a manual grepping of the possible nodes dependencies.
 
-> On 10/8/20 4:23 AM, Oliver O'Halloran wrote:
-> > On Fri, Sep 25, 2020 at 7:23 PM C=C3=A9dric Le Goater <clg@kaod.org> wr=
-ote:
-> >>
-> >> To fix an issue with PHB hotplug on pSeries machine (HPT/XIVE), commit
-> >> 3a3181e16fbd introduced a PPC specific pcibios_remove_bus() routine to
-> >> clear all interrupt mappings when the bus is removed. This routine
-> >> frees an array allocated in pcibios_scan_phb().
-> >>
-> >> This broke PHB hotplug on PowerNV because, when a PHB is removed and
-> >> re-scanned through sysfs, the PCI layer un-assigns and re-assigns
-> >> resources to the PHB but does not destroy and recreate the PCI
-> >> controller structure. Since pcibios_remove_bus() does not clear the
-> >> 'irq_map' array pointer, a second removal of the PHB will try to free
-> >> the array a second time and corrupt memory.
-> >=20
-> > "PHB hotplug" and "hot-plugging devices under a PHB" are different
-> > things. What you're saying here doesn't make a whole lot of sense to
-> > me unless you're conflating the two. The distinction is important
-> > since on pseries we can use DLPAR to add and remove actual PHBs (i.e.
-> > the pci_controller) at runtime, but there's no corresponding mechanism
-> > on PowerNV.
->=20
-> And it's even different on QEMU.=20
->=20
-
-If the real HW doesn't have the notion of adding/removing a PHB at
-runtime, then QEMU should stick to that, ie. setting dc->hotpluggable
-to false for PNV PHB device types.
-
-> >> Free the 'irq_map' array in pcibios_free_controller() to fix
-> >> corruption and clear interrupt mapping after it has been
-> >> disposed. This to avoid filling up the array with successive
-> >> remove/rescan of a bus.
-> >=20
-> > Even with this patch I think we're still broken. With this patch
-> > applied the init path is something like:
-> >=20
-> > per-phb init:
-> >     allocate phb->irq_map array
-> > per-bus init:
-> >     nothing
-> > per-device init:
-> >     pcibios_bus_add_device()
-> >        pci_read_irq_line()
-> >             pci_irq_map_register(pci_dev, virq)
-> >                *record the device's interrupt in phb->irq_map*
-> >=20
-> > And the teardown path:
-> >=20
-> > per-device teardown:
-> >     nothing
-> > per-bus teardown:
-> >     pcibios_remove_bus()
-> >         pci_irq_map_dispose()
-> >             *walk phb->irq_map and dispose of each mapped interrupt*
-> > per-phb teardown:
-> >     free(phb->irq_map)
-> >=20
-> > There's a lot of asymmetry here, which is a problem in itself, but the
-> > real issue is that when removing *any* pci_bus under a PHB we dispose
-> > of the LSI\ for *every* device under that PHB. Not good.
-> >=20
-> > Ideally we should be fixing this by having the per-device teardown
-> > handle disposing the mapping. Unfortunately, there's no pcibios hook
-> > that's called when removing a pci_dev. However, we can register a bus
-> > notifier which will be called when the pci_dev is removed from its bus
-> > and we already do that for the per-device EEH teardown and to handle
-> > IOMMU TCE invalidation when the device is removed.
->=20
-> I lack the knowledge here and I think some else should take over,
-> as I am not doing a good job.=20
->=20
-> Michael, can you drop the initial patch again :/ It is better not
-> to merge anything.
->=20
-> Thanks,
->=20
-> C.=20
->=20
->=20
-
+Not sure how you envisioned these change to be picked up, but you may
+need to split these changes between ARM/ARM64, MIPS and PowerPC at
+least. And within ARM/ARM64 you will most likely have to split according
+to the various SoC maintainers.
+-- 
+Florian
