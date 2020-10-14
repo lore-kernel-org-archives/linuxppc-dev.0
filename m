@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4199C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:11:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63224C43457
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:13:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CD1E32068E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:11:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CD1E32068E
+	by mail.kernel.org (Postfix) with ESMTPS id 3A3B52173E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:13:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A3B52173E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQ8Q5TlBzDr8C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:11:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQBT4R1NzDqGS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:13:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (ns2.baikalelectronics.ru
- [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQN0RPQzDqlZ
+Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBDQN13yDzDqpJ
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 00:53:15 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 13EF980023F8;
- Wed, 14 Oct 2020 10:14:14 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 595658002548;
+ Wed, 14 Oct 2020 10:14:17 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id DsxEGLhxyhtr; Wed, 14 Oct 2020 13:14:13 +0300 (MSK)
+ with ESMTP id GjCpbGu3yfxE; Wed, 14 Oct 2020 13:14:16 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>
-Subject: [PATCH 12/20] dt-bindings: usb: dwc3: Add Tx De-emphasis restrictions
-Date: Wed, 14 Oct 2020 13:13:54 +0300
-Message-ID: <20201014101402.18271-13-Sergey.Semin@baikalelectronics.ru>
+ <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>, Bjorn Andersson
+ <bjorn.andersson@linaro.org>, Manu Gautam <mgautam@codeaurora.org>
+Subject: [PATCH 17/20] dt-bindings: usb: qcom,dwc3: Validate DWC3 sub-node
+Date: Wed, 14 Oct 2020 13:13:59 +0300
+Message-ID: <20201014101402.18271-18-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -62,55 +62,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>,
+Cc: devicetree@vger.kernel.org, linux-mips@vger.kernel.org,
+ Neil Armstrong <narmstrong@baylibre.com>, Kevin Hilman <khilman@baylibre.com>,
  Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
  linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
  Serge Semin <fancer.lancer@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Serge Semin <Sergey.Semin@baikalelectronics.ru>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
- Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ linux-arm-msm@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In accordance with the driver comments the PIPE3 de-emphasis can be tuned
-to be either -6dB, -2.5dB or disabled. Let's add the de-emphasis
-property restriction so the DT schema would make sure the controller DT
-node is equipped with correct value.
+Qualcomm msm8996/sc7180/sdm845 DWC3 compatible DT nodes are supposed to
+have a DWC USB3 compatible sub-node to describe a fully functioning USB
+interface. Let's use the available DWC USB3 DT schema to validate the
+Qualcomm DWC3 sub-nodes.
+
+Note since the generic DWC USB3 DT node is supposed to be named as generic
+USB HCD ("^usb(@.*)?") one we have to accordingly fix the sub-nodes name
+regexp and fix the DT node example.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
 ---
 
 Changelog v2:
-- Grammar fix: "s/tunned/tuned"
-- Grammar fix: remove redundant "or" conjunction.
+- Discard the "^dwc3@[0-9a-f]+$" nodes from being acceptable as sub-nodes.
 ---
- Documentation/devicetree/bindings/usb/snps,dwc3.yaml | 4 ++++
- 1 file changed, 4 insertions(+)
+ Documentation/devicetree/bindings/usb/qcom,dwc3.yaml | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-index 2f746ac64e71..307affb669aa 100644
---- a/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-+++ b/Documentation/devicetree/bindings/usb/snps,dwc3.yaml
-@@ -145,6 +145,10 @@ properties:
-       The value driven to the PHY is controlled by the LTSSM during USB3
-       Compliance mode.
-     $ref: /schemas/types.yaml#/definitions/uint8
-+    enum:
-+      - 0 # -6dB de-emphasis
-+      - 1 # -3.5dB de-emphasis
-+      - 2 # No de-emphasis
+diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+index dac10848dd7f..8f8d781e73a0 100644
+--- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+@@ -103,11 +103,8 @@ properties:
+ # Required child node:
  
-   snps,dis_u3_susphy_quirk:
-     description: When set core will disable USB3 suspend phy
+ patternProperties:
+-  "^dwc3@[0-9a-f]+$":
+-    type: object
+-    description:
+-      A child node must exist to represent the core DWC3 IP block
+-      The content of the node is defined in dwc3.txt.
++  "^usb@[0-9a-f]+$":
++    $ref: snps,dwc3.yaml#
+ 
+ required:
+   - compatible
+@@ -160,7 +157,7 @@ examples:
+ 
+             resets = <&gcc GCC_USB30_PRIM_BCR>;
+ 
+-            dwc3@a600000 {
++            usb@a600000 {
+                 compatible = "snps,dwc3";
+                 reg = <0 0x0a600000 0 0xcd00>;
+                 interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
 -- 
 2.27.0
 
