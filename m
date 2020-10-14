@@ -2,55 +2,53 @@ Return-Path: <SRS0=Si2p=DV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51F91C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C27C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:31:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7AE5E21D7F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:29:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7AE5E21D7F
+	by mail.kernel.org (Postfix) with ESMTPS id CA45121D7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Oct 2020 21:31:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA45121D7F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQY21LMtzDrNq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:29:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBQZw32NhzDrF2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 08:31:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (unknown [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CBFz30GlYzDqlZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 02:03:10 +1100 (AEDT)
+Received: from mail.baikalelectronics.ru (ns2.baikalchip.com [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBJxP4j7szDqnV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 04:16:50 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id 797A6803202B;
- Wed, 14 Oct 2020 10:14:07 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id BDEBF803073C;
+ Wed, 14 Oct 2020 17:16:46 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wEC0Wp42eOrV; Wed, 14 Oct 2020 13:14:06 +0300 (MSK)
+ with ESMTP id Ys7tOGr55fWZ; Wed, 14 Oct 2020 20:16:46 +0300 (MSK)
+Date: Wed, 14 Oct 2020 20:16:40 +0300
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
- <robh+dt@kernel.org>
-Subject: [PATCH 01/20] dt-bindings: usb: usb-hcd: Convert generic USB
- properties to DT schema
-Date: Wed, 14 Oct 2020 13:13:43 +0300
-Message-ID: <20201014101402.18271-2-Sergey.Semin@baikalelectronics.ru>
-In-Reply-To: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 20/20] arch: dts: Fix DWC USB3 DT nodes name
+Message-ID: <20201014171640.bup52mgaz4jvhtsy@mobilestation>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+ <20201014101402.18271-21-Sergey.Semin@baikalelectronics.ru>
+ <CAJKOXPeErocR5-3xCDqBR3-k3w_2EQ_768d71n229cbzeo4TtQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <CAJKOXPeErocR5-3xCDqBR3-k3w_2EQ_768d71n229cbzeo4TtQ@mail.gmail.com>
 X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
-X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:49 +1100
+X-Mailman-Approved-At: Thu, 15 Oct 2020 07:49:50 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,210 +60,154 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Serge Semin <fancer.lancer@gmail.com>,
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-usb@vger.kernel.org,
+ Neil Armstrong <narmstrong@baylibre.com>, Tony Lindgren <tony@atomide.com>,
  Bjorn Andersson <bjorn.andersson@linaro.org>,
- Serge Semin <Sergey.Semin@baikalelectronics.ru>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Gregory Clement <gregory.clement@bootlin.com>, Wei Xu <xuwei5@hisilicon.com>,
+ Chen-Yu Tsai <wens@csie.org>, Kukjin Kim <kgene@kernel.org>,
+ Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>,
+ Mathias Nyman <mathias.nyman@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Maxime Ripard <mripard@kernel.org>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Roger Quadros <rogerq@ti.com>
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@kernel.org>,
+ linux-mips@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linuxppc-dev@lists.ozlabs.org, Patrice Chotard <patrice.chotard@st.com>,
+ Serge Semin <fancer.lancer@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ Manu Gautam <mgautam@codeaurora.org>,
+ =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
+ Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The generic USB HCD properties have been described in the legacy bindings
-text file: Documentation/devicetree/bindings/usb/generic.txt . Let's
-convert it' content into the USB HCD DT schema properties so all USB DT
-nodes would be validated to have them properly utilized.
+On Wed, Oct 14, 2020 at 12:33:25PM +0200, Krzysztof Kozlowski wrote:
+> On Wed, 14 Oct 2020 at 12:23, Serge Semin
+> <Sergey.Semin@baikalelectronics.ru> wrote:
+> >
+> > In accordance with the DWC USB3 bindings the corresponding node name is
+> > suppose to comply with Generic USB HCD DT schema, which requires the USB
+> > nodes to have the name acceptable by the regexp: "^usb(@.*)?" . But a lot
+> > of the DWC USB3-compatible nodes defined in the ARM/ARM64 DTS files have
+> > name as "^dwc3@.*" or "^usb[1-3]@.*" or even "^dwusb@.*", which will cause
+> > the dtbs_check procedure failure. Let's fix the nodes naming to be
+> > compatible with the DWC USB3 DT schema to make dtbs_check happy.
+> >
+> > Note we don't change the DWC USB3-compatible nodes names of
+> > arch/arm64/boot/dts/apm/{apm-storm.dtsi,apm-shadowcat.dtsi} since the
+> > in-source comment says that the nodes name need to be preserved as
+> > "^dwusb@.*" for some backward compatibility.
+> >
+> > Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> >
+> > ---
+> >
+> > Please, test the patch out to make sure it doesn't brake the dependent DTS
+> > files. I did only a manual grepping of the possible nodes dependencies.
+> 
 
-Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> 1. It is you who should compare the decompiled DTS, not us. For example:
+> $ for i in dts-old/*/*dtb dts-old/*/*/*dtb; do echo $i; crosc64
+> scripts/dtc/dtx_diff ${i} dts-new/${i#dts-old/} ; done
+> 
+> $ for i in dts-old/*/*dtb dts-old/*/*/*dtb; do echo $i; crosc64
+> fdtdump ${i} > ${i}.fdt ; crosc64 fdtdump dts-new/${i#dts-old/} >
+> dts-new/${i#dts-old/}.fdt ; diff -ubB ${i}.fdt
+> dts-new/${i#dts-old/}.fdt ; done
 
----
+So basically you suggest first to compile the old and new dts files, then to
+de-compile them, then diff old and new fdt's, and visually compare the results.
+Personally it isn't that much better than what I did, since each old and new
+dtbs will for sure differ due to the node names change suggested in this patch.
+So it will lead to the visual debugging too, which isn't that effective. But
+your approach is still more demonstrative to make sure that I didn't loose any
+nodes redefinition, since in the occasion the old and new de-compiled nodes will
+differ not only by the node names but with an additional old named node.
 
-Changelog v2:
-- Discard '|' in all the new properties, since we don't need to preserve
-  the text formatting.
-- Convert abbreviated form of the "maximum-speed" enum restriction into
-  the multi-lined version of the list.
-- Drop quotes from around the string constants.
----
- .../devicetree/bindings/usb/generic.txt       | 57 ------------
- .../devicetree/bindings/usb/usb-hcd.yaml      | 88 +++++++++++++++++++
- 2 files changed, 88 insertions(+), 57 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/usb/generic.txt
+So to speak thanks for suggesting it. I'll try it to validate the proposed
+changes.
 
-diff --git a/Documentation/devicetree/bindings/usb/generic.txt b/Documentation/devicetree/bindings/usb/generic.txt
-deleted file mode 100644
-index ba472e7aefc9..000000000000
---- a/Documentation/devicetree/bindings/usb/generic.txt
-+++ /dev/null
-@@ -1,57 +0,0 @@
--Generic USB Properties
--
--Optional properties:
-- - maximum-speed: tells USB controllers we want to work up to a certain
--			speed. Valid arguments are "super-speed-plus",
--			"super-speed", "high-speed", "full-speed" and
--			"low-speed". In case this isn't passed via DT, USB
--			controllers should default to their maximum HW
--			capability.
-- - dr_mode: tells Dual-Role USB controllers that we want to work on a
--			particular mode. Valid arguments are "host",
--			"peripheral" and "otg". In case this attribute isn't
--			passed via DT, USB DRD controllers should default to
--			OTG.
-- - phy_type: tells USB controllers that we want to configure the core to support
--			a UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is
--			selected. Valid arguments are "utmi" and "utmi_wide".
--			In case this isn't passed via DT, USB controllers should
--			default to HW capability.
-- - otg-rev: tells usb driver the release number of the OTG and EH supplement
--			with which the device and its descriptors are compliant,
--			in binary-coded decimal (i.e. 2.0 is 0200H). This
--			property is used if any real OTG features(HNP/SRP/ADP)
--			is enabled, if ADP is required, otg-rev should be
--			0x0200 or above.
-- - companion: phandle of a companion
-- - hnp-disable: tells OTG controllers we want to disable OTG HNP, normally HNP
--			is the basic function of real OTG except you want it
--			to be a srp-capable only B device.
-- - srp-disable: tells OTG controllers we want to disable OTG SRP, SRP is
--			optional for OTG device.
-- - adp-disable: tells OTG controllers we want to disable OTG ADP, ADP is
--			optional for OTG device.
-- - usb-role-switch: boolean, indicates that the device is capable of assigning
--			the USB data role (USB host or USB device) for a given
--			USB connector, such as Type-C, Type-B(micro).
--			see connector/usb-connector.yaml.
-- - role-switch-default-mode: indicating if usb-role-switch is enabled, the
--			device default operation mode of controller while usb
--			role is USB_ROLE_NONE. Valid arguments are "host" and
--			"peripheral". Defaults to "peripheral" if not
--			specified.
--
--
--This is an attribute to a USB controller such as:
--
--dwc3@4a030000 {
--	compatible = "synopsys,dwc3";
--	reg = <0x4a030000 0xcfff>;
--	interrupts = <0 92 4>
--	usb-phy = <&usb2_phy>, <&usb3,phy>;
--	maximum-speed = "super-speed";
--	dr_mode = "otg";
--	phy_type = "utmi_wide";
--	otg-rev = <0x0200>;
--	adp-disable;
--};
-diff --git a/Documentation/devicetree/bindings/usb/usb-hcd.yaml b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-index 7263b7f2b510..ee7ea205c71d 100644
---- a/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-+++ b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
-@@ -22,9 +22,97 @@ properties:
-     description:
-       Name specifier for the USB PHY
- 
-+  maximum-speed:
-+   description:
-+     Tells USB controllers we want to work up to a certain speed. In case this
-+     isn't passed via DT, USB controllers should default to their maximum HW
-+     capability.
-+   $ref: /schemas/types.yaml#/definitions/string
-+   enum:
-+     - low-speed
-+     - full-speed
-+     - high-speed
-+     - super-speed
-+     - super-speed-plus
-+
-+  dr_mode:
-+    description:
-+      Tells Dual-Role USB controllers that we want to work on a particular
-+      mode. In case this attribute isn't passed via DT, USB DRD controllers
-+      should default to OTG.
-+    $ref: /schemas/types.yaml#/definitions/string
-+    enum: [host, peripheral, otg]
-+
-+  phy_type:
-+    description:
-+      Tells USB controllers that we want to configure the core to support a
-+      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected. In case
-+      this isn't passed via DT, USB controllers should default to HW
-+      capability.
-+    $ref: /schemas/types.yaml#/definitions/string
-+    enum: [utmi, utmi_wide]
-+
-+  otg-rev:
-+    description:
-+      Tells usb driver the release number of the OTG and EH supplement with
-+      which the device and its descriptors are compliant, in binary-coded
-+      decimal (i.e. 2.0 is 0200H). This property is used if any real OTG
-+      features (HNP/SRP/ADP) is enabled. If ADP is required, otg-rev should be
-+      0x0200 or above.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  companion:
-+    description: Phandle of a companion device
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+  hnp-disable:
-+    description:
-+      Tells OTG controllers we want to disable OTG HNP. Normally HNP is the
-+      basic function of real OTG except you want it to be a srp-capable only B
-+      device.
-+    type: boolean
-+
-+  srp-disable:
-+    description:
-+      Tells OTG controllers we want to disable OTG SRP. SRP is optional for OTG
-+      device.
-+    type: boolean
-+
-+  adp-disable:
-+    description:
-+      Tells OTG controllers we want to disable OTG ADP. ADP is optional for OTG
-+      device.
-+    type: boolean
-+
-+  usb-role-switch:
-+    description:
-+      Indicates that the device is capable of assigning the USB data role
-+      (USB host or USB device) for a given USB connector, such as Type-C,
-+      Type-B(micro). See connector/usb-connector.yaml.
-+
-+  role-switch-default-mode:
-+    description:
-+      Indicates if usb-role-switch is enabled, the device default operation
-+      mode of controller while usb role is USB_ROLE_NONE.
-+    $ref: /schemas/types.yaml#/definitions/string
-+    enum: [host, peripheral]
-+    default: peripheral
-+
- examples:
-   - |
-     usb {
-         phys = <&usb2_phy1>, <&usb3_phy1>;
-         phy-names = "usb";
-     };
-+  - |
-+    usb@4a030000 {
-+        compatible = "snps,dwc3";
-+        reg = <0x4a030000 0xcfff>;
-+        interrupts = <0 92 4>;
-+        usb-phy = <&usb2_phy>, <&usb3_phy>;
-+        maximum-speed = "super-speed";
-+        dr_mode = "otg";
-+        phy_type = "utmi_wide";
-+        otg-rev = <0x0200>;
-+        adp-disable;
-+    };
--- 
-2.27.0
+Two questions:
+1) Any advise of a good inliner/command to compile all dtbs at once? Of course I
+can get all the updated dtsi'es, then find out all the dts'es which include
+them, then directly use dtc to compile the found dts'es... On the other hand I
+can just compile all dts'es, then compare old and new ones. The diff of the
+non-modified dtb'es will be just empty...
+2) What crosc64 is?
 
+> 
+> 2. Split it per arm architectures (and proper subject prefix - not
+> "arch") and subarchitectures so maintainers can pick it up.
+
+Why? The changes are simple and can be formatted as a single patch. I've seen
+tons of patches submitted like that, accepted and then merged. What you suggest
+is just much more work, which I don't see quite required.
+
+> 
+> 3. The subject title could be more accurate - there is no fix here
+> because there was no errors in the first place. Requirement of DWC
+> node names comes recently, so it is more alignment with dtschema.
+> Otherwise automatic-pickup-stable-bot might want to pick up... and it
+> should not go to stable.
+
+Actually it is a fix, because the USB DT nodes should have been named with "usb"
+prefix in the first place. Legacy DWC USB3 bindings didn't define the nodes
+naming, but implied to be "usb"-prefixed by the USB HCD schema. The Qualcomm
+DWC3 schema should have defined the sub-nodes as "dwc3@"-prefixed, which was
+wrong in the first place.
+
+Regarding automatic-pickup-stable-bot if it exists I don't think it scans all the
+emails, but most likely the stable@vger.kernel.org list only or the emails
+having the "Fixes:" tag. If I am wrong please give me a link to the bot sources
+or refer to a doc where I can read about the way it works, to take it into
+account in future commits. Just to note I submitted patches which did some fixes,
+had the word "fix" in the subject but weren't selected to be backported to the
+stable kernel.
+
+Anyway I don't really care that much about the subject text using the word "fix"
+or some else. So if you suggest some better alternative, I'd be glad to consider
+it.
+
+-Sergey
+
+> 
+> Best regards,
+> Krzysztof
+> 
+> >  arch/arm/boot/dts/armada-375.dtsi              | 2 +-
+> >  arch/arm/boot/dts/exynos5250.dtsi              | 2 +-
+> >  arch/arm/boot/dts/exynos54xx.dtsi              | 4 ++--
+> >  arch/arm/boot/dts/keystone-k2e.dtsi            | 4 ++--
+> >  arch/arm/boot/dts/keystone.dtsi                | 2 +-
+> >  arch/arm/boot/dts/ls1021a.dtsi                 | 2 +-
+> >  arch/arm/boot/dts/omap5-l4.dtsi                | 2 +-
+> >  arch/arm/boot/dts/stih407-family.dtsi          | 2 +-
+> >  arch/arm64/boot/dts/allwinner/sun50i-h6.dtsi   | 2 +-
+> >  arch/arm64/boot/dts/exynos/exynos5433.dtsi     | 4 ++--
+> >  arch/arm64/boot/dts/exynos/exynos7.dtsi        | 2 +-
+> >  arch/arm64/boot/dts/freescale/fsl-ls1012a.dtsi | 4 ++--
+> >  arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi | 6 +++---
+> >  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 4 ++--
+> >  arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 4 ++--
+> >  arch/arm64/boot/dts/hisilicon/hi3660.dtsi      | 2 +-
+> >  arch/arm64/boot/dts/qcom/apq8096-db820c.dtsi   | 4 ++--
+> >  arch/arm64/boot/dts/qcom/ipq8074.dtsi          | 4 ++--
+> >  arch/arm64/boot/dts/qcom/msm8996.dtsi          | 4 ++--
+> >  arch/arm64/boot/dts/qcom/msm8998.dtsi          | 2 +-
+> >  arch/arm64/boot/dts/qcom/qcs404-evb.dtsi       | 2 +-
+> >  arch/arm64/boot/dts/qcom/qcs404.dtsi           | 4 ++--
+> >  arch/arm64/boot/dts/qcom/sc7180.dtsi           | 2 +-
+> >  arch/arm64/boot/dts/qcom/sdm845.dtsi           | 4 ++--
+> >  arch/arm64/boot/dts/qcom/sm8150.dtsi           | 2 +-
+> >  25 files changed, 38 insertions(+), 38 deletions(-)
+> >
