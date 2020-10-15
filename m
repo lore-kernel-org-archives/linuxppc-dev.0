@@ -2,65 +2,55 @@ Return-Path: <SRS0=6wQL=DW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3FFCC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 00:20:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2E38C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 03:01:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01CB0221FF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 00:20:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="ik7VxBvm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01CB0221FF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0364E22226
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 03:01:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0364E22226
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBVLK4FPRzDqX9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 11:20:41 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBVJQ0J3LzDqVC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 11:19:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.a=rsa-sha256 header.s=201702 header.b=ik7VxBvm; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4CBVJK6H5dz9sT6;
- Thu, 15 Oct 2020 11:18:57 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1602721141;
- bh=Mb2bFDMqNicXNfC4Ps43K7SfZoXJq9Lfw7aztaE6atg=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=ik7VxBvmeMXfqSGhAW8lWf8cRG/yithYAwWRPa6YI/JKJ/f4+z1s4yMujMzFdXWp7
- nkwGUqiNoJV16swjd+4OYVmKYsADXp7/7HTKFgEfg4suAukZm1imym1Ic+WDNUDhnq
- YDYrFW+coLLSgoSZeJbfwG7RVmc9839VX/D/ODGhNe0B6eBTTKV0naWAmjmwfpkQy6
- XcXeOfvlUEY00cKnybz3hRQpNV/TmoMml3gZtVURHnOWaxlqsOJUCqXaagTOA2L8z9
- 9AZ9CIIDZXf2NZjvGDpNrnVFbDKm+ZNdi6vGndbF4sqgxUi79cplQSfUdpAgu5quDj
- AfsTdaKkHRwSQ==
-Date: Thu, 15 Oct 2020 11:18:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Subject: Re: [PATCH -next] Revert "powerpc/pci: unmap legacy INTx interrupts
- when a PHB is removed"
-Message-ID: <20201015111857.3a197732@canb.auug.org.au>
-In-Reply-To: <CAOSf1CFT_Y67Q8caH2uFOYtwpRgFozh30ZWWZzzR-x18LBsG8g@mail.gmail.com>
-References: <20201014182811.12027-1-cai@lca.pw>
- <CAOSf1CFT_Y67Q8caH2uFOYtwpRgFozh30ZWWZzzR-x18LBsG8g@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBYw95SRGzDqX0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 14:01:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=arm.com
+ (client-ip=217.140.110.172; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CBYtN3lZQzDqQt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:00:10 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EE6F831B;
+ Wed, 14 Oct 2020 20:00:07 -0700 (PDT)
+Received: from [192.168.0.130] (unknown [172.31.20.19])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2459F3F719;
+ Wed, 14 Oct 2020 20:00:05 -0700 (PDT)
+Subject: Re: [PATCH v4 00/13] mm/debug_vm_pgtable fixes
+To: Andrew Morton <akpm@linux-foundation.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+References: <20200902114222.181353-1-aneesh.kumar@linux.ibm.com>
+ <20201013135858.f4a7f0c5f3b0a69a2a304cfe@linux-foundation.org>
+ <034db663-a5bd-fd5e-b7f6-3ec31310e8e5@linux.ibm.com>
+ <20201014133607.fbf63d060e331fcd6007b624@linux-foundation.org>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <6669114f-8522-c0cf-8b99-53f064b5b946@arm.com>
+Date: Thu, 15 Oct 2020 08:29:25 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/F8wNrQpMx3RT1ZliEaacCX9";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+In-Reply-To: <20201014133607.fbf63d060e331fcd6007b624@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,54 +62,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>, Qian Cai <cai@lca.pw>,
- =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/F8wNrQpMx3RT1ZliEaacCX9
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi Oliver,
 
-On Thu, 15 Oct 2020 10:00:49 +1100 "Oliver O'Halloran" <oohall@gmail.com> w=
-rote:
->
-> On Thu, Oct 15, 2020 at 5:28 AM Qian Cai <cai@lca.pw> wrote:
-> >
-> > This reverts commit 3a3181e16fbde752007759f8759d25e0ff1fc425 which
-> > causes memory corruptions on POWER9 NV. =20
->=20
-> I was going to post this along with a fix for Cedric's original bug,
-> but I can do that separately so:
->=20
-> Acked-by: Oliver O'Halloran <oohall@gmail.com>
+On 10/15/2020 02:06 AM, Andrew Morton wrote:
+> On Wed, 14 Oct 2020 08:45:16 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+> 
+>>> Against mm-debug_vm_pgtable-avoid-none-pte-in-pte_clear_test.patch:
+>>>
+>>> https://lkml.kernel.org/r/87zh5wx51b.fsf@linux.ibm.com
+>>
+>>
+>> yes this one we should get fixed. I was hoping someone familiar with 
+>> Riscv pte updates rules would pitch in. IIUC we need to update 
+>> RANDON_ORVALUE similar to how we updated it for s390 and ppc64.
+>>
+>>
+>>   Alternatively we can do this
+>>
+>> modified   mm/debug_vm_pgtable.c
+>> @@ -548,7 +548,7 @@ static void __init pte_clear_tests(struct mm_struct 
+>> *mm, pte_t *ptep,
+>>   	pte_t pte = pfn_pte(pfn, prot);
+>>
+>>   	pr_debug("Validating PTE clear\n");
+>> -	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+>> +//	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+>>   	set_pte_at(mm, vaddr, ptep, pte);
+>>   	barrier();
+>>   	pte_clear(mm, vaddr, ptep);
+>>
+>> till we get that feedback from RiscV team?
+> 
+> Would it be better to do
+> 
+> #ifdef CONFIG_S390
+> 	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+> #endif
 
-I added that to linux-next today.
+I would suggest just dropping RANDOM_ORVALUE from pte_clear_tests()
+possibly with a comment saying it needs to be fixed on RISCV before
+being added back later.
 
---=20
-Cheers,
-Stephen Rothwell
+	pte = __pte(pte_val(pte));
 
---Sig_/F8wNrQpMx3RT1ZliEaacCX9
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+OR
 
------BEGIN PGP SIGNATURE-----
+Disable RANDOM_ORVALUE only for RISCV.
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAl+HlXEACgkQAVBC80lX
-0Gzl4ggAjsFTjV/ekYiFVurllVs8uhLgiJiyX9kc2/avzMyjh4YlPjJaamjMQq0A
-QkosvP4MD+YceuyeCtP813DCfhvfp/QY2uMLWeaUPVTn3V8FvtQ3lxIECpq/m3KY
-F6ruVH65ndcsJu1Z+da5+3/g8JiPBIrED00G/rOT4RmfBLLng41G7OfJGUDqOrtk
-8WR7MCNqk1neiJMPdXMOe5IohTDW33yoxaiFWNZO9IuNzcHRuYHJ1xP1MG7m2SSA
-Kdwn+L4Rrm//cW00kRZOBV3S5Y+GvCFTiR7N2RpsA/b/4+H4oDU6JeOmpZYl3ugO
-uk1Vb2NnlTf9AaPBmccafR4mAe5MFQ==
-=vTaC
------END PGP SIGNATURE-----
-
---Sig_/F8wNrQpMx3RT1ZliEaacCX9--
+#ifndef CONFIG_RISCV
+	pte = __pte(pte_val(pte) | RANDOM_ORVALUE);
+#endif
