@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D481FC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29484C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:57:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B752A20878
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:52:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B752A20878
+	by mail.kernel.org (Postfix) with ESMTPS id 7382820878
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:57:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7382820878
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBv1p54vgzDqST
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 02:52:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBv772QTYzDqTs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 02:57:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=codefail.de (client-ip=198.54.127.72;
  helo=se15-1.privateemail.com; envelope-from=cmr@codefail.de;
@@ -30,29 +30,30 @@ Received: from se15-1.privateemail.com (se15-1.privateemail.com
  [198.54.127.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBv023YSyzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 02:51:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CBv556hJtzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 02:55:37 +1100 (AEDT)
 Received: from new-01-3.privateemail.com ([198.54.122.47])
  by se15.registrar-servers.com with esmtpsa
  (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.92)
- (envelope-from <cmr@codefail.de>) id 1kT4iT-0002Hy-NV
+ (envelope-from <cmr@codefail.de>) id 1kT4iT-0002KG-NV
  for linuxppc-dev@lists.ozlabs.org; Thu, 15 Oct 2020 07:58:58 -0700
 Received: from MTA-11.privateemail.com (unknown [10.20.147.23])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id E62D0A70
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:52 +0000 (UTC)
+ by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 6B2F8A73
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:53 +0000 (UTC)
 Received: from mta-11.privateemail.com (localhost [127.0.0.1])
- by mta-11.privateemail.com (Postfix) with ESMTP id D2CDD8004A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 10:58:52 -0400 (EDT)
+ by mta-11.privateemail.com (Postfix) with ESMTP id 596F98004A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 10:58:53 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.235])
- by mta-11.privateemail.com (Postfix) with ESMTPA id A459880041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:52 +0000 (UTC)
+ by mta-11.privateemail.com (Postfix) with ESMTPA id 2D04380041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:53 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/8] powerpc/uaccess: Add unsafe_copy_from_user
-Date: Thu, 15 Oct 2020 10:01:52 -0500
-Message-Id: <20201015150159.28933-2-cmr@codefail.de>
+Subject: [PATCH 3/8] powerpc: Mark functions called inside uaccess blocks w/
+ 'notrace'
+Date: Thu, 15 Oct 2020 10:01:54 -0500
+Message-Id: <20201015150159.28933-4-cmr@codefail.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201015150159.28933-1-cmr@codefail.de>
 References: <20201015150159.28933-1-cmr@codefail.de>
@@ -65,20 +66,20 @@ X-SpamExperts-Username: out-03
 Authentication-Results: registrar-servers.com;
  auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
 X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00193233972791)
+X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.000363830439727)
 X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0Z1apovzGPsYhEeBL1aoZmqpSDasLI4SayDByyq9LIhVt0I3FMaRZXlF
- zWBMq97wYUTNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
- xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX7zDNnDZzaQlmD5sMjPNVJAFO05s+oip5EC/YK
+X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0Z1apovzGPsYhEeBL1aoZmqpSDasLI4SayDByyq9LIhVnBwbp0YUhe+O
+ 2DbR64A3hkTNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
+ xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX7koyYQEBsxcRjmyRQyjglYlO05s+oip5EC/YK
  rMQ9+O92RfE6OSObaNx/GIkER/ho6hfscI36S5ZyZNhIm1qgi83+PBTijYijPG8NZSI4ZQ7w5N/o
  jaomCoWWiTtol8oIjMLSPcwmNI0TQjQbbn/msxmYvSRMYhU3cO2EzUHwVXEwQzgH3ZUltkgdVMpa
  zhNDPjwfaB2rE/S2BhQBkwlK0UgKCrov1GasWV1vj2C+0pcXuAT86WptVNwo/cWcelODMVhfRAfm
  ME3CBgei5d0ipUHvm3Pq/TMVhLiLVSlbDnIEsVH1HkXSWW+lJituJnqw31/E3ahF5MMcDI7KdpjQ
  KUg2DwcIutxTdYYuCv7MB8w4iSij0rwbBa82X4V+KdE8ybxQmwA+8NxVIq0MJiSKg9jlDHh8k6TT
  dHl8m1/8O/92QjNLubgZSlcJjVjePeKVE0yhWxRviTEhnM4stux5zhImD2XryHHXvPaqNrPREOWT
- G1bmlWkaJteaOAtonp0amgJEec4u8FTknEDiI6RmG2ZJgVZw2KizLfHKT1Ui9eqnil7sNNnzdI7c
+ G1bmlWkaJteaOAtonp0aNn3Jb3/JyHGPYOHTI9g2IWZJgVZw2KizLfHKT1Ui9eqnil7sNNnzdI7c
  WFzHzXcM92PNDpgLsd6Ddd/s7VM53ngEDB0hGM25vwdLItd8JHlwRg+9bWPA7CG7LJO22QfG5uwj
- 3VKIhMn3+9f/r55/JTcFkBYR8V3+0JM6whdTjXhc9aUV1oY4fX3W5eOCNA39ksRRE30nnfZObe7o
+ 3VKIhMn3+9f/r55/JVIQ7Q4T4FbQa112ynEmNotc9aUV1oY4fX3W5eOCNA39ksRRE30nnfZObe7o
  1mbr5b4m4O41f3i6XB3J2CA/ZpSpytsBXZZv0niRRFlqwL4JNTd9Km+1fuQNFP4CpCvZPbNBqyph
  zXy+6cTE/AxalG8BEiCj5vZGv9mneHqn4w6ZRYMJqVDlz3D3q3rGz4wpqbrr3vieQzASqOF9IoeU
  DZANWzkl2RGDx1/F1uE2HybNOt0p+xrrv5paups8mshKvA==
@@ -98,88 +99,133 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Implement raw_copy_from_user_allowed() which assumes that userspace read
-access is open. Use this new function to implement raw_copy_from_user().
-Finally, wrap the new function to follow the usual "unsafe_" convention
-of taking a label argument. The new raw_copy_from_user_allowed() calls
-__copy_tofrom_user() internally, but this is still safe to call in user
-access blocks formed with user_*_access_begin()/user_*_access_end()
-since asm functions are not instrumented for tracing.
+Functions called between user_*_access_begin() and user_*_access_end()
+should be either inlined or marked 'notrace' to prevent leaving
+userspace access exposed. Mark any such functions relevant to signal
+handling so that subsequent patches can call them inside uaccess blocks.
 
 Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 ---
- arch/powerpc/include/asm/uaccess.h | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/process.c | 20 ++++++++++----------
+ arch/powerpc/mm/mem.c         |  4 ++--
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 26781b044932..66940b4eb692 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -418,38 +418,45 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- }
- #endif /* __powerpc64__ */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index ba2c987b8403..bf5d9654bd2c 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -84,7 +84,7 @@ extern unsigned long _get_SP(void);
+  */
+ bool tm_suspend_disabled __ro_after_init = false;
  
--static inline unsigned long raw_copy_from_user(void *to,
--		const void __user *from, unsigned long n)
-+static inline unsigned long
-+raw_copy_from_user_allowed(void *to, const void __user *from, unsigned long n)
+-static void check_if_tm_restore_required(struct task_struct *tsk)
++static void notrace check_if_tm_restore_required(struct task_struct *tsk)
  {
--	unsigned long ret;
- 	if (__builtin_constant_p(n) && (n <= 8)) {
--		ret = 1;
-+		unsigned long ret = 1;
+ 	/*
+ 	 * If we are saving the current thread's registers, and the
+@@ -151,7 +151,7 @@ void notrace __msr_check_and_clear(unsigned long bits)
+ EXPORT_SYMBOL(__msr_check_and_clear);
  
- 		switch (n) {
- 		case 1:
- 			barrier_nospec();
--			__get_user_size(*(u8 *)to, from, 1, ret);
-+			__get_user_size_allowed(*(u8 *)to, from, 1, ret);
- 			break;
- 		case 2:
- 			barrier_nospec();
--			__get_user_size(*(u16 *)to, from, 2, ret);
-+			__get_user_size_allowed(*(u16 *)to, from, 2, ret);
- 			break;
- 		case 4:
- 			barrier_nospec();
--			__get_user_size(*(u32 *)to, from, 4, ret);
-+			__get_user_size_allowed(*(u32 *)to, from, 4, ret);
- 			break;
- 		case 8:
- 			barrier_nospec();
--			__get_user_size(*(u64 *)to, from, 8, ret);
-+			__get_user_size_allowed(*(u64 *)to, from, 8, ret);
- 			break;
- 		}
- 		if (ret == 0)
- 			return 0;
- 	}
+ #ifdef CONFIG_PPC_FPU
+-static void __giveup_fpu(struct task_struct *tsk)
++static void notrace __giveup_fpu(struct task_struct *tsk)
+ {
+ 	unsigned long msr;
  
-+	return __copy_tofrom_user((__force void __user *)to, from, n);
-+}
-+
-+static inline unsigned long
-+raw_copy_from_user(void *to, const void __user *from, unsigned long n)
-+{
-+	unsigned long ret;
-+
- 	barrier_nospec();
- 	allow_read_from_user(from, n);
--	ret = __copy_tofrom_user((__force void __user *)to, from, n);
-+	ret = raw_copy_from_user_allowed(to, from, n);
- 	prevent_read_from_user(from, n);
- 	return ret;
+@@ -163,7 +163,7 @@ static void __giveup_fpu(struct task_struct *tsk)
+ 	tsk->thread.regs->msr = msr;
  }
-@@ -571,6 +578,9 @@ user_write_access_begin(const void __user *ptr, size_t len)
- #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
- #define unsafe_put_user(x, p, e) __put_user_goto(x, p, e)
  
-+#define unsafe_copy_from_user(d, s, l, e) \
-+	unsafe_op_wrap(raw_copy_from_user_allowed(d, s, l), e)
-+
- #define unsafe_copy_to_user(d, s, l, e) \
- do {									\
- 	u8 __user *_dst = (u8 __user *)(d);				\
+-void giveup_fpu(struct task_struct *tsk)
++void notrace giveup_fpu(struct task_struct *tsk)
+ {
+ 	check_if_tm_restore_required(tsk);
+ 
+@@ -177,7 +177,7 @@ EXPORT_SYMBOL(giveup_fpu);
+  * Make sure the floating-point register state in the
+  * the thread_struct is up to date for task tsk.
+  */
+-void flush_fp_to_thread(struct task_struct *tsk)
++void notrace flush_fp_to_thread(struct task_struct *tsk)
+ {
+ 	if (tsk->thread.regs) {
+ 		/*
+@@ -234,7 +234,7 @@ static inline void __giveup_fpu(struct task_struct *tsk) { }
+ #endif /* CONFIG_PPC_FPU */
+ 
+ #ifdef CONFIG_ALTIVEC
+-static void __giveup_altivec(struct task_struct *tsk)
++static void notrace __giveup_altivec(struct task_struct *tsk)
+ {
+ 	unsigned long msr;
+ 
+@@ -246,7 +246,7 @@ static void __giveup_altivec(struct task_struct *tsk)
+ 	tsk->thread.regs->msr = msr;
+ }
+ 
+-void giveup_altivec(struct task_struct *tsk)
++void notrace giveup_altivec(struct task_struct *tsk)
+ {
+ 	check_if_tm_restore_required(tsk);
+ 
+@@ -285,7 +285,7 @@ EXPORT_SYMBOL(enable_kernel_altivec);
+  * Make sure the VMX/Altivec register state in the
+  * the thread_struct is up to date for task tsk.
+  */
+-void flush_altivec_to_thread(struct task_struct *tsk)
++void notrace flush_altivec_to_thread(struct task_struct *tsk)
+ {
+ 	if (tsk->thread.regs) {
+ 		preempt_disable();
+@@ -300,7 +300,7 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
+ #endif /* CONFIG_ALTIVEC */
+ 
+ #ifdef CONFIG_VSX
+-static void __giveup_vsx(struct task_struct *tsk)
++static void notrace __giveup_vsx(struct task_struct *tsk)
+ {
+ 	unsigned long msr = tsk->thread.regs->msr;
+ 
+@@ -317,7 +317,7 @@ static void __giveup_vsx(struct task_struct *tsk)
+ 		__giveup_altivec(tsk);
+ }
+ 
+-static void giveup_vsx(struct task_struct *tsk)
++static void notrace giveup_vsx(struct task_struct *tsk)
+ {
+ 	check_if_tm_restore_required(tsk);
+ 
+@@ -352,7 +352,7 @@ void enable_kernel_vsx(void)
+ }
+ EXPORT_SYMBOL(enable_kernel_vsx);
+ 
+-void flush_vsx_to_thread(struct task_struct *tsk)
++void notrace flush_vsx_to_thread(struct task_struct *tsk)
+ {
+ 	if (tsk->thread.regs) {
+ 		preempt_disable();
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index ddc32cc1b6cf..da2345a2abc6 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -378,7 +378,7 @@ static inline bool flush_coherent_icache(unsigned long addr)
+  * @start: the start address
+  * @stop: the stop address (exclusive)
+  */
+-static void invalidate_icache_range(unsigned long start, unsigned long stop)
++static void notrace invalidate_icache_range(unsigned long start, unsigned long stop)
+ {
+ 	unsigned long shift = l1_icache_shift();
+ 	unsigned long bytes = l1_icache_bytes();
+@@ -402,7 +402,7 @@ static void invalidate_icache_range(unsigned long start, unsigned long stop)
+  * @start: the start address
+  * @stop: the stop address (exclusive)
+  */
+-void flush_icache_range(unsigned long start, unsigned long stop)
++void notrace flush_icache_range(unsigned long start, unsigned long stop)
+ {
+ 	if (flush_coherent_icache(start))
+ 		return;
 -- 
 2.28.0
 
