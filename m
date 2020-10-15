@@ -2,103 +2,63 @@ Return-Path: <SRS0=6wQL=DW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D22BC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 09:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5EC1C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 10:17:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BA9A2222E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 09:11:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B0EA220BED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 10:17:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=st.com header.i=@st.com header.b="0oTWPBOx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BA9A2222E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=st.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="WCURctuR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0EA220BED
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBk6v5v2pzDqWS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 20:11:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBlZz0mXqzDqW6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 21:17:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=balbi@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=st.com
- (client-ip=185.132.182.106; helo=mx07-00178001.pphosted.com;
- envelope-from=amelie.delaunay@st.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=st.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=st.com header.i=@st.com header.a=rsa-sha256
- header.s=STMicroelectronics header.b=0oTWPBOx; 
- dkim-atps=neutral
-X-Greylist: delayed 1853 seconds by postgrey-1.36 at bilbo;
- Thu, 15 Oct 2020 19:37:48 AEDT
-Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com
- [185.132.182.106])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=WCURctuR; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBjMw124BzDqSn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 19:37:47 +1100 (AEDT)
-Received: from pps.filterd (m0046037.ppops.net [127.0.0.1])
- by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 09F810KF022265; Thu, 15 Oct 2020 10:05:56 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=STMicroelectronics;
- bh=glhTCKVcnbc8lpjOZBjcwL/WddjOBnrvQMsvFgpIX9U=;
- b=0oTWPBOxS3dHCpvop3Yn8LtnhruTiBArA0yscaywKM5jRBukrtlORwr/OlTPsO/MuqpZ
- NxiXz4Nvydwfc6H86n+++QoVfKWlkVK6RwSl08U860IelLWDFi6VfYxV1c49lArFXN0l
- AFDe3yXM7+VozPw8LXqj2LRtKWO4kRrD6cgMmP7U9tLEM1gC6uz4J1P7UBVkolbWZPMC
- 0c23ip1jx4I4AYDVB506N+iPL276OKcmTrJwevYifEHpP48qXDA8TdK71per8cKZVT4H
- PfdxOAWlYV0XFPa9ElhEi0cBzBscOmgtycug9z9NV8KOyMMJP+rSe/YeUgH1QAaLqKx4 LA== 
-Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
- by mx07-00178001.pphosted.com with ESMTP id 34356ekf4q-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Thu, 15 Oct 2020 10:05:56 +0200
-Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
- by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 0884E100034;
- Thu, 15 Oct 2020 10:05:47 +0200 (CEST)
-Received: from Webmail-eu.st.com (sfhdag3node2.st.com [10.75.127.8])
- by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 8D2CD20602D;
- Thu, 15 Oct 2020 10:05:47 +0200 (CEST)
-Received: from lmecxl0995.lme.st.com (10.75.127.49) by SFHDAG3NODE2.st.com
- (10.75.127.8) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 15 Oct
- 2020 10:05:44 +0200
-Subject: Re: [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
-To: Serge Semin <Sergey.Semin@baikalelectronics.ru>, Mathias Nyman
- <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>,
- Rob Herring <robh+dt@kernel.org>, Alexey Brodkin <abrodkin@synopsys.com>,
- Vineet Gupta <vgupta@synopsys.com>, Hauke Mehrtens <hauke@hauke-m.de>,
- =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
- <bcm-kernel-feedback-list@broadcom.com>, Wei Xu
- <xuwei5@hisilicon.com>, Vladimir Zapolskiy <vz@mleia.com>, Maxime Coquelin
- <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>,
- Paul Cercueil <paul@crapouillou.net>, Thomas Bogendoerfer
- <tsbogend@alpha.franken.de>, Matthias Brugger <matthias.bgg@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CBlY80bQ3zDqTK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 21:15:56 +1100 (AEDT)
+Received: from saruman (88-113-213-94.elisa-laajakaista.fi [88.113.213.94])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2533920BED;
+ Thu, 15 Oct 2020 10:15:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1602756952;
+ bh=Z6L85tl0hUzxc/Wf2yAWwRbRBy0g42YVSMNsAOso/ic=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+ b=WCURctuRAO7apKBpnigKSW4w0RrSEIpplBnDIjs+ve/o+8+46MlY5TmxYzakNSnGt
+ wshd18tKRcbQS+ist8JlaxoOpSixojILJcBphDceJNvzEVJ7nc77SPULh7DZu7zIN5
+ MdYW0FZqoioit4bvm377ZfhSD1iKvlH90Ra8372k=
+From: Felipe Balbi <balbi@kernel.org>
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Subject: Re: [PATCH 20/20] arch: dts: Fix DWC USB3 DT nodes name
+In-Reply-To: <20201014143720.yny3jco5pkb7dr4b@mobilestation>
 References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
- <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
-From: Amelie DELAUNAY <amelie.delaunay@st.com>
-Message-ID: <a68552c5-3284-7196-3873-61711aaf5007@st.com>
-Date: Thu, 15 Oct 2020 10:05:43 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <20201014101402.18271-21-Sergey.Semin@baikalelectronics.ru>
+ <878sc8lx0e.fsf@kernel.org>
+ <20201014143720.yny3jco5pkb7dr4b@mobilestation>
+Date: Thu, 15 Oct 2020 13:15:37 +0300
+Message-ID: <875z7blrqu.fsf@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.75.127.49]
-X-ClientProxiedBy: SFHDAG4NODE3.st.com (10.75.127.12) To SFHDAG3NODE2.st.com
- (10.75.127.8)
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
- definitions=2020-10-15_03:2020-10-14,
- 2020-10-15 signatures=0
-X-Mailman-Approved-At: Thu, 15 Oct 2020 20:09:47 +1100
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,61 +70,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
- Kevin Hilman <khilman@baylibre.com>,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-usb@vger.kernel.org,
+ Neil Armstrong <narmstrong@baylibre.com>, Tony Lindgren <tony@atomide.com>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>, Wei Xu <xuwei5@hisilicon.com>,
+ linux-samsung-soc@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>,
+ Gregory Clement <gregory.clement@bootlin.com>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+ Kukjin Kim <kgene@kernel.org>, Andy Gross <agross@kernel.org>,
+ linux-arm-msm@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>,
+ Mathias Nyman <mathias.nyman@intel.com>, linux-kernel@vger.kernel.org,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Serge Semin <fancer.lancer@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
- linux-mediatek@lists.infradead.org,
- Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ Maxime Ripard <mripard@kernel.org>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ Roger Quadros <rogerq@ti.com>, linux-mips@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linuxppc-dev@lists.ozlabs.org, Patrice Chotard <patrice.chotard@st.com>,
+ Serge Semin <fancer.lancer@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ Manu Gautam <mgautam@codeaurora.org>,
+ =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
+ Shawn Guo <shawnguo@kernel.org>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Serge,
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On 10/14/20 12:14 PM, Serge Semin wrote:
-> In accordance with the Generic EHCI/OHCI bindings the corresponding node
-> name is suppose to comply with the Generic USB HCD DT schema, which
-> requires the USB nodes to have the name acceptable by the regexp:
-> "^usb(@.*)?"  . Let's fix the DTS files, which have the nodes defined with
-> incompatible names.
-> 
-> Signed-off-by: Serge Semin<Sergey.Semin@baikalelectronics.ru>
-> 
-> diff --git a/arch/arm/boot/dts/stm32mp151.dtsi b/arch/arm/boot/dts/stm32mp151.dtsi
-> index bfe29023fbd5..576f7da564c5 100644
-> --- a/arch/arm/boot/dts/stm32mp151.dtsi
-> +++ b/arch/arm/boot/dts/stm32mp151.dtsi
-> @@ -1404,7 +1404,7 @@ ethernet0: ethernet@5800a000 {
->   			status = "disabled";
->   		};
->   
-> -		usbh_ohci: usbh-ohci@5800c000 {
-> +		usbh_ohci: usb@5800c000 {
->   			compatible = "generic-ohci";
->   			reg = <0x5800c000 0x1000>;
->   			clocks = <&rcc USBH>;
-> @@ -1413,7 +1413,7 @@ usbh_ohci: usbh-ohci@5800c000 {
->   			status = "disabled";
->   		};
->   
-> -		usbh_ehci: usbh-ehci@5800d000 {
-> +		usbh_ehci: usb@5800d000 {
->   			compatible = "generic-ehci";
->   			reg = <0x5800d000 0x1000>;
->   			clocks = <&rcc USBH>;
+Serge Semin <Sergey.Semin@baikalelectronics.ru> writes:
 
-For STM32MP151:
+> On Wed, Oct 14, 2020 at 05:09:37PM +0300, Felipe Balbi wrote:
+>>=20
+>> Hi Serge,
+>>=20
+>> Serge Semin <Sergey.Semin@baikalelectronics.ru> writes:
+>> > In accordance with the DWC USB3 bindings the corresponding node name is
+>> > suppose to comply with Generic USB HCD DT schema, which requires the U=
+SB
+>>=20
+>
+>> DWC3 is not a simple HDC, though.
+>
+> Yeah, strictly speaking it is equipped with a lot of vendor-specific stuf=
+f,
+> which are tuned by the DWC USB3 driver in the kernel. But after that the
+> controller is registered as xhci-hcd device so it's serviced by the xHCI =
+driver,
 
-Acked-by: Amelie Delaunay <amelie.delaunay@st.com>
+in Dual-role or host-only builds, that's correct. We can also have
+peripheral-only builds (both SW or HW versions) which means xhci isn't
+even in the picture.
 
-Thanks,
-Amelie
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJFBAEBCAAvFiEElLzh7wn96CXwjh2IzL64meEamQYFAl+IIUoRHGJhbGJpQGtl
+cm5lbC5vcmcACgkQzL64meEamQZO3Q//SiuQrPc8kbjk55HntU2Nq2ql7KHubHOj
+ZhrcegAbPbzA0vqIIasxjkXAC8Abbz3Bn59kDuu0ohRtTG1sKXMrN1aqkIo1tTh+
+zkF7t+k5cdunzJ19jb0lohFu/eDK0JPuXRoByJfUhbxIZfWbacO7bG8TkClU7zhL
+denO6pfQG1nOetdAaHZV9imMuTKJOrnl+bcHx5tNcV9sH02sC6OVXBn4dN5ZnABf
+/FdDd671tZMcz43t7jm1vNk7yxgZPSqQ6myBeXQ45ZL2mn9i0gyi4eEWy29vLwu9
+kVUhb9nrliaBsf/X/+oh05qRACLg/noIcuSpXMtu8tmR2DIcwDijYG8XOsBaDLEj
+ZYSJju7/JQ2XUmrS2s/xWtjcqQN0ZxVsJx0Vy4JZNRQ404qs2cqjDeUFdclP+fdJ
+90W74TKzXS1/t52pQyG84LSM648I/7PhUWara2RV9jds7XPgFuFCwWTxEKkyQCSW
+ayPWVASHrKX0Kzp77GW2UUILCIo+luyMMd7V/BraTI6L+PMBL6+etB/O72UUXdb9
+E2hQyJojMpg7BZ6dnpLcvbtHetLtW1hLisTOfD3NbPUyJzPJAgLt8D77SN5ncTUy
+nC8/57GA0Bs2uzYEB6TlPV4i7c9tLT3MJrlVE/p4uziQ7R/b34xbHDX3xNcspk9Q
+vO7uMM8lF9I=
+=XrV0
+-----END PGP SIGNATURE-----
+--=-=-=--
