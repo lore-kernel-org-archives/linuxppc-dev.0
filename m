@@ -2,88 +2,160 @@ Return-Path: <SRS0=6wQL=DW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29484C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:57:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90AA8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 16:38:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7382820878
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:57:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7382820878
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id 7057D22210
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 16:38:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hCNXfrGU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7057D22210
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBv772QTYzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 02:57:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBw306PB6zDqbk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 03:38:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=198.54.127.72;
- helo=se15-1.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=f.fainelli@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=codefail.de
-Received: from se15-1.privateemail.com (se15-1.privateemail.com
- [198.54.127.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=hCNXfrGU; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBv556hJtzDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 02:55:37 +1100 (AEDT)
-Received: from new-01-3.privateemail.com ([198.54.122.47])
- by se15.registrar-servers.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.92)
- (envelope-from <cmr@codefail.de>) id 1kT4iT-0002KG-NV
- for linuxppc-dev@lists.ozlabs.org; Thu, 15 Oct 2020 07:58:58 -0700
-Received: from MTA-11.privateemail.com (unknown [10.20.147.23])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 6B2F8A73
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:53 +0000 (UTC)
-Received: from mta-11.privateemail.com (localhost [127.0.0.1])
- by mta-11.privateemail.com (Postfix) with ESMTP id 596F98004A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 10:58:53 -0400 (EDT)
-Received: from geist.attlocal.net (unknown [10.20.151.235])
- by mta-11.privateemail.com (Postfix) with ESMTPA id 2D04380041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:53 +0000 (UTC)
-From: "Christopher M. Riedl" <cmr@codefail.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/8] powerpc: Mark functions called inside uaccess blocks w/
- 'notrace'
-Date: Thu, 15 Oct 2020 10:01:54 -0500
-Message-Id: <20201015150159.28933-4-cmr@codefail.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201015150159.28933-1-cmr@codefail.de>
-References: <20201015150159.28933-1-cmr@codefail.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CBw133mf7zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 03:37:10 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id e10so2366771pfj.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 09:37:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=YWBB1tNjSVqbpAQ46aLKFVE5AjRjWL3r4Ab3QA5/ays=;
+ b=hCNXfrGUsg7H+0N2587CoFp6PRzA1+cUtNOT/VHEx3tdTq4TU0bs3+xBIACNvvhH2L
+ w5kAlmgn1HxNTD6EiJF78B4N+5B1vuyi95gDuXvOBWtEiObTsqUqSBnT0aQ+Tfb3+KEi
+ SNl4ErMdYcQfhs4Cbk6LCY1ym2RvR1Od3sHAXN7S9sEWoDTxDjuQeKS3VkIemOxztkbd
+ w2MKCuwY5tB1vWv9+cIiLrJCNPo2Wn+DNn7xQTWCQ3MUYsHDXCKlqcRE4J9LfiNmHwdP
+ CHIMUOz7+4gPj3n1Ooc8wA0s1mnIGvPjTR/bUwk2hh+GKewjjRwJzneiAZHdLw3ZHUPO
+ 9syw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=YWBB1tNjSVqbpAQ46aLKFVE5AjRjWL3r4Ab3QA5/ays=;
+ b=oT+3TFRYxbgR5dS14MlTmnnmujHggUAqQsr5u62tG0K83X67arWI0M/kNCSVqBj3W6
+ JJlf89oyMaz8XtNc7zYLePLcmlHIalic643SIJifFffjp7fX5zjQO1S4fol1CqHySRrv
+ aSdYbgF90ETIPutVIBIvZiJpMNf7GZb5MLwrCU/RuDgaYHAJX2iaIVacHB9EoahGhXRc
+ dYZLUSMPs4gbHY/e3xtrJqoH9hqH17mXBKdp4dIbZQqWLN7Cyhj4JJ2hACcdqcBqXwSf
+ BQE2tEkLuz8VwHyk9s0h2Agz6qvOVlE1H3KWj8/gdPlQkd2s9bAoRNqZSF7aYaR63ll5
+ uang==
+X-Gm-Message-State: AOAM5303M0FkUaMLFJ8ikjAXdY1SWL9Wlx+kYqgiOMyhKyvB54VKH7D0
+ hAba+yNyBR+UJIsNk3nVBpY=
+X-Google-Smtp-Source: ABdhPJwmDS3Vi5aXAC+G4xDfoACzvAax5MX+Zi2h2BRQvZdLVRnvx2/yyCqMIoUsI4TFC86wRFhuNg==
+X-Received: by 2002:aa7:94a4:0:b029:151:d786:d5c2 with SMTP id
+ a4-20020aa794a40000b0290151d786d5c2mr4673216pfl.50.1602779826806; 
+ Thu, 15 Oct 2020 09:37:06 -0700 (PDT)
+Received: from [10.67.48.230] ([192.19.223.252])
+ by smtp.googlemail.com with ESMTPSA id q21sm3700834pgg.45.2020.10.15.09.37.02
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Thu, 15 Oct 2020 09:37:05 -0700 (PDT)
+Subject: Re: [PATCH 18/20] arch: dts: Fix EHCI/OHCI DT nodes name
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Alexey Brodkin <abrodkin@synopsys.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Hauke Mehrtens <hauke@hauke-m.de>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
+ bcm-kernel-feedback-list@broadcom.com, Wei Xu <xuwei5@hisilicon.com>,
+ Vladimir Zapolskiy <vz@mleia.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Paul Cercueil <paul@crapouillou.net>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
+ <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Autocrypt: addr=f.fainelli@gmail.com; prefer-encrypt=mutual; keydata=
+ mQGiBEjPuBIRBACW9MxSJU9fvEOCTnRNqG/13rAGsj+vJqontvoDSNxRgmafP8d3nesnqPyR
+ xGlkaOSDuu09rxuW+69Y2f1TzjFuGpBk4ysWOR85O2Nx8AJ6fYGCoeTbovrNlGT1M9obSFGQ
+ X3IzRnWoqlfudjTO5TKoqkbOgpYqIo5n1QbEjCCwCwCg3DOH/4ug2AUUlcIT9/l3pGvoRJ0E
+ AICDzi3l7pmC5IWn2n1mvP5247urtHFs/uusE827DDj3K8Upn2vYiOFMBhGsxAk6YKV6IP0d
+ ZdWX6fqkJJlu9cSDvWtO1hXeHIfQIE/xcqvlRH783KrihLcsmnBqOiS6rJDO2x1eAgC8meAX
+ SAgsrBhcgGl2Rl5gh/jkeA5ykwbxA/9u1eEuL70Qzt5APJmqVXR+kWvrqdBVPoUNy/tQ8mYc
+ nzJJ63ng3tHhnwHXZOu8hL4nqwlYHRa9eeglXYhBqja4ZvIvCEqSmEukfivk+DlIgVoOAJbh
+ qIWgvr3SIEuR6ayY3f5j0f2ejUMYlYYnKdiHXFlF9uXm1ELrb0YX4GMHz7QnRmxvcmlhbiBG
+ YWluZWxsaSA8Zi5mYWluZWxsaUBnbWFpbC5jb20+iGYEExECACYCGyMGCwkIBwMCBBUCCAME
+ FgIDAQIeAQIXgAUCVF/S8QUJHlwd3wAKCRBhV5kVtWN2DvCVAJ4u4/bPF4P3jxb4qEY8I2gS
+ 6hG0gACffNWlqJ2T4wSSn+3o7CCZNd7SLSC5BA0ESM+4EhAQAL/o09boR9D3Vk1Tt7+gpYr3
+ WQ6hgYVON905q2ndEoA2J0dQxJNRw3snabHDDzQBAcqOvdi7YidfBVdKi0wxHhSuRBfuOppu
+ pdXkb7zxuPQuSveCLqqZWRQ+Cc2QgF7SBqgznbe6Ngout5qXY5Dcagk9LqFNGhJQzUGHAsIs
+ hap1f0B1PoUyUNeEInV98D8Xd/edM3mhO9nRpUXRK9Bvt4iEZUXGuVtZLT52nK6Wv2EZ1TiT
+ OiqZlf1P+vxYLBx9eKmabPdm3yjalhY8yr1S1vL0gSA/C6W1o/TowdieF1rWN/MYHlkpyj9c
+ Rpc281gAO0AP3V1G00YzBEdYyi0gaJbCEQnq8Vz1vDXFxHzyhgGz7umBsVKmYwZgA8DrrB0M
+ oaP35wuGR3RJcaG30AnJpEDkBYHznI2apxdcuTPOHZyEilIRrBGzDwGtAhldzlBoBwE3Z3MY
+ 31TOpACu1ZpNOMysZ6xiE35pWkwc0KYm4hJA5GFfmWSN6DniimW3pmdDIiw4Ifcx8b3mFrRO
+ BbDIW13E51j9RjbO/nAaK9ndZ5LRO1B/8Fwat7bLzmsCiEXOJY7NNpIEpkoNoEUfCcZwmLrU
+ +eOTPzaF6drw6ayewEi5yzPg3TAT6FV3oBsNg3xlwU0gPK3v6gYPX5w9+ovPZ1/qqNfOrbsE
+ FRuiSVsZQ5s3AAMFD/9XjlnnVDh9GX/r/6hjmr4U9tEsM+VQXaVXqZuHKaSmojOLUCP/YVQo
+ 7IiYaNssCS4FCPe4yrL4FJJfJAsbeyDykMN7wAnBcOkbZ9BPJPNCbqU6dowLOiy8AuTYQ48m
+ vIyQ4Ijnb6GTrtxIUDQeOBNuQC/gyyx3nbL/lVlHbxr4tb6YkhkO6shjXhQh7nQb33FjGO4P
+ WU11Nr9i/qoV8QCo12MQEo244RRA6VMud06y/E449rWZFSTwGqb0FS0seTcYNvxt8PB2izX+
+ HZA8SL54j479ubxhfuoTu5nXdtFYFj5Lj5x34LKPx7MpgAmj0H7SDhpFWF2FzcC1bjiW9mjW
+ HaKaX23Awt97AqQZXegbfkJwX2Y53ufq8Np3e1542lh3/mpiGSilCsaTahEGrHK+lIusl6mz
+ Joil+u3k01ofvJMK0ZdzGUZ/aPMZ16LofjFA+MNxWrZFrkYmiGdv+LG45zSlZyIvzSiG2lKy
+ kuVag+IijCIom78P9jRtB1q1Q5lwZp2TLAJlz92DmFwBg1hyFzwDADjZ2nrDxKUiybXIgZp9
+ aU2d++ptEGCVJOfEW4qpWCCLPbOT7XBr+g/4H3qWbs3j/cDDq7LuVYIe+wchy/iXEJaQVeTC
+ y5arMQorqTFWlEOgRA8OP47L9knl9i4xuR0euV6DChDrguup2aJVU4hPBBgRAgAPAhsMBQJU
+ X9LxBQkeXB3fAAoJEGFXmRW1Y3YOj4UAn3nrFLPZekMeqX5aD/aq/dsbXSfyAKC45Go0YyxV
+ HGuUuzv+GKZ6nsysJ7kCDQRXG8fwARAA6q/pqBi5PjHcOAUgk2/2LR5LjjesK50bCaD4JuNc
+ YDhFR7Vs108diBtsho3w8WRd9viOqDrhLJTroVckkk74OY8r+3t1E0Dd4wHWHQZsAeUvOwDM
+ PQMqTUBFuMi6ydzTZpFA2wBR9x6ofl8Ax+zaGBcFrRlQnhsuXLnM1uuvS39+pmzIjasZBP2H
+ UPk5ifigXcpelKmj6iskP3c8QN6x6GjUSmYx+xUfs/GNVSU1XOZn61wgPDbgINJd/THGdqiO
+ iJxCLuTMqlSsmh1+E1dSdfYkCb93R/0ZHvMKWlAx7MnaFgBfsG8FqNtZu3PCLfizyVYYjXbV
+ WO1A23riZKqwrSJAATo5iTS65BuYxrFsFNPrf7TitM8E76BEBZk0OZBvZxMuOs6Z1qI8YKVK
+ UrHVGFq3NbuPWCdRul9SX3VfOunr9Gv0GABnJ0ET+K7nspax0xqq7zgnM71QEaiaH17IFYGS
+ sG34V7Wo3vyQzsk7qLf9Ajno0DhJ+VX43g8+AjxOMNVrGCt9RNXSBVpyv2AMTlWCdJ5KI6V4
+ KEzWM4HJm7QlNKE6RPoBxJVbSQLPd9St3h7mxLcne4l7NK9eNgNnneT7QZL8fL//s9K8Ns1W
+ t60uQNYvbhKDG7+/yLcmJgjF74XkGvxCmTA1rW2bsUriM533nG9gAOUFQjURkwI8jvMAEQEA
+ AYkCaAQYEQIACQUCVxvH8AIbAgIpCRBhV5kVtWN2DsFdIAQZAQIABgUCVxvH8AAKCRCH0Jac
+ RAcHBIkHD/9nmfog7X2ZXMzL9ktT++7x+W/QBrSTCTmq8PK+69+INN1ZDOrY8uz6htfTLV9+
+ e2W6G8/7zIvODuHk7r+yQ585XbplgP0V5Xc8iBHdBgXbqnY5zBrcH+Q/oQ2STalEvaGHqNoD
+ UGyLQ/fiKoLZTPMur57Fy1c9rTuKiSdMgnT0FPfWVDfpR2Ds0gpqWePlRuRGOoCln5GnREA/
+ 2MW2rWf+CO9kbIR+66j8b4RUJqIK3dWn9xbENh/aqxfonGTCZQ2zC4sLd25DQA4w1itPo+f5
+ V/SQxuhnlQkTOCdJ7b/mby/pNRz1lsLkjnXueLILj7gNjwTabZXYtL16z24qkDTI1x3g98R/
+ xunb3/fQwR8FY5/zRvXJq5us/nLvIvOmVwZFkwXc+AF+LSIajqQz9XbXeIP/BDjlBNXRZNdo
+ dVuSU51ENcMcilPr2EUnqEAqeczsCGpnvRCLfVQeSZr2L9N4svNhhfPOEscYhhpHTh0VPyxI
+ pPBNKq+byuYPMyk3nj814NKhImK0O4gTyCK9b+gZAVvQcYAXvSouCnTZeJRrNHJFTgTgu6E0
+ caxTGgc5zzQHeX67eMzrGomG3ZnIxmd1sAbgvJUDaD2GrYlulfwGWwWyTNbWRvMighVdPkSF
+ 6XFgQaosWxkV0OELLy2N485YrTr2Uq64VKyxpncLh50e2RnyAJ9Za0Dx0yyp44iD1OvHtkEI
+ M5kY0ACeNhCZJvZ5g4C2Lc9fcTHu8jxmEkI=
+Message-ID: <8c0f6dee-ee59-e8b4-b7b6-4ca64b342c83@gmail.com>
+Date: Thu, 15 Oct 2020 09:37:02 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
-X-Originating-IP: 198.54.122.47
-X-SpamExperts-Domain: o3.privateemail.com
-X-SpamExperts-Username: out-03
-Authentication-Results: registrar-servers.com;
- auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
-X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.000363830439727)
-X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0Z1apovzGPsYhEeBL1aoZmqpSDasLI4SayDByyq9LIhVnBwbp0YUhe+O
- 2DbR64A3hkTNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
- xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX7koyYQEBsxcRjmyRQyjglYlO05s+oip5EC/YK
- rMQ9+O92RfE6OSObaNx/GIkER/ho6hfscI36S5ZyZNhIm1qgi83+PBTijYijPG8NZSI4ZQ7w5N/o
- jaomCoWWiTtol8oIjMLSPcwmNI0TQjQbbn/msxmYvSRMYhU3cO2EzUHwVXEwQzgH3ZUltkgdVMpa
- zhNDPjwfaB2rE/S2BhQBkwlK0UgKCrov1GasWV1vj2C+0pcXuAT86WptVNwo/cWcelODMVhfRAfm
- ME3CBgei5d0ipUHvm3Pq/TMVhLiLVSlbDnIEsVH1HkXSWW+lJituJnqw31/E3ahF5MMcDI7KdpjQ
- KUg2DwcIutxTdYYuCv7MB8w4iSij0rwbBa82X4V+KdE8ybxQmwA+8NxVIq0MJiSKg9jlDHh8k6TT
- dHl8m1/8O/92QjNLubgZSlcJjVjePeKVE0yhWxRviTEhnM4stux5zhImD2XryHHXvPaqNrPREOWT
- G1bmlWkaJteaOAtonp0aNn3Jb3/JyHGPYOHTI9g2IWZJgVZw2KizLfHKT1Ui9eqnil7sNNnzdI7c
- WFzHzXcM92PNDpgLsd6Ddd/s7VM53ngEDB0hGM25vwdLItd8JHlwRg+9bWPA7CG7LJO22QfG5uwj
- 3VKIhMn3+9f/r55/JVIQ7Q4T4FbQa112ynEmNotc9aUV1oY4fX3W5eOCNA39ksRRE30nnfZObe7o
- 1mbr5b4m4O41f3i6XB3J2CA/ZpSpytsBXZZv0niRRFlqwL4JNTd9Km+1fuQNFP4CpCvZPbNBqyph
- zXy+6cTE/AxalG8BEiCj5vZGv9mneHqn4w6ZRYMJqVDlz3D3q3rGz4wpqbrr3vieQzASqOF9IoeU
- DZANWzkl2RGDx1/F1uE2HybNOt0p+xrrv5paups8mshKvA==
-X-Report-Abuse-To: spam@se5.registrar-servers.com
+In-Reply-To: <20201014101402.18271-19-Sergey.Semin@baikalelectronics.ru>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,137 +167,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Neil Armstrong <narmstrong@baylibre.com>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
+ Serge Semin <fancer.lancer@gmail.com>, linux-kernel@vger.kernel.org,
+ Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
+ Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ linux-mediatek@lists.infradead.org, linux-snps-arc@lists.infradead.org,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ linux-stm32@st-md-mailman.stormreply.com,
+ Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Functions called between user_*_access_begin() and user_*_access_end()
-should be either inlined or marked 'notrace' to prevent leaving
-userspace access exposed. Mark any such functions relevant to signal
-handling so that subsequent patches can call them inside uaccess blocks.
+On 10/14/20 3:14 AM, Serge Semin wrote:
+> In accordance with the Generic EHCI/OHCI bindings the corresponding node
+> name is suppose to comply with the Generic USB HCD DT schema, which
+> requires the USB nodes to have the name acceptable by the regexp:
+> "^usb(@.*)?" . Let's fix the DTS files, which have the nodes defined with
+> incompatible names.
+> 
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> 
+> ---
+> 
+> Please, test the patch out to make sure it doesn't brake the dependent DTS
+> files. I did only a manual grepping of the possible nodes dependencies.
+> ---
 
-Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
----
- arch/powerpc/kernel/process.c | 20 ++++++++++----------
- arch/powerpc/mm/mem.c         |  4 ++--
- 2 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ba2c987b8403..bf5d9654bd2c 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -84,7 +84,7 @@ extern unsigned long _get_SP(void);
-  */
- bool tm_suspend_disabled __ro_after_init = false;
- 
--static void check_if_tm_restore_required(struct task_struct *tsk)
-+static void notrace check_if_tm_restore_required(struct task_struct *tsk)
- {
- 	/*
- 	 * If we are saving the current thread's registers, and the
-@@ -151,7 +151,7 @@ void notrace __msr_check_and_clear(unsigned long bits)
- EXPORT_SYMBOL(__msr_check_and_clear);
- 
- #ifdef CONFIG_PPC_FPU
--static void __giveup_fpu(struct task_struct *tsk)
-+static void notrace __giveup_fpu(struct task_struct *tsk)
- {
- 	unsigned long msr;
- 
-@@ -163,7 +163,7 @@ static void __giveup_fpu(struct task_struct *tsk)
- 	tsk->thread.regs->msr = msr;
- }
- 
--void giveup_fpu(struct task_struct *tsk)
-+void notrace giveup_fpu(struct task_struct *tsk)
- {
- 	check_if_tm_restore_required(tsk);
- 
-@@ -177,7 +177,7 @@ EXPORT_SYMBOL(giveup_fpu);
-  * Make sure the floating-point register state in the
-  * the thread_struct is up to date for task tsk.
-  */
--void flush_fp_to_thread(struct task_struct *tsk)
-+void notrace flush_fp_to_thread(struct task_struct *tsk)
- {
- 	if (tsk->thread.regs) {
- 		/*
-@@ -234,7 +234,7 @@ static inline void __giveup_fpu(struct task_struct *tsk) { }
- #endif /* CONFIG_PPC_FPU */
- 
- #ifdef CONFIG_ALTIVEC
--static void __giveup_altivec(struct task_struct *tsk)
-+static void notrace __giveup_altivec(struct task_struct *tsk)
- {
- 	unsigned long msr;
- 
-@@ -246,7 +246,7 @@ static void __giveup_altivec(struct task_struct *tsk)
- 	tsk->thread.regs->msr = msr;
- }
- 
--void giveup_altivec(struct task_struct *tsk)
-+void notrace giveup_altivec(struct task_struct *tsk)
- {
- 	check_if_tm_restore_required(tsk);
- 
-@@ -285,7 +285,7 @@ EXPORT_SYMBOL(enable_kernel_altivec);
-  * Make sure the VMX/Altivec register state in the
-  * the thread_struct is up to date for task tsk.
-  */
--void flush_altivec_to_thread(struct task_struct *tsk)
-+void notrace flush_altivec_to_thread(struct task_struct *tsk)
- {
- 	if (tsk->thread.regs) {
- 		preempt_disable();
-@@ -300,7 +300,7 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
- #endif /* CONFIG_ALTIVEC */
- 
- #ifdef CONFIG_VSX
--static void __giveup_vsx(struct task_struct *tsk)
-+static void notrace __giveup_vsx(struct task_struct *tsk)
- {
- 	unsigned long msr = tsk->thread.regs->msr;
- 
-@@ -317,7 +317,7 @@ static void __giveup_vsx(struct task_struct *tsk)
- 		__giveup_altivec(tsk);
- }
- 
--static void giveup_vsx(struct task_struct *tsk)
-+static void notrace giveup_vsx(struct task_struct *tsk)
- {
- 	check_if_tm_restore_required(tsk);
- 
-@@ -352,7 +352,7 @@ void enable_kernel_vsx(void)
- }
- EXPORT_SYMBOL(enable_kernel_vsx);
- 
--void flush_vsx_to_thread(struct task_struct *tsk)
-+void notrace flush_vsx_to_thread(struct task_struct *tsk)
- {
- 	if (tsk->thread.regs) {
- 		preempt_disable();
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index ddc32cc1b6cf..da2345a2abc6 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -378,7 +378,7 @@ static inline bool flush_coherent_icache(unsigned long addr)
-  * @start: the start address
-  * @stop: the stop address (exclusive)
-  */
--static void invalidate_icache_range(unsigned long start, unsigned long stop)
-+static void notrace invalidate_icache_range(unsigned long start, unsigned long stop)
- {
- 	unsigned long shift = l1_icache_shift();
- 	unsigned long bytes = l1_icache_bytes();
-@@ -402,7 +402,7 @@ static void invalidate_icache_range(unsigned long start, unsigned long stop)
-  * @start: the start address
-  * @stop: the stop address (exclusive)
-  */
--void flush_icache_range(unsigned long start, unsigned long stop)
-+void notrace flush_icache_range(unsigned long start, unsigned long stop)
- {
- 	if (flush_coherent_icache(start))
- 		return;
+>  arch/arm/boot/dts/bcm5301x.dtsi                | 4 ++--
+>  arch/arm/boot/dts/bcm53573.dtsi                | 4 ++--
+Acked-by: Florian Fainelli <f.fainelli@gmail.com>
 -- 
-2.28.0
-
+Florian
