@@ -2,59 +2,60 @@ Return-Path: <SRS0=6wQL=DW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF6DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3968C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:24:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D06102225A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:22:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D06102225A
+	by mail.kernel.org (Postfix) with ESMTPS id 97DAE2225A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Oct 2020 15:24:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97DAE2225A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CBtMH00L3zDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 02:22:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CBtPc4ZMMzDqFG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 02:24:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=198.54.127.69;
- helo=se14-2.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=codefail.de (client-ip=198.54.127.82;
+ helo=se17-3.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=codefail.de
-X-Greylist: delayed 1286 seconds by postgrey-1.36 at bilbo;
- Fri, 16 Oct 2020 02:20:26 AEDT
-Received: from se14-2.privateemail.com (se14-2.privateemail.com
- [198.54.127.69])
+Received: from se17-3.privateemail.com (se17-3.privateemail.com
+ [198.54.127.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CBtJV0D8JzDqF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 02:20:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CBtLV0tYmzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 02:22:09 +1100 (AEDT)
 Received: from new-01-3.privateemail.com ([198.54.122.47])
- by se14.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
- (Exim 4.92) (envelope-from <cmr@codefail.de>) id 1kT4iT-0005PL-Nz
- for linuxppc-dev@lists.ozlabs.org; Thu, 15 Oct 2020 07:59:01 -0700
+ by se17.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
+ (Exim 4.92) (envelope-from <cmr@codefail.de>)
+ id 1kT4iV-0007rl-K3; Thu, 15 Oct 2020 07:58:57 -0700
 Received: from MTA-11.privateemail.com (unknown [10.20.147.23])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id B02B1A6F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:52 +0000 (UTC)
+ by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 49BEBA79;
+ Thu, 15 Oct 2020 14:58:54 +0000 (UTC)
 Received: from mta-11.privateemail.com (localhost [127.0.0.1])
- by mta-11.privateemail.com (Postfix) with ESMTP id 9350580046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 10:58:52 -0400 (EDT)
+ by mta-11.privateemail.com (Postfix) with ESMTP id 357C580051;
+ Thu, 15 Oct 2020 10:58:54 -0400 (EDT)
 Received: from geist.attlocal.net (unknown [10.20.151.235])
- by mta-11.privateemail.com (Postfix) with ESMTPA id 6541A80041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2020 14:58:52 +0000 (UTC)
+ by mta-11.privateemail.com (Postfix) with ESMTPA id EAF6380041;
+ Thu, 15 Oct 2020 14:58:53 +0000 (UTC)
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/8] Improve signal performance on PPC64 with KUAP
-Date: Thu, 15 Oct 2020 10:01:51 -0500
-Message-Id: <20201015150159.28933-1-cmr@codefail.de>
+Subject: [PATCH 6/8] powerpc/signal64: Replace setup_trampoline() w/
+ unsafe_setup_trampoline()
+Date: Thu, 15 Oct 2020 10:01:57 -0500
+Message-Id: <20201015150159.28933-7-cmr@codefail.de>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201015150159.28933-1-cmr@codefail.de>
+References: <20201015150159.28933-1-cmr@codefail.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Virus-Scanned: ClamAV using ClamSMTP
@@ -64,23 +65,24 @@ X-SpamExperts-Username: out-03
 Authentication-Results: registrar-servers.com;
  auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
 X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: Combined (0.05)
+X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00442090784405)
 X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0ZXzIHSbE2lF8iY6Od2jmSypSDasLI4SayDByyq9LIhViSvBvoGA1PKw
- 0/ADnCN/+ETNWdUk1Ol2OGx3IfrIJKywOmJyM1qr8uRnWBrbSAGD34MCL/enst4vEtpA4leDRT1y
- xwOMUv2um0QcmoO8mg24Dcwf+CZK8NXgy3In+fX7tsjNGt6ga+gOd82cI5iPfFO05s+oip5EC/YK
- rMQ9+O92RfE6OSObaNx/GIkER/ho6hfscI36S5ZyZNhIm1qgix6Fhd62KY0TvtygpLSFJ3Lw5N/o
- jaomCoWWiTtol8oIjMLSPcwmNI0TQjQbbn/msxmYvSRMYhU3cO2EzUHwVXEwQzgH3ZUltkgdVMpa
- zhNDPjwfaB2rE/S2BhQBkwlK0UgKCrov1GasWV1vj2C+0pcXuAT86WptVNwo/cWcelODMVhfRAfm
- ME3CBgei5d0ipWZHuZ2luxkemtGoNxZUQqTo/wKPvFA5qTwvBasVtSz0gfFrL3927nPLXidUYhzT
- L3iFCDAL0QosIifn4ScHG4ifU642KNtk4n/u8nyV2xsjehIqUczFWeS6sE8e1b5/Uj/i4hYVfUxI
- FxiN15g3w5xXw7ICF89SRx911u2+L1VDWTXxQxalx1UzmAX+Mm3XrPEJxD5mbm+QYi3GBj11aazW
- 78ZTQ7i5CZLcqOLpLJxz1m+Kp1KCPGoyG38yARaHof3QzxUBjDlIxq/CY6GWA8+LBDMrD7q/cJog
- wbqzsuoky0Qu9o0UsJYe8KzUZOzYBJq7nLN6wi0+LTtGPl8kCiqRsjtBYSmMAZnDo+4asne4/G1I
- l1bfb2jzXa+qJgNxdnLYM3A6BXfvel8OEFDbU52Uoxy7ZVs22aLE5aXKh2Z2/SyswYYxeanpYW+O
- DenQmhIuIkxkuoNHoZV8ALzej/7m/TG6mPfH0STtFp8lq4mlVm2lHuINJIGiJ73RKeuKpUVINNG3
- OVUHjoaAVY6FvR05Ix7/C9VwqPH/5QpQnZ0BJh1tDfjT4hz4J/ncsYb09chmWIDGRew9XvW9QFDz
- YgSG3lyuFjEDwoOBw76gv6dU
+X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0ZXzIHSbE2lF8iY6Od2jmSypSDasLI4SayDByyq9LIhVNtKkxyIswddP
+ mMM+St0E/UTNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kv5Hkyx+J97b+o9P3S0pLZy4w
+ PvAjpsqvjj/j6hjEzdgwjIM8WZL74q/ySdUU6LOaaqSWR3CtR9MEIpagdB6ZLItBp0ZKBmNWQvqk
+ vDS0Ww23Ne7vwRJxFM/BRzDLXKGsjwf70+7do7vxRy98hA8Alvw1GE/Cydn5ZDjy83M8c+f8vC9y
+ FJZ0kFGd5mPzJ18yEkFMgnpRObkTI0d8VNc23gBVGrIwH5DcMOPS6l8pYvFNxaypTbp28NxghjNo
+ pU/Oaqj4KISIRSJ5MfjE8OaunZEyYYf7TmlI3iEcqXK4A61ChHMQHCMEWTX9HEhwSP4/MSl+mev0
+ M9cO0xP2892D0WDioB3wdYQziB29ThgO+dDGuexHqoM8MMZ/+Vt6fmBOrXsVtdb5vXHsmjrM3PMl
+ +bwqyT5p50x81ZKcmzCu2U1nS+fo8RPkdhnEE0g/KB9GdlzeqgLHqMHcMQ9hN/g2idwbqGxFBmIA
+ iDD7PzfsCqBft7Ajx7WHtEhOA3XgEeYZW39F4n0x+HPOZspMfvAj0YRTW602yRQA5EJXZYVlfSNb
+ 7LsWe1T/HBot8r+VrUoMXuUtdBRw0CzMOyehQ6vQGMkQt7SVjG/Wt9q2MCBOO8okifyOlZVz+Ubf
+ ZoWWBe3r7o8DebwK9n0BDYMYTfypr0++GRKi3fJfRTPr/PuJHE14Rl1ncZ3/2Ly7gkIlz7EOQVDg
+ U8x/XonV574CjYPqsbK4t8eoCcCPuuAofv54KabNMIAIBiaK9DtmHf+mwe4RVKFwDpe+9rZABUSO
+ mrMA1t06xDMGattwo1uV8C85T2sDuqZMQd8MRn7MIVJyXHM9WxeQXKq4zKXxIidNa/vJ3chBkF1n
+ BDIDda3A4W6X/AKQNp0AAtPqH+KJLPpSUJn7dvBbxPsvBDzFahmXZhm6GOijHBtexFH6/O9QemIW
+ oIwDla26yemspyrEDYfZa91p0pRdPKxLj4jcJSWgPFoMJ6qhJBzU5fwG//sGHps/u1ExL7hrJSk6
+ 0SF3F6RYOYr2
 X-Report-Abuse-To: spam@se5.registrar-servers.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -93,76 +95,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As reported by Anton, there is a large penalty to signal handling
-performance on radix systems using KUAP. The signal handling code
-performs many user access operations, each of which needs to switch the
-KUAP permissions bit to open and then close user access. This involves a
-costly 'mtspr' operation [0].
+From: Daniel Axtens <dja@axtens.net>
 
-There is existing work done on x86 and by Christopher Leroy for PPC32 to
-instead open up user access in "blocks" using user_*_access_{begin,end}.
-We can do the same in PPC64 to bring performance back up on KUAP-enabled
-radix systems.
+Previously setup_trampoline() performed a costly KUAP switch on every
+uaccess operation. These repeated uaccess switches cause a significant
+drop in signal handling performance.
 
-This series applies on top of Christophe Leroy's work for PPC32 [1] (I'm
-sure patchwork won't be too happy about that).
+Rewrite setup_trampoline() to assume that a userspace write access
+window is open. Replace all uaccess functions with their 'unsafe'
+versions to avoid the repeated uaccess switches.
 
-The first two patches add some needed 'unsafe' versions of copy-from
-functions. While these do not make use of asm-goto they still allow for
-avoiding the repeated uaccess switches. The third patch adds 'notrace'
-to any functions expected to be called in a uaccess block context.
-Normally functions called in such a context should be inlined, but this
-is not feasible everywhere. Marking them 'notrace' should provide _some_
-protection against leaving the user access window open.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
+---
+ arch/powerpc/kernel/signal_64.c | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-The next three patches rewrite some of the signal64 helper functions to
-be 'unsafe'. Finally, the last two patches update the main signal
-handling functions to make use of the new 'unsafe' helpers and eliminate
-some additional uaccess switching.
-
-I used the will-it-scale signal1 benchmark to measure and compare
-performance [2]. The below results are from a P9 Blackbird system. Note
-that currently hash does not support KUAP and is therefore used as the
-"baseline" comparison. Bigger numbers are better:
-
-	signal1_threads -t1 -s10
-
-	|                 | hash   | radix  |
-	| --------------- | ------ | ------ |
-	| linuxppc/next   | 289014 | 158408 |
-	| unsafe-signal64 | 298506 | 253053 |
-
-[0]: https://github.com/linuxppc/issues/issues/277
-[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=196278
-[2]: https://github.com/antonblanchard/will-it-scale/blob/master/tests/signal1.c
-
-Christopher M. Riedl (5):
-  powerpc/uaccess: Add unsafe_copy_from_user
-  powerpc/signal: Add unsafe_copy_{vsx,fpr}_from_user()
-  powerpc: Mark functions called inside uaccess blocks w/ 'notrace'
-  powerpc/signal64: Replace setup_sigcontext() w/
-    unsafe_setup_sigcontext()
-  powerpc/signal64: Replace restore_sigcontext() w/
-    unsafe_restore_sigcontext()
-
-Daniel Axtens (3):
-  powerpc/signal64: Replace setup_trampoline() w/
-    unsafe_setup_trampoline()
-  powerpc/signal64: Rewrite handle_rt_signal64() to minimise uaccess
-    switches
-  powerpc/signal64: Rewrite rt_sigreturn() to minimise uaccess switches
-
- arch/powerpc/include/asm/uaccess.h |  28 ++--
- arch/powerpc/kernel/process.c      |  20 +--
- arch/powerpc/kernel/signal.h       |  33 +++++
- arch/powerpc/kernel/signal_64.c    | 216 +++++++++++++++++------------
- arch/powerpc/mm/mem.c              |   4 +-
- 5 files changed, 194 insertions(+), 107 deletions(-)
-
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index bd92064e5576..6d4f7a5c4fbf 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -600,30 +600,33 @@ static long restore_tm_sigcontexts(struct task_struct *tsk,
+ /*
+  * Setup the trampoline code on the stack
+  */
+-static long setup_trampoline(unsigned int syscall, unsigned int __user *tramp)
++#define unsafe_setup_trampoline(syscall, tramp, e) \
++	unsafe_op_wrap(__unsafe_setup_trampoline(syscall, tramp), e)
++static long notrace __unsafe_setup_trampoline(unsigned int syscall,
++					unsigned int __user *tramp)
+ {
+ 	int i;
+-	long err = 0;
+ 
+ 	/* bctrl # call the handler */
+-	err |= __put_user(PPC_INST_BCTRL, &tramp[0]);
++	unsafe_put_user(PPC_INST_BCTRL, &tramp[0], err);
+ 	/* addi r1, r1, __SIGNAL_FRAMESIZE  # Pop the dummy stackframe */
+-	err |= __put_user(PPC_INST_ADDI | __PPC_RT(R1) | __PPC_RA(R1) |
+-			  (__SIGNAL_FRAMESIZE & 0xffff), &tramp[1]);
++	unsafe_put_user(PPC_INST_ADDI | __PPC_RT(R1) | __PPC_RA(R1) |
++			  (__SIGNAL_FRAMESIZE & 0xffff), &tramp[1], err);
+ 	/* li r0, __NR_[rt_]sigreturn| */
+-	err |= __put_user(PPC_INST_ADDI | (syscall & 0xffff), &tramp[2]);
++	unsafe_put_user(PPC_INST_ADDI | (syscall & 0xffff), &tramp[2], err);
+ 	/* sc */
+-	err |= __put_user(PPC_INST_SC, &tramp[3]);
++	unsafe_put_user(PPC_INST_SC, &tramp[3], err);
+ 
+ 	/* Minimal traceback info */
+ 	for (i=TRAMP_TRACEBACK; i < TRAMP_SIZE ;i++)
+-		err |= __put_user(0, &tramp[i]);
++		unsafe_put_user(0, &tramp[i], err);
+ 
+-	if (!err)
+-		flush_icache_range((unsigned long) &tramp[0],
+-			   (unsigned long) &tramp[TRAMP_SIZE]);
++	flush_icache_range((unsigned long)&tramp[0],
++			   (unsigned long)&tramp[TRAMP_SIZE]);
+ 
+-	return err;
++	return 0;
++err:
++	return 1;
+ }
+ 
+ /*
+@@ -888,7 +891,10 @@ int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
+ 	if (vdso64_rt_sigtramp && tsk->mm->context.vdso_base) {
+ 		regs->nip = tsk->mm->context.vdso_base + vdso64_rt_sigtramp;
+ 	} else {
+-		err |= setup_trampoline(__NR_rt_sigreturn, &frame->tramp[0]);
++		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
++			return -EFAULT;
++		err |= __unsafe_setup_trampoline(__NR_rt_sigreturn, &frame->tramp[0]);
++		user_write_access_end();
+ 		if (err)
+ 			goto badframe;
+ 		regs->nip = (unsigned long) &frame->tramp[0];
 -- 
 2.28.0
 
