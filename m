@@ -2,41 +2,41 @@ Return-Path: <SRS0=n4ep=DX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DB80C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 11:05:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68E47C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 11:35:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 758B8207F7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 11:05:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 758B8207F7
+	by mail.kernel.org (Postfix) with ESMTPS id 161342084C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 11:35:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 161342084C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CCNbJ5Rd7zDqDh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 22:05:00 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CCPGq2ZhGzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Oct 2020 22:35:47 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CCNWv0DBMzDqYX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 22:02:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CCPC84N1kzDqcg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 22:32:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CCNWt4JGbz9sTv; Fri, 16 Oct 2020 22:02:02 +1100 (AEDT)
+ id 4CCPC72wlBz9sTq; Fri, 16 Oct 2020 22:32:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20201014024711.1138386-1-oohall@gmail.com>
-References: <20201014024711.1138386-1-oohall@gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: Fix eeh-basic.sh exit codes
-Message-Id: <160284610607.1777686.10903297249798635302.b4-ty@ellerman.id.au>
-Date: Fri, 16 Oct 2020 22:02:02 +1100 (AEDT)
+To: mpe@ellerman.id.au, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20201014064813.109515-1-aneesh.kumar@linux.ibm.com>
+References: <20201014064813.109515-1-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/opal_elog: Handle multiple writes to ack attribute
+Message-Id: <160284791841.1794337.13323860774237941486.b4-ty@ellerman.id.au>
+Date: Fri, 16 Oct 2020 22:32:35 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,23 +48,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 14 Oct 2020 13:47:11 +1100, Oliver O'Halloran wrote:
-> The kselftests test running infrastructure expects tests to finish with an
-> exit code of 4 if the test decided it should be skipped. Currently
-> eeh-basic.sh exits with the number of devices that failed to recover, so if
-> four devices didn't recover we'll report a skip instead of a fail.
-> 
-> Fix this by checking if the return code is non-zero and report success
-> and failure by returning 0 or 1 respectively. For the cases where should
-> actually skip return 4.
+On Wed, 14 Oct 2020 12:18:13 +0530, Aneesh Kumar K.V wrote:
+> Even though we use self removing sysfs helper, we still need
+> to make sure we do the final kobject delete conditionally.
+> sysfs_remove_file_self() will handle parallel calls to remove
+> the sysfs attribute file and returns true only in the caller
+> that removed the attribute file. The other parallel callers
+> are returned false. Do the final kobject delete checking
+> the return value of sysfs_remove_file_self().
 
-Applied to powerpc/next.
+Applied to powerpc/fixes.
 
-[1/1] selftests/powerpc: Fix eeh-basic.sh exit codes
-      https://git.kernel.org/powerpc/c/996f9e0f93f16211945c8d5f18f296a88cb32f91
+[1/1] powerpc/opal_elog: Handle multiple writes to ack attribute
+      https://git.kernel.org/powerpc/c/d4263b12a1a0e8816e021450be0765a1ad8bb53c
 
 cheers
