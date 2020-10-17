@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36F91C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:03:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3147C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:49:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1738522203
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:03:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A880321D81
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:49:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="c4I6GyNY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1738522203
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="PdMACSbF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A880321D81
 Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CCjsl48f7zDr61
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 11:03:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CCktv4TXLzDqwJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 11:49:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=flex--morbo.bounces.google.com
- (client-ip=2607:f8b0:4864:20::84a; helo=mail-qt1-x84a.google.com;
- envelope-from=3djskxwukdasxz2mzrzzrwp.nzxwty5800n-op6wt343.zawlm3.z2r@flex--morbo.bounces.google.com;
+ (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com;
+ envelope-from=3qz-kxwukdowacfpcuccuzs.qcazwbilddq-rsjzwghg.cnzopg.cfu@flex--morbo.bounces.google.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=c4I6GyNY; dkim-atps=neutral
-Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
- [IPv6:2607:f8b0:4864:20::84a])
+ header.s=20161025 header.b=PdMACSbF; dkim-atps=neutral
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com
+ [IPv6:2607:f8b0:4864:20::44a])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CCjr30T0VzDqx1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2020 11:02:02 +1100 (AEDT)
-Received: by mail-qt1-x84a.google.com with SMTP id b12so2370527qte.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 17:02:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CCks43PhZzDqMk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2020 11:48:05 +1100 (AEDT)
+Received: by mail-pf1-x44a.google.com with SMTP id b195so2340609pfb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 17:48:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=sender:date:message-id:mime-version:subject:from:to:cc;
- bh=4qX6R8ATeno1n1khz5HXB0Z4nN7hHOns/0/s7ydkqQw=;
- b=c4I6GyNYE01O83HBrm121Fa4E4Uhm3NTjTsfEDeBn8m4qwddXVxaE1mKTAV2h72D0G
- rMUS5zTFupfRRjMFec07LxJCnVr35uqJEtcgPAlwvxhGXKtzMhAj5ZcKuw4c6JLllgBI
- rmtbipLhtno2XDvH1Bzza8nf/gGRx0JSLSbtEUnLMGVaTsdyoxx2k0w9gNfNfCbM8G9u
- PzUV3cluEBb/K5HiOvLTSJ7PpzQ98Lk9uSc3+NiHuF1ScjiauTlVByJBFPiDlMLu3Pad
- rywdCFbi9+FVCVYdgnNjvO2uGMJLyE3vrWv/WkqrhMJ364eWmkzwgBAHlDgKCPx1oYtB
- M3vw==
+ h=sender:date:in-reply-to:message-id:mime-version:references:subject
+ :from:to:cc; bh=jsPNLKRt0zVT0owId+SX5kSYWOR84snN45v+3a3AfG8=;
+ b=PdMACSbFfcgqdAAL0gSxsAQD4S8LWoOWgZOzLX4zHianfpWYE7u71cFGln91BamRuB
+ wOut5MrpBl626fI3I/p7Sxoyl/zok3BMWOVssLcxP7V/+kUJmrGmGpbErYn8lz67jQUH
+ xiKTETFxSej6pzlzucQzkC08bhJ3IzNsNdqdpQIehHo5bfK24ahWNH4hiAYcEntJpMBI
+ uiT6EJEKBW9rjAWS1hOMywMoSYF0Pmw1BfprPxtdP3sEzuQeqiZjHbey+1yhfL/yA5WU
+ 82DTWh1LMvrEPg5PVVYu2KEJ0hjlf2kebz0WxwK0EHiQSqQTU76Do8fBM39i6pHMfW/8
+ WUyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
- :to:cc;
- bh=4qX6R8ATeno1n1khz5HXB0Z4nN7hHOns/0/s7ydkqQw=;
- b=A4HkmLAuwOXdmefSkQNb5oRWbO8/1hN5e65ai6nwBCbAvpAzEEpcfCVlztSTq1ik0V
- 6uc8X4Prrji456SQ4fxGy8jWuV4VRLFl5jLTYVo2msAKBRagg8fi+Y81wF3DY/wkVHwK
- OXqMhaGNcSeOg7mIKloyf6+ofhUoDkXSomeLwH4QpxxtidXZnwJ1RXVMKOsTaPgzdRk0
- Iqa2hJfeJlhBE3g7m1vvxZdUWOxDnBwUeSWaWlikaU+1TCOhw14JZyDSXOKdDtDet2O/
- c6hFHU58vbDwvQ23VGrYjQRgr8qV4+S63OqBc4W1UaiTUQDtfeDCvVZqG4rp5NGTU7C4
- 5WHA==
-X-Gm-Message-State: AOAM533prTaI1gwVqy3wjo6n2CpvPtxDhYgU6SPEAMiyAzRZU6eBVKyQ
- Dnf+2Ii63JNYAXlCioaPOCvJ67+MOXrFTmD3LML75UsnFHB0tseLd1brM76s5YEDO/ECdQZfCW6
- d1T6CRl36oHi20fqRCnREzEfDbQLiLTSDPeztG+dFWhsuTMdfDkwjyQJLC1ALV6R/AG4=
-X-Google-Smtp-Source: ABdhPJxwWl1HNU/s7TzUDYtEwiDxZoITL86v6HyrcvOJwJ9+5nfzIE8DoPu/aJLdbEpdeCnCmlAalfTIgw==
+ h=x-gm-message-state:sender:date:in-reply-to:message-id:mime-version
+ :references:subject:from:to:cc;
+ bh=jsPNLKRt0zVT0owId+SX5kSYWOR84snN45v+3a3AfG8=;
+ b=bOUuE5T0hJCVxpXs/65QplD2705pJ8bVxecaz2cte/buM59HQKEgYE2hhzk1r2Uejg
+ 4xHD512O9ERX1elFqYIDvDLRicoAXC6t08q28aZ5EuUso55gKiznUW5Z5gTRZ6PhbUVL
+ 8Roo9JogvFs91g8jKULgCMmhHRFlLTKSdzFBaw7Afwdj5x2DseovvpjgAdb2/G2hleKb
+ 46Evo62PasowMPCBWVs9B/+HPyUqfmAlQdMq8lznIoCiAuVPKoyzxntXjmhe7wObTc9k
+ 95Nex1idEhVQAdB50te5f/fEm8MJ+RSQLkbnVs9urb7u9pjiaha98ytLwd1qKkyFPTCF
+ Av0A==
+X-Gm-Message-State: AOAM530udHfiY47hmDEqdsxLKkE+TsXOKMfHG5yPIb7SRV0HDJoVk2xZ
+ cL5rYtNXPWRaOhJ7K+QJfSAV/k0vj+5PboSOFaGVa1l8VRTQrR+27kEU70j55UDqikZ/Vfnt7+9
+ nlWtv6NjuBaPtxZq6XIRUrAuskke7kgd7UcrybUvrnyK0KwDX+oHo6iGBSBdYMagMgo0=
+X-Google-Smtp-Source: ABdhPJyujnTqOo0oeIRLZ0m/4nV2sNP8LxrB+GFRw7Gwqe292l9rX4xyV23m/Uq3+m+5rwTPJ9NFj6/+JA==
 X-Received: from fawn.svl.corp.google.com
  ([2620:15c:2cd:202:7220:84ff:fe0f:9f6a])
- (user=morbo job=sendgmr) by 2002:a0c:e346:: with SMTP id
- a6mr6581232qvm.9.1602892918177; 
- Fri, 16 Oct 2020 17:01:58 -0700 (PDT)
-Date: Fri, 16 Oct 2020 17:01:51 -0700
-Message-Id: <20201017000151.150788-1-morbo@google.com>
+ (user=morbo job=sendgmr) by 2002:a17:90a:c388:: with SMTP id
+ h8mr6690265pjt.100.1602895683144; Fri, 16 Oct 2020 17:48:03 -0700 (PDT)
+Date: Fri, 16 Oct 2020 17:47:52 -0700
+In-Reply-To: <20201017004752.415054-1-morbo@google.com>
+Message-Id: <20201017004752.415054-3-morbo@google.com>
 Mime-Version: 1.0
+References: <20201017004752.415054-1-morbo@google.com>
 X-Mailer: git-send-email 2.29.0.rc1.297.gfa9743e501-goog
-Subject: [PATCH] powerpc/boot: move the .got section to after the .dynamic
- section
+Subject: [PATCH 2/2] powerpc/boot: Use clang when CC is clang
 From: Bill Wendling <morbo@google.com>
 To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
@@ -96,59 +96,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Both .dynamic and .got are RELRO sections and should be placed together,
-and LLD emits an error:
-
-  ld.lld: error: section: .got is not contiguous with other relro sections
-
-Place them together to avoid this.
+The gcc compiler may not be available if CC is clang.
 
 Cc: Fangrui Song <maskray@google.com>
 Cc: Alan Modra <amodra@gmail.com>
 Signed-off-by: Bill Wendling <morbo@google.com>
 ---
- arch/powerpc/boot/zImage.lds.S | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
-index a21f3a76e06f..d6f072865627 100644
---- a/arch/powerpc/boot/zImage.lds.S
-+++ b/arch/powerpc/boot/zImage.lds.S
-@@ -34,6 +34,17 @@ SECTIONS
-     __dynamic_start = .;
-     *(.dynamic)
-   }
-+
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-+  . = ALIGN(256);
-+  .got :
-+  {
-+    __toc_start = .;
-+    *(.got)
-+    *(.toc)
-+  }
-+#endif
-+
-   .hash : { *(.hash) }
-   .interp : { *(.interp) }
-   .rela.dyn :
-@@ -76,16 +87,6 @@ SECTIONS
-     _esm_blob_end =  .;
-   }
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index b88fd27a45f0..218f1c9adb5b 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -21,7 +21,11 @@
+ all: $(obj)/zImage
  
--#ifdef CONFIG_PPC64_BOOT_WRAPPER
--  . = ALIGN(256);
--  .got :
--  {
--    __toc_start = .;
--    *(.got)
--    *(.toc)
--  }
--#endif
--
-   . = ALIGN(4096);
-   .bss       :
-   {
+ ifdef CROSS32_COMPILE
++ifdef CONFIG_CC_IS_CLANG
++    BOOTCC := $(CROSS32_COMPILE)clang
++else
+     BOOTCC := $(CROSS32_COMPILE)gcc
++endif
+     BOOTAR := $(CROSS32_COMPILE)ar
+ else
+     BOOTCC := $(CC)
 -- 
 2.29.0.rc1.297.gfa9743e501-goog
 
