@@ -2,82 +2,87 @@ Return-Path: <SRS0=DFH+=DY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC6DC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1898FC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 01:27:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E6AD821D81
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 00:52:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F2CCE207E8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 01:27:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="RWzY/piC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6AD821D81
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BuFPK4FJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2CCE207E8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CCkyV6fvnzDqxb
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 11:52:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CClkT6Tt9zDr0V
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Oct 2020 12:27:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=flex--morbo.bounces.google.com
- (client-ip=2607:f8b0:4864:20::549; helo=mail-pg1-x549.google.com;
- envelope-from=3pz-kxwukdogwyblyqyyqvo.mywvsxehzzm-nofvscdc.yjvklc.ybq@flex--morbo.bounces.google.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441;
+ helo=mail-pf1-x441.google.com; envelope-from=nicoleotsuka@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256
- header.s=20161025 header.b=RWzY/piC; dkim-atps=neutral
-Received: from mail-pg1-x549.google.com (mail-pg1-x549.google.com
- [IPv6:2607:f8b0:4864:20::549])
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=BuFPK4FJ; dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CCks76Bp7zDqlJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2020 11:48:02 +1100 (AEDT)
-Received: by mail-pg1-x549.google.com with SMTP id x77so2127360pgx.23
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 17:48:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=sender:date:message-id:mime-version:subject:from:to:cc;
- bh=ixiZWMbrWnfJCj6w4pIymadOOWlYaZoKWVAlr1IE7kQ=;
- b=RWzY/piC3N7Z1yWtztVs2nhn7mXzIFA5DDcYEGfhwiA+BrNACR+YZ65BwqWy6CvDYh
- eMz8/vWD4agcss+wdB2ycSe1bHDjuo9BwqtVpiWTKvlaIoO8YtSA5boxMcYNNhJG/4Im
- NFMmwYXJSWz9r5aGJxbmrrkZ2C+HHcZDkxRq53cOZv2qNVIcAxzANNXRctsA9iRoDStq
- /2ISY78lkzY6FSFcViQATsMoCCQ9z5lOywsyF1tjWyQP+FkQsfTYOB6gOZt/VrSxd2w6
- 1QPGBpnwKCHxR99XNAukSloeuXMzefTTnhW9WPd6atOIsItFp7YybbyMx86QtOuhcf8c
- +zyg==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CClhv4w6WzDqys
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2020 12:26:07 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id x13so2467208pfa.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2020 18:26:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=rRFRUFeNNAwvjKBB1fE6qSaSpbNzd7iDj3KBBS9Wi24=;
+ b=BuFPK4FJjOiSIUHGD7OM2XveIj3tBrf87q24Lrgnu+LjUUrdp0wG5I19CPCKob/guJ
+ QXBtQDPHZww3sdBO+hjkhHdXWlS5OU9k267rzwmKaimvsbAOxucxxH7QGyCEzB3ZX3VO
+ BybuTUFk371oC5XZ5aWLrKvy9Jt54/AUpZ8zUn8QTLQC5dVnUEWnl1gzwuAA+FM1VS1S
+ Ju6udc81wtlOMR4ePVzJxyBW2HVQk3pQWEh4OmAgMprXg9DC2XnLrFhrOyV2ydCcy/n4
+ aaEOpLgKmBi4cUE0DrCVQPXScPJlAtozf/1k6csHO9se9Q4th86LiiHgqedREdDtz7G0
+ ycOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
- :to:cc;
- bh=ixiZWMbrWnfJCj6w4pIymadOOWlYaZoKWVAlr1IE7kQ=;
- b=oxSu4t+/GaPGktSG+YAy+GEa1bs6NblVmlFnsluHcKyqmwy0WUtt9HlTdv9WAna+Go
- H/YqAFYsNVkwQDRVd32d0Zx9AF2g4RinqE2LELuNyb5byYzBderHemfL3XKZue9Eu7la
- rzwHoz0m3e1P0VaSmIIYEcIiK0rxdZz44YRo1dpsOomQLNAWPPBYIRGLsiBoZMuGrCXp
- zQZGw2Ic3rCuC2zRa5b4K88SPh/lrNfsIy4QB8C05CaM80f5JVmS6Kzr2zJzpxabXBF8
- mr35giz6TvPr35zZL17NxovH5K+XT/sS1UjXpnHHoLr/y2QYHX/dfiYcIwQHpWztQ5nI
- jdrQ==
-X-Gm-Message-State: AOAM530tlHs4uYra2lKNt09799tcdMo/FpjkKsQNZP96P/M3Qw2R0fco
- B5c9/IYHRaU9sGMP4TyMECQZXdQWggixm3AEri8kuAy//CVhh1kBa0G8onscXlCpp7r0JDUU1A9
- p76qypxTjdxv+OqSrcEMTzklKfgs71WU/+0DWhCMSXtqUbTby9qFIvpxNGLSYakQcfds=
-X-Google-Smtp-Source: ABdhPJySW6wBRdxaVkG4yxL2O5dnmJXGKj6Eq3dD2TTn8yMq4EcC2qJsEpmcNQKIRQFDN0JauuEX+3yQmA==
-X-Received: from fawn.svl.corp.google.com
- ([2620:15c:2cd:202:7220:84ff:fe0f:9f6a])
- (user=morbo job=sendgmr) by 2002:a17:902:b414:b029:d5:cfb6:e44 with SMTP id
- x20-20020a170902b414b02900d5cfb60e44mr2504168plr.28.1602895679003; Fri, 16
- Oct 2020 17:47:59 -0700 (PDT)
-Date: Fri, 16 Oct 2020 17:47:50 -0700
-Message-Id: <20201017004752.415054-1-morbo@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.29.0.rc1.297.gfa9743e501-goog
-Subject: [PATCH 0/2] Fixes for clang/lld
-From: Bill Wendling <morbo@google.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=rRFRUFeNNAwvjKBB1fE6qSaSpbNzd7iDj3KBBS9Wi24=;
+ b=DuXfoTvS0sFubGtPXWXO9dyn+kfN+wvQ4D+ohzEpWdXl33HG9uz7pk6PgAE6O0oz62
+ psGeE9qdDh72/glqgvnFlRA0kFTi80MsjNUOX8IDTp3uB5066rKVvDGDzb/Ff4viFeD1
+ q003OxL+QkQG0FZoiYzxWxweerOYD/fwZ0YpbMwf3fLFvTEx390xw6jY1adZFZ9KkLMw
+ x3kAePSuWsyaSYucpgRKaobhyY81vBBGeX/305ju2q1j1V8poMdp1E7O9XPMwOAPhFZl
+ 6O8KJVI3YMMURA5otXnQ7UngehBDNzZgJxYnSoMmxjCIUYMS2BqBvvhjAsJ3qZX8AA+S
+ 5NMw==
+X-Gm-Message-State: AOAM533Q5C9YaIx/57DpJAFBED6ikeUCuXFonssBXJny0XBlojwUkPPF
+ Az7OEEosifJLUhvNOKldx0k=
+X-Google-Smtp-Source: ABdhPJxDcmWpg0O4z3LieL6I8S03PlsvcZQSH/YCpoH4Q7Ghg9XaHg0XS98S2kNrz+YFd1mvx/cu+Q==
+X-Received: by 2002:a63:5b03:: with SMTP id p3mr5366880pgb.154.1602897963819; 
+ Fri, 16 Oct 2020 18:26:03 -0700 (PDT)
+Received: from Asurada-Nvidia (thunderhill.nvidia.com. [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id i7sm3868098pfo.208.2020.10.16.18.26.01
+ (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 16 Oct 2020 18:26:03 -0700 (PDT)
+Date: Fri, 16 Oct 2020 18:17:32 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "Viorel Suman (OSS)" <viorel.suman@oss.nxp.com>
+Subject: Re: [PATCH v4 1/2] ASoC: fsl_xcvr: Add XCVR ASoC CPU DAI driver
+Message-ID: <20201017011731.GA7203@Asurada-Nvidia>
+References: <20201013121733.83684-1-viorel.suman@oss.nxp.com>
+ <20201013121733.83684-2-viorel.suman@oss.nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201013121733.83684-2-viorel.suman@oss.nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,21 +94,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Bill Wendling <morbo@google.com>
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org,
+ Matthias Schiffer <matthias.schiffer@ew.tq-group.com>,
+ Viorel Suman <viorel.suman@nxp.com>, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Shengjiu Wang <shengjiu.wang@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>,
+ Rob Herring <robh+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Cosmin-Gabriel Samoila <cosmin.samoila@nxp.com>,
+ Jaroslav Kysela <perex@perex.cz>, Fabio Estevam <festevam@gmail.com>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These patches fix some compilation / linking issues with clang & lld.
+On Tue, Oct 13, 2020 at 03:17:32PM +0300, Viorel Suman (OSS) wrote:
+> From: Viorel Suman <viorel.suman@nxp.com>
+> 
+> XCVR (Audio Transceiver) is a on-chip functional module found
+> on i.MX8MP. It support HDMI2.1 eARC, HDMI1.4 ARC and SPDIF.
+> 
+> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
 
-Bill Wendling (2):
-  powerpc/wrapper: Add "-z notext" flag to disable diagnostic
-  powerpc/boot: Use clang when CC is clang
-
- arch/powerpc/boot/Makefile | 4 ++++
- arch/powerpc/boot/wrapper  | 6 ++++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
-
--- 
-2.29.0.rc1.297.gfa9743e501-goog
-
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
