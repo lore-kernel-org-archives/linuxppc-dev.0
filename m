@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AC65C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2020 19:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59D02C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2020 19:29:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A30AF20791
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2020 19:26:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AEF7B20791
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 18 Oct 2020 19:29:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qp9WjIbm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A30AF20791
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="TWVnB0Yh"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEF7B20791
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CDqd00z8xzDqKT
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2020 06:26:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CDqhg2bxSzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Oct 2020 06:29:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
@@ -28,35 +28,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=qp9WjIbm; dkim-atps=neutral
+ header.s=default header.b=TWVnB0Yh; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CDqWm2XMXzDqNH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2020 06:21:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CDqYs1mJszDqYh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2020 06:23:44 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 24F20222E7;
- Sun, 18 Oct 2020 19:21:51 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5A984222EB;
+ Sun, 18 Oct 2020 19:23:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1603048912;
- bh=D4zjN5/SB8CO5872b2Os3idW0tfPlzkQWmu5vObtLck=;
+ s=default; t=1603049021;
+ bh=aVN0XD+W72zWAq8WIH6dVuf20bTx+EfECv4rGISoK9Y=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=qp9WjIbm76mz2J/wXBD9P+sUu3h8ul7K68eI8QZbGz4eAJQWmM9WkYqWEkCDvxObE
- GelXnsT6SijwM5LC1X648Kb1A3nvU22QeWm8P1t1KNPVsjilLjG53SMAwwtPTHBf1b
- Txwj4DNPezqbsZOUFjWnt/JjkAsFTeBbDLvHO/vQ=
+ b=TWVnB0YhyGtnhh9WOw19Royj3839f9/gKrK2kjMJ/eJEAEnK6zdT4qVlsSnHnBXaL
+ BcTjzq3qB7TuBsEfZ0s5VNBRP0JmCClJlCgppDsbbh3uT2UkwiZQGdnjcj6R3wJvTe
+ RRG7dmdVVVZCXthsqCC2UVQkcZMSUVvp6rulsqdY=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.8 071/101] scsi: ibmvfc: Fix error return in
+Subject: [PATCH AUTOSEL 5.4 55/80] scsi: ibmvfc: Fix error return in
  ibmvfc_probe()
-Date: Sun, 18 Oct 2020 15:19:56 -0400
-Message-Id: <20201018192026.4053674-71-sashal@kernel.org>
+Date: Sun, 18 Oct 2020 15:22:06 -0400
+Message-Id: <20201018192231.4054535-55-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201018192026.4053674-1-sashal@kernel.org>
-References: <20201018192026.4053674-1-sashal@kernel.org>
+In-Reply-To: <20201018192231.4054535-1-sashal@kernel.org>
+References: <20201018192231.4054535-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -96,10 +96,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 635f6f9cffc40..ef91f3d01f989 100644
+index df897df5cafee..8a76284b59b08 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -4928,6 +4928,7 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+@@ -4788,6 +4788,7 @@ static int ibmvfc_probe(struct vio_dev *vdev, const struct vio_device_id *id)
  	if (IS_ERR(vhost->work_thread)) {
  		dev_err(dev, "Couldn't create kernel thread: %ld\n",
  			PTR_ERR(vhost->work_thread));
