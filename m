@@ -2,119 +2,54 @@ Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D419DC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 09:40:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 236D2C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 11:26:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE3F120691
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 09:40:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=renesasgroup.onmicrosoft.com header.i=@renesasgroup.onmicrosoft.com header.b="Hx01r+Nu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE3F120691
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=renesas.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1F0AC2223C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 11:26:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F0AC2223C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFpX95SGDzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 20:40:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFrtL5BdGzDqXL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 22:26:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=renesas.com (client-ip=40.107.132.139;
- helo=apc01-pu1-obe.outbound.protection.outlook.com;
- envelope-from=yoshihiro.shimoda.uh@renesas.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=renesas.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=renesasgroup.onmicrosoft.com
- header.i=@renesasgroup.onmicrosoft.com header.a=rsa-sha256
- header.s=selector2-renesasgroup-onmicrosoft-com header.b=Hx01r+Nu; 
- dkim-atps=neutral
-Received: from APC01-PU1-obe.outbound.protection.outlook.com
- (mail-eopbgr1320139.outbound.protection.outlook.com [40.107.132.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFgwp3QMyzDqKl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 15:43:04 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=JdnJ+RO0geOLG/SCeQ/gvmcgOZe/J52HejfbTHQ/ArGItCU1uZzpe4EWYdOaUdP5HlXFKWqD4PtAu6+tzk4cVKHJVka3nKStJzuRBPHCDa15/1fYBswh4BbAERNPHroCszDjDCDu6/LMSX2VH7NGRzEm05QwXe1O2t9XKlPrdunWp0rmq99PyHYelf/r2c4dVmISzi9XPZt4DtLqLp7tYZTNsU4k01EN/xbOGo63G/cZwiYdqxOSmfj+z4wequjo38jG3kUMvrXiVRwxlhlJWCCJ1xoLfbj+1VVN64vro8IGyGQREXIdXJ5T4EbihrB1Jr+V9VhWQcdatYo5hz70BQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QWM4DXjhGfLABCefLHfcGyqVcy0duIDR+ZQO2IrjM2I=;
- b=Oa+d6XRAl9Q6H1gZdloQb6v2qQZzLPulWWTjlnErXWFGb6KWshN4u5h7YirsP2AP02YYfPhS8AQHxgCa7QcrVjVppx7RbzVRI6kB+JGkBPm0UcUzGVLXnX880eJEuWZpFzLdnOCq4qU3N8WyP2FUgVN1yAcNZhz5JmmC7eqiHjOj3/IbWVMQpQAV4fWydK4ZPdCcbrHp5VlYWadofmnzAwF0to90Tp2JAlt9V9EEdyRPTf0tMGvY/bLu4SHhb7zYf4aoySn+nHFHUfJGrnTnR4MBfc66mtzts33VnLRh7nUFG3h7VQydabOysPwVLFLYq/kF+QRgdKiYr7PJzBRIiA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=renesas.com; dmarc=pass action=none header.from=renesas.com;
- dkim=pass header.d=renesas.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=renesasgroup.onmicrosoft.com; s=selector2-renesasgroup-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QWM4DXjhGfLABCefLHfcGyqVcy0duIDR+ZQO2IrjM2I=;
- b=Hx01r+Nuvk9kGeuQEKuC9E1FBjSa9IFWIFC/0nzhMrcgpwQdsNWe63JG08PvWsPQ16p6P3uVhaxKqGQHpZzcs+g9upGAFZSGaI4S5xIX1+wQEXFEOumgSM7RoPmI3TM3h0em6VtfG7W4bosJKoCVYZEA4b4AMzvdieJ7txjS6n8=
-Received: from TY2PR01MB3692.jpnprd01.prod.outlook.com (2603:1096:404:d5::22)
- by TY2PR01MB3545.jpnprd01.prod.outlook.com (2603:1096:404:d1::20)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3477.20; Tue, 20 Oct
- 2020 04:42:50 +0000
-Received: from TY2PR01MB3692.jpnprd01.prod.outlook.com
- ([fe80::bcba:dccf:7d4c:c883]) by TY2PR01MB3692.jpnprd01.prod.outlook.com
- ([fe80::bcba:dccf:7d4c:c883%4]) with mapi id 15.20.3477.028; Tue, 20 Oct 2020
- 04:42:50 +0000
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-To: Serge Semin <Sergey.Semin@baikalelectronics.ru>, Mathias Nyman
- <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, 
- Prabhakar Mahadev Lad <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Subject: RE: [PATCH 08/20] dt-bindings: usb: renesas-xhci: Refer to the
- usb-xhci.yaml file
-Thread-Topic: [PATCH 08/20] dt-bindings: usb: renesas-xhci: Refer to the
- usb-xhci.yaml file
-Thread-Index: AQHWohLFbtOMYgZ0fEaKABdhF8ofKKmf8mkw
-Date: Tue, 20 Oct 2020 04:42:50 +0000
-Message-ID: <TY2PR01MB36921A342B4374B5853E65ACD81F0@TY2PR01MB3692.jpnprd01.prod.outlook.com>
-References: <20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru>
- <20201014101402.18271-9-Sergey.Semin@baikalelectronics.ru>
-In-Reply-To: <20201014101402.18271-9-Sergey.Semin@baikalelectronics.ru>
-Accept-Language: ja-JP, en-US
-Content-Language: ja-JP
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: baikalelectronics.ru; dkim=none (message not signed)
- header.d=none;baikalelectronics.ru; dmarc=none action=none
- header.from=renesas.com;
-x-originating-ip: [240f:60:5f3e:1:65e1:c1da:e357:e253]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: e0cf67bd-d839-4138-7e5b-08d874b2999d
-x-ms-traffictypediagnostic: TY2PR01MB3545:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <TY2PR01MB3545068EE83E8730E96958E7D81F0@TY2PR01MB3545.jpnprd01.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4502;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: WK+A4gfG7J/J/BaMXioWzGIRdUVMHAIw7lUTC0zHI5w545+g2C8hRBQ1WxltcUfS/Umi5VT88Fzuw3GCdEHZCcWZGqcoExclXScuNpyRjjQsRZg4HYr8ju9PF9FmgcPt9OxvvXqv4IdRzDduciHb1NImXrVjn0b7jLD5GUTEhiC4DqmMlwm3ygRgPnqRHTEoEoL7n4FnCQ29fwfe9tzDNruYTRrPiCjyQcUx3xxKkbprLtAi7+GngKsAgXnJK4Ew/WMnEN9M/5Ix/IiSwSorjW8uIWTG78+QjZDy8yD5n0QgSlVKe7eVkiZnmH9cPvRA60Ni9Jc72TeF54d2pGBe9w==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:TY2PR01MB3692.jpnprd01.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(346002)(376002)(396003)(39860400002)(136003)(366004)(5660300002)(33656002)(4744005)(66476007)(7696005)(64756008)(66446008)(66556008)(71200400001)(83380400001)(55016002)(478600001)(76116006)(52536014)(54906003)(6506007)(110136005)(66946007)(316002)(186003)(2906002)(7416002)(8676002)(8936002)(86362001)(4326008)(9686003);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata: 63VNagmqy5xD2WZ2ibAAdmzeqZTyq86rB5d/TCL4GajNI+zgTti5RQbRNV+b/JQaeAiG4id8tUM2ZgNPRh3LllCgugKRDFOVPwOHgvbuoROXx9A9k4I5NkiHF3sOvNBeSDQJvH7SKvoDBV4j/zfdaV5v9qe4IhikpyzxzCE4ipI/FqI6VYPNP+VDqwcbGOCdMqoTJR6Khs0zs/BPBjLDf84B8oP2r2dw2afoV06vGt1RjkBJvuIwSx5oD3T8cVDbf/W4QfwxCL3AArOQuA9r+v3O80d8ilcQ+huyF7VJED11NGAmgiN/6C23jSgZHpkktGS8mgij8BU3IWd8jX4rvpmfQQU3eO72j8xBAVGBVRqkMlzJ4hSk7dA17MiCUwa2VqJIuZZKWMyX1M/R2y5zwU9L/M+F7eIH74vEt2uuJUsURgGXmXnaZFByUXXoiOG4OJOIQGnEdi3ZzBg41h1khKzhsxBsds4OGWZs46vjKuzZOXZ13CF4jXEaJNJG+7WlZf1eor/yD32Eu7VRnbN9UjOGsaso0/5oEe2CsNaLzZoOXlxqYVz2I9WH+1gmSJ9cinFH2uvc9bCrARk6QANQb1T4id0/kLnFFQDPGgZkYriz6IoTLOzBeg7YK33EhZO5rxTq/QiwCXpKzDPnfnp37NnpueatJItb2RQu5fSaPhdSKbSR/jEm3HzDPgO4xx35CfQjJPTib2+I/e+lX/KT9g==
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
+ helo=mail.baikalelectronics.ru;
+ envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=baikalelectronics.ru
+Received: from mail.baikalelectronics.ru (unknown [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CFrmS6JdRzDqW8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 22:21:26 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 00B8A803071D;
+ Tue, 20 Oct 2020 11:21:21 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at baikalelectronics.ru
+Received: from mail.baikalelectronics.ru ([127.0.0.1])
+ by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7QoCO2dR-qHv; Tue, 20 Oct 2020 14:21:20 +0300 (MSK)
+From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
+Subject: [PATCH v3 01/16] dt-bindings: usb: usb-hcd: Convert generic USB
+ properties to DT schema
+Date: Tue, 20 Oct 2020 14:20:46 +0300
+Message-ID: <20201020112101.19077-2-Sergey.Semin@baikalelectronics.ru>
+In-Reply-To: <20201020112101.19077-1-Sergey.Semin@baikalelectronics.ru>
+References: <20201020112101.19077-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-X-OriginatorOrg: renesas.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TY2PR01MB3692.jpnprd01.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e0cf67bd-d839-4138-7e5b-08d874b2999d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Oct 2020 04:42:50.0672 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 53d82571-da19-47e4-9cb4-625a166a4a2a
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: nfoSYQ9pjI04ARJCJ3LLt8z6Ll4Dq26ZGNr5aZQaLKsR3ah9pXIQNg/t/+no8h8sDgWWdBP79DG78gQ28KGykaLF2cHTwzKzt+YoJcwD/87P18Uv+9Gc50S+fSJx7IF2
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY2PR01MB3545
-X-Mailman-Approved-At: Tue, 20 Oct 2020 20:38:52 +1100
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,40 +61,212 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Neil Armstrong <narmstrong@baylibre.com>, Kevin Hilman <khilman@baylibre.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Kevin Hilman <khilman@baylibre.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
  Serge Semin <fancer.lancer@gmail.com>,
  Bjorn Andersson <bjorn.andersson@linaro.org>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
  Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
  Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Roger Quadros <rogerq@ti.com>
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+The generic USB HCD properties have been described in the legacy bindings
+text file: Documentation/devicetree/bindings/usb/generic.txt . Let's
+convert it' content into the USB HCD DT schema properties so all USB DT
+nodes would be validated to have them properly utilized.
 
-> From: Serge Semin, Sent: Wednesday, October 14, 2020 7:14 PM
->=20
-> With minor peculiarities (like uploading some vendor-specific firmware)
-> these are just Generic xHCI controllers fully compatible with its
-> properties. Make sure the Renesas USB xHCI DT nodes are also validated
-> against the Generic xHCI DT schema.
->=20
-> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-> ---
+Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Reviewed-by: Rob Herring <robh@kernel.org>
 
-Thank you for the patch!
+---
 
-Reviewed-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Changelog v2:
+- Discard '|' in all the new properties, since we don't need to preserve
+  the text formatting.
+- Convert abbreviated form of the "maximum-speed" enum restriction into
+  the multi-lined version of the list.
+- Drop quotes from around the string constants.
+---
+ .../devicetree/bindings/usb/generic.txt       | 57 ------------
+ .../devicetree/bindings/usb/usb-hcd.yaml      | 88 +++++++++++++++++++
+ 2 files changed, 88 insertions(+), 57 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/usb/generic.txt
 
-Best regards,
-Yoshihiro Shimoda
+diff --git a/Documentation/devicetree/bindings/usb/generic.txt b/Documentation/devicetree/bindings/usb/generic.txt
+deleted file mode 100644
+index ba472e7aefc9..000000000000
+--- a/Documentation/devicetree/bindings/usb/generic.txt
++++ /dev/null
+@@ -1,57 +0,0 @@
+-Generic USB Properties
+-
+-Optional properties:
+- - maximum-speed: tells USB controllers we want to work up to a certain
+-			speed. Valid arguments are "super-speed-plus",
+-			"super-speed", "high-speed", "full-speed" and
+-			"low-speed". In case this isn't passed via DT, USB
+-			controllers should default to their maximum HW
+-			capability.
+- - dr_mode: tells Dual-Role USB controllers that we want to work on a
+-			particular mode. Valid arguments are "host",
+-			"peripheral" and "otg". In case this attribute isn't
+-			passed via DT, USB DRD controllers should default to
+-			OTG.
+- - phy_type: tells USB controllers that we want to configure the core to support
+-			a UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is
+-			selected. Valid arguments are "utmi" and "utmi_wide".
+-			In case this isn't passed via DT, USB controllers should
+-			default to HW capability.
+- - otg-rev: tells usb driver the release number of the OTG and EH supplement
+-			with which the device and its descriptors are compliant,
+-			in binary-coded decimal (i.e. 2.0 is 0200H). This
+-			property is used if any real OTG features(HNP/SRP/ADP)
+-			is enabled, if ADP is required, otg-rev should be
+-			0x0200 or above.
+- - companion: phandle of a companion
+- - hnp-disable: tells OTG controllers we want to disable OTG HNP, normally HNP
+-			is the basic function of real OTG except you want it
+-			to be a srp-capable only B device.
+- - srp-disable: tells OTG controllers we want to disable OTG SRP, SRP is
+-			optional for OTG device.
+- - adp-disable: tells OTG controllers we want to disable OTG ADP, ADP is
+-			optional for OTG device.
+- - usb-role-switch: boolean, indicates that the device is capable of assigning
+-			the USB data role (USB host or USB device) for a given
+-			USB connector, such as Type-C, Type-B(micro).
+-			see connector/usb-connector.yaml.
+- - role-switch-default-mode: indicating if usb-role-switch is enabled, the
+-			device default operation mode of controller while usb
+-			role is USB_ROLE_NONE. Valid arguments are "host" and
+-			"peripheral". Defaults to "peripheral" if not
+-			specified.
+-
+-
+-This is an attribute to a USB controller such as:
+-
+-dwc3@4a030000 {
+-	compatible = "synopsys,dwc3";
+-	reg = <0x4a030000 0xcfff>;
+-	interrupts = <0 92 4>
+-	usb-phy = <&usb2_phy>, <&usb3,phy>;
+-	maximum-speed = "super-speed";
+-	dr_mode = "otg";
+-	phy_type = "utmi_wide";
+-	otg-rev = <0x0200>;
+-	adp-disable;
+-};
+diff --git a/Documentation/devicetree/bindings/usb/usb-hcd.yaml b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
+index 7263b7f2b510..ee7ea205c71d 100644
+--- a/Documentation/devicetree/bindings/usb/usb-hcd.yaml
++++ b/Documentation/devicetree/bindings/usb/usb-hcd.yaml
+@@ -22,9 +22,97 @@ properties:
+     description:
+       Name specifier for the USB PHY
+ 
++  maximum-speed:
++   description:
++     Tells USB controllers we want to work up to a certain speed. In case this
++     isn't passed via DT, USB controllers should default to their maximum HW
++     capability.
++   $ref: /schemas/types.yaml#/definitions/string
++   enum:
++     - low-speed
++     - full-speed
++     - high-speed
++     - super-speed
++     - super-speed-plus
++
++  dr_mode:
++    description:
++      Tells Dual-Role USB controllers that we want to work on a particular
++      mode. In case this attribute isn't passed via DT, USB DRD controllers
++      should default to OTG.
++    $ref: /schemas/types.yaml#/definitions/string
++    enum: [host, peripheral, otg]
++
++  phy_type:
++    description:
++      Tells USB controllers that we want to configure the core to support a
++      UTMI+ PHY with an 8- or 16-bit interface if UTMI+ is selected. In case
++      this isn't passed via DT, USB controllers should default to HW
++      capability.
++    $ref: /schemas/types.yaml#/definitions/string
++    enum: [utmi, utmi_wide]
++
++  otg-rev:
++    description:
++      Tells usb driver the release number of the OTG and EH supplement with
++      which the device and its descriptors are compliant, in binary-coded
++      decimal (i.e. 2.0 is 0200H). This property is used if any real OTG
++      features (HNP/SRP/ADP) is enabled. If ADP is required, otg-rev should be
++      0x0200 or above.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  companion:
++    description: Phandle of a companion device
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++  hnp-disable:
++    description:
++      Tells OTG controllers we want to disable OTG HNP. Normally HNP is the
++      basic function of real OTG except you want it to be a srp-capable only B
++      device.
++    type: boolean
++
++  srp-disable:
++    description:
++      Tells OTG controllers we want to disable OTG SRP. SRP is optional for OTG
++      device.
++    type: boolean
++
++  adp-disable:
++    description:
++      Tells OTG controllers we want to disable OTG ADP. ADP is optional for OTG
++      device.
++    type: boolean
++
++  usb-role-switch:
++    description:
++      Indicates that the device is capable of assigning the USB data role
++      (USB host or USB device) for a given USB connector, such as Type-C,
++      Type-B(micro). See connector/usb-connector.yaml.
++
++  role-switch-default-mode:
++    description:
++      Indicates if usb-role-switch is enabled, the device default operation
++      mode of controller while usb role is USB_ROLE_NONE.
++    $ref: /schemas/types.yaml#/definitions/string
++    enum: [host, peripheral]
++    default: peripheral
++
+ examples:
+   - |
+     usb {
+         phys = <&usb2_phy1>, <&usb3_phy1>;
+         phy-names = "usb";
+     };
++  - |
++    usb@4a030000 {
++        compatible = "snps,dwc3";
++        reg = <0x4a030000 0xcfff>;
++        interrupts = <0 92 4>;
++        usb-phy = <&usb2_phy>, <&usb3_phy>;
++        maximum-speed = "super-speed";
++        dr_mode = "otg";
++        phy_type = "utmi_wide";
++        otg-rev = <0x0200>;
++        adp-disable;
++    };
+-- 
+2.27.0
 
