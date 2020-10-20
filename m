@@ -7,42 +7,45 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 947F1C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:09:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48EE8C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:12:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A140B20BED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:09:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A140B20BED
+	by mail.kernel.org (Postfix) with ESMTPS id 78001207C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:12:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78001207C3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baikalelectronics.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFsqG4G2DzDqTq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:08:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFsv72GZKzDqfc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:12:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=baikalelectronics.ru (client-ip=94.125.187.42;
  helo=mail.baikalelectronics.ru;
  envelope-from=sergey.semin@baikalelectronics.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=baikalelectronics.ru
-Received: from mail.baikalelectronics.ru (unknown [94.125.187.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CFrmX6knNzDqW4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 22:21:32 +1100 (AEDT)
+Received: from mail.baikalelectronics.ru (mx.baikalelectronics.ru
+ [94.125.187.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CFrmY3L21zDqWd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 22:21:33 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mail.baikalelectronics.ru (Postfix) with ESMTP id CE7A2803073C;
- Tue, 20 Oct 2020 11:21:24 +0000 (UTC)
+ by mail.baikalelectronics.ru (Postfix) with ESMTP id 307C6803071B;
+ Tue, 20 Oct 2020 11:21:28 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
  by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id K-gi4uduP2Mi; Tue, 20 Oct 2020 14:21:23 +0300 (MSK)
+ with ESMTP id rGfb2P_QZAGl; Tue, 20 Oct 2020 14:21:27 +0300 (MSK)
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 To: Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, 
  Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>
-Subject: [PATCH v3 06/16] dt-bindings: usb: Convert xHCI bindings to DT schema
-Date: Tue, 20 Oct 2020 14:20:51 +0300
-Message-ID: <20201020112101.19077-7-Sergey.Semin@baikalelectronics.ru>
+ <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Andy Gross
+ <agross@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Manu
+ Gautam <mgautam@codeaurora.org>
+Subject: [PATCH v3 16/16] dt-bindings: usb: qcom,dwc3: Validate DWC3 sub-node
+Date: Tue, 20 Oct 2020 14:21:01 +0300
+Message-ID: <20201020112101.19077-17-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20201020112101.19077-1-Sergey.Semin@baikalelectronics.ru>
 References: <20201020112101.19077-1-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
@@ -60,41 +63,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-mips@vger.kernel.org, Neil Armstrong <narmstrong@baylibre.com>,
+Cc: devicetree@vger.kernel.org, linux-mips@vger.kernel.org,
+ Neil Armstrong <narmstrong@baylibre.com>,
  Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
  Kevin Hilman <khilman@baylibre.com>,
  Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
  linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
  Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
  Serge Semin <fancer.lancer@gmail.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Serge Semin <Sergey.Semin@baikalelectronics.ru>,
- Manu Gautam <mgautam@codeaurora.org>, Andy Gross <agross@kernel.org>,
- Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
  Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+ Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+ Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
+ linux-arm-msm@vger.kernel.org, linux-snps-arc@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>,
  linux-arm-kernel@lists.infradead.org, Roger Quadros <rogerq@ti.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the DT bindings of Generic xHCI Controllers are described by means
-of the legacy text file. Since such format is deprecated in favor of the
-DT schema, let's convert the Generic xHCI Controllers bindings file to the
-corresponding yaml files. There will be two of them: a DT schema for the
-xHCI controllers on a generic platform and a DT schema validating a generic
-xHCI controllers properties. The later will be used to validate the xHCI
-controllers, which aside from some vendor-specific features support the
-basic xHCI functionality.
+Qualcomm msm8996/sc7180/sdm845 DWC3 compatible DT nodes are supposed to
+have a DWC USB3 compatible sub-node to describe a fully functioning USB
+interface. Let's use the available DWC USB3 DT schema to validate the
+Qualcomm DWC3 sub-nodes.
 
-An xHCI-compatible DT node shall support the standard USB HCD properties
-and custom ones like: usb2-lpm-disable, usb3-lpm-capable,
-quirk-broken-port-ped and imod-interval-ns. In addition if a generic xHCI
-controller is being validated against the DT schema it is also supposed to
-be equipped with mandatory compatible string, single registers range,
-single interrupts source, and is supposed to optionally contain up to two
-reference clocks for the controller core and CSRs.
+Note since the generic DWC USB3 DT node is supposed to be named as generic
+USB HCD ("^usb(@.*)?") one we have to accordingly fix the sub-nodes name
+regexp and fix the DT node example.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 Reviewed-by: Rob Herring <robh@kernel.org>
@@ -102,182 +96,38 @@ Reviewed-by: Rob Herring <robh@kernel.org>
 ---
 
 Changelog v2:
-- Add explicit "additionalProperties: true" to the usb-xhci.yaml schema,
-  since additionalProperties/unevaluatedProperties are going to be mandary
-  for each binding.
+- Discard the "^dwc3@[0-9a-f]+$" nodes from being acceptable as sub-nodes.
 ---
- .../devicetree/bindings/usb/generic-xhci.yaml | 63 +++++++++++++++++++
- .../devicetree/bindings/usb/usb-xhci.txt      | 41 ------------
- .../devicetree/bindings/usb/usb-xhci.yaml     | 42 +++++++++++++
- 3 files changed, 105 insertions(+), 41 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/usb/generic-xhci.yaml
- delete mode 100644 Documentation/devicetree/bindings/usb/usb-xhci.txt
- create mode 100644 Documentation/devicetree/bindings/usb/usb-xhci.yaml
+ Documentation/devicetree/bindings/usb/qcom,dwc3.yaml | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/generic-xhci.yaml b/Documentation/devicetree/bindings/usb/generic-xhci.yaml
-new file mode 100644
-index 000000000000..1ea1d49a8175
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/generic-xhci.yaml
-@@ -0,0 +1,63 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/usb/generic-xhci.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: USB xHCI Controller Device Tree Bindings
-+
-+maintainers:
-+  - Mathias Nyman <mathias.nyman@intel.com>
-+
-+allOf:
-+  - $ref: "usb-xhci.yaml#"
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - description: Generic xHCI device
-+        const: generic-xhci
-+      - description: Armada 37xx/375/38x/8k SoCs
-+        items:
-+          - enum:
-+              - marvell,armada3700-xhci
-+              - marvell,armada-375-xhci
-+              - marvell,armada-380-xhci
-+              - marvell,armada-8k-xhci
-+          - const: generic-xhci
-+      - description: Broadcom STB SoCs with xHCI
-+        const: brcm,bcm7445-xhci
-+      - description: Generic xHCI device
-+        const: xhci-platform
-+        deprecated: true
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    minItems: 1
-+    maxItems: 2
-+
-+  clock-names:
-+    minItems: 1
-+    items:
-+      - const: core
-+      - const: reg
-+
-+unevaluatedProperties: false
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+examples:
-+  - |
-+    usb@f0931000 {
-+      compatible = "generic-xhci";
-+      reg = <0xf0931000 0x8c8>;
-+      interrupts = <0x0 0x4e 0x0>;
-+    };
-diff --git a/Documentation/devicetree/bindings/usb/usb-xhci.txt b/Documentation/devicetree/bindings/usb/usb-xhci.txt
-deleted file mode 100644
-index 0c5cff84a969..000000000000
---- a/Documentation/devicetree/bindings/usb/usb-xhci.txt
-+++ /dev/null
-@@ -1,41 +0,0 @@
--USB xHCI controllers
--
--Required properties:
--  - compatible: should be one or more of
--
--    - "generic-xhci" for generic XHCI device
--    - "marvell,armada3700-xhci" for Armada 37xx SoCs
--    - "marvell,armada-375-xhci" for Armada 375 SoCs
--    - "marvell,armada-380-xhci" for Armada 38x SoCs
--    - "brcm,bcm7445-xhci" for Broadcom STB SoCs with XHCI
--    - "xhci-platform" (deprecated)
--
--    When compatible with the generic version, nodes must list the
--    SoC-specific version corresponding to the platform first
--    followed by the generic version.
--
--  - reg: should contain address and length of the standard XHCI
--    register set for the device.
--  - interrupts: one XHCI interrupt should be described here.
--
--Optional properties:
--  - clocks: reference to the clocks
--  - clock-names: mandatory if there is a second clock, in this case
--    the name must be "core" for the first clock and "reg" for the
--    second one
--  - usb2-lpm-disable: indicate if we don't want to enable USB2 HW LPM
--  - usb3-lpm-capable: determines if platform is USB3 LPM capable
--  - quirk-broken-port-ped: set if the controller has broken port disable mechanism
--  - imod-interval-ns: default interrupt moderation interval is 5000ns
--  - phys : see usb-hcd.yaml in the current directory
--
--additionally the properties from usb-hcd.yaml (in the current directory) are
--supported.
--
--
--Example:
--	usb@f0931000 {
--		compatible = "generic-xhci";
--		reg = <0xf0931000 0x8c8>;
--		interrupts = <0x0 0x4e 0x0>;
--	};
-diff --git a/Documentation/devicetree/bindings/usb/usb-xhci.yaml b/Documentation/devicetree/bindings/usb/usb-xhci.yaml
-new file mode 100644
-index 000000000000..965f87fef702
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/usb-xhci.yaml
-@@ -0,0 +1,42 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/usb/usb-xhci.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Generic USB xHCI Controller Device Tree Bindings
-+
-+maintainers:
-+  - Mathias Nyman <mathias.nyman@intel.com>
-+
-+allOf:
-+  - $ref: "usb-hcd.yaml#"
-+
-+properties:
-+  usb2-lpm-disable:
-+    description: Indicates if we don't want to enable USB2 HW LPM
-+    type: boolean
-+
-+  usb3-lpm-capable:
-+    description: Determines if platform is USB3 LPM capable
-+    type: boolean
-+
-+  quirk-broken-port-ped:
-+    description: Set if the controller has broken port disable mechanism
-+    type: boolean
-+
-+  imod-interval-ns:
-+    description: Interrupt moderation interval
-+    default: 5000
-+
-+additionalProperties: true
-+
-+examples:
-+  - |
-+    usb@f0930000 {
-+      compatible = "generic-xhci";
-+      reg = <0xf0930000 0x8c8>;
-+      interrupts = <0x0 0x4e 0x0>;
-+      usb2-lpm-disable;
-+      usb3-lpm-capable;
-+    };
+diff --git a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+index dac10848dd7f..8f8d781e73a0 100644
+--- a/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
++++ b/Documentation/devicetree/bindings/usb/qcom,dwc3.yaml
+@@ -103,11 +103,8 @@ properties:
+ # Required child node:
+ 
+ patternProperties:
+-  "^dwc3@[0-9a-f]+$":
+-    type: object
+-    description:
+-      A child node must exist to represent the core DWC3 IP block
+-      The content of the node is defined in dwc3.txt.
++  "^usb@[0-9a-f]+$":
++    $ref: snps,dwc3.yaml#
+ 
+ required:
+   - compatible
+@@ -160,7 +157,7 @@ examples:
+ 
+             resets = <&gcc GCC_USB30_PRIM_BCR>;
+ 
+-            dwc3@a600000 {
++            usb@a600000 {
+                 compatible = "snps,dwc3";
+                 reg = <0 0x0a600000 0 0xcd00>;
+                 interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
 -- 
 2.27.0
 
