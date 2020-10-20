@@ -2,24 +2,23 @@ Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADF81C433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:16:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F820C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:21:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97F142224D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:16:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97F142224D
+	by mail.kernel.org (Postfix) with ESMTPS id B3B082224D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:21:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B3B082224D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFhfw6BJTzDqWf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 16:16:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFhnS4g55zDqW3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 16:21:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=intel.com (client-ip=134.134.136.100; helo=mga07.intel.com;
  envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
@@ -28,31 +27,32 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFhbv27HpzDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 16:13:29 +1100 (AEDT)
-IronPort-SDR: 33wQkwy8LCFvMhSRtZp1AfEJXWgUDGrmFG0o0gC2g4zqzzgJcknrAYW34cQZIB8NV0QG8QmVZg
- JrderuPwEing==
-X-IronPort-AV: E=McAfee;i="6000,8403,9779"; a="231352085"
-X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="231352085"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFhks35QtzDqTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 16:19:31 +1100 (AEDT)
+IronPort-SDR: iJqtL8ul9Qx19clhWYSneXFJTC4MBNohu875sNAFOae+EsnOwneaTGb4eyN0GRs1tL3lJIUhAe
+ auOmCMBfIHhQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9779"; a="231352580"
+X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="231352580"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Oct 2020 22:13:26 -0700
-IronPort-SDR: x8beOuRhU7ZpRn4f2Nl+wme5Cjnt9HEeRwQMQqNQ2JXekVwjdN+9YOGlXulnc4BkeN5D5Srq96
- 9DF5u92rB3Vw==
+ 19 Oct 2020 22:19:27 -0700
+IronPort-SDR: ePseumoaJrcJWOjiz5Xr2QreeR4pVx9Zf6VukmxVXJtOy6JPW+vcGzImu+ByNnmOs1ikha1hVl
+ eWrAH9/ompeQ==
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="348127210"
+X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="301620594"
 Received: from lkp-server01.sh.intel.com (HELO 88424da292e0) ([10.239.97.150])
- by orsmga008.jf.intel.com with ESMTP; 19 Oct 2020 22:13:25 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 19 Oct 2020 22:19:26 -0700
 Received: from kbuild by 88424da292e0 with local (Exim 4.92)
  (envelope-from <lkp@intel.com>)
- id 1kUjxc-0000PO-KI; Tue, 20 Oct 2020 05:13:24 +0000
-Date: Tue, 20 Oct 2020 13:13:10 +0800
+ id 1kUk3R-0000Pg-G5; Tue, 20 Oct 2020 05:19:25 +0000
+Date: Tue, 20 Oct 2020 13:19:15 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes] BUILD SUCCESS 358ab796ce78ba271a6ff82834183ffb2cb68c4c
-Message-ID: <5f8e71e6.NrAP43dcdHgQIOVt%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ c9818c0abfb0c3500684bb2bc75981123d63134d
+Message-ID: <5f8e7353.QcADpqjlnakhzCpp%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,12 +73,12 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes
-branch HEAD: 358ab796ce78ba271a6ff82834183ffb2cb68c4c  powerpc/powernv/dump: Handle multiple writes to ack attribute
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: c9818c0abfb0c3500684bb2bc75981123d63134d  powerpc/64s: Convert some cpu_setup() and cpu_restore() functions to C
 
-elapsed time: 993m
+elapsed time: 997m
 
-configs tested: 223
+configs tested: 209
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -97,13 +97,9 @@ powerpc                      ppc64e_defconfig
 mips                        nlm_xlr_defconfig
 nds32                            alldefconfig
 c6x                        evmc6457_defconfig
+powerpc                     redwood_defconfig
 parisc                generic-32bit_defconfig
 arm                     am200epdkit_defconfig
-powerpc                     redwood_defconfig
-arc                     haps_hs_smp_defconfig
-mips                      malta_kvm_defconfig
-powerpc                  storcenter_defconfig
-sh                     sh7710voipgw_defconfig
 mips                           ip27_defconfig
 s390                             allyesconfig
 arm                             rpc_defconfig
@@ -127,11 +123,6 @@ xtensa                  audio_kc705_defconfig
 sh                  sh7785lcr_32bit_defconfig
 powerpc                     kmeter1_defconfig
 nios2                               defconfig
-arm                             pxa_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                      pxa255-idp_defconfig
-m68k                       bvme6000_defconfig
-arm                        magician_defconfig
 powerpc                     mpc5200_defconfig
 arm                          pxa3xx_defconfig
 sh                          landisk_defconfig
@@ -142,6 +133,7 @@ arm                         palmz72_defconfig
 powerpc                      acadia_defconfig
 arm                          collie_defconfig
 nios2                         3c120_defconfig
+mips                      malta_kvm_defconfig
 arm                           sama5_defconfig
 sh                            migor_defconfig
 powerpc                      makalu_defconfig
@@ -149,6 +141,7 @@ powerpc                   bluestone_defconfig
 arm                           corgi_defconfig
 powerpc                      ep88xc_defconfig
 sh                             sh03_defconfig
+sh                     sh7710voipgw_defconfig
 powerpc                      tqm8xx_defconfig
 sh                               alldefconfig
 m68k                          sun3x_defconfig
@@ -170,11 +163,6 @@ mips                     cu1000-neo_defconfig
 mips                        bcm47xx_defconfig
 mips                           ip32_defconfig
 sh                           se7780_defconfig
-xtensa                generic_kc705_defconfig
-mips                           jazz_defconfig
-arm                        multi_v5_defconfig
-powerpc                        cell_defconfig
-arm                              alldefconfig
 mips                         tb0287_defconfig
 arm                            hisi_defconfig
 arm                          badge4_defconfig
@@ -195,6 +183,7 @@ mips                  cavium_octeon_defconfig
 arm                       omap2plus_defconfig
 sh                ecovec24-romimage_defconfig
 arm                       cns3420vb_defconfig
+m68k                       bvme6000_defconfig
 arm                         s5pv210_defconfig
 powerpc                         ps3_defconfig
 sh                          rsk7269_defconfig
@@ -241,9 +230,6 @@ sparc64                             defconfig
 arm                           omap1_defconfig
 mips                        vocore2_defconfig
 sh                        edosk7705_defconfig
-powerpc                     akebono_defconfig
-mips                         bigsur_defconfig
-sh                        dreamcast_defconfig
 m68k                        m5407c3_defconfig
 sh                           se7343_defconfig
 arc                        nsimosci_defconfig
