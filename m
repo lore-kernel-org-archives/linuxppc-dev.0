@@ -7,82 +7,50 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7395CC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 01:59:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2DA3C433E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:15:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95D5022260
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 01:59:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95D5022260
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
+	by mail.kernel.org (Postfix) with ESMTPS id D19EB222E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:15:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D19EB222E9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=zte.com.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFcHt1NvLzDqX7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:59:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFcf92rRKzDqVm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 13:15:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=198.54.127.69;
- helo=se14-2.privateemail.com; envelope-from=cmr@codefail.de;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=zte.com.cn (client-ip=63.217.80.70; helo=mxhk.zte.com.cn;
+ envelope-from=wang.yi59@zte.com.cn; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=codefail.de
-Received: from se14-2.privateemail.com (se14-2.privateemail.com
- [198.54.127.69])
+ dmarc=pass (p=none dis=none) header.from=zte.com.cn
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.217.80.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFcGC1TgDzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 12:57:54 +1100 (AEDT)
-Received: from new-01-3.privateemail.com ([198.54.122.47])
- by se14.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
- (Exim 4.92) (envelope-from <cmr@codefail.de>)
- id 1kUguD-0000C1-Eq; Mon, 19 Oct 2020 18:57:51 -0700
-Received: from MTA-08-1.privateemail.com (unknown [10.20.147.18])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 588F7A72;
- Tue, 20 Oct 2020 01:57:39 +0000 (UTC)
-Received: from MTA-08.privateemail.com (localhost [127.0.0.1])
- by MTA-08.privateemail.com (Postfix) with ESMTP id 42E296003E;
- Mon, 19 Oct 2020 21:57:39 -0400 (EDT)
-Received: from localhost (unknown [10.20.151.214])
- by MTA-08.privateemail.com (Postfix) with ESMTPA id 0E69260038;
- Tue, 20 Oct 2020 01:57:38 +0000 (UTC)
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 3/8] powerpc: Mark functions called inside uaccess
- blocks w/ 'notrace'
-From: "Christopher M. Riedl" <cmr@codefail.de>
-Date: Mon, 19 Oct 2020 20:59:52 -0500
-Message-Id: <C6HCI5ZCNOK7.38L522D7VL2QR@geist>
-In-Reply-To: <30d9ccba-20a5-37b4-1629-d0f9e0da4c84@csgroup.eu>
-X-Virus-Scanned: ClamAV using ClamSMTP
-X-Originating-IP: 198.54.122.47
-X-SpamExperts-Domain: o3.privateemail.com
-X-SpamExperts-Username: out-03
-Authentication-Results: registrar-servers.com;
- auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
-X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00023020979305)
-X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0acxlbLX9+ibl6ixChE10xOpSDasLI4SayDByyq9LIhVdoCmd7d8XIQ6
- RgdxWoJK+kTNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kwi4BXSuOO65HxJws2e+QTrd8
- cnMVGQoZ8W9SqygcY4DfgwIv96ey3i8S2kDiV4NFL0mKUVqHu+m9KLsR0ilyGUGlz8CJSOMrvzx9
- TVg3RkVvtszCBXJ+SJ3GQRXVcU0Op8jZ4AoGBlDR94YkH0RjFRfL4EkKxU9ObJV0pa6ww8AiiPMZ
- yTxq5Zj1313L44OSSUJOjKBJNHzJF8ycSHMaEvDk3+iNqiYKhZaJO2iXygjDQWjOmI87Lh7Y8XsC
- bZWVvRkWzsAgaWolxIxCj2GHto6atsxaFkWS/KO9ggVt7y11v0HCq9Ij3WgoQoezM+scaWWR7drM
- d0qbJIo1RVCXie2VXGdtLyog7ui50fJvZPWymVBEglNuNDdi9xAbizrHQe+bc+r9MxWEuItVKVsO
- chW6PYU7vZf9hpAifuf5iKzfX8TdqEXkwxwMjsp2mNAp/RfNE82Z0j/SGVOKzpZStLLrEkdjWooj
- rxhIwxLjxK3LgKffTIgl7nuGO/IJU1342OUMeHyTpNN0eXybX/w7/4a+Zyc1sUYlckMDbruAhxcr
- zyR3yXPdggqRch5qYBgdiEv3LcyF4PeZ2Kcbyk5JAruiXLLmj1s/Ik6HjO34HfVogUE8PQu6GTAc
- nRPAXQn76cR0wOIgRm2hJfLmYEHLuNO6UlGm0ycQh0Ylbt1+Ear3Y80OmAux3oN13+ztUzne3jdp
- YBMFjVxNUx8bpJ4bPiG/x2hyPJvsEORuxUz9b6ETMFFQ36qcvKwKb8V+SJ+wsNsIDXCdzswXjwto
- Hmi4tVz1pRXWhjh9fdbl44I0Df2OsG3EZZg2uoCaGUazTdO7HUifxNxi/vr+xe0awpy3/ac9nHrO
- TNZtkVLPUrmUqzE1N30qb7V+5A0U/gKkK9k9/8Rp6VG8MMj91VO6Xp0YgpWAX6frP3SxSkEBDMTz
- FORFgwmpUOXPcPeresbPjCmptaly/uPaPGs4IuAYIIDnnqEO+NQBOd/FKlhsdD5U1GS+QVH2BVkH
- vSrZKgwA8kr3
-X-Report-Abuse-To: spam@se5.registrar-servers.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFccJ5LTFzDqNN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 13:13:23 +1100 (AEDT)
+Received: from mse-fl2.zte.com.cn (unknown [10.30.14.239])
+ by Forcepoint Email with ESMTPS id A3E73973B30690451C97;
+ Tue, 20 Oct 2020 10:13:03 +0800 (CST)
+Received: from kjyxapp01.zte.com.cn ([10.30.12.200])
+ by mse-fl2.zte.com.cn with SMTP id 09K2D2x6088964;
+ Tue, 20 Oct 2020 10:13:02 +0800 (GMT-8)
+ (envelope-from wang.yi59@zte.com.cn)
+Received: from fox-host8.localdomain (unknown [10.234.72.110])
+ by smtp (Zmail) with SMTP; Tue, 20 Oct 2020 10:13:02 +0800
+X-Zmail-TransId: 3e885f8e47ad000-a1f05
+From: Yi Wang <wang.yi59@zte.com.cn>
+To: Roy.Pledge@nxp.com, leoyang.li@nxp.com
+Subject: [PATCH v3] soc: fsl: dpio: Get the cpumask through cpumask_of(cpu)
+Date: Tue, 20 Oct 2020 10:18:32 +0800
+Message-Id: <20201020021832.36846-1-wang.yi59@zte.com.cn>
+X-Mailer: X-Zmail-Txt
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed;
+	boundary="=====_001_next====="
+X-MAIL: mse-fl2.zte.com.cn 09K2D2x6088964
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,170 +62,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: wang.yi59@zte.com.cn, jiang.xuexin@zte.com.cn, Hao Si <si.hao@zte.com.cn>,
+ linux-kernel@vger.kernel.org, Lin Chen <chen.lin5@zte.com.cn>,
+ xue.zhihong@zte.com.cn, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri Oct 16, 2020 at 4:02 AM CDT, Christophe Leroy wrote:
->
->
-> Le 15/10/2020 =C3=A0 17:01, Christopher M. Riedl a =C3=A9crit :
-> > Functions called between user_*_access_begin() and user_*_access_end()
-> > should be either inlined or marked 'notrace' to prevent leaving
-> > userspace access exposed. Mark any such functions relevant to signal
-> > handling so that subsequent patches can call them inside uaccess blocks=
-.
->
-> Is it enough to mark it "notrace" ? I see that when I activate KASAN,
-> there are still KASAN calls in
-> those functions.
->
 
-Maybe not enough after all :(
 
-> In my series for 32 bits, I re-ordered stuff in order to do all those
-> calls before doing the
-> _access_begin(), can't you do the same on PPC64 ? (See
-> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/f6eac65781b4a5722=
-0477c8864bca2b57f29a5d5.1597770847.git.christophe.leroy@csgroup.eu/)
->
+--=====_001_next=====
+Content-Type: multipart/alternative;
+	boundary="=====_003_next====="
 
-Yes, I will give this another shot in the next spin.
 
-> Christophe
->
-> >=20
-> > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
-> > ---
-> >   arch/powerpc/kernel/process.c | 20 ++++++++++----------
-> >   arch/powerpc/mm/mem.c         |  4 ++--
-> >   2 files changed, 12 insertions(+), 12 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/proces=
-s.c
-> > index ba2c987b8403..bf5d9654bd2c 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -84,7 +84,7 @@ extern unsigned long _get_SP(void);
-> >    */
-> >   bool tm_suspend_disabled __ro_after_init =3D false;
-> >  =20
-> > -static void check_if_tm_restore_required(struct task_struct *tsk)
-> > +static void notrace check_if_tm_restore_required(struct task_struct *t=
-sk)
-> >   {
-> >   	/*
-> >   	 * If we are saving the current thread's registers, and the
-> > @@ -151,7 +151,7 @@ void notrace __msr_check_and_clear(unsigned long bi=
-ts)
-> >   EXPORT_SYMBOL(__msr_check_and_clear);
-> >  =20
-> >   #ifdef CONFIG_PPC_FPU
-> > -static void __giveup_fpu(struct task_struct *tsk)
-> > +static void notrace __giveup_fpu(struct task_struct *tsk)
-> >   {
-> >   	unsigned long msr;
-> >  =20
-> > @@ -163,7 +163,7 @@ static void __giveup_fpu(struct task_struct *tsk)
-> >   	tsk->thread.regs->msr =3D msr;
-> >   }
-> >  =20
-> > -void giveup_fpu(struct task_struct *tsk)
-> > +void notrace giveup_fpu(struct task_struct *tsk)
-> >   {
-> >   	check_if_tm_restore_required(tsk);
-> >  =20
-> > @@ -177,7 +177,7 @@ EXPORT_SYMBOL(giveup_fpu);
-> >    * Make sure the floating-point register state in the
-> >    * the thread_struct is up to date for task tsk.
-> >    */
-> > -void flush_fp_to_thread(struct task_struct *tsk)
-> > +void notrace flush_fp_to_thread(struct task_struct *tsk)
-> >   {
-> >   	if (tsk->thread.regs) {
-> >   		/*
-> > @@ -234,7 +234,7 @@ static inline void __giveup_fpu(struct task_struct =
-*tsk) { }
-> >   #endif /* CONFIG_PPC_FPU */
-> >  =20
-> >   #ifdef CONFIG_ALTIVEC
-> > -static void __giveup_altivec(struct task_struct *tsk)
-> > +static void notrace __giveup_altivec(struct task_struct *tsk)
-> >   {
-> >   	unsigned long msr;
-> >  =20
-> > @@ -246,7 +246,7 @@ static void __giveup_altivec(struct task_struct *ts=
-k)
-> >   	tsk->thread.regs->msr =3D msr;
-> >   }
-> >  =20
-> > -void giveup_altivec(struct task_struct *tsk)
-> > +void notrace giveup_altivec(struct task_struct *tsk)
-> >   {
-> >   	check_if_tm_restore_required(tsk);
-> >  =20
-> > @@ -285,7 +285,7 @@ EXPORT_SYMBOL(enable_kernel_altivec);
-> >    * Make sure the VMX/Altivec register state in the
-> >    * the thread_struct is up to date for task tsk.
-> >    */
-> > -void flush_altivec_to_thread(struct task_struct *tsk)
-> > +void notrace flush_altivec_to_thread(struct task_struct *tsk)
-> >   {
-> >   	if (tsk->thread.regs) {
-> >   		preempt_disable();
-> > @@ -300,7 +300,7 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
-> >   #endif /* CONFIG_ALTIVEC */
-> >  =20
-> >   #ifdef CONFIG_VSX
-> > -static void __giveup_vsx(struct task_struct *tsk)
-> > +static void notrace __giveup_vsx(struct task_struct *tsk)
-> >   {
-> >   	unsigned long msr =3D tsk->thread.regs->msr;
-> >  =20
-> > @@ -317,7 +317,7 @@ static void __giveup_vsx(struct task_struct *tsk)
-> >   		__giveup_altivec(tsk);
-> >   }
-> >  =20
-> > -static void giveup_vsx(struct task_struct *tsk)
-> > +static void notrace giveup_vsx(struct task_struct *tsk)
-> >   {
-> >   	check_if_tm_restore_required(tsk);
-> >  =20
-> > @@ -352,7 +352,7 @@ void enable_kernel_vsx(void)
-> >   }
-> >   EXPORT_SYMBOL(enable_kernel_vsx);
-> >  =20
-> > -void flush_vsx_to_thread(struct task_struct *tsk)
-> > +void notrace flush_vsx_to_thread(struct task_struct *tsk)
-> >   {
-> >   	if (tsk->thread.regs) {
-> >   		preempt_disable();
-> > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> > index ddc32cc1b6cf..da2345a2abc6 100644
-> > --- a/arch/powerpc/mm/mem.c
-> > +++ b/arch/powerpc/mm/mem.c
-> > @@ -378,7 +378,7 @@ static inline bool flush_coherent_icache(unsigned l=
-ong addr)
-> >    * @start: the start address
-> >    * @stop: the stop address (exclusive)
-> >    */
-> > -static void invalidate_icache_range(unsigned long start, unsigned long=
- stop)
-> > +static void notrace invalidate_icache_range(unsigned long start, unsig=
-ned long stop)
-> >   {
-> >   	unsigned long shift =3D l1_icache_shift();
-> >   	unsigned long bytes =3D l1_icache_bytes();
-> > @@ -402,7 +402,7 @@ static void invalidate_icache_range(unsigned long s=
-tart, unsigned long stop)
-> >    * @start: the start address
-> >    * @stop: the stop address (exclusive)
-> >    */
-> > -void flush_icache_range(unsigned long start, unsigned long stop)
-> > +void notrace flush_icache_range(unsigned long start, unsigned long sto=
-p)
-> >   {
-> >   	if (flush_coherent_icache(start))
-> >   		return;
-> >=20
+--=====_003_next=====
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: base64
+
+RnJvbTogSGFvIFNpIDxzaS5oYW9AenRlLmNvbS5jbj4NCg0KVGhlIGxvY2FsIHZhcmlhYmxlICdj
+cHVtYXNrX3QgbWFzaycgaXMgaW4gdGhlIHN0YWNrIG1lbW9yeSwgYW5kIGl0cyBhZGRyZXNzDQpp
+cyBhc3NpZ25lZCB0byAnZGVzYy0+YWZmaW5pdHknIGluICdpcnFfc2V0X2FmZmluaXR5X2hpbnQo
+KScuDQpCdXQgdGhlIG1lbW9yeSBhcmVhIHdoZXJlIHRoaXMgdmFyaWFibGUgaXMgbG9jYXRlZCBp
+cyBhdCByaXNrIG9mIGJlaW5nDQptb2RpZmllZC4NCg0KRHVyaW5nIExUUCB0ZXN0aW5nLCB0aGUg
+Zm9sbG93aW5nIGVycm9yIHdhcyBnZW5lcmF0ZWQ6DQoNClVuYWJsZSB0byBoYW5kbGUga2VybmVs
+IHBhZ2luZyByZXF1ZXN0IGF0IHZpcnR1YWwgYWRkcmVzcyBmZmZmMDAwMDEyZTliNzkwDQpNZW0g
+YWJvcnQgaW5mbzoNCiAgRVNSID0gMHg5NjAwMDAwNw0KICBFeGNlcHRpb24gY2xhc3MgPSBEQUJU
+IChjdXJyZW50IEVMKSwgSUwgPSAzMiBiaXRzDQogIFNFVCA9IDAsIEZuViA9IDANCiAgRUEgPSAw
+LCBTMVBUVyA9IDANCkRhdGEgYWJvcnQgaW5mbzoNCiAgSVNWID0gMCwgSVNTID0gMHgwMDAwMDAw
+Nw0KICBDTSA9IDAsIFduUiA9IDANCnN3YXBwZXIgcGd0YWJsZTogNGsgcGFnZXMsIDQ4LWJpdCBW
+QXMsIHBnZHAgPSAwMDAwMDAwMDc1YWM1ZTA3DQpbZmZmZjAwMDAxMmU5Yjc5MF0gcGdkPTAwMDAw
+MDI3ZGJmZmUwMDMsIHB1ZD0wMDAwMDAyN2RiZmZkMDAzLA0KcG1kPTAwMDAwMDI3YjZkNjEwMDMs
+IHB0ZT0wMDAwMDAwMDAwMDAwMDAwDQpJbnRlcm5hbCBlcnJvcjogT29wczogOTYwMDAwMDcgWyMx
+XSBQUkVFTVBUIFNNUA0KTW9kdWxlcyBsaW5rZWQgaW46IHh0X2Nvbm50cmFjaw0KUHJvY2VzcyBy
+ZWFkX2FsbCAocGlkOiAyMDE3MSwgc3RhY2sgbGltaXQgPSAweDAwMDAwMDAwNDRlYTQwOTUpDQpD
+UFU6IDE0IFBJRDogMjAxNzEgQ29tbTogcmVhZF9hbGwgVGFpbnRlZDogRyAgICBCICAgVw0KSGFy
+ZHdhcmUgbmFtZTogTlhQIExheWVyc2NhcGUgTFgyMTYwQVJEQiAoRFQpDQpwc3RhdGU6IDgwMDAw
+MDg1IChOemN2IGRhSWYgLVBBTiAtVUFPKQ0KcGMgOiBpcnFfYWZmaW5pdHlfaGludF9wcm9jX3No
+b3crMHg1NC8weGIwDQpsciA6IGlycV9hZmZpbml0eV9oaW50X3Byb2Nfc2hvdysweDRjLzB4YjAN
+CnNwIDogZmZmZjAwMDAxMTM4YmMxMA0KeDI5OiBmZmZmMDAwMDExMzhiYzEwIHgyODogMDAwMGZm
+ZmZkMTMxZDFlMA0KeDI3OiAwMDAwMDAwMDAwNzAwMGMwIHgyNjogZmZmZjgwMjViOTQ4MGRjMA0K
+eDI1OiBmZmZmODAyNWI5NDgwZGE4IHgyNDogMDAwMDAwMDAwMDAwMDNmZg0KeDIzOiBmZmZmODAy
+NzMzNGY4MzAwIHgyMjogZmZmZjgwMjcyZTk3ZDAwMA0KeDIxOiBmZmZmODAyNzJlOTdkMGIwIHgy
+MDogZmZmZjgwMjViOTQ4MGQ4MA0KeDE5OiBmZmZmMDAwMDA5YTQ5MDAwIHgxODogMDAwMDAwMDAw
+MDAwMDAwMA0KeDE3OiAwMDAwMDAwMDAwMDAwMDAwIHgxNjogMDAwMDAwMDAwMDAwMDAwMA0KeDE1
+OiAwMDAwMDAwMDAwMDAwMDAwIHgxNDogMDAwMDAwMDAwMDAwMDAwMA0KeDEzOiAwMDAwMDAwMDAw
+MDAwMDAwIHgxMjogMDAwMDAwMDAwMDAwMDA0MA0KeDExOiAwMDAwMDAwMDAwMDAwMDAwIHgxMDog
+ZmZmZjgwMjczNWI3OWI4OA0KeDkgOiAwMDAwMDAwMDAwMDAwMDAwIHg4IDogMDAwMDAwMDAwMDAw
+MDAwMA0KeDcgOiBmZmZmMDAwMDA5YTQ5ODQ4IHg2IDogMDAwMDAwMDAwMDAwMDAwMw0KeDUgOiAw
+MDAwMDAwMDAwMDAwMDAwIHg0IDogZmZmZjAwMDAwODE1N2Q2Yw0KeDMgOiBmZmZmMDAwMDExMzhi
+YzEwIHgyIDogZmZmZjAwMDAxMmU5Yjc5MA0KeDEgOiAwMDAwMDAwMDAwMDAwMDAwIHgwIDogMDAw
+MDAwMDAwMDAwMDAwMA0KQ2FsbCB0cmFjZToNCiBpcnFfYWZmaW5pdHlfaGludF9wcm9jX3Nob3cr
+MHg1NC8weGIwDQogc2VxX3JlYWQrMHgxYjAvMHg0NDANCiBwcm9jX3JlZ19yZWFkKzB4ODAvMHhk
+OA0KIF9fdmZzX3JlYWQrMHg2MC8weDE3OA0KIHZmc19yZWFkKzB4OTQvMHgxNTANCiBrc3lzX3Jl
+YWQrMHg3NC8weGYwDQogX19hcm02NF9zeXNfcmVhZCsweDI0LzB4MzANCiBlbDBfc3ZjX2NvbW1v
+bi5jb25zdHByb3AuMCsweGQ4LzB4MWEwDQogZWwwX3N2Y19oYW5kbGVyKzB4MzQvMHg4OA0KIGVs
+MF9zdmMrMHgxMC8weDE0DQpDb2RlOiBmOTAwMWJiZiA5NDNlMDczMiBmOTQwNjZjMiBiNDAwMDA2
+MiAoZjk0MDAwNDEpDQotLS1bIGVuZCB0cmFjZSBiNDk1YmRjYjBiM2I3MzJiIF0tLS0NCktlcm5l
+bCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBGYXRhbCBleGNlcHRpb24NClNNUDogc3RvcHBpbmcgc2Vj
+b25kYXJ5IENQVXMNClNNUDogZmFpbGVkIHRvIHN0b3Agc2Vjb25kYXJ5IENQVXMgMCwyLTQsNiw4
+LDExLDEzLTE1DQpLZXJuZWwgT2Zmc2V0OiBkaXNhYmxlZA0KQ1BVIGZlYXR1cmVzOiAweDAsMjEw
+MDYwMDgNCk1lbW9yeSBMaW1pdDogbm9uZQ0KLS0tWyBlbmQgS2VybmVsIHBhbmljIC0gbm90IHN5
+bmNpbmc6IEZhdGFsIGV4Y2VwdGlvbiBdLS0tDQoNCkZpeCBpdCBieSB1c2luZyAnY3B1bWFza19v
+ZihjcHUpJyB0byBnZXQgdGhlIGNwdW1hc2suDQoNClNpZ25lZC1vZmYtYnk6IEhhbyBTaSA8c2ku
+aGFvQHp0ZS5jb20uY24+DQpTaWduZWQtb2ZmLWJ5OiBMaW4gQ2hlbiA8Y2hlbi5saW41QHp0ZS5j
+b20uY24+DQpTaWduZWQtb2ZmLWJ5OiBZaSBXYW5nIDx3YW5nLnlpNTlAenRlLmNvbS5jbj4NCi0t
+LQ0KdjM6IFVzZSBjcHVtYXNrX29mKGNwdSkgdG8gZ2V0IHRoZSBwcmUtZGVmaW5lZCBjcHVtYXNr
+IGluIHRoZSBzdGF0aWMgDQpjcHVfYml0X2JpdG1hcCBhcnJheS4NCnYyOiBQbGFjZSAnY3B1bWFz
+a190IG1hc2snIGluIHRoZSBkcml2ZXIncyBwcml2YXRlIGRhdGEgYW5kIHdoaWxlIGF0IGl0LCAN
+CnJlbmFtZSBpdCB0byBjcHVfbWFzay4NCg0KIGRyaXZlcnMvc29jL2ZzbC9kcGlvL2RwaW8tZHJp
+dmVyLmMgfCA1ICstLS0tDQogMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCA0IGRlbGV0
+aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL2RwaW8vZHBpby1kcml2ZXIu
+YyBiL2RyaXZlcnMvc29jL2ZzbC9kcGlvL2RwaW8tZHJpdmVyLmMNCmluZGV4IDdiNjQyYzMuLjdm
+Mzk3YjQgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3NvYy9mc2wvZHBpby9kcGlvLWRyaXZlci5jDQor
+KysgYi9kcml2ZXJzL3NvYy9mc2wvZHBpby9kcGlvLWRyaXZlci5jDQpAQCAtOTUsNyArOTUsNiBA
+QCBzdGF0aWMgaW50IHJlZ2lzdGVyX2RwaW9faXJxX2hhbmRsZXJzKHN0cnVjdCBmc2xfbWNfZGV2
+aWNlICpkcGlvX2RldiwgaW50IGNwdSkNCiB7DQogCWludCBlcnJvcjsNCiAJc3RydWN0IGZzbF9t
+Y19kZXZpY2VfaXJxICppcnE7DQotCWNwdW1hc2tfdCBtYXNrOw0KIA0KIAlpcnEgPSBkcGlvX2Rl
+di0+aXJxc1swXTsNCiAJZXJyb3IgPSBkZXZtX3JlcXVlc3RfaXJxKCZkcGlvX2Rldi0+ZGV2LA0K
+QEAgLTExMiw5ICsxMTEsNyBAQCBzdGF0aWMgaW50IHJlZ2lzdGVyX2RwaW9faXJxX2hhbmRsZXJz
+KHN0cnVjdCBmc2xfbWNfZGV2aWNlICpkcGlvX2RldiwgaW50IGNwdSkNCiAJfQ0KIA0KIAkvKiBz
+ZXQgdGhlIGFmZmluaXR5IGhpbnQgKi8NCi0JY3B1bWFza19jbGVhcigmbWFzayk7DQotCWNwdW1h
+c2tfc2V0X2NwdShjcHUsICZtYXNrKTsNCi0JaWYgKGlycV9zZXRfYWZmaW5pdHlfaGludChpcnEt
+Pm1zaV9kZXNjLT5pcnEsICZtYXNrKSkNCisJaWYgKGlycV9zZXRfYWZmaW5pdHlfaGludChpcnEt
+Pm1zaV9kZXNjLT5pcnEsIGNwdW1hc2tfb2YoY3B1KSkpDQogCQlkZXZfZXJyKCZkcGlvX2Rldi0+
+ZGV2LA0KIAkJCSJpcnFfc2V0X2FmZmluaXR5IGZhaWxlZCBpcnEgJWQgY3B1ICVkXG4iLA0KIAkJ
+CWlycS0+bXNpX2Rlc2MtPmlycSwgY3B1KTsNCi0tIA0KMi4xNS4y
+
+
+--=====_003_next=====--
+
+--=====_001_next=====--
 
