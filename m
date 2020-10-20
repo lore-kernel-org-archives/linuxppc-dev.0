@@ -2,61 +2,107 @@ Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DA06C433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CFC0C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:47:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DCFF2225F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:24:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DCFF2225F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id C1BDE2225F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 05:47:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="pZhNU6ZY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1BDE2225F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFhrG6dtfzDqKs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 16:24:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFjLm0nb4zDqXD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 16:47:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=ravi.bangoria@linux.ibm.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=pZhNU6ZY; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFhks45gzzDqTb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 16:19:30 +1100 (AEDT)
-IronPort-SDR: 0q0p08HreCL8Dkw1ZLkHqg3g9j2JI8J9l0ci+KHAW8HiYLLYFtl2hYwvRcaHqmBsVGdTmZJIre
- 1c1jJj5VJDrw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9779"; a="147013531"
-X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="147013531"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Oct 2020 22:19:27 -0700
-IronPort-SDR: uz27SmLWXqLLZRytUVIJ15jbigPwgX0a1HDLDrUYnY7QJZeaRh/qiwfLNhkOCfFaYdOS700lpp
- FHC3kPTCfPDQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,396,1596524400"; d="scan'208";a="320523152"
-Received: from lkp-server01.sh.intel.com (HELO 88424da292e0) ([10.239.97.150])
- by orsmga006.jf.intel.com with ESMTP; 19 Oct 2020 22:19:25 -0700
-Received: from kbuild by 88424da292e0 with local (Exim 4.92)
- (envelope-from <lkp@intel.com>)
- id 1kUk3R-0000Pa-1f; Tue, 20 Oct 2020 05:19:25 +0000
-Date: Tue, 20 Oct 2020 13:19:12 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS 96b5a60d059984a2f0eaef90e97f59ac4a76bff4
-Message-ID: <5f8e7350.GRgmplCr/L7O8Ito%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFjJj5D1YzDqTw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 16:45:25 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09K5XGuv019400; Tue, 20 Oct 2020 01:45:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=7abWBSiE/31suRpn6Y3yu3w8jDIcAqW98wIiE+Hb/3Y=;
+ b=pZhNU6ZY/B6wS/4/U0tYgMrlPwEKffrPI42ZnvqirZB1E2llKhDRdrrbE7YD3JlnQW3L
+ xknjVMPVXM0/YnbqbRe44emp4NbEpN5qEqBI2LuI9OOH/ANng2b1dUhnD8x6tLzl1ID0
+ qWcibrIMZuVVdSQ4kaMCDqCAebiYTe2EO6tFWwKd+MMPSMz7q2v87UrAZg9PrL1EoNuz
+ M5YJRexKhucsVrMy9va8y1KZsI5E3FX0HZOaVxHTalU5EOhcidSBZcGbLny4saUr8wdO
+ yaF17o1Xi2SbZYfmIAyJr3APA168KV1M8vwTSYvVNvzqMCp31Zh9D6vE2sroXV73ulcn /Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 349sd20vdd-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Oct 2020 01:45:17 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 09K5c5Tw032148;
+ Tue, 20 Oct 2020 01:45:17 -0400
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 349sd20vch-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Oct 2020 01:45:16 -0400
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+ by ppma04ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09K5aXYi004915;
+ Tue, 20 Oct 2020 05:45:13 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by ppma04ams.nl.ibm.com with ESMTP id 347r88auqh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 20 Oct 2020 05:45:13 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09K5jAYP33882588
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 20 Oct 2020 05:45:11 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AB2A752052;
+ Tue, 20 Oct 2020 05:45:10 +0000 (GMT)
+Received: from bangoria.ibmuc.com (unknown [9.199.34.51])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 498F952051;
+ Tue, 20 Oct 2020 05:45:08 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH 2/2] powerpc/watchpoint: Workaround P10 DD1 issue with VSX-32
+ byte instructions
+Date: Tue, 20 Oct 2020 11:14:54 +0530
+Message-Id: <20201020054454.194343-2-ravi.bangoria@linux.ibm.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20201020054454.194343-1-ravi.bangoria@linux.ibm.com>
+References: <20201020054454.194343-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235, 18.0.687
+ definitions=2020-10-20_03:2020-10-16,
+ 2020-10-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0
+ spamscore=0 phishscore=0 priorityscore=1501 impostorscore=0
+ mlxlogscore=999 malwarescore=0 adultscore=0 mlxscore=0 lowpriorityscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010200037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,202 +114,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: christophe.leroy@c-s.fr, ravi.bangoria@linux.ibm.com, mikey@linux.ibm.com,
+ jniethe5@gmail.com, npiggin@gmail.com, maddy@linux.ibm.com, paulus@samba.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  merge
-branch HEAD: 96b5a60d059984a2f0eaef90e97f59ac4a76bff4  Automatic merge of 'fixes' into merge (2020-10-19 23:20)
+POWER10 DD1 has an issue where it generates watchpoint exceptions when it
+shouldn't. The conditions where this occur are:
 
-elapsed time: 998m
+ - octword op
+ - ending address of DAWR range is less than starting address of op
+ - those addresses need to be in the same or in two consecutive 512B
+   blocks
+ - 'op address + 64B' generates an address that has a carry into bit
+   52 (crosses 2K boundary)
 
-configs tested: 176
-configs skipped: 2
+Handle such spurious exception by considering them as extraneous and
+emulating/single-steeping instruction without generating an event.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-xtensa                    xip_kc705_defconfig
-mips                            ar7_defconfig
-arm                            mmp2_defconfig
-powerpc                      ppc64e_defconfig
-mips                        nlm_xlr_defconfig
-mips                           ip27_defconfig
-s390                             allyesconfig
-arm                             rpc_defconfig
-sh                        apsh4ad0a_defconfig
-arc                           tb10x_defconfig
-arm                        keystone_defconfig
-arc                      axs103_smp_defconfig
-powerpc                    socrates_defconfig
-riscv                            alldefconfig
-powerpc                mpc7448_hpc2_defconfig
-arm                          ixp4xx_defconfig
-microblaze                      mmu_defconfig
-powerpc                      mgcoge_defconfig
-arm                           spitz_defconfig
-xtensa                  audio_kc705_defconfig
-sh                  sh7785lcr_32bit_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                     mpc5200_defconfig
-arm                          pxa3xx_defconfig
-sh                          landisk_defconfig
-openrisc                    or1ksim_defconfig
-arm                         nhk8815_defconfig
-powerpc                 mpc834x_itx_defconfig
-arm                     am200epdkit_defconfig
-arm                         palmz72_defconfig
-powerpc                      acadia_defconfig
-arm                          collie_defconfig
-nios2                         3c120_defconfig
-mips                      malta_kvm_defconfig
-arm                           sama5_defconfig
-sh                            migor_defconfig
-powerpc                      makalu_defconfig
-powerpc                   bluestone_defconfig
-arm                           corgi_defconfig
-powerpc                      ep88xc_defconfig
-sh                             sh03_defconfig
-parisc                generic-32bit_defconfig
-sh                     sh7710voipgw_defconfig
-powerpc                      tqm8xx_defconfig
-sh                               alldefconfig
-m68k                          sun3x_defconfig
-powerpc                       holly_defconfig
-mips                       lemote2f_defconfig
-sh                           se7751_defconfig
-arm                          ep93xx_defconfig
-arm                      integrator_defconfig
-c6x                        evmc6457_defconfig
-powerpc                 mpc832x_rdb_defconfig
-mips                     cu1000-neo_defconfig
-mips                        bcm47xx_defconfig
-mips                           ip32_defconfig
-sh                           se7780_defconfig
-mips                         tb0287_defconfig
-arm                            hisi_defconfig
-arm                          badge4_defconfig
-h8300                            alldefconfig
-arm                        spear6xx_defconfig
-arm                          tango4_defconfig
-arm                           efm32_defconfig
-powerpc                    amigaone_defconfig
-powerpc                     powernv_defconfig
-sh                               j2_defconfig
-mips                         tb0226_defconfig
-mips                  cavium_octeon_defconfig
-arm                       omap2plus_defconfig
-sh                ecovec24-romimage_defconfig
-arm                       cns3420vb_defconfig
-m68k                       bvme6000_defconfig
-arm                         s5pv210_defconfig
-powerpc                         ps3_defconfig
-arm                        mvebu_v7_defconfig
-m68k                        mvme147_defconfig
-sh                          rsk7269_defconfig
-sh                           se7724_defconfig
-sh                            shmin_defconfig
-powerpc                      ppc40x_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                           se7750_defconfig
-alpha                            alldefconfig
-sh                          kfr2r09_defconfig
-powerpc                     mpc512x_defconfig
-arm                            zeus_defconfig
-powerpc                      katmai_defconfig
-mips                    maltaup_xpa_defconfig
-arm                           tegra_defconfig
-sh                          rsk7264_defconfig
-powerpc                     skiroot_defconfig
-arm                          lpd270_defconfig
-sh                     magicpanelr2_defconfig
-arm                    vt8500_v6_v7_defconfig
-mips                        workpad_defconfig
-mips                     loongson1b_defconfig
-powerpc                   currituck_defconfig
-powerpc                  iss476-smp_defconfig
-arm                        spear3xx_defconfig
-m68k                        m5407c3_defconfig
-sh                           se7343_defconfig
-arc                        nsimosci_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20201019
-x86_64               randconfig-a002-20201019
-x86_64               randconfig-a006-20201019
-x86_64               randconfig-a003-20201019
-x86_64               randconfig-a005-20201019
-x86_64               randconfig-a001-20201019
-i386                 randconfig-a006-20201019
-i386                 randconfig-a005-20201019
-i386                 randconfig-a001-20201019
-i386                 randconfig-a003-20201019
-i386                 randconfig-a004-20201019
-i386                 randconfig-a002-20201019
-i386                 randconfig-a015-20201019
-i386                 randconfig-a013-20201019
-i386                 randconfig-a016-20201019
-i386                 randconfig-a012-20201019
-i386                 randconfig-a011-20201019
-i386                 randconfig-a014-20201019
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a016-20201019
-x86_64               randconfig-a015-20201019
-x86_64               randconfig-a012-20201019
-x86_64               randconfig-a013-20201019
-x86_64               randconfig-a011-20201019
-x86_64               randconfig-a014-20201019
-
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+
+Dependency: VSX-32 byte emulation support patches
+  https://lore.kernel.org/r/20201011050908.72173-1-ravi.bangoria@linux.ibm.com
+
+ arch/powerpc/kernel/hw_breakpoint.c | 69 ++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index f4e8f21046f5..4514745d27c3 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -499,6 +499,11 @@ static bool is_larx_stcx_instr(int type)
+ 	return type == LARX || type == STCX;
+ }
+ 
++static bool is_octword_vsx_instr(int type, int size)
++{
++	return ((type == LOAD_VSX || type == STORE_VSX) && size == 32);
++}
++
+ /*
+  * We've failed in reliably handling the hw-breakpoint. Unregister
+  * it and throw a warning message to let the user know about it.
+@@ -549,6 +554,60 @@ static bool stepping_handler(struct pt_regs *regs, struct perf_event **bp,
+ 	return true;
+ }
+ 
++static void handle_p10dd1_spurious_exception(struct arch_hw_breakpoint **info,
++					     int *hit, unsigned long ea)
++{
++	int i;
++	unsigned long hw_start_addr;
++	unsigned long hw_end_addr;
++
++	/*
++	 * Handle spurious exception only when any bp_per_reg is set.
++	 * Otherwise this might be created by xmon and not actually a
++	 * spurious exception.
++	 */
++	for (i = 0; i < nr_wp_slots(); i++) {
++		if (!info[i])
++			continue;
++
++		hw_start_addr = ALIGN_DOWN(info[i]->address, HW_BREAKPOINT_SIZE);
++		hw_end_addr = ALIGN(info[i]->address + info[i]->len, HW_BREAKPOINT_SIZE);
++
++		/*
++		 * Ending address of DAWR range is less than starting
++		 * address of op.
++		 */
++		if ((hw_end_addr - 1) >= ea)
++			continue;
++
++		/*
++		 * Those addresses need to be in the same or in two
++		 * consecutive 512B blocks;
++		 */
++		if (((hw_end_addr - 1) >> 10) != (ea >> 10))
++			continue;
++
++		/*
++		 * 'op address + 64B' generates an address that has a
++		 * carry into bit 52 (crosses 2K boundary).
++		 */
++		if ((ea & 0x800) == ((ea + 64) & 0x800))
++			continue;
++
++		break;
++	}
++
++	if (i == nr_wp_slots())
++		return;
++
++	for (i = 0; i < nr_wp_slots(); i++) {
++		if (info[i]) {
++			hit[i] = 1;
++			info[i]->type |= HW_BRK_TYPE_EXTRANEOUS_IRQ;
++		}
++	}
++}
++
+ int hw_breakpoint_handler(struct die_args *args)
+ {
+ 	bool err = false;
+@@ -607,8 +666,14 @@ int hw_breakpoint_handler(struct die_args *args)
+ 		goto reset;
+ 
+ 	if (!nr_hit) {
+-		rc = NOTIFY_DONE;
+-		goto out;
++		if (cpu_has_feature(CPU_FTR_POWER10_DD1) &&
++		    !IS_ENABLED(CONFIG_PPC_8xx) &&
++		    is_octword_vsx_instr(type, size)) {
++			handle_p10dd1_spurious_exception(info, hit, ea);
++		} else {
++			rc = NOTIFY_DONE;
++			goto out;
++		}
+ 	}
+ 
+ 	/*
+-- 
+2.25.1
+
