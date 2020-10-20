@@ -2,55 +2,43 @@ Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA5CBC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:31:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C5BDC433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:34:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05C3C22265
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:31:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05C3C22265
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id E5D8922265
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:34:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5D8922265
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFtJw0C0mzDqMB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:31:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=permerror (SPF Permanent Error: Unknown mechanism
- found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
- (client-ip=63.228.1.57; helo=gate.crashing.org;
- envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFtN61RQKzDqjj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:33:58 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFt8W1KYyzDqhK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 23:23:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CFt3d6kXQzDqJf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 23:19:41 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 09KCGBUp025510;
- Tue, 20 Oct 2020 07:16:16 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id 09KCGAIq025509;
- Tue, 20 Oct 2020 07:16:10 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Tue, 20 Oct 2020 07:16:10 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 3/3] powerpc: Fix update form addressing in inline
- assembly
-Message-ID: <20201020121610.GZ2672@gate.crashing.org>
-References: <212d3bc4a52ca71523759517bb9c61f7e477c46a.1603179582.git.christophe.leroy@csgroup.eu>
- <fcff4199459890d107a06dbc39c52668ccd0921b.1603179582.git.christophe.leroy@csgroup.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fcff4199459890d107a06dbc39c52668ccd0921b.1603179582.git.christophe.leroy@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 4CFt8R2XZqz9sRK; Tue, 20 Oct 2020 23:23:51 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 4CFt8Q752Pz9sRR; Tue, 20 Oct 2020 23:23:50 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+In-Reply-To: <20201017164236.264713-1-hegdevasant@linux.vnet.ibm.com>
+References: <20201017164236.264713-1-hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv/dump: Handle multiple writes to ack
+ attribute
+Message-Id: <160319651032.2348169.7593409271532136155.b4-ty@ellerman.id.au>
+Date: Tue, 20 Oct 2020 23:23:50 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,58 +50,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@efficios.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+On Sat, 17 Oct 2020 22:12:36 +0530, Vasant Hegde wrote:
+> Even though we use self removing sysfs helper, we still need
+> to make sure we do the final kobject delete conditionally.
+> sysfs_remove_file_self() will handle parallel calls to remove
+> the sysfs attribute file and returns true only in the caller
+> that removed the attribute file. The other parallel callers
+> are returned false. Do the final kobject delete checking
+> the return value of sysfs_remove_file_self().
 
-On Tue, Oct 20, 2020 at 07:40:09AM +0000, Christophe Leroy wrote:
-> In several places, inline assembly uses the "%Un" modifier
-> to enable the use of instruction with update form addressing,
-> but the associated "<>" constraint is missing.
-> 
-> As mentioned in previous patch, this fails with gcc 4.9, so
-> "<>" can't be used directly.
-> 
-> Use UPD_CONSTR macro everywhere %Un modifier is used.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Applied to powerpc/fixes.
 
-Oh well, it will be easy enough to remove this wart later, so
+[1/1] powerpc/powernv/dump: Handle multiple writes to ack attribute
+      https://git.kernel.org/powerpc/c/358ab796ce78ba271a6ff82834183ffb2cb68c4c
 
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
-
-> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> @@ -525,7 +525,7 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
->  		stw%U0%X0 %2,%0\n\
->  		eieio\n\
->  		stw%U1%X1 %L2,%1"
-> -	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
-> +	: "=m"UPD_CONSTR (*ptep), "=m"UPD_CONSTR (*((unsigned char *)ptep+4))
->  	: "r" (pte) : "memory");
-
-Here it would pre-increment ptep+4.  That can never be something useful
-afaics?  The order the two operands are (either or not) pre-modified in
-the asm is not specified (GCC does not parse the asm template, by
-design), so I fail to see how this could ever work.
-
-> --- a/arch/powerpc/include/asm/nohash/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-> @@ -200,7 +200,7 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
->  			stw%U0%X0 %2,%0\n\
->  			eieio\n\
->  			stw%U1%X1 %L2,%1"
-> -		: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
-> +		: "=m"UPD_CONSTR (*ptep), "=m"UPD_CONSTR (*((unsigned char *)ptep+4))
->  		: "r" (pte) : "memory");
-
-Same here.
-
-The rest looks fine.
-
-
-Segher
+cheers
