@@ -2,41 +2,69 @@ Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0829AC433E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F592C433DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:45:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 222DC21548
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:42:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 222DC21548
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2368F21789
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 12:45:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2368F21789
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFtZ76WtpzDqLj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:42:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFtdm6tPZzDqLs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:45:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=209.85.128.68; helo=mail-wm1-f68.google.com;
+ envelope-from=k.kozlowski.k@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-wm1-f68.google.com (mail-wm1-f68.google.com
+ [209.85.128.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFt8Z0Dq0zDqRG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 23:23:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CFt8W3RDHz9sRR; Tue, 20 Oct 2020 23:23:54 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-In-Reply-To: <20201019042716.106234-1-srikar@linux.vnet.ibm.com>
-References: <20201019042716.106234-1-srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 0/2] Fixes for coregroup
-Message-Id: <160319650960.2348169.11451661238920733591.b4-ty@ellerman.id.au>
-Date: Tue, 20 Oct 2020 23:23:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFtTg64j3zDqKs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 23:38:47 +1100 (AEDT)
+Received: by mail-wm1-f68.google.com with SMTP id k21so1093211wmi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 05:38:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to;
+ bh=VTv2TqWQaefwCIoRzRKnAaaiLi/7OL3sa2J56yTprLs=;
+ b=j+L0GCeDZOSUhID6im71Cw6DPMZvnG2kk5r6EoujTR4aYPW2dsRo5QCrZQgl2ugHMs
+ pAEJzk999yzA43qLduxUTNU5lXs5ra7X1mHu1zVIe5VlFDhNckcoRrqTqhzXms1tDaVk
+ DN8XpoKO1sc2pLcJ2dk3OjSci0gjrVwf7+DHvPpiZEfn4BiSCyLMuLBYhGRanuuN0Qwb
+ B0SY9OcruHx+x2s+rCoHOI6DzJK9PGLqoiVp+EXnBFVGA+pcL0Vv/NINN2jMqVAwBxsE
+ 9uFKSweXXJoySyXrkUX3pMoVnsY4e1+S4qGZphvwL+nswOIqBwtCLmDUPc3gFIIRQ2Vp
+ kiGQ==
+X-Gm-Message-State: AOAM532MxB1yUd0ON8eZp2OcfWjRxmpqxOVx2bpmFC/6H8wRAmJhIDVA
+ mZDg2Hf4rZro1qsIjTvWTrA=
+X-Google-Smtp-Source: ABdhPJxYWnby37gGUJzkP8a+m+DcxULHlq2Ju5ioF7EFg4aW+NMlchfDdOXWGCt5a67pdNl3vfjobw==
+X-Received: by 2002:a7b:c250:: with SMTP id b16mr2860427wmj.161.1603197523212; 
+ Tue, 20 Oct 2020 05:38:43 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.171])
+ by smtp.googlemail.com with ESMTPSA id k6sm2575353wmk.16.2020.10.20.05.38.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 20 Oct 2020 05:38:41 -0700 (PDT)
+Date: Tue, 20 Oct 2020 14:38:33 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Subject: Re: [PATCH 15/29] powerpc: dts: akebono: Harmonize EHCI/OHCI DT
+ nodes name
+Message-ID: <20201020123833.GL127386@kozik-lap>
+References: <20201020115959.2658-1-Sergey.Semin@baikalelectronics.ru>
+ <20201020115959.2658-16-Sergey.Semin@baikalelectronics.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20201020115959.2658-16-Sergey.Semin@baikalelectronics.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,33 +76,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>,
- Gautham R Shenoy <ego@linux.vnet.ibm.com>, Qian Cai <cai@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Valentin Schneider <valentin.schneider@arm.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Serge Semin <fancer.lancer@gmail.com>,
+ devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 19 Oct 2020 09:57:14 +0530, Srikar Dronamraju wrote:
-> These patches fixes problems introduced by the coregroup patches.
-> The first patch we remove a redundant variable.
-> Second patch allows to boot with CONFIG_CPUMASK_OFFSTACK enabled.
+On Tue, Oct 20, 2020 at 02:59:45PM +0300, Serge Semin wrote:
+> In accordance with the Generic EHCI/OHCI bindings the corresponding node
+> name is suppose to comply with the Generic USB HCD DT schema, which
+> requires the USB nodes to have the name acceptable by the regexp:
+> "^usb(@.*)?" . Make sure the "generic-ehci" and "generic-ohci"-compatible
+> nodes are correctly named.
 > 
-> Changelog v1->v2:
-> https://lore.kernel.org/linuxppc-dev/20201008034240.34059-1-srikar@linux.vnet.ibm.com/t/#u
-> 1. 1st patch was not part of previous posting.
-> 2. Updated 2nd patch based on comments from Michael Ellerman
-> 
-> [...]
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> ---
+>  arch/powerpc/boot/dts/akebono.dts | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-Applied to powerpc/fixes.
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-[1/2] powerpc/smp: Remove unnecessary variable
-      https://git.kernel.org/powerpc/c/966730a6e8524c1b5fe64358e5884605cab6ccb3
-[2/2] powerpc/smp: Use GFP_ATOMIC while allocating tmp mask
-      https://git.kernel.org/powerpc/c/84dbf66c63472069e5eb40b810731367618cd8b5
-
-cheers
+Best regards,
+Krzysztof
