@@ -7,55 +7,56 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A351DC433DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:40:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3739DC433E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:42:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8B3A2244C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:40:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8B3A2244C
+	by mail.kernel.org (Postfix) with ESMTPS id 91F03223BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 02:42:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91F03223BF
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=codefail.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CFdCG29rKzDqRv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 13:40:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CFdFz29qmzDqSg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 13:42:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=codefail.de (client-ip=198.54.127.87;
- helo=se18-4.privateemail.com; envelope-from=cmr@codefail.de;
+ smtp.mailfrom=codefail.de (client-ip=198.54.127.69;
+ helo=se14-2.privateemail.com; envelope-from=cmr@codefail.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=codefail.de
-Received: from se18-4.privateemail.com (se18-4.privateemail.com
- [198.54.127.87])
+Received: from se14-2.privateemail.com (se14-2.privateemail.com
+ [198.54.127.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CFd97656lzDqRF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 13:38:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CFdD0506JzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2020 13:41:04 +1100 (AEDT)
 Received: from new-01-3.privateemail.com ([198.54.122.47])
- by se18.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
+ by se14.registrar-servers.com with esmtpsa (TLSv1.2:AES128-GCM-SHA256:128)
  (Exim 4.92) (envelope-from <cmr@codefail.de>)
- id 1kUhXf-00091K-4B; Mon, 19 Oct 2020 19:38:31 -0700
+ id 1kUha6-0009ba-1x; Mon, 19 Oct 2020 19:41:01 -0700
 Received: from MTA-07-1.privateemail.com (unknown [10.20.147.17])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 1A766A70;
- Tue, 20 Oct 2020 02:38:25 +0000 (UTC)
+ by NEW-01-3.privateemail.com (Postfix) with ESMTPS id 12C20A6F;
+ Tue, 20 Oct 2020 02:40:57 +0000 (UTC)
 Received: from MTA-07.privateemail.com (localhost [127.0.0.1])
- by MTA-07.privateemail.com (Postfix) with ESMTP id 04AF660047;
- Mon, 19 Oct 2020 22:38:25 -0400 (EDT)
-Received: from localhost (unknown [10.20.151.241])
- by MTA-07.privateemail.com (Postfix) with ESMTPA id C2C6160045;
- Tue, 20 Oct 2020 02:38:24 +0000 (UTC)
+ by MTA-07.privateemail.com (Postfix) with ESMTP id F1CC560043;
+ Mon, 19 Oct 2020 22:40:56 -0400 (EDT)
+Received: from localhost (unknown [10.20.151.225])
+ by MTA-07.privateemail.com (Postfix) with ESMTPA id AD99D60045;
+ Tue, 20 Oct 2020 02:40:56 +0000 (UTC)
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Subject: Re: [PATCH 2/8] powerpc/signal: Add unsafe_copy_{vsx,fpr}_from_user()
+Subject: Re: [PATCH 6/8] powerpc/signal64: Replace setup_trampoline() w/
+ unsafe_setup_trampoline()
 From: "Christopher M. Riedl" <cmr@codefail.de>
 To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
  <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 19 Oct 2020 21:01:21 -0500
-Message-Id: <C6HCJAJH1QOC.1U5G1AHURT3NJ@geist>
-In-Reply-To: <5e15b794-e33e-a871-3296-df1154b7d408@csgroup.eu>
+Date: Mon, 19 Oct 2020 21:42:06 -0500
+Message-Id: <C6HDEHRYN1HT.16V34IHMSGUK8@geist>
+In-Reply-To: <c447ee06-a581-1f5f-42c7-814a1f570fe0@csgroup.eu>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-Originating-IP: 198.54.122.47
 X-SpamExperts-Domain: o3.privateemail.com
@@ -63,23 +64,24 @@ X-SpamExperts-Username: out-03
 Authentication-Results: registrar-servers.com;
  auth=pass (plain) smtp.auth=out-03@o3.privateemail.com
 X-SpamExperts-Outgoing-Class: ham
-X-SpamExperts-Outgoing-Evidence: Combined (0.04)
+X-SpamExperts-Outgoing-Evidence: SB/global_tokens (0.00403869464108)
 X-Recommended-Action: accept
-X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0acxlbLX9+ibl6ixChE10xOpSDasLI4SayDByyq9LIhVIYEIrI1+IPiB
- u3xbjzdyyUTNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kwi4BXSuOO65HxJws2e+QTrd8
- cnMVGQoZ8W9SqygcY4DfgwIv96ey3i8S2kDiV4NFL0mKUVqHu+m9KLsR0ilyGUGlz8CJSOMrvzx9
- TVg3RkUfEwfhAQRayU9yh7uUCyW4p8jZ4AoGBlDR94YkH0RjFRfL4EkKxU9ObJV0pa6ww8AiiPMZ
- yTxq5Zj1313L44OSS1ueBonkNzcqLq2LIe51i/Dk3+iNqiYKhZaJO2iXygjDQWjOmI87Lh7Y8XsC
- bZWVvRkWzsAgaWolxIxCj2GHto6atsxaFkWS/KO9ggVt7y11v0HCq9Ij3WgoQoezM+scaWWR7drM
- d0qbJIo1RVCXie2VXGdtLyog7ui50fJvZPWymVBEglNuNDdi9xAbizrH5OsVdOhXIGZEKBBVfrNX
- IVS7yrN4xA/q5McvR31SN9iB8Wsvf3buc8teJ1RiHNMvIwZgYFwjw1mzO+UJiTlJpdvpo2UgV9PP
- 0GtOSQCD3Wp6EipRzMVZ5LqwTx7Vvn9SWQRihqWRcCaa7yMGNcHiKrDnA3wXPkA2INjAw9EFTL7j
- 9F/zRLt6ogdwVndq1MMDmdLMVjKL1rrZibSGL3heGOgLajiYZlmwZdifT41pqqED3WbML0pHvwic
- IIZgSSF9KjOelVZXLMA29DfEruL6DYsEMysPur9wmiDBurOy6iTDrd0x+3YQnB0RHLi/vQmrViIQ
- n70lBYH88dpo7a4LbTlCkrnRSCw5DxM8/gaaExwqRf2mnYGPQXhTkxZo1zKSctgzcDoFd+96Xw4Q
- UNtTnTj+sNQbfmTcbCI4bP4Q2wTKDIqtF9zdULrTh6VP35X/OeA38wHfD4EgRY6r4dAy/Ob9MbqY
- 98fRJO0WnyWriaVOP34VGRo5L8M2MA2Zvy07Qp3F8cjyBYzOHeaMieHYbzkjHv8L1XCo8f/lClCd
- nQEV4c33O1R/KGaKK9RjaKoDpQVQQrINKHxdrweiF9kFyBNoYrJRVwuktqDPF7HQoew=
+X-Filter-ID: Mvzo4OR0dZXEDF/gcnlw0acxlbLX9+ibl6ixChE10xOpSDasLI4SayDByyq9LIhV4s58yQiUp5Yg
+ Dju8HQ1kvETNWdUk1Ol2OGx3IfrIJKyP9eGNFz9TW9u+Jt8z2T3Kv5Hkyx+J97b+o9P3S0pLZ/Mp
+ AFfZKu6jiKhfDEdeK2Dn98dacUsL66kgvenDmrmPkbNQWAhniA2nZ6Uf9X6bEYSGaQOYvUz3Qyrl
+ 0TYKe/LS6SVcTDfu4zA3T/zuN4cDJgulB/yq8PwMQlVtAeEpxrk5JPeAOPgn+kMHnHQHwyxJf1OL
+ 05gxFbhTnU32bkEaVWMlqXXd+RxAnk9GBmPz0QiZvPgV2a3WEfKXnN3tGyuXDO5DCb49DrBLGBuh
+ WUgNrEoBPa5iwIbD+Ed7E28GGEpCHkq3t2QWc5y7R2vgTKTvxnrnHtOKPp7r4O3DezwNkL/+h1aL
+ 2OqtpSX2AHJEJUCbUeEMVjDon5rfSznEF9Wn0xds8xzlI9bNNBd60UaawOdYtt/eE4r9wJTVwPfY
+ y4ljc3cdkir05kMDTgrRv8/dAGQ93WWVSHcYlg6mr/IfPd0rEuGjFyZoidhtHm+Wob6mgd/Zma/L
+ hZdebzz8Axcatd1bXT2D6UAyQBvI2WhODZAR62S8fTT/GafqgXnPyyS4Hh8s12ybj3OcYQ7BbVHJ
+ pP5+GeY+Zn45S5XkEzp7LLlWjrE6IX2XGQJt2ZBm5BDe+6hn6JcOTrtzMkvsUtCxS03pl3iQmE2c
+ s7thUuOe14lz/GPGiMHexzKgYd2IaO1NcsBz14JUbrLxxNJ5B1HDEd6Yplvh+oay7O24oTPn3Z/n
+ KLrE+foBRgHDmjSepV3wAvAL66Saq2Jrxe6pDvjnFL/NV+urNmku+ljA/fSspASU8nI0l2AWwkUS
+ z/3cxZshUV/RtKXq9IlYqP0RAAPkCcj7ATESLZldlzAWaP8bAPyjSh4bXhC4zacckC+XHiHr1bo6
+ e7Y539UsOzwj0MWyLsz3qNj4PRhN4XJKt2sCqXf0vqTZTyCZtOKU+Z570AJj69weJGANpikz+V2q
+ yj5aUOJArqP2Qk28NEXtBK9f8OTf6I2qJgqFlok7aJfKCJLJWvvP93Jgzk6YSAusWc8pZPjaS96K
+ QivKH02x1SD0OHz81N3dNrb/kl0y4ehmVTEvuGslKTrRIXcXpFg5ivY=
 X-Report-Abuse-To: spam@se5.registrar-servers.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,135 +94,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri Oct 16, 2020 at 10:48 AM CDT, Christophe Leroy wrote:
+On Fri Oct 16, 2020 at 10:56 AM CDT, Christophe Leroy wrote:
 >
 >
 > Le 15/10/2020 =C3=A0 17:01, Christopher M. Riedl a =C3=A9crit :
-> > Reuse the "safe" implementation from signal.c except for calling
-> > unsafe_copy_from_user() to copy into a local buffer. Unlike the
-> > unsafe_copy_{vsx,fpr}_to_user() functions the "copy from" functions
-> > cannot use unsafe_get_user() directly to bypass the local buffer since
-> > doing so significantly reduces signal handling performance.
->
-> Why can't the functions use unsafe_get_user(), why does it significantly
-> reduces signal handling
-> performance ? How much significant ? I would expect that not going
-> through an intermediate memory
-> area would be more efficient
->
-
-Here is a comparison, 'unsafe-signal64-regs' avoids the intermediate buffer=
-:
-
-	|                      | hash   | radix  |
-	| -------------------- | ------ | ------ |
-	| linuxppc/next        | 289014 | 158408 |
-	| unsafe-signal64      | 298506 | 253053 |
-	| unsafe-signal64-regs | 254898 | 220831 |
-
-I have not figured out the 'why' yet. As you mentioned in your series,
-technically calling __copy_tofrom_user() is overkill for these
-operations. The only obvious difference between unsafe_put_user() and
-unsafe_get_user() is that we don't have asm-goto for the 'get' variant.
-Instead we wrap with unsafe_op_wrap() which inserts a conditional and
-then goto to the label.
-
-Implemenations:
-
-	#define unsafe_copy_fpr_from_user(task, from, label)   do {            \
-	       struct task_struct *__t =3D task;                                 \
-	       u64 __user *buf =3D (u64 __user *)from;                           \
-	       int i;                                                          \
-									       \
-	       for (i =3D 0; i < ELF_NFPREG - 1; i++)                            \
-		       unsafe_get_user(__t->thread.TS_FPR(i), &buf[i], label); \
-	       unsafe_get_user(__t->thread.fp_state.fpscr, &buf[i], label);    \
-	} while (0)
-
-	#define unsafe_copy_vsx_from_user(task, from, label)   do {            \
-	       struct task_struct *__t =3D task;                                 \
-	       u64 __user *buf =3D (u64 __user *)from;                           \
-	       int i;                                                          \
-									       \
-	       for (i =3D 0; i < ELF_NVSRHALFREG ; i++)                          \
-		       unsafe_get_user(__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET], \
-				       &buf[i], label);                        \
-	} while (0)
-
-> Christophe
->
->
+> > From: Daniel Axtens <dja@axtens.net>
 > >=20
+> > Previously setup_trampoline() performed a costly KUAP switch on every
+> > uaccess operation. These repeated uaccess switches cause a significant
+> > drop in signal handling performance.
+> >=20
+> > Rewrite setup_trampoline() to assume that a userspace write access
+> > window is open. Replace all uaccess functions with their 'unsafe'
+> > versions to avoid the repeated uaccess switches.
+> >=20
+> > Signed-off-by: Daniel Axtens <dja@axtens.net>
 > > Signed-off-by: Christopher M. Riedl <cmr@codefail.de>
 > > ---
-> >   arch/powerpc/kernel/signal.h | 33 +++++++++++++++++++++++++++++++++
-> >   1 file changed, 33 insertions(+)
+> >   arch/powerpc/kernel/signal_64.c | 32 +++++++++++++++++++-------------
+> >   1 file changed, 19 insertions(+), 13 deletions(-)
 > >=20
-> > diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.=
-h
-> > index 2559a681536e..e9aaeac0da37 100644
-> > --- a/arch/powerpc/kernel/signal.h
-> > +++ b/arch/powerpc/kernel/signal.h
-> > @@ -53,6 +53,33 @@ unsigned long copy_ckfpr_from_user(struct task_struc=
-t *task, void __user *from);
-> >   				&buf[i], label);\
-> >   } while (0)
-> >  =20
-> > +#define unsafe_copy_fpr_from_user(task, from, label)	do {		\
-> > +	struct task_struct *__t =3D task;					\
-> > +	u64 __user *__f =3D (u64 __user *)from;				\
-> > +	u64 buf[ELF_NFPREG];						\
-> > +	int i;								\
-> > +									\
-> > +	unsafe_copy_from_user(buf, __f, ELF_NFPREG * sizeof(double),	\
-> > +				label);					\
-> > +	for (i =3D 0; i < ELF_NFPREG - 1; i++)				\
-> > +		__t->thread.TS_FPR(i) =3D buf[i];				\
-> > +	__t->thread.fp_state.fpscr =3D buf[i];				\
-> > +} while (0)
-> > +
-> > +#define unsafe_copy_vsx_from_user(task, from, label)	do {		\
-> > +	struct task_struct *__t =3D task;					\
-> > +	u64 __user *__f =3D (u64 __user *)from;				\
-> > +	u64 buf[ELF_NVSRHALFREG];					\
-> > +	int i;								\
-> > +									\
-> > +	unsafe_copy_from_user(buf, __f,					\
-> > +				ELF_NVSRHALFREG * sizeof(double),	\
-> > +				label);					\
-> > +	for (i =3D 0; i < ELF_NVSRHALFREG ; i++)				\
-> > +		__t->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] =3D buf[i];	\
-> > +} while (0)
-> > +
-> > +
-> >   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >   #define unsafe_copy_ckfpr_to_user(to, task, label)	do {		\
-> >   	struct task_struct *__t =3D task;					\
-> > @@ -80,6 +107,10 @@ unsigned long copy_ckfpr_from_user(struct task_stru=
-ct *task, void __user *from);
-> >   	unsafe_copy_to_user(to, (task)->thread.fp_state.fpr,	\
-> >   			    ELF_NFPREG * sizeof(double), label)
-> >  =20
-> > +#define unsafe_copy_fpr_from_user(task, from, label)		\
-> > +	unsafe_copy_from_user((task)->thread.fp_state.fpr, from	\
-> > +			    ELF_NFPREG * sizeof(double), label)
-> > +
-> >   static inline unsigned long
-> >   copy_fpr_to_user(void __user *to, struct task_struct *task)
+> > diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/sign=
+al_64.c
+> > index bd92064e5576..6d4f7a5c4fbf 100644
+> > --- a/arch/powerpc/kernel/signal_64.c
+> > +++ b/arch/powerpc/kernel/signal_64.c
+> > @@ -600,30 +600,33 @@ static long restore_tm_sigcontexts(struct task_st=
+ruct *tsk,
+> >   /*
+> >    * Setup the trampoline code on the stack
+> >    */
+> > -static long setup_trampoline(unsigned int syscall, unsigned int __user=
+ *tramp)
+> > +#define unsafe_setup_trampoline(syscall, tramp, e) \
+> > +	unsafe_op_wrap(__unsafe_setup_trampoline(syscall, tramp), e)
+> > +static long notrace __unsafe_setup_trampoline(unsigned int syscall,
+> > +					unsigned int __user *tramp)
 > >   {
-> > @@ -115,6 +146,8 @@ copy_ckfpr_from_user(struct task_struct *task, void=
- __user *from)
-> >   #else
-> >   #define unsafe_copy_fpr_to_user(to, task, label) do { } while (0)
+> >   	int i;
+> > -	long err =3D 0;
 > >  =20
-> > +#define unsafe_copy_fpr_from_user(task, from, label) do { } while (0)
-> > +
-> >   static inline unsigned long
-> >   copy_fpr_to_user(void __user *to, struct task_struct *task)
-> >   {
+> >   	/* bctrl # call the handler */
+> > -	err |=3D __put_user(PPC_INST_BCTRL, &tramp[0]);
+> > +	unsafe_put_user(PPC_INST_BCTRL, &tramp[0], err);
+> >   	/* addi r1, r1, __SIGNAL_FRAMESIZE  # Pop the dummy stackframe */
+> > -	err |=3D __put_user(PPC_INST_ADDI | __PPC_RT(R1) | __PPC_RA(R1) |
+> > -			  (__SIGNAL_FRAMESIZE & 0xffff), &tramp[1]);
+> > +	unsafe_put_user(PPC_INST_ADDI | __PPC_RT(R1) | __PPC_RA(R1) |
+> > +			  (__SIGNAL_FRAMESIZE & 0xffff), &tramp[1], err);
+> >   	/* li r0, __NR_[rt_]sigreturn| */
+> > -	err |=3D __put_user(PPC_INST_ADDI | (syscall & 0xffff), &tramp[2]);
+> > +	unsafe_put_user(PPC_INST_ADDI | (syscall & 0xffff), &tramp[2], err);
+> >   	/* sc */
+> > -	err |=3D __put_user(PPC_INST_SC, &tramp[3]);
+> > +	unsafe_put_user(PPC_INST_SC, &tramp[3], err);
+> >  =20
+> >   	/* Minimal traceback info */
+> >   	for (i=3DTRAMP_TRACEBACK; i < TRAMP_SIZE ;i++)
+> > -		err |=3D __put_user(0, &tramp[i]);
+> > +		unsafe_put_user(0, &tramp[i], err);
+> >  =20
+> > -	if (!err)
+> > -		flush_icache_range((unsigned long) &tramp[0],
+> > -			   (unsigned long) &tramp[TRAMP_SIZE]);
+> > +	flush_icache_range((unsigned long)&tramp[0],
+> > +			   (unsigned long)&tramp[TRAMP_SIZE]);
+>
+> This flush should be done outside the user_write_access block.
+>
+
+Hmm, I suppose that means setup_trampoline() cannot be completely
+"unsafe". I'll see if I can re-arrange the code which calls this
+function to avoid an additional uaccess block instead and push the
+start()/end() into setup_trampoline() directly.
+
+> >  =20
+> > -	return err;
+> > +	return 0;
+> > +err:
+> > +	return 1;
+> >   }
+> >  =20
+> >   /*
+> > @@ -888,7 +891,10 @@ int handle_rt_signal64(struct ksignal *ksig, sigse=
+t_t *set,
+> >   	if (vdso64_rt_sigtramp && tsk->mm->context.vdso_base) {
+> >   		regs->nip =3D tsk->mm->context.vdso_base + vdso64_rt_sigtramp;
+> >   	} else {
+> > -		err |=3D setup_trampoline(__NR_rt_sigreturn, &frame->tramp[0]);
+> > +		if (!user_write_access_begin(frame, sizeof(struct rt_sigframe)))
+> > +			return -EFAULT;
+> > +		err |=3D __unsafe_setup_trampoline(__NR_rt_sigreturn, &frame->tramp[=
+0]);
+> > +		user_write_access_end();
+> >   		if (err)
+> >   			goto badframe;
+> >   		regs->nip =3D (unsigned long) &frame->tramp[0];
 > >=20
+>
+> Christophe
 
