@@ -2,72 +2,44 @@ Return-Path: <SRS0=5Udx=D4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB8F8C4363D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:33:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40B27C4363D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:34:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B103721707
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:33:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="O5gyu5GO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B103721707
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=mediatek.com
+	by mail.kernel.org (Postfix) with ESMTPS id 81A4022404
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:34:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81A4022404
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CGGKm2v8MzDqfY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 14:33:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGGMV2RSRzDqLR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 14:34:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=mediatek.com (client-ip=1.203.163.81; helo=mailgw02.mediatek.com;
- envelope-from=chunfeng.yun@mediatek.com; receiver=<UNKNOWN>)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=mediatek.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=mediatek.com header.i=@mediatek.com header.a=rsa-sha256
- header.s=dk header.b=O5gyu5GO; dkim-atps=neutral
-X-Greylist: delayed 312 seconds by postgrey-1.36 at bilbo;
- Wed, 21 Oct 2020 14:06:05 AEDT
-Received: from mailgw02.mediatek.com (unknown [1.203.163.81])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CGFkP327rzDqNJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 14:06:03 +1100 (AEDT)
-X-UUID: bfdcb39a477d4622842528e573a75b07-20201021
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com;
- s=dk; 
- h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID;
- bh=/iKtVrC60W8Ht9PLV1xcIWqrBacl7AEML6GCLswWhVg=; 
- b=O5gyu5GO8o7RPPeVjRzKjyxJ3d+NlctHg+//xdF2fPsU2+SMY3lJwMXeeYeG1JiWU4LrByHSq3i6C88irBwEETdQnHDoipxT2bV6It25I1Tckr1C7Oj3IPbOD7XtVT4KzEoRr6vxKOTCoUD1/XD+BWvi7yqbKhVHDHEQIT5Atoc=;
-X-UUID: bfdcb39a477d4622842528e573a75b07-20201021
-Received: from mtkcas35.mediatek.inc [(172.27.4.253)] by mailgw02.mediatek.com
- (envelope-from <chunfeng.yun@mediatek.com>)
- (mailgw01.mediatek.com ESMTP with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
- with ESMTP id 1349775153; Wed, 21 Oct 2020 11:00:41 +0800
-Received: from MTKCAS32.mediatek.inc (172.27.4.184) by MTKMBS31N2.mediatek.inc
- (172.27.4.87) with Microsoft SMTP Server (TLS) id 15.0.1497.2;
- Wed, 21 Oct 2020 11:00:37 +0800
-Received: from [10.17.3.153] (10.17.3.153) by MTKCAS32.mediatek.inc
- (172.27.4.170) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 21 Oct 2020 11:00:36 +0800
-Message-ID: <1603249236.31607.9.camel@mhfsdcap03>
-Subject: Re: [PATCH v3 01/16] dt-bindings: usb: usb-hcd: Convert generic USB
- properties to DT schema
-From: Chunfeng Yun <chunfeng.yun@mediatek.com>
-To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Date: Wed, 21 Oct 2020 11:00:36 +0800
-In-Reply-To: <20201020112101.19077-2-Sergey.Semin@baikalelectronics.ru>
-References: <20201020112101.19077-1-Sergey.Semin@baikalelectronics.ru>
- <20201020112101.19077-2-Sergey.Semin@baikalelectronics.ru>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.10.4-0ubuntu2 
-MIME-Version: 1.0
-X-TM-SNTS-SMTP: 3C612C300D75B9D840779466513725D6819DC7FF11D1B86F2C1C754B59618B642000:8
-X-MTK: N
-Content-Transfer-Encoding: base64
-X-Mailman-Approved-At: Wed, 21 Oct 2020 14:31:01 +1100
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CGGFn104QzDqcy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 14:29:48 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id AE9F0AE80252;
+ Tue, 20 Oct 2020 23:20:00 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel 2/2] powerpc/dma: Fallback to dma_ops when persistent
+ memory present
+Date: Wed, 21 Oct 2020 14:20:26 +1100
+Message-Id: <20201021032026.45030-3-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201021032026.45030-1-aik@ozlabs.ru>
+References: <20201021032026.45030-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,165 +51,269 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Neil Armstrong <narmstrong@baylibre.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>,
- Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Andy Gross <agross@kernel.org>,
- linux-snps-arc@lists.infradead.org, devicetree@vger.kernel.org,
- Mathias Nyman <mathias.nyman@intel.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
- Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
- Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org,
- Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
- linux-usb@vger.kernel.org, linux-mips@vger.kernel.org,
- Serge Semin <fancer.lancer@gmail.com>, linux-kernel@vger.kernel.org,
- Manu Gautam <mgautam@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Christoph Hellwig <hch@lst.de>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gVHVlLCAyMDIwLTEwLTIwIGF0IDE0OjIwICswMzAwLCBTZXJnZSBTZW1pbiB3cm90ZToNCj4g
-VGhlIGdlbmVyaWMgVVNCIEhDRCBwcm9wZXJ0aWVzIGhhdmUgYmVlbiBkZXNjcmliZWQgaW4gdGhl
-IGxlZ2FjeSBiaW5kaW5ncw0KPiB0ZXh0IGZpbGU6IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy91c2IvZ2VuZXJpYy50eHQgLiBMZXQncw0KPiBjb252ZXJ0IGl0JyBjb250ZW50IGlu
-dG8gdGhlIFVTQiBIQ0QgRFQgc2NoZW1hIHByb3BlcnRpZXMgc28gYWxsIFVTQiBEVA0KICAgICAg
-ICAgIF4gaXRzPw0KPiBub2RlcyB3b3VsZCBiZSB2YWxpZGF0ZWQgdG8gaGF2ZSB0aGVtIHByb3Bl
-cmx5IHV0aWxpemVkLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogU2VyZ2UgU2VtaW4gPFNlcmdleS5T
-ZW1pbkBiYWlrYWxlbGVjdHJvbmljcy5ydT4NCj4gUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxy
-b2JoQGtlcm5lbC5vcmc+DQo+IA0KPiAtLS0NCj4gDQo+IENoYW5nZWxvZyB2MjoNCj4gLSBEaXNj
-YXJkICd8JyBpbiBhbGwgdGhlIG5ldyBwcm9wZXJ0aWVzLCBzaW5jZSB3ZSBkb24ndCBuZWVkIHRv
-IHByZXNlcnZlDQo+ICAgdGhlIHRleHQgZm9ybWF0dGluZy4NCj4gLSBDb252ZXJ0IGFiYnJldmlh
-dGVkIGZvcm0gb2YgdGhlICJtYXhpbXVtLXNwZWVkIiBlbnVtIHJlc3RyaWN0aW9uIGludG8NCj4g
-ICB0aGUgbXVsdGktbGluZWQgdmVyc2lvbiBvZiB0aGUgbGlzdC4NCj4gLSBEcm9wIHF1b3RlcyBm
-cm9tIGFyb3VuZCB0aGUgc3RyaW5nIGNvbnN0YW50cy4NCj4gLS0tDQo+ICAuLi4vZGV2aWNldHJl
-ZS9iaW5kaW5ncy91c2IvZ2VuZXJpYy50eHQgICAgICAgfCA1NyAtLS0tLS0tLS0tLS0NCj4gIC4u
-Li9kZXZpY2V0cmVlL2JpbmRpbmdzL3VzYi91c2ItaGNkLnlhbWwgICAgICB8IDg4ICsrKysrKysr
-KysrKysrKysrKysNCkRvIHdlIG5lZWQgY2hhbmdlIHRoZSBmaWxlIG5hbWUgb3IgbW9kaWZ5IGl0
-J3MgdGl0bGU/DQp0aGUgdGl0bGUgaXMgIkdlbmVyaWMgVVNCIEhvc3QgQ29udHJvbGxlciBEZXZp
-Y2UgVHJlZSBCaW5kaW5ncyIsIGJ1dA0Kc29tZSBnZW5lcmljIHByb3BlcnRpZXMsIHN1Y2ggYXMs
-IGRyX21vZGUsIHVzYi1yb2xlLXN3aXRjaCwgb3RnIHJlbGF0ZWQNCm9uZXMsIGFyZSB1c3VhbGx5
-IHVzZWQgYnkgRFJEIGNvbnRyb2xsZXIsIHRoaXMgbWF5IGNhdXNlIHNvbWUgY29uZnVzaW9uLg0K
-DQo+ICAyIGZpbGVzIGNoYW5nZWQsIDg4IGluc2VydGlvbnMoKyksIDU3IGRlbGV0aW9ucygtKQ0K
-PiAgZGVsZXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy91
-c2IvZ2VuZXJpYy50eHQNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvdXNiL2dlbmVyaWMudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3VzYi9nZW5lcmljLnR4dA0KPiBkZWxldGVkIGZpbGUgbW9kZSAxMDA2NDQNCj4gaW5k
-ZXggYmE0NzJlN2FlZmM5Li4wMDAwMDAwMDAwMDANCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3VzYi9nZW5lcmljLnR4dA0KPiArKysgL2Rldi9udWxsDQo+IEBAIC0x
-LDU3ICswLDAgQEANCj4gLUdlbmVyaWMgVVNCIFByb3BlcnRpZXMNCj4gLQ0KPiAtT3B0aW9uYWwg
-cHJvcGVydGllczoNCj4gLSAtIG1heGltdW0tc3BlZWQ6IHRlbGxzIFVTQiBjb250cm9sbGVycyB3
-ZSB3YW50IHRvIHdvcmsgdXAgdG8gYSBjZXJ0YWluDQo+IC0JCQlzcGVlZC4gVmFsaWQgYXJndW1l
-bnRzIGFyZSAic3VwZXItc3BlZWQtcGx1cyIsDQo+IC0JCQkic3VwZXItc3BlZWQiLCAiaGlnaC1z
-cGVlZCIsICJmdWxsLXNwZWVkIiBhbmQNCj4gLQkJCSJsb3ctc3BlZWQiLiBJbiBjYXNlIHRoaXMg
-aXNuJ3QgcGFzc2VkIHZpYSBEVCwgVVNCDQo+IC0JCQljb250cm9sbGVycyBzaG91bGQgZGVmYXVs
-dCB0byB0aGVpciBtYXhpbXVtIEhXDQo+IC0JCQljYXBhYmlsaXR5Lg0KPiAtIC0gZHJfbW9kZTog
-dGVsbHMgRHVhbC1Sb2xlIFVTQiBjb250cm9sbGVycyB0aGF0IHdlIHdhbnQgdG8gd29yayBvbiBh
-DQo+IC0JCQlwYXJ0aWN1bGFyIG1vZGUuIFZhbGlkIGFyZ3VtZW50cyBhcmUgImhvc3QiLA0KPiAt
-CQkJInBlcmlwaGVyYWwiIGFuZCAib3RnIi4gSW4gY2FzZSB0aGlzIGF0dHJpYnV0ZSBpc24ndA0K
-PiAtCQkJcGFzc2VkIHZpYSBEVCwgVVNCIERSRCBjb250cm9sbGVycyBzaG91bGQgZGVmYXVsdCB0
-bw0KPiAtCQkJT1RHLg0KPiAtIC0gcGh5X3R5cGU6IHRlbGxzIFVTQiBjb250cm9sbGVycyB0aGF0
-IHdlIHdhbnQgdG8gY29uZmlndXJlIHRoZSBjb3JlIHRvIHN1cHBvcnQNCj4gLQkJCWEgVVRNSSsg
-UEhZIHdpdGggYW4gOC0gb3IgMTYtYml0IGludGVyZmFjZSBpZiBVVE1JKyBpcw0KPiAtCQkJc2Vs
-ZWN0ZWQuIFZhbGlkIGFyZ3VtZW50cyBhcmUgInV0bWkiIGFuZCAidXRtaV93aWRlIi4NCj4gLQkJ
-CUluIGNhc2UgdGhpcyBpc24ndCBwYXNzZWQgdmlhIERULCBVU0IgY29udHJvbGxlcnMgc2hvdWxk
-DQo+IC0JCQlkZWZhdWx0IHRvIEhXIGNhcGFiaWxpdHkuDQo+IC0gLSBvdGctcmV2OiB0ZWxscyB1
-c2IgZHJpdmVyIHRoZSByZWxlYXNlIG51bWJlciBvZiB0aGUgT1RHIGFuZCBFSCBzdXBwbGVtZW50
-DQo+IC0JCQl3aXRoIHdoaWNoIHRoZSBkZXZpY2UgYW5kIGl0cyBkZXNjcmlwdG9ycyBhcmUgY29t
-cGxpYW50LA0KPiAtCQkJaW4gYmluYXJ5LWNvZGVkIGRlY2ltYWwgKGkuZS4gMi4wIGlzIDAyMDBI
-KS4gVGhpcw0KPiAtCQkJcHJvcGVydHkgaXMgdXNlZCBpZiBhbnkgcmVhbCBPVEcgZmVhdHVyZXMo
-SE5QL1NSUC9BRFApDQo+IC0JCQlpcyBlbmFibGVkLCBpZiBBRFAgaXMgcmVxdWlyZWQsIG90Zy1y
-ZXYgc2hvdWxkIGJlDQo+IC0JCQkweDAyMDAgb3IgYWJvdmUuDQo+IC0gLSBjb21wYW5pb246IHBo
-YW5kbGUgb2YgYSBjb21wYW5pb24NCj4gLSAtIGhucC1kaXNhYmxlOiB0ZWxscyBPVEcgY29udHJv
-bGxlcnMgd2Ugd2FudCB0byBkaXNhYmxlIE9URyBITlAsIG5vcm1hbGx5IEhOUA0KPiAtCQkJaXMg
-dGhlIGJhc2ljIGZ1bmN0aW9uIG9mIHJlYWwgT1RHIGV4Y2VwdCB5b3Ugd2FudCBpdA0KPiAtCQkJ
-dG8gYmUgYSBzcnAtY2FwYWJsZSBvbmx5IEIgZGV2aWNlLg0KPiAtIC0gc3JwLWRpc2FibGU6IHRl
-bGxzIE9URyBjb250cm9sbGVycyB3ZSB3YW50IHRvIGRpc2FibGUgT1RHIFNSUCwgU1JQIGlzDQo+
-IC0JCQlvcHRpb25hbCBmb3IgT1RHIGRldmljZS4NCj4gLSAtIGFkcC1kaXNhYmxlOiB0ZWxscyBP
-VEcgY29udHJvbGxlcnMgd2Ugd2FudCB0byBkaXNhYmxlIE9URyBBRFAsIEFEUCBpcw0KPiAtCQkJ
-b3B0aW9uYWwgZm9yIE9URyBkZXZpY2UuDQo+IC0gLSB1c2Itcm9sZS1zd2l0Y2g6IGJvb2xlYW4s
-IGluZGljYXRlcyB0aGF0IHRoZSBkZXZpY2UgaXMgY2FwYWJsZSBvZiBhc3NpZ25pbmcNCj4gLQkJ
-CXRoZSBVU0IgZGF0YSByb2xlIChVU0IgaG9zdCBvciBVU0IgZGV2aWNlKSBmb3IgYSBnaXZlbg0K
-PiAtCQkJVVNCIGNvbm5lY3Rvciwgc3VjaCBhcyBUeXBlLUMsIFR5cGUtQihtaWNybykuDQo+IC0J
-CQlzZWUgY29ubmVjdG9yL3VzYi1jb25uZWN0b3IueWFtbC4NCj4gLSAtIHJvbGUtc3dpdGNoLWRl
-ZmF1bHQtbW9kZTogaW5kaWNhdGluZyBpZiB1c2Itcm9sZS1zd2l0Y2ggaXMgZW5hYmxlZCwgdGhl
-DQo+IC0JCQlkZXZpY2UgZGVmYXVsdCBvcGVyYXRpb24gbW9kZSBvZiBjb250cm9sbGVyIHdoaWxl
-IHVzYg0KPiAtCQkJcm9sZSBpcyBVU0JfUk9MRV9OT05FLiBWYWxpZCBhcmd1bWVudHMgYXJlICJo
-b3N0IiBhbmQNCj4gLQkJCSJwZXJpcGhlcmFsIi4gRGVmYXVsdHMgdG8gInBlcmlwaGVyYWwiIGlm
-IG5vdA0KPiAtCQkJc3BlY2lmaWVkLg0KPiAtDQo+IC0NCj4gLVRoaXMgaXMgYW4gYXR0cmlidXRl
-IHRvIGEgVVNCIGNvbnRyb2xsZXIgc3VjaCBhczoNCj4gLQ0KPiAtZHdjM0A0YTAzMDAwMCB7DQo+
-IC0JY29tcGF0aWJsZSA9ICJzeW5vcHN5cyxkd2MzIjsNCj4gLQlyZWcgPSA8MHg0YTAzMDAwMCAw
-eGNmZmY+Ow0KPiAtCWludGVycnVwdHMgPSA8MCA5MiA0Pg0KPiAtCXVzYi1waHkgPSA8JnVzYjJf
-cGh5PiwgPCZ1c2IzLHBoeT47DQo+IC0JbWF4aW11bS1zcGVlZCA9ICJzdXBlci1zcGVlZCI7DQo+
-IC0JZHJfbW9kZSA9ICJvdGciOw0KPiAtCXBoeV90eXBlID0gInV0bWlfd2lkZSI7DQo+IC0Jb3Rn
-LXJldiA9IDwweDAyMDA+Ow0KPiAtCWFkcC1kaXNhYmxlOw0KPiAtfTsNCj4gZGlmZiAtLWdpdCBh
-L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvdXNiLWhjZC55YW1sIGIvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3VzYi91c2ItaGNkLnlhbWwNCj4gaW5kZXgg
-NzI2M2I3ZjJiNTEwLi5lZTdlYTIwNWM3MWQgMTAwNjQ0DQo+IC0tLSBhL0RvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvdXNiLWhjZC55YW1sDQo+ICsrKyBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy91c2IvdXNiLWhjZC55YW1sDQo+IEBAIC0yMiw5ICsyMiw5
-NyBAQCBwcm9wZXJ0aWVzOg0KPiAgICAgIGRlc2NyaXB0aW9uOg0KPiAgICAgICAgTmFtZSBzcGVj
-aWZpZXIgZm9yIHRoZSBVU0IgUEhZDQo+ICANCj4gKyAgbWF4aW11bS1zcGVlZDoNCj4gKyAgIGRl
-c2NyaXB0aW9uOg0KPiArICAgICBUZWxscyBVU0IgY29udHJvbGxlcnMgd2Ugd2FudCB0byB3b3Jr
-IHVwIHRvIGEgY2VydGFpbiBzcGVlZC4gSW4gY2FzZSB0aGlzDQo+ICsgICAgIGlzbid0IHBhc3Nl
-ZCB2aWEgRFQsIFVTQiBjb250cm9sbGVycyBzaG91bGQgZGVmYXVsdCB0byB0aGVpciBtYXhpbXVt
-IEhXDQo+ICsgICAgIGNhcGFiaWxpdHkuDQo+ICsgICAkcmVmOiAvc2NoZW1hcy90eXBlcy55YW1s
-Iy9kZWZpbml0aW9ucy9zdHJpbmcNCj4gKyAgIGVudW06DQo+ICsgICAgIC0gbG93LXNwZWVkDQo+
-ICsgICAgIC0gZnVsbC1zcGVlZA0KPiArICAgICAtIGhpZ2gtc3BlZWQNCj4gKyAgICAgLSBzdXBl
-ci1zcGVlZA0KPiArICAgICAtIHN1cGVyLXNwZWVkLXBsdXMNCj4gKw0KPiArICBkcl9tb2RlOg0K
-PiArICAgIGRlc2NyaXB0aW9uOg0KPiArICAgICAgVGVsbHMgRHVhbC1Sb2xlIFVTQiBjb250cm9s
-bGVycyB0aGF0IHdlIHdhbnQgdG8gd29yayBvbiBhIHBhcnRpY3VsYXINCj4gKyAgICAgIG1vZGUu
-IEluIGNhc2UgdGhpcyBhdHRyaWJ1dGUgaXNuJ3QgcGFzc2VkIHZpYSBEVCwgVVNCIERSRCBjb250
-cm9sbGVycw0KPiArICAgICAgc2hvdWxkIGRlZmF1bHQgdG8gT1RHLg0KPiArICAgICRyZWY6IC9z
-Y2hlbWFzL3R5cGVzLnlhbWwjL2RlZmluaXRpb25zL3N0cmluZw0KPiArICAgIGVudW06IFtob3N0
-LCBwZXJpcGhlcmFsLCBvdGddDQo+ICsNCj4gKyAgcGh5X3R5cGU6DQo+ICsgICAgZGVzY3JpcHRp
-b246DQo+ICsgICAgICBUZWxscyBVU0IgY29udHJvbGxlcnMgdGhhdCB3ZSB3YW50IHRvIGNvbmZp
-Z3VyZSB0aGUgY29yZSB0byBzdXBwb3J0IGENCj4gKyAgICAgIFVUTUkrIFBIWSB3aXRoIGFuIDgt
-IG9yIDE2LWJpdCBpbnRlcmZhY2UgaWYgVVRNSSsgaXMgc2VsZWN0ZWQuIEluIGNhc2UNCj4gKyAg
-ICAgIHRoaXMgaXNuJ3QgcGFzc2VkIHZpYSBEVCwgVVNCIGNvbnRyb2xsZXJzIHNob3VsZCBkZWZh
-dWx0IHRvIEhXDQo+ICsgICAgICBjYXBhYmlsaXR5Lg0KPiArICAgICRyZWY6IC9zY2hlbWFzL3R5
-cGVzLnlhbWwjL2RlZmluaXRpb25zL3N0cmluZw0KPiArICAgIGVudW06IFt1dG1pLCB1dG1pX3dp
-ZGVdDQo+ICsNCj4gKyAgb3RnLXJldjoNCj4gKyAgICBkZXNjcmlwdGlvbjoNCj4gKyAgICAgIFRl
-bGxzIHVzYiBkcml2ZXIgdGhlIHJlbGVhc2UgbnVtYmVyIG9mIHRoZSBPVEcgYW5kIEVIIHN1cHBs
-ZW1lbnQgd2l0aA0KPiArICAgICAgd2hpY2ggdGhlIGRldmljZSBhbmQgaXRzIGRlc2NyaXB0b3Jz
-IGFyZSBjb21wbGlhbnQsIGluIGJpbmFyeS1jb2RlZA0KPiArICAgICAgZGVjaW1hbCAoaS5lLiAy
-LjAgaXMgMDIwMEgpLiBUaGlzIHByb3BlcnR5IGlzIHVzZWQgaWYgYW55IHJlYWwgT1RHDQo+ICsg
-ICAgICBmZWF0dXJlcyAoSE5QL1NSUC9BRFApIGlzIGVuYWJsZWQuIElmIEFEUCBpcyByZXF1aXJl
-ZCwgb3RnLXJldiBzaG91bGQgYmUNCj4gKyAgICAgIDB4MDIwMCBvciBhYm92ZS4NCj4gKyAgICAk
-cmVmOiAvc2NoZW1hcy90eXBlcy55YW1sIy9kZWZpbml0aW9ucy91aW50MzINCj4gKw0KPiArICBj
-b21wYW5pb246DQo+ICsgICAgZGVzY3JpcHRpb246IFBoYW5kbGUgb2YgYSBjb21wYW5pb24gZGV2
-aWNlDQo+ICsgICAgJHJlZjogL3NjaGVtYXMvdHlwZXMueWFtbCMvZGVmaW5pdGlvbnMvcGhhbmRs
-ZQ0KPiArDQo+ICsgIGhucC1kaXNhYmxlOg0KPiArICAgIGRlc2NyaXB0aW9uOg0KPiArICAgICAg
-VGVsbHMgT1RHIGNvbnRyb2xsZXJzIHdlIHdhbnQgdG8gZGlzYWJsZSBPVEcgSE5QLiBOb3JtYWxs
-eSBITlAgaXMgdGhlDQo+ICsgICAgICBiYXNpYyBmdW5jdGlvbiBvZiByZWFsIE9URyBleGNlcHQg
-eW91IHdhbnQgaXQgdG8gYmUgYSBzcnAtY2FwYWJsZSBvbmx5IEINCj4gKyAgICAgIGRldmljZS4N
-Cj4gKyAgICB0eXBlOiBib29sZWFuDQo+ICsNCj4gKyAgc3JwLWRpc2FibGU6DQo+ICsgICAgZGVz
-Y3JpcHRpb246DQo+ICsgICAgICBUZWxscyBPVEcgY29udHJvbGxlcnMgd2Ugd2FudCB0byBkaXNh
-YmxlIE9URyBTUlAuIFNSUCBpcyBvcHRpb25hbCBmb3IgT1RHDQo+ICsgICAgICBkZXZpY2UuDQo+
-ICsgICAgdHlwZTogYm9vbGVhbg0KPiArDQo+ICsgIGFkcC1kaXNhYmxlOg0KPiArICAgIGRlc2Ny
-aXB0aW9uOg0KPiArICAgICAgVGVsbHMgT1RHIGNvbnRyb2xsZXJzIHdlIHdhbnQgdG8gZGlzYWJs
-ZSBPVEcgQURQLiBBRFAgaXMgb3B0aW9uYWwgZm9yIE9URw0KPiArICAgICAgZGV2aWNlLg0KPiAr
-ICAgIHR5cGU6IGJvb2xlYW4NCj4gKw0KPiArICB1c2Itcm9sZS1zd2l0Y2g6DQo+ICsgICAgZGVz
-Y3JpcHRpb246DQo+ICsgICAgICBJbmRpY2F0ZXMgdGhhdCB0aGUgZGV2aWNlIGlzIGNhcGFibGUg
-b2YgYXNzaWduaW5nIHRoZSBVU0IgZGF0YSByb2xlDQo+ICsgICAgICAoVVNCIGhvc3Qgb3IgVVNC
-IGRldmljZSkgZm9yIGEgZ2l2ZW4gVVNCIGNvbm5lY3Rvciwgc3VjaCBhcyBUeXBlLUMsDQo+ICsg
-ICAgICBUeXBlLUIobWljcm8pLiBTZWUgY29ubmVjdG9yL3VzYi1jb25uZWN0b3IueWFtbC4NCj4g
-Kw0KPiArICByb2xlLXN3aXRjaC1kZWZhdWx0LW1vZGU6DQo+ICsgICAgZGVzY3JpcHRpb246DQo+
-ICsgICAgICBJbmRpY2F0ZXMgaWYgdXNiLXJvbGUtc3dpdGNoIGlzIGVuYWJsZWQsIHRoZSBkZXZp
-Y2UgZGVmYXVsdCBvcGVyYXRpb24NCj4gKyAgICAgIG1vZGUgb2YgY29udHJvbGxlciB3aGlsZSB1
-c2Igcm9sZSBpcyBVU0JfUk9MRV9OT05FLg0KPiArICAgICRyZWY6IC9zY2hlbWFzL3R5cGVzLnlh
-bWwjL2RlZmluaXRpb25zL3N0cmluZw0KPiArICAgIGVudW06IFtob3N0LCBwZXJpcGhlcmFsXQ0K
-PiArICAgIGRlZmF1bHQ6IHBlcmlwaGVyYWwNCj4gKw0KPiAgZXhhbXBsZXM6DQo+ICAgIC0gfA0K
-PiAgICAgIHVzYiB7DQo+ICAgICAgICAgIHBoeXMgPSA8JnVzYjJfcGh5MT4sIDwmdXNiM19waHkx
-PjsNCj4gICAgICAgICAgcGh5LW5hbWVzID0gInVzYiI7DQo+ICAgICAgfTsNCj4gKyAgLSB8DQo+
-ICsgICAgdXNiQDRhMDMwMDAwIHsNCj4gKyAgICAgICAgY29tcGF0aWJsZSA9ICJzbnBzLGR3YzMi
-Ow0KPiArICAgICAgICByZWcgPSA8MHg0YTAzMDAwMCAweGNmZmY+Ow0KPiArICAgICAgICBpbnRl
-cnJ1cHRzID0gPDAgOTIgND47DQo+ICsgICAgICAgIHVzYi1waHkgPSA8JnVzYjJfcGh5PiwgPCZ1
-c2IzX3BoeT47DQo+ICsgICAgICAgIG1heGltdW0tc3BlZWQgPSAic3VwZXItc3BlZWQiOw0KPiAr
-ICAgICAgICBkcl9tb2RlID0gIm90ZyI7DQo+ICsgICAgICAgIHBoeV90eXBlID0gInV0bWlfd2lk
-ZSI7DQo+ICsgICAgICAgIG90Zy1yZXYgPSA8MHgwMjAwPjsNCj4gKyAgICAgICAgYWRwLWRpc2Fi
-bGU7DQo+ICsgICAgfTsNCg0K
+So far we have been using huge DMA windows to map all the RAM available.
+The RAM is normally mapped to the VM address space contiguously, and
+there is always a reasonable upper limit for possible future hot plugged
+RAM which makes it easy to map all RAM via IOMMU.
+
+Now there is persistent memory ("ibm,pmemory" in the FDT) which (unlike
+normal RAM) can map anywhere in the VM space beyond the maximum RAM size
+and since it can be used for DMA, it requires extending the huge window
+up to MAX_PHYSMEM_BITS which requires hypervisor support for:
+1. huge TCE tables;
+2. multilevel TCE tables;
+3. huge IOMMU pages.
+
+Certain hypervisors cannot do either so the only option left is
+restricting the huge DMA window to include only RAM and fallback to
+the default DMA window for persistent memory.
+
+This checks if the system has persistent memory. If it does not,
+the DMA bypass mode is selected, i.e.
+* dev->bus_dma_limit = 0
+* dev->dma_ops_bypass = true <- this avoid calling dma_ops for mapping.
+
+If there is such memory, this creates identity mapping only for RAM and
+disables the DMA bypass mode which makes generic DMA code use indirect
+dma_ops which may have performance impact:
+* dev->bus_dma_limit = bus_offset + max_ram_size
+  for example 0x0800.0000.8000.0000 for a 2GB VM
+* dev->dma_ops_bypass = false <- this forces indirect calls to dma_ops for
+  every mapping which then directs these to small or huge window.
+
+This should not change the existing behaviour when no persistent memory.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+Without reverting 19c65c3d30bb5a97170, I could have added
+
+I can repost if this is preferrable. Thanks.
+
+---
+Changelog:
+v2:
+* rebased on current upstream with the device::bypass added and DMA
+direct code movement reverted
+---
+ arch/powerpc/kernel/dma-iommu.c        | 68 +++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/iommu.c | 41 +++++++++++++---
+ 2 files changed, 99 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index a1c744194018..9a2a3b95f72d 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -10,6 +10,16 @@
+ #include <linux/pci.h>
+ #include <asm/iommu.h>
+ 
++static inline bool can_map_direct(struct device *dev, phys_addr_t addr)
++{
++	return dev->bus_dma_limit >= phys_to_dma(dev, addr);
++}
++
++static inline bool dma_handle_direct(struct device *dev, dma_addr_t dma_handle)
++{
++	return dma_handle >= dev->archdata.dma_offset;
++}
++
+ /*
+  * Generic iommu implementation
+  */
+@@ -44,6 +54,12 @@ static dma_addr_t dma_iommu_map_page(struct device *dev, struct page *page,
+ 				     enum dma_data_direction direction,
+ 				     unsigned long attrs)
+ {
++	if (dev->bus_dma_limit &&
++	    can_map_direct(dev, (phys_addr_t) page_to_phys(page) +
++			   offset + size))
++		return dma_direct_map_page(dev, page, offset, size, direction,
++					   attrs);
++
+ 	return iommu_map_page(dev, get_iommu_table_base(dev), page, offset,
+ 			      size, dma_get_mask(dev), direction, attrs);
+ }
+@@ -53,6 +69,12 @@ static void dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
+ 				 size_t size, enum dma_data_direction direction,
+ 				 unsigned long attrs)
+ {
++	if (dev->bus_dma_limit &&
++	    dma_handle_direct(dev, dma_handle + size)) {
++		dma_direct_unmap_page(dev, dma_handle, size, direction, attrs);
++		return;
++	}
++
+ 	iommu_unmap_page(get_iommu_table_base(dev), dma_handle, size, direction,
+ 			 attrs);
+ }
+@@ -62,6 +84,22 @@ static int dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
+ 			    int nelems, enum dma_data_direction direction,
+ 			    unsigned long attrs)
+ {
++	if (dev->bus_dma_limit) {
++		struct scatterlist *s;
++		bool direct = true;
++		int i;
++
++		for_each_sg(sglist, s, nelems, i) {
++			direct = can_map_direct(dev,
++					sg_phys(s) + s->offset + s->length);
++			if (!direct)
++				break;
++		}
++		if (direct)
++			return dma_direct_map_sg(dev, sglist, nelems, direction,
++						 attrs);
++	}
++
+ 	return ppc_iommu_map_sg(dev, get_iommu_table_base(dev), sglist, nelems,
+ 				dma_get_mask(dev), direction, attrs);
+ }
+@@ -70,6 +108,24 @@ static void dma_iommu_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		int nelems, enum dma_data_direction direction,
+ 		unsigned long attrs)
+ {
++	if (dev->bus_dma_limit) {
++		struct scatterlist *s;
++		bool direct = true;
++		int i;
++
++		for_each_sg(sglist, s, nelems, i) {
++			direct = dma_handle_direct(dev,
++						   s->dma_address + s->length);
++			if (!direct)
++				break;
++		}
++		if (direct) {
++			dma_direct_unmap_sg(dev, sglist, nelems, direction,
++					    attrs);
++			return;
++		}
++	}
++
+ 	ppc_iommu_unmap_sg(get_iommu_table_base(dev), sglist, nelems,
+ 			   direction, attrs);
+ }
+@@ -90,8 +146,16 @@ int dma_iommu_dma_supported(struct device *dev, u64 mask)
+ 	struct iommu_table *tbl = get_iommu_table_base(dev);
+ 
+ 	if (dev_is_pci(dev) && dma_iommu_bypass_supported(dev, mask)) {
+-		dev->dma_ops_bypass = true;
+-		dev_dbg(dev, "iommu: 64-bit OK, using fixed ops\n");
++		/*
++		 * dma_iommu_bypass_supported() sets dma_max when there is
++		 * 1:1 mapping but it is somehow limited.
++		 * ibm,pmemory is one example.
++		 */
++		dev->dma_ops_bypass = dev->bus_dma_limit == 0;
++		if (!dev->dma_ops_bypass)
++			dev_warn(dev, "iommu: 64-bit OK but using default ops\n");
++		else
++			dev_dbg(dev, "iommu: 64-bit OK, using fixed ops\n");
+ 		return 1;
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index e4198700ed1a..e6aa6c923666 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -839,7 +839,7 @@ static void remove_ddw(struct device_node *np, bool remove_prop)
+ 			np, ret);
+ }
+ 
+-static u64 find_existing_ddw(struct device_node *pdn)
++static u64 find_existing_ddw(struct device_node *pdn, int *window_shift)
+ {
+ 	struct direct_window *window;
+ 	const struct dynamic_dma_window_prop *direct64;
+@@ -851,6 +851,7 @@ static u64 find_existing_ddw(struct device_node *pdn)
+ 		if (window->device == pdn) {
+ 			direct64 = window->prop;
+ 			dma_addr = be64_to_cpu(direct64->dma_base);
++			*window_shift = be32_to_cpu(direct64->window_shift);
+ 			break;
+ 		}
+ 	}
+@@ -1111,11 +1112,13 @@ static void reset_dma_window(struct pci_dev *dev, struct device_node *par_dn)
+  */
+ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ {
+-	int len, ret;
++	int len = 0, ret;
++	bool pmem_present = of_find_node_by_type(NULL, "ibm,pmemory") != NULL;
++	int max_ram_len = order_base_2(ddw_memory_hotplug_max());
+ 	struct ddw_query_response query;
+ 	struct ddw_create_response create;
+ 	int page_shift;
+-	u64 dma_addr, max_addr;
++	u64 dma_addr;
+ 	struct device_node *dn;
+ 	u32 ddw_avail[DDW_APPLICABLE_SIZE];
+ 	struct direct_window *window;
+@@ -1126,7 +1129,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 
+ 	mutex_lock(&direct_window_init_mutex);
+ 
+-	dma_addr = find_existing_ddw(pdn);
++	dma_addr = find_existing_ddw(pdn, &len);
+ 	if (dma_addr != 0)
+ 		goto out_unlock;
+ 
+@@ -1212,14 +1215,27 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 	}
+ 	/* verify the window * number of ptes will map the partition */
+ 	/* check largest block * page size > max memory hotplug addr */
+-	max_addr = ddw_memory_hotplug_max();
+-	if (query.largest_available_block < (max_addr >> page_shift)) {
++	/*
++	 * The "ibm,pmemory" can appear anywhere in the address space.
++	 * Assuming it is still backed by page structs, try MAX_PHYSMEM_BITS
++	 * for the upper limit and fallback to max RAM otherwise but this
++	 * disables device::dma_ops_bypass.
++	 */
++	len = max_ram_len;
++	if (pmem_present) {
++		if (query.largest_available_block >=
++		    (1ULL << (MAX_PHYSMEM_BITS - page_shift)))
++			len = MAX_PHYSMEM_BITS - page_shift;
++		else
++			dev_info(&dev->dev, "Skipping ibm,pmemory");
++	}
++
++	if (query.largest_available_block < (1ULL << (len - page_shift))) {
+ 		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %llu "
+-			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
++			  "%llu-sized pages\n", 1ULL << len, query.largest_available_block,
+ 			  1ULL << page_shift);
+ 		goto out_failed;
+ 	}
+-	len = order_base_2(max_addr);
+ 	win64 = kzalloc(sizeof(struct property), GFP_KERNEL);
+ 	if (!win64) {
+ 		dev_info(&dev->dev,
+@@ -1299,6 +1315,15 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn)
+ 
+ out_unlock:
+ 	mutex_unlock(&direct_window_init_mutex);
++
++	/*
++	 * If we have persistent memory and the window size is only as big
++	 * as RAM, then we failed to create a window to cover persistent
++	 * memory and need to set the DMA limit.
++	 */
++	if (pmem_present && dma_addr && (len == max_ram_len))
++		dev->dev.bus_dma_limit = dma_addr + (1ULL << len);
++
+ 	return dma_addr;
+ }
+ 
+-- 
+2.17.1
 
