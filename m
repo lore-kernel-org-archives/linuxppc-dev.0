@@ -1,53 +1,43 @@
-Return-Path: <SRS0=mlYb=D3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=5Udx=D4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 845A7C4363D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C2DC4363D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:31:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 862BC21707
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Oct 2020 23:46:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 862BC21707
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8AB8320738
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:31:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AB8320738
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CG9Hh23gSzDqTn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 10:46:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=telegraphics.com.au (client-ip=98.124.60.144;
- helo=kvm5.telegraphics.com.au; envelope-from=fthain@telegraphics.com.au;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CG9Dv16pjzDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 10:43:39 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 3A69323B22;
- Tue, 20 Oct 2020 19:43:34 -0400 (EDT)
-Date: Wed, 21 Oct 2020 10:43:37 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Brad Boyer <brad@allandria.com>
-Subject: Re: [PATCH] serial: pmac_zilog: don't init if zilog is not available
-In-Reply-To: <20201020224446.GA15066@allandria.com>
-Message-ID: <alpine.LNX.2.23.453.2010211038390.6@nippy.intranet>
-References: <20201020162303.1730562-1-laurent@vivier.eu>
- <20201020162844.GA865546@kroah.com>
- <468bbbef-4745-3b16-b6f4-30b46ebcdc33@vivier.eu>
- <20201020173745.GA882703@kroah.com>
- <387fd2aa-b181-c41f-0581-0a7e79a44e41@vivier.eu>
- <20201020183246.GA912431@kroah.com>
- <b52e7fde-8874-3c53-ca13-7709656b69fb@vivier.eu>
- <20201020224446.GA15066@allandria.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGGHt5ZWJzDqhN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 14:31:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CGGFn1qNWzDqdf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 14:29:48 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 1DC2CAE800C0;
+ Tue, 20 Oct 2020 23:19:55 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel 0/2] powerpc/dma: Fallback to dma_ops when persistent
+ memory present
+Date: Wed, 21 Oct 2020 14:20:24 +1100
+Message-Id: <20201021032026.45030-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,55 +49,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Laurent Vivier <laurent@vivier.eu>,
- linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Joshua Thompson <funaho@jurai.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Christoph Hellwig <hch@lst.de>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 20 Oct 2020, Brad Boyer wrote:
+This allows mixing direct DMA (to/from RAM) and
+IOMMU (to/from apersistent memory) on the PPC64/pseries
+platform. This was supposed to be a single patch but
+unexpected move of direct DMA functions happened.
 
-> 
-> Wouldn't it be better to rearrange this code to only run if the devices 
-> are present? This is a macio driver on pmac and a platform driver on 
-> mac, so shouldn't it be possible to only run this code when the 
-> appropriate entries are present in the right data structures?
-> 
-> I didn't look at a lot of the other serial drivers, but some other mac 
-> drivers have recently been updated to no longer have MACH_IS_MAC checks 
-> due to being converted to platform drivers.
-> 
+This is based on sha1
+7cf726a59435 Linus Torvalds "Merge tag 'linux-kselftest-kunit-5.10-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux-kselftest".
 
-Actually, it's not simply a platform driver or macio driver. I think the 
-console is supposed to be registered before the normal bus matching takes 
-place. Hence this comment in pmac_zilog.c,
+Please comment. Thanks.
 
-        /* 
-         * First, we need to do a direct OF-based probe pass. We
-         * do that because we want serial console up before the
-         * macio stuffs calls us back, and since that makes it
-         * easier to pass the proper number of channels to
-         * uart_register_driver()
-         */
 
-Laurent, can we avoid the irq == 0 warning splat like this?
 
-diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
-index 96e7aa479961..7db600cd8cc7 100644
---- a/drivers/tty/serial/pmac_zilog.c
-+++ b/drivers/tty/serial/pmac_zilog.c
-@@ -1701,8 +1701,10 @@ static int __init pmz_init_port(struct uart_pmac_port *uap)
- 	int irq;
- 
- 	r_ports = platform_get_resource(uap->pdev, IORESOURCE_MEM, 0);
-+	if (!r_ports)
-+		return -ENODEV;
- 	irq = platform_get_irq(uap->pdev, 0);
--	if (!r_ports || irq <= 0)
-+	if (irq <= 0)
- 		return -ENODEV;
- 
- 	uap->port.mapbase  = r_ports->start;
+Alexey Kardashevskiy (2):
+  Revert "dma-mapping: move large parts of <linux/dma-direct.h> to
+    kernel/dma"
+  powerpc/dma: Fallback to dma_ops when persistent memory present
+
+ include/linux/dma-direct.h             | 106 ++++++++++++++++++++++
+ kernel/dma/direct.h                    | 119 -------------------------
+ arch/powerpc/kernel/dma-iommu.c        |  68 +++++++++++++-
+ arch/powerpc/platforms/pseries/iommu.c |  41 +++++++--
+ kernel/dma/direct.c                    |   2 +-
+ kernel/dma/mapping.c                   |   2 +-
+ 6 files changed, 207 insertions(+), 131 deletions(-)
+ delete mode 100644 kernel/dma/direct.h
+
+-- 
+2.17.1
+
