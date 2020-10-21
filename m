@@ -2,46 +2,62 @@ Return-Path: <SRS0=5Udx=D4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5825FC4363D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:36:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66DFFC4363D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 04:08:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B43B22404
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 03:36:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B43B22404
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 823C021D7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 04:08:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 823C021D7F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CGGPJ68MWzDqvp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 14:36:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGH6s6xV4zDqgr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Oct 2020 15:08:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-X-Greylist: delayed 542 seconds by postgrey-1.36 at bilbo;
- Wed, 21 Oct 2020 14:29:49 AEDT
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CGGFn0YYdzDqcR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 14:29:48 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 584AFAE80120;
- Tue, 20 Oct 2020 23:19:58 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel 1/2] Revert "dma-mapping: move large parts of
- <linux/dma-direct.h> to kernel/dma"
-Date: Wed, 21 Oct 2020 14:20:25 +1100
-Message-Id: <20201021032026.45030-2-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201021032026.45030-1-aik@ozlabs.ru>
-References: <20201021032026.45030-1-aik@ozlabs.ru>
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CGH4938sczDqY2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2020 15:06:30 +1100 (AEDT)
+IronPort-SDR: zYLW0wR7LBotjVkX3/hLaY6lw2kHa1XyUQ70assfmYTD2N8s0sisYz2+CCiyGcGnex9B1uTsmo
+ 1JLuIb2RBMBA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9780"; a="154261154"
+X-IronPort-AV: E=Sophos;i="5.77,400,1596524400"; d="scan'208";a="154261154"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Oct 2020 21:06:26 -0700
+IronPort-SDR: IYohpdW+xFjlW3Ln99JRChPT/T1vYbUQPcit85FcUIYgMDkWiW2Rp3LpQpS4/WhiBuC4riD4iU
+ oSA4NBHMgrRg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,400,1596524400"; d="scan'208";a="332466602"
+Received: from lkp-server02.sh.intel.com (HELO fbeef087c6a9) ([10.239.97.151])
+ by orsmga002.jf.intel.com with ESMTP; 20 Oct 2020 21:06:25 -0700
+Received: from kbuild by fbeef087c6a9 with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1kV5OK-00001o-Nh; Wed, 21 Oct 2020 04:06:24 +0000
+Date: Wed, 21 Oct 2020 12:05:43 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ d1781f23704707d350b8c9006e2bdf5394bf91b2
+Message-ID: <5f8fb397.VopV8qi0Rd5FJmMf%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,310 +69,238 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Christoph Hellwig <hch@lst.de>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit 19c65c3d30bb5a97170e425979d2e44ab2096c7d which
-was a right move but sadly there is a POWERPC/pseries hardware config
-which uses a mixture of direct and IOMMU DMA but bringing this
-logic to the generic code won't benefit anybody else. The user of
-this revert comes in the next patch.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  fixes-test
+branch HEAD: d1781f23704707d350b8c9006e2bdf5394bf91b2  selftests/powerpc: Make alignment handler test P9N DD2.1 vector CI load workaround
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+elapsed time: 930m
+
+configs tested: 212
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                   bluestone_defconfig
+sh                          rsk7203_defconfig
+arc                 nsimosci_hs_smp_defconfig
+sparc                            alldefconfig
+m68k                          sun3x_defconfig
+arm                         palmz72_defconfig
+ia64                                defconfig
+sh                        edosk7760_defconfig
+arm                        realview_defconfig
+i386                                defconfig
+mips                       rbtx49xx_defconfig
+arm                  colibri_pxa300_defconfig
+sh                           se7722_defconfig
+sh                          kfr2r09_defconfig
+mips                  maltasmvp_eva_defconfig
+m68k                         apollo_defconfig
+arm                       aspeed_g5_defconfig
+alpha                            alldefconfig
+m68k                         amcore_defconfig
+mips                            e55_defconfig
+sh                        sh7757lcr_defconfig
+arm                         ebsa110_defconfig
+powerpc                      obs600_defconfig
+sh                             sh03_defconfig
+riscv                            allyesconfig
+powerpc                       maple_defconfig
+um                           x86_64_defconfig
+sh                            titan_defconfig
+mips                          rb532_defconfig
+sh                          lboxre2_defconfig
+arm                         hackkit_defconfig
+um                             i386_defconfig
+openrisc                 simple_smp_defconfig
+h8300                            allyesconfig
+powerpc                    sam440ep_defconfig
+powerpc                    klondike_defconfig
+sh                ecovec24-romimage_defconfig
+arm                       spear13xx_defconfig
+ia64                             allmodconfig
+m68k                        mvme16x_defconfig
+mips                      loongson3_defconfig
+mips                         tb0219_defconfig
+powerpc                          g5_defconfig
+m68k                        mvme147_defconfig
+arm                  colibri_pxa270_defconfig
+mips                  decstation_64_defconfig
+mips                malta_kvm_guest_defconfig
+mips                        workpad_defconfig
+sh                         ecovec24_defconfig
+xtensa                  nommu_kc705_defconfig
+arc                        vdk_hs38_defconfig
+powerpc               mpc834x_itxgp_defconfig
+mips                    maltaup_xpa_defconfig
+mips                      pistachio_defconfig
+mips                 decstation_r4k_defconfig
+sh                     magicpanelr2_defconfig
+mips                     loongson1c_defconfig
+mips                       capcella_defconfig
+arc                              alldefconfig
+powerpc                      ppc40x_defconfig
+mips                           ci20_defconfig
+nios2                               defconfig
+powerpc                      pcm030_defconfig
+csky                                defconfig
+powerpc64                        alldefconfig
+mips                       lemote2f_defconfig
+powerpc                 mpc836x_rdk_defconfig
+s390                          debug_defconfig
+powerpc                       ppc64_defconfig
+sh                            shmin_defconfig
+arm                           viper_defconfig
+powerpc                  iss476-smp_defconfig
+powerpc                   motionpro_defconfig
+sh                          sdk7786_defconfig
+arm                          ep93xx_defconfig
+sh                              ul2_defconfig
+sh                         ap325rxa_defconfig
+arm                         at91_dt_defconfig
+arm                   milbeaut_m10v_defconfig
+mips                         mpc30x_defconfig
+mips                          ath79_defconfig
+s390                       zfcpdump_defconfig
+arm                        clps711x_defconfig
+sh                   sh7724_generic_defconfig
+m68k                        m5307c3_defconfig
+arc                           tb10x_defconfig
+mips                         tb0287_defconfig
+sh                          r7785rp_defconfig
+powerpc                     stx_gp3_defconfig
+mips                      maltasmvp_defconfig
+arm                    vt8500_v6_v7_defconfig
+sh                          landisk_defconfig
+arm                            dove_defconfig
+arm                             pxa_defconfig
+powerpc                     tqm8540_defconfig
+powerpc                      pmac32_defconfig
+powerpc                 mpc834x_itx_defconfig
+sparc64                             defconfig
+powerpc                     taishan_defconfig
+sh                  sh7785lcr_32bit_defconfig
+um                            kunit_defconfig
+x86_64                           allyesconfig
+powerpc                 mpc832x_rdb_defconfig
+mips                          rm200_defconfig
+parisc                generic-64bit_defconfig
+arm                            mps2_defconfig
+sh                          urquell_defconfig
+arm                           stm32_defconfig
+powerpc                 canyonlands_defconfig
+arm                       omap2plus_defconfig
+powerpc                      acadia_defconfig
+h8300                     edosk2674_defconfig
+x86_64                              defconfig
+powerpc                 mpc836x_mds_defconfig
+arc                          axs103_defconfig
+xtensa                         virt_defconfig
+arm                     eseries_pxa_defconfig
+arm                         assabet_defconfig
+sh                            migor_defconfig
+ia64                             alldefconfig
+openrisc                            defconfig
+mips                          malta_defconfig
+xtensa                    xip_kc705_defconfig
+m68k                          amiga_defconfig
+arc                     nsimosci_hs_defconfig
+arm                       aspeed_g4_defconfig
+arm                          moxart_defconfig
+powerpc                     rainier_defconfig
+arm                          badge4_defconfig
+m68k                          multi_defconfig
+arm                           corgi_defconfig
+parisc                              defconfig
+ia64                        generic_defconfig
+powerpc                mpc7448_hpc2_defconfig
+mips                      maltaaprp_defconfig
+mips                         rt305x_defconfig
+m68k                       m5249evb_defconfig
+xtensa                          iss_defconfig
+mips                        nlm_xlr_defconfig
+sh                          polaris_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arm                       imx_v6_v7_defconfig
+riscv                               defconfig
+powerpc                  mpc866_ads_defconfig
+arm                          pxa3xx_defconfig
+nios2                            alldefconfig
+powerpc                 mpc8560_ads_defconfig
+arm                            zeus_defconfig
+xtensa                  cadence_csp_defconfig
+arc                              allyesconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20201020
+i386                 randconfig-a005-20201020
+i386                 randconfig-a003-20201020
+i386                 randconfig-a001-20201020
+i386                 randconfig-a006-20201020
+i386                 randconfig-a004-20201020
+x86_64               randconfig-a011-20201020
+x86_64               randconfig-a013-20201020
+x86_64               randconfig-a016-20201020
+x86_64               randconfig-a015-20201020
+x86_64               randconfig-a012-20201020
+x86_64               randconfig-a014-20201020
+i386                 randconfig-a016-20201020
+i386                 randconfig-a014-20201020
+i386                 randconfig-a015-20201020
+i386                 randconfig-a013-20201020
+i386                 randconfig-a012-20201020
+i386                 randconfig-a011-20201020
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a001-20201020
+x86_64               randconfig-a002-20201020
+x86_64               randconfig-a003-20201020
+x86_64               randconfig-a006-20201020
+x86_64               randconfig-a005-20201020
+x86_64               randconfig-a004-20201020
+
 ---
- include/linux/dma-direct.h | 106 +++++++++++++++++++++++++++++++++
- kernel/dma/direct.h        | 119 -------------------------------------
- kernel/dma/direct.c        |   2 +-
- kernel/dma/mapping.c       |   2 +-
- 4 files changed, 108 insertions(+), 121 deletions(-)
- delete mode 100644 kernel/dma/direct.h
-
-diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
-index 18aade195884..e388b77e0048 100644
---- a/include/linux/dma-direct.h
-+++ b/include/linux/dma-direct.h
-@@ -120,8 +120,114 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
- void dma_direct_free_pages(struct device *dev, size_t size,
- 		struct page *page, dma_addr_t dma_addr,
- 		enum dma_data_direction dir);
-+int dma_direct_get_sgtable(struct device *dev, struct sg_table *sgt,
-+		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-+		unsigned long attrs);
-+bool dma_direct_can_mmap(struct device *dev);
-+int dma_direct_mmap(struct device *dev, struct vm_area_struct *vma,
-+		void *cpu_addr, dma_addr_t dma_addr, size_t size,
-+		unsigned long attrs);
- int dma_direct_supported(struct device *dev, u64 mask);
-+bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr);
-+int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
-+		enum dma_data_direction dir, unsigned long attrs);
- dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
- 		size_t size, enum dma_data_direction dir, unsigned long attrs);
-+size_t dma_direct_max_mapping_size(struct device *dev);
- 
-+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-+    defined(CONFIG_SWIOTLB)
-+void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
-+		int nents, enum dma_data_direction dir);
-+#else
-+static inline void dma_direct_sync_sg_for_device(struct device *dev,
-+		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
-+{
-+}
-+#endif
-+
-+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-+    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
-+    defined(CONFIG_SWIOTLB)
-+void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl,
-+		int nents, enum dma_data_direction dir, unsigned long attrs);
-+void dma_direct_sync_sg_for_cpu(struct device *dev,
-+		struct scatterlist *sgl, int nents, enum dma_data_direction dir);
-+#else
-+static inline void dma_direct_unmap_sg(struct device *dev,
-+		struct scatterlist *sgl, int nents, enum dma_data_direction dir,
-+		unsigned long attrs)
-+{
-+}
-+static inline void dma_direct_sync_sg_for_cpu(struct device *dev,
-+		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
-+{
-+}
-+#endif
-+
-+static inline void dma_direct_sync_single_for_device(struct device *dev,
-+		dma_addr_t addr, size_t size, enum dma_data_direction dir)
-+{
-+	phys_addr_t paddr = dma_to_phys(dev, addr);
-+
-+	if (unlikely(is_swiotlb_buffer(paddr)))
-+		swiotlb_tbl_sync_single(dev, paddr, size, dir, SYNC_FOR_DEVICE);
-+
-+	if (!dev_is_dma_coherent(dev))
-+		arch_sync_dma_for_device(paddr, size, dir);
-+}
-+
-+static inline void dma_direct_sync_single_for_cpu(struct device *dev,
-+		dma_addr_t addr, size_t size, enum dma_data_direction dir)
-+{
-+	phys_addr_t paddr = dma_to_phys(dev, addr);
-+
-+	if (!dev_is_dma_coherent(dev)) {
-+		arch_sync_dma_for_cpu(paddr, size, dir);
-+		arch_sync_dma_for_cpu_all();
-+	}
-+
-+	if (unlikely(is_swiotlb_buffer(paddr)))
-+		swiotlb_tbl_sync_single(dev, paddr, size, dir, SYNC_FOR_CPU);
-+
-+	if (dir == DMA_FROM_DEVICE)
-+		arch_dma_mark_clean(paddr, size);
-+}
-+
-+static inline dma_addr_t dma_direct_map_page(struct device *dev,
-+		struct page *page, unsigned long offset, size_t size,
-+		enum dma_data_direction dir, unsigned long attrs)
-+{
-+	phys_addr_t phys = page_to_phys(page) + offset;
-+	dma_addr_t dma_addr = phys_to_dma(dev, phys);
-+
-+	if (unlikely(swiotlb_force == SWIOTLB_FORCE))
-+		return swiotlb_map(dev, phys, size, dir, attrs);
-+
-+	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
-+		if (swiotlb_force != SWIOTLB_NO_FORCE)
-+			return swiotlb_map(dev, phys, size, dir, attrs);
-+
-+		dev_WARN_ONCE(dev, 1,
-+			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
-+			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
-+		return DMA_MAPPING_ERROR;
-+	}
-+
-+	if (!dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		arch_sync_dma_for_device(phys, size, dir);
-+	return dma_addr;
-+}
-+
-+static inline void dma_direct_unmap_page(struct device *dev, dma_addr_t addr,
-+		size_t size, enum dma_data_direction dir, unsigned long attrs)
-+{
-+	phys_addr_t phys = dma_to_phys(dev, addr);
-+
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		dma_direct_sync_single_for_cpu(dev, addr, size, dir);
-+
-+	if (unlikely(is_swiotlb_buffer(phys)))
-+		swiotlb_tbl_unmap_single(dev, phys, size, size, dir, attrs);
-+}
- #endif /* _LINUX_DMA_DIRECT_H */
-diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
-deleted file mode 100644
-index b98615578737..000000000000
---- a/kernel/dma/direct.h
-+++ /dev/null
-@@ -1,119 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * Copyright (C) 2018 Christoph Hellwig.
-- *
-- * DMA operations that map physical memory directly without using an IOMMU.
-- */
--#ifndef _KERNEL_DMA_DIRECT_H
--#define _KERNEL_DMA_DIRECT_H
--
--#include <linux/dma-direct.h>
--
--int dma_direct_get_sgtable(struct device *dev, struct sg_table *sgt,
--		void *cpu_addr, dma_addr_t dma_addr, size_t size,
--		unsigned long attrs);
--bool dma_direct_can_mmap(struct device *dev);
--int dma_direct_mmap(struct device *dev, struct vm_area_struct *vma,
--		void *cpu_addr, dma_addr_t dma_addr, size_t size,
--		unsigned long attrs);
--bool dma_direct_need_sync(struct device *dev, dma_addr_t dma_addr);
--int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
--		enum dma_data_direction dir, unsigned long attrs);
--size_t dma_direct_max_mapping_size(struct device *dev);
--
--#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
--    defined(CONFIG_SWIOTLB)
--void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
--		int nents, enum dma_data_direction dir);
--#else
--static inline void dma_direct_sync_sg_for_device(struct device *dev,
--		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
--{
--}
--#endif
--
--#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
--    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
--    defined(CONFIG_SWIOTLB)
--void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl,
--		int nents, enum dma_data_direction dir, unsigned long attrs);
--void dma_direct_sync_sg_for_cpu(struct device *dev,
--		struct scatterlist *sgl, int nents, enum dma_data_direction dir);
--#else
--static inline void dma_direct_unmap_sg(struct device *dev,
--		struct scatterlist *sgl, int nents, enum dma_data_direction dir,
--		unsigned long attrs)
--{
--}
--static inline void dma_direct_sync_sg_for_cpu(struct device *dev,
--		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
--{
--}
--#endif
--
--static inline void dma_direct_sync_single_for_device(struct device *dev,
--		dma_addr_t addr, size_t size, enum dma_data_direction dir)
--{
--	phys_addr_t paddr = dma_to_phys(dev, addr);
--
--	if (unlikely(is_swiotlb_buffer(paddr)))
--		swiotlb_tbl_sync_single(dev, paddr, size, dir, SYNC_FOR_DEVICE);
--
--	if (!dev_is_dma_coherent(dev))
--		arch_sync_dma_for_device(paddr, size, dir);
--}
--
--static inline void dma_direct_sync_single_for_cpu(struct device *dev,
--		dma_addr_t addr, size_t size, enum dma_data_direction dir)
--{
--	phys_addr_t paddr = dma_to_phys(dev, addr);
--
--	if (!dev_is_dma_coherent(dev)) {
--		arch_sync_dma_for_cpu(paddr, size, dir);
--		arch_sync_dma_for_cpu_all();
--	}
--
--	if (unlikely(is_swiotlb_buffer(paddr)))
--		swiotlb_tbl_sync_single(dev, paddr, size, dir, SYNC_FOR_CPU);
--
--	if (dir == DMA_FROM_DEVICE)
--		arch_dma_mark_clean(paddr, size);
--}
--
--static inline dma_addr_t dma_direct_map_page(struct device *dev,
--		struct page *page, unsigned long offset, size_t size,
--		enum dma_data_direction dir, unsigned long attrs)
--{
--	phys_addr_t phys = page_to_phys(page) + offset;
--	dma_addr_t dma_addr = phys_to_dma(dev, phys);
--
--	if (unlikely(swiotlb_force == SWIOTLB_FORCE))
--		return swiotlb_map(dev, phys, size, dir, attrs);
--
--	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
--		if (swiotlb_force != SWIOTLB_NO_FORCE)
--			return swiotlb_map(dev, phys, size, dir, attrs);
--
--		dev_WARN_ONCE(dev, 1,
--			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
--			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
--		return DMA_MAPPING_ERROR;
--	}
--
--	if (!dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
--		arch_sync_dma_for_device(phys, size, dir);
--	return dma_addr;
--}
--
--static inline void dma_direct_unmap_page(struct device *dev, dma_addr_t addr,
--		size_t size, enum dma_data_direction dir, unsigned long attrs)
--{
--	phys_addr_t phys = dma_to_phys(dev, addr);
--
--	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
--		dma_direct_sync_single_for_cpu(dev, addr, size, dir);
--
--	if (unlikely(is_swiotlb_buffer(phys)))
--		swiotlb_tbl_unmap_single(dev, phys, size, size, dir, attrs);
--}
--#endif /* _KERNEL_DMA_DIRECT_H */
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index 06c111544f61..cf281589cdc6 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -7,13 +7,13 @@
- #include <linux/memblock.h> /* for max_pfn */
- #include <linux/export.h>
- #include <linux/mm.h>
-+#include <linux/dma-direct.h>
- #include <linux/dma-map-ops.h>
- #include <linux/scatterlist.h>
- #include <linux/pfn.h>
- #include <linux/vmalloc.h>
- #include <linux/set_memory.h>
- #include <linux/slab.h>
--#include "direct.h"
- 
- /*
-  * Most architectures use ZONE_DMA for the first 16 Megabytes, but some use
-diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index 51bb8fa8eb89..335ba183e095 100644
---- a/kernel/dma/mapping.c
-+++ b/kernel/dma/mapping.c
-@@ -7,6 +7,7 @@
-  */
- #include <linux/memblock.h> /* for max_pfn */
- #include <linux/acpi.h>
-+#include <linux/dma-direct.h>
- #include <linux/dma-map-ops.h>
- #include <linux/export.h>
- #include <linux/gfp.h>
-@@ -14,7 +15,6 @@
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
- #include "debug.h"
--#include "direct.h"
- 
- /*
-  * Managed DMA API
--- 
-2.17.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
