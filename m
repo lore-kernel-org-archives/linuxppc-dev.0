@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 776B3C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:39:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A909C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:40:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B25D122249
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:39:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B25D122249
+	by mail.kernel.org (Postfix) with ESMTPS id 518A122249
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:40:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 518A122249
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyPz129RzDqXQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:39:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyRq6XRmzDqX7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:40:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBl4JPDzDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 17:29:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBp6t7gzDqJM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 17:29:38 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CGyBc0CNcz9vBKg;
- Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4CGyBk38CQz9vBKx;
+ Thu, 22 Oct 2020 08:29:34 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bvukwrtbdk_M; Thu, 22 Oct 2020 08:29:27 +0200 (CEST)
+ with ESMTP id Lly7IQ7jR6WI; Thu, 22 Oct 2020 08:29:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBb6PmQz9vBKb;
- Thu, 22 Oct 2020 08:29:27 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBk2CWsz9vBKw;
+ Thu, 22 Oct 2020 08:29:34 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C90CA8B805;
- Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B3E68B806;
+ Thu, 22 Oct 2020 08:29:35 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id JcQRQGpUlnlX; Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
+ with ESMTP id qhdYHAtasZ3q; Thu, 22 Oct 2020 08:29:35 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7903E8B769;
- Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id AA4F28B769;
+ Thu, 22 Oct 2020 08:29:34 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 5D2C1667EF; Thu, 22 Oct 2020 06:29:28 +0000 (UTC)
-Message-Id: <4a58831da6d6ba4fe309b94aa1dd8f02982d46b2.1603348103.git.christophe.leroy@csgroup.eu>
+ id 8F2AA667EF; Thu, 22 Oct 2020 06:29:34 +0000 (UTC)
+Message-Id: <475136425541db5c7c8a0395d19d400525b251bc.1603348103.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
 References: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 03/20] powerpc/mm: Remove flush_tlb_page_nohash() prototype.
+Subject: [PATCH v1 09/20] powerpc/32s: Inline _tlbie() on non SMP
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 22 Oct 2020 06:29:28 +0000 (UTC)
+Date: Thu, 22 Oct 2020 06:29:34 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,41 +76,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-flush_tlb_page_nohash() was removed by
-commit 703b41ad1a87 ("powerpc/mm: remove flush_tlb_page_nohash")
+On non SMP, _tlbie() is just a tlbie plus a sync instruction.
 
-Remove stale prototype and comment.
+Make it static inline.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/book3s/32/tlbflush.h | 1 -
- arch/powerpc/include/asm/nohash/tlbflush.h    | 1 -
- 2 files changed, 2 deletions(-)
+ arch/powerpc/include/asm/book3s/32/tlbflush.h | 7 +++++++
+ arch/powerpc/mm/book3s32/hash_low.S           | 7 ++-----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/32/tlbflush.h b/arch/powerpc/include/asm/book3s/32/tlbflush.h
-index 068085b709fb..29e292be4f1b 100644
+index 3043e7af70aa..f392a619138d 100644
 --- a/arch/powerpc/include/asm/book3s/32/tlbflush.h
 +++ b/arch/powerpc/include/asm/book3s/32/tlbflush.h
-@@ -8,7 +8,6 @@
-  */
- extern void flush_tlb_mm(struct mm_struct *mm);
- extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
--extern void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr);
- extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+@@ -12,7 +12,14 @@ extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
  			    unsigned long end);
  extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
-diff --git a/arch/powerpc/include/asm/nohash/tlbflush.h b/arch/powerpc/include/asm/nohash/tlbflush.h
-index b1d8fec29169..1edb7243e515 100644
---- a/arch/powerpc/include/asm/nohash/tlbflush.h
-+++ b/arch/powerpc/include/asm/nohash/tlbflush.h
-@@ -10,7 +10,6 @@
-  *  - local_flush_tlb_mm(mm, full) flushes the specified mm context on
-  *                           the local processor
-  *  - local_flush_tlb_page(vma, vmaddr) flushes one page on the local processor
-- *  - flush_tlb_page_nohash(vma, vmaddr) flushes one page if SW loaded TLB
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-  *
+ 
++#ifdef CONFIG_SMP
+ void _tlbie(unsigned long address);
++#else
++static inline void _tlbie(unsigned long address)
++{
++	asm volatile ("tlbie %0; sync" : : "r" (address) : "memory");
++}
++#endif
+ void _tlbia(void);
+ 
+ static inline void local_flush_tlb_page(struct vm_area_struct *vma,
+diff --git a/arch/powerpc/mm/book3s32/hash_low.S b/arch/powerpc/mm/book3s32/hash_low.S
+index b2c912e517b9..006e9a452bde 100644
+--- a/arch/powerpc/mm/book3s32/hash_low.S
++++ b/arch/powerpc/mm/book3s32/hash_low.S
+@@ -637,8 +637,8 @@ _ASM_NOKPROBE_SYMBOL(flush_hash_pages)
+ /*
+  * Flush an entry from the TLB
+  */
+-_GLOBAL(_tlbie)
+ #ifdef CONFIG_SMP
++_GLOBAL(_tlbie)
+ 	lwz	r8,TASK_CPU(r2)
+ 	oris	r8,r8,11
+ 	mfmsr	r10
+@@ -662,12 +662,9 @@ _GLOBAL(_tlbie)
+ 	stw	r0,0(r9)		/* clear mmu_hash_lock */
+ 	mtmsr	r10
+ 	isync
+-#else /* CONFIG_SMP */
+-	tlbie	r3
+-	sync
+-#endif /* CONFIG_SMP */
+ 	blr
+ _ASM_NOKPROBE_SYMBOL(_tlbie)
++#endif /* CONFIG_SMP */
+ 
+ /*
+  * Flush the entire TLB. 603/603e only
 -- 
 2.25.0
 
