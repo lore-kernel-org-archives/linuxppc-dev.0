@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF698C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7702C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:37:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 007A720790
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:35:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 007A720790
+	by mail.kernel.org (Postfix) with ESMTPS id 2D0D121D43
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:37:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D0D121D43
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyKT6rFjzDqlQ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:35:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyMp5Zq1zDqkm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:37:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,37 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBl3xpGzDq7d
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBl4dWvzDqKZ
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 17:29:33 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CGyBZ0btYz9vBKd;
- Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4CGyBf0kRwz9vBKk;
+ Thu, 22 Oct 2020 08:29:30 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3Yi_ud8vKGm4; Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ with ESMTP id 1ig85L5yVpG2; Thu, 22 Oct 2020 08:29:30 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBY6pFWz9vBKb;
- Thu, 22 Oct 2020 08:29:25 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBd5ySXz9vBKb;
+ Thu, 22 Oct 2020 08:29:29 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CBE4F8B805;
- Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C36DB8B805;
+ Thu, 22 Oct 2020 08:29:30 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id RZPUlOz3ue1r; Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ with ESMTP id XD9yY0SUI2oL; Thu, 22 Oct 2020 08:29:30 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 893BE8B769;
- Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 81FAF8B769;
+ Thu, 22 Oct 2020 08:29:30 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 2C942667EF; Thu, 22 Oct 2020 06:29:26 +0000 (UTC)
-Message-Id: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
+ id 65E57667EF; Thu, 22 Oct 2020 06:29:30 +0000 (UTC)
+Message-Id: <f1766631a9e014b6433f1a3c12c726ddfce34220.1603348103.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
+References: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 01/20] powerpc/feature: Fix CPU_FTRS_ALWAYS by removing
- CPU_FTRS_GENERIC_32
+Subject: [PATCH v1 05/20] powerpc/32s: Use mmu_has_feature(MMU_FTR_HPTE_TABLE)
+ instead of checking Hash var
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 22 Oct 2020 06:29:26 +0000 (UTC)
+Date: Thu, 22 Oct 2020 06:29:30 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,59 +77,80 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8xx, we get the following features:
+We now have an early hash table on hash MMU, so no need to check
+Hash var to know if the Hash table is set of not.
 
-[    0.000000] cpu_features      = 0x0000000000000100
-[    0.000000]   possible        = 0x0000000000000120
-[    0.000000]   always          = 0x0000000000000000
+Use mmu_has_feature(MMU_FTR_HPTE_TABLE) instead. This will allow
+optimisation via jump_label.
 
-This is not correct. As CONFIG_PPC_8xx is mutually exclusive with all
-other configurations, the three lines should be equal.
-
-The problem is due to CPU_FTRS_GENERIC_32 which is taken when
-CONFIG_BOOK3S_32 is NOT selected. This CPU_FTRS_GENERIC_32 is
-pointless because there is no generic configuration supporting
-all 32 bits but book3s/32.
-
-Remove this pointless generic features definition to unbreak the
-calculation of 'possible' features and 'always' features.
-
-Fixes: 76bc080ef5a3 ("[POWERPC] Make default cputable entries reflect selected CPU family")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/cputable.h | 5 -----
- 1 file changed, 5 deletions(-)
+ arch/powerpc/mm/book3s32/mmu.c |  2 +-
+ arch/powerpc/mm/book3s32/tlb.c | 10 +++++-----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 93bc70d4c9a1..c596bab134e2 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -409,7 +409,6 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_DBELL | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_DEBUG_LVL_EXC | CPU_FTR_EMB_HV | CPU_FTR_ALTIVEC_COMP | \
- 	    CPU_FTR_CELL_TB_BUG | CPU_FTR_SMT)
--#define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index eceb55c12fe9..6612d2a9a1ff 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -308,7 +308,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea)
+ {
+ 	pmd_t *pmd;
  
- /* 64-bit CPUs */
- #define CPU_FTRS_PPC970	(CPU_FTR_LWSYNC | \
-@@ -520,8 +519,6 @@ enum {
- 	    CPU_FTRS_7447 | CPU_FTRS_7447A | CPU_FTRS_82XX |
- 	    CPU_FTRS_G2_LE | CPU_FTRS_E300 | CPU_FTRS_E300C2 |
- 	    CPU_FTRS_CLASSIC32 |
--#else
--	    CPU_FTRS_GENERIC_32 |
- #endif
- #ifdef CONFIG_PPC_8xx
- 	    CPU_FTRS_8XX |
-@@ -596,8 +593,6 @@ enum {
- 	    CPU_FTRS_7447 & CPU_FTRS_7447A & CPU_FTRS_82XX &
- 	    CPU_FTRS_G2_LE & CPU_FTRS_E300 & CPU_FTRS_E300C2 &
- 	    CPU_FTRS_CLASSIC32 &
--#else
--	    CPU_FTRS_GENERIC_32 &
- #endif
- #ifdef CONFIG_PPC_8xx
- 	    CPU_FTRS_8XX &
+-	if (!Hash)
++	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE))
+ 		return;
+ 	pmd = pmd_off(mm, ea);
+ 	if (!pmd_none(*pmd))
+diff --git a/arch/powerpc/mm/book3s32/tlb.c b/arch/powerpc/mm/book3s32/tlb.c
+index b6c7427daa6f..ae5dbba95805 100644
+--- a/arch/powerpc/mm/book3s32/tlb.c
++++ b/arch/powerpc/mm/book3s32/tlb.c
+@@ -36,7 +36,7 @@ void flush_hash_entry(struct mm_struct *mm, pte_t *ptep, unsigned long addr)
+ {
+ 	unsigned long ptephys;
+ 
+-	if (Hash) {
++	if (mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+ 		ptephys = __pa(ptep) & PAGE_MASK;
+ 		flush_hash_pages(mm->context.id, addr, ptephys, 1);
+ 	}
+@@ -49,7 +49,7 @@ EXPORT_SYMBOL(flush_hash_entry);
+  */
+ void tlb_flush(struct mmu_gather *tlb)
+ {
+-	if (!Hash) {
++	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+ 		/*
+ 		 * 603 needs to flush the whole TLB here since
+ 		 * it doesn't use a hash table.
+@@ -80,7 +80,7 @@ static void flush_range(struct mm_struct *mm, unsigned long start,
+ 	unsigned int ctx = mm->context.id;
+ 
+ 	start &= PAGE_MASK;
+-	if (!Hash) {
++	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+ 		if (end - start <= PAGE_SIZE)
+ 			_tlbie(start);
+ 		else
+@@ -122,7 +122,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *mp;
+ 
+-	if (!Hash) {
++	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+ 		_tlbia();
+ 		return;
+ 	}
+@@ -143,7 +143,7 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
+ 	struct mm_struct *mm;
+ 	pmd_t *pmd;
+ 
+-	if (!Hash) {
++	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+ 		_tlbie(vmaddr);
+ 		return;
+ 	}
 -- 
 2.25.0
 
