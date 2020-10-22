@@ -2,74 +2,79 @@ Return-Path: <SRS0=xaUg=D5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B04C1C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DEFAC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:39:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABA6F221FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:37:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="G3EFVUGd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABA6F221FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6D81A223BF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:39:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D81A223BF
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=ACULAB.COM
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CH2Mh6SVBzDqvW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 20:37:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CH2Q11RpRzDqvL
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 20:39:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=aculab.com (client-ip=207.82.80.151;
+ helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=G3EFVUGd; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=ACULAB.COM
+Received: from eu-smtp-delivery-151.mimecast.com
+ (eu-smtp-delivery-151.mimecast.com [207.82.80.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CH1wB4hZBzDqDS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 20:17:14 +1100 (AEDT)
-Received: from mail-qv1-f50.google.com (mail-qv1-f50.google.com
- [209.85.219.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A754224196
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 09:17:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1603358231;
- bh=EK7qoJBo5hV6BXWX1tF72KBJ6WGosC+S7u14dcM7ZuU=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=G3EFVUGd1ziiftQhYscC/sPpMElPA8jd7zVdEhkBsjovQuurD5WmSx4tCAE6C6uba
- ldLnbG5l3mhLlsgRIQe0MzQ4JoUEB1z3sFvw7F+rUqUgUdd2Rvay5bkn3rcfJKfMHG
- FJaq/3xpaJh4NTk2KlQxT8N4VeuNtqrRSEt/L5ws=
-Received: by mail-qv1-f50.google.com with SMTP id t6so511875qvz.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 02:17:11 -0700 (PDT)
-X-Gm-Message-State: AOAM530D85FnAyeqQ3rVZulnvGLtd8IBpkZErt2WUeqtmDbylFmwj7VG
- +RBJPD2iLpCS7Pfv7vSv+g0v2ybNNcea0n8ctnk=
-X-Google-Smtp-Source: ABdhPJyBgyw2EAc5e3+lPot5HIF+Yf1PkYa3AQp8bFTt9ENBXKmskM5kWqxYpWTilnoFehIq391QA56z0G7MJmXqFVM=
-X-Received: by 2002:ad4:4203:: with SMTP id k3mr1300974qvp.8.1603358230600;
- Thu, 22 Oct 2020 02:17:10 -0700 (PDT)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CH2Gl6J0CzDqf4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 20:33:19 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.126 [156.67.243.126]) (Using
+ TLS) by relay.mimecast.com with ESMTP id
+ uk-mta-305-8XvjHwJ8MYOWawC799xGnw-1; Thu, 22 Oct 2020 10:32:05 +0100
+X-MC-Unique: 8XvjHwJ8MYOWawC799xGnw-1
+Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) by
+ AcuMS.aculab.com (fd9f:af1c:a25b:0:43c:695e:880f:8750) with Microsoft SMTP
+ Server (TLS) id 15.0.1347.2; Thu, 22 Oct 2020 10:32:04 +0100
+Received: from AcuMS.Aculab.com ([fe80::43c:695e:880f:8750]) by
+ AcuMS.aculab.com ([fe80::43c:695e:880f:8750%12]) with mapi id 15.00.1347.000; 
+ Thu, 22 Oct 2020 10:32:04 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'David Hildenbrand' <david@redhat.com>, Greg KH
+ <gregkh@linuxfoundation.org>
+Subject: RE: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
+ rw_copy_check_uvector() into lib/iov_iter.c"
+Thread-Topic: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
+ rw_copy_check_uvector() into lib/iov_iter.c"
+Thread-Index: AQHWqE5GNDfnH4y9nkGWtfqJueR1KKmjTCJQgAAN4UiAAAD2IA==
+Date: Thu, 22 Oct 2020 09:32:04 +0000
+Message-ID: <bc0a091865f34700b9df332c6e9dcdfd@AcuMS.aculab.com>
 References: <20200925045146.1283714-1-hch@lst.de>
- <20200925045146.1283714-3-hch@lst.de>
- <20201021161301.GA1196312@kroah.com>
+ <20200925045146.1283714-3-hch@lst.de> <20201021161301.GA1196312@kroah.com>
  <20201021233914.GR3576660@ZenIV.linux.org.uk>
  <20201022082654.GA1477657@kroah.com>
-In-Reply-To: <20201022082654.GA1477657@kroah.com>
-From: Arnd Bergmann <arnd@kernel.org>
-Date: Thu, 22 Oct 2020 11:16:54 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0Y8+yREExGG4SFP5+FmKaQbBJrrsZHWEoSKDep-2S=qg@mail.gmail.com>
-Message-ID: <CAK8P3a0Y8+yREExGG4SFP5+FmKaQbBJrrsZHWEoSKDep-2S=qg@mail.gmail.com>
-Subject: Re: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
- rw_copy_check_uvector() into lib/iov_iter.c"
-To: Greg KH <gregkh@linuxfoundation.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 22 Oct 2020 20:33:30 +1100
+ <80a2e5fa-718a-8433-1ab0-dd5b3e3b5416@redhat.com>
+ <5d2ecb24db1e415b8ff88261435386ec@AcuMS.aculab.com>
+ <df2e0758-b8ed-5aec-6adc-a18f499c0179@redhat.com>
+ <20201022090155.GA1483166@kroah.com>
+ <e04d0c5d-e834-a15b-7844-44dcc82785cc@redhat.com>
+ <a1533569-948a-1d5b-e231-5531aa988047@redhat.com>
+In-Reply-To: <a1533569-948a-1d5b-e231-5531aa988047@redhat.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
+MIME-Version: 1.0
+Authentication-Results: relay.mimecast.com;
+ auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,75 +86,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-aio <linux-aio@kvack.org>,
- "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
- David Howells <dhowells@redhat.com>, Linux-MM <linux-mm@kvack.org>,
- keyrings@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
- Christoph Hellwig <hch@lst.de>, linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Android Kernel Team <kernel-team@android.com>,
- linux-block <linux-block@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- io-uring@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Jens Axboe <axboe@kernel.dk>, Parisc List <linux-parisc@vger.kernel.org>,
- Networking <netdev@vger.kernel.org>,
+Cc: "linux-aio@kvack.org" <linux-aio@kvack.org>,
+ "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Christoph Hellwig <hch@lst.de>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+ "kernel-team@android.com" <kernel-team@android.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ "io-uring@vger.kernel.org" <io-uring@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Jens Axboe <axboe@kernel.dk>,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  Nick Desaulniers <ndesaulniers@google.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- LSM List <linux-security-module@vger.kernel.org>,
- David Laight <David.Laight@aculab.com>,
- Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 22, 2020 at 10:26 AM Greg KH <gregkh@linuxfoundation.org> wrote:
-> On Thu, Oct 22, 2020 at 12:39:14AM +0100, Al Viro wrote:
-> > On Wed, Oct 21, 2020 at 06:13:01PM +0200, Greg KH wrote:
-> > > On Fri, Sep 25, 2020 at 06:51:39AM +0200, Christoph Hellwig wrote:
-> > >
-> > > I can't really figure out what the regression is, only that this commit
-> > > triggers a "large Android system binary" from working properly.  There's
-> > > no kernel log messages anywhere, and I don't have any way to strace the
-> > > thing in the testing framework, so any hints that people can provide
-> > > would be most appreciated.
-> >
-> > It's a pure move - modulo changed line breaks in the argument lists
-> > the functions involved are identical before and after that (just checked
-> > that directly, by checking out the trees before and after, extracting two
-> > functions in question from fs/read_write.c and lib/iov_iter.c (before and
-> > after, resp.) and checking the diff between those.
-> >
-> > How certain is your bisection?
->
-> The bisection is very reproducable.
->
-> But, this looks now to be a compiler bug.  I'm using the latest version
-> of clang and if I put "noinline" at the front of the function,
-> everything works.
->
-> Nick, any ideas here as to who I should report this to?
->
-> I'll work on a fixup patch for the Android kernel tree to see if I can
-> work around it there, but others will hit this in Linus's tree sooner or
-> later...
+RnJvbTogRGF2aWQgSGlsZGVuYnJhbmQNCj4gU2VudDogMjIgT2N0b2JlciAyMDIwIDEwOjI1DQou
+Li4NCj4gLi4uIGVzcGVjaWFsbHkgYmVjYXVzZSBJIHJlY2FsbCB0aGF0IGNsYW5nIGFuZCBnY2Mg
+YmVoYXZlIHNsaWdodGx5DQo+IGRpZmZlcmVudGx5Og0KPiANCj4gaHR0cHM6Ly9naXRodWIuY29t
+L2hqbC10b29scy94ODYtcHNBQkkvaXNzdWVzLzINCj4gDQo+ICJGdW5jdGlvbiBhcmdzIGFyZSBk
+aWZmZXJlbnQ6IG5hcnJvdyB0eXBlcyBhcmUgc2lnbiBvciB6ZXJvIGV4dGVuZGVkIHRvDQo+IDMy
+IGJpdHMsIGRlcGVuZGluZyBvbiB0aGVpciB0eXBlLiBjbGFuZyBkZXBlbmRzIG9uIHRoaXMgZm9y
+IGluY29taW5nDQo+IGFyZ3MsIGJ1dCBnY2MgZG9lc24ndCBtYWtlIHRoYXQgYXNzdW1wdGlvbi4g
+QnV0IGJvdGggY29tcGlsZXJzIGRvIGl0DQo+IHdoZW4gY2FsbGluZywgc28gZ2NjIGNvZGUgY2Fu
+IGNhbGwgY2xhbmcgY29kZS4NCg0KSXQgcmVhbGx5IGlzIGJlc3QgdG8gdXNlICdpbnQnIChvciBl
+dmVuICdsb25nJykgZm9yIGFsbCBudW1lcmljDQphcmd1bWVudHMgKGFuZCByZXN1bHRzKSByZWdh
+cmRsZXNzIG9mIHRoZSBkb21haW4gb2YgdGhlIHZhbHVlLg0KDQpSZWxhdGVkLCBJJ3ZlIGFsd2F5
+cyB3b3JyaWVkIGFib3V0ICdib29sJy4uLi4NCg0KPiBUaGUgdXBwZXIgMzIgYml0cyBvZiByZWdp
+c3RlcnMgYXJlIGFsd2F5cyB1bmRlZmluZWQgZ2FyYmFnZSBmb3IgdHlwZXMNCj4gc21hbGxlciB0
+aGFuIDY0IGJpdHMuIg0KDQpPbiB4ODYtNjQgdGhlIGhpZ2ggYml0cyBhcmUgemVyb2VkIGJ5IGFs
+bCAzMmJpdCBsb2Fkcy4NCg0KCURhdmlkDQoNCi0NClJlZ2lzdGVyZWQgQWRkcmVzcyBMYWtlc2lk
+ZSwgQnJhbWxleSBSb2FkLCBNb3VudCBGYXJtLCBNaWx0b24gS2V5bmVzLCBNSzEgMVBULCBVSw0K
+UmVnaXN0cmF0aW9uIE5vOiAxMzk3Mzg2IChXYWxlcykNCg==
 
-I see that Christoph rewrote the function again in bfdc59701d6d
-("iov_iter: refactor rw_copy_check_uvector and import_iovec"),
-do you know if the current mainline version is also affected?
-
-Do you know if it happens across multiple architectures or might
-be specific to either x86 or arm64?
-
-https://bugs.llvm.org/ is obviously the place for reporting the
-issue if it does turn out to be a bug in clang, but that requires
-a specific thing going wrong in the output.
-
-One idea I have for debugging it is to sprinkle the inlined
-function with lots of barrier()s to prevent a lot of the optimizations.
-If that solves the issue, you can bisect through those until you
-find one barrier that makes the difference between working and
-broken and then look at diff of the assembler output.
-
-        Arnd
