@@ -2,65 +2,74 @@ Return-Path: <SRS0=xaUg=D5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB4F6C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B04C1C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:37:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BDCF0223BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:35:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDCF0223BF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id ABA6F221FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 09:37:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="G3EFVUGd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABA6F221FE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CH2Kg1yctzDqx5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 20:35:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CH2Mh6SVBzDqvW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 20:37:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=G3EFVUGd; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CH2BK58hYzDqdx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 20:29:29 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CH2B84wX0z9tx15;
- Thu, 22 Oct 2020 11:29:20 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id fzijWGiC-ME9; Thu, 22 Oct 2020 11:29:20 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CH2B843H0z9tx14;
- Thu, 22 Oct 2020 11:29:20 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A44F28B769;
- Thu, 22 Oct 2020 11:29:21 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id MiwXcxZPlWL2; Thu, 22 Oct 2020 11:29:21 +0200 (CEST)
-Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 41ABD8B805;
- Thu, 22 Oct 2020 11:29:21 +0200 (CEST)
-Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 262026680D; Thu, 22 Oct 2020 09:29:21 +0000 (UTC)
-Message-Id: <62eab5ca595485c192de1765bdac099f633a21d0.1603358942.git.christophe.leroy@csgroup.eu>
-In-Reply-To: <25e6fca46fda3e2a4298448edbf654f64756eee7.1603358942.git.christophe.leroy@csgroup.eu>
-References: <25e6fca46fda3e2a4298448edbf654f64756eee7.1603358942.git.christophe.leroy@csgroup.eu>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v3 3/3] powerpc: Fix update form addressing in inline assembly
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- mathieu.desnoyers@efficios.com
-Date: Thu, 22 Oct 2020 09:29:21 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CH1wB4hZBzDqDS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 20:17:14 +1100 (AEDT)
+Received: from mail-qv1-f50.google.com (mail-qv1-f50.google.com
+ [209.85.219.50])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A754224196
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 09:17:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1603358231;
+ bh=EK7qoJBo5hV6BXWX1tF72KBJ6WGosC+S7u14dcM7ZuU=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=G3EFVUGd1ziiftQhYscC/sPpMElPA8jd7zVdEhkBsjovQuurD5WmSx4tCAE6C6uba
+ ldLnbG5l3mhLlsgRIQe0MzQ4JoUEB1z3sFvw7F+rUqUgUdd2Rvay5bkn3rcfJKfMHG
+ FJaq/3xpaJh4NTk2KlQxT8N4VeuNtqrRSEt/L5ws=
+Received: by mail-qv1-f50.google.com with SMTP id t6so511875qvz.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 02:17:11 -0700 (PDT)
+X-Gm-Message-State: AOAM530D85FnAyeqQ3rVZulnvGLtd8IBpkZErt2WUeqtmDbylFmwj7VG
+ +RBJPD2iLpCS7Pfv7vSv+g0v2ybNNcea0n8ctnk=
+X-Google-Smtp-Source: ABdhPJyBgyw2EAc5e3+lPot5HIF+Yf1PkYa3AQp8bFTt9ENBXKmskM5kWqxYpWTilnoFehIq391QA56z0G7MJmXqFVM=
+X-Received: by 2002:ad4:4203:: with SMTP id k3mr1300974qvp.8.1603358230600;
+ Thu, 22 Oct 2020 02:17:10 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200925045146.1283714-1-hch@lst.de>
+ <20200925045146.1283714-3-hch@lst.de>
+ <20201021161301.GA1196312@kroah.com>
+ <20201021233914.GR3576660@ZenIV.linux.org.uk>
+ <20201022082654.GA1477657@kroah.com>
+In-Reply-To: <20201022082654.GA1477657@kroah.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Thu, 22 Oct 2020 11:16:54 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0Y8+yREExGG4SFP5+FmKaQbBJrrsZHWEoSKDep-2S=qg@mail.gmail.com>
+Message-ID: <CAK8P3a0Y8+yREExGG4SFP5+FmKaQbBJrrsZHWEoSKDep-2S=qg@mail.gmail.com>
+Subject: Re: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
+ rw_copy_check_uvector() into lib/iov_iter.c"
+To: Greg KH <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Thu, 22 Oct 2020 20:33:30 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,121 +81,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-aio <linux-aio@kvack.org>,
+ "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+ David Howells <dhowells@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ keyrings@vger.kernel.org, sparclinux <sparclinux@vger.kernel.org>,
+ Christoph Hellwig <hch@lst.de>, linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Android Kernel Team <kernel-team@android.com>,
+ linux-block <linux-block@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ io-uring@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Jens Axboe <axboe@kernel.dk>, Parisc List <linux-parisc@vger.kernel.org>,
+ Networking <netdev@vger.kernel.org>,
+ Nick Desaulniers <ndesaulniers@google.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ LSM List <linux-security-module@vger.kernel.org>,
+ David Laight <David.Laight@aculab.com>,
+ Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In several places, inline assembly uses the "%Un" modifier
-to enable the use of instruction with update form addressing,
-but the associated "<>" constraint is missing.
+On Thu, Oct 22, 2020 at 10:26 AM Greg KH <gregkh@linuxfoundation.org> wrote:
+> On Thu, Oct 22, 2020 at 12:39:14AM +0100, Al Viro wrote:
+> > On Wed, Oct 21, 2020 at 06:13:01PM +0200, Greg KH wrote:
+> > > On Fri, Sep 25, 2020 at 06:51:39AM +0200, Christoph Hellwig wrote:
+> > >
+> > > I can't really figure out what the regression is, only that this commit
+> > > triggers a "large Android system binary" from working properly.  There's
+> > > no kernel log messages anywhere, and I don't have any way to strace the
+> > > thing in the testing framework, so any hints that people can provide
+> > > would be most appreciated.
+> >
+> > It's a pure move - modulo changed line breaks in the argument lists
+> > the functions involved are identical before and after that (just checked
+> > that directly, by checking out the trees before and after, extracting two
+> > functions in question from fs/read_write.c and lib/iov_iter.c (before and
+> > after, resp.) and checking the diff between those.
+> >
+> > How certain is your bisection?
+>
+> The bisection is very reproducable.
+>
+> But, this looks now to be a compiler bug.  I'm using the latest version
+> of clang and if I put "noinline" at the front of the function,
+> everything works.
+>
+> Nick, any ideas here as to who I should report this to?
+>
+> I'll work on a fixup patch for the Android kernel tree to see if I can
+> work around it there, but others will hit this in Linus's tree sooner or
+> later...
 
-As mentioned in previous patch, this fails with gcc 4.9, so
-"<>" can't be used directly.
+I see that Christoph rewrote the function again in bfdc59701d6d
+("iov_iter: refactor rw_copy_check_uvector and import_iovec"),
+do you know if the current mainline version is also affected?
 
-Use UPD_CONSTR macro everywhere %Un modifier is used.
+Do you know if it happens across multiple architectures or might
+be specific to either x86 or arm64?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
----
-v3: __set_pte_at() not impacted anymore (%U0 removed in previous patch)
-v2: Build failure (circular inclusion) fixed by change in patch 1
----
- arch/powerpc/include/asm/atomic.h | 9 +++++----
- arch/powerpc/include/asm/io.h     | 4 ++--
- arch/powerpc/kvm/powerpc.c        | 4 ++--
- 3 files changed, 9 insertions(+), 8 deletions(-)
+https://bugs.llvm.org/ is obviously the place for reporting the
+issue if it does turn out to be a bug in clang, but that requires
+a specific thing going wrong in the output.
 
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index 8a55eb8cc97b..61c6e8b200e8 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -10,6 +10,7 @@
- #include <linux/types.h>
- #include <asm/cmpxchg.h>
- #include <asm/barrier.h>
-+#include <asm/asm-const.h>
- 
- /*
-  * Since *_return_relaxed and {cmp}xchg_relaxed are implemented with
-@@ -26,14 +27,14 @@ static __inline__ int atomic_read(const atomic_t *v)
- {
- 	int t;
- 
--	__asm__ __volatile__("lwz%U1%X1 %0,%1" : "=r"(t) : "m"(v->counter));
-+	__asm__ __volatile__("lwz%U1%X1 %0,%1" : "=r"(t) : "m"UPD_CONSTR(v->counter));
- 
- 	return t;
- }
- 
- static __inline__ void atomic_set(atomic_t *v, int i)
- {
--	__asm__ __volatile__("stw%U0%X0 %1,%0" : "=m"(v->counter) : "r"(i));
-+	__asm__ __volatile__("stw%U0%X0 %1,%0" : "=m"UPD_CONSTR(v->counter) : "r"(i));
- }
- 
- #define ATOMIC_OP(op, asm_op)						\
-@@ -316,14 +317,14 @@ static __inline__ s64 atomic64_read(const atomic64_t *v)
- {
- 	s64 t;
- 
--	__asm__ __volatile__("ld%U1%X1 %0,%1" : "=r"(t) : "m"(v->counter));
-+	__asm__ __volatile__("ld%U1%X1 %0,%1" : "=r"(t) : "m"UPD_CONSTR(v->counter));
- 
- 	return t;
- }
- 
- static __inline__ void atomic64_set(atomic64_t *v, s64 i)
- {
--	__asm__ __volatile__("std%U0%X0 %1,%0" : "=m"(v->counter) : "r"(i));
-+	__asm__ __volatile__("std%U0%X0 %1,%0" : "=m"UPD_CONSTR(v->counter) : "r"(i));
- }
- 
- #define ATOMIC64_OP(op, asm_op)						\
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 58635960403c..87964dfb838e 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -122,7 +122,7 @@ static inline u##size name(const volatile u##size __iomem *addr)	\
- {									\
- 	u##size ret;							\
- 	__asm__ __volatile__("sync;"#insn"%U1%X1 %0,%1;twi 0,%0,0;isync"\
--		: "=r" (ret) : "m" (*addr) : "memory");			\
-+		: "=r" (ret) : "m"UPD_CONSTR (*addr) : "memory");	\
- 	return ret;							\
- }
- 
-@@ -130,7 +130,7 @@ static inline u##size name(const volatile u##size __iomem *addr)	\
- static inline void name(volatile u##size __iomem *addr, u##size val)	\
- {									\
- 	__asm__ __volatile__("sync;"#insn"%U0%X0 %1,%0"			\
--		: "=m" (*addr) : "r" (val) : "memory");			\
-+		: "=m"UPD_CONSTR (*addr) : "r" (val) : "memory");	\
- 	mmiowb_set_pending();						\
- }
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 13999123b735..cf52d26f49cd 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1087,7 +1087,7 @@ static inline u64 sp_to_dp(u32 fprs)
- 
- 	preempt_disable();
- 	enable_kernel_fp();
--	asm ("lfs%U1%X1 0,%1; stfd%U0%X0 0,%0" : "=m" (fprd) : "m" (fprs)
-+	asm ("lfs%U1%X1 0,%1; stfd%U0%X0 0,%0" : "=m"UPD_CONSTR (fprd) : "m"UPD_CONSTR (fprs)
- 	     : "fr0");
- 	preempt_enable();
- 	return fprd;
-@@ -1099,7 +1099,7 @@ static inline u32 dp_to_sp(u64 fprd)
- 
- 	preempt_disable();
- 	enable_kernel_fp();
--	asm ("lfd%U1%X1 0,%1; stfs%U0%X0 0,%0" : "=m" (fprs) : "m" (fprd)
-+	asm ("lfd%U1%X1 0,%1; stfs%U0%X0 0,%0" : "=m"UPD_CONSTR (fprs) : "m"UPD_CONSTR (fprd)
- 	     : "fr0");
- 	preempt_enable();
- 	return fprs;
--- 
-2.25.0
+One idea I have for debugging it is to sprinkle the inlined
+function with lots of barrier()s to prevent a lot of the optimizations.
+If that solves the issue, you can bisect through those until you
+find one barrier that makes the difference between working and
+broken and then look at diff of the assembler output.
 
+        Arnd
