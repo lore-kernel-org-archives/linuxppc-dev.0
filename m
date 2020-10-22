@@ -7,19 +7,19 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A73BC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEAB2C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:34:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5154A20723
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:32:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5154A20723
+	by mail.kernel.org (Postfix) with ESMTPS id C7BB920790
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 06:34:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C7BB920790
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyG86DLMzDqXW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:32:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CGyHs2tRtzDqYk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Oct 2020 17:34:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBl4Gv8zDqJY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CGyBl3zhwzDqJM
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2020 17:29:33 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CGyBZ6kBLz9vBKf;
- Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ by localhost (Postfix) with ESMTP id 4CGyBc6hPHz9vBKh;
+ Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uUvs04MJXxVs; Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ with ESMTP id eCxCuD1o-iMx; Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBZ5vgNz9vBKb;
- Thu, 22 Oct 2020 08:29:26 +0200 (CEST)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CGyBc5v9qz9vBKb;
+ Thu, 22 Oct 2020 08:29:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AF7C58B805;
- Thu, 22 Oct 2020 08:29:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B255E8B805;
+ Thu, 22 Oct 2020 08:29:29 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id lzM74ZzbG_H7; Thu, 22 Oct 2020 08:29:27 +0200 (CEST)
+ with ESMTP id okKauxLKSYqX; Thu, 22 Oct 2020 08:29:29 +0200 (CEST)
 Received: from po17688vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 68EE58B769;
- Thu, 22 Oct 2020 08:29:27 +0200 (CEST)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B9658B769;
+ Thu, 22 Oct 2020 08:29:29 +0200 (CEST)
 Received: by po17688vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4C59E667EF; Thu, 22 Oct 2020 06:29:27 +0000 (UTC)
-Message-Id: <4943775fbe91885eb3e09133b093aaf62e55c715.1603348103.git.christophe.leroy@csgroup.eu>
+ id 61583667EF; Thu, 22 Oct 2020 06:29:29 +0000 (UTC)
+Message-Id: <054fec0c139fc4c0a306360b360784733c0a6e65.1603348103.git.christophe.leroy@csgroup.eu>
 In-Reply-To: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
 References: <648e2448e938d52d0b5887445e018ca584edc06d.1603348103.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v1 02/20] powerpc/mm: Add mask of always present MMU features
+Subject: [PATCH v1 04/20] powerpc/32s: Make bat_addrs[] static
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 22 Oct 2020 06:29:27 +0000 (UTC)
+Date: Thu, 22 Oct 2020 06:29:29 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,60 +76,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On the same principle as commit 773edeadf672 ("powerpc/mm: Add mask
-of possible MMU features"), add mask for MMU features that are
-always there in order to optimise out dead branches.
+This table is used only locally. Declare it static.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/mmu.h | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ arch/powerpc/mm/book3s32/mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 255a1837e9f7..7f57a9f7999f 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -201,8 +201,30 @@ enum {
- 		0,
- };
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index a59e7ec98180..eceb55c12fe9 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -40,7 +40,7 @@ static unsigned int hash_mb, hash_mb2;
  
-+#ifdef CONFIG_PPC_8xx
-+#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_8xx
-+#endif
-+#ifdef CONFIG_40x
-+#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_40x
-+#endif
-+#ifdef CONFIG_PPC_47x
-+#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_47x
-+#elif defined(CONFIG_44x)
-+#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_44x
-+#endif
-+#if defined(CONFIG_E200) || defined(CONFIG_E500)
-+#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_FSL_E
-+#endif
-+
-+#ifndef MMU_FTRS_ALWAYS
-+#define MMU_FTRS_ALWAYS		0
-+#endif
-+
- static inline bool early_mmu_has_feature(unsigned long feature)
- {
-+	if (MMU_FTRS_ALWAYS & feature)
-+		return true;
-+
- 	return !!(MMU_FTRS_POSSIBLE & cur_cpu_spec->mmu_features & feature);
- }
+ struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
  
-@@ -231,6 +253,9 @@ static __always_inline bool mmu_has_feature(unsigned long feature)
- 	}
- #endif
- 
-+	if (MMU_FTRS_ALWAYS & feature)
-+		return true;
-+
- 	if (!(MMU_FTRS_POSSIBLE & feature))
- 		return false;
- 
+-struct batrange {		/* stores address ranges mapped by BATs */
++static struct batrange {	/* stores address ranges mapped by BATs */
+ 	unsigned long start;
+ 	unsigned long limit;
+ 	phys_addr_t phys;
 -- 
 2.25.0
 
