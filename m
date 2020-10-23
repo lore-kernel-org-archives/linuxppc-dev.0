@@ -2,57 +2,61 @@ Return-Path: <SRS0=t5Sp=D6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6E91C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 18:01:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB88BC388F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 18:36:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F046222201
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 18:01:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F046222201
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zeniv.linux.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id E967E20882
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 18:36:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E967E20882
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CHsVL3K8QzDr5Y
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 05:01:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=ftp.linux.org.uk (client-ip=2002:c35c:fd02::1;
- helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CHtGn31jdzDr4q
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 05:36:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=permerror (SPF Permanent Error: Unknown mechanism
+ found: ip:192.40.192.88/32) smtp.mailfrom=kernel.crashing.org
+ (client-ip=63.228.1.57; helo=gate.crashing.org;
+ envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=zeniv.linux.org.uk
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [IPv6:2002:c35c:fd02::1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CHsSF5zvMzDqtr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 04:59:23 +1100 (AEDT)
-Received: from viro by ZenIV.linux.org.uk with local (Exim 4.92.3 #3 (Red Hat
- Linux)) id 1kW1L7-00749v-U5; Fri, 23 Oct 2020 17:58:58 +0000
-Date: Fri, 23 Oct 2020 18:58:57 +0100
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: David Hildenbrand <david@redhat.com>
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CHtCj5MH0zDqHG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 05:33:37 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 09NIREDK014153;
+ Fri, 23 Oct 2020 13:27:15 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id 09NIRD8Q014147;
+ Fri, 23 Oct 2020 13:27:13 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Fri, 23 Oct 2020 13:27:13 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Al Viro <viro@zeniv.linux.org.uk>
 Subject: Re: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
  rw_copy_check_uvector() into lib/iov_iter.c"
-Message-ID: <20201023175857.GA3576660@ZenIV.linux.org.uk>
-References: <a1533569-948a-1d5b-e231-5531aa988047@redhat.com>
- <bc0a091865f34700b9df332c6e9dcdfd@AcuMS.aculab.com>
+Message-ID: <20201023182713.GG2672@gate.crashing.org>
+References: <bc0a091865f34700b9df332c6e9dcdfd@AcuMS.aculab.com>
  <5fd6003b-55a6-2c3c-9a28-8fd3a575ca78@redhat.com>
- <20201022104805.GA1503673@kroah.com>
- <20201022121849.GA1664412@kroah.com>
+ <20201022104805.GA1503673@kroah.com> <20201022121849.GA1664412@kroah.com>
  <98d9df88-b7ef-fdfb-7d90-2fa7a9d7bab5@redhat.com>
- <20201022125759.GA1685526@kroah.com>
- <20201022135036.GA1787470@kroah.com>
+ <20201022125759.GA1685526@kroah.com> <20201022135036.GA1787470@kroah.com>
  <134f162d711d466ebbd88906fae35b33@AcuMS.aculab.com>
  <935f7168-c2f5-dd14-7124-412b284693a2@redhat.com>
-MIME-Version: 1.0
+ <20201023175857.GA3576660@ZenIV.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <935f7168-c2f5-dd14-7124-412b284693a2@redhat.com>
+In-Reply-To: <20201023175857.GA3576660@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,6 +69,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "linux-aio@kvack.org" <linux-aio@kvack.org>,
+ David Hildenbrand <david@redhat.com>,
  "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
  David Howells <dhowells@redhat.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
  "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>,
@@ -94,27 +99,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 23, 2020 at 03:09:30PM +0200, David Hildenbrand wrote:
-
-> Now, I am not a compiler expert, but as I already cited, at least on
-> x86-64 clang expects that the high bits were cleared by the caller - in
-> contrast to gcc. I suspect it's the same on arm64, but again, I am no
-> compiler expert.
+On Fri, Oct 23, 2020 at 06:58:57PM +0100, Al Viro wrote:
+> On Fri, Oct 23, 2020 at 03:09:30PM +0200, David Hildenbrand wrote:
 > 
-> If what I said and cites for x86-64 is correct, if the function expects
-> an "unsigned int", it will happily use 64bit operations without further
-> checks where valid when assuming high bits are zero. That's why even
-> converting everything to "unsigned int" as proposed by me won't work on
-> clang - it assumes high bits are zero (as indicated by Nick).
+> > Now, I am not a compiler expert, but as I already cited, at least on
+> > x86-64 clang expects that the high bits were cleared by the caller - in
+> > contrast to gcc. I suspect it's the same on arm64, but again, I am no
+> > compiler expert.
+> > 
+> > If what I said and cites for x86-64 is correct, if the function expects
+> > an "unsigned int", it will happily use 64bit operations without further
+> > checks where valid when assuming high bits are zero. That's why even
+> > converting everything to "unsigned int" as proposed by me won't work on
+> > clang - it assumes high bits are zero (as indicated by Nick).
+> > 
+> > As I am neither a compiler experts (did I mention that already? ;) ) nor
+> > an arm64 experts, I can't tell if this is a compiler BUG or not.
 > 
-> As I am neither a compiler experts (did I mention that already? ;) ) nor
-> an arm64 experts, I can't tell if this is a compiler BUG or not.
+> On arm64 when callee expects a 32bit argument, the caller is *not* responsible
+> for clearing the upper half of 64bit register used to pass the value - it only
+> needs to store the actual value into the lower half.  The callee must consider
+> the contents of the upper half of that register as undefined.  See AAPCS64 (e.g.
+> https://github.com/ARM-software/abi-aa/blob/master/aapcs64/aapcs64.rst#parameter-passing-rules
+> ); AFAICS, the relevant bit is
+> 	"Unlike in the 32-bit AAPCS, named integral values must be narrowed by
+> the callee rather than the caller."
 
-On arm64 when callee expects a 32bit argument, the caller is *not* responsible
-for clearing the upper half of 64bit register used to pass the value - it only
-needs to store the actual value into the lower half.  The callee must consider
-the contents of the upper half of that register as undefined.  See AAPCS64 (e.g.
-https://github.com/ARM-software/abi-aa/blob/master/aapcs64/aapcs64.rst#parameter-passing-rules
-); AFAICS, the relevant bit is
-	"Unlike in the 32-bit AAPCS, named integral values must be narrowed by
-the callee rather than the caller."
+Or the formal rule:
+
+C.9 	If the argument is an Integral or Pointer Type, the size of the
+	argument is less than or equal to 8 bytes and the NGRN is less
+	than 8, the argument is copied to the least significant bits in
+	x[NGRN]. The NGRN is incremented by one. The argument has now
+	been allocated.
+
+
+Segher
