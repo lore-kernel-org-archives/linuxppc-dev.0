@@ -2,71 +2,103 @@ Return-Path: <SRS0=t5Sp=D6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5616CC388F9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 14:50:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A8D1C388F9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCDB320853
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 14:50:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 22181208C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="n+Z3zXp7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCDB320853
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linuxfoundation.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="jCYqKvBk";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="jCYqKvBk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22181208C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CHnG62VFVzDqvl
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 01:50:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CHqcb687vzDqmJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 03:36:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=198.145.29.99;
- helo=mail.kernel.org; envelope-from=gregkh@linuxfoundation.org;
+ smtp.mailfrom=redhat.com (client-ip=63.128.21.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=n+Z3zXp7; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=jCYqKvBk; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=jCYqKvBk; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [63.128.21.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CHnB46YZvzDr3F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 01:46:50 +1100 (AEDT)
-Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E45AF21527;
- Fri, 23 Oct 2020 14:46:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1603464403;
- bh=LtX8NeyP+cZ+2j1IkUU1onEVvrv3sB8QAV9FejdlLLQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=n+Z3zXp7hD62WA2GyjU1CFbNrrDqUUtJgO3Hhs0qmS6IRk1kCefdPKHlJkGJDQDby
- tb8m505yCaidWoXteLvLB2qPUN8tGHdSulV4hyYT/Cc4MZvzeSAaCs/I78FB9ZMO1G
- o8KazfPZPnsdksdQupxOqy9g0C+sIFUJot2idFhI=
-Date: Fri, 23 Oct 2020 16:47:18 +0200
-From: 'Greg KH' <gregkh@linuxfoundation.org>
-To: David Laight <David.Laight@aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CHqXw6QjjzDqPv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 03:33:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1603470795;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=qFpT9rw9kU+fUUj5fb7jig81eZVzobxvui7gAjawuH0=;
+ b=jCYqKvBkG2GdjY1DUZF5NWtsiGLJ9YC9z4syTQqWdOsQP24r17aal+fMLECtc6M16OeA+H
+ sJO1g/XAwINGnDOdywtyqoFs750it4J40vpWJkXU1aCWX1qtF/ZzR2f9esOsXxjH+N2ZKl
+ 6mB4s7bi6imBga23sFFsjcyTuCrAh2s=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1603470795;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=qFpT9rw9kU+fUUj5fb7jig81eZVzobxvui7gAjawuH0=;
+ b=jCYqKvBkG2GdjY1DUZF5NWtsiGLJ9YC9z4syTQqWdOsQP24r17aal+fMLECtc6M16OeA+H
+ sJO1g/XAwINGnDOdywtyqoFs750it4J40vpWJkXU1aCWX1qtF/ZzR2f9esOsXxjH+N2ZKl
+ 6mB4s7bi6imBga23sFFsjcyTuCrAh2s=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-42-mE4iRpoaPm6zGEfodl9TZg-1; Fri, 23 Oct 2020 12:33:11 -0400
+X-MC-Unique: mE4iRpoaPm6zGEfodl9TZg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 47449108E1B2;
+ Fri, 23 Oct 2020 16:33:07 +0000 (UTC)
+Received: from [10.36.114.18] (ovpn-114-18.ams2.redhat.com [10.36.114.18])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 139D160BFA;
+ Fri, 23 Oct 2020 16:33:00 +0000 (UTC)
 Subject: Re: Buggy commit tracked to: "Re: [PATCH 2/9] iov_iter: move
  rw_copy_check_uvector() into lib/iov_iter.c"
-Message-ID: <20201023144718.GA2525489@kroah.com>
+To: 'Greg KH' <gregkh@linuxfoundation.org>,
+ David Laight <David.Laight@aculab.com>
 References: <5fd6003b-55a6-2c3c-9a28-8fd3a575ca78@redhat.com>
- <20201022104805.GA1503673@kroah.com>
- <20201022121849.GA1664412@kroah.com>
+ <20201022104805.GA1503673@kroah.com> <20201022121849.GA1664412@kroah.com>
  <98d9df88-b7ef-fdfb-7d90-2fa7a9d7bab5@redhat.com>
- <20201022125759.GA1685526@kroah.com>
- <20201022135036.GA1787470@kroah.com>
+ <20201022125759.GA1685526@kroah.com> <20201022135036.GA1787470@kroah.com>
  <134f162d711d466ebbd88906fae35b33@AcuMS.aculab.com>
  <935f7168-c2f5-dd14-7124-412b284693a2@redhat.com>
  <999e2926-9a75-72fd-007a-1de0af341292@redhat.com>
  <35d0ec90ef4f4a35a75b9df7d791f719@AcuMS.aculab.com>
+ <20201023144718.GA2525489@kroah.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <52fe0398-02be-33fb-3a64-e394cc819b60@redhat.com>
+Date: Fri, 23 Oct 2020 18:33:00 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <35d0ec90ef4f4a35a75b9df7d791f719@AcuMS.aculab.com>
+In-Reply-To: <20201023144718.GA2525489@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,7 +111,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "linux-aio@kvack.org" <linux-aio@kvack.org>,
- 'David Hildenbrand' <david@redhat.com>,
  "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
  David Howells <dhowells@redhat.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
  "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>,
@@ -108,26 +139,51 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 23, 2020 at 02:39:24PM +0000, David Laight wrote:
-> From: David Hildenbrand
-> > Sent: 23 October 2020 15:33
-> ...
-> > I just checked against upstream code generated by clang 10 and it
-> > properly discards the upper 32bit via a mov w23 w2.
-> > 
-> > So at least clang 10 indeed properly assumes we could have garbage and
-> > masks it off.
-> > 
-> > Maybe the issue is somewhere else, unrelated to nr_pages ... or clang 11
-> > behaves differently.
+On 23.10.20 16:47, 'Greg KH' wrote:
+> On Fri, Oct 23, 2020 at 02:39:24PM +0000, David Laight wrote:
+>> From: David Hildenbrand
+>>> Sent: 23 October 2020 15:33
+>> ...
+>>> I just checked against upstream code generated by clang 10 and it
+>>> properly discards the upper 32bit via a mov w23 w2.
+>>>
+>>> So at least clang 10 indeed properly assumes we could have garbage and
+>>> masks it off.
+>>>
+>>> Maybe the issue is somewhere else, unrelated to nr_pages ... or clang 11
+>>> behaves differently.
+>>
+>> We'll need the disassembly from a failing kernel image.
+>> It isn't that big to hand annotate.
 > 
-> We'll need the disassembly from a failing kernel image.
-> It isn't that big to hand annotate.
+> I've worked around the merge at the moment in the android tree, but it
+> is still quite reproducable, and will try to get a .o file to
+> disassemble on Monday or so...
 
-I've worked around the merge at the moment in the android tree, but it
-is still quite reproducable, and will try to get a .o file to
-disassemble on Monday or so...
+I just compiled pre and post fb041b598997d63c0f7d7305dfae70046bf66fe1 with
 
-thanks,
+clang version 11.0.0 (Fedora 11.0.0-0.2.rc1.fc33)
 
-greg k-h
+for aarch64 with defconfig and extracted import_iovec and
+rw_copy_check_uvector (skipping the compat things)
+
+Pre fb041b598997d63c0f7d7305dfae70046bf66fe1 import_iovec
+-> https://pastebin.com/LtnYMLJt
+Post fb041b598997d63c0f7d7305dfae70046bf66fe1 import_iovec
+-> https://pastebin.com/BWPmXrAf
+Pre fb041b598997d63c0f7d7305dfae70046bf66fe1 rw_copy_check_uvector
+-> https://pastebin.com/4nSBYRbf
+Post fb041b598997d63c0f7d7305dfae70046bf66fe1 rw_copy_check_uvector
+-> https://pastebin.com/hPtEgaEW
+
+I'm only able to spot minor differences ... less gets inlined than I
+would have expected. But there are some smaller differences.
+
+Maybe someone wants to have a look before we have object files as used
+by Greg ...
+
+-- 
+Thanks,
+
+David / dhildenb
+
