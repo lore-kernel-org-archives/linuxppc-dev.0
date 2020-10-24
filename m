@@ -2,40 +2,61 @@ Return-Path: <SRS0=qtOt=D7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E07E9C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4610CC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:52:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A7E72226B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:33:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A7E72226B
+	by mail.kernel.org (Postfix) with ESMTPS id 3CCC124248
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:52:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="h1bbSPWl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CCC124248
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CJHWT6jqNzDr9L
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 21:33:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CJHwh3yL0zDqpL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 21:52:04 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CJHNv1c8SzDqlR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 21:27:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CJHtm1sByzDqWM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 21:50:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CJHNv1LNKz9sVH; Sat, 24 Oct 2020 21:27:59 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Oliver O'Halloran <oohall@gmail.com>
-In-Reply-To: <20201021232554.1434687-1-oohall@gmail.com>
-References: <20201021232554.1434687-1-oohall@gmail.com>
-Subject: Re: [PATCH] powerpc/eeh: Fix eeh_dev_check_failure() for PE#0
-Message-Id: <160353524026.3419015.7292966014896302736.b4-ty@ellerman.id.au>
-Date: Sat, 24 Oct 2020 21:27:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
+ header.a=rsa-sha256 header.s=201909 header.b=h1bbSPWl; 
+ dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 4CJHtk2PFBz9sV0;
+ Sat, 24 Oct 2020 21:50:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
+ s=201909; t=1603536623;
+ bh=futRN9+C9/VUFQoIxDl1M1NHrkygM2MfKid/iDdusPM=;
+ h=From:To:Cc:Subject:Date:From;
+ b=h1bbSPWlgE9sfQnrTURDeWhd4Hpc6xe2uSYYMVjKBreNFyFIZtgMVifk/jWlmJMOW
+ rkmau2+wp/85KWciIbnUDJ58nRNGsKmAz83b9EgX2b6GzzwK8zSKSpRU0ybH1O1pjn
+ XcFenP3nnhoz/gq1piCOWkbdG0L2owEOxDqiOT3aGEk74Xg/irbNnl9oJOS5jwgOPt
+ 9g21JQwejXpvAVwvOJln0GIRYii31jeu6QWdYkvMHNUCvu1L1oNwdgVbCscBV6BHrZ
+ SW6x6LP1jJ8FDbf/cKGbVto5Qej0X1B21yy1aYS7rYdhsfMfuQHUzLx26jva9bQEWm
+ o3LZbJHXJoXwA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.10-2 tag
+Date: Sat, 24 Oct 2020 21:50:21 +1100
+Message-ID: <871rhnyk2a.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,25 +68,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: mikey@neuling.org, srikar@linux.vnet.ibm.com, aneesh.kumar@linux.ibm.com,
+ linux-kernel@vger.kernel.org, hegdevasant@linux.vnet.ibm.com,
+ ganeshgr@linux.ibm.com, jniethe5@gmail.com, oohall@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 22 Oct 2020 10:25:54 +1100, Oliver O'Halloran wrote:
-> In commit 269e583357df ("powerpc/eeh: Delete eeh_pe->config_addr") the
-> following simplification was made:
-> 
-> -       if (!pe->addr && !pe->config_addr) {
-> +       if (!pe->addr) {
->                 eeh_stats.no_cfg_addr++;
->                 return 0;
->         }
-> 
-> [...]
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Applied to powerpc/fixes.
+Hi Linus,
 
-[1/1] powerpc/eeh: Fix eeh_dev_check_failure() for PE#0
-      https://git.kernel.org/powerpc/c/99f6e9795a68fe23f96a2b5b0be07a3dd9457f99
+Please pull powerpc fixes for 5.10:
 
-cheers
+The following changes since commit ffd0b25ca049a477cb757e5bcf2d5e1664d12e5d:
+
+  Revert "powerpc/pci: unmap legacy INTx interrupts when a PHB is removed" (2020-10-15 13:42:49 +1100)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.10-2
+
+for you to fetch changes up to 4ff753feab021242144818b9a3ba011238218145:
+
+  powerpc/pseries: Avoid using addr_to_pfn in real mode (2020-10-22 14:34:45 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 5.10 #2
+
+A fix for undetected data corruption on Power9 Nimbus <= DD2.1 in the emulation
+of VSX loads. The affected CPUs were not widely available.
+
+Two fixes for machine check handling in guests under PowerVM.
+
+A fix for our recent changes to SMP setup, when CONFIG_CPUMASK_OFFSTACK=y.
+
+Three fixes for races in the handling of some of our powernv sysfs attributes.
+
+One change to remove TM from the set of Power10 CPU features.
+
+A couple of other minor fixes.
+
+Thanks to:
+  Aneesh Kumar K.V, Christophe Leroy, Ganesh Goudar, Jordan Niethe, Mahesh
+  Salgaonkar, Michael Neuling, Oliver O'Halloran, Qian Cai, Srikar Dronamraju,
+  Vasant Hegde.
+
+- ------------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/opal_elog: Handle multiple writes to ack attribute
+
+Christophe Leroy (1):
+      powerpc/uaccess: Don't use "m<>" constraint with GCC 4.9
+
+Ganesh Goudar (2):
+      powerpc/mce: Avoid nmi_enter/exit in real mode on pseries hash
+      powerpc/pseries: Avoid using addr_to_pfn in real mode
+
+Jordan Niethe (1):
+      powerpc/64s: Remove TM from Power10 features
+
+Michael Neuling (2):
+      powerpc: Fix undetected data corruption with P9N DD2.1 VSX CI load emulation
+      selftests/powerpc: Make alignment handler test P9N DD2.1 vector CI load workaround
+
+Oliver O'Halloran (1):
+      powerpc/eeh: Fix eeh_dev_check_failure() for PE#0
+
+Srikar Dronamraju (2):
+      powerpc/smp: Remove unnecessary variable
+      powerpc/smp: Use GFP_ATOMIC while allocating tmp mask
+
+Vasant Hegde (2):
+      powerpc/powernv/dump: Fix race while processing OPAL dump
+      powerpc/powernv/dump: Handle multiple writes to ack attribute
+
+
+ arch/powerpc/include/asm/asm-const.h                          |  13 +++
+ arch/powerpc/include/asm/cputable.h                           |   2 +-
+ arch/powerpc/include/asm/uaccess.h                            |   4 +-
+ arch/powerpc/kernel/cputable.c                                |  13 ++-
+ arch/powerpc/kernel/eeh.c                                     |   5 -
+ arch/powerpc/kernel/mce.c                                     |   7 +-
+ arch/powerpc/kernel/smp.c                                     |  70 ++++++------
+ arch/powerpc/kernel/traps.c                                   |   2 +-
+ arch/powerpc/platforms/powernv/opal-dump.c                    |  52 ++++++---
+ arch/powerpc/platforms/powernv/opal-elog.c                    |  11 +-
+ arch/powerpc/platforms/pseries/ras.c                          | 118 ++++++++++++--------
+ tools/testing/selftests/powerpc/alignment/alignment_handler.c |   8 +-
+ 12 files changed, 185 insertions(+), 120 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAl+UBeUACgkQUevqPMjh
+pYBHUA//THLt6DJlSPPqn8LQZQGT76Gx82cKyy9DQ7/Elcl13xcuq3XbhHD5asi0
+QbJGbLhRqpRhtmj3c8BCYAygi5FXZWH4IeN6FK8xoZGR2bi/gY7VkhIUSzFAHnRi
+PFXafzb8eWVS7O5k8xbxrjxdOAu8SjEzywG5I8PPn5IWFwhUwjGosv81QtxJOLVc
+V9WwuTBK87nfvoMdfcl3YJXRs+4vKOQQ0Gqa5vTVTUmgdbJOqJi1MvLULnSnKxTJ
+G+XplOeSI1N3gk+E2cycPasghTYziTtzEyrTHe0Uufgx+9t6VuN1g2zL81kDA7U9
+10Oqqry4Z66V2BhGrDMnXKYGeQNGRO8vNLT2DuuZd5XTN/LpV0knJHm/9F2E+5zl
+T+GgQwS0IhXDcbS70TcbxXHPyBe2/eXRH1+rkSlAEjl656JVbKefgi1VUsqSzkjH
+JBF2+zCodYelbbnRP89Aj5/03t+VeHbNC/1jixoYDHR7drXiU2XQqjfFZeCHvxOQ
+YCznpoC84gcDupGC5q4op3tHBmvULJn0KaHYWryaAEWlCxjdVcjBis48B+GQVww8
+JnDMC5WGVvAAxPHc74EkyEvdROx4Q+8UeOj+TXnrRlowEF8Wymxcvy7NUn2Bqq2J
+VsRCUzLIReKCckdJQ/+SxG8eb9JUxQRWG76+Q9zzTHbdaBSWuMc=
+=9Oxg
+-----END PGP SIGNATURE-----
