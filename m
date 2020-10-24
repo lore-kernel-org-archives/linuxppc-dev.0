@@ -2,45 +2,41 @@ Return-Path: <SRS0=qtOt=D7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AB84C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:31:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F95CC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:32:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3722722210
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:31:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3722722210
+	by mail.kernel.org (Postfix) with ESMTPS id D248722210
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 10:32:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D248722210
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CJHSY28SkzDr1V
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 21:31:09 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CJHV05NTQzDr96
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Oct 2020 21:32:24 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CJHNt0RclzDqlR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CJHNt4GgczDqlR
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2020 21:27:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 4CJHNs1yYGz9sV1; Sat, 24 Oct 2020 21:27:57 +1100 (AEDT)
+ id 4CJHNt3PVzz9sVD; Sat, 24 Oct 2020 21:27:58 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- mathieu.desnoyers@efficios.com
-In-Reply-To: <212d3bc4a52ca71523759517bb9c61f7e477c46a.1603179582.git.christophe.leroy@csgroup.eu>
-References: <212d3bc4a52ca71523759517bb9c61f7e477c46a.1603179582.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 1/3] powerpc/uaccess: Don't use "m<>" constraint with
- GCC 4.9
-Message-Id: <160353524065.3419015.15517113357931210947.b4-ty@ellerman.id.au>
-Date: Sat, 24 Oct 2020 21:27:57 +1100 (AEDT)
+To: linuxppc-dev@lists.ozlabs.org, Jordan Niethe <jniethe5@gmail.com>
+In-Reply-To: <20200827035529.900-1-jniethe5@gmail.com>
+References: <20200827035529.900-1-jniethe5@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Remove TM from Power10 features
+Message-Id: <160353524000.3419015.13643609591414847651.b4-ty@ellerman.id.au>
+Date: Sat, 24 Oct 2020 21:27:58 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,54 +48,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 20 Oct 2020 07:40:07 +0000 (UTC), Christophe Leroy wrote:
-> GCC 4.9 sometimes fails to build with "m<>" constraint in
-> inline assembly.
-> 
->   CC      lib/iov_iter.o
-> In file included from ./arch/powerpc/include/asm/cmpxchg.h:6:0,
->                  from ./arch/powerpc/include/asm/atomic.h:11,
->                  from ./include/linux/atomic.h:7,
->                  from ./include/linux/crypto.h:15,
->                  from ./include/crypto/hash.h:11,
->                  from lib/iov_iter.c:2:
-> lib/iov_iter.c: In function 'iovec_from_user.part.30':
-> ./arch/powerpc/include/asm/uaccess.h:287:2: error: 'asm' operand has impossible constraints
->   __asm__ __volatile__(    \
->   ^
-> ./include/linux/compiler.h:78:42: note: in definition of macro 'unlikely'
->  # define unlikely(x) __builtin_expect(!!(x), 0)
->                                           ^
-> ./arch/powerpc/include/asm/uaccess.h:583:34: note: in expansion of macro 'unsafe_op_wrap'
->  #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
->                                   ^
-> ./arch/powerpc/include/asm/uaccess.h:329:10: note: in expansion of macro '__get_user_asm'
->   case 4: __get_user_asm(x, (u32 __user *)ptr, retval, "lwz"); break; \
->           ^
-> ./arch/powerpc/include/asm/uaccess.h:363:3: note: in expansion of macro '__get_user_size_allowed'
->    __get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err); \
->    ^
-> ./arch/powerpc/include/asm/uaccess.h:100:2: note: in expansion of macro '__get_user_nocheck'
->   __get_user_nocheck((x), (ptr), sizeof(*(ptr)), false)
->   ^
-> ./arch/powerpc/include/asm/uaccess.h:583:49: note: in expansion of macro '__get_user_allowed'
->  #define unsafe_get_user(x, p, e) unsafe_op_wrap(__get_user_allowed(x, p), e)
->                                                  ^
-> lib/iov_iter.c:1663:3: note: in expansion of macro 'unsafe_get_user'
->    unsafe_get_user(len, &uiov[i].iov_len, uaccess_end);
->    ^
-> make[1]: *** [scripts/Makefile.build:283: lib/iov_iter.o] Error 1
-> 
-> [...]
+On Thu, 27 Aug 2020 13:55:29 +1000, Jordan Niethe wrote:
+> ISA v3.1 removes transactional memory and hence it should not be present
+> in cpu_features or cpu_user_features2. Remove CPU_FTR_TM_COMP from
+> CPU_FTRS_POWER10. Remove PPC_FEATURE2_HTM_COMP and
+> PPC_FEATURE2_HTM_NOSC_COMP from COMMON_USER2_POWER10.
 
-Patch 1 applied to powerpc/fixes.
+Applied to powerpc/fixes.
 
-[1/3] powerpc/uaccess: Don't use "m<>" constraint with GCC 4.9
-      https://git.kernel.org/powerpc/c/592bbe9c505d9a0ef69260f8c8263df47da2698e
+[1/1] powerpc/64s: Remove TM from Power10 features
+      https://git.kernel.org/powerpc/c/ec613a57fa1d57381f890c3166175fe68cf43f12
 
 cheers
