@@ -1,119 +1,81 @@
-Return-Path: <SRS0=b2NF=EI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=PQl9=EA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8564C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 21:15:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC43BC55178
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Oct 2020 20:27:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 902DB207BB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 21:15:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E765522284
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Oct 2020 20:27:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="FgmPWUA/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 902DB207BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f3NbGeK+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E765522284
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQ5LB5NHrzDqQ9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 08:15:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CK8fc5s8dzDqQG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 07:27:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d43;
+ helo=mail-io1-xd43.google.com; envelope-from=kernelfans@gmail.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=40.107.4.74; helo=eur03-db5-obe.outbound.protection.outlook.com;
- envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=selector2 header.b=FgmPWUA/; 
- dkim-atps=neutral
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40074.outbound.protection.outlook.com [40.107.4.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20161025 header.b=f3NbGeK+; dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQ5J94hy9zDqFp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 08:14:00 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=HyWxA/6X8rKINNcv9L6+m3i7bP8wPQ6p+cXBYFMBFlIEznTyq3DkiB0b75nszdXORfcE4FzDSXOFtFtV7LKI8AQVFqhycfO1tai8ZCArYp9bL3A0w7e+RXJLzRtu/Box+vzgfyIHWm/nsPq55umDA5L4wCcNVlbN3S8huNVNy3tvRly3Nz5pabbhg05zXuuEyG3EOOs4PAftIEiwqr8MFjMBRBYqTYG4dAcHR6xyYoqkSTvu9hcDBHiPRlQmXrCVbDbdS3KMRdsEDbtVZQLNVWpuQdo/a4KMbWk6f9IuZnvLp9hm9IdUc2x1698dXepVvKEcO7RIvOlXATP+LI6uMw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Av6vl/QsxIvXTDPoA+3o12mvjdaLL38Ki/dyo+EPfXQ=;
- b=mbTKp+uX97j8RyXDnEBCVitFBGfr6Zho4mTVRHnzWayO1XYXcKk1ZUm4ALlFgDwYBfG13ljHfrxsWJtlsCnn8kEja+qdJ3OnIMZEr2/dDLc43+jxlsFX6jnm2rcq289078dzwudgY8eHp3EKUP33U88rovPU6JHd3V8DMvkgmWM4zm8XyDITUOj5CIikAwB+XTsmIW2vP2ovZIsYqN6LdJz0GRy7eNnbUQp58XE9Cpje+dIsodXRSlhTer/xoGXI/23WawP9zCWJ5yIL5zgWEvQAgtsHNuUWOLi/GWpvT7ZRtobjRZqZxc0thVNhTdNDN8xVko1H08OtMcCCdPvSmQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Av6vl/QsxIvXTDPoA+3o12mvjdaLL38Ki/dyo+EPfXQ=;
- b=FgmPWUA/mfFLefFZ71yHBCWW4+f5HMrm15Tox4wB3Qr9iR/pAyQpBZDtlsFEhmXCnrZKBh7T54OVa1ZjA1/ZbpZxXKEkbAF3Ja9tif9j4VddzmqyMF5L1TksoUaqr2l6Byt9iI8P+toqcsmgD4SJdglhsrRnzqKY+SYdVDsMFeI=
-Authentication-Results: lists.infradead.org; dkim=none (message not signed)
- header.d=none;lists.infradead.org; dmarc=none action=none
- header.from=nxp.com;
-Received: from VI1PR04MB4046.eurprd04.prod.outlook.com (2603:10a6:803:4d::29)
- by VI1PR0401MB2317.eurprd04.prod.outlook.com (2603:10a6:800:28::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3499.18; Mon, 2 Nov
- 2020 21:13:52 +0000
-Received: from VI1PR04MB4046.eurprd04.prod.outlook.com
- ([fe80::dcb4:903:81f8:a8e2]) by VI1PR04MB4046.eurprd04.prod.outlook.com
- ([fe80::dcb4:903:81f8:a8e2%6]) with mapi id 15.20.3499.030; Mon, 2 Nov 2020
- 21:13:52 +0000
-Subject: Re: [PATCH v2 net-next 3/3] crypto: caam: Replace in_irq() usage.
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <20201101232257.3028508-1-bigeasy@linutronix.de>
- <20201101232257.3028508-4-bigeasy@linutronix.de>
-From: =?UTF-8?Q?Horia_Geant=c4=83?= <horia.geanta@nxp.com>
-Message-ID: <5307ee7c-8d2b-5edd-a5e6-d6c70d8828d2@nxp.com>
-Date: Mon, 2 Nov 2020 23:13:49 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.1
-In-Reply-To: <20201101232257.3028508-4-bigeasy@linutronix.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [78.97.206.147]
-X-ClientProxiedBy: AM4P190CA0008.EURP190.PROD.OUTLOOK.COM
- (2603:10a6:200:56::18) To VI1PR04MB4046.eurprd04.prod.outlook.com
- (2603:10a6:803:4d::29)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CJwLM5cpWzDqSt
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Oct 2020 22:12:57 +1100 (AEDT)
+Received: by mail-io1-xd43.google.com with SMTP id b15so6968568iod.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Oct 2020 04:12:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=TFkX+ZerAmd8hm3G9ObErPm+YgVkEx8CRGWjFIckLIQ=;
+ b=f3NbGeK+6ZtbJFn78qe4TBYAxMxAh1+TJc804ela0OLJTQw2JEKf1SkDA8eVf9brkR
+ mkLQeYkcGVKrjSHSDPcgQfXWRVFBd3xw1z55/3d2QdheAA0lxY+MqSwtS1VWDMkU6gfi
+ POo9W4DMsNEsyMHN8QHjPnd88b/qTMU1mts1m8Y911y/G1rceY85Trw6aiqI3lezE6ex
+ ybrLhG4vEq7vy3JKBwPWAMPRF7h53KM55YZ8Pdu1XY+9KaTq4z8mfpSTzlF0l7fl5UQk
+ qeM8+X0riyiWK+c6Bn5smz3P9q9uSyVC73BxA7j+VYtPw+51XiuQJw2T6feDufCAZBsv
+ xO0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=TFkX+ZerAmd8hm3G9ObErPm+YgVkEx8CRGWjFIckLIQ=;
+ b=jR//p1nez96oaF/IZLskdkSdLO1uw6wKxxp/kJIvN4dDpogxkoxkNTFGkM1F7+r5y6
+ JwU1F+FICq98tXS1Doohgr1yJncGQbXcPsO3CnhASw78bcPt0OCq5Slrqlo1+7yRP4CI
+ wDkyACjma+prXxSW+gfcfL+INVpyrU0EhLmgIZtS6EmJrucdBN5pKAbDBv5MM5SrFAQm
+ SmyNQUsCpjImjAVgwblj4JAwA4MpYj+Ry1Amt6upEqeb8Xiew9w4j9Wjm5gcifLbS/LM
+ eL1MGvZCLYLMjJr9rIrb9fqrbM20tNYehLjruY8t13vDgxQvOXeDxBwhK3a7pqNM4YDu
+ 1ODw==
+X-Gm-Message-State: AOAM5328xqOH/8O4d5HEs4BhFWeOmknAzUXS2+b5m6MumAKbWH23aGct
+ S4QW51N9FLYVj5zAX+yJGNc0aZDTkwC4okxzUQ==
+X-Google-Smtp-Source: ABdhPJyZD9Zz+IOM7rNg+RoAMaAduHW8YbNrNxUEVG0hEHoPcu1GLzdc08/YxotEW1/Ji2X/IlcELqgPdfyTZiD8Hfo=
+X-Received: by 2002:a6b:8b95:: with SMTP id n143mr7598620iod.36.1603624372449; 
+ Sun, 25 Oct 2020 04:12:52 -0700 (PDT)
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from [192.168.0.129] (78.97.206.147) by
- AM4P190CA0008.EURP190.PROD.OUTLOOK.COM (2603:10a6:200:56::18) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.3499.18 via Frontend Transport; Mon, 2 Nov 2020 21:13:51 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 60092d5d-8214-4584-6ef1-08d87f743344
-X-MS-TrafficTypeDiagnostic: VI1PR0401MB2317:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <VI1PR0401MB23170DBF064D7CF4C129DFFE98100@VI1PR0401MB2317.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:5516;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: i0vB1fFmxSKHcv88cF7qV68km4itJ/ihBNyAnbT9/ibVCGmG9giLiynuU2oXWalP8pSC26JvXSW1miuAztyGgYlHZp9JGB8ppzUEUVKB+Ql/Z9gGHzrt4qnVAhk2fw3B7tpotE/dvLDMhK0WzEhgyhECFXPRnIzduWMq1rMjfNAoZm5nLdxxaB4E4dVO80p/qnE/EdScZnClCcccYRzbKm2oHVtGA+Q4mAcIL53xHv8VFh16blyqSdYuulIO6s8c0mEdKfILH17YCXMOewGkF+BWo9+YG7Be6yT2RvU+7Dkd+lX336YyLO2urZOU/bh8jFrFgSW8tccHnMD8bwZ8w6Ti3wO0HeFUu/wkPfYLPO4pekhuIjSF+6C/kQINCi1+
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:VI1PR04MB4046.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(4636009)(366004)(136003)(396003)(39850400004)(376002)(346002)(316002)(110136005)(54906003)(16576012)(31686004)(956004)(2616005)(86362001)(478600001)(4326008)(66556008)(66476007)(186003)(16526019)(66946007)(52116002)(26005)(8676002)(31696002)(2906002)(53546011)(36756003)(6486002)(8936002)(83380400001)(5660300002)(43740500002);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData: SsnRAe2qVH0ihkzPkT5qXw3jW41WRRBGxZBCgo4FbfQHCT1zr6QP3iujZwoslkMnmbxZTIjgD05zbYdS+gPkI3Fck3vvyeqh4g9ST/fzFvJPde6wCQkd/zq9BTsB8nPZQC40WBRhQgDWcxOYpXK7ehI+aZ+4QjNPccWwwo5SKYI9Mae9ENIFvPJ7mUCHIjhIkCBC+neYV0zp0EdU3eEdM7RoCOQdmtLWtiPMTUuROo+mKTkMgKNGALW/hPITkbZNTaXiWDSXKq0Hw2Z/IKfcY2szKLE5ZyHOqJj4QBfoC7D2Yptm1ScSEXFS/4oY0ZmV2vbJhR32OGQVxLQzr85xQFqut3+KNbSPEVBNDnEag11kAILbkD3z4RIc6HIYiWv7lYcG2K7ivKIAhgOjWW1gmeP13his5cEINnHlOHdD8swEsqeaIixzaEwbf9DGkovErzPTskyM6QqqXHSdvu9cJvolgeX/2gV8Sg4cnzbaDqGxkbFOXNrv9XoikWOSYLeuICpLTdVjLpOY9tB/VOTM7XqtaMt7qSOKO7n+LDZ1jpsIWVIJh9nGnp/pi6LG6OfdxUKVv9jHog3Fw2Afr1iCDf6i0v3CSWCvN+yockI50X0ct2l3oxf5wTC/St/0ilMg1F/s+oY9eAF1NdM/G/lvsw==
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 60092d5d-8214-4584-6ef1-08d87f743344
-X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB4046.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Nov 2020 21:13:52.8060 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: FZ1u/pexk20WiLugtoZUtdWve4aRLXNtkEJwdZy3P62zvDxz3Z+e3GBPM+avuNJyTjfhf2/08Pws7hdk2jDTcg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2317
+References: <1603346163-21645-1-git-send-email-kernelfans@gmail.com>
+ <871rhq7j1h.fsf@nanos.tec.linutronix.de>
+In-Reply-To: <871rhq7j1h.fsf@nanos.tec.linutronix.de>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Sun, 25 Oct 2020 19:12:41 +0800
+Message-ID: <CAFgQCTvFwvvtPE0Eow4cebCEe5OD5OhgAQarckpbFc38Bphaag@mail.gmail.com>
+Subject: Re: [PATCH 0/3] warn and suppress irqflood
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Mon, 26 Oct 2020 07:26:15 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -125,43 +87,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Aymen Sghaier <aymen.sghaier@nxp.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Madalin Bucur <madalin.bucur@nxp.com>, Leo Li <leoyang.li@nxp.com>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Maulik Shah <mkshah@codeaurora.org>, Petr Mladek <pmladek@suse.com>,
+ Oliver Neukum <oneukum@suse.com>, Jonathan Corbet <corbet@lwn.net>,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+ Peter Zijlstra <peterz@infradead.org>, Marc Zyngier <maz@kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "Guilherme G. Piccoli" <gpiccoli@canonical.com>, linux-doc@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Lina Iyer <ilina@codeaurora.org>,
+ Jisheng Zhang <Jisheng.Zhang@synaptics.com>,
+ Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>,
+ afzal mohammed <afzal.mohd.ma@gmail.com>,
+ Kexec Mailing List <kexec@lists.infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/2/2020 1:23 AM, Sebastian Andrzej Siewior wrote:
-> The driver uses in_irq() + in_serving_softirq() magic to decide if NAPI
-> scheduling is required or packet processing.
-> 
-> The usage of in_*() in drivers is phased out and Linus clearly requested
-> that code which changes behaviour depending on context should either be
-> separated or the context be conveyed in an argument passed by the caller,
-> which usually knows the context.
-> 
-> Use the `sched_napi' argument passed by the callback. It is set true if
-> called from the interrupt handler and NAPI should be scheduled.
-> 
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Cc: "Horia Geantă" <horia.geanta@nxp.com>
-> Cc: Aymen Sghaier <aymen.sghaier@nxp.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Madalin Bucur <madalin.bucur@nxp.com>
-> Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: Li Yang <leoyang.li@nxp.com>
-> Cc: linux-crypto@vger.kernel.org
-> Cc: netdev@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-Reviewed-by: Horia Geantă <horia.geanta@nxp.com>
+On Thu, Oct 22, 2020 at 4:37 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Thu, Oct 22 2020 at 13:56, Pingfan Liu wrote:
+> > I hit a irqflood bug on powerpc platform, and two years ago, on a x86 platform.
+> > When the bug happens, the kernel is totally occupies by irq.  Currently, there
+> > may be nothing or just soft lockup warning showed in console. It is better
+> > to warn users with irq flood info.
+> >
+> > In the kdump case, the kernel can move on by suppressing the irq flood.
+>
+> You're curing the symptom not the cause and the cure is just magic and
+> can't work reliably.
+Yeah, it is magic. But at least, it is better to printk something and
+alarm users about what happens. With current code, it may show nothing
+when system hangs.
+>
+> Where is that irq flood originated from and why is none of the
+> mechanisms we have in place to shut it up working?
+The bug originates from a driver tpm_i2c_nuvoton, which calls i2c-bus
+driver (i2c-opal.c). After i2c_opal_send_request(), the bug is
+triggered.
+
+But things are complicated by introducing a firmware layer: Skiboot.
+This software layer hides the detail of manipulating the hardware from
+Linux.
+
+I guess the software logic can not enter a sane state when kernel crashes.
+
+Cc Skiboot and ppc64 community to see whether anyone has idea about it.
 
 Thanks,
-Horia
+Pingfan
