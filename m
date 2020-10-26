@@ -1,64 +1,64 @@
-Return-Path: <SRS0=MBk5=EB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=voBx=EC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E322C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 23:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4024C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 00:02:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 60DA120773
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 23:58:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 150ED20754
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 00:02:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ff0ltz1/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 60DA120773
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="epkS9ljx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 150ED20754
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CKsHM733FzDqRH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 10:58:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CKsNH6rGkzDqDY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 11:02:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=ff0ltz1/; dkim-atps=neutral
+ header.s=default header.b=epkS9ljx; dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CKs1C6wcYzDqPk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2020 10:46:23 +1100 (AEDT)
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CKs4R4J4HzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Oct 2020 10:49:11 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E0B5020714;
- Mon, 26 Oct 2020 23:46:20 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id EB34C20773;
+ Mon, 26 Oct 2020 23:49:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1603755981;
- bh=9AbYxVaOs4JLDjH4TqJYrI1yDoSHClRW3bLhQND9QQc=;
- h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
- b=ff0ltz1/baOuGcau/EHKSBsbDpjYtpS/+w4a196NqNZbOV09MvIQbqSe3lcPBS6v/
- VTjjxO6kXUm/95xoLikQuzTjXoRawaDc60RDg5oUspU/JAIqBLRLmVeHabJMKciP+B
- D53DOs3yz8C+/pHISFUY5D9sY3k5UtBmUomQduW4=
-Date: Mon, 26 Oct 2020 23:46:16 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Xiubo.Lee@gmail.com, timur@kernel.org, lgirdwood@gmail.com,
- Shengjiu Wang <shengjiu.wang@nxp.com>, perex@perex.cz,
- devicetree@vger.kernel.org, tiwai@suse.com, festevam@gmail.com,
- robh+dt@kernel.org, alsa-devel@alsa-project.org, nicoleotsuka@gmail.com
-In-Reply-To: <1602739728-4433-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1602739728-4433-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH 1/2] ASoC: dt-bindings: fsl_spdif: Add new compatible
- string for i.MX8QM
-Message-Id: <160375592348.31132.8709437914280376392.b4-ty@kernel.org>
+ s=default; t=1603756147;
+ bh=727kUY/DmPJJ0W0lhr5vNjKxpO8k3WyXL/OwS/sssYI=;
+ h=From:To:Cc:Subject:Date:From;
+ b=epkS9ljxefbN50b3pi/M2klF5ZB959Y2ge0gvHyTWT0JdFlrsNmLmbtzOTdKpSujW
+ H3quDq8JxvbG0aB82Zb2THHebPNR9eZidWo2cQMw15SEMz9LTYxEVZH6vUYQt6nPiO
+ s91ILaFbvKtYo1/k4+UV/HX+cssRozEc/urth1Dw=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.9 001/147] powerpc/vmemmap: Fix memory leak with
+ vmemmap list allocation failures.
+Date: Mon, 26 Oct 2020 19:46:39 -0400
+Message-Id: <20201026234905.1022767-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,41 +71,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 15 Oct 2020 13:28:47 +0800, Shengjiu Wang wrote:
-> Add new compatible string "fsl,imx8qm-spdif" for supporting spdif
-> module on i.MX8QM.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 
-Applied to
+[ Upstream commit ccaea15296f9773abd43aaa17ee4b88848e4a505 ]
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+If we fail to allocate vmemmap list, we don't keep track of allocated
+vmemmap block buf. Hence on section deactivate we skip vmemmap block
+buf free. This results in memory leak.
 
-Thanks!
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20200731113500.248306-1-aneesh.kumar@linux.ibm.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/mm/init_64.c | 35 ++++++++++++++++++++++++++++-------
+ 1 file changed, 28 insertions(+), 7 deletions(-)
 
-[1/2] ASoC: dt-bindings: fsl_spdif: Add new compatible string for i.MX8QM
-      commit: 87b2fc1139a13cf81d0a95fb2cbaba7daeee8908
-[2/2] ASoC: fsl_spdif: Add support for i.MX8QM platform
-      commit: 516232e3609f485be04445b03723fbaed64a5321
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 8459056cce671..2ae42c2a5cf04 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -162,16 +162,16 @@ static __meminit struct vmemmap_backing * vmemmap_list_alloc(int node)
+ 	return next++;
+ }
+ 
+-static __meminit void vmemmap_list_populate(unsigned long phys,
+-					    unsigned long start,
+-					    int node)
++static __meminit int vmemmap_list_populate(unsigned long phys,
++					   unsigned long start,
++					   int node)
+ {
+ 	struct vmemmap_backing *vmem_back;
+ 
+ 	vmem_back = vmemmap_list_alloc(node);
+ 	if (unlikely(!vmem_back)) {
+-		WARN_ON(1);
+-		return;
++		pr_debug("vmemap list allocation failed\n");
++		return -ENOMEM;
+ 	}
+ 
+ 	vmem_back->phys = phys;
+@@ -179,6 +179,7 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
+ 	vmem_back->list = vmemmap_list;
+ 
+ 	vmemmap_list = vmem_back;
++	return 0;
+ }
+ 
+ static bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long start,
+@@ -199,6 +200,7 @@ static bool altmap_cross_boundary(struct vmem_altmap *altmap, unsigned long star
+ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+ 		struct vmem_altmap *altmap)
+ {
++	bool altmap_alloc;
+ 	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+ 
+ 	/* Align to the page size of the linear mapping. */
+@@ -228,13 +230,32 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+ 			p = vmemmap_alloc_block_buf(page_size, node, altmap);
+ 			if (!p)
+ 				pr_debug("altmap block allocation failed, falling back to system memory");
++			else
++				altmap_alloc = true;
+ 		}
+-		if (!p)
++		if (!p) {
+ 			p = vmemmap_alloc_block_buf(page_size, node, NULL);
++			altmap_alloc = false;
++		}
+ 		if (!p)
+ 			return -ENOMEM;
+ 
+-		vmemmap_list_populate(__pa(p), start, node);
++		if (vmemmap_list_populate(__pa(p), start, node)) {
++			/*
++			 * If we don't populate vmemap list, we don't have
++			 * the ability to free the allocated vmemmap
++			 * pages in section_deactivate. Hence free them
++			 * here.
++			 */
++			int nr_pfns = page_size >> PAGE_SHIFT;
++			unsigned long page_order = get_order(page_size);
++
++			if (altmap_alloc)
++				vmem_altmap_free(altmap, nr_pfns);
++			else
++				free_pages((unsigned long)p, page_order);
++			return -ENOMEM;
++		}
+ 
+ 		pr_debug("      * %016lx..%016lx allocated at %p\n",
+ 			 start, start + page_size, p);
+-- 
+2.25.1
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
