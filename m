@@ -2,58 +2,94 @@ Return-Path: <SRS0=MBk5=EB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.2 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D0DBC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE1EBC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 11:08:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4444C223AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:50:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4444C223AB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id EB2E82224A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 11:08:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="HlpA2vaW";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="HlpA2vaW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB2E82224A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CKWnh0nK0zDqM7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 21:50:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CKXBR26rLzDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 22:08:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=redhat.com (client-ip=216.205.24.124;
+ helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
+ header.s=mimecast20190719 header.b=HlpA2vaW; 
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=HlpA2vaW; 
+ dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [216.205.24.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CKWjW6PKnzDqGM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2020 21:46:39 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8A9E3200671;
- Mon, 26 Oct 2020 11:46:36 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1CFDB2009F5;
- Mon, 26 Oct 2020 11:46:31 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net
- [10.192.224.44])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 98D71402BB;
- Mon, 26 Oct 2020 11:46:24 +0100 (CET)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
- alsa-devel@alsa-project.org, lgirdwood@gmail.com, robh+dt@kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH 2/2] ASoC: fsl_aud2htx: Add aud2htx module driver
-Date: Mon, 26 Oct 2020 18:40:55 +0800
-Message-Id: <1603708855-2663-2-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1603708855-2663-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1603708855-2663-1-git-send-email-shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CKX7R0hXzzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2020 22:05:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1603710335;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=uR3SoUQ38JQhR3FzkH7b6r+ChPHdaTScYhjRwjs5L+4=;
+ b=HlpA2vaWkks1DzlbhXHM5sNLLcmX9dG1Pwhi+ravy6rRl5hUvqozaIbZhnQB766Hlsda18
+ KxXPS3lad0m25HgEyRgcMMAv9IJjDkzL4ga6WxPH77/fU7SRcCMA16ep7sUqygbS1n3nJk
+ 7md1Mprb4TBOVDrePmogd+bEQvJsu7w=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+ s=mimecast20190719; t=1603710335;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=uR3SoUQ38JQhR3FzkH7b6r+ChPHdaTScYhjRwjs5L+4=;
+ b=HlpA2vaWkks1DzlbhXHM5sNLLcmX9dG1Pwhi+ravy6rRl5hUvqozaIbZhnQB766Hlsda18
+ KxXPS3lad0m25HgEyRgcMMAv9IJjDkzL4ga6WxPH77/fU7SRcCMA16ep7sUqygbS1n3nJk
+ 7md1Mprb4TBOVDrePmogd+bEQvJsu7w=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-301-pGgOFeOzOUSKAoeWEvAb1w-1; Mon, 26 Oct 2020 07:05:30 -0400
+X-MC-Unique: pGgOFeOzOUSKAoeWEvAb1w-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 87FB0101F7B0;
+ Mon, 26 Oct 2020 11:05:25 +0000 (UTC)
+Received: from [10.36.113.62] (ovpn-113-62.ams2.redhat.com [10.36.113.62])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 00EE61043269;
+ Mon, 26 Oct 2020 11:05:14 +0000 (UTC)
+Subject: Re: [PATCH 1/4] mm: introduce debug_pagealloc_map_pages() helper
+To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <20201025101555.3057-1-rppt@kernel.org>
+ <20201025101555.3057-2-rppt@kernel.org>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <8720c067-7dc5-2b02-918b-e54dd642bfd6@redhat.com>
+Date: Mon, 26 Oct 2020 12:05:13 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
+MIME-Version: 1.0
+In-Reply-To: <20201025101555.3057-2-rppt@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,471 +101,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Len Brown <len.brown@intel.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ David Rientjes <rientjes@google.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Pekka Enberg <penberg@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, "Edgecombe,
+ Rick P" <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The AUD2HTX is a digital module that provides a bridge between
-the Audio Subsystem and the HDMI RTX Subsystem. This module
-includes intermediate storage to queue SDMA transactions prior
-to being synchronized and passed to the HDMI RTX Subsystem over
-the Audio Link.
+On 25.10.20 11:15, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> When CONFIG_DEBUG_PAGEALLOC is enabled, it unmaps pages from the
+> kernel direct mapping after free_pages(). The pages than need to be
+> mapped back before they could be used. Theese mapping operations use 
+> __kernel_map_pages() guarded with with debug_pagealloc_enabled().
+> 
+> The only place that calls __kernel_map_pages() without checking
+> whether DEBUG_PAGEALLOC is enabled is the hibernation code that
+> presumes availability of this function when ARCH_HAS_SET_DIRECT_MAP
+> is set. Still, on arm64, __kernel_map_pages() will bail out when
+> DEBUG_PAGEALLOC is not enabled but set_direct_map_invalid_noflush()
+> may render some pages not present in the direct map and hibernation
+> code won't be able to save such pages.
+> 
+> To make page allocation debugging and hibernation interaction more
+> robust, the dependency on DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP
+> has to be made more explicit.
+> 
+> Start with combining the guard condition and the call to 
+> __kernel_map_pages() into a single debug_pagealloc_map_pages()
+> function to emphasize that __kernel_map_pages() should not be called
+> without DEBUG_PAGEALLOC and use this new function to map/unmap pages
+> when page allocation debug is enabled.
+> 
+> As the only remaining user of kernel_map_pages() is the hibernation
+> code, mode that function into kernel/power/snapshot.c closer to a
+> caller.
 
-The AUD2HTX contains a DMA request routed to the SDMA module.
-This DMA request is controlled based on the watermark level in
-the 32-entry sample buffer.
+s/mode/move/
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/Kconfig       |   8 +
- sound/soc/fsl/Makefile      |   2 +
- sound/soc/fsl/fsl_aud2htx.c | 322 ++++++++++++++++++++++++++++++++++++
- sound/soc/fsl/fsl_aud2htx.h |  67 ++++++++
- 4 files changed, 399 insertions(+)
- create mode 100644 sound/soc/fsl/fsl_aud2htx.c
- create mode 100644 sound/soc/fsl/fsl_aud2htx.h
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com> --- 
+> include/linux/mm.h      | 16 +++++++--------- kernel/power/snapshot.c
+> | 11 +++++++++++ mm/memory_hotplug.c     |  3 +-- mm/page_alloc.c
+> |  6 ++---- mm/slab.c               |  8 +++----- 5 files changed, 24
+> insertions(+), 20 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h index
+> ef360fe70aaf..14e397f3752c 100644 --- a/include/linux/mm.h +++
+> b/include/linux/mm.h @@ -2927,21 +2927,19 @@ static inline bool
+> debug_pagealloc_enabled_static(void) #if
+> defined(CONFIG_DEBUG_PAGEALLOC) ||
+> defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP) extern void
+> __kernel_map_pages(struct page *page, int numpages, int enable);
+> 
+> -/* - * When called in DEBUG_PAGEALLOC context, the call should most
+> likely be - * guarded by debug_pagealloc_enabled() or
+> debug_pagealloc_enabled_static() - */ -static inline void 
+> -kernel_map_pages(struct page *page, int numpages, int enable) 
+> +static inline void debug_pagealloc_map_pages(struct page *page, +
+> int numpages, int enable) { -	__kernel_map_pages(page, numpages,
+> enable); +	if (debug_pagealloc_enabled_static()) +
+> __kernel_map_pages(page, numpages, enable); } + #ifdef
+> CONFIG_HIBERNATION extern bool kernel_page_present(struct page
+> *page); #endif	/* CONFIG_HIBERNATION */ #else	/*
+> CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */ -static
+> inline void -kernel_map_pages(struct page *page, int numpages, int
+> enable) {} +static inline void debug_pagealloc_map_pages(struct page
+> *page, +					     int numpages, int enable) {} #ifdef
+> CONFIG_HIBERNATION static inline bool kernel_page_present(struct page
+> *page) { return true; } #endif	/* CONFIG_HIBERNATION */ diff --git
+> a/kernel/power/snapshot.c b/kernel/power/snapshot.c index
+> 46b1804c1ddf..fa499466f645 100644 --- a/kernel/power/snapshot.c +++
+> b/kernel/power/snapshot.c @@ -76,6 +76,17 @@ static inline void
+> hibernate_restore_protect_page(void *page_address) {} static inline
+> void hibernate_restore_unprotect_page(void *page_address) {} #endif
+> /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
+> 
+> +#if defined(CONFIG_DEBUG_PAGEALLOC) ||
+> defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP) +static inline void 
+> +kernel_map_pages(struct page *page, int numpages, int enable) +{ +
+> __kernel_map_pages(page, numpages, enable); +} +#else +static inline
+> void +kernel_map_pages(struct page *page, int numpages, int enable)
+> {} +#endif +
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 3f76ff71ea47..5234d9ab9884 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -95,6 +95,14 @@ config SND_SOC_FSL_EASRC
- 	  destination sample rate. It is a new design module compare with the
- 	  old ASRC.
- 
-+config SND_SOC_FSL_AUD2HTX
-+	tristate "AUDIO TO HDMI TX module support"
-+	select REGMAP_MMIO
-+	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC != n
-+	select SND_SOC_GENERIC_DMAENGINE_PCM
-+	help
-+	  Say Y if you want to add AUDIO TO HDMI TX support for NXP.
-+
- config SND_SOC_FSL_UTILS
- 	tristate
- 
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index b835eebf8825..78bc088b39d5 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -25,6 +25,7 @@ snd-soc-fsl-utils-objs := fsl_utils.o
- snd-soc-fsl-dma-objs := fsl_dma.o
- snd-soc-fsl-mqs-objs := fsl_mqs.o
- snd-soc-fsl-easrc-objs := fsl_easrc.o
-+snd-soc-fsl-aud2htx-objs := fsl_aud2htx.o
- 
- obj-$(CONFIG_SND_SOC_FSL_AUDMIX) += snd-soc-fsl-audmix.o
- obj-$(CONFIG_SND_SOC_FSL_ASOC_CARD) += snd-soc-fsl-asoc-card.o
-@@ -38,6 +39,7 @@ obj-$(CONFIG_SND_SOC_FSL_UTILS) += snd-soc-fsl-utils.o
- obj-$(CONFIG_SND_SOC_FSL_MQS) += snd-soc-fsl-mqs.o
- obj-$(CONFIG_SND_SOC_FSL_EASRC) += snd-soc-fsl-easrc.o
- obj-$(CONFIG_SND_SOC_POWERPC_DMA) += snd-soc-fsl-dma.o
-+obj-$(CONFIG_SND_SOC_FSL_AUD2HTX) += snd-soc-fsl-aud2htx.o
- 
- # MPC5200 Platform Support
- obj-$(CONFIG_SND_MPC52xx_DMA) += mpc5200_dma.o
-diff --git a/sound/soc/fsl/fsl_aud2htx.c b/sound/soc/fsl/fsl_aud2htx.c
-new file mode 100644
-index 000000000000..8c4b897db6f0
---- /dev/null
-+++ b/sound/soc/fsl/fsl_aud2htx.c
-@@ -0,0 +1,322 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (C) 2020 NXP
-+
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/delay.h>
-+#include <linux/dmaengine.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/of_address.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/time.h>
-+#include <linux/pm_qos.h>
-+#include <sound/core.h>
-+#include <sound/dmaengine_pcm.h>
-+#include <sound/pcm_params.h>
-+#include <linux/dma-mapping.h>
-+
-+#include "fsl_aud2htx.h"
-+#include "imx-pcm.h"
-+
-+static int fsl_aud2htx_hw_params(struct snd_pcm_substream *substream,
-+				 struct snd_pcm_hw_params *params,
-+				 struct snd_soc_dai *cpu_dai)
-+{
-+	struct fsl_aud2htx *aud2htx = snd_soc_dai_get_drvdata(cpu_dai);
-+
-+	/* DMA request when number of entries < WTMK_LOW */
-+	regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
-+			   AUD2HTX_CTRE_DT_MASK, 0);
-+
-+	/* Disable interrupts*/
-+	regmap_update_bits(aud2htx->regmap, AUD2HTX_IRQ_MASK,
-+			   AUD2HTX_WM_HIGH_IRQ_MASK |
-+			   AUD2HTX_WM_LOW_IRQ_MASK |
-+			   AUD2HTX_OVF_MASK,
-+			   AUD2HTX_WM_HIGH_IRQ_MASK |
-+			   AUD2HTX_WM_LOW_IRQ_MASK |
-+			   AUD2HTX_OVF_MASK);
-+
-+	/* Configur watermark */
-+	regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
-+			   AUD2HTX_CTRE_WL_MASK,
-+			   AUD2HTX_WTMK_LOW << AUD2HTX_CTRE_WL_SHIFT);
-+	regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
-+			   AUD2HTX_CTRE_WH_MASK,
-+			   AUD2HTX_WTMK_HIGH << AUD2HTX_CTRE_WH_SHIFT);
-+	return 0;
-+}
-+
-+static int fsl_aud2htx_trigger(struct snd_pcm_substream *substream, int cmd,
-+			       struct snd_soc_dai *dai)
-+{
-+	struct fsl_aud2htx *aud2htx = snd_soc_dai_get_drvdata(dai);
-+
-+	switch (cmd) {
-+	case SNDRV_PCM_TRIGGER_START:
-+	case SNDRV_PCM_TRIGGER_RESUME:
-+	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-+		regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL,
-+				   AUD2HTX_CTRL_EN, AUD2HTX_CTRL_EN);
-+		regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
-+				   AUD2HTX_CTRE_DE, AUD2HTX_CTRE_DE);
-+		break;
-+	case SNDRV_PCM_TRIGGER_SUSPEND:
-+	case SNDRV_PCM_TRIGGER_STOP:
-+	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-+		regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL_EXT,
-+				   AUD2HTX_CTRE_DE, 0);
-+		regmap_update_bits(aud2htx->regmap, AUD2HTX_CTRL,
-+				   AUD2HTX_CTRL_EN, 0);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static const struct snd_soc_dai_ops fsl_aud2htx_dai_ops = {
-+	.hw_params	= fsl_aud2htx_hw_params,
-+	.trigger	= fsl_aud2htx_trigger,
-+};
-+
-+static int fsl_aud2htx_dai_probe(struct snd_soc_dai *cpu_dai)
-+{
-+	struct fsl_aud2htx *aud2htx = dev_get_drvdata(cpu_dai->dev);
-+
-+	snd_soc_dai_init_dma_data(cpu_dai, &aud2htx->dma_params_tx,
-+				  &aud2htx->dma_params_rx);
-+
-+	return 0;
-+}
-+
-+static struct snd_soc_dai_driver fsl_aud2htx_dai = {
-+	.probe = fsl_aud2htx_dai_probe,
-+	.playback = {
-+		.stream_name = "CPU-Playback",
-+		.channels_min = 1,
-+		.channels_max = 8,
-+		.rates = SNDRV_PCM_RATE_32000 |
-+			 SNDRV_PCM_RATE_44100 |
-+			 SNDRV_PCM_RATE_48000 |
-+			 SNDRV_PCM_RATE_88200 |
-+			 SNDRV_PCM_RATE_96000 |
-+			 SNDRV_PCM_RATE_176400 |
-+			 SNDRV_PCM_RATE_192000,
-+		.formats = FSL_AUD2HTX_FORMATS,
-+	},
-+	.ops = &fsl_aud2htx_dai_ops,
-+};
-+
-+static const struct snd_soc_component_driver fsl_aud2htx_component = {
-+	.name	= "fsl-aud2htx",
-+};
-+
-+static const struct reg_default fsl_aud2htx_reg_defaults[] = {
-+	{AUD2HTX_CTRL,		0x00000000},
-+	{AUD2HTX_CTRL_EXT,	0x00000000},
-+	{AUD2HTX_WR,		0x00000000},
-+	{AUD2HTX_STATUS,	0x00000000},
-+	{AUD2HTX_IRQ_NOMASK,	0x00000000},
-+	{AUD2HTX_IRQ_MASKED,	0x00000000},
-+	{AUD2HTX_IRQ_MASK,	0x00000000},
-+};
-+
-+static bool fsl_aud2htx_readable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AUD2HTX_CTRL:
-+	case AUD2HTX_CTRL_EXT:
-+	case AUD2HTX_STATUS:
-+	case AUD2HTX_IRQ_NOMASK:
-+	case AUD2HTX_IRQ_MASKED:
-+	case AUD2HTX_IRQ_MASK:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static bool fsl_aud2htx_writeable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AUD2HTX_CTRL:
-+	case AUD2HTX_CTRL_EXT:
-+	case AUD2HTX_WR:
-+	case AUD2HTX_IRQ_NOMASK:
-+	case AUD2HTX_IRQ_MASKED:
-+	case AUD2HTX_IRQ_MASK:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static bool fsl_aud2htx_volatile_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case AUD2HTX_STATUS:
-+	case AUD2HTX_IRQ_NOMASK:
-+	case AUD2HTX_IRQ_MASKED:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct regmap_config fsl_aud2htx_regmap_config = {
-+	.reg_bits = 32,
-+	.reg_stride = 4,
-+	.val_bits = 32,
-+
-+	.max_register = AUD2HTX_IRQ_MASK,
-+	.reg_defaults = fsl_aud2htx_reg_defaults,
-+	.num_reg_defaults = ARRAY_SIZE(fsl_aud2htx_reg_defaults),
-+	.readable_reg = fsl_aud2htx_readable_reg,
-+	.volatile_reg = fsl_aud2htx_volatile_reg,
-+	.writeable_reg = fsl_aud2htx_writeable_reg,
-+	.cache_type = REGCACHE_RBTREE,
-+};
-+
-+static const struct of_device_id fsl_aud2htx_dt_ids[] = {
-+	{ .compatible = "fsl,imx8mp-aud2htx",},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, fsl_aud2htx_dt_ids);
-+
-+static irqreturn_t fsl_aud2htx_isr(int irq, void *dev_id)
-+{
-+	return IRQ_HANDLED;
-+}
-+
-+static int fsl_aud2htx_probe(struct platform_device *pdev)
-+{
-+	struct fsl_aud2htx *aud2htx;
-+	struct resource *res;
-+	void __iomem *regs;
-+	int ret, irq;
-+
-+	aud2htx = devm_kzalloc(&pdev->dev, sizeof(*aud2htx), GFP_KERNEL);
-+	if (!aud2htx)
-+		return -ENOMEM;
-+
-+	aud2htx->pdev = pdev;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	regs = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(regs)) {
-+		dev_err(&pdev->dev, "failed ioremap\n");
-+		return PTR_ERR(regs);
-+	}
-+
-+	aud2htx->regmap = devm_regmap_init_mmio(&pdev->dev, regs,
-+						&fsl_aud2htx_regmap_config);
-+	if (IS_ERR(aud2htx->regmap)) {
-+		dev_err(&pdev->dev, "failed to init regmap");
-+		return PTR_ERR(aud2htx->regmap);
-+	}
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
-+		dev_err(&pdev->dev, "no irq for node %s\n",
-+			dev_name(&pdev->dev));
-+		return irq;
-+	}
-+
-+	ret = devm_request_irq(&pdev->dev, irq, fsl_aud2htx_isr, 0,
-+			       dev_name(&pdev->dev), aud2htx);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to claim irq %u: %d\n", irq, ret);
-+		return ret;
-+	}
-+
-+	aud2htx->bus_clk = devm_clk_get(&pdev->dev, "bus");
-+	if (IS_ERR(aud2htx->bus_clk)) {
-+		dev_err(&pdev->dev, "failed to get mem clock\n");
-+		return PTR_ERR(aud2htx->bus_clk);
-+	}
-+
-+	aud2htx->dma_params_tx.chan_name = "tx";
-+	aud2htx->dma_params_tx.maxburst = AUD2HTX_MAXBURST;
-+	aud2htx->dma_params_tx.addr = res->start + AUD2HTX_WR;
-+
-+	platform_set_drvdata(pdev, aud2htx);
-+	pm_runtime_enable(&pdev->dev);
-+
-+	regcache_cache_only(aud2htx->regmap, true);
-+
-+	ret = devm_snd_soc_register_component(&pdev->dev,
-+					      &fsl_aud2htx_component,
-+					      &fsl_aud2htx_dai, 1);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
-+		return ret;
-+	}
-+
-+	ret = imx_pcm_dma_init(pdev, IMX_DEFAULT_DMABUF_SIZE);
-+	if (ret)
-+		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static int fsl_aud2htx_remove(struct platform_device *pdev)
-+{
-+	pm_runtime_disable(&pdev->dev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int fsl_aud2htx_runtime_suspend(struct device *dev)
-+{
-+	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
-+
-+	regcache_cache_only(aud2htx->regmap, true);
-+	clk_disable_unprepare(aud2htx->bus_clk);
-+
-+	return 0;
-+}
-+
-+static int fsl_aud2htx_runtime_resume(struct device *dev)
-+{
-+	struct fsl_aud2htx *aud2htx = dev_get_drvdata(dev);
-+	int ret;
-+
-+	ret = clk_prepare_enable(aud2htx->bus_clk);
-+	if (ret)
-+		return ret;
-+
-+	regcache_cache_only(aud2htx->regmap, false);
-+	regcache_mark_dirty(aud2htx->regmap);
-+	regcache_sync(aud2htx->regmap);
-+
-+	return 0;
-+}
-+#endif /*CONFIG_PM*/
-+
-+static const struct dev_pm_ops fsl_aud2htx_pm_ops = {
-+	SET_RUNTIME_PM_OPS(fsl_aud2htx_runtime_suspend,
-+			   fsl_aud2htx_runtime_resume,
-+			   NULL)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
-+};
-+
-+static struct platform_driver fsl_aud2htx_driver = {
-+	.probe = fsl_aud2htx_probe,
-+	.remove = fsl_aud2htx_remove,
-+	.driver = {
-+		.name = "fsl-aud2htx",
-+		.pm = &fsl_aud2htx_pm_ops,
-+		.of_match_table = fsl_aud2htx_dt_ids,
-+	},
-+};
-+module_platform_driver(fsl_aud2htx_driver);
-+
-+MODULE_AUTHOR("Shengjiu Wang <Shengjiu.Wang@nxp.com>");
-+MODULE_DESCRIPTION("NXP AUD2HTX driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/sound/soc/fsl/fsl_aud2htx.h b/sound/soc/fsl/fsl_aud2htx.h
-new file mode 100644
-index 000000000000..ffa98e6af5ec
---- /dev/null
-+++ b/sound/soc/fsl/fsl_aud2htx.h
-@@ -0,0 +1,67 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2020 NXP
-+ */
-+
-+#ifndef _FSL_AUD2HTX_H
-+#define _FSL_AUD2HTX_H
-+
-+#define FSL_AUD2HTX_FORMATS (SNDRV_PCM_FMTBIT_S24_LE | \
-+			     SNDRV_PCM_FMTBIT_S32_LE)
-+
-+/* AUD2HTX Register Map */
-+#define AUD2HTX_CTRL          0x0   /* AUD2HTX Control Register */
-+#define AUD2HTX_CTRL_EXT      0x4   /* AUD2HTX Control Extended Register */
-+#define AUD2HTX_WR            0x8   /* AUD2HTX Write Register */
-+#define AUD2HTX_STATUS        0xC   /* AUD2HTX Status Register */
-+#define AUD2HTX_IRQ_NOMASK    0x10  /* AUD2HTX Nonmasked Interrupt Flags Register */
-+#define AUD2HTX_IRQ_MASKED    0x14  /* AUD2HTX Masked Interrupt Flags Register */
-+#define AUD2HTX_IRQ_MASK      0x18  /* AUD2HTX IRQ Masks Register */
-+
-+/* AUD2HTX Control Register */
-+#define AUD2HTX_CTRL_EN          BIT(0)
-+
-+/* AUD2HTX Control Extended Register */
-+#define AUD2HTX_CTRE_DE          BIT(0)
-+#define AUD2HTX_CTRE_DT_SHIFT    0x1
-+#define AUD2HTX_CTRE_DT_WIDTH    0x2
-+#define AUD2HTX_CTRE_DT_MASK     ((BIT(AUD2HTX_CTRE_DT_WIDTH) - 1) \
-+				 << AUD2HTX_CTRE_DT_SHIFT)
-+#define AUD2HTX_CTRE_WL_SHIFT    16
-+#define AUD2HTX_CTRE_WL_WIDTH    5
-+#define AUD2HTX_CTRE_WL_MASK     ((BIT(AUD2HTX_CTRE_WL_WIDTH) - 1) \
-+				 << AUD2HTX_CTRE_WL_SHIFT)
-+#define AUD2HTX_CTRE_WH_SHIFT    24
-+#define AUD2HTX_CTRE_WH_WIDTH    5
-+#define AUD2HTX_CTRE_WH_MASK     ((BIT(AUD2HTX_CTRE_WH_WIDTH) - 1) \
-+				 << AUD2HTX_CTRE_WH_SHIFT)
-+
-+/* AUD2HTX IRQ Masks Register */
-+#define AUD2HTX_WM_HIGH_IRQ_MASK BIT(2)
-+#define AUD2HTX_WM_LOW_IRQ_MASK  BIT(1)
-+#define AUD2HTX_OVF_MASK         BIT(0)
-+
-+#define AUD2HTX_FIFO_DEPTH       0x20
-+#define AUD2HTX_WTMK_LOW         0x10
-+#define AUD2HTX_WTMK_HIGH        0x10
-+#define AUD2HTX_MAXBURST         0x10
-+
-+/**
-+ * fsl_aud2htx: AUD2HTX private data
-+ *
-+ * @pdev: platform device pointer
-+ * @regmap: regmap handler
-+ * @bus_clk: clock source to access register
-+ * @dma_params_rx: DMA parameters for receive channel
-+ * @dma_params_tx: DMA parameters for transmit channel
-+ */
-+struct fsl_aud2htx {
-+	struct platform_device *pdev;
-+	struct regmap *regmap;
-+	struct clk *bus_clk;
-+
-+	struct snd_dmaengine_dai_dma_data dma_params_rx;
-+	struct snd_dmaengine_dai_dma_data dma_params_tx;
-+};
-+
-+#endif /* _FSL_AUD2HTX_H */
+That change should go into a separate patch.
+
+
+For the debug_pagealloc_map_pages() parts
+
+Reviewed-by: David Hildenbrand <david@redhat.com>
+
+
 -- 
-2.27.0
+Thanks,
+
+David / dhildenb
 
