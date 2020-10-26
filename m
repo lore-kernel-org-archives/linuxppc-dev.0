@@ -2,59 +2,48 @@ Return-Path: <SRS0=MBk5=EB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6950C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBB02C55178
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:44:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A81CB207E8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:40:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A81CB207E8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=collabora.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4E11E20809
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 10:44:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E11E20809
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CKWZF0yKpzDqNK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 21:40:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=collabora.com (client-ip=46.235.227.227;
- helo=bhuna.collabora.co.uk; envelope-from=chris.obbard@collabora.com;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CKWfc5PfGzDqP6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Oct 2020 21:44:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=suse.de
+ (client-ip=195.135.220.15; helo=mx2.suse.de; envelope-from=msuchanek@suse.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=collabora.com
-X-Greylist: delayed 453 seconds by postgrey-1.36 at bilbo;
- Mon, 26 Oct 2020 21:25:02 AEDT
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CKWDZ5cgYzDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2020 21:25:02 +1100 (AEDT)
-Received: from [IPv6:2a00:23c5:9900:2d00:fa7c:ed23:2f0a:448d] (unknown
- [IPv6:2a00:23c5:9900:2d00:fa7c:ed23:2f0a:448d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested) (Authenticated sender: obbardc)
- by bhuna.collabora.co.uk (Postfix) with ESMTPSA id 49C851F44F40;
- Mon, 26 Oct 2020 10:17:18 +0000 (GMT)
-Subject: Re: Build regressions/improvements in v5.10-rc1
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20201026081811.3934205-1-geert@linux-m68k.org>
- <CAMuHMdXbsJPnsXg6bA_e32zJkBG1Zzqj-ja5WzHDKL0d9OcfPg@mail.gmail.com>
-From: Christopher Obbard <chris.obbard@collabora.com>
-Message-ID: <ed39a579-62c9-de88-3550-f21382b804a8@collabora.com>
-Date: Mon, 26 Oct 2020 10:17:16 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CKWcq0GGhzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Oct 2020 21:42:34 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 5D071ABBE;
+ Mon, 26 Oct 2020 10:42:30 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: Thomas Bogendoerfer <tbogendoerfer@suse.de>,
+	netdev@vger.kernel.org
+Subject: [PATCH] ibmveth: Fix use of ibmveth in a bridge.
+Date: Mon, 26 Oct 2020 11:42:21 +0100
+Message-Id: <20201026104221.26570-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
-In-Reply-To: <CAMuHMdXbsJPnsXg6bA_e32zJkBG1Zzqj-ja5WzHDKL0d9OcfPg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Mon, 26 Oct 2020 21:38:41 +1100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,60 +55,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joe Perches <joe@perches.com>, linux-um <linux-um@lists.infradead.org>,
- arcml <linux-snps-arc@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Cristobal Forno <cforno12@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Cris Forno <cforno12@linux.vnet.ibm.com>,
+ Jakub Kicinski <kuba@kernel.org>, Michal Suchanek <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Geert,
+From: Thomas Bogendoerfer <tbogendoerfer@suse.de>
 
-On 26/10/2020 09:48, Geert Uytterhoeven wrote:
-> On Mon, Oct 26, 2020 at 10:46 AM Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> Below is the list of build error/warning regressions/improvements in
->> v5.10-rc1[1] compared to v5.9[2].
->>
->> Summarized:
->>    - build errors: +3/-7
->>    - build warnings: +26/-28
->>
->> Happy fixing! ;-)
->>
->> Thanks to the linux-next team for providing the build service.
->>
->> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/3650b228f83adda7e5ee532e2b90429c03f7b9ec/ (all 192 configs)
->> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/bbf5c979011a099af5dc76498918ed7df445635b/ (all 192 configs)
->>
->>
->> *** ERRORS ***
->>
->> 3 error regressions:
->>    + /kisskb/src/arch/um/kernel/skas/clone.c: error: expected declaration specifiers or '...' before string constant:  => 24:16
+The check for src mac address in ibmveth_is_packet_unsupported is wrong.
+Commit 6f2275433a2f wanted to shut down messages for loopback packets,
+but now suppresses bridged frames, which are accepted by the hypervisor
+otherwise bridging won't work at all.
 
-For me, reverting commit 33def8498fdde180023444b08e12b72a9efed41d 
-("treewide: Convert macro and uses of __section(foo) to 
-__section("foo")") fixed this compile error and one other introduced by 
-the same patch.
-Unfortunately I wasn't able to come up with a fix for that, but I have 
-CC the author of that patch.
+Fixes: 6f2275433a2f ("ibmveth: Detect unsupported packets before sending to the hypervisor")
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ms: added commit message
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-Thanks!
-Christopher Obbard
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 7ef3369953b6..c3ec9ceed833 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1031,12 +1031,6 @@ static int ibmveth_is_packet_unsupported(struct sk_buff *skb,
+ 		ret = -EOPNOTSUPP;
+ 	}
+ 
+-	if (!ether_addr_equal(ether_header->h_source, netdev->dev_addr)) {
+-		netdev_dbg(netdev, "source packet MAC address does not match veth device's, dropping packet.\n");
+-		netdev->stats.tx_dropped++;
+-		ret = -EOPNOTSUPP;
+-	}
+-
+ 	return ret;
+ }
+ 
+-- 
+2.28.0
 
-> 
-> um-all{mod,yes}config
-> 
->>    + error: hotplug-memory.c: undefined reference to `of_drconf_to_nid_single':  => .text+0x5e0)
-> 
-> powerpc-gcc5/pseries_le_defconfig+NO_NUMA
-> 
->>    + {standard input}: Error: inappropriate arguments for opcode 'adc':  => 170
-> 
-> arc-gcc10/axs101_defconfig
-> 
-> Gr{oetje,eeting}s,
-> 
->                          Geert
-> 
