@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 034F7C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:12:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4380AC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:15:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42B012225E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:12:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7059F2225E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:14:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="IrVDFjU5";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="1hcOJSQq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42B012225E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bMHlhllu";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="F+okaaPl"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7059F2225E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSD83L4yzDqSV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:12:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSGT64fzzDqRx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:14:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
@@ -31,43 +31,43 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=IrVDFjU5; 
+ header.s=2020 header.b=bMHlhllu; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=1hcOJSQq; 
+ header.a=ed25519-sha256 header.s=2020e header.b=F+okaaPl; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrd58C4zDqN7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:56:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrn1MjLzDqNw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:56:09 +1100 (AEDT)
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1603839357;
+ s=2020; t=1603839355;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=DjmStdTYpXx0Q5cgHBNYgoGt1xQMDGvpBhIAE5x62bo=;
- b=IrVDFjU5wiUh3/1b+EWqAdpLz9jEaa0feaxAB0seewu3KP62xQWrIDIDRFVfJR88akb5V8
- pixqewfSpPphy6wjIpk84kuwnoRmYibI+WPGXbSjRtkxqKuGHv479c5O+07RtRHzWP9EyO
- /XS2O6gq02ndIa9jvIju3YeZBwPe7jdNPpcZYA5f5c/yCRKzmmvrHi/lomT6/LJwNTuzDq
- 79tALLYTDN3HvBlJ21WplNePz/PcB96jD/urLc/mb0VXNxgXdrKoOYIKtApY4oS3NuMRJx
- udPmRn5otfroi+DJXX7goaPxUdhrmyFNBJYKUfaap+PqN/QIS+Vy6OoaWTLFrw==
+ bh=ecxJzZtRribDKzKIiwElpzea91WJXQDRkjrSNkyvp44=;
+ b=bMHlhlluCx8UyhuU9NTXFEBFBDPzmifO9O7nsSBrqtLd+vr4IXh9AiD/7K0zGUjEiHeczw
+ 11cc4w8mxNiAF8ibzLraKYfn9RPhxYf4MtwYhVbwMuDsFMoxLHA/DSgHVzUj4DyGyD3vPW
+ E2tipXy7jDjfZE0npmPtMrXPiWTv01kHZhkmvY8bq7w3Z8ZeikEww4mvYZCUOYPqraVy1S
+ gwdqr3G3BB9h9qxhCr8fJdTDRs1LYzp2vzKChp8W4yBFl2siku3YD3x2aLGnerVg7aNO60
+ y45jk/Re/uruKE8kGCYWFbVhlc7ZjQL3Dk63LQoOdWHzf+Ni6Jkp2iVd0fOseQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1603839357;
+ s=2020e; t=1603839355;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=DjmStdTYpXx0Q5cgHBNYgoGt1xQMDGvpBhIAE5x62bo=;
- b=1hcOJSQqWKvZ0z3m9yg8HSR6q16whMj9tbVFBVxwm9sIAnvgysjdR0EPOnpijehHN6jTXv
- eMzOMmrlvWnhypDQ==
+ bh=ecxJzZtRribDKzKIiwElpzea91WJXQDRkjrSNkyvp44=;
+ b=F+okaaPlS1iKiuSjJd/s7xvfHx4naujCeq35xuq8TIJfx0CUcb4GntS5xPg3EjWk1mcjb2
+ f+BuFsDmP7NUaeAg==
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 10/15] net: zd1211rw: Remove in_atomic() usage.
-Date: Tue, 27 Oct 2020 23:54:49 +0100
-Message-Id: <20201027225454.3492351-11-bigeasy@linutronix.de>
+Subject: [PATCH net-next 09/15] net: hostap: Remove in_atomic() check.
+Date: Tue, 27 Oct 2020 23:54:48 +0100
+Message-Id: <20201027225454.3492351-10-bigeasy@linutronix.de>
 In-Reply-To: <20201027225454.3492351-1-bigeasy@linutronix.de>
 References: <20201027225454.3492351-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
@@ -102,67 +102,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The usage of in_atomic() in driver code is deprecated as it can not
-always detect all states where it is not allowed to sleep.
+hostap_get_wireless_stats() is the iw_handler_if::get_wireless_stats()
+callback of this driver. This callback was not allowed to sleep until
+commit a160ee69c6a46 ("wext: let get_wireless_stats() sleep") in v2.6.32.
 
-All callers are in premptible thread context and all functions invoke core
-functions which have checks for invalid calling contexts already.
+Remove the therefore pointless in_atomic() check.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Daniel Drake <dsd@gentoo.org>
-Cc: Ulrich Kunitz <kune@deine-taler.de>
+Cc: Jouni Malinen <j@w1.fi>
 Cc: Kalle Valo <kvalo@codeaurora.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 Cc: linux-wireless@vger.kernel.org
 Cc: netdev@vger.kernel.org
 ---
- drivers/net/wireless/zydas/zd1211rw/zd_usb.c | 15 ---------------
- 1 file changed, 15 deletions(-)
+ drivers/net/wireless/intersil/hostap/hostap_ioctl.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/net/wireless/zydas/zd1211rw/zd_usb.c b/drivers/net/wir=
-eless/zydas/zd1211rw/zd_usb.c
-index 66367ab7e4c1e..5c4cd0e1adebb 100644
---- a/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
-@@ -1711,11 +1711,6 @@ int zd_usb_ioread16v(struct zd_usb *usb, u16 *values,
- 			 count, USB_MAX_IOREAD16_COUNT);
- 		return -EINVAL;
- 	}
--	if (in_atomic()) {
--		dev_dbg_f(zd_usb_dev(usb),
--			 "error: io in atomic context not supported\n");
--		return -EWOULDBLOCK;
--	}
- 	if (!usb_int_enabled(usb)) {
- 		dev_dbg_f(zd_usb_dev(usb),
- 			  "error: usb interrupt not enabled\n");
-@@ -1882,11 +1877,6 @@ int zd_usb_iowrite16v_async(struct zd_usb *usb, cons=
-t struct zd_ioreq16 *ioreqs,
- 			count, USB_MAX_IOWRITE16_COUNT);
- 		return -EINVAL;
- 	}
--	if (in_atomic()) {
--		dev_dbg_f(zd_usb_dev(usb),
--			"error: io in atomic context not supported\n");
--		return -EWOULDBLOCK;
--	}
+diff --git a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c b/drivers/=
+net/wireless/intersil/hostap/hostap_ioctl.c
+index 514c7b01dbf6f..49766b285230c 100644
+--- a/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
++++ b/drivers/net/wireless/intersil/hostap/hostap_ioctl.c
+@@ -44,19 +44,8 @@ static struct iw_statistics *hostap_get_wireless_stats(s=
+truct net_device *dev)
 =20
- 	udev =3D zd_usb_to_usbdev(usb);
+ 	if (local->iw_mode !=3D IW_MODE_MASTER &&
+ 	    local->iw_mode !=3D IW_MODE_REPEAT) {
+-		int update =3D 1;
+-#ifdef in_atomic
+-		/* RID reading might sleep and it must not be called in
+-		 * interrupt context or while atomic. However, this
+-		 * function seems to be called while atomic (at least in Linux
+-		 * 2.5.59). Update signal quality values only if in suitable
+-		 * context. Otherwise, previous values read from tick timer
+-		 * will be used. */
+-		if (in_atomic())
+-			update =3D 0;
+-#endif /* in_atomic */
 =20
-@@ -1966,11 +1956,6 @@ int zd_usb_rfwrite(struct zd_usb *usb, u32 value, u8=
- bits)
- 	int i, req_len, actual_req_len;
- 	u16 bit_value_template;
+-		if (update && prism2_update_comms_qual(dev) =3D=3D 0)
++		if (prism2_update_comms_qual(dev) =3D=3D 0)
+ 			wstats->qual.updated =3D IW_QUAL_ALL_UPDATED |
+ 				IW_QUAL_DBM;
 =20
--	if (in_atomic()) {
--		dev_dbg_f(zd_usb_dev(usb),
--			"error: io in atomic context not supported\n");
--		return -EWOULDBLOCK;
--	}
- 	if (bits < USB_MIN_RFWRITE_BIT_COUNT) {
- 		dev_dbg_f(zd_usb_dev(usb),
- 			"error: bits %d are smaller than"
 --=20
 2.28.0
 
