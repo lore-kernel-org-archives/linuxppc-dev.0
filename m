@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77BBEC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE050C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:23:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B69C22202
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:21:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F362F2223C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:23:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="fnnyXMra";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="LhRto8Gj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B69C22202
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="HCswUXFn";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="oAEOw6n2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F362F2223C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSQ41xB1zDqTM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:21:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSS31xNdzDqSG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:23:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
@@ -31,47 +31,47 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=fnnyXMra; 
+ header.s=2020 header.b=HCswUXFn; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=LhRto8Gj; 
+ header.a=ed25519-sha256 header.s=2020e header.b=oAEOw6n2; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrq3k1jzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:56:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrr2vc0zDqMm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:56:12 +1100 (AEDT)
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1603839360;
+ s=2020; t=1603839362;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=JUnXmlM0pClR2oSFLL6eEWvAWYA2QW+YiY+0XjVZIZk=;
- b=fnnyXMraO7p09sICaO22cniixEyjU6BSK7GQa102YZaPqJxYBdda0nB0KIVATJejAL2/uz
- dwW8QXz8mYyHf6wvdEv7B65G3nJKntzU59jdHqIxSRlqilM5Vpr2wvnrE51RINrrYRVHRe
- PYThagWLiHUWO7FhC2mnHwrFy3IVdjNUgiL/XlYmlMRWAIK8uRUEfGiNl6/NLx6ZPnjmoB
- m4EKy+VbBc7Z5MDc3k5wsXGmgmNm3efPQ927+tdFrQs6gVq2oP42ouJmxLfX8u0K7yq3H2
- VBX44HdWy79z0/CZfIzePmm3knhG8C2g58k2rdVTD1aHkbRQndTEpRqc79jH7Q==
+ bh=JdH9fbe/FwP3XeKGJ3l0Cm+b4e3o/aTEE/5T4JYIZFo=;
+ b=HCswUXFnBU+7krIAiJOvKpJSk3khqzvmKXrOz1gM0erhfW+xw/741cfqlWqCbrRKLGLiBt
+ 2ZUaoSP5ox8MMXp4zr4zTdeIQdrQbLDd0lfErEBFbuXJjY3Sl3TG4/ouW5bIhvmTNIXpU2
+ BTxYIVC5S4gOd9AbXC9lwhtY+aEdK+XsyZo+dmWM4PBHrMzxjgQL0BRejFLweIG6Bz/IjH
+ nC8PmUrMrQF9GbZZGnV1R5kFKPY2Fs+ZajwTg/K7K2jZYCeoeZvjAFEvEq0xdkMubwsmn/
+ UsR1mqQZqTsrHdN5Gr4QV7uqdaWF2X7OF6/NuBkY5fZeD4jNj5by8GNXbkDe4w==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1603839360;
+ s=2020e; t=1603839362;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=JUnXmlM0pClR2oSFLL6eEWvAWYA2QW+YiY+0XjVZIZk=;
- b=LhRto8GjrXrS3x1WtqyEzaR2oSLcCb9lDG0/JNGC54mzzO12yMUMHiL7FS5TIt+/eyI4fV
- suVt8QjXdQk+iCAw==
+ bh=JdH9fbe/FwP3XeKGJ3l0Cm+b4e3o/aTEE/5T4JYIZFo=;
+ b=oAEOw6n2K77vQLRBPQlNlkEg06bqlyVo2TatzLpimvX8utPK3aWhDMLaJa4tCTD6u/57ST
+ kccvLXygOL73iBBg==
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 12/15] net: rtlwifi: Remove in_interrupt() usage in
- halbtc_send_bt_mp_operation()
-Date: Tue, 27 Oct 2020 23:54:51 +0100
-Message-Id: <20201027225454.3492351-13-bigeasy@linutronix.de>
+Subject: [PATCH net-next 14/15] net: dpaa: Replace in_irq() usage.
+Date: Tue, 27 Oct 2020 23:54:53 +0100
+Message-Id: <20201027225454.3492351-15-bigeasy@linutronix.de>
 In-Reply-To: <20201027225454.3492351-1-bigeasy@linutronix.de>
 References: <20201027225454.3492351-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,114 +103,91 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-halbtc_send_bt_mp_operation() uses in_interrupt() to determine if it is
-safe to invoke wait_for_completion().
+The driver uses in_irq() + in_serving_softirq() magic to decide if NAPI
+scheduling is required or packet processing.
 
-The usage of in_interrupt() in drivers is phased out and Linus clearly
-requested that code which changes behaviour depending on context should
-either be separated or the context be conveyed in an argument passed by the
-caller, which usually knows the context.
+The usage of in_*() in drivers is phased out and Linus clearly requested
+that code which changes behaviour depending on context should either be
+seperated or the context be conveyed in an argument passed by the caller,
+which usually knows the context.
 
-Aside of that in_interrupt() is not correct as it does not catch preempt
-disabled regions which neither can sleep.
-
-halbtc_send_bt_mp_operation() is called from:
-
- rtl_watchdog_wq_callback()
-   rtl_btc_periodical()
-     halbtc_get()
-       case BTC_GET_U4_BT_PATCH_VER:
-         halbtc_get_bt_patch_version()
-
- which is preemtible context.
-
-   rtl_c2h_content_parsing()
-     btc_ops->btc_btinfo_notify()
-       rtl_btc_btinfo_notify()
-         exhalbtc_bt_info_notify()
-           ex_btc8723b1ant_bt_info_notify()
-	   ex_btc8821a1ant_bt_info_notify()
-	   ex_btc8821a2ant_bt_info_notify()
-             btcoexist->btc_set_bt_reg()
-               halbtc_set_bt_reg()
-
-   rtl_c2h_content_parsing() is in turn called from:
-
-   rtl_c2hcmd_wq_callback()
-     rtl_c2hcmd_launcher()
-
-   which is preemptible context and from:
-
-   _rtl_pci_rx_interrupt
-     rtl_c2hcmd_enqueue()
-
-   which is obviously not preemptible but limited to C2H_BT_MP commands
-   which does invoke rtl_c2h_content_parsing().
-
-Aside of that it can be reached from:
-
-     halbtc_get()
-       case BTC_GET_U4_SUPPORTED_FEATURE:
-         halbtc_get_bt_coex_supported_feature()
-       case BTC_GET_U4_BT_FORBIDDEN_SLOT_VAL:
-         halbtc_get_bt_forbidden_slot_val()
-       case BTC_GET_U4_BT_DEVICE_INFO:
-         halbtc_get_bt_device_info()
-       case BTC_GET_U4_SUPPORTED_VERSION:
-         halbtc_get_bt_coex_supported_version()
-       case BTC_GET_U4_SUPPORTED_FEATURE:
-         halbtc_get_bt_coex_supported_feature()
-
-   btcoexist->btc_get_bt_afh_map_from_bt()
-     halbtc_get_bt_afh_map_from_bt()
-
-   btcoexist->btc_get_ble_scan_para_from_bt()
-     halbtc_get_ble_scan_para_from_bt()
-
-   btcoexist->btc_get_ble_scan_type_from_bt()
-     halbtc_get_ble_scan_type_from_bt()
-
-   btcoexist->btc_get_ant_det_val_from_bt()
-     halbtc_get_ant_det_val_from_bt()
-
-   btcoexist->btc_get_bt_coex_supported_version()
-     halbtc_get_bt_coex_supported_version()
-
-   btcoexist->btc_get_bt_coex_supported_feature()
-     halbtc_get_bt_coex_supported_feature()
-
-None of these have a caller. Welcome to the wonderful world of HALs and
-onion layers.
-
-Remove in_interrupt() check.
+Use the `napi' argument passed by the callback. It is set true if
+called from the interrupt handler and NAPI should be scheduled.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Ping-Ke Shih <pkshih@realtek.com>
-Cc: Kalle Valo <kvalo@codeaurora.org>
+Cc: "Horia Geant=C4=83" <horia.geanta@nxp.com>
+Cc: Aymen Sghaier <aymen.sghaier@nxp.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Madalin Bucur <madalin.bucur@nxp.com>
 Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: linux-wireless@vger.kernel.org
+Cc: Li Yang <leoyang.li@nxp.com>
+Cc: linux-crypto@vger.kernel.org
 Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
 ---
- drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c =
-b/drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c
-index 2155a6699ef8d..be4c0e60d44d1 100644
---- a/drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c
-+++ b/drivers/net/wireless/realtek/rtlwifi/btcoexist/halbtcoutsrc.c
-@@ -240,9 +240,6 @@ bool halbtc_send_bt_mp_operation(struct btc_coexist *bt=
-coexist, u8 op_code,
- 	rtl_dbg(rtlpriv, COMP_BT_COEXIST, DBG_LOUD,
- 		"btmpinfo wait req_num=3D%d wait=3D%ld\n", req_num, wait_ms);
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/e=
+thernet/freescale/dpaa/dpaa_eth.c
+index 27835310b718e..2c949acd74c67 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -2300,9 +2300,9 @@ static void dpaa_tx_conf(struct net_device *net_dev,
+ }
 =20
--	if (in_interrupt())
--		return false;
--
- 	if (wait_for_completion_timeout(&btcoexist->bt_mp_comp,
- 					msecs_to_jiffies(wait_ms)) =3D=3D 0) {
- 		rtl_dbg(rtlpriv, COMP_BT_COEXIST, DBG_DMESG,
+ static inline int dpaa_eth_napi_schedule(struct dpaa_percpu_priv *percpu_p=
+riv,
+-					 struct qman_portal *portal)
++					 struct qman_portal *portal, bool napi)
+ {
+-	if (unlikely(in_irq() || !in_serving_softirq())) {
++	if (napi) {
+ 		/* Disable QMan IRQ and invoke NAPI */
+ 		qman_p_irqsource_remove(portal, QM_PIRQ_DQRI);
+=20
+@@ -2333,7 +2333,7 @@ static enum qman_cb_dqrr_result rx_error_dqrr(struct =
+qman_portal *portal,
+=20
+ 	percpu_priv =3D this_cpu_ptr(priv->percpu_priv);
+=20
+-	if (dpaa_eth_napi_schedule(percpu_priv, portal))
++	if (dpaa_eth_napi_schedule(percpu_priv, portal, napi))
+ 		return qman_cb_dqrr_stop;
+=20
+ 	dpaa_eth_refill_bpools(priv);
+@@ -2377,7 +2377,7 @@ static enum qman_cb_dqrr_result rx_default_dqrr(struc=
+t qman_portal *portal,
+ 	percpu_priv =3D this_cpu_ptr(priv->percpu_priv);
+ 	percpu_stats =3D &percpu_priv->stats;
+=20
+-	if (unlikely(dpaa_eth_napi_schedule(percpu_priv, portal)))
++	if (unlikely(dpaa_eth_napi_schedule(percpu_priv, portal, napi)))
+ 		return qman_cb_dqrr_stop;
+=20
+ 	/* Make sure we didn't run out of buffers */
+@@ -2474,7 +2474,7 @@ static enum qman_cb_dqrr_result conf_error_dqrr(struc=
+t qman_portal *portal,
+=20
+ 	percpu_priv =3D this_cpu_ptr(priv->percpu_priv);
+=20
+-	if (dpaa_eth_napi_schedule(percpu_priv, portal))
++	if (dpaa_eth_napi_schedule(percpu_priv, portal, napi))
+ 		return qman_cb_dqrr_stop;
+=20
+ 	dpaa_tx_error(net_dev, priv, percpu_priv, &dq->fd, fq->fqid);
+@@ -2499,7 +2499,7 @@ static enum qman_cb_dqrr_result conf_dflt_dqrr(struct=
+ qman_portal *portal,
+=20
+ 	percpu_priv =3D this_cpu_ptr(priv->percpu_priv);
+=20
+-	if (dpaa_eth_napi_schedule(percpu_priv, portal))
++	if (dpaa_eth_napi_schedule(percpu_priv, portal, napi))
+ 		return qman_cb_dqrr_stop;
+=20
+ 	dpaa_tx_conf(net_dev, priv, percpu_priv, &dq->fd, fq->fqid);
 --=20
 2.28.0
 
