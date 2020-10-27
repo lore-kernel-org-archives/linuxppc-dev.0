@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5A9BC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:11:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 034F7C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:12:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE9A22068E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:11:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 42B012225E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:12:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="g9gqclAg";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="3pu8A+mw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE9A22068E
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="IrVDFjU5";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="1hcOJSQq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42B012225E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSB84T1gzDqMb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:11:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLSD83L4yzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:12:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
@@ -31,43 +31,43 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=g9gqclAg; 
+ header.s=2020 header.b=IrVDFjU5; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=3pu8A+mw; 
+ header.a=ed25519-sha256 header.s=2020e header.b=1hcOJSQq; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrd4cYtzDqNS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrd58C4zDqN7
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:56:01 +1100 (AEDT)
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1603839353;
+ s=2020; t=1603839357;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=rHsm8MJPK4Ur0LbpXXnCUbJyu0caOerJrH2+ye+Subo=;
- b=g9gqclAgDAf3eJ1BzG/Tjo6c3Wjzvg/2fO6fd0T8GBNT+WzPxY2DVEYi+F9Gvd+ktf+TEC
- WZu1xS6DQTgKQ6xtk5aRay4F1JP5dovJNmHPK/Jd/iC5z2TbEqpBOXFGIA6gGP1UD3DlBn
- rPtlUrfNxA1kPVS1Jto98k1ccQzCwJ4D7PSTpzfyXH+r463MHvnIryOV7bKk9tCEWkYXLd
- RR5zVi1h7i7bGbbI5c2HQPyzKxbOfTy6Hmj7lfCVkajbWk+v/hmoCUyU//Be0NoBUEgNIq
- nDVhsDeb8kv7uGwK7UZh5McvCCDUdQSqx0foVktzkZ98kiWEDi2kv8nVlws46Q==
+ bh=DjmStdTYpXx0Q5cgHBNYgoGt1xQMDGvpBhIAE5x62bo=;
+ b=IrVDFjU5wiUh3/1b+EWqAdpLz9jEaa0feaxAB0seewu3KP62xQWrIDIDRFVfJR88akb5V8
+ pixqewfSpPphy6wjIpk84kuwnoRmYibI+WPGXbSjRtkxqKuGHv479c5O+07RtRHzWP9EyO
+ /XS2O6gq02ndIa9jvIju3YeZBwPe7jdNPpcZYA5f5c/yCRKzmmvrHi/lomT6/LJwNTuzDq
+ 79tALLYTDN3HvBlJ21WplNePz/PcB96jD/urLc/mb0VXNxgXdrKoOYIKtApY4oS3NuMRJx
+ udPmRn5otfroi+DJXX7goaPxUdhrmyFNBJYKUfaap+PqN/QIS+Vy6OoaWTLFrw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1603839353;
+ s=2020e; t=1603839357;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=rHsm8MJPK4Ur0LbpXXnCUbJyu0caOerJrH2+ye+Subo=;
- b=3pu8A+mwxh3mhIXxUiir7K7vb09NmYUGtA31VB2CEtZ6pEKV8Cnze51kmc1BQ9Ksoyw8ug
- oP8DR7dDU3HBjKBQ==
+ bh=DjmStdTYpXx0Q5cgHBNYgoGt1xQMDGvpBhIAE5x62bo=;
+ b=1hcOJSQqWKvZ0z3m9yg8HSR6q16whMj9tbVFBVxwm9sIAnvgysjdR0EPOnpijehHN6jTXv
+ eMzOMmrlvWnhypDQ==
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 07/15] net: airo: Always use JOB_STATS and JOB_EVENT
-Date: Tue, 27 Oct 2020 23:54:46 +0100
-Message-Id: <20201027225454.3492351-8-bigeasy@linutronix.de>
+Subject: [PATCH net-next 10/15] net: zd1211rw: Remove in_atomic() usage.
+Date: Tue, 27 Oct 2020 23:54:49 +0100
+Message-Id: <20201027225454.3492351-11-bigeasy@linutronix.de>
 In-Reply-To: <20201027225454.3492351-1-bigeasy@linutronix.de>
 References: <20201027225454.3492351-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
@@ -102,68 +102,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-issuecommand() is using in_atomic() to decide if it is safe to invoke
-schedule() while waiting for the command to be accepted.
+The usage of in_atomic() in driver code is deprecated as it can not
+always detect all states where it is not allowed to sleep.
 
-Usage of in_atomic() for this is only half correct as it can not detect all
-condition where it is not allowed to schedule(). Also Linus clearly
-requested that code which changes behaviour depending on context should
-either be seperated or the context be conveyed in an argument passed by the
-caller, which usually knows the context.
-
-Chasing the call chains leading up to issuecommand() is straight forward,
-but airo_link() and airo_get_stats() would require to pass the context
-through a quite large amount of functions.
-
-As this is ancient hardware, avoid the churn and enforce the invocation of
-those functions through the JOB machinery.
+All callers are in premptible thread context and all functions invoke core
+functions which have checks for invalid calling contexts already.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Daniel Drake <dsd@gentoo.org>
+Cc: Ulrich Kunitz <kune@deine-taler.de>
 Cc: Kalle Valo <kvalo@codeaurora.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 Cc: linux-wireless@vger.kernel.org
 Cc: netdev@vger.kernel.org
 ---
- drivers/net/wireless/cisco/airo.c | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+ drivers/net/wireless/zydas/zd1211rw/zd_usb.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-diff --git a/drivers/net/wireless/cisco/airo.c b/drivers/net/wireless/cisco=
-/airo.c
-index ca423f3b6b3ea..369a6ca44d1ff 100644
---- a/drivers/net/wireless/cisco/airo.c
-+++ b/drivers/net/wireless/cisco/airo.c
-@@ -2286,12 +2286,8 @@ static struct net_device_stats *airo_get_stats(struc=
-t net_device *dev)
- 	struct airo_info *local =3D  dev->ml_priv;
-=20
- 	if (!test_bit(JOB_STATS, &local->jobs)) {
--		/* Get stats out of the card if available */
--		if (down_trylock(&local->sem) !=3D 0) {
--			set_bit(JOB_STATS, &local->jobs);
--			wake_up_interruptible(&local->thr_wait);
--		} else
--			airo_read_stats(dev);
-+		set_bit(JOB_STATS, &local->jobs);
-+		wake_up_interruptible(&local->thr_wait);
+diff --git a/drivers/net/wireless/zydas/zd1211rw/zd_usb.c b/drivers/net/wir=
+eless/zydas/zd1211rw/zd_usb.c
+index 66367ab7e4c1e..5c4cd0e1adebb 100644
+--- a/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zydas/zd1211rw/zd_usb.c
+@@ -1711,11 +1711,6 @@ int zd_usb_ioread16v(struct zd_usb *usb, u16 *values,
+ 			 count, USB_MAX_IOREAD16_COUNT);
+ 		return -EINVAL;
  	}
+-	if (in_atomic()) {
+-		dev_dbg_f(zd_usb_dev(usb),
+-			 "error: io in atomic context not supported\n");
+-		return -EWOULDBLOCK;
+-	}
+ 	if (!usb_int_enabled(usb)) {
+ 		dev_dbg_f(zd_usb_dev(usb),
+ 			  "error: usb interrupt not enabled\n");
+@@ -1882,11 +1877,6 @@ int zd_usb_iowrite16v_async(struct zd_usb *usb, cons=
+t struct zd_ioreq16 *ioreqs,
+ 			count, USB_MAX_IOWRITE16_COUNT);
+ 		return -EINVAL;
+ 	}
+-	if (in_atomic()) {
+-		dev_dbg_f(zd_usb_dev(usb),
+-			"error: io in atomic context not supported\n");
+-		return -EWOULDBLOCK;
+-	}
 =20
- 	return &dev->stats;
-@@ -3277,11 +3273,9 @@ static void airo_handle_link(struct airo_info *ai)
- 		set_bit(FLAG_UPDATE_UNI, &ai->flags);
- 		set_bit(FLAG_UPDATE_MULTI, &ai->flags);
+ 	udev =3D zd_usb_to_usbdev(usb);
 =20
--		if (down_trylock(&ai->sem) !=3D 0) {
--			set_bit(JOB_EVENT, &ai->jobs);
--			wake_up_interruptible(&ai->thr_wait);
--		} else
--			airo_send_event(ai->dev);
-+		set_bit(JOB_EVENT, &ai->jobs);
-+		wake_up_interruptible(&ai->thr_wait);
-+
- 		netif_carrier_on(ai->dev);
- 	} else if (!scan_forceloss) {
- 		if (auto_wep && !ai->expires) {
+@@ -1966,11 +1956,6 @@ int zd_usb_rfwrite(struct zd_usb *usb, u32 value, u8=
+ bits)
+ 	int i, req_len, actual_req_len;
+ 	u16 bit_value_template;
+=20
+-	if (in_atomic()) {
+-		dev_dbg_f(zd_usb_dev(usb),
+-			"error: io in atomic context not supported\n");
+-		return -EWOULDBLOCK;
+-	}
+ 	if (bits < USB_MIN_RFWRITE_BIT_COUNT) {
+ 		dev_dbg_f(zd_usb_dev(usb),
+ 			"error: bits %d are smaller than"
 --=20
 2.28.0
 
