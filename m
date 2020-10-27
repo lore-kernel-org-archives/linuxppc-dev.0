@@ -2,27 +2,27 @@ Return-Path: <SRS0=voBx=EC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 124E1C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0725AC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D836E21707
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:01:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 041FA221F7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Oct 2020 23:03:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="266a3cFB";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="2ykMjyQB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D836E21707
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bUBIMaq+";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Cgb/QtXN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 041FA221F7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLRzH6Kk7zDqFh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:01:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLS1m00HpzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 10:03:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
  helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de;
@@ -31,44 +31,43 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=266a3cFB; 
+ header.s=2020 header.b=bUBIMaq+; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=2ykMjyQB; 
+ header.a=ed25519-sha256 header.s=2020e header.b=Cgb/QtXN; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrS4rDXzDqNm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:55:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLRrT2zXqzDqNs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 09:55:53 +1100 (AEDT)
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1603839345;
+ s=2020; t=1603839350;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=/TW26lQLpozs0XwB5T+mhVlUC9AnO3WZrZ768veDUO0=;
- b=266a3cFBU0gVDAEwLrQXjeHKgXbAOtcj1n3K2Jw0mqabUmNDhl+Cjaiytp65uS8t3giIl7
- VNigi07OKXtfbvGOEKu9i87gn1nYMBygoh7BxJ4n77BxZg/+XxvQbKwyu4Q4+cxeaBP8IZ
- 1wOWMFZD+atks/b3j9hJztOWKNpfiiGCZmrPVHGJRGCNWRP/ruprCO7qiCsWvRNBcohXCk
- vlaJpjuF77ad4cKHptCN3Xq5aQ5p1V3lVWpWDN2HRh9ATJVvvKoimRK2yjoIhoSZ8oCmK0
- 9g3+n7KVdUxY3HlcLR4BXUjwDtF4e64QNY+aJtRac2f9lKPfP6Tkx/tBsdVVBg==
+ bh=bRUacw3Bc7beEyn3i5nkNjBTNGCFptcuD9rU8qmYaPs=;
+ b=bUBIMaq+5g117Vna+uU5FsYVLRKwfXrZMdL6Dww76JU4Tp01mYahr9O9Ayv3jxTrDze8FP
+ RZIS4wAem0B/yoOxJEGFqmsv7plaMurrt5k0X+tVU6TNRsgZNdCbpGqjG5lAFzzKcn91sg
+ w4LpdZ9wUqLsoLjUKqvLD2tkZec/QI+TWgm/G8S3PfJHQo5pVHZziHS78c5WOd3aqj3+sx
+ zxZDi+gg/l1ko9GFarBY4+1VrgfBXIIxMVxPjJM2KsqpGIJGcM1XXKQjdtiip5rvmqIbch
+ iEQ6li1cikA2h9wRa0UxavXNoJCNfI8QHpX0VjZgHwX2hFZ7JfWcaiLi/iHCnQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1603839345;
+ s=2020e; t=1603839350;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=/TW26lQLpozs0XwB5T+mhVlUC9AnO3WZrZ768veDUO0=;
- b=2ykMjyQByoGZE8+MN3pU0gNhtllD+Ziw3lg+7I/+rhvn+aCZ5JAJnEZY/GgSMu3WsOJiQx
- ZgFYSIDOUPOfb4AA==
+ bh=bRUacw3Bc7beEyn3i5nkNjBTNGCFptcuD9rU8qmYaPs=;
+ b=Cgb/QtXNKviGBg73QZnIeZQ1gqwTyx4EwiIyoivLRnvuq3kETK3qzlLQjmbEHhXNNGLydO
+ OZAkZaOYrNZBaBAg==
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 02/15] net: neterion: s2io: Replace in_interrupt()
- for context detection
-Date: Tue, 27 Oct 2020 23:54:41 +0100
-Message-Id: <20201027225454.3492351-3-bigeasy@linutronix.de>
+Subject: [PATCH net-next 05/15] net: tlan: Replace in_irq() usage
+Date: Tue, 27 Oct 2020 23:54:44 +0100
+Message-Id: <20201027225454.3492351-6-bigeasy@linutronix.de>
 In-Reply-To: <20201027225454.3492351-1-bigeasy@linutronix.de>
 References: <20201027225454.3492351-1-bigeasy@linutronix.de>
 MIME-Version: 1.0
@@ -103,275 +102,300 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-wait_for_cmd_complete() uses in_interrupt() to detect whether it is safe to
-sleep or not.
+The driver uses in_irq() to determine if the tlan_priv::lock has to be
+acquired in tlan_mii_read_reg() and tlan_mii_write_reg().
 
-The usage of in_interrupt() in drivers is phased out and Linus clearly
-requested that code which changes behaviour depending on context should
-either be seperated or the context be conveyed in an argument passed by the
-caller, which usually knows the context.
+The interrupt handler acquires the lock outside of these functions so the
+in_irq() check is meant to prevent a lock recursion deadlock. But this
+check is incorrect when interrupt force threading is enabled because then
+the handler runs in thread context and in_irq() correctly returns false.
 
-in_interrupt() also is only partially correct because it fails to chose the
-correct code path when just preemption or interrupts are disabled.
+The usage of in_*() in drivers is phased out and Linus clearly requested
+that code which changes behaviour depending on context should either be
+seperated or the context be conveyed in an argument passed by the caller,
+which usually knows the context.
 
-Add an argument 'may_block' to both functions and adjust the callers to
-pass the context information.
+tlan_set_timer() has this conditional as well, but this function is only
+invoked from task context or the timer callback itself. So it always has to
+lock and the check can be removed.
 
-The following call chains which end up invoking wait_for_cmd_complete()
-were analyzed to be safe to sleep:
+tlan_mii_read_reg(), tlan_mii_write_reg() and tlan_phy_print() are invoked
+from interrupt and other contexts.
 
- s2io_card_up()
-   s2io_set_multicast()
-
- init_nic()
-   init_tti()
-
- s2io_close()
-   do_s2io_delete_unicast_mc()
-     do_s2io_add_mac()
-
- s2io_set_mac_addr()
-   do_s2io_prog_unicast()
-     do_s2io_add_mac()
-
- s2io_reset()
-   do_s2io_restore_unicast_mc()
-     do_s2io_add_mc()
-       do_s2io_add_mac()
-
- s2io_open()
-   do_s2io_prog_unicast()
-     do_s2io_add_mac()
-
-The following call chains which end up invoking wait_for_cmd_complete()
-were analyzed to be safe to sleep:
-
- __dev_set_rx_mode()
-    s2io_set_multicast()
-
- s2io_txpic_intr_handle()
-   s2io_link()
-     init_tti()
-
-Add a may_sleep argument to wait_for_cmd_complete(), s2io_set_multicast()
-and init_tti() and hand the context information in from the call sites.
+Split out the actual function body into helper variants which are called
+from interrupt context and make the original functions wrappers which
+acquire tlan_priv::lock unconditionally.
 
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Jon Mason <jdmason@kudzu.us>
+Cc: Samuel Chessman <chessman@tux.org>
 Cc: "David S. Miller" <davem@davemloft.net>
 Cc: Jakub Kicinski <kuba@kernel.org>
 Cc: netdev@vger.kernel.org
 ---
- drivers/net/ethernet/neterion/s2io.c | 41 ++++++++++++++++------------
- drivers/net/ethernet/neterion/s2io.h |  4 +--
- 2 files changed, 25 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/ti/tlan.c | 98 ++++++++++++++++++++--------------
+ 1 file changed, 57 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/net/ethernet/neterion/s2io.c b/drivers/net/ethernet/ne=
-terion/s2io.c
-index d13d92bf74478..8f2f091bce899 100644
---- a/drivers/net/ethernet/neterion/s2io.c
-+++ b/drivers/net/ethernet/neterion/s2io.c
-@@ -1106,7 +1106,7 @@ static int s2io_print_pci_mode(struct s2io_nic *nic)
-  *  '-1' on failure
-  */
+diff --git a/drivers/net/ethernet/ti/tlan.c b/drivers/net/ethernet/ti/tlan.c
+index 267c080ee084b..0b2ce4bdc2c3d 100644
+--- a/drivers/net/ethernet/ti/tlan.c
++++ b/drivers/net/ethernet/ti/tlan.c
+@@ -186,6 +186,7 @@ static void	tlan_reset_adapter(struct net_device *);
+ static void	tlan_finish_reset(struct net_device *);
+ static void	tlan_set_mac(struct net_device *, int areg, char *mac);
 =20
--static int init_tti(struct s2io_nic *nic, int link)
-+static int init_tti(struct s2io_nic *nic, int link, bool may_sleep)
++static void	__tlan_phy_print(struct net_device *);
+ static void	tlan_phy_print(struct net_device *);
+ static void	tlan_phy_detect(struct net_device *);
+ static void	tlan_phy_power_down(struct net_device *);
+@@ -201,9 +202,11 @@ static void	tlan_phy_finish_auto_neg(struct net_device=
+ *);
+   static int	tlan_phy_dp83840a_check(struct net_device *);
+ */
+=20
+-static bool	tlan_mii_read_reg(struct net_device *, u16, u16, u16 *);
++static bool	__tlan_mii_read_reg(struct net_device *, u16, u16, u16 *);
++static void	tlan_mii_read_reg(struct net_device *, u16, u16, u16 *);
+ static void	tlan_mii_send_data(u16, u32, unsigned);
+ static void	tlan_mii_sync(u16);
++static void	__tlan_mii_write_reg(struct net_device *, u16, u16, u16);
+ static void	tlan_mii_write_reg(struct net_device *, u16, u16, u16);
+=20
+ static void	tlan_ee_send_start(u16);
+@@ -242,23 +245,20 @@ static u32
+ 	tlan_handle_rx_eoc
+ };
+=20
+-static inline void
++static void
+ tlan_set_timer(struct net_device *dev, u32 ticks, u32 type)
  {
- 	struct XENA_dev_config __iomem *bar0 =3D nic->bar0;
- 	register u64 val64 =3D 0;
-@@ -1166,7 +1166,7 @@ static int init_tti(struct s2io_nic *nic, int link)
+ 	struct tlan_priv *priv =3D netdev_priv(dev);
+ 	unsigned long flags =3D 0;
 =20
- 		if (wait_for_cmd_complete(&bar0->tti_command_mem,
- 					  TTI_CMD_MEM_STROBE_NEW_CMD,
--					  S2IO_BIT_RESET) !=3D SUCCESS)
-+					  S2IO_BIT_RESET, may_sleep) !=3D SUCCESS)
- 			return FAILURE;
+-	if (!in_irq())
+-		spin_lock_irqsave(&priv->lock, flags);
++	spin_lock_irqsave(&priv->lock, flags);
+ 	if (priv->timer.function !=3D NULL &&
+ 	    priv->timer_type !=3D TLAN_TIMER_ACTIVITY) {
+-		if (!in_irq())
+-			spin_unlock_irqrestore(&priv->lock, flags);
++		spin_unlock_irqrestore(&priv->lock, flags);
+ 		return;
  	}
+ 	priv->timer.function =3D tlan_timer;
+-	if (!in_irq())
+-		spin_unlock_irqrestore(&priv->lock, flags);
++	spin_unlock_irqrestore(&priv->lock, flags);
 =20
-@@ -1659,7 +1659,7 @@ static int init_nic(struct s2io_nic *nic)
- 	 */
-=20
- 	/* Initialize TTI */
--	if (SUCCESS !=3D init_tti(nic, nic->last_link_state))
-+	if (SUCCESS !=3D init_tti(nic, nic->last_link_state, true))
- 		return -ENODEV;
-=20
- 	/* RTI Initialization */
-@@ -3331,7 +3331,7 @@ static void s2io_updt_xpak_counter(struct net_device =
-*dev)
-  */
-=20
- static int wait_for_cmd_complete(void __iomem *addr, u64 busy_bit,
--				 int bit_state)
-+				 int bit_state, bool may_sleep)
- {
- 	int ret =3D FAILURE, cnt =3D 0, delay =3D 1;
- 	u64 val64;
-@@ -3353,7 +3353,7 @@ static int wait_for_cmd_complete(void __iomem *addr, =
-u64 busy_bit,
- 			}
+ 	priv->timer_set_at =3D jiffies;
+ 	priv->timer_type =3D type;
+@@ -1703,22 +1703,22 @@ static u32 tlan_handle_status_check(struct net_devi=
+ce *dev, u16 host_int)
+ 				 dev->name, (unsigned) net_sts);
  		}
+ 		if ((net_sts & TLAN_NET_STS_MIRQ) &&  (priv->phy_num =3D=3D 0)) {
+-			tlan_mii_read_reg(dev, phy, TLAN_TLPHY_STS, &tlphy_sts);
+-			tlan_mii_read_reg(dev, phy, TLAN_TLPHY_CTL, &tlphy_ctl);
++			__tlan_mii_read_reg(dev, phy, TLAN_TLPHY_STS, &tlphy_sts);
++			__tlan_mii_read_reg(dev, phy, TLAN_TLPHY_CTL, &tlphy_ctl);
+ 			if (!(tlphy_sts & TLAN_TS_POLOK) &&
+ 			    !(tlphy_ctl & TLAN_TC_SWAPOL)) {
+ 				tlphy_ctl |=3D TLAN_TC_SWAPOL;
+-				tlan_mii_write_reg(dev, phy, TLAN_TLPHY_CTL,
+-						   tlphy_ctl);
++				__tlan_mii_write_reg(dev, phy, TLAN_TLPHY_CTL,
++						     tlphy_ctl);
+ 			} else if ((tlphy_sts & TLAN_TS_POLOK) &&
+ 				   (tlphy_ctl & TLAN_TC_SWAPOL)) {
+ 				tlphy_ctl &=3D ~TLAN_TC_SWAPOL;
+-				tlan_mii_write_reg(dev, phy, TLAN_TLPHY_CTL,
+-						   tlphy_ctl);
++				__tlan_mii_write_reg(dev, phy, TLAN_TLPHY_CTL,
++						     tlphy_ctl);
+ 			}
 =20
--		if (in_interrupt())
-+		if (!may_sleep)
- 			mdelay(delay);
- 		else
- 			msleep(delay);
-@@ -4877,8 +4877,7 @@ static struct net_device_stats *s2io_get_stats(struct=
- net_device *dev)
-  *  Return value:
-  *  void.
-  */
--
--static void s2io_set_multicast(struct net_device *dev)
-+static void s2io_set_multicast(struct net_device *dev, bool may_sleep)
+ 			if (debug)
+-				tlan_phy_print(dev);
++				__tlan_phy_print(dev);
+ 		}
+ 	}
+=20
+@@ -2379,7 +2379,7 @@ ThunderLAN driver PHY layer routines
+=20
+=20
+ /*********************************************************************
+- *	tlan_phy_print
++ *	__tlan_phy_print
+  *
+  *	Returns:
+  *		Nothing
+@@ -2391,11 +2391,13 @@ ThunderLAN driver PHY layer routines
+  *
+  ********************************************************************/
+=20
+-static void tlan_phy_print(struct net_device *dev)
++static void __tlan_phy_print(struct net_device *dev)
  {
- 	int i, j, prev_cnt;
- 	struct netdev_hw_addr *ha;
-@@ -4903,7 +4902,7 @@ static void s2io_set_multicast(struct net_device *dev)
- 		/* Wait till command completes */
- 		wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 				      RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--				      S2IO_BIT_RESET);
-+				      S2IO_BIT_RESET, may_sleep);
+ 	struct tlan_priv *priv =3D netdev_priv(dev);
+ 	u16 i, data0, data1, data2, data3, phy;
 =20
- 		sp->m_cast_flg =3D 1;
- 		sp->all_multi_pos =3D config->max_mc_addr - 1;
-@@ -4920,7 +4919,7 @@ static void s2io_set_multicast(struct net_device *dev)
- 		/* Wait till command completes */
- 		wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 				      RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--				      S2IO_BIT_RESET);
-+				      S2IO_BIT_RESET, may_sleep);
-=20
- 		sp->m_cast_flg =3D 0;
- 		sp->all_multi_pos =3D 0;
-@@ -5000,7 +4999,7 @@ static void s2io_set_multicast(struct net_device *dev)
- 			/* Wait for command completes */
- 			if (wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 						  RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--						  S2IO_BIT_RESET)) {
-+						  S2IO_BIT_RESET, may_sleep)) {
- 				DBG_PRINT(ERR_DBG,
- 					  "%s: Adding Multicasts failed\n",
- 					  dev->name);
-@@ -5030,7 +5029,7 @@ static void s2io_set_multicast(struct net_device *dev)
- 			/* Wait for command completes */
- 			if (wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 						  RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--						  S2IO_BIT_RESET)) {
-+						  S2IO_BIT_RESET, may_sleep)) {
- 				DBG_PRINT(ERR_DBG,
- 					  "%s: Adding Multicasts failed\n",
- 					  dev->name);
-@@ -5041,6 +5040,12 @@ static void s2io_set_multicast(struct net_device *de=
-v)
- 	}
- }
-=20
-+/* NDO wrapper for s2io_set_multicast */
-+static void s2io_ndo_set_multicast(struct net_device *dev)
-+{
-+	s2io_set_multicast(dev, false);
-+}
++	lockdep_assert_held(&priv->lock);
 +
- /* read from CAM unicast & multicast addresses and store it in
-  * def_mac_addr structure
-  */
-@@ -5127,7 +5132,7 @@ static int do_s2io_add_mac(struct s2io_nic *sp, u64 a=
-ddr, int off)
- 	/* Wait till command completes */
- 	if (wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 				  RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--				  S2IO_BIT_RESET)) {
-+				  S2IO_BIT_RESET, true)) {
- 		DBG_PRINT(INFO_DBG, "do_s2io_add_mac failed\n");
- 		return FAILURE;
- 	}
-@@ -5171,7 +5176,7 @@ static u64 do_s2io_read_unicast_mc(struct s2io_nic *s=
-p, int offset)
- 	/* Wait till command completes */
- 	if (wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 				  RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--				  S2IO_BIT_RESET)) {
-+				  S2IO_BIT_RESET, true)) {
- 		DBG_PRINT(INFO_DBG, "do_s2io_read_unicast_mc failed\n");
- 		return FAILURE;
- 	}
-@@ -7141,7 +7146,7 @@ static int s2io_card_up(struct s2io_nic *sp)
- 	}
+ 	phy =3D priv->phy[priv->phy_num];
 =20
- 	/* Setting its receive mode */
--	s2io_set_multicast(dev);
-+	s2io_set_multicast(dev, true);
+ 	if (priv->adapter->flags & TLAN_ADAPTER_UNMANAGED_PHY) {
+@@ -2404,10 +2406,10 @@ static void tlan_phy_print(struct net_device *dev)
+ 		netdev_info(dev, "PHY 0x%02x\n", phy);
+ 		pr_info("   Off.  +0     +1     +2     +3\n");
+ 		for (i =3D 0; i < 0x20; i +=3D 4) {
+-			tlan_mii_read_reg(dev, phy, i, &data0);
+-			tlan_mii_read_reg(dev, phy, i + 1, &data1);
+-			tlan_mii_read_reg(dev, phy, i + 2, &data2);
+-			tlan_mii_read_reg(dev, phy, i + 3, &data3);
++			__tlan_mii_read_reg(dev, phy, i, &data0);
++			__tlan_mii_read_reg(dev, phy, i + 1, &data1);
++			__tlan_mii_read_reg(dev, phy, i + 2, &data2);
++			__tlan_mii_read_reg(dev, phy, i + 3, &data3);
+ 			pr_info("   0x%02x 0x%04hx 0x%04hx 0x%04hx 0x%04hx\n",
+ 				i, data0, data1, data2, data3);
+ 		}
+@@ -2417,7 +2419,15 @@ static void tlan_phy_print(struct net_device *dev)
 =20
- 	if (dev->features & NETIF_F_LRO) {
- 		/* Initialize max aggregatable pkts per session based on MTU */
-@@ -7447,7 +7452,7 @@ static void s2io_link(struct s2io_nic *sp, int link)
- 	struct swStat *swstats =3D &sp->mac_control.stats_info->sw_stat;
-=20
- 	if (link !=3D sp->last_link_state) {
--		init_tti(sp, link);
-+		init_tti(sp, link, false);
- 		if (link =3D=3D LINK_DOWN) {
- 			DBG_PRINT(ERR_DBG, "%s: Link down\n", dev->name);
- 			s2io_stop_all_tx_queue(sp);
-@@ -7604,7 +7609,7 @@ static int rts_ds_steer(struct s2io_nic *nic, u8 ds_c=
-odepoint, u8 ring)
-=20
- 	return wait_for_cmd_complete(&bar0->rts_ds_mem_ctrl,
- 				     RTS_DS_MEM_CTRL_STROBE_CMD_BEING_EXECUTED,
--				     S2IO_BIT_RESET);
-+				     S2IO_BIT_RESET, true);
  }
 =20
- static const struct net_device_ops s2io_netdev_ops =3D {
-@@ -7613,7 +7618,7 @@ static const struct net_device_ops s2io_netdev_ops =
-=3D {
- 	.ndo_get_stats	        =3D s2io_get_stats,
- 	.ndo_start_xmit    	=3D s2io_xmit,
- 	.ndo_validate_addr	=3D eth_validate_addr,
--	.ndo_set_rx_mode	=3D s2io_set_multicast,
-+	.ndo_set_rx_mode	=3D s2io_ndo_set_multicast,
- 	.ndo_do_ioctl	   	=3D s2io_ioctl,
- 	.ndo_set_mac_address    =3D s2io_set_mac_addr,
- 	.ndo_change_mtu	   	=3D s2io_change_mtu,
-@@ -7929,7 +7934,7 @@ s2io_init_nic(struct pci_dev *pdev, const struct pci_=
-device_id *pre)
- 	writeq(val64, &bar0->rmac_addr_cmd_mem);
- 	wait_for_cmd_complete(&bar0->rmac_addr_cmd_mem,
- 			      RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING,
--			      S2IO_BIT_RESET);
-+			      S2IO_BIT_RESET, true);
- 	tmp64 =3D readq(&bar0->rmac_addr_data0_mem);
- 	mac_down =3D (u32)tmp64;
- 	mac_up =3D (u32) (tmp64 >> 32);
-diff --git a/drivers/net/ethernet/neterion/s2io.h b/drivers/net/ethernet/ne=
-terion/s2io.h
-index 6fa3159a977fd..5a6032212c19d 100644
---- a/drivers/net/ethernet/neterion/s2io.h
-+++ b/drivers/net/ethernet/neterion/s2io.h
-@@ -1066,7 +1066,7 @@ static void tx_intr_handler(struct fifo_info *fifo_da=
-ta);
- static void s2io_handle_errors(void * dev_id);
++static void tlan_phy_print(struct net_device *dev)
++{
++	struct tlan_priv *priv =3D netdev_priv(dev);
++	unsigned long flags;
 =20
- static void s2io_tx_watchdog(struct net_device *dev, unsigned int txqueue);
--static void s2io_set_multicast(struct net_device *dev);
-+static void s2io_set_multicast(struct net_device *dev, bool may_sleep);
- static int rx_osm_handler(struct ring_info *ring_data, struct RxD_t * rxdp=
-);
- static void s2io_link(struct s2io_nic * sp, int link);
- static void s2io_reset(struct s2io_nic * sp);
-@@ -1087,7 +1087,7 @@ static int s2io_set_swapper(struct s2io_nic * sp);
- static void s2io_card_down(struct s2io_nic *nic);
- static int s2io_card_up(struct s2io_nic *nic);
- static int wait_for_cmd_complete(void __iomem *addr, u64 busy_bit,
--					int bit_state);
-+				 int bit_state, bool may_sleep);
- static int s2io_add_isr(struct s2io_nic * sp);
- static void s2io_rem_isr(struct s2io_nic * sp);
++	spin_lock_irqsave(&priv->lock, flags);
++	__tlan_phy_print(dev);
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
 =20
+=20
+ /*********************************************************************
+@@ -2795,7 +2805,7 @@ these routines are based on the information in chap. =
+2 of the
+=20
+=20
+ /***************************************************************
+- *	tlan_mii_read_reg
++ *	__tlan_mii_read_reg
+  *
+  *	Returns:
+  *		false	if ack received ok
+@@ -2819,7 +2829,7 @@ these routines are based on the information in chap. =
+2 of the
+  **************************************************************/
+=20
+ static bool
+-tlan_mii_read_reg(struct net_device *dev, u16 phy, u16 reg, u16 *val)
++__tlan_mii_read_reg(struct net_device *dev, u16 phy, u16 reg, u16 *val)
+ {
+ 	u8	nack;
+ 	u16	sio, tmp;
+@@ -2827,15 +2837,13 @@ tlan_mii_read_reg(struct net_device *dev, u16 phy, =
+u16 reg, u16 *val)
+ 	bool	err;
+ 	int	minten;
+ 	struct tlan_priv *priv =3D netdev_priv(dev);
+-	unsigned long flags =3D 0;
++
++	lockdep_assert_held(&priv->lock);
+=20
+ 	err =3D false;
+ 	outw(TLAN_NET_SIO, dev->base_addr + TLAN_DIO_ADR);
+ 	sio =3D dev->base_addr + TLAN_DIO_DATA + TLAN_NET_SIO;
+=20
+-	if (!in_irq())
+-		spin_lock_irqsave(&priv->lock, flags);
+-
+ 	tlan_mii_sync(dev->base_addr);
+=20
+ 	minten =3D tlan_get_bit(TLAN_NET_SIO_MINTEN, sio);
+@@ -2881,15 +2889,19 @@ tlan_mii_read_reg(struct net_device *dev, u16 phy, =
+u16 reg, u16 *val)
+=20
+ 	*val =3D tmp;
+=20
+-	if (!in_irq())
+-		spin_unlock_irqrestore(&priv->lock, flags);
+-
+ 	return err;
+-
+ }
+=20
++static void tlan_mii_read_reg(struct net_device *dev, u16 phy, u16 reg,
++			      u16 *val)
++{
++	struct tlan_priv *priv =3D netdev_priv(dev);
++	unsigned long flags;
+=20
+-
++	spin_lock_irqsave(&priv->lock, flags);
++	__tlan_mii_read_reg(dev, phy, reg, val);
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
+=20
+ /***************************************************************
+  *	tlan_mii_send_data
+@@ -2971,7 +2983,7 @@ static void tlan_mii_sync(u16 base_port)
+=20
+=20
+ /***************************************************************
+- *	tlan_mii_write_reg
++ *	__tlan_mii_write_reg
+  *
+  *	Returns:
+  *		Nothing
+@@ -2991,19 +3003,17 @@ static void tlan_mii_sync(u16 base_port)
+  **************************************************************/
+=20
+ static void
+-tlan_mii_write_reg(struct net_device *dev, u16 phy, u16 reg, u16 val)
++__tlan_mii_write_reg(struct net_device *dev, u16 phy, u16 reg, u16 val)
+ {
+ 	u16	sio;
+ 	int	minten;
+-	unsigned long flags =3D 0;
+ 	struct tlan_priv *priv =3D netdev_priv(dev);
+=20
++	lockdep_assert_held(&priv->lock);
++
+ 	outw(TLAN_NET_SIO, dev->base_addr + TLAN_DIO_ADR);
+ 	sio =3D dev->base_addr + TLAN_DIO_DATA + TLAN_NET_SIO;
+=20
+-	if (!in_irq())
+-		spin_lock_irqsave(&priv->lock, flags);
+-
+ 	tlan_mii_sync(dev->base_addr);
+=20
+ 	minten =3D tlan_get_bit(TLAN_NET_SIO_MINTEN, sio);
+@@ -3024,12 +3034,18 @@ tlan_mii_write_reg(struct net_device *dev, u16 phy,=
+ u16 reg, u16 val)
+ 	if (minten)
+ 		tlan_set_bit(TLAN_NET_SIO_MINTEN, sio);
+=20
+-	if (!in_irq())
+-		spin_unlock_irqrestore(&priv->lock, flags);
+-
+ }
+=20
++static void
++tlan_mii_write_reg(struct net_device *dev, u16 phy, u16 reg, u16 val)
++{
++	struct tlan_priv *priv =3D netdev_priv(dev);
++	unsigned long flags;
+=20
++	spin_lock_irqsave(&priv->lock, flags);
++	__tlan_mii_write_reg(dev, phy, reg, val);
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
+=20
+=20
+ /*************************************************************************=
+****
 --=20
 2.28.0
 
