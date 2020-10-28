@@ -2,24 +2,23 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB492C55179
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:59:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E93CC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:01:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E798824828
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:59:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E798824828
+	by mail.kernel.org (Postfix) with ESMTPS id 65DDA24835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:01:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65DDA24835
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CM1D611L4zDqZX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 07:59:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CM1GM0fHmzDqWW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 08:01:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=gmail.com (client-ip=209.85.167.196;
  helo=mail-oi1-f196.google.com; envelope-from=robherring2@gmail.com;
@@ -31,36 +30,36 @@ Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CM0xS3cJ5zDqVH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 07:47:08 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id c72so951046oig.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 13:47:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CM0xT69gczDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 07:47:09 +1100 (AEDT)
+Received: by mail-oi1-f196.google.com with SMTP id j7so933651oie.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 13:47:09 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=h0T8M9HFPja/Qcz5+OFxDy+3Ox865wq64TJqX0lZtiY=;
- b=tBIaBFEj2DJ9vhGZmygmV3w3bw2TYPPEtRAT8RINZktL8rpVT89sW7culol2NC0N8Y
- 3VnRCHUsc0FHFcEmEsvjBh4Vck2rxwlLjdxo/+0rlWvV6YKGHpFasxQGEjpum6O3g7Rx
- 98/egOH8U7GLnWwpjuzUF65XdeL7kzli77OSbo6i+o2oDoyGeKtsggFu1RjnknU8Uu6Q
- RLKy5Q2naw2T958sQNR/jAGFJ6PfGa7np3SebIteAt2YGP9E5pn6gViR3Lhs9C3zLhGy
- E7NoHjv7lQEgK5vTPMc4YuRseXVC0hSWPFzognYpx39g5qlvzhNamde0y6paTPo9gyxw
- dHng==
-X-Gm-Message-State: AOAM531348tD0MnSZbjEzaEDCqVzV2d7tpMp1o6ArA8y32jdwmNDzm1v
- nsfUooRuMBHXhMwYapPmBQ==
-X-Google-Smtp-Source: ABdhPJzzLIwVb0GnrgftuCJ9zcN8udQxeppgVsd6r2Be66BDmlGrxb8/wZxghvtZTyC09OZtmCreNQ==
-X-Received: by 2002:aca:47cc:: with SMTP id u195mr630676oia.83.1603918024915; 
- Wed, 28 Oct 2020 13:47:04 -0700 (PDT)
+ bh=PxZqaaZeM9rn0EmiB2pyN8ld61KaiAeovfT1I1hXfhU=;
+ b=VfbRyVxeZ2uOaa+hWRnwQzQ0SyxwkwYcy1YtVRM8QkbwY1TSAuWZmIrJM/d5bFhgjY
+ IHPpzVDSAYuhlOp6Hs/6C1t/gG6XbgDfP5kyrv0yf7WMhGRjKEZGMNmJUkMhLj7v3Eyn
+ xDBslzRo/Sr7qfBFV/GAR+pl3l8btSUEFjIIGtD5nSj5qKnkvpT+4SAz8BAcNlhtU3el
+ +9ZtDobIPsnnGTVtPhYSv+qAKh93ez1Ms8K+EA3xsegWK0hv3Bm4TrgmjkQbkjWcJ8zV
+ u0tdOOH10LawtcowamNoKwwZgEEfkb5rkjSBcoutGHBwZPcJXcRfd4LXHjbOjW32SPvd
+ 8dZA==
+X-Gm-Message-State: AOAM5338TG+D+soBp8ja7QoelloJkmTseZ5FVLQiashHVjdwsYbMSxhH
+ aAIo5GHldfx+w9/XoMfRrw==
+X-Google-Smtp-Source: ABdhPJyFp7QnoFosByRfbGom+wWmaa8T9lbdi9qswtTyff4qMNEAI9VDyjl5mqDEBjA5fFbiY8f1Ew==
+X-Received: by 2002:a54:4194:: with SMTP id 20mr606316oiy.137.1603918027560;
+ Wed, 28 Oct 2020 13:47:07 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.googlemail.com with ESMTPSA id t17sm116123oor.3.2020.10.28.13.47.02
+ by smtp.googlemail.com with ESMTPSA id t17sm116123oor.3.2020.10.28.13.47.05
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Oct 2020 13:47:04 -0700 (PDT)
+ Wed, 28 Oct 2020 13:47:06 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH 06/13] PCI: dwc/dra7xx: Use the common MSI irq_chip
-Date: Wed, 28 Oct 2020 15:46:39 -0500
-Message-Id: <20201028204646.356535-7-robh@kernel.org>
+Subject: [PATCH 07/13] PCI: dwc: Drop the .set_num_vectors() host op
+Date: Wed, 28 Oct 2020 15:46:40 -0500
+Message-Id: <20201028204646.356535-8-robh@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201028204646.356535-1-robh@kernel.org>
 References: <20201028204646.356535-1-robh@kernel.org>
@@ -106,157 +105,126 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The dra7xx MSI irq_chip implementation is identical to the default DWC one.
-The only difference is the interrupt handler as the MSI interrupt is muxed
-with other interrupts, but that doesn't affect the irq_chip part of it.
+There's no reason for the .set_num_vectors() host op. Drivers needing a
+non-default value can just initialize pcie_port.num_vectors directly.
 
-Cc: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Gustavo Pimentel <gustavo.pimentel@synopsys.com>
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-omap@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-tegra@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/pci/controller/dwc/pci-dra7xx.c | 125 ------------------------
- 1 file changed, 125 deletions(-)
+ .../pci/controller/dwc/pcie-designware-host.c | 19 ++++---------------
+ .../pci/controller/dwc/pcie-designware-plat.c |  7 +------
+ drivers/pci/controller/dwc/pcie-designware.h  |  1 -
+ drivers/pci/controller/dwc/pcie-tegra194.c    |  7 +------
+ 4 files changed, 6 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
-index a4aabc85dbb1..4d0c35a4aa59 100644
---- a/drivers/pci/controller/dwc/pci-dra7xx.c
-+++ b/drivers/pci/controller/dwc/pci-dra7xx.c
-@@ -377,133 +377,8 @@ static int dra7xx_pcie_init_irq_domain(struct pcie_port *pp)
+diff --git a/drivers/pci/controller/dwc/pcie-designware-host.c b/drivers/pci/controller/dwc/pcie-designware-host.c
+index 265a48f1a0ae..1bd6a9762426 100644
+--- a/drivers/pci/controller/dwc/pcie-designware-host.c
++++ b/drivers/pci/controller/dwc/pcie-designware-host.c
+@@ -365,22 +365,11 @@ int dw_pcie_host_init(struct pcie_port *pp)
+ 		pci->link_gen = of_pci_get_max_link_speed(np);
+ 
+ 	if (pci_msi_enabled()) {
+-		/*
+-		 * If a specific SoC driver needs to change the
+-		 * default number of vectors, it needs to implement
+-		 * the set_num_vectors callback.
+-		 */
+-		if (!pp->ops->set_num_vectors) {
++		if (!pp->num_vectors) {
+ 			pp->num_vectors = MSI_DEF_NUM_VECTORS;
+-		} else {
+-			pp->ops->set_num_vectors(pp);
+-
+-			if (pp->num_vectors > MAX_MSI_IRQS ||
+-			    pp->num_vectors == 0) {
+-				dev_err(dev,
+-					"Invalid number of vectors\n");
+-				return -EINVAL;
+-			}
++		} else if (pp->num_vectors > MAX_MSI_IRQS) {
++			dev_err(dev, "Invalid number of vectors\n");
++			return -EINVAL;
+ 		}
+ 
+ 		if (!pp->ops->msi_host_init) {
+diff --git a/drivers/pci/controller/dwc/pcie-designware-plat.c b/drivers/pci/controller/dwc/pcie-designware-plat.c
+index 562a05e07b1d..13fede1d4157 100644
+--- a/drivers/pci/controller/dwc/pcie-designware-plat.c
++++ b/drivers/pci/controller/dwc/pcie-designware-plat.c
+@@ -44,14 +44,8 @@ static int dw_plat_pcie_host_init(struct pcie_port *pp)
  	return 0;
  }
  
--static void dra7xx_pcie_setup_msi_msg(struct irq_data *d, struct msi_msg *msg)
+-static void dw_plat_set_num_vectors(struct pcie_port *pp)
 -{
--	struct pcie_port *pp = irq_data_get_irq_chip_data(d);
--	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	u64 msi_target;
--
--	msi_target = (u64)pp->msi_data;
--
--	msg->address_lo = lower_32_bits(msi_target);
--	msg->address_hi = upper_32_bits(msi_target);
--
--	msg->data = d->hwirq;
--
--	dev_dbg(pci->dev, "msi#%d address_hi %#x address_lo %#x\n",
--		(int)d->hwirq, msg->address_hi, msg->address_lo);
+-	pp->num_vectors = MAX_MSI_IRQS;
 -}
 -
--static int dra7xx_pcie_msi_set_affinity(struct irq_data *d,
--					const struct cpumask *mask,
--					bool force)
--{
--	return -EINVAL;
--}
--
--static void dra7xx_pcie_bottom_mask(struct irq_data *d)
--{
--	struct pcie_port *pp = irq_data_get_irq_chip_data(d);
--	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	unsigned int res, bit, ctrl;
--	unsigned long flags;
--
--	raw_spin_lock_irqsave(&pp->lock, flags);
--
--	ctrl = d->hwirq / MAX_MSI_IRQS_PER_CTRL;
--	res = ctrl * MSI_REG_CTRL_BLOCK_SIZE;
--	bit = d->hwirq % MAX_MSI_IRQS_PER_CTRL;
--
--	pp->irq_mask[ctrl] |= BIT(bit);
--	dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_MASK + res,
--			   pp->irq_mask[ctrl]);
--
--	raw_spin_unlock_irqrestore(&pp->lock, flags);
--}
--
--static void dra7xx_pcie_bottom_unmask(struct irq_data *d)
--{
--	struct pcie_port *pp = irq_data_get_irq_chip_data(d);
--	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	unsigned int res, bit, ctrl;
--	unsigned long flags;
--
--	raw_spin_lock_irqsave(&pp->lock, flags);
--
--	ctrl = d->hwirq / MAX_MSI_IRQS_PER_CTRL;
--	res = ctrl * MSI_REG_CTRL_BLOCK_SIZE;
--	bit = d->hwirq % MAX_MSI_IRQS_PER_CTRL;
--
--	pp->irq_mask[ctrl] &= ~BIT(bit);
--	dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_MASK + res,
--			   pp->irq_mask[ctrl]);
--
--	raw_spin_unlock_irqrestore(&pp->lock, flags);
--}
--
--static void dra7xx_pcie_bottom_ack(struct irq_data *d)
--{
--	struct pcie_port *pp  = irq_data_get_irq_chip_data(d);
--	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	unsigned int res, bit, ctrl;
--
--	ctrl = d->hwirq / MAX_MSI_IRQS_PER_CTRL;
--	res = ctrl * MSI_REG_CTRL_BLOCK_SIZE;
--	bit = d->hwirq % MAX_MSI_IRQS_PER_CTRL;
--
--	dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_STATUS + res, BIT(bit));
--}
--
--static struct irq_chip dra7xx_pci_msi_bottom_irq_chip = {
--	.name = "DRA7XX-PCI-MSI",
--	.irq_ack = dra7xx_pcie_bottom_ack,
--	.irq_compose_msi_msg = dra7xx_pcie_setup_msi_msg,
--	.irq_set_affinity = dra7xx_pcie_msi_set_affinity,
--	.irq_mask = dra7xx_pcie_bottom_mask,
--	.irq_unmask = dra7xx_pcie_bottom_unmask,
--};
--
--static int dra7xx_pcie_msi_host_init(struct pcie_port *pp)
--{
--	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
--	struct device *dev = pci->dev;
--	u32 ctrl, num_ctrls;
--	int ret;
--
--	pp->msi_irq_chip = &dra7xx_pci_msi_bottom_irq_chip;
--
--	num_ctrls = pp->num_vectors / MAX_MSI_IRQS_PER_CTRL;
--	/* Initialize IRQ Status array */
--	for (ctrl = 0; ctrl < num_ctrls; ctrl++) {
--		pp->irq_mask[ctrl] = ~0;
--		dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_MASK +
--				    (ctrl * MSI_REG_CTRL_BLOCK_SIZE),
--				    pp->irq_mask[ctrl]);
--		dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_ENABLE +
--				    (ctrl * MSI_REG_CTRL_BLOCK_SIZE),
--				    ~0);
--	}
--
--	ret = dw_pcie_allocate_domains(pp);
--	if (ret)
--		return ret;
--
--	pp->msi_data = dma_map_single_attrs(dev, &pp->msi_msg,
--					   sizeof(pp->msi_msg),
--					   DMA_FROM_DEVICE,
--					   DMA_ATTR_SKIP_CPU_SYNC);
--	ret = dma_mapping_error(dev, pp->msi_data);
--	if (ret) {
--		dev_err(dev, "Failed to map MSI data\n");
--		pp->msi_data = 0;
--		dw_pcie_free_msi(pp);
--	}
--	return ret;
--}
--
- static const struct dw_pcie_host_ops dra7xx_pcie_host_ops = {
- 	.host_init = dra7xx_pcie_host_init,
--	.msi_host_init = dra7xx_pcie_msi_host_init,
+ static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
+ 	.host_init = dw_plat_pcie_host_init,
+-	.set_num_vectors = dw_plat_set_num_vectors,
  };
  
- static void dra7xx_pcie_ep_init(struct dw_pcie_ep *ep)
+ static int dw_plat_pcie_establish_link(struct dw_pcie *pci)
+@@ -128,6 +122,7 @@ static int dw_plat_add_pcie_port(struct dw_plat_pcie *dw_plat_pcie,
+ 			return pp->msi_irq;
+ 	}
+ 
++	pp->num_vectors = MAX_MSI_IRQS;
+ 	pp->ops = &dw_plat_pcie_host_ops;
+ 
+ 	ret = dw_pcie_host_init(pp);
+diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
+index ed19c34dd0fe..96382dcb2859 100644
+--- a/drivers/pci/controller/dwc/pcie-designware.h
++++ b/drivers/pci/controller/dwc/pcie-designware.h
+@@ -171,7 +171,6 @@ enum dw_pcie_device_mode {
+ 
+ struct dw_pcie_host_ops {
+ 	int (*host_init)(struct pcie_port *pp);
+-	void (*set_num_vectors)(struct pcie_port *pp);
+ 	int (*msi_host_init)(struct pcie_port *pp);
+ };
+ 
+diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
+index f8fca6794282..5e2841f58700 100644
+--- a/drivers/pci/controller/dwc/pcie-tegra194.c
++++ b/drivers/pci/controller/dwc/pcie-tegra194.c
+@@ -990,11 +990,6 @@ static int tegra_pcie_dw_link_up(struct dw_pcie *pci)
+ 	return !!(val & PCI_EXP_LNKSTA_DLLLA);
+ }
+ 
+-static void tegra_pcie_set_msi_vec_num(struct pcie_port *pp)
+-{
+-	pp->num_vectors = MAX_MSI_IRQS;
+-}
+-
+ static int tegra_pcie_dw_start_link(struct dw_pcie *pci)
+ {
+ 	struct tegra_pcie_dw *pcie = to_tegra_pcie(pci);
+@@ -1019,7 +1014,6 @@ static const struct dw_pcie_ops tegra_dw_pcie_ops = {
+ 
+ static struct dw_pcie_host_ops tegra_pcie_dw_host_ops = {
+ 	.host_init = tegra_pcie_dw_host_init,
+-	.set_num_vectors = tegra_pcie_set_msi_vec_num,
+ };
+ 
+ static void tegra_pcie_disable_phy(struct tegra_pcie_dw *pcie)
+@@ -1995,6 +1989,7 @@ static int tegra_pcie_dw_probe(struct platform_device *pdev)
+ 	pci->n_fts[1] = FTS_VAL;
+ 
+ 	pp = &pci->pp;
++	pp->num_vectors = MAX_MSI_IRQS;
+ 	pcie->dev = &pdev->dev;
+ 	pcie->mode = (enum dw_pcie_device_mode)data->mode;
+ 
 -- 
 2.25.1
 
