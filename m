@@ -2,62 +2,53 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9386AC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 11:48:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F26CC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 11:58:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E99B9246CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 11:48:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E99B9246CB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id ADFCA246DD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 11:58:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ADFCA246DD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLmzP07DbzDqST
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 22:48:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLhVv2LhWzDqQl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 19:26:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLnBv210KzDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 22:57:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=0kpd=ed=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4CLhVv0H5kz8t11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 19:26:31 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4CLhVt6xs3z9sVX; Wed, 28 Oct 2020 19:26:30 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=neutral (access neither permitted nor denied)
- smtp.mailfrom=russell.cc (client-ip=140.211.168.157; helo=fox;
- envelope-from=snowpatch@russell.cc; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-X-Greylist: delayed 398 seconds by postgrey-1.36 at bilbo;
- Wed, 28 Oct 2020 19:26:30 AEDT
-Received: from fox (140-211-168-157-openstack.osuosl.org [140.211.168.157])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4CLhVt0kgWz9sV7
- for <linuxppc-dev@ozlabs.org>; Wed, 28 Oct 2020 19:26:29 +1100 (AEDT)
-Received: from fox (ip6-localhost [::1])
- by fox (OpenSMTPD) with ESMTP id d9d6ea9a;
- Wed, 28 Oct 2020 08:19:48 +0000 (UTC)
-Subject: Test Results: RE: powerpc: avoid broken GCC __attribute__((optimize))
-To: "Ard Biesheuvel" <ardb@kernel.org>, <linuxppc-dev@ozlabs.org>
-From: <snowpatch@russell.cc>
-In-Reply-To: <20201028080433.26799-1-ardb@kernel.org>
-Date: Wed, 28 Oct 2020 08:19:48 -0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLn8x5gTSzDqQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 22:56:17 +1100 (AEDT)
+Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
+ [66.24.58.225])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A727C246DE;
+ Wed, 28 Oct 2020 11:56:14 +0000 (UTC)
+Received: from rostedt by gandalf.local.home with local (Exim 4.94)
+ (envelope-from <rostedt@goodmis.org>)
+ id 1kXk3p-005ZIX-8X; Wed, 28 Oct 2020 07:56:13 -0400
+Message-ID: <20201028115613.140212174@goodmis.org>
+User-Agent: quilt/0.66
+Date: Wed, 28 Oct 2020 07:52:49 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/9] kprobes/ftrace: Add recursion protection to the ftrace
+ callback
+References: <20201028115244.995788961@goodmis.org>
 MIME-Version: 1.0
-Message-ID: <1ec72dd0-653c-49e6-bc98-5eb277e8c7a8.lettre@localhost>
-Content-Type: multipart/mixed; boundary=d9rsrrUMyxZkynvW3eZmZRJTsyTxGe
-X-Mailman-Approved-At: Wed, 28 Oct 2020 22:46:08 +1100
+Content-Type: text/plain; charset=UTF-8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,70 +60,238 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-parisc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
 
---d9rsrrUMyxZkynvW3eZmZRJTsyTxGe
-Content-Type: text/plain; charset=utf-8
+If a ftrace callback does not supply its own recursion protection and
+does not set the RECURSION_SAFE flag in its ftrace_ops, then ftrace will
+make a helper trampoline to do so before calling the callback instead of
+just calling the callback directly.
 
-Thanks for your contribution, unfortunately we've found some issues.
+The default for ftrace_ops is going to assume recursion protection unless
+otherwise specified.
 
-Your patch was successfully applied on branch powerpc/merge (8cb17737940b156329cb5210669b9c9b23f4dd56)
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Guo Ren <guoren@kernel.org>
+Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: x86@kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-csky@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+---
+ arch/csky/kernel/probes/ftrace.c     | 12 ++++++++++--
+ arch/parisc/kernel/ftrace.c          | 13 +++++++++++--
+ arch/powerpc/kernel/kprobes-ftrace.c | 11 ++++++++++-
+ arch/s390/kernel/ftrace.c            | 13 +++++++++++--
+ arch/x86/kernel/kprobes/ftrace.c     | 12 ++++++++++--
+ 5 files changed, 52 insertions(+), 9 deletions(-)
 
-The test build-ppc64le reported the following: Build failed!
+diff --git a/arch/csky/kernel/probes/ftrace.c b/arch/csky/kernel/probes/ftrace.c
+index 5264763d05be..5eb2604fdf71 100644
+--- a/arch/csky/kernel/probes/ftrace.c
++++ b/arch/csky/kernel/probes/ftrace.c
+@@ -13,16 +13,21 @@ int arch_check_ftrace_location(struct kprobe *p)
+ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 			   struct ftrace_ops *ops, struct pt_regs *regs)
+ {
++	int bit;
+ 	bool lr_saver = false;
+ 	struct kprobe *p;
+ 	struct kprobe_ctlblk *kcb;
+ 
+-	/* Preempt is disabled by ftrace */
++	bit = ftrace_test_recursion_trylock();
++	if (bit < 0)
++		return;
++
++	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (!p) {
+ 		p = get_kprobe((kprobe_opcode_t *)(ip - MCOUNT_INSN_SIZE));
+ 		if (unlikely(!p) || kprobe_disabled(p))
+-			return;
++			goto out;
+ 		lr_saver = true;
+ 	}
+ 
+@@ -56,6 +61,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		 */
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
++out:
++	preempt_enable_notrace();
++	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+ 
+diff --git a/arch/parisc/kernel/ftrace.c b/arch/parisc/kernel/ftrace.c
+index 4bab21c71055..5f7742b225a5 100644
+--- a/arch/parisc/kernel/ftrace.c
++++ b/arch/parisc/kernel/ftrace.c
+@@ -208,13 +208,19 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ {
+ 	struct kprobe_ctlblk *kcb;
+ 	struct kprobe *p = get_kprobe((kprobe_opcode_t *)ip);
++	int bit;
+ 
+-	if (unlikely(!p) || kprobe_disabled(p))
++	bit = ftrace_test_recursion_trylock();
++	if (bit < 0)
+ 		return;
+ 
++	preempt_disable_notrace();
++	if (unlikely(!p) || kprobe_disabled(p))
++		goto out;
++
+ 	if (kprobe_running()) {
+ 		kprobes_inc_nmissed_count(p);
+-		return;
++		goto out;
+ 	}
+ 
+ 	__this_cpu_write(current_kprobe, p);
+@@ -235,6 +241,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		}
+ 	}
+ 	__this_cpu_write(current_kprobe, NULL);
++out:
++	preempt_enable_notrace();
++	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+ 
+diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
+index 972cb28174b2..5df8d50c65ae 100644
+--- a/arch/powerpc/kernel/kprobes-ftrace.c
++++ b/arch/powerpc/kernel/kprobes-ftrace.c
+@@ -18,10 +18,16 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+ {
+ 	struct kprobe *p;
+ 	struct kprobe_ctlblk *kcb;
++	int bit;
+ 
++	bit = ftrace_test_recursion_trylock();
++	if (bit < 0)
++		return;
++
++	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)nip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+-		return;
++		goto out;
+ 
+ 	kcb = get_kprobe_ctlblk();
+ 	if (kprobe_running()) {
+@@ -52,6 +58,9 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
+ 		 */
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
++out:
++	preempt_enable_notrace();
++	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+ 
+diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
+index b388e87a08bf..88466d7fb6b2 100644
+--- a/arch/s390/kernel/ftrace.c
++++ b/arch/s390/kernel/ftrace.c
+@@ -202,13 +202,19 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ {
+ 	struct kprobe_ctlblk *kcb;
+ 	struct kprobe *p = get_kprobe((kprobe_opcode_t *)ip);
++	int bit;
+ 
+-	if (unlikely(!p) || kprobe_disabled(p))
++	bit = ftrace_test_recursion_trylock();
++	if (bit < 0)
+ 		return;
+ 
++	preempt_disable_notrace();
++	if (unlikely(!p) || kprobe_disabled(p))
++		goto out;
++
+ 	if (kprobe_running()) {
+ 		kprobes_inc_nmissed_count(p);
+-		return;
++		goto out;
+ 	}
+ 
+ 	__this_cpu_write(current_kprobe, p);
+@@ -228,6 +234,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		}
+ 	}
+ 	__this_cpu_write(current_kprobe, NULL);
++out:
++	preempt_enable_notrace();
++	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+ 
+diff --git a/arch/x86/kernel/kprobes/ftrace.c b/arch/x86/kernel/kprobes/ftrace.c
+index 681a4b36e9bb..a40a6cdfcca3 100644
+--- a/arch/x86/kernel/kprobes/ftrace.c
++++ b/arch/x86/kernel/kprobes/ftrace.c
+@@ -18,11 +18,16 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ {
+ 	struct kprobe *p;
+ 	struct kprobe_ctlblk *kcb;
++	int bit;
+ 
+-	/* Preempt is disabled by ftrace */
++	bit = ftrace_test_recursion_trylock();
++	if (bit < 0)
++		return;
++
++	preempt_disable_notrace();
+ 	p = get_kprobe((kprobe_opcode_t *)ip);
+ 	if (unlikely(!p) || kprobe_disabled(p))
+-		return;
++		goto out;
+ 
+ 	kcb = get_kprobe_ctlblk();
+ 	if (kprobe_running()) {
+@@ -52,6 +57,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+ 		 */
+ 		__this_cpu_write(current_kprobe, NULL);
+ 	}
++out:
++	preempt_enable_notrace();
++	ftrace_test_recursion_unlock(bit);
+ }
+ NOKPROBE_SYMBOL(kprobe_ftrace_handler);
+ 
+-- 
+2.28.0
 
- Full log: https://openpower.xyz/job/snowpatch/job/snowpatch-linux-sparse/21048//artifact/linux/report.txt
-
-
-Here's a preview of the log:
-
-arch/powerpc/kernel/paca.c:244:25: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'setup_paca'
-  244 | void __nostackprotector setup_paca(struct paca_struct *new_paca)
-      |                         ^~~~~~~~~~
-make[2]: *** [scripts/Makefile.build:283: arch/powerpc/kernel/paca.o] Error 1
-make[1]: *** [scripts/Makefile.build:500: arch/powerpc/kernel] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1799: arch/powerpc] Error 2
-make: *** Waiting for unfinished jobs....
-
-
-The test build-ppc64be reported the following: Build failed!
-
- Full log: https://openpower.xyz/job/snowpatch/job/snowpatch-linux-sparse/21049//artifact/linux/report.txt
-
-
-Here's a preview of the log:
-
-arch/powerpc/kernel/paca.c:244:25: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'setup_paca'
-  244 | void __nostackprotector setup_paca(struct paca_struct *new_paca)
-      |                         ^~~~~~~~~~
-make[2]: *** [scripts/Makefile.build:283: arch/powerpc/kernel/paca.o] Error 1
-make[1]: *** [scripts/Makefile.build:500: arch/powerpc/kernel] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1799: arch/powerpc] Error 2
-make: *** Waiting for unfinished jobs....
-
-
-The test build-ppc64e reported the following: Build failed!
-
- Full log: https://openpower.xyz/job/snowpatch/job/snowpatch-linux-sparse/21050//artifact/linux/report.txt
-
-
-Here's a preview of the log:
-
-arch/powerpc/kernel/paca.c:244:25: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'setup_paca'
-  244 | void __nostackprotector setup_paca(struct paca_struct *new_paca)
-      |                         ^~~~~~~~~~
-make[2]: *** [scripts/Makefile.build:283: arch/powerpc/kernel/paca.o] Error 1
-make[1]: *** [scripts/Makefile.build:500: arch/powerpc/kernel] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1799: arch/powerpc] Error 2
-make: *** Waiting for unfinished jobs....
-
-
-
-
---d9rsrrUMyxZkynvW3eZmZRJTsyTxGe--
 
