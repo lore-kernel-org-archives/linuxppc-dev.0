@@ -2,65 +2,67 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7261C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C0D3C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:50:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88AB324823
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:48:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88AB324823
+	by mail.kernel.org (Postfix) with ESMTPS id 65D9024827
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:50:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65D9024827
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CM0zS2ZJ0zDqPC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 07:48:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CM11l47ZLzDqW3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 07:50:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=209.85.210.65; helo=mail-ot1-f65.google.com;
+ smtp.mailfrom=gmail.com (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
  envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f65.google.com (mail-ot1-f65.google.com
- [209.85.210.65])
+Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
+ [209.85.210.68])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CM0x95pNdzDqTN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 07:46:52 +1100 (AEDT)
-Received: by mail-ot1-f65.google.com with SMTP id j21so363641ota.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 13:46:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CM0xC0xKqzDqTN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 07:46:54 +1100 (AEDT)
+Received: by mail-ot1-f68.google.com with SMTP id a6so378889otp.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 13:46:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=fkYpsqioT7Tb7YApRr6kOuIOqhvTBzDRVXioLFVYRRs=;
- b=s5IvEnxFLdV6Zjc9OAeyFo2drtHpBk5dpbvzs8ADLWIfGhr8P6Ln8nvXq2kUFF32cy
- BBqcETb67CKYcEk8dv5FRBzcGDDvUF9iuskq8WcBBw5B2PBFdW0j1cibNDAeNRmJAmxn
- o4nTbZqlkFYPwyAxd1OErQYlqX6aFE2LoCGxW9lWr77qug1nM5ShxWb+F1He3QH4mXG3
- Oi59DjWfPtOcJARLPtgzL2WEmZUz3M4TLnQAP4OH8UMzXiEksbXN6yT7I3IVZgw3X6fB
- 7ga3NCbqM0RT8NY0/GVrwnvnI6yEVPLsmxcPTUrFImug+6vPTJglmh1WAssSDuF+NOiu
- 5hWw==
-X-Gm-Message-State: AOAM530sIybUw80E9OcTb69DMxH0nv4CapHj5FIZw1Lc+8ACZlP78Fzu
- qxTJfysseygAWb//GyaieA==
-X-Google-Smtp-Source: ABdhPJzUHZm4YYIM4XMiwc5sacukMJ5Sdrdk/i+veAcVoB9ovA+Vih+j4WmB8WVNzg3/epAFFNC3mg==
-X-Received: by 2002:a05:6830:1694:: with SMTP id
- k20mr912314otr.100.1603918009773; 
- Wed, 28 Oct 2020 13:46:49 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=KLOvbaset6wV6Dn3/Arex7U+9set4P3J+tKjETLL1EM=;
+ b=GU0d5wnEkqneLSJI22G7Kexu62t3BIfwZpQW/wJXncWDu8pWkxHh50zUFqB89g25sd
+ x/YVfWEDPfbSaF/xbEqSF9fYvBoE6Zi90gwF0ZPWZ5jLufaXcx4tCrUsqCc6JLbGYkGq
+ XXOUUjyvWczybJFiaQJ3XKwVY7LFgPYqjSv/8Vm/GKMcTefozKxm7H7aPzksGbH4GtSi
+ DtNOsrUTHQcDpU+GIBpMfw+DUR3bAG1iWlFlRh70XEKEijvjFmxj3dSbUeA/ltHM2Wah
+ vKJSwmvjEmmd94S62GY3e4Y0XDd2Ww9rUImrgkICB/jWbl2I61wNin/l2FUcOjdFez2e
+ BplQ==
+X-Gm-Message-State: AOAM533v1Hx3YJZqMjfNjZvUykFIvNJ6tSrbZ+RdgENkAwsoZTOsFMWS
+ 965aF23Afdzz6ax1vhbKcw==
+X-Google-Smtp-Source: ABdhPJzwjKbq7JzT2KR7oH5ul6upvIjlNUB089dgKIfM3L82ah64mMOfdxaaYJTCvyPMxLN4/ugXrg==
+X-Received: by 2002:a05:6830:1c71:: with SMTP id
+ s17mr847498otg.29.1603918012278; 
+ Wed, 28 Oct 2020 13:46:52 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
  [24.155.109.49])
- by smtp.googlemail.com with ESMTPSA id t17sm116123oor.3.2020.10.28.13.46.47
+ by smtp.googlemail.com with ESMTPSA id t17sm116123oor.3.2020.10.28.13.46.49
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Oct 2020 13:46:49 -0700 (PDT)
+ Wed, 28 Oct 2020 13:46:51 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH 00/13] PCI: dwc: Another round of clean-ups
-Date: Wed, 28 Oct 2020 15:46:33 -0500
-Message-Id: <20201028204646.356535-1-robh@kernel.org>
+Subject: [PATCH 01/13] PCI: dwc/imx6: Drop setting PCI_MSI_FLAGS_ENABLE
+Date: Wed, 28 Oct 2020 15:46:34 -0500
+Message-Id: <20201028204646.356535-2-robh@kernel.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20201028204646.356535-1-robh@kernel.org>
+References: <20201028204646.356535-1-robh@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -103,56 +105,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Here's another batch of DWC PCI host refactoring. This series primarily
-moves more of the MSI, link up, and resource handling to the core
-code.
+No other host driver sets the PCI_MSI_FLAGS_ENABLE bit, so it must not
+be necessary. If it is, a comment is needed.
 
-No doubt I've probably broken something. Please test. A git branch is
-here[1].
+Cc: Richard Zhu <hongxing.zhu@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/pci/controller/dwc/pci-imx6.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-Rob
-
-[1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git pci-more-dwc-cleanup
-
-Rob Herring (13):
-  PCI: dwc/imx6: Drop setting PCI_MSI_FLAGS_ENABLE
-  PCI: dwc/intel-gw: Move ATU offset out of driver match data
-  PCI: dwc: Move "dbi", "dbi2", and "addr_space" resource setup into
-    common code
-  PCI: dwc/intel-gw: Remove some unneeded function wrappers
-  PCI: dwc: Ensure all outbound ATU windows are reset
-  PCI: dwc/dra7xx: Use the common MSI irq_chip
-  PCI: dwc: Drop the .set_num_vectors() host op
-  PCI: dwc: Move MSI interrupt setup into DWC common code
-  PCI: dwc: Rework MSI initialization
-  PCI: dwc: Move link handling into common code
-  PCI: dwc: Move dw_pcie_msi_init() into core
-  PCI: dwc: Move dw_pcie_setup_rc() to DWC common code
-  PCI: dwc: Remove unnecessary wrappers around dw_pcie_host_init()
-
- drivers/pci/controller/dwc/pci-dra7xx.c       | 141 +-----------------
- drivers/pci/controller/dwc/pci-exynos.c       |  50 ++-----
- drivers/pci/controller/dwc/pci-imx6.c         |  51 +------
- drivers/pci/controller/dwc/pci-keystone.c     |  68 +--------
- .../pci/controller/dwc/pci-layerscape-ep.c    |  37 +----
- drivers/pci/controller/dwc/pci-layerscape.c   |  67 +--------
- drivers/pci/controller/dwc/pci-meson.c        |  53 ++-----
- drivers/pci/controller/dwc/pcie-al.c          |  29 +---
- drivers/pci/controller/dwc/pcie-armada8k.c    |  37 ++---
- drivers/pci/controller/dwc/pcie-artpec6.c     |  76 +---------
- .../pci/controller/dwc/pcie-designware-ep.c   |  29 +++-
- .../pci/controller/dwc/pcie-designware-host.c |  80 ++++++----
- .../pci/controller/dwc/pcie-designware-plat.c |  70 +--------
- drivers/pci/controller/dwc/pcie-designware.h  |  12 +-
- drivers/pci/controller/dwc/pcie-histb.c       |  37 ++---
- drivers/pci/controller/dwc/pcie-intel-gw.c    |  59 ++------
- drivers/pci/controller/dwc/pcie-kirin.c       |  62 +-------
- drivers/pci/controller/dwc/pcie-qcom.c        |  38 +----
- drivers/pci/controller/dwc/pcie-spear13xx.c   |  62 +++-----
- drivers/pci/controller/dwc/pcie-tegra194.c    |  40 +----
- drivers/pci/controller/dwc/pcie-uniphier-ep.c |  38 +----
- drivers/pci/controller/dwc/pcie-uniphier.c    |  51 +------
- 22 files changed, 217 insertions(+), 970 deletions(-)
-
---
+diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
+index 5cf1ef12fb9b..7dd137d62dca 100644
+--- a/drivers/pci/controller/dwc/pci-imx6.c
++++ b/drivers/pci/controller/dwc/pci-imx6.c
+@@ -1002,7 +1002,6 @@ static int imx6_pcie_probe(struct platform_device *pdev)
+ 	struct resource *dbi_base;
+ 	struct device_node *node = dev->of_node;
+ 	int ret;
+-	u16 val;
+ 
+ 	imx6_pcie = devm_kzalloc(dev, sizeof(*imx6_pcie), GFP_KERNEL);
+ 	if (!imx6_pcie)
+@@ -1167,13 +1166,6 @@ static int imx6_pcie_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (pci_msi_enabled()) {
+-		u8 offset = dw_pcie_find_capability(pci, PCI_CAP_ID_MSI);
+-		val = dw_pcie_readw_dbi(pci, offset + PCI_MSI_FLAGS);
+-		val |= PCI_MSI_FLAGS_ENABLE;
+-		dw_pcie_writew_dbi(pci, offset + PCI_MSI_FLAGS, val);
+-	}
+-
+ 	return 0;
+ }
+ 
+-- 
 2.25.1
+
