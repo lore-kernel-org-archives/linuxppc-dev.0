@@ -2,67 +2,57 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C358C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 09:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EE9AC4363A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 09:46:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 47D562469E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 09:43:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="BAxhPNm0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47D562469E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 418F62469F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 09:46:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 418F62469F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLkD66wvDzDqT6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:43:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLkGx3s0RzDqTW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 20:46:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=BAxhPNm0; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLkBD5D8CzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 20:42:12 +1100 (AEDT)
-Received: from kernel.org (unknown [87.70.96.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 51BD32469B;
- Wed, 28 Oct 2020 09:42:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1603878129;
- bh=TeNt5NA/mgWkbLu1J6Mmn4AZrBqZNOgXaAyr5KmIXdc=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=BAxhPNm00YmUvqZ3itxYhYio6fYAnJQ499wadwVQA1K0WvG4XS19jLvpQ8+eKhIIU
- s5CNhtP486uh5zhqaz0QS5SyAvIRcDNWo3SzSu4cxxTrXJkuMWq5HghyPFcy1dXFKg
- Hhf6FJq+WSim8L2T+mmNr/hWPUmxbWsHsyI76+WI=
-Date: Wed, 28 Oct 2020 11:41:56 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
-Subject: Re: [PATCH 2/4] PM: hibernate: improve robustness of mapping pages
- in the direct map
-Message-ID: <20201028094156.GD1428094@kernel.org>
-References: <20201025101555.3057-1-rppt@kernel.org>
- <20201025101555.3057-3-rppt@kernel.org>
- <f20900a403bea9eb3f0814128e5ea46f6580f5a5.camel@intel.com>
- <20201026091554.GB1154158@kernel.org>
- <a28d8248057e7dc01716764da9edfd666722ff62.camel@intel.com>
- <20201027084902.GH1154158@kernel.org>
- <ce66dcf2bbc17d40bcbe752868edb13976b3f1bb.camel@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ce66dcf2bbc17d40bcbe752868edb13976b3f1bb.camel@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLkF25fBBzDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 20:44:38 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6DEB81A1508;
+ Wed, 28 Oct 2020 10:44:33 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5510D1A14FF;
+ Wed, 28 Oct 2020 10:44:28 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net
+ [10.192.224.44])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BFE44402B7;
+ Wed, 28 Oct 2020 10:44:21 +0100 (CET)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: timur@kernel.org, nicoleotsuka@gmail.com, Xiubo.Lee@gmail.com,
+ festevam@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org, lgirdwood@gmail.com, robh+dt@kernel.org,
+ devicetree@vger.kernel.org
+Subject: [PATCH v2 1/2] ASoC: dt-bindings: fsl_aud2htx: Add binding doc for
+ aud2htx module
+Date: Wed, 28 Oct 2020 17:38:49 +0800
+Message-Id: <1603877930-10553-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,143 +64,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "david@redhat.com" <david@redhat.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "paulus@samba.org" <paulus@samba.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
- "hpa@zytor.com" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "cl@linux.com" <cl@linux.com>, "will@kernel.org" <will@kernel.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
- "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "rientjes@google.com" <rientjes@google.com>, "Brown,
- Len" <len.brown@intel.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
- "gor@linux.ibm.com" <gor@linux.ibm.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "hca@linux.ibm.com" <hca@linux.ibm.com>, "bp@alien8.de" <bp@alien8.de>,
- "luto@kernel.org" <luto@kernel.org>,
- "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>,
- "kirill@shutemov.name" <kirill@shutemov.name>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "penberg@kernel.org" <penberg@kernel.org>,
- "palmer@dabbelt.com" <palmer@dabbelt.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 27, 2020 at 10:44:21PM +0000, Edgecombe, Rick P wrote:
-> On Tue, 2020-10-27 at 10:49 +0200, Mike Rapoport wrote:
-> > On Mon, Oct 26, 2020 at 06:57:32PM +0000, Edgecombe, Rick P wrote:
-> > > On Mon, 2020-10-26 at 11:15 +0200, Mike Rapoport wrote:
-> > > > On Mon, Oct 26, 2020 at 12:38:32AM +0000, Edgecombe, Rick P
-> > > > wrote:
-> > > > > On Sun, 2020-10-25 at 12:15 +0200, Mike Rapoport wrote:
-> > > > > > From: Mike Rapoport <rppt@linux.ibm.com>
-> > > > > > 
-> > > > > > When DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP is enabled a
-> > > > > > page
-> > > > > > may
-> > > > > > be
-> > > > > > not present in the direct map and has to be explicitly mapped
-> > > > > > before
-> > > > > > it
-> > > > > > could be copied.
-> > > > > > 
-> > > > > > On arm64 it is possible that a page would be removed from the
-> > > > > > direct
-> > > > > > map
-> > > > > > using set_direct_map_invalid_noflush() but
-> > > > > > __kernel_map_pages()
-> > > > > > will
-> > > > > > refuse
-> > > > > > to map this page back if DEBUG_PAGEALLOC is disabled.
-> > > > > 
-> > > > > It looks to me that arm64 __kernel_map_pages() will still
-> > > > > attempt
-> > > > > to
-> > > > > map it if rodata_full is true, how does this happen?
-> > > > 
-> > > > Unless I misread the code, arm64 requires both rodata_full and
-> > > > debug_pagealloc_enabled() to be true for __kernel_map_pages() to
-> > > > do
-> > > > anything.
-> > > > But rodata_full condition applies to set_direct_map_*_noflush()
-> > > > as
-> > > > well,
-> > > > so with !rodata_full the linear map won't be ever changed.
-> > > 
-> > > Hmm, looks to me that __kernel_map_pages() will only skip it if
-> > > both
-> > > debug pagealloc and rodata_full are false.
-> > > 
-> > > But now I'm wondering if maybe we could simplify things by just
-> > > moving
-> > > the hibernate unmapped page logic off of the direct map. On x86,
-> > > text_poke() used to use this reserved fixmap pte thing that it
-> > > could
-> > > rely on to remap memory with. If hibernate had some separate pte
-> > > for
-> > > remapping like that, then we could not have any direct map
-> > > restrictions
-> > > caused by it/kernel_map_pages(), and it wouldn't have to worry
-> > > about
-> > > relying on anything else.
-> > 
-> > Well, there is map_kernel_range() that can be used by hibernation as
-> > there is no requirement for particular virtual address, but that
-> > would
-> > be quite costly if done for every page.
-> > 
-> > Maybe we can do somthing like
-> > 
-> > 	if (kernel_page_present(s_page)) {
-> > 		do_copy_page(dst, page_address(s_page));
-> > 	} else {
-> > 		map_kernel_range_noflush(page_address(page), PAGE_SIZE,
-> > 					 PROT_READ, &page);
-> > 		do_copy_page(dst, page_address(s_page));
-> > 		unmap_kernel_range_noflush(page_address(page),
-> > PAGE_SIZE);
-> > 	}
-> > 
-> > But it seems that a prerequisite for changing the way a page is
-> > mapped
-> > in safe_copy_page() would be to teach hibernation that a mapping here
-> > may fail.
-> > 
-> Yea that is what I meant, the direct map could still be used for mapped
-> pages.
-> 
-> But for the unmapped case it could have a pre-setup 4k pte for some non
-> direct map address. Then just change the pte to point to any unmapped
-> direct map page that was encountered. The point would be to give
-> hibernate some 4k pte of its own to manipulate so that it can't fail.
-> 
-> Yet another option would be have hibernate_map_page() just map large
-> pages if it finds them.
-> 
-> So we could teach hibernate to handle mapping failures, OR we could
-> change it so it doesn't rely on direct map page sizes in order to
-> succeed. The latter seems better to me since there isn't a reason why
-> it should have to fail and the resulting logic might be simpler. Both
-> seem like improvements in robustness though.
+AUD2HTX (Audio Subsystem TO HDMI TX Subsystem) is a new
+IP module found on i.MX8MP.
 
-That's correct, but as the purpose of this series is to prevent usage of
-__kernel_map_pages() outside DEBUG_PAGALLOC, for now I'm going to update this
-patch changelog and add a comment to hibernate_map_page().
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+changes in v2:
+- fix indentation issue
+- remove nodename
 
+ .../bindings/sound/fsl,aud2htx.yaml           | 64 +++++++++++++++++++
+ 1 file changed, 64 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/sound/fsl,aud2htx.yaml
+
+diff --git a/Documentation/devicetree/bindings/sound/fsl,aud2htx.yaml b/Documentation/devicetree/bindings/sound/fsl,aud2htx.yaml
+new file mode 100644
+index 000000000000..6d9ba2946bfb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/fsl,aud2htx.yaml
+@@ -0,0 +1,64 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/sound/fsl,aud2htx.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: NXP Audio Subsystem to HDMI RTX Subsystem Controller
++
++maintainers:
++  - Shengjiu Wang <shengjiu.wang@nxp.com>
++
++properties:
++  compatible:
++    const: fsl,imx8mp-aud2htx
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    items:
++      - description: Peripheral clock
++
++  clock-names:
++    items:
++      - const: bus
++
++  dmas:
++    items:
++      - description: DMA controller phandle and request line for TX
++
++  dma-names:
++    items:
++      - const: tx
++
++  power-domains:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - clock-names
++  - dmas
++  - dma-names
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/imx8mp-clock.h>
++
++    aud2htx: aud2htx@30cb0000 {
++        compatible = "fsl,imx8mp-aud2htx";
++        reg = <0x30cb0000 0x10000>;
++        interrupts = <GIC_SPI 130 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_AUD2HTX_IPG>;
++        clock-names = "bus";
++        dmas = <&sdma2 26 2 0>;
++        dma-names = "tx";
++        power-domains = <&audiomix_pd>;
++    };
 -- 
-Sincerely yours,
-Mike.
+2.27.0
+
