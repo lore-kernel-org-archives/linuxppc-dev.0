@@ -2,89 +2,65 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF7BBC4363A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:17:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC466C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:21:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DC362475E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:17:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 10D8824838
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 21:21:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="InpLHLru"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DC362475E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="loooxR5X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10D8824838
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CM1cn6W9SzDqwm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 08:17:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CM1hf4tCKzDql8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 08:21:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::443;
- helo=mail-pf1-x443.google.com; envelope-from=richardcochran@gmail.com;
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=deny=ed=paulmck-thinkpad-p72.home=paulmck@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=InpLHLru; dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=loooxR5X; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLwty3chJzDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 04:44:36 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id j18so77234pfa.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 10:44:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=GeMX+k14VhxeG76k1/qSlgb4+cXieu72K4e08pwdt1o=;
- b=InpLHLruF700Q395/JUSDPFi5ct3Q0NFGhIrDU/UmIhGdDThKH8GKD+cw6T2N6QNcD
- PUvF0K87ShFDKaAjJCfvpeMCAaEiJ8eHb269GNLlCVUSVFBQarvkQDFEeK2v65rPe7+J
- tC/1aFfwnYWg9j8u/6Ud/Yyen1uhouxurM0nLvzz3MYFdzPpthJUWusVU6lftQoy21uA
- qiW9X1ZTMFe3cniRtPQ+TCgotIme378DGRcyAXvYYZgBHvV1ur7fGjNBhSILa0vbkqSM
- tRUkeNha3rVBlOMkNme6QRGiAF7X/US6S2FlZ9tPWrsV95ioL0sZyvBU99MP8xfC1Ema
- woPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=GeMX+k14VhxeG76k1/qSlgb4+cXieu72K4e08pwdt1o=;
- b=ImU5ziDdFAVxlLh22abIEcMPxj2wPsivlL5dO0+AUpWwCkLGH+abnLfxYhzHHu2WAj
- 3xwIjIKyrEbWHuZa6UOChg+CxZP0gjUfxliQ91FXOLQKp1tkWFe6euzfGY9xCTnCTXe0
- doSrkt6a1x+oSV5FKpeS3gFeIci0zQaiYLVsLkKTf7pwTRN7DAKAbTyH+x4I1Sy2c9UF
- 5WhDiGyBdL5dqQe60TwSAt7xYtt/jqdjJZ4loBIGYN1OU9d5m9naBxG8xUi8EnStkjTE
- RRslgihDbThY1MzQSYoLzTgcDryxFBI9uD9QFLc04YYKjDqkIPCOoMLqzYf+pgIaWzoJ
- aMuQ==
-X-Gm-Message-State: AOAM533Ul4hlqC8o+Llx8iz3TC5fzk6DTnxB1/Tu0nW/8eewpjdZV+4f
- LFEJ9E+bAMWJ08NZ+3xwb7M=
-X-Google-Smtp-Source: ABdhPJw+P7PZ1ANDYILo79Hsg7TsK8M0hrdd6+wFNAfXxYnBAlE0Wr2vQTH+qAkmHlbh1+XaD9f7GA==
-X-Received: by 2002:a63:78c3:: with SMTP id t186mr490857pgc.12.1603907075050; 
- Wed, 28 Oct 2020 10:44:35 -0700 (PDT)
-Received: from hoboy.vegasvil.org (c-73-241-114-122.hsd1.ca.comcast.net.
- [73.241.114.122])
- by smtp.gmail.com with ESMTPSA id d26sm224049pfo.82.2020.10.28.10.44.29
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Oct 2020 10:44:34 -0700 (PDT)
-Date: Wed, 28 Oct 2020 10:44:27 -0700
-From: Richard Cochran <richardcochran@gmail.com>
-To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Subject: Re: [PATCH 20/33] docs: ABI: testing: make the files compatible with
- ReST output
-Message-ID: <20201028174427.GE9364@hoboy.vegasvil.org>
-References: <cover.1603893146.git.mchehab+huawei@kernel.org>
- <4ebaaa0320101479e392ce2db4b62e24fdf15ef1.1603893146.git.mchehab+huawei@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CM1Cf74xNzDqXW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 07:59:26 +1100 (AEDT)
+Received: from paulmck-ThinkPad-P72.home (50-39-104-11.bvtn.or.frontiernet.net
+ [50.39.104.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id F04F624827;
+ Wed, 28 Oct 2020 20:59:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1603918763;
+ bh=uhOhRHxQVfGw7MyAyAJTdGF3H9kCy/1BltY5AjTtSN0=;
+ h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+ b=loooxR5XyCI1oAjmIJHBwJpYv3LJvTxBzAr3RNF9wwefMD6/PYs7CotHJqnLyHWfP
+ iJWhdiBHD8kIx56QNV6L8kXzavPKJe0TMhRs3XZhpvdyH+xqG7bUw64lnu5IOM7ejT
+ MMYu3qltUG0hDSkGZwhklk03zwVcULaE3bL3uyxI=
+Received: by paulmck-ThinkPad-P72.home (Postfix, from userid 1000)
+ id A1C2935229CE; Wed, 28 Oct 2020 13:59:22 -0700 (PDT)
+Date: Wed, 28 Oct 2020 13:59:22 -0700
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: Qian Cai <cai@redhat.com>
+Subject: Re: [PATCH] powerpc/smp: Move rcu_cpu_starting() earlier
+Message-ID: <20201028205922.GF3249@paulmck-ThinkPad-P72>
+References: <20201028182334.13466-1-cai@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ebaaa0320101479e392ce2db4b62e24fdf15ef1.1603893146.git.mchehab+huawei@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Thu, 29 Oct 2020 08:04:12 +1100
+In-Reply-To: <20201028182334.13466-1-cai@redhat.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,92 +72,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Heikki Krogerus <heikki.krogerus@linux.intel.com>,
- Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Petr Mladek <pmladek@suse.com>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Nayna Jain <nayna@linux.ibm.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Mimi Zohar <zohar@linux.ibm.com>, Sebastian Reichel <sre@kernel.org>,
- Guenter Roeck <groeck@chromium.org>, Bruno Meneguele <bmeneg@redhat.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Pavel Machek <pavel@ucw.cz>,
- Hanjun Guo <guohanjun@huawei.com>,
- Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, netdev@vger.kernel.org,
- Oleh Kravchenko <oleg@kaa.org.ua>, Dan Williams <dan.j.williams@intel.com>,
- Andrew Donnellan <ajd@linux.ibm.com>,
- Javier =?iso-8859-1?Q?Gonz=E1lez?= <javier@javigon.com>,
- Fabrice Gasnier <fabrice.gasnier@st.com>,
- Stefano Stabellini <sstabellini@kernel.org>, linux-acpi@vger.kernel.org,
- Jonathan Corbet <corbet@lwn.net>, Chunyan Zhang <zhang.lyra@gmail.com>,
- Mario Limonciello <mario.limonciello@dell.com>,
- linux-stm32@st-md-mailman.stormreply.com,
- Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
- Ludovic Desroches <ludovic.desroches@microchip.com>,
- Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org, Frederic Barrat <fbarrat@linux.ibm.com>,
- Niklas Cassel <niklas.cassel@wdc.com>, Len Brown <lenb@kernel.org>,
- Juergen Gross <jgross@suse.com>,
- Mika Westerberg <mika.westerberg@linux.intel.com>,
- Alexandre Torgue <alexandre.torgue@st.com>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Baolin Wang <baolin.wang7@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Dan Murphy <dmurphy@ti.com>, Orson Zhai <orsonzhai@gmail.com>,
- Philippe Bergheaud <felix@linux.ibm.com>, xen-devel@lists.xenproject.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Benson Leung <bleung@chromium.org>, Konstantin Khlebnikov <koct9i@gmail.com>,
- Jens Axboe <axboe@kernel.dk>, Felipe Balbi <balbi@kernel.org>,
- Kranthi Kuntala <kranthi.kuntala@intel.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>, linux-mm@kvack.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Nicolas Ferre <nicolas.ferre@microchip.com>, linux-iio@vger.kernel.org,
- Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Thomas Gleixner <tglx@linutronix.de>, Leonid Maksymchuk <leonmaxx@gmail.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Johannes Thumshirn <johannes.thumshirn@wdc.com>,
- Enric Balletbo i Serra <enric.balletbo@collabora.com>,
- Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
- Peter Rosin <peda@axentia.se>, Jonathan Cameron <jic23@kernel.org>,
- Mike Kravetz <mike.kravetz@oracle.com>
+Reply-To: paulmck@kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 28, 2020 at 03:23:18PM +0100, Mauro Carvalho Chehab wrote:
+On Wed, Oct 28, 2020 at 02:23:34PM -0400, Qian Cai wrote:
+> The call to rcu_cpu_starting() in start_secondary() is not early enough
+> in the CPU-hotplug onlining process, which results in lockdep splats as
+> follows:
+> 
+>  WARNING: suspicious RCU usage
+>  -----------------------------
+>  kernel/locking/lockdep.c:3497 RCU-list traversed in non-reader section!!
+> 
+>  other info that might help us debug this:
+> 
+>  RCU used illegally from offline CPU!
+>  rcu_scheduler_active = 1, debug_locks = 1
+>  no locks held by swapper/1/0.
+> 
+>  Call Trace:
+>  dump_stack+0xec/0x144 (unreliable)
+>  lockdep_rcu_suspicious+0x128/0x14c
+>  __lock_acquire+0x1060/0x1c60
+>  lock_acquire+0x140/0x5f0
+>  _raw_spin_lock_irqsave+0x64/0xb0
+>  clockevents_register_device+0x74/0x270
+>  register_decrementer_clockevent+0x94/0x110
+>  start_secondary+0x134/0x800
+>  start_secondary_prolog+0x10/0x14
+> 
+> This is avoided by moving the call to rcu_cpu_starting up near the
+> beginning of the start_secondary() function. Note that the
+> raw_smp_processor_id() is required in order to avoid calling into
+> lockdep before RCU has declared the CPU to be watched for readers.
+> 
+> Link: https://lore.kernel.org/lkml/160223032121.7002.1269740091547117869.tip-bot2@tip-bot2/
+> Signed-off-by: Qian Cai <cai@redhat.com>
 
-> diff --git a/Documentation/ABI/testing/sysfs-uevent b/Documentation/ABI/testing/sysfs-uevent
-> index aa39f8d7bcdf..d0893dad3f38 100644
-> --- a/Documentation/ABI/testing/sysfs-uevent
-> +++ b/Documentation/ABI/testing/sysfs-uevent
-> @@ -19,7 +19,8 @@ Description:
->                  a transaction identifier so it's possible to use the same UUID
->                  value for one or more synthetic uevents in which case we
->                  logically group these uevents together for any userspace
-> -                listeners. The UUID value appears in uevent as
-> +                listeners. The UUID value appears in uevent as:
+Acked-by: Paul E. McKenney <paulmck@kernel.org>
 
-I know almost nothing about Sphinx, but why have one colon here ^^^ and ...
-
-> +
->                  "SYNTH_UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" environment
->                  variable.
+> ---
+>  arch/powerpc/kernel/smp.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 3c6b9822f978..8c2857cbd960 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1393,13 +1393,14 @@ static void add_cpu_to_masks(int cpu)
+>  /* Activate a secondary processor. */
+>  void start_secondary(void *unused)
+>  {
+> -	unsigned int cpu = smp_processor_id();
+> +	unsigned int cpu = raw_smp_processor_id();
 >  
-> @@ -30,18 +31,19 @@ Description:
->                  It's possible to define zero or more pairs - each pair is then
->                  delimited by a space character ' '. Each pair appears in
->                  synthetic uevent as "SYNTH_ARG_KEY=VALUE". That means the KEY
-> -                name gains "SYNTH_ARG_" prefix to avoid possible collisions
-> +                name gains `SYNTH_ARG_` prefix to avoid possible collisions
->                  with existing variables.
+>  	mmgrab(&init_mm);
+>  	current->active_mm = &init_mm;
 >  
-> -                Example of valid sequence written to the uevent file:
-> +                Example of valid sequence written to the uevent file::
-
-... two here?
-
-Thanks,
-Richard
+>  	smp_store_cpu_info(cpu);
+>  	set_dec(tb_ticks_per_jiffy);
+> +	rcu_cpu_starting(cpu);
+>  	preempt_disable();
+>  	cpu_callin_map[cpu] = 1;
+>  
+> -- 
+> 2.28.0
+> 
