@@ -2,26 +2,26 @@ Return-Path: <SRS0=QTfK=ED=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC31EC388F7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 12:38:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7F38C388F7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 12:40:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6ED12472B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 12:38:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 755CB24730
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 12:40:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="NwJFu0bd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6ED12472B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="cCznlyto"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 755CB24730
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CLp5N62NQzDqTP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 23:38:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CLp7n60jWzDqFM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Oct 2020 23:40:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
  smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com;
@@ -30,81 +30,78 @@ Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
  header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=NwJFu0bd; dkim-atps=neutral
+ header.s=pp1 header.b=cCznlyto; dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CLp2m60SszDqS6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CLp2m5Xn5zDqRv
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Oct 2020 23:36:00 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 09SCXV0U123184; Wed, 28 Oct 2020 08:35:51 -0400
+ 09SCW4Pf016767; Wed, 28 Oct 2020 08:35:44 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=rHF6Yz59thCYyjQXEOJ1jQe6RNpwoec7Q33DAyj1sg0=;
- b=NwJFu0bdrOPw1NPOyLZcR5/P6fiQPXDoWRXoT6bKwvXrREuf1vitt1mc3LQIuYNiG0UB
- fqijZ6qbe2DXFM29VLpuaemWm+YgypabyfPo8pVW8Gvp+PMh435zDvTf0oK/sRaHpKxK
- aH/7mCYQr0MAiuiZDDbctn0Zo2jiKH3tdke5Ldf8x8egplagAHnizwlRozlJr7CFXLeO
- 7bBvtGlWYFqw/jLskzF3z2OqJwlmFvBpu/4Lby7KoGY4ZHvaInJZXBq+a6wzfNYhBroa
- Zp/ehDr+dYOaNIie08+Vo+8oU9YehfkJeQbHtjkg2mQXAn3+HYreHlaUQUWwLLKAok+p Ew== 
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=MV2MBnKKYZiGBnNfPc84zyMszrhhiWoSY+vuWbX4zLY=;
+ b=cCznlytoBN4iufLk15zpGbMCeEhHE5w+q85O21qDVv1KNAvQTq/SHRqmR8zs6/mFrTgO
+ YdjYgG/47EtaYZFl5+p5Q07Jpv0mm9COdGZN/EezBXHkWqMZgq4vQ5S1RiPwyDXPWCQ6
+ WGMDt9sgen50qHSGXscXcrFngM39Dkb71I4kDsphUK0FlQzpBMTfo1gqsnty6GEVDa6R
+ Qa/eIjpBNCLyOtK72BlvXq5H0gzCzdiD6keSoHT122oZz/V04hm24dy2Nvo9M0BhfJ4k
+ +KY85uHlocxnOEWK2x1FKbgBAMYmWHZRQyz+uJo/6mgpS0H8TneY67TXOaNTBIP+o8No Jg== 
 Received: from pps.reinject (localhost [127.0.0.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 34endju226-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34ew3jafv7-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Oct 2020 08:35:51 -0400
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
- by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 09SCXwOv125263;
- Wed, 28 Oct 2020 08:35:51 -0400
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0b-001b2d01.pphosted.com with ESMTP id 34endju1xs-1
+ Wed, 28 Oct 2020 08:35:44 -0400
+Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
+ by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 09SCXA3g025166;
+ Wed, 28 Oct 2020 08:35:44 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
+ [169.51.49.102])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34ew3jafu2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Oct 2020 08:35:51 -0400
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09SCQvYf027926;
- Wed, 28 Oct 2020 12:35:47 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by ppma06fra.de.ibm.com with ESMTP id 34ejqe8kwr-1
+ Wed, 28 Oct 2020 08:35:43 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+ by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09SCR1HK011222;
+ Wed, 28 Oct 2020 12:35:42 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by ppma06ams.nl.ibm.com with ESMTP id 34cbhh4g5v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Wed, 28 Oct 2020 12:35:47 +0000
+ Wed, 28 Oct 2020 12:35:41 +0000
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
  [9.149.105.59])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 09SCZjds31457732
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09SCZdEV33620246
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 28 Oct 2020 12:35:45 GMT
+ Wed, 28 Oct 2020 12:35:39 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5AC79A4055;
- Wed, 28 Oct 2020 12:35:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id A1212A4059;
+ Wed, 28 Oct 2020 12:35:39 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3873DA4040;
- Wed, 28 Oct 2020 12:35:43 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 95ABEA4051;
+ Wed, 28 Oct 2020 12:35:37 +0000 (GMT)
 Received: from srikart450.in.ibm.com (unknown [9.79.210.102])
  by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 28 Oct 2020 12:35:43 +0000 (GMT)
+ Wed, 28 Oct 2020 12:35:37 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/4] powerpc: Rename is_kvm_guest to check_kvm_guest
-Date: Wed, 28 Oct 2020 18:05:10 +0530
-Message-Id: <20201028123512.871051-3-srikar@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] Powerpc: Better preemption for shared processor
+Date: Wed, 28 Oct 2020 18:05:08 +0530
+Message-Id: <20201028123512.871051-1-srikar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20201028123512.871051-1-srikar@linux.vnet.ibm.com>
-References: <20201028123512.871051-1-srikar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-10-28_06:2020-10-26,
+ definitions=2020-10-28_04:2020-10-26,
  2020-10-28 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 mlxlogscore=999 mlxscore=0
- spamscore=0 priorityscore=1501 malwarescore=0 adultscore=0 suspectscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2010280083
+ mlxscore=0 lowpriorityscore=0
+ mlxlogscore=974 bulkscore=0 phishscore=0 clxscore=1015 impostorscore=0
+ suspectscore=0 malwarescore=0 adultscore=0 spamscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2010280083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,10 +124,46 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-is_kvm_guest() will be reused in subsequent patch in a new avatar.  Hence
-rename is_kvm_guest to check_kvm_guest. No additional changes.
+Currently, vcpu_is_preempted will return the yield_count for
+shared_processor. On a PowerVM LPAR, Phyp schedules at SMT8 core boundary
+i.e all CPUs belonging to a core are either group scheduled in or group
+scheduled out. This can be used to better predict non-preempted CPUs on
+PowerVM shared LPARs.
 
-Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+perf stat -r 5 -a perf bench sched pipe -l 10000000 (lesser time is better)
+
+powerpc/next
+     35,107,951.20 msec cpu-clock                 #  255.898 CPUs utilized            ( +-  0.31% )
+        23,655,348      context-switches          #    0.674 K/sec                    ( +-  3.72% )
+            14,465      cpu-migrations            #    0.000 K/sec                    ( +-  5.37% )
+            82,463      page-faults               #    0.002 K/sec                    ( +-  8.40% )
+ 1,127,182,328,206      cycles                    #    0.032 GHz                      ( +-  1.60% )  (66.67%)
+    78,587,300,622      stalled-cycles-frontend   #    6.97% frontend cycles idle     ( +-  0.08% )  (50.01%)
+   654,124,218,432      stalled-cycles-backend    #   58.03% backend cycles idle      ( +-  1.74% )  (50.01%)
+   834,013,059,242      instructions              #    0.74  insn per cycle
+                                                  #    0.78  stalled cycles per insn  ( +-  0.73% )  (66.67%)
+   132,911,454,387      branches                  #    3.786 M/sec                    ( +-  0.59% )  (50.00%)
+     2,890,882,143      branch-misses             #    2.18% of all branches          ( +-  0.46% )  (50.00%)
+
+           137.195 +- 0.419 seconds time elapsed  ( +-  0.31% )
+
+powerpc/next + patchset
+     29,981,702.64 msec cpu-clock                 #  255.881 CPUs utilized            ( +-  1.30% )
+        40,162,456      context-switches          #    0.001 M/sec                    ( +-  0.01% )
+             1,110      cpu-migrations            #    0.000 K/sec                    ( +-  5.20% )
+            62,616      page-faults               #    0.002 K/sec                    ( +-  3.93% )
+ 1,430,030,626,037      cycles                    #    0.048 GHz                      ( +-  1.41% )  (66.67%)
+    83,202,707,288      stalled-cycles-frontend   #    5.82% frontend cycles idle     ( +-  0.75% )  (50.01%)
+   744,556,088,520      stalled-cycles-backend    #   52.07% backend cycles idle      ( +-  1.39% )  (50.01%)
+   940,138,418,674      instructions              #    0.66  insn per cycle
+                                                  #    0.79  stalled cycles per insn  ( +-  0.51% )  (66.67%)
+   146,452,852,283      branches                  #    4.885 M/sec                    ( +-  0.80% )  (50.00%)
+     3,237,743,996      branch-misses             #    2.21% of all branches          ( +-  1.18% )  (50.01%)
+
+            117.17 +- 1.52 seconds time elapsed  ( +-  1.30% )
+
+This is around 14.6% improvement in performance.
+
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -142,68 +175,22 @@ Cc: Valentin Schneider <valentin.schneider@arm.com>
 Cc: Juri Lelli <juri.lelli@redhat.com>
 Cc: Waiman Long <longman@redhat.com>
 Cc: Phil Auld <pauld@redhat.com>
----
- arch/powerpc/include/asm/kvm_guest.h | 4 ++--
- arch/powerpc/include/asm/kvm_para.h  | 2 +-
- arch/powerpc/kernel/firmware.c       | 2 +-
- arch/powerpc/platforms/pseries/smp.c | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_guest.h b/arch/powerpc/include/asm/kvm_guest.h
-index c0ace884a0e8..ba8291e02ba9 100644
---- a/arch/powerpc/include/asm/kvm_guest.h
-+++ b/arch/powerpc/include/asm/kvm_guest.h
-@@ -7,9 +7,9 @@
- #define __POWERPC_KVM_GUEST_H__
- 
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_KVM_GUEST)
--bool is_kvm_guest(void);
-+bool check_kvm_guest(void);
- #else
--static inline bool is_kvm_guest(void) { return false; }
-+static inline bool check_kvm_guest(void) { return false; }
- #endif
- 
- #endif /* __POWERPC_KVM_GUEST_H__ */
-diff --git a/arch/powerpc/include/asm/kvm_para.h b/arch/powerpc/include/asm/kvm_para.h
-index abe1b5e82547..6fba06b6cfdb 100644
---- a/arch/powerpc/include/asm/kvm_para.h
-+++ b/arch/powerpc/include/asm/kvm_para.h
-@@ -14,7 +14,7 @@
- 
- static inline int kvm_para_available(void)
- {
--	return IS_ENABLED(CONFIG_KVM_GUEST) && is_kvm_guest();
-+	return IS_ENABLED(CONFIG_KVM_GUEST) && check_kvm_guest();
- }
- 
- static inline unsigned int kvm_arch_para_features(void)
-diff --git a/arch/powerpc/kernel/firmware.c b/arch/powerpc/kernel/firmware.c
-index fe48d319d490..61243267d4cf 100644
---- a/arch/powerpc/kernel/firmware.c
-+++ b/arch/powerpc/kernel/firmware.c
-@@ -21,7 +21,7 @@ EXPORT_SYMBOL_GPL(powerpc_firmware_features);
- #endif
- 
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_KVM_GUEST)
--bool is_kvm_guest(void)
-+bool check_kvm_guest(void)
- {
- 	struct device_node *hyper_node;
- 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index d578732c545d..c70b4be9f0a5 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -211,7 +211,7 @@ static __init void pSeries_smp_probe(void)
- 	if (!cpu_has_feature(CPU_FTR_SMT))
- 		return;
- 
--	if (is_kvm_guest()) {
-+	if (check_kvm_guest()) {
- 		/*
- 		 * KVM emulates doorbells by disabling FSCR[MSGP] so msgsndp
- 		 * faults to the hypervisor which then reads the instruction
+Srikar Dronamraju (4):
+  powerpc: Refactor is_kvm_guest declaration to new header
+  powerpc: Rename is_kvm_guest to check_kvm_guest
+  powerpc: Reintroduce is_kvm_guest
+  powerpc/paravirt: Use is_kvm_guest in vcpu_is_preempted
+
+ arch/powerpc/include/asm/firmware.h  |  6 ------
+ arch/powerpc/include/asm/kvm_guest.h | 25 +++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_para.h  |  2 +-
+ arch/powerpc/include/asm/paravirt.h  | 18 ++++++++++++++++++
+ arch/powerpc/kernel/firmware.c       |  5 ++++-
+ arch/powerpc/platforms/pseries/smp.c |  3 ++-
+ 6 files changed, 50 insertions(+), 9 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kvm_guest.h
+
 -- 
 2.18.4
 
