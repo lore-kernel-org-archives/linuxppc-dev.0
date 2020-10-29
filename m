@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0594C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:29:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DDB1C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:30:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9FBA2076E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:29:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9FBA2076E
+	by mail.kernel.org (Postfix) with ESMTPS id A10562076E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:30:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A10562076E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMhTw1Y2FzDqjT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 10:29:08 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMhWs59kLzDqkJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 10:30:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMhLH1H4QzDqYd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:22:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMhNy1YDSzDqXV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:24:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4CMhLG51Smz8tB6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:22:30 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4CMhNx5RPLz8tB6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:24:49 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 4CMhLG3ytsz9sSG; Fri, 30 Oct 2020 10:22:30 +1100 (AEDT)
+ id 4CMhNx3J7Cz9sSG; Fri, 30 Oct 2020 10:24:49 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=neutral (access neither permitted nor denied)
  smtp.mailfrom=russell.cc (client-ip=140.211.168.157; helo=fox;
@@ -42,20 +42,20 @@ Received: from fox (140-211-168-157-openstack.osuosl.org [140.211.168.157])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4CMhLF68H7z9sRk
- for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2020 10:22:29 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4CMhNw4xF3z9sRk
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2020 10:24:48 +1100 (AEDT)
 Received: from fox (ip6-localhost [::1])
- by fox (OpenSMTPD) with ESMTP id b19ddf98;
- Thu, 29 Oct 2020 23:22:28 +0000 (UTC)
-Subject: Test Results: RE: [V2,14/18] mm/highmem: Remove the old kmap_atomic
- cruft
+ by fox (OpenSMTPD) with ESMTP id 19846d5e;
+ Thu, 29 Oct 2020 23:24:46 +0000 (UTC)
+Subject: Test Results: RE: [V2,16/18] sched: highmem: Store local kmaps in
+ task struct
 To: "Thomas Gleixner" <tglx@linutronix.de>, <linuxppc-dev@ozlabs.org>
 From: <snowpatch@russell.cc>
-In-Reply-To: <20201029222651.992069499@linutronix.de>
-Date: Thu, 29 Oct 2020 23:22:27 -0000
+In-Reply-To: <20201029222652.194349374@linutronix.de>
+Date: Thu, 29 Oct 2020 23:24:46 -0000
 MIME-Version: 1.0
-Message-ID: <57f1afc9-cac0-4deb-b3cb-5eb91266576a.lettre@localhost>
-Content-Type: multipart/mixed; boundary=Ol0ZPWYZbPR3LZNwf4M4LHmxiTC9nf
+Message-ID: <460b0d10-a5d0-4ebe-94ea-20a7dfaa20af.lettre@localhost>
+Content-Type: multipart/mixed; boundary=1NSJQ1SQodHbsYawnwYiXt59iU0ccA
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,7 +72,7 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---Ol0ZPWYZbPR3LZNwf4M4LHmxiTC9nf
+--1NSJQ1SQodHbsYawnwYiXt59iU0ccA
 Content-Type: text/plain; charset=utf-8
 
 Thanks for your contribution, unfortunately we've found some issues.
@@ -81,5 +81,5 @@ Your patch failed to apply to any branch.
 
 
 
---Ol0ZPWYZbPR3LZNwf4M4LHmxiTC9nf--
+--1NSJQ1SQodHbsYawnwYiXt59iU0ccA--
 
