@@ -2,27 +2,27 @@ Return-Path: <SRS0=8b8/=EE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01A82C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:36:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D67E1C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:38:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CDEA5206DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:36:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C04AD2076B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:38:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QSHJIt7L";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bG4zbqkg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDEA5206DD
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="d5x1VtEr";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="B0bLlLwU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C04AD2076B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMgK33JgfzDqMV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 09:36:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMgMB0RjGzDqg5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 09:38:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
@@ -31,44 +31,45 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=QSHJIt7L; 
+ header.s=2020 header.b=d5x1VtEr; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=bG4zbqkg; 
+ header.a=ed25519-sha256 header.s=2020e header.b=B0bLlLwU; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMgDJ2kY2zDqWR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 09:32:13 +1100 (AEDT)
-Message-Id: <20201029221806.189523375@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMgDJ3qNYzDqX9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 09:32:16 +1100 (AEDT)
+Message-Id: <20201029222651.017620801@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604010728;
+ s=2020; t=1604010733;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=dHsj3bB6txbW51auQ1NY6Tbn9YUEP9hPQj+cerV4cH0=;
- b=QSHJIt7LvlxNN9hJ0pBq2tvQAj6s9PRKwf9DDs+9wLl0TB3D07XB2aNc/P+jBNvq3OKdlB
- 9uImGW8KQrL2/v2DDWGmYr3ItyplTubI+62xRgbsyi4IeFKyTQeBZLSpOp/k//RoMYNU0D
- MRXq2PcsrvKw8tKj6JtpzI7I7c+m0/l1rgAB1Q7e0HTSfRHwiF/OYPDVhjJi/t5CuooKwL
- 72rzQkellKlgnCIrCAJFk+1lKoYhevy2jnE7fElUwMoYj2u61NhwHpz39yR1AKfSxC9hiI
- tHhi3pMD0MqXztTmwu1jN5JS5hiXfWpnm7xNyzYqMOICUggRy8lWVYhFp7D5AA==
+ content-transfer-encoding:content-transfer-encoding:  references:references;
+ bh=YUFkSS0SmKHrjVK9j7zp61zNdE1EMunOZsr2rqRATRM=;
+ b=d5x1VtErKO/SwINiIYdH5+pnxVwgzyB1LHLe+fwpXvVhdll/nQiQpygU63zGz3pI9NqhA8
+ s0n+UaIAmNYLm0T/jIRm+RoTlwacvln97Vtg1t+75oD0QY8PHyvQoKYHAk52x6KpW63vSX
+ L+Az8H+xKwQL+EpvTjAW2hVvvmZLhS0Rwyn+zC6IaRMB7hMlH8Z23gurzwkH1Fx2gloUEI
+ Hav0p6oUh6prkkKxle052/P3XO8o3kawNDApL0D3ONfj8tgak12TkPQ4XNRq/g6DImKti4
+ IelA613GfJp9yKxXnyBsyFFWhhO8nAj+U2XqulWCXq7fRW+alAtHAfBE9cW44g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604010728;
+ s=2020e; t=1604010733;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding;
- bh=dHsj3bB6txbW51auQ1NY6Tbn9YUEP9hPQj+cerV4cH0=;
- b=bG4zbqkg1p92+Z0M4jQM3XbBv8SsS1VZa551XHoVYcBtO5FLMANBcd4TnLvpnuGvnhoALG
- sOxX2o7Ksc9Qt8DQ==
-Date: Thu, 29 Oct 2020 23:18:06 +0100
+ content-transfer-encoding:content-transfer-encoding:  references:references;
+ bh=YUFkSS0SmKHrjVK9j7zp61zNdE1EMunOZsr2rqRATRM=;
+ b=B0bLlLwUxJvxzt9I7LtpElLoJDN40JibSmVNy5zRJDRt4enTzB8YsoT8EKdo1hSNxxxW6c
+ 0fXPrqIrLb/i8TAg==
+Date: Thu, 29 Oct 2020 23:18:10 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V2 00/18] mm/highmem: Preemptible variant of kmap_atomic &
- friends
+Subject: [patch V2 04/18] x86/mm/highmem: Use generic kmap atomic
+ implementation
+References: <20201029221806.189523375@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8-bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,11 +86,11 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-xtensa@linux-xtensa.org,
  Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
  Ben Segall <bsegall@google.com>, linux-mm@kvack.org,
  Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Vincent Chen <deanbo422@gmail.com>, Christoph Hellwig <hch@lst.de>,
  linux-arch@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
  Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org,
  Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, David Airlie <airlied@linux.ie>,
+ Ingo Molnar <mingo@kernel.org>, David Airlie <airlied@linux.ie>,
  Mel Gorman <mgorman@suse.de>, linux-snps-arc@lists.infradead.org,
  Ard Biesheuvel <ardb@kernel.org>, Paul McKenney <paulmck@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
@@ -108,116 +109,283 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rm9sbG93aW5nIHVwIHRvIHRoZSBkaXNjdXNzaW9uIGluOgoKICBodHRwczovL2xvcmUua2VybmVs
-Lm9yZy9yLzIwMjAwOTE0MjA0MjA5LjI1NjI2NjA5M0BsaW51dHJvbml4LmRlCgphbmQgdGhlIGlu
-aXRpYWwgdmVyc2lvbiBvZiB0aGlzOgoKICBodHRwczovL2xvcmUua2VybmVsLm9yZy9yLzIwMjAw
-OTE5MDkxNzUxLjAxMTExNjY0OUBsaW51dHJvbml4LmRlCgp0aGlzIHNlcmllcyBwcm92aWRlcyBh
-IHByZWVtcHRpYmxlIHZhcmlhbnQgb2Yga21hcF9hdG9taWMgJiByZWxhdGVkCmludGVyZmFjZXMu
-CgpOb3cgdGhhdCB0aGUgc2NoZWR1bGVyIGZvbGtzIGhhdmUgd3JhcHBlZCB0aGVpciBoZWFkcyBh
-cm91bmQgdGhlIG1pZ3JhdGlvbgpkaXNhYmxlIHNjaGVkdWxlciB3b2VzLCB0aGVyZSBpcyBub3Qg
-YSByZWFsIHJlYXNvbiBhbnltb3JlIHRvIGNvbmZpbmUKbWlncmF0aW9uIGRpc2FibGluZyB0byBS
-VC4KCkFzIGV4cHJlc3NlZCBpbiB0aGUgZWFybGllciBkaXNjdXNzaW9uIGJ5IGdyYXBoaWNzIGFu
-ZCBjcnlwdG8gZm9sa3MsIHRoZXJlCmlzIGludGVyZXN0IHRvIGdldCByaWQgb2YgdGhlaXIga21h
-cF9hdG9taWMqIHVzYWdlIGJlY2F1c2UgdGhleSBuZWVkIG9ubHkgYQp0ZW1wb3Jhcnkgc3RhYmxl
-IG1hcCBhbmQgbm90IGFsbCB0aGUgYmVsbHMgYW5kIHdoaXN0ZWxzIG9mIGttYXBfYXRvbWljKi4K
-ClRoaXMgc2VyaWVzIHByb3ZpZGVzIGttYXBfbG9jYWwuKiBpb21hcF9sb2NhbCB2YXJpYW50cyB3
-aGljaCBvbmx5IGRpc2FibGUKbWlncmF0aW9uIHRvIGtlZXAgdGhlIHZpcnR1YWwgbWFwcGluZyBh
-ZGRyZXNzIHN0YWJsZSBhY2Nyb3NzIHByZWVtcHRpb24sCmJ1dCBkbyBuZWl0aGVyIGRpc2FibGUg
-cGFnZWZhdWx0cyBub3IgcHJlZW1wdGlvbi4gVGhlIG5ldyBmdW5jdGlvbnMgY2FuIGJlCnVzZWQg
-aW4gYW55IGNvbnRleHQsIGJ1dCBpZiB1c2VkIGluIGF0b21pYyBjb250ZXh0IHRoZSBjYWxsZXIg
-aGFzIHRvIHRha2UKY2FyZSBvZiBldmVudHVhbGx5IGRpc2FibGluZyBwYWdlZmF1bHRzLgoKVGhp
-cyBpcyBhY2hpZXZlZCBieToKCiAtIFJlbW92aW5nIHRoZSBSVCBkZXBlbmRlbmN5IGZyb20gbWln
-cmF0ZV9kaXNhYmxlL2VuYWJsZSgpCgogLSBDb25zb2xpZGF0aW5nIGFsbCBrbWFwIGF0b21pYyBp
-bXBsZW1lbnRhdGlvbnMgaW4gZ2VuZXJpYyBjb2RlCgogLSBTd2l0Y2hpbmcgZnJvbSBwZXIgQ1BV
-IHN0b3JhZ2Ugb2YgdGhlIGttYXAgaW5kZXggdG8gYSBwZXIgdGFzayBzdG9yYWdlCgogLSBBZGRp
-bmcgYSBwdGV2YWwgYXJyYXkgdG8gdGhlIHBlciB0YXNrIHN0b3JhZ2Ugd2hpY2ggY29udGFpbnMg
-dGhlIHB0ZXZhbHMKICAgb2YgdGhlIGN1cnJlbnRseSBhY3RpdmUgdGVtcG9yYXJ5IGttYXBzCgog
-LSBBZGRpbmcgY29udGV4dCBzd2l0Y2ggY29kZSB3aGljaCBjaGVja3Mgd2hldGhlciB0aGUgb3V0
-Z29pbmcgb3IgdGhlCiAgIGluY29taW5nIHRhc2sgaGFzIGFjdGl2ZSB0ZW1wb3Jhcnkga21hcHMu
-IElmIHNvLCB0aGUgb3V0Z29pbmcgdGFzaydzCiAgIGttYXBzIGFyZSByZW1vdmVkIGFuZCB0aGUg
-aW5jb21pbmcgdGFzaydzIGttYXBzIGFyZSByZXN0b3JlZC4KCiAtIEFkZGluZyBuZXcgaW50ZXJm
-YWNlcyBrW3VuXW1hcF90ZW1wb3JhcnkqKCkgd2hpY2ggYXJlIG5vdCBkaXNhYmxpbmcKICAgcHJl
-ZW1wdGlvbiBhbmQgY2FuIGJlIGNhbGxlZCBmcm9tIGFueSBjb250ZXh0IChleGNlcHQgTk1JKS4K
-CiAgIENvbnRyYXJ5IHRvIGttYXAoKSB3aGljaCBwcm92aWRlcyBwcmVlbXB0aWJsZSBhbmQgInBl
-cnNpc3RhbnQiIG1hcHBpbmdzLAogICB0aGVzZSBpbnRlcmZhY2VzIGFyZSBtZWFudCB0byByZXBs
-YWNlIHRoZSB0ZW1wb3JhcnkgbWFwcGluZ3MgcHJvdmlkZWQgYnkKICAga21hcF9hdG9taWMqKCkg
-dG9kYXkuCgpUaGlzIGFsbG93cyB0byBnZXQgcmlkIG9mIGNvbmRpdGlvbmFsIG1hcHBpbmcgY2hv
-aWNlcyBhbmQgYWxsb3dzIHRvIGhhdmUKcHJlZW1wdGlibGUgc2hvcnQgdGVybSBtYXBwaW5ncyBv
-biA2NGJpdCB3aGljaCBhcmUgdG9kYXkgZW5mb3JjZWQgdG8gYmUKbm9uLXByZWVtcHRpYmxlIGR1
-ZSB0byB0aGUgaGlnaG1lbSBjb25zdHJhaW50cy4gSXQgY2xlYXJseSBwdXRzIG92ZXJoZWFkIG9u
-CnRoZSBoaWdobWVtIHVzZXJzLCBidXQgaGlnaG1lbSBpcyBzbG93IGFueXdheS4KClRoaXMgaXMg
-bm90IGEgd2hvbGVzYWxlIGNvbnZlcnNpb24gd2hpY2ggbWFrZXMga21hcF9hdG9taWMgbWFnaWNh
-bGx5CnByZWVtcHRpYmxlIGJlY2F1c2UgdGhlcmUgbWlnaHQgYmUgdXNhZ2Ugc2l0ZXMgd2hpY2gg
-cmVseSBvbiB0aGUgaW1wbGljaXQKcHJlZW1wdCBkaXNhYmxlLiBTbyB0aGlzIG5lZWRzIHRvIGJl
-IGRvbmUgb24gYSBjYXNlIGJ5IGNhc2UgYmFzaXMgYW5kIHRoZQpjYWxsIHNpdGVzIGNvbnZlcnRl
-ZCB0byBrbWFwX3RlbXBvcmFyeS4KCk5vdGUsIHRoYXQgdGhpcyBpcyBvbmx5IGxpZ2h0bHkgdGVz
-dGVkIG9uIFg4NiBhbmQgY29tcGxldGVseSB1bnRlc3RlZCBvbgphbGwgb3RoZXIgYXJjaGl0ZWN0
-dXJlcy4KClRoZXJlIGlzIGFsc28gYSBzdGlsbCB0byBiZSBpbnZlc3RpZ2F0ZWQgcXVlc3Rpb24g
-ZnJvbSBMaW51cyBvbiB0aGUgaW5pdGlhbApwb3N0aW5nIHZlcnN1cyB0aGUgcGVyIGNwdSAvIHBl
-ciB0YXNrIG1hcHBpbmcgc3RhY2sgZGVwdGggd2hpY2ggbWlnaHQgbmVlZAp0byBiZSBtYWRlIGxh
-cmdlciBkdWUgdG8gdGhlIGFiaWxpdHkgdG8gdGFrZSBwYWdlIGZhdWx0cyB3aXRoaW4gYSBtYXBw
-aW5nCnJlZ2lvbi4KClRob3VnaCBJIHdhbnRlZCB0byBzaGFyZSB0aGUgY3VycmVudCBzdGF0ZSBv
-ZiBhZmZhaXJzIGJlZm9yZSBpbnZlc3RpZ2F0aW5nCnRoYXQgZnVydGhlci4gSWYgdGhlcmUgaXMg
-Y29uc2Vuc3VzIGluIGdvaW5nIGZvcndhcmQgd2l0aCB0aGlzLCBJJ2xsIGhhdmUgYQpkZWVwZXIg
-bG9vayBpbnRvIHRoaXMgaXNzdWUuCgpUaGUgbG90IGlzIGF2YWlsYWJsZSBmcm9tCgogICBnaXQ6
-Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdGdseC9kZXZlbC5naXQg
-aGlnaG1lbQoKSXQgaXMgYmFzZWQgb24gUGV0ZXIgWmlqbHN0cmFzIG1pZ3JhdGUgZGlzYWJsZSBi
-cmFuY2ggd2hpY2ggaXMgY2xvc2UgdG8gYmUKbWVyZ2VkIGludG8gdGhlIHRpcCB0cmVlLCBidXQg
-c3RpbGwgbm90IGZpbmFsaXplZDoKCiAgIGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGlu
-dXgva2VybmVsL2dpdC9wZXRlcnovcXVldWUuZ2l0IHNjaGVkL21pZ3JhdGUtZGlzYWJsZQoKQ2hh
-bmdlcyB2cy4gVjE6CgogIC0gTWFrZSBpdCB0cnVseSBmdW5jdGlvbmFsIGJ5IGRlcGVuZGluZyBv
-biBtaWdyYXRlIGRpc2FibGUvZW5hYmxlIChCcm93biBwYXBlcmJhZykKICAtIFJlbmFtZSB0byBr
-bWFwX2xvY2FsLiogKExpbnVzKQogIC0gRml4IHRoZSBzY2hlZCBpbi9vdXQgaXNzdWUgTGludXMg
-cG9pbnRlZCBvdXQKICAtIEZpeCBhIGZldyBzdHlsZSBpc3N1ZXMgKENocmlzdG9waCkKICAtIFNw
-bGl0IGEgZmV3IHRoaW5ncyBvdXQgaW50byBzZXBlcmF0ZSBwYXRjaGVzIHRvIG1ha2UgcmV2aWV3
-IHNpbXBsZXIKICAtIFBpY2sgdXAgYWNrZWQvcmV2aWV3ZWQgdGFncyBhcyBhcHByb3ByaWF0ZQoK
-VGhhbmtzLAoKCXRnbHgKLS0tCiBhL2FyY2gvYXJtL21tL2hpZ2htZW0uYyAgICAgICAgICAgICAg
-IHwgIDEyMSAtLS0tLS0tLS0tLS0tLS0tLS0KIGEvYXJjaC9taWNyb2JsYXplL21tL2hpZ2htZW0u
-YyAgICAgICAgfCAgIDc4IC0tLS0tLS0tLS0tLQogYS9hcmNoL25kczMyL21tL2hpZ2htZW0uYyAg
-ICAgICAgICAgICB8ICAgNDggLS0tLS0tLQogYS9hcmNoL3Bvd2VycGMvbW0vaGlnaG1lbS5jICAg
-ICAgICAgICB8ICAgNjcgLS0tLS0tLS0tLQogYS9hcmNoL3NwYXJjL21tL2hpZ2htZW0uYyAgICAg
-ICAgICAgICB8ICAxMTUgLS0tLS0tLS0tLS0tLS0tLS0KIGFyY2gvYXJjL0tjb25maWcgICAgICAg
-ICAgICAgICAgICAgICAgfCAgICAxIAogYXJjaC9hcmMvaW5jbHVkZS9hc20vaGlnaG1lbS5oICAg
-ICAgICB8ICAgIDggKwogYXJjaC9hcmMvbW0vaGlnaG1lbS5jICAgICAgICAgICAgICAgICB8ICAg
-NDQgLS0tLS0tCiBhcmNoL2FybS9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgIHwgICAgMSAK
-IGFyY2gvYXJtL2luY2x1ZGUvYXNtL2hpZ2htZW0uaCAgICAgICAgfCAgIDMxICsrKy0KIGFyY2gv
-YXJtL21tL01ha2VmaWxlICAgICAgICAgICAgICAgICAgfCAgICAxIAogYXJjaC9jc2t5L0tjb25m
-aWcgICAgICAgICAgICAgICAgICAgICB8ICAgIDEgCiBhcmNoL2Nza3kvaW5jbHVkZS9hc20vaGln
-aG1lbS5oICAgICAgIHwgICAgNCAKIGFyY2gvY3NreS9tbS9oaWdobWVtLmMgICAgICAgICAgICAg
-ICAgfCAgIDc1IC0tLS0tLS0tLS0tCiBhcmNoL21pY3JvYmxhemUvS2NvbmZpZyAgICAgICAgICAg
-ICAgIHwgICAgMSAKIGFyY2gvbWljcm9ibGF6ZS9pbmNsdWRlL2FzbS9oaWdobWVtLmggfCAgICA2
-IAogYXJjaC9taWNyb2JsYXplL21tL01ha2VmaWxlICAgICAgICAgICB8ICAgIDEgCiBhcmNoL21p
-Y3JvYmxhemUvbW0vaW5pdC5jICAgICAgICAgICAgIHwgICAgNiAKIGFyY2gvbWlwcy9LY29uZmln
-ICAgICAgICAgICAgICAgICAgICAgfCAgICAxIAogYXJjaC9taXBzL2luY2x1ZGUvYXNtL2hpZ2ht
-ZW0uaCAgICAgICB8ICAgIDQgCiBhcmNoL21pcHMvbW0vaGlnaG1lbS5jICAgICAgICAgICAgICAg
-IHwgICA3NyAtLS0tLS0tLS0tLS0KIGFyY2gvbWlwcy9tbS9pbml0LmMgICAgICAgICAgICAgICAg
-ICAgfCAgICAzIAogYXJjaC9uZHMzMi9LY29uZmlnLmNwdSAgICAgICAgICAgICAgICB8ICAgIDEg
-CiBhcmNoL25kczMyL2luY2x1ZGUvYXNtL2hpZ2htZW0uaCAgICAgIHwgICAyMSArKy0KIGFyY2gv
-bmRzMzIvbW0vTWFrZWZpbGUgICAgICAgICAgICAgICAgfCAgICAxIAogYXJjaC9wb3dlcnBjL0tj
-b25maWcgICAgICAgICAgICAgICAgICB8ICAgIDEgCiBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
-aGlnaG1lbS5oICAgIHwgICAgNiAKIGFyY2gvcG93ZXJwYy9tbS9NYWtlZmlsZSAgICAgICAgICAg
-ICAgfCAgICAxIAogYXJjaC9wb3dlcnBjL21tL21lbS5jICAgICAgICAgICAgICAgICB8ICAgIDcg
-LQogYXJjaC9zcGFyYy9LY29uZmlnICAgICAgICAgICAgICAgICAgICB8ICAgIDEgCiBhcmNoL3Nw
-YXJjL2luY2x1ZGUvYXNtL2hpZ2htZW0uaCAgICAgIHwgICAgNyAtCiBhcmNoL3NwYXJjL21tL01h
-a2VmaWxlICAgICAgICAgICAgICAgIHwgICAgMyAKIGFyY2gvc3BhcmMvbW0vc3JtbXUuYyAgICAg
-ICAgICAgICAgICAgfCAgICAyIAogYXJjaC94ODYvaW5jbHVkZS9hc20vZml4bWFwLmggICAgICAg
-ICB8ICAgIDEgCiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9oaWdobWVtLmggICAgICAgIHwgICAxMiAr
-CiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9pb21hcC5oICAgICAgICAgIHwgICAxMyAtLQogYXJjaC94
-ODYvbW0vaGlnaG1lbV8zMi5jICAgICAgICAgICAgICB8ICAgNTkgLS0tLS0tLS0tCiBhcmNoL3g4
-Ni9tbS9pbml0XzMyLmMgICAgICAgICAgICAgICAgIHwgICAxNSAtLQogYXJjaC94ODYvbW0vaW9t
-YXBfMzIuYyAgICAgICAgICAgICAgICB8ICAgNTcgLS0tLS0tLS0KIGFyY2gveHRlbnNhL0tjb25m
-aWcgICAgICAgICAgICAgICAgICAgfCAgICAxIAogYXJjaC94dGVuc2EvaW5jbHVkZS9hc20vaGln
-aG1lbS5oICAgICB8ICAgIDkgKwogYXJjaC94dGVuc2EvbW0vaGlnaG1lbS5jICAgICAgICAgICAg
-ICB8ICAgNDQgLS0tLS0tCiBiL2FyY2gveDg2L0tjb25maWcgICAgICAgICAgICAgICAgICAgIHwg
-ICAgMyAKIGluY2x1ZGUvbGludXgvaGlnaG1lbS5oICAgICAgICAgICAgICAgfCAgMjAzICsrKysr
-KysrKysrKysrKysrKysrKystLS0tLS0tLS0KIGluY2x1ZGUvbGludXgvaW8tbWFwcGluZy5oICAg
-ICAgICAgICAgfCAgIDQyICsrKysrLQogaW5jbHVkZS9saW51eC9wcmVlbXB0LmggICAgICAgICAg
-ICAgICB8ICAgMzggLS0tLS0KIGluY2x1ZGUvbGludXgvc2NoZWQuaCAgICAgICAgICAgICAgICAg
-fCAgIDExICsKIGtlcm5lbC9lbnRyeS9jb21tb24uYyAgICAgICAgICAgICAgICAgfCAgICAyIAog
-a2VybmVsL2ZvcmsuYyAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDEgCiBrZXJuZWwvc2No
-ZWQvY29yZS5jICAgICAgICAgICAgICAgICAgIHwgICAzMCArKystCiBrZXJuZWwvc2NoZWQvc2No
-ZWQuaCAgICAgICAgICAgICAgICAgIHwgICAgMiAKIGxpYi9zbXBfcHJvY2Vzc29yX2lkLmMgICAg
-ICAgICAgICAgICAgfCAgICAyIAogbW0vS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICB8ICAgIDMgCiBtbS9oaWdobWVtLmMgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIxOCAr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiA1NCBmaWxlcyBjaGFuZ2VkLCA1NDIg
-aW5zZXJ0aW9ucygrKSwgOTY5IGRlbGV0aW9ucygtKQoK
+Convert X86 to the generic kmap atomic implementation and make the
+iomap_atomic() naming convention consistent while at it.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: x86@kernel.org
+---
+ arch/x86/Kconfig               |    3 +-
+ arch/x86/include/asm/fixmap.h  |    1 
+ arch/x86/include/asm/highmem.h |   12 ++++++--
+ arch/x86/include/asm/iomap.h   |   18 ++++++------
+ arch/x86/mm/highmem_32.c       |   59 -----------------------------------------
+ arch/x86/mm/init_32.c          |   15 ----------
+ arch/x86/mm/iomap_32.c         |   59 +++--------------------------------------
+ include/linux/io-mapping.h     |    2 -
+ 8 files changed, 27 insertions(+), 142 deletions(-)
+
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -14,10 +14,11 @@ config X86_32
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select CLKSRC_I8253
+ 	select CLONE_BACKWARDS
++	select GENERIC_VDSO_32
+ 	select HAVE_DEBUG_STACKOVERFLOW
++	select KMAP_LOCAL
+ 	select MODULES_USE_ELF_REL
+ 	select OLD_SIGACTION
+-	select GENERIC_VDSO_32
+ 
+ config X86_64
+ 	def_bool y
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -151,7 +151,6 @@ extern void reserve_top_address(unsigned
+ 
+ extern int fixmaps_set;
+ 
+-extern pte_t *kmap_pte;
+ extern pte_t *pkmap_page_table;
+ 
+ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
+--- a/arch/x86/include/asm/highmem.h
++++ b/arch/x86/include/asm/highmem.h
+@@ -58,11 +58,17 @@ extern unsigned long highstart_pfn, high
+ #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-void *kmap_atomic_pfn(unsigned long pfn);
+-void *kmap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot);
+-
+ #define flush_cache_kmaps()	do { } while (0)
+ 
++#define	arch_kmap_local_post_map(vaddr, pteval)		\
++	arch_flush_lazy_mmu_mode()
++
++#define	arch_kmap_local_post_unmap(vaddr)		\
++	do {						\
++		flush_tlb_one_kernel((vaddr));		\
++		arch_flush_lazy_mmu_mode();		\
++	} while (0)
++
+ extern void add_highpages_with_active_regions(int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+ 
+--- a/arch/x86/include/asm/iomap.h
++++ b/arch/x86/include/asm/iomap.h
+@@ -9,19 +9,21 @@
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/uaccess.h>
++#include <linux/highmem.h>
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ 
+-void __iomem *
+-iomap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot);
++void __iomem *iomap_atomic_pfn_prot(unsigned long pfn, pgprot_t prot);
+ 
+-void
+-iounmap_atomic(void __iomem *kvaddr);
++static inline void iounmap_atomic(void __iomem *vaddr)
++{
++	kunmap_local_indexed((void __force *)vaddr);
++	pagefault_enable();
++	preempt_enable();
++}
+ 
+-int
+-iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot);
++int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot);
+ 
+-void
+-iomap_free(resource_size_t base, unsigned long size);
++void iomap_free(resource_size_t base, unsigned long size);
+ 
+ #endif /* _ASM_X86_IOMAP_H */
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -4,65 +4,6 @@
+ #include <linux/swap.h> /* for totalram_pages */
+ #include <linux/memblock.h>
+ 
+-void *kmap_atomic_high_prot(struct page *page, pgprot_t prot)
+-{
+-	unsigned long vaddr;
+-	int idx, type;
+-
+-	type = kmap_atomic_idx_push();
+-	idx = type + KM_TYPE_NR*smp_processor_id();
+-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	BUG_ON(!pte_none(*(kmap_pte-idx)));
+-	set_pte(kmap_pte-idx, mk_pte(page, prot));
+-	arch_flush_lazy_mmu_mode();
+-
+-	return (void *)vaddr;
+-}
+-EXPORT_SYMBOL(kmap_atomic_high_prot);
+-
+-/*
+- * This is the same as kmap_atomic() but can map memory that doesn't
+- * have a struct page associated with it.
+- */
+-void *kmap_atomic_pfn(unsigned long pfn)
+-{
+-	return kmap_atomic_prot_pfn(pfn, kmap_prot);
+-}
+-EXPORT_SYMBOL_GPL(kmap_atomic_pfn);
+-
+-void kunmap_atomic_high(void *kvaddr)
+-{
+-	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+-
+-	if (vaddr >= __fix_to_virt(FIX_KMAP_END) &&
+-	    vaddr <= __fix_to_virt(FIX_KMAP_BEGIN)) {
+-		int idx, type;
+-
+-		type = kmap_atomic_idx();
+-		idx = type + KM_TYPE_NR * smp_processor_id();
+-
+-#ifdef CONFIG_DEBUG_HIGHMEM
+-		WARN_ON_ONCE(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
+-#endif
+-		/*
+-		 * Force other mappings to Oops if they'll try to access this
+-		 * pte without first remap it.  Keeping stale mappings around
+-		 * is a bad idea also, in case the page changes cacheability
+-		 * attributes or becomes a protected page in a hypervisor.
+-		 */
+-		kpte_clear_flush(kmap_pte-idx, vaddr);
+-		kmap_atomic_idx_pop();
+-		arch_flush_lazy_mmu_mode();
+-	}
+-#ifdef CONFIG_DEBUG_HIGHMEM
+-	else {
+-		BUG_ON(vaddr < PAGE_OFFSET);
+-		BUG_ON(vaddr >= (unsigned long)high_memory);
+-	}
+-#endif
+-}
+-EXPORT_SYMBOL(kunmap_atomic_high);
+-
+ void __init set_highmem_pages_init(void)
+ {
+ 	struct zone *zone;
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -394,19 +394,6 @@ kernel_physical_mapping_init(unsigned lo
+ 	return last_map_addr;
+ }
+ 
+-pte_t *kmap_pte;
+-
+-static void __init kmap_init(void)
+-{
+-	unsigned long kmap_vstart;
+-
+-	/*
+-	 * Cache the first kmap pte:
+-	 */
+-	kmap_vstart = __fix_to_virt(FIX_KMAP_BEGIN);
+-	kmap_pte = virt_to_kpte(kmap_vstart);
+-}
+-
+ #ifdef CONFIG_HIGHMEM
+ static void __init permanent_kmaps_init(pgd_t *pgd_base)
+ {
+@@ -712,8 +699,6 @@ void __init paging_init(void)
+ 
+ 	__flush_tlb_all();
+ 
+-	kmap_init();
+-
+ 	/*
+ 	 * NOTE: at this point the bootmem allocator is fully available.
+ 	 */
+--- a/arch/x86/mm/iomap_32.c
++++ b/arch/x86/mm/iomap_32.c
+@@ -44,28 +44,7 @@ void iomap_free(resource_size_t base, un
+ }
+ EXPORT_SYMBOL_GPL(iomap_free);
+ 
+-void *kmap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot)
+-{
+-	unsigned long vaddr;
+-	int idx, type;
+-
+-	preempt_disable();
+-	pagefault_disable();
+-
+-	type = kmap_atomic_idx_push();
+-	idx = type + KM_TYPE_NR * smp_processor_id();
+-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+-	arch_flush_lazy_mmu_mode();
+-
+-	return (void *)vaddr;
+-}
+-
+-/*
+- * Map 'pfn' using protections 'prot'
+- */
+-void __iomem *
+-iomap_atomic_prot_pfn(unsigned long pfn, pgprot_t prot)
++void __iomem *iomap_atomic_pfn_prot(unsigned long pfn, pgprot_t prot)
+ {
+ 	/*
+ 	 * For non-PAT systems, translate non-WB request to UC- just in
+@@ -81,36 +60,8 @@ iomap_atomic_prot_pfn(unsigned long pfn,
+ 	/* Filter out unsupported __PAGE_KERNEL* bits: */
+ 	pgprot_val(prot) &= __default_kernel_pte_mask;
+ 
+-	return (void __force __iomem *) kmap_atomic_prot_pfn(pfn, prot);
+-}
+-EXPORT_SYMBOL_GPL(iomap_atomic_prot_pfn);
+-
+-void
+-iounmap_atomic(void __iomem *kvaddr)
+-{
+-	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+-
+-	if (vaddr >= __fix_to_virt(FIX_KMAP_END) &&
+-	    vaddr <= __fix_to_virt(FIX_KMAP_BEGIN)) {
+-		int idx, type;
+-
+-		type = kmap_atomic_idx();
+-		idx = type + KM_TYPE_NR * smp_processor_id();
+-
+-#ifdef CONFIG_DEBUG_HIGHMEM
+-		WARN_ON_ONCE(vaddr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
+-#endif
+-		/*
+-		 * Force other mappings to Oops if they'll try to access this
+-		 * pte without first remap it.  Keeping stale mappings around
+-		 * is a bad idea also, in case the page changes cacheability
+-		 * attributes or becomes a protected page in a hypervisor.
+-		 */
+-		kpte_clear_flush(kmap_pte-idx, vaddr);
+-		kmap_atomic_idx_pop();
+-	}
+-
+-	pagefault_enable();
+-	preempt_enable();
++	preempt_disable();
++	pagefault_disable();
++	return (void __force __iomem *)__kmap_local_pfn_prot(pfn, prot);
+ }
+-EXPORT_SYMBOL_GPL(iounmap_atomic);
++EXPORT_SYMBOL_GPL(iomap_atomic_pfn_prot);
+--- a/include/linux/io-mapping.h
++++ b/include/linux/io-mapping.h
+@@ -69,7 +69,7 @@ io_mapping_map_atomic_wc(struct io_mappi
+ 
+ 	BUG_ON(offset >= mapping->size);
+ 	phys_addr = mapping->base + offset;
+-	return iomap_atomic_prot_pfn(PHYS_PFN(phys_addr), mapping->prot);
++	return iomap_atomic_pfn_prot(PHYS_PFN(phys_addr), mapping->prot);
+ }
+ 
+ static inline void
+
