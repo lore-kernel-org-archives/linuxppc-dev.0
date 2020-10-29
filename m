@@ -7,65 +7,64 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74E42C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:57:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61A73C4741F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:59:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A75A620639
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:57:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 814AF2076D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 22:59:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="j4Kq3J1x";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="J4VL1zNL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A75A620639
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="FOmP5Y2C";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="2P8kK3cK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 814AF2076D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMgn71yckzDqyc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 09:57:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMgqC5k72zDqkR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 09:59:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=j4Kq3J1x; 
+ header.s=2020 header.b=FOmP5Y2C; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=J4VL1zNL; 
+ header.a=ed25519-sha256 header.s=2020e header.b=2P8kK3cK; 
  dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a0a:51c0:0:12e:550::1])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMgDb1TbrzDqY3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 09:32:31 +1100 (AEDT)
-Message-Id: <20201029222651.885593433@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMgDc6HPJzDqX9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 09:32:32 +1100 (AEDT)
+Message-Id: <20201029222652.194349374@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604010744;
+ s=2020; t=1604010748;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=LufW3kO54Nr2100PGampKWimA5aEr8Imx1WFVO7xrw4=;
- b=j4Kq3J1xytiwogkgzVlHOciXiJ1X9e95juvY5nmiB8tzupy22IadS0O40bAyqBJmkCN9Ur
- y0qPPUW2tXbG0Lkda23fNJOralmhD/EGP2JuAKX0QBasC9PdPQusNLgaKt33z4tbDpM9VU
- 6PUTm98f4CRQimklmHRbrKuiRHshN4e4ADG4f4lP0gdK4odT7QjzwbtfYoKLeYcj1d6a+m
- LNeB1MFNWX45WX7NSeq+Pgk22CsjEA91O3osOymgoANaexT9zV7bmthjqtLuA5RpPNbQ9i
- iHKyjRVf8dRstiFVXwDT/tKcEwHUeXNL2cbIUddGM4Xmalxi84w6i4ZSXQsZJw==
+ bh=sdXI7uto7JGSNPM0IVUoIg2pbKsluCZDYWtwfegzM8w=;
+ b=FOmP5Y2C/lyOqnO8NRQR7UeX7g96W79J74og5WndG2GjK1T3b2uRiyCBECmKlLcuaXoHu8
+ bjaO/viBQhQ8bvgNso5sb4fHIkbzpPsCviHoxY+2EsUN1BaZlNmsZcBAmmjBfLppHZ27j1
+ 8lbkSKu8k/8qW6LY2xD1EX5vzaJ3/FdcM9vTyye/Tv7TTKG3aZOv8Jh8oZzsGDDYfH1SQ6
+ I6rGLBa0cZuLsOHLTT3MjdFH+65ijfrAWHBbcJCQCzQxfFIyFYHpilKwQdNE2o+LoJ/DpZ
+ n2dbzgsWeQRp5mGKz2qckWUEFFHjnxsDDjH0eBmDpexQlEEuO5OoALrI5/Y/gA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604010744;
+ s=2020e; t=1604010748;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=LufW3kO54Nr2100PGampKWimA5aEr8Imx1WFVO7xrw4=;
- b=J4VL1zNL7oBS8xSf4hW/0svoZPMGaKoJMwK2efYvA+sVXzcWMChJ2eGLsxyFbxD64uPr9d
- GMJEsGE96Dl8XECg==
-Date: Thu, 29 Oct 2020 23:18:19 +0100
+ bh=sdXI7uto7JGSNPM0IVUoIg2pbKsluCZDYWtwfegzM8w=;
+ b=2P8kK3cKzIGAVVEcZXJVGmyGsyPoNrPQWyv/xRi4meWRIELqGztBgTX8k0SbykrmKDkQmG
+ lS1o8L5loEELkyBQ==
+Date: Thu, 29 Oct 2020 23:18:22 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V2 13/18] xtensa/mm/highmem: Switch to generic kmap atomic
+Subject: [patch V2 16/18] sched: highmem: Store local kmaps in task struct
 References: <20201029221806.189523375@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -81,9 +80,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-xtensa@linux-xtensa.org,
+ Peter Zijlstra <peterz@infradead.org>,
  Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Ben Segall <bsegall@google.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Ben Segall <bsegall@google.com>, linux-mm@kvack.org,
  Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
  Vincent Chen <deanbo422@gmail.com>, Ingo Molnar <mingo@kernel.org>,
  linux-arch@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>,
@@ -91,134 +91,309 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
  Christoph Hellwig <hch@lst.de>, David Airlie <airlied@linux.ie>,
  Mel Gorman <mgorman@suse.de>, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Paul McKenney <paulmck@kernel.org>,
+ Ard Biesheuvel <ardb@kernel.org>, Paul McKenney <paulmck@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
  Linus Torvalds <torvalds@linuxfoundation.org>,
  Greentime Hu <green.hu@gmail.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>,
  linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>,
  Michal Simek <monstr@monstr.eu>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Nick Hu <nickhu@andestech.com>, linux-mm@kvack.org,
+ Nick Hu <nickhu@andestech.com>, Max Filippov <jcmvbkbc@gmail.com>,
  Vineet Gupta <vgupta@synopsys.com>, linux-mips@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel@ffwll.ch>,
- Ard Biesheuvel <ardb@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
  Daniel Bristot de Oliveira <bristot@redhat.com>,
  "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No reason having the same code in every architecture
+Instead of storing the map per CPU provide and use per task storage. That
+prepares for local kmaps which are preemptible.
+
+The context switch code is preparatory and not yet in use because
+kmap_atomic() runs with preemption disabled. Will be made usable in the
+next step.
+
+The context switch logic is safe even when an interrupt happens after
+clearing or before restoring the kmaps. The kmap index in task struct is
+not modified so any nesting kmap in an interrupt will use unused indices
+and on return the counter is the same as before.
+
+Also add an assert into the return to user space code. Going back to user
+space with an active kmap local is a nono.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Max Filippov <jcmvbkbc@gmail.com>
-Cc: linux-xtensa@linux-xtensa.org
-
 ---
- arch/xtensa/Kconfig               |    1 
- arch/xtensa/include/asm/highmem.h |    9 +++++++
- arch/xtensa/mm/highmem.c          |   44 +++-----------------------------------
- 3 files changed, 14 insertions(+), 40 deletions(-)
+ include/linux/highmem.h |   10 +++++
+ include/linux/sched.h   |    9 ++++
+ kernel/entry/common.c   |    2 +
+ kernel/fork.c           |    1 
+ kernel/sched/core.c     |   18 +++++++++
+ mm/highmem.c            |   96 +++++++++++++++++++++++++++++++++++++++++-------
+ 6 files changed, 123 insertions(+), 13 deletions(-)
 
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -666,6 +666,7 @@ endchoice
- config HIGHMEM
- 	bool "High Memory Support"
- 	depends on MMU
-+        select KMAP_LOCAL
- 	help
- 	  Linux can use the full amount of RAM in the system by
- 	  default. However, the default MMUv2 setup only maps the
---- a/arch/xtensa/include/asm/highmem.h
-+++ b/arch/xtensa/include/asm/highmem.h
-@@ -68,6 +68,15 @@ static inline void flush_cache_kmaps(voi
- 	flush_cache_all();
- }
- 
-+enum fixed_addresses kmap_local_map_idx(int type, unsigned long pfn);
-+#define arch_kmap_local_map_idx		kmap_local_map_idx
-+
-+enum fixed_addresses kmap_local_unmap_idx(int type, unsigned long addr);
-+#define arch_kmap_local_unmap_idx	kmap_local_unmap_idx
-+
-+#define arch_kmap_local_post_unmap(vaddr)	\
-+	local_flush_tlb_kernel_range(vaddr, vaddr + PAGE_SIZE)
-+
- void kmap_init(void);
- 
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -38,6 +38,16 @@ static inline void invalidate_kernel_vma
+ void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
+ void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
+ void kunmap_local_indexed(void *vaddr);
++void kmap_local_fork(struct task_struct *tsk);
++void __kmap_local_sched_out(void);
++void __kmap_local_sched_in(void);
++static inline void kmap_assert_nomap(void)
++{
++	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
++}
++#else
++static inline void kmap_local_fork(struct task_struct *tsk) { }
++static inline void kmap_assert_nomap(void) { }
  #endif
---- a/arch/xtensa/mm/highmem.c
-+++ b/arch/xtensa/mm/highmem.c
-@@ -12,8 +12,6 @@
- #include <linux/highmem.h>
- #include <asm/tlbflush.h>
  
--static pte_t *kmap_pte;
--
- #if DCACHE_WAY_SIZE > PAGE_SIZE
- unsigned int last_pkmap_nr_arr[DCACHE_N_COLORS];
- wait_queue_head_t pkmap_map_wait_arr[DCACHE_N_COLORS];
-@@ -37,55 +35,21 @@ static inline enum fixed_addresses kmap_
- 		color;
+ #ifdef CONFIG_HIGHMEM
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -34,6 +34,7 @@
+ #include <linux/rseq.h>
+ #include <linux/seqlock.h>
+ #include <linux/kcsan.h>
++#include <asm/kmap_types.h>
+ 
+ /* task_struct member predeclarations (sorted alphabetically): */
+ struct audit_context;
+@@ -629,6 +630,13 @@ struct wake_q_node {
+ 	struct wake_q_node *next;
+ };
+ 
++struct kmap_ctrl {
++#ifdef CONFIG_KMAP_LOCAL
++	int				idx;
++	pte_t				pteval[KM_TYPE_NR];
++#endif
++};
++
+ struct task_struct {
+ #ifdef CONFIG_THREAD_INFO_IN_TASK
+ 	/*
+@@ -1294,6 +1302,7 @@ struct task_struct {
+ 	unsigned int			sequential_io;
+ 	unsigned int			sequential_io_avg;
+ #endif
++	struct kmap_ctrl		kmap_ctrl;
+ #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
+ 	unsigned long			task_state_change;
+ #endif
+--- a/kernel/entry/common.c
++++ b/kernel/entry/common.c
+@@ -2,6 +2,7 @@
+ 
+ #include <linux/context_tracking.h>
+ #include <linux/entry-common.h>
++#include <linux/highmem.h>
+ #include <linux/livepatch.h>
+ #include <linux/audit.h>
+ 
+@@ -194,6 +195,7 @@ static void exit_to_user_mode_prepare(st
+ 
+ 	/* Ensure that the address limit is intact and no locks are held */
+ 	addr_limit_user_check();
++	kmap_assert_nomap();
+ 	lockdep_assert_irqs_disabled();
+ 	lockdep_sys_exit();
  }
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -930,6 +930,7 @@ static struct task_struct *dup_task_stru
+ 	account_kernel_stack(tsk, 1);
  
--void *kmap_atomic_high_prot(struct page *page, pgprot_t prot)
-+enum fixed_addresses kmap_local_map_idx(int type, unsigned long pfn)
+ 	kcov_task_init(tsk);
++	kmap_local_fork(tsk);
+ 
+ #ifdef CONFIG_FAULT_INJECTION
+ 	tsk->fail_nth = 0;
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -4053,6 +4053,22 @@ static inline void finish_lock_switch(st
+ # define finish_arch_post_lock_switch()	do { } while (0)
+ #endif
+ 
++static inline void kmap_local_sched_out(void)
++{
++#ifdef CONFIG_KMAP_LOCAL
++	if (unlikely(current->kmap_ctrl.idx))
++		__kmap_local_sched_out();
++#endif
++}
++
++static inline void kmap_local_sched_in(void)
++{
++#ifdef CONFIG_KMAP_LOCAL
++	if (unlikely(current->kmap_ctrl.idx))
++		__kmap_local_sched_in();
++#endif
++}
++
+ /**
+  * prepare_task_switch - prepare to switch tasks
+  * @rq: the runqueue preparing to switch
+@@ -4075,6 +4091,7 @@ prepare_task_switch(struct rq *rq, struc
+ 	perf_event_task_sched_out(prev, next);
+ 	rseq_preempt(prev);
+ 	fire_sched_out_preempt_notifiers(prev, next);
++	kmap_local_sched_out();
+ 	prepare_task(next);
+ 	prepare_arch_switch(next);
+ }
+@@ -4141,6 +4158,7 @@ static struct rq *finish_task_switch(str
+ 	finish_lock_switch(rq);
+ 	finish_arch_post_lock_switch();
+ 	kcov_finish_switch(current);
++	kmap_local_sched_in();
+ 
+ 	fire_sched_in_preempt_notifiers(current);
+ 	/*
+--- a/mm/highmem.c
++++ b/mm/highmem.c
+@@ -367,27 +367,24 @@ EXPORT_SYMBOL(kunmap_high);
+ 
+ #ifdef CONFIG_KMAP_LOCAL
+ 
+-static DEFINE_PER_CPU(int, __kmap_atomic_idx);
+-
+-static inline int kmap_atomic_idx_push(void)
++static inline int kmap_local_idx_push(void)
  {
--	enum fixed_addresses idx;
--	unsigned long vaddr;
--
--	idx = kmap_idx(kmap_atomic_idx_push(),
--		       DCACHE_ALIAS(page_to_phys(page)));
--	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
--#ifdef CONFIG_DEBUG_HIGHMEM
--	BUG_ON(!pte_none(*(kmap_pte + idx)));
--#endif
--	set_pte(kmap_pte + idx, mk_pte(page, prot));
--
--	return (void *)vaddr;
-+	return kmap_idx(type, DCACHE_ALIAS(pfn << PAGE_SHIFT);
- }
--EXPORT_SYMBOL(kmap_atomic_high_prot);
+-	int idx = __this_cpu_inc_return(__kmap_atomic_idx) - 1;
++	int idx = current->kmap_ctrl.idx++;
  
--void kunmap_atomic_high(void *kvaddr)
-+enum fixed_addresses kmap_local_unmap_idx(int type, unsigned long addr)
- {
--	if (kvaddr >= (void *)FIXADDR_START &&
--	    kvaddr < (void *)FIXADDR_TOP) {
--		int idx = kmap_idx(kmap_atomic_idx(),
--				   DCACHE_ALIAS((unsigned long)kvaddr));
--
--		/*
--		 * Force other mappings to Oops if they'll try to access this
--		 * pte without first remap it.  Keeping stale mappings around
--		 * is a bad idea also, in case the page changes cacheability
--		 * attributes or becomes a protected page in a hypervisor.
--		 */
--		pte_clear(&init_mm, kvaddr, kmap_pte + idx);
--		local_flush_tlb_kernel_range((unsigned long)kvaddr,
--					     (unsigned long)kvaddr + PAGE_SIZE);
--
--		kmap_atomic_idx_pop();
--	}
-+	return kmap_idx(type, DCACHE_ALIAS(addr));
+ 	WARN_ON_ONCE(in_irq() && !irqs_disabled());
+ 	BUG_ON(idx >= KM_TYPE_NR);
+ 	return idx;
  }
--EXPORT_SYMBOL(kunmap_atomic_high);
  
- void __init kmap_init(void)
+-static inline int kmap_atomic_idx(void)
++static inline int kmap_local_idx(void)
  {
--	unsigned long kmap_vstart;
--
- 	/* Check if this memory layout is broken because PKMAP overlaps
- 	 * page table.
- 	 */
- 	BUILD_BUG_ON(PKMAP_BASE < TLBTEMP_BASE_1 + TLBTEMP_SIZE);
--	/* cache the first kmap pte */
--	kmap_vstart = __fix_to_virt(FIX_KMAP_BEGIN);
--	kmap_pte = virt_to_kpte(kmap_vstart);
- 	kmap_waitqueues_init();
+-	return __this_cpu_read(__kmap_atomic_idx) - 1;
++	return current->kmap_ctrl.idx - 1;
  }
+ 
+-static inline void kmap_atomic_idx_pop(void)
++static inline void kmap_local_idx_pop(void)
+ {
+-	int idx = __this_cpu_dec_return(__kmap_atomic_idx);
+-
+-	BUG_ON(idx < 0);
++	current->kmap_ctrl.idx--;
++	BUG_ON(current->kmap_ctrl.idx < 0);
+ }
+ 
+ #ifndef arch_kmap_local_post_map
+@@ -447,12 +444,13 @@ void *__kmap_local_pfn_prot(unsigned lon
+ 	int idx;
+ 
+ 	preempt_disable();
+-	idx = arch_kmap_local_map_idx(kmap_atomic_idx_push(), pfn);
++	idx = arch_kmap_local_map_idx(kmap_local_idx_push(), pfn);
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	BUG_ON(!pte_none(*(kmap_pte - idx)));
+ 	pteval = pfn_pte(pfn, prot);
+ 	set_pte_at(&init_mm, vaddr, kmap_pte - idx, pteval);
+ 	arch_kmap_local_post_map(vaddr, pteval);
++	current->kmap_ctrl.pteval[kmap_local_idx()] = pteval;
+ 	preempt_enable();
+ 
+ 	return (void *)vaddr;
+@@ -491,16 +489,88 @@ void kunmap_local_indexed(void *vaddr)
+ 	}
+ 
+ 	preempt_disable();
+-	idx = arch_kmap_local_unmap_idx(kmap_atomic_idx(), addr);
++	idx = arch_kmap_local_unmap_idx(kmap_local_idx(), addr);
+ 	WARN_ON_ONCE(addr != __fix_to_virt(FIX_KMAP_BEGIN + idx));
+ 
+ 	arch_kmap_local_pre_unmap(addr);
+ 	pte_clear(&init_mm, addr, kmap_pte - idx);
+ 	arch_kmap_local_post_unmap(addr);
+-	kmap_atomic_idx_pop();
++	current->kmap_ctrl.pteval[kmap_local_idx()] = __pte(0);
++	kmap_local_idx_pop();
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(kunmap_local_indexed);
++
++/*
++ * Invoked before switch_to(). This is safe even when during or after
++ * clearing the maps an interrupt which needs a kmap_local happens because
++ * the task::kmap_ctrl.idx is not modified by the unmapping code so a
++ * nested kmap_local will use the next unused index and restore the index
++ * on unmap. The already cleared kmaps of the outgoing task are irrelevant
++ * because the interrupt context does not know about them. The same applies
++ * when scheduling back in for an interrupt which happens before the
++ * restore is complete.
++ */
++void __kmap_local_sched_out(void)
++{
++	struct task_struct *tsk = current;
++	pte_t *kmap_pte = kmap_get_pte();
++	int i;
++
++	/* Clear kmaps */
++	for (i = 0; i < tsk->kmap_ctrl.idx; i++) {
++		pte_t pteval = tsk->kmap_ctrl.pteval[i];
++		unsigned long addr;
++		int idx;
++
++		if (WARN_ON_ONCE(pte_none(pteval)))
++			continue;
++
++		/*
++		 * This is a horrible hack for XTENSA to calculate the
++		 * coloured PTE index. Uses the PFN encoded into the pteval
++		 * and the map index calculation because the actual mapped
++		 * virtual address is not stored in task::kmap_ctrl.
++		 * For any sane architecture this is optimized out.
++		 */
++		idx = arch_kmap_local_map_idx(i, pte_pfn(pteval));
++
++		addr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
++		arch_kmap_local_pre_unmap(addr);
++		pte_clear(&init_mm, addr, kmap_pte - idx);
++		arch_kmap_local_post_unmap(addr);
++	}
++}
++
++void __kmap_local_sched_in(void)
++{
++	struct task_struct *tsk = current;
++	pte_t *kmap_pte = kmap_get_pte();
++	int i;
++
++	/* Restore kmaps */
++	for (i = 0; i < tsk->kmap_ctrl.idx; i++) {
++		pte_t pteval = tsk->kmap_ctrl.pteval[i];
++		unsigned long addr;
++		int idx;
++
++		if (WARN_ON_ONCE(pte_none(pteval)))
++			continue;
++
++		/* See comment in __kmap_local_sched_out() */
++		idx = arch_kmap_local_map_idx(i, pte_pfn(pteval));
++		addr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
++		set_pte_at(&init_mm, addr, kmap_pte - idx, pteval);
++		arch_kmap_local_post_map(addr, pteval);
++	}
++}
++
++void kmap_local_fork(struct task_struct *tsk)
++{
++	if (WARN_ON_ONCE(tsk->kmap_ctrl.idx))
++		memset(&tsk->kmap_ctrl, 0, sizeof(tsk->kmap_ctrl));
++}
++
+ #endif
+ 
+ #if defined(HASHED_PAGE_VIRTUAL)
 
