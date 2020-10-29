@@ -2,99 +2,59 @@ Return-Path: <SRS0=8b8/=EE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C1DAC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90659C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:17:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 18B172076E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:09:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gy+FevCW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18B172076E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9D22C2076E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Oct 2020 23:17:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D22C2076E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMh355GSmzDqgb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 10:09:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641;
- helo=mail-pl1-x641.google.com; envelope-from=jingoohan1@gmail.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=gy+FevCW; dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMhDm0RsczDqdg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 10:17:44 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMgGS1kpnzDqWR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 09:34:08 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id b19so2011107pld.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 15:34:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:thread-topic:thread-index:date:message-id
- :references:in-reply-to:accept-language:content-language
- :content-transfer-encoding:mime-version;
- bh=odZpHbQegqT56U/cV/zJ1qrd6r3mGVChHF0VMSj69o0=;
- b=gy+FevCWq3xOKFvYbDpwz/v/EbxdJwTn9QVRUJOTJih66PW1TK/3NCZSJDPw9s+lse
- bkn74gnr4dgUfMBduEsxwTi2+ufO5e/+hUGIsMqkVs/R90SRyOZN7E7Oo/Uiz4+/kdKI
- XSLd+pdpeS8hOp+w4CCkgtaXITBk3FeqS/Atf8ilvae/ogwHTlVc0Ego1liS94BkKlv+
- 1upTB8XaECpXOjZFIGOHsSRwFVRuMF4SuobL1D0hQWgog7GripUtaiOtQDlhGkAE3kHv
- vTu7ty07GqlJzrf6WKLjk+wXp1xMQLRtLDu6cF6UfdcVzOs3s0GSgD61pl8eeKqYlUAH
- skUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:thread-topic:thread-index
- :date:message-id:references:in-reply-to:accept-language
- :content-language:content-transfer-encoding:mime-version;
- bh=odZpHbQegqT56U/cV/zJ1qrd6r3mGVChHF0VMSj69o0=;
- b=gBb9/RxgR7sbzrNJt++kaNSceYCs1LmdO+hR2bHXFR5g4Pv7OF9gCw0JuGmX6A8/ko
- KaIhqR4N/W5rDR13pW8789YNQ3n7jxOjwkrBO/ElpvNt2nwECl0Q0kh/1xIV5xvrNvX3
- rinQFTUyrDx7475d8e2EqnCojNmNd5MX7eIsLD3dijOaihrONqvFTPLOyIlo8a2kLQ6E
- oPcQyMJOCyLFK6PndxZE+/80kza2oGq5+arEcBuhEB4lrwoVGrMR4q+8Pm25rLZx8Dw1
- F5HVvXbzLxTLmt7e679s1i5TxO8hIM+MjVC5R7jM9jFS2ikwByh4p5WN3qO45MI8/9SG
- FLBA==
-X-Gm-Message-State: AOAM530x7ccOoQApxRs29ysa5QlU3MgU2/PN1Y1Ixt+tefx7xd1C1R0F
- ICz6SJDpOL+FJQ/2O05ApQ4=
-X-Google-Smtp-Source: ABdhPJz+1FMPSkLVT3GNpxHHfWtt2o0ojp3jORJQkn1z2v1aWL9snq6p3aEN0mFkDfNYztLrINb5ag==
-X-Received: by 2002:a17:902:bd01:b029:d4:d73d:7644 with SMTP id
- p1-20020a170902bd01b02900d4d73d7644mr6117533pls.69.1604010843618; 
- Thu, 29 Oct 2020 15:34:03 -0700 (PDT)
-Received: from SLXP216MB0477.KORP216.PROD.OUTLOOK.COM ([2603:1046:100:9::5])
- by smtp.gmail.com with ESMTPSA id i24sm3912204pfd.7.2020.10.29.15.33.53
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 29 Oct 2020 15:34:02 -0700 (PDT)
-From: Jingoo Han <jingoohan1@gmail.com>
-To: Rob Herring <robh@kernel.org>, Lorenzo Pieralisi
- <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 12/13] PCI: dwc: Move dw_pcie_setup_rc() to DWC common code
-Thread-Topic: [PATCH 12/13] PCI: dwc: Move dw_pcie_setup_rc() to DWC common
- code
-Thread-Index: AQHWrWuNe0SVTqZ+qUiqNCgd41OCHamvKtka
-X-MS-Exchange-MessageSentRepresentingType: 1
-Date: Thu, 29 Oct 2020 22:29:06 +0000
-Message-ID: <SLXP216MB047727F5D8FE67D796651A8BAA140@SLXP216MB0477.KORP216.PROD.OUTLOOK.COM>
-References: <20201028204646.356535-1-robh@kernel.org>
- <20201028204646.356535-13-robh@kernel.org>
-In-Reply-To: <20201028204646.356535-13-robh@kernel.org>
-Accept-Language: ko-KR, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-Exchange-Organization-SCL: -1
-X-MS-TNEF-Correlator: 
-X-MS-Exchange-Organization-RecordReviewCfmType: 0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMhC93DRYzDqMm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:16:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4CMhC91kQ0z8tK5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 10:16:21 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 4CMhC91QcLz9sRk; Fri, 30 Oct 2020 10:16:21 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=neutral (access neither permitted nor denied)
+ smtp.mailfrom=russell.cc (client-ip=140.211.168.157; helo=fox;
+ envelope-from=snowpatch@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Received: from fox (140-211-168-157-openstack.osuosl.org [140.211.168.157])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4CMhC81c0nz9sRK
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Oct 2020 10:16:19 +1100 (AEDT)
+Received: from fox (ip6-localhost [::1])
+ by fox (OpenSMTPD) with ESMTP id bdfe175b;
+ Thu, 29 Oct 2020 23:16:16 +0000 (UTC)
+Subject: Test Results: RE: [V2,18/18] io-mapping: Provide iomap_local variant
+To: "Thomas Gleixner" <tglx@linutronix.de>, <linuxppc-dev@ozlabs.org>
+From: <snowpatch@russell.cc>
+In-Reply-To: <20201029222652.396632514@linutronix.de>
+Date: Thu, 29 Oct 2020 23:16:16 -0000
 MIME-Version: 1.0
+Message-ID: <25063f1b-e2c3-4eb2-9bf3-34df9fd95ded.lettre@localhost>
+Content-Type: multipart/mixed; boundary=SJXDUZ1wqKdKmXWDReByycMj1lHep3
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,112 +66,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
- Neil Armstrong <narmstrong@baylibre.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Binghui Wang <wangbinghui@hisilicon.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- "linux-arm-kernel@axis.com" <linux-arm-kernel@axis.com>,
- Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
- Jonathan Chocron <jonnyc@amazon.com>, Shawn Guo <shawnguo@kernel.org>,
- Jonathan Hunter <jonathanh@nvidia.com>, Fabio Estevam <festevam@gmail.com>,
- Jerome Brunet <jbrunet@baylibre.com>, Jesper Nilsson <jesper.nilsson@axis.com>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- Minghuan Lian <minghuan.Lian@nxp.com>, Kevin Hilman <khilman@baylibre.com>,
- Pratyush Anand <pratyush.anand@gmail.com>,
- Krzysztof Kozlowski <krzk@kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>,
- Kukjin Kim <kgene@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
- Xiaowei Song <songxiaowei@hisilicon.com>, Richard Zhu <hongxing.zhu@nxp.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Yue Wang <yue.wang@Amlogic.com>,
- Murali Karicheri <m-karicheri2@ti.com>, Bjorn Helgaas <bhelgaas@google.com>,
- "linux-amlogic@lists.infradead.org" <linux-amlogic@lists.infradead.org>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Gustavo Pimentel <gustavo.pimentel@synopsys.com>,
- Andy Gross <agross@kernel.org>, Stanimir Varbanov <svarbanov@mm-sol.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Han Jingoo <jingoohan1@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Lucas Stach <l.stach@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/28/20, 4:47 PM, Rob Herring wrote:
->=20
-> All RC complex drivers must call dw_pcie_setup_rc(). The ordering of the
-> call shouldn't be too important other than being after any RC resets.
->
-> There's a few calls of dw_pcie_setup_rc() left as drivers implementing
-> suspend/resume need it.
->
-> Cc: Kishon Vijay Abraham I <kishon@ti.com>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+--SJXDUZ1wqKdKmXWDReByycMj1lHep3
+Content-Type: text/plain; charset=utf-8
 
-Best regards,
-Jingoo Han
+Thanks for your contribution, unfortunately we've found some issues.
 
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Richard Zhu <hongxing.zhu@nxp.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Shawn Guo <shawnguo@kernel.org>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
-> Cc: Fabio Estevam <festevam@gmail.com>
-> Cc: NXP Linux Team <linux-imx@nxp.com>
-> Cc: Murali Karicheri <m-karicheri2@ti.com>
-> Cc: Minghuan Lian <minghuan.Lian@nxp.com>
-> Cc: Mingkai Hu <mingkai.hu@nxp.com>
-> Cc: Roy Zang <roy.zang@nxp.com>
-> Cc: Yue Wang <yue.wang@Amlogic.com>
-> Cc: Kevin Hilman <khilman@baylibre.com>
-> Cc: Neil Armstrong <narmstrong@baylibre.com>
-> Cc: Jerome Brunet <jbrunet@baylibre.com>
-> Cc: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-> Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-> Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-> Cc: Gustavo Pimentel <gustavo.pimentel@synopsys.com>
-> Cc: Xiaowei Song <songxiaowei@hisilicon.com>
-> Cc: Binghui Wang <wangbinghui@hisilicon.com>
-> Cc: Andy Gross <agross@kernel.org>
-> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Cc: Stanimir Varbanov <svarbanov@mm-sol.com>
-> Cc: Pratyush Anand <pratyush.anand@gmail.com>
-> Cc: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-amlogic@lists.infradead.org
-> Cc: linux-arm-kernel@axis.com
-> Cc: linux-arm-msm@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  drivers/pci/controller/dwc/pci-dra7xx.c           | 1 -
->  drivers/pci/controller/dwc/pci-exynos.c           | 1 -
->  drivers/pci/controller/dwc/pci-imx6.c             | 1 -
->  drivers/pci/controller/dwc/pci-keystone.c         | 2 --
->  drivers/pci/controller/dwc/pci-layerscape.c       | 2 --
->  drivers/pci/controller/dwc/pci-meson.c            | 2 --
->  drivers/pci/controller/dwc/pcie-armada8k.c        | 2 --
->  drivers/pci/controller/dwc/pcie-artpec6.c         | 1 -
->  drivers/pci/controller/dwc/pcie-designware-host.c | 1 +
->  drivers/pci/controller/dwc/pcie-designware-plat.c | 8 --------
->  drivers/pci/controller/dwc/pcie-histb.c           | 3 ---
->  drivers/pci/controller/dwc/pcie-kirin.c           | 2 --
->  drivers/pci/controller/dwc/pcie-qcom.c            | 1 -
->  drivers/pci/controller/dwc/pcie-spear13xx.c       | 2 --
->  drivers/pci/controller/dwc/pcie-uniphier.c        | 2 --
->  15 files changed, 1 insertion(+), 30 deletions(-)
+Your patch failed to apply to any branch.
 
-[...]
+
+
+--SJXDUZ1wqKdKmXWDReByycMj1lHep3--
+
