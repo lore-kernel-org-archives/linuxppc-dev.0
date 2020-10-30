@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30BF0C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:57:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AA3FC2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:59:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00737206DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:57:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B98D820739
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:58:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="jZU93C9f"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00737206DB
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Uxe4z8dL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B98D820739
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMlmn1809zDr5y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 12:57:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMlpn3ZCszDqhH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 12:58:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
  helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=jZU93C9f; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ header.s=pp1 header.b=Uxe4z8dL; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkw848QGzDqkB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:18:32 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 09U11tcH157921
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:29 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkw950KrzDqkg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:18:33 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09U12CDE010508
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:31 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=zXyu783FmcB2w6crLYhGJf+XLU4795p0M4xyzhF8i8U=;
- b=jZU93C9foEiwNm8OktJ9G+Js3S1SVoM1jGvZ2XpXtyAgr8tSAw24xggqZDVbnNDlguR9
- O/JTll50harxnJcChN/fRo0UpydkOHG10TeS5wDRceYWOTnr/fCeeteWDif7r1um1dVz
- uaH8U5gC+fqrerNN2uuDZA8fO9vVWkHlg8ZIWgMzkOzYq8XpgJzzHVAVG3DypF01sg2i
- lkNsCWIYRjjIkRYfuapU2V4Urwc+U0a7C4xvjBuc36l4QCNjvONnmk61mpL0rPy2tKwr
- 5xH/eD0pzj1m3LgZKNLVJRhaF26ZEsZwyQtEBHfdwsrLiTJ4iAY4SLtNjZ9aoS/385PV qw== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.11])
- by mx0b-001b2d01.pphosted.com with ESMTP id 34g3kkh5f2-1
+ bh=su9MjL6FPeUY4ZUXXkQlG11yBExMfKMsXTEbzomIW9o=;
+ b=Uxe4z8dLF7goFQPqai5Uorhxb5LBxQuGJhf9El/j/RqYi0dTmPgrPBdJ5otNd9n1DaqX
+ XvO5eMN2eixc1NEqwNDNZW0cbRs8MYlxfZ18LdqRYzmrMQOdlq+ncX2RFiYp+rt/pyGe
+ kYwM2TP6MxjesC/A+MZpBCVhfZwWn2/CAo+PDrUjXRxuZSUrcJstBksPTqVEya+2fzm1
+ 9HM6OmA8N8DPSf1uIcfYvVBIRTCKx1BnxoGOhYxmZGAMG2/AmUEflnJSUktb24V2X2nl
+ WdxaXkamo93IyqGvFDbnabS9/dpEBTAjj7YOF4vWvtnrVyCjgFnM2WGo2CnMW2+l2q4N tA== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com
+ [169.55.85.253])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34fnh0e2fu-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:29 -0400
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
- by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1Ggtf027844
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:29 GMT
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by ppma03dal.us.ibm.com with ESMTP id 34etf9fq86-1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:31 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+ by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1DDli009298
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:30 GMT
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by ppma01wdc.us.ibm.com with ESMTP id 34cbw9dugs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:29 +0000
-Received: from b03ledav002.gho.boulder.ibm.com
- (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 09U1IK5X27656658
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:30 +0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09U1IKHR53019044
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
  Fri, 30 Oct 2020 01:18:20 GMT
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95CEC13605E;
- Fri, 30 Oct 2020 01:18:25 +0000 (GMT)
-Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 499EE136055;
- Fri, 30 Oct 2020 01:18:25 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A1A8278067;
+ Fri, 30 Oct 2020 01:18:28 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5B2AF7805F;
+ Fri, 30 Oct 2020 01:18:28 +0000 (GMT)
 Received: from localhost (unknown [9.65.225.148])
- by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 30 Oct 2020 01:18:25 +0000 (GMT)
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Oct 2020 01:18:27 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 22/29] powerpc/rtas: remove rtas_suspend_cpu()
-Date: Thu, 29 Oct 2020 20:17:58 -0500
-Message-Id: <20201030011805.1224603-23-nathanl@linux.ibm.com>
+Subject: [PATCH 24/29] powerpc/rtas: remove unused rtas_suspend_last_cpu()
+Date: Thu, 29 Oct 2020 20:18:00 -0500
+Message-Id: <20201030011805.1224603-25-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20201030011805.1224603-1-nathanl@linux.ibm.com>
 References: <20201030011805.1224603-1-nathanl@linux.ibm.com>
@@ -94,11 +94,11 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-10-29_12:2020-10-29,
  2020-10-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015
- priorityscore=1501 lowpriorityscore=0 mlxscore=0 mlxlogscore=700
- phishscore=0 bulkscore=0 malwarescore=0 impostorscore=0 spamscore=0
- adultscore=0 suspectscore=1 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2009150000 definitions=main-2010300001
+ bulkscore=0 spamscore=0
+ mlxlogscore=972 lowpriorityscore=0 clxscore=1015 impostorscore=0
+ suspectscore=1 priorityscore=1501 adultscore=0 phishscore=0 malwarescore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010300001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,90 +116,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-rtas_suspend_cpu() no longer has users; remove it and
-__rtas_suspend_cpu() which now becomes unused as well.
+rtas_suspend_last_cpu() is now unused, remove it and
+__rtas_suspend_last_cpu() which also becomes unused.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
  arch/powerpc/include/asm/rtas.h |  1 -
- arch/powerpc/kernel/rtas.c      | 52 ---------------------------------
- 2 files changed, 53 deletions(-)
+ arch/powerpc/kernel/rtas.c      | 45 ---------------------------------
+ 2 files changed, 46 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 1e695e553a36..86f5d07969e4 100644
+index 86f5d07969e4..d405b4bd659b 100644
 --- a/arch/powerpc/include/asm/rtas.h
 +++ b/arch/powerpc/include/asm/rtas.h
 @@ -256,7 +256,6 @@ extern bool rtas_indicator_present(int token, int *maxindex);
  extern int rtas_set_indicator(int indicator, int index, int new_value);
  extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
  extern void rtas_progress(char *s, unsigned short hex);
--extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
- extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+-extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
  int rtas_ibm_suspend_me(int *fw_status);
  int rtas_syscall_dispatch_ibm_suspend_me(u64 handle);
+ 
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 6fde38b488f7..4445219e92ce 100644
+index 4445219e92ce..98ec9ffaa3b3 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -843,58 +843,6 @@ int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data)
- 	return __rtas_suspend_last_cpu(data, 0);
+@@ -799,51 +799,6 @@ void rtas_os_term(char *str)
  }
  
--static int __rtas_suspend_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
+ static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
+-#ifdef CONFIG_PPC_PSERIES
+-static int __rtas_suspend_last_cpu(struct rtas_suspend_me_data *data, int wake_when_done)
 -{
--	long rc = H_SUCCESS;
--	unsigned long msr_save;
+-	u16 slb_size = mmu_slb_size;
+-	int rc = H_MULTI_THREADS_ACTIVE;
 -	int cpu;
 -
--	atomic_inc(&data->working);
+-	slb_set_size(SLB_MIN_SIZE);
+-	printk(KERN_DEBUG "calling ibm,suspend-me on cpu %i\n", smp_processor_id());
 -
--	/* really need to ensure MSR.EE is off for H_JOIN */
--	msr_save = mfmsr();
--	mtmsr(msr_save & ~(MSR_EE));
+-	while (rc == H_MULTI_THREADS_ACTIVE && !atomic_read(&data->done) &&
+-	       !atomic_read(&data->error))
+-		rc = rtas_call(data->token, 0, 1, NULL);
 -
--	while (rc == H_SUCCESS && !atomic_read(&data->done) && !atomic_read(&data->error))
--		rc = plpar_hcall_norets(H_JOIN);
--
--	mtmsr(msr_save);
--
--	if (rc == H_SUCCESS) {
--		/* This cpu was prodded and the suspend is complete. */
--		goto out;
--	} else if (rc == H_CONTINUE) {
--		/* All other cpus are in H_JOIN, this cpu does
--		 * the suspend.
--		 */
--		return __rtas_suspend_last_cpu(data, wake_when_done);
--	} else {
--		printk(KERN_ERR "H_JOIN on cpu %i failed with rc = %ld\n",
--		       smp_processor_id(), rc);
--		atomic_set(&data->error, rc);
+-	if (rc || atomic_read(&data->error)) {
+-		printk(KERN_DEBUG "ibm,suspend-me returned %d\n", rc);
+-		slb_set_size(slb_size);
 -	}
+-
+-	if (atomic_read(&data->error))
+-		rc = atomic_read(&data->error);
+-
+-	atomic_set(&data->error, rc);
+-	pSeries_coalesce_init();
 -
 -	if (wake_when_done) {
 -		atomic_set(&data->done, 1);
 -
--		/* This cpu did the suspend or got an error; in either case,
--		 * we need to prod all other other cpus out of join state.
--		 * Extra prods are harmless.
--		 */
 -		for_each_online_cpu(cpu)
 -			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
 -	}
--out:
+-
 -	if (atomic_dec_return(&data->working) == 0)
 -		complete(data->complete);
+-
 -	return rc;
 -}
 -
--int rtas_suspend_cpu(struct rtas_suspend_me_data *data)
+-int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data)
 -{
--	return __rtas_suspend_cpu(data, 0);
+-	atomic_inc(&data->working);
+-	return __rtas_suspend_last_cpu(data, 0);
 -}
 -
- #endif
+-#endif
  
  /**
+  * rtas_activate_firmware() - Activate a new version of firmware.
 -- 
 2.25.4
 
