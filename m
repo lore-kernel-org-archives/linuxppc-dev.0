@@ -2,53 +2,78 @@ Return-Path: <SRS0=J6Sm=EF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77CE1C00A89
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 21:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A4BC00A89
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 22:28:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5707720727
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 21:44:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5707720727
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 0DDAA2151B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 22:28:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="LxHJ68FH";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="2rJuYiPt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DDAA2151B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CNG6b0hLbzDqHn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Oct 2020 08:44:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CNH5M1y3gzDqx5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Oct 2020 09:28:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=8n3+=ef=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1;
+ helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
+ header.s=2020 header.b=LxHJ68FH; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=2rJuYiPt; 
+ dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CNG1t49M6zDqw9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2020 08:40:18 +1100 (AEDT)
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5D02822274;
- Fri, 30 Oct 2020 21:40:15 +0000 (UTC)
-Received: from rostedt by gandalf.local.home with local (Exim 4.94)
- (envelope-from <rostedt@goodmis.org>)
- id 1kYc85-00648X-W3; Fri, 30 Oct 2020 17:40:14 -0400
-Message-ID: <20201030214013.824581418@goodmis.org>
-User-Agent: quilt/0.66
-Date: Fri, 30 Oct 2020 17:31:47 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/11 v2] kprobes/ftrace: Add recursion protection to the
- ftrace callback
-References: <20201030213142.096102821@goodmis.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CNH3S251YzDqvL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Oct 2020 09:26:44 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020; t=1604096793;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=26Ts76LEb5dF8UM0hmSIHaJpUqiGiJWBHMp5iFf7PiU=;
+ b=LxHJ68FH0YuIEFWx2pJpQimCZfTiqoGgDDau1FguLxRy0zRx9jDZctdAlFRJ324v8CuoYi
+ ZcuxU/DPzAwKZjuk1f5n85YkZURSL9nRFHt8mfu6t3it4VWyE7SlneV0erS9MR7nX9FzlP
+ P+HNof6Xh5RpyyaWT992LVmq2zyMt7WHQ/M2MkeRhrztzkZ4okq5IzkTTD/fUPiSmr0pHZ
+ BD6hj5xP7axA2OIEeQSYPyXK4XbM9OHuPNmPWTriLFFXeAcRngKo5tuvQR0c5M5uRZiaiR
+ 7vOFKe6AAtTBf3UuZjT2hn26v4yx6tPJ2p6ldMkYWP3ZaJp8ZxNVmOK4vPxpMA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+ s=2020e; t=1604096793;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=26Ts76LEb5dF8UM0hmSIHaJpUqiGiJWBHMp5iFf7PiU=;
+ b=2rJuYiPt20Oowm+h+GqzEiWNX0OgtYb09gN+zSFDN57qQiTBtXhd6AncITU48GjmrMPQTD
+ wElJt4hkBKleVUBg==
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch V2 00/18] mm/highmem: Preemptible variant of kmap_atomic &
+ friends
+In-Reply-To: <CAHk-=whsJv0bwWRVZHsLoSe48ykAea6T7Oi=G+r8ckLrZ0YUpg@mail.gmail.com>
+References: <20201029221806.189523375@linutronix.de>
+ <CAHk-=wiFxxGapdOyZHE-7LbFPk+jdfoqdeeJg0zWNQ86WvJGXg@mail.gmail.com>
+ <87pn50ob0s.fsf@nanos.tec.linutronix.de>
+ <87blgknjcw.fsf@nanos.tec.linutronix.de>
+ <CAHk-=whsJv0bwWRVZHsLoSe48ykAea6T7Oi=G+r8ckLrZ0YUpg@mail.gmail.com>
+Date: Fri, 30 Oct 2020 23:26:33 +0100
+Message-ID: <87sg9vl59i.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,245 +85,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Miroslav Benes <mbenes@suse.cz>,
- Ingo Molnar <mingo@kernel.org>, linux-s390@vger.kernel.org,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Petr Mladek <pmladek@suse.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
- Jiri Kosina <jikos@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-parisc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>,
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-xtensa@linux-xtensa.org,
+ Peter Zijlstra <peterz@infradead.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-mips@vger.kernel.org,
+ Ben Segall <bsegall@google.com>, Linux-MM <linux-mm@kvack.org>,
+ Guo Ren <guoren@kernel.org>, Matthew Wilcox <willy@infradead.org>,
+ linux-sparc <sparclinux@vger.kernel.org>, Vincent Chen <deanbo422@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-arch <linux-arch@vger.kernel.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, David Airlie <airlied@linux.ie>,
+ Mel Gorman <mgorman@suse.de>,
+ "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
+ Ard Biesheuvel <ardb@kernel.org>, Paul McKenney <paulmck@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Greentime Hu <green.hu@gmail.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Nick Hu <nickhu@andestech.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Vineet Gupta <vgupta@synopsys.com>, LKML <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel@ffwll.ch>,
  Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+ Daniel Bristot de Oliveira <bristot@redhat.com>, "David
+ S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
+On Fri, Oct 30 2020 at 13:28, Linus Torvalds wrote:
+> On Fri, Oct 30, 2020 at 2:39 AM Thomas Gleixner <tglx@linutronix.de> wrote:
+>>
+>> But then we really should not name it kmap_local. 'local' suggests
+>> locality, think local_irq*, local_bh* ... kmap_task would be more
+>> accurate then.
+>
+> So the main reason I'd like to see it is because I think on a
+> non-highmem machine, the new kmap should be a complete no-op. IOW,
+> we'd make sure that there are no costs, no need to increment any
+> "restrict migration" counts etc.
 
-If a ftrace callback does not supply its own recursion protection and
-does not set the RECURSION_SAFE flag in its ftrace_ops, then ftrace will
-make a helper trampoline to do so before calling the callback instead of
-just calling the callback directly.
+Fair enough.
 
-The default for ftrace_ops is going to change. It will expect that handlers
-provide their own recursion protection, unless its ftrace_ops states
-otherwise.
+> It's been a bit of a pain to have kmap_atomic() have magical side
+> semantics that people might then depend on.
 
-Link: https://lkml.kernel.org/r/20201028115613.140212174@goodmis.org
+kmap_atomic() will still have the side semantics :)
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Guo Ren <guoren@kernel.org>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-Cc: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-csky@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
----
- arch/csky/kernel/probes/ftrace.c     | 12 ++++++++++--
- arch/parisc/kernel/ftrace.c          | 13 +++++++++++--
- arch/powerpc/kernel/kprobes-ftrace.c | 11 ++++++++++-
- arch/s390/kernel/ftrace.c            | 13 +++++++++++--
- arch/x86/kernel/kprobes/ftrace.c     | 12 ++++++++++--
- 5 files changed, 52 insertions(+), 9 deletions(-)
+> I think "local" could still work as a name, because it would have to
+> be thread-local (and maybe we'd want a debug mode where that gets
+> verified, as actual HIGHMEM machines are getting rare).
+>
+> I'd avoid "task", because that implies (to me, at least) that it
+> wouldn't be good for interrupts etc that don't have a task context.
+>
+> I think the main issue is that it has to be released in the same
+> context as it was created (ie no passing those things around to other
+> contexts). I think "local" is fine for that, but I could imagine other
+> names. The ones that come to mind are somewhat cumbersome, though
+> ("shortterm" or "local_ctx" or something along those lines).
 
-diff --git a/arch/csky/kernel/probes/ftrace.c b/arch/csky/kernel/probes/ftrace.c
-index 5264763d05be..5eb2604fdf71 100644
---- a/arch/csky/kernel/probes/ftrace.c
-+++ b/arch/csky/kernel/probes/ftrace.c
-@@ -13,16 +13,21 @@ int arch_check_ftrace_location(struct kprobe *p)
- void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 			   struct ftrace_ops *ops, struct pt_regs *regs)
- {
-+	int bit;
- 	bool lr_saver = false;
- 	struct kprobe *p;
- 	struct kprobe_ctlblk *kcb;
- 
--	/* Preempt is disabled by ftrace */
-+	bit = ftrace_test_recursion_trylock();
-+	if (bit < 0)
-+		return;
-+
-+	preempt_disable_notrace();
- 	p = get_kprobe((kprobe_opcode_t *)ip);
- 	if (!p) {
- 		p = get_kprobe((kprobe_opcode_t *)(ip - MCOUNT_INSN_SIZE));
- 		if (unlikely(!p) || kprobe_disabled(p))
--			return;
-+			goto out;
- 		lr_saver = true;
- 	}
- 
-@@ -56,6 +61,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 		 */
- 		__this_cpu_write(current_kprobe, NULL);
- 	}
-+out:
-+	preempt_enable_notrace();
-+	ftrace_test_recursion_unlock(bit);
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
-diff --git a/arch/parisc/kernel/ftrace.c b/arch/parisc/kernel/ftrace.c
-index 63e3ecb9da81..4b1fdf15662c 100644
---- a/arch/parisc/kernel/ftrace.c
-+++ b/arch/parisc/kernel/ftrace.c
-@@ -208,13 +208,19 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- {
- 	struct kprobe_ctlblk *kcb;
- 	struct kprobe *p = get_kprobe((kprobe_opcode_t *)ip);
-+	int bit;
- 
--	if (unlikely(!p) || kprobe_disabled(p))
-+	bit = ftrace_test_recursion_trylock();
-+	if (bit < 0)
- 		return;
- 
-+	preempt_disable_notrace();
-+	if (unlikely(!p) || kprobe_disabled(p))
-+		goto out;
-+
- 	if (kprobe_running()) {
- 		kprobes_inc_nmissed_count(p);
--		return;
-+		goto out;
- 	}
- 
- 	__this_cpu_write(current_kprobe, p);
-@@ -235,6 +241,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 		}
- 	}
- 	__this_cpu_write(current_kprobe, NULL);
-+out:
-+	preempt_enable_notrace();
-+	ftrace_test_recursion_unlock(bit);
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
-diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
-index 972cb28174b2..5df8d50c65ae 100644
---- a/arch/powerpc/kernel/kprobes-ftrace.c
-+++ b/arch/powerpc/kernel/kprobes-ftrace.c
-@@ -18,10 +18,16 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
- {
- 	struct kprobe *p;
- 	struct kprobe_ctlblk *kcb;
-+	int bit;
- 
-+	bit = ftrace_test_recursion_trylock();
-+	if (bit < 0)
-+		return;
-+
-+	preempt_disable_notrace();
- 	p = get_kprobe((kprobe_opcode_t *)nip);
- 	if (unlikely(!p) || kprobe_disabled(p))
--		return;
-+		goto out;
- 
- 	kcb = get_kprobe_ctlblk();
- 	if (kprobe_running()) {
-@@ -52,6 +58,9 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
- 		 */
- 		__this_cpu_write(current_kprobe, NULL);
- 	}
-+out:
-+	preempt_enable_notrace();
-+	ftrace_test_recursion_unlock(bit);
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
-diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
-index b388e87a08bf..88466d7fb6b2 100644
---- a/arch/s390/kernel/ftrace.c
-+++ b/arch/s390/kernel/ftrace.c
-@@ -202,13 +202,19 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- {
- 	struct kprobe_ctlblk *kcb;
- 	struct kprobe *p = get_kprobe((kprobe_opcode_t *)ip);
-+	int bit;
- 
--	if (unlikely(!p) || kprobe_disabled(p))
-+	bit = ftrace_test_recursion_trylock();
-+	if (bit < 0)
- 		return;
- 
-+	preempt_disable_notrace();
-+	if (unlikely(!p) || kprobe_disabled(p))
-+		goto out;
-+
- 	if (kprobe_running()) {
- 		kprobes_inc_nmissed_count(p);
--		return;
-+		goto out;
- 	}
- 
- 	__this_cpu_write(current_kprobe, p);
-@@ -228,6 +234,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 		}
- 	}
- 	__this_cpu_write(current_kprobe, NULL);
-+out:
-+	preempt_enable_notrace();
-+	ftrace_test_recursion_unlock(bit);
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
-diff --git a/arch/x86/kernel/kprobes/ftrace.c b/arch/x86/kernel/kprobes/ftrace.c
-index 681a4b36e9bb..a40a6cdfcca3 100644
---- a/arch/x86/kernel/kprobes/ftrace.c
-+++ b/arch/x86/kernel/kprobes/ftrace.c
-@@ -18,11 +18,16 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- {
- 	struct kprobe *p;
- 	struct kprobe_ctlblk *kcb;
-+	int bit;
- 
--	/* Preempt is disabled by ftrace */
-+	bit = ftrace_test_recursion_trylock();
-+	if (bit < 0)
-+		return;
-+
-+	preempt_disable_notrace();
- 	p = get_kprobe((kprobe_opcode_t *)ip);
- 	if (unlikely(!p) || kprobe_disabled(p))
--		return;
-+		goto out;
- 
- 	kcb = get_kprobe_ctlblk();
- 	if (kprobe_running()) {
-@@ -52,6 +57,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 		 */
- 		__this_cpu_write(current_kprobe, NULL);
- 	}
-+out:
-+	preempt_enable_notrace();
-+	ftrace_test_recursion_unlock(bit);
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
--- 
-2.28.0
+Yeah, not really intuitive either.
+
+Let's stick with _local and add proper function documentation which
+clearly says, that the side effect of non-migratability applies only for
+the 32bit highmem case in order to make it work at all.
+
+So code which needs CPU locality cannot rely on it and we have enough
+debug stuff to catch something like:
+
+    kmap_local()
+    this_cpu_write(....)
+    kunmap_local()
+
+Let me redo the pile.
+
+While at it I might have a look at that debug request from Willy in the
+other end of this thread. Any comment on that?
+
+ https://lore.kernel.org/r/87k0v7mrrd.fsf@nanos.tec.linutronix.de
+
+Thanks,
+
+        tglx
 
 
+      
