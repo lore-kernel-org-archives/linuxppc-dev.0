@@ -2,104 +2,97 @@ Return-Path: <SRS0=J6Sm=EF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BAD7C4363A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 02:10:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59CD3C4363A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 02:11:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 72FED20723
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 02:10:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2286220723
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 02:11:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="oQAvXiBS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72FED20723
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="FFfxaeCe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2286220723
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMm3n2GB0zDqtv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 13:10:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMm5g4W7jzDqYL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 13:11:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=oracle.com (client-ip=141.146.126.78; helo=aserp2120.oracle.com;
+ envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+ dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=oQAvXiBS; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256
+ header.s=corp-2020-01-29 header.b=FFfxaeCe; 
+ dkim-atps=neutral
+Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMl2T1ddhzDqlW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:24:00 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 09U13Mou058230
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:23:58 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=/8qLAC6rQiiY5NQ65YuU4qWG8zvyF3iP9sxd8IDzD6o=;
- b=oQAvXiBSp/NXzOG2gzoe4hkY/efi/APrhUsEC+2Fx6h6zONWJYeKitKVhwK/Tpjq58fX
- wg1R2l74NKQsTno5onPT6uHp8B1Dos0Kp+JW5/fEnoPFtihp9WiBoa5j4okIEKgIKAsA
- jj/yiKYYH8BFlsMYsL4XRQm0Eq+7f6Y2lgRleab33JXV/Jr+G9kRGWbXcxFhXAIUoRBn
- RrUMH82VrgrY7tFexCvidNOL9cq7pf0QwY49Es96vEHT0K0PRBsqpX5cVR2U3qgEwseP
- t8YbpQ3wa9aSwgQqJQ8sZ37+rpTayv/BFzfgE7qexeAbcO6i3DacdN5Tv5M+YKgCb1GE XA== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
- [169.63.214.131])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34fww7m5vk-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:23:58 -0400
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
- by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1HNu7027674
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:32 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by ppma01dal.us.ibm.com with ESMTP id 34cbw9s9xw-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:32 +0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 09U1IULD13959592
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Oct 2020 01:18:31 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E3DA2C6055;
- Fri, 30 Oct 2020 01:18:30 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80138C6059;
- Fri, 30 Oct 2020 01:18:30 +0000 (GMT)
-Received: from localhost (unknown [9.65.225.148])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 30 Oct 2020 01:18:30 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 26/29] powerpc/pseries/hibernation: perform post-suspend
- fixups later
-Date: Thu, 29 Oct 2020 20:18:02 -0500
-Message-Id: <20201030011805.1224603-27-nathanl@linux.ibm.com>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20201030011805.1224603-1-nathanl@linux.ibm.com>
-References: <20201030011805.1224603-1-nathanl@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMlnj0r23zDrBd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:58:00 +1100 (AEDT)
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+ by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 09U1nkJG194397;
+ Fri, 30 Oct 2020 01:57:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=to : cc : subject :
+ from : message-id : references : date : in-reply-to : mime-version :
+ content-type; s=corp-2020-01-29;
+ bh=k491AmM/Y+1/TVwdU3qb5wP/MX/pqSxeRxtsPbFX+Wo=;
+ b=FFfxaeCegHHoeVKKlMdjBk/b0CJ11fojYVJxCMIsWel5kTKmAyMKIPUa7SWzM1XeJgUj
+ x12zQ5vc5cn/40tp5BpSj/k2nk3QS7s3RhN4BAOr6Ker7PHbl0qdtA8wIpBCo+oS0KEY
+ 6dHnZd4kZbYpdVn5+CFhoYvbMbtDDye7Va2GoT19/7EZ3lXUoKZ55vnEBsVG3uwWjjYV
+ A8nOkTU8t5ZFRE2gaDSbPBErkGq7aalhHoGVDHcQlyG+VR4hRgD6exbiQUPbRAOx0N/5
+ 32JhjF5BvGTRTavd+DdCvipKfYNdqlpPu43zK/5sTue/+T42pcga1j4sqgE1L1mTdXSm Sg== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+ by aserp2120.oracle.com with ESMTP id 34cc7m7pht-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 30 Oct 2020 01:57:53 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+ by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 09U1sXbu007434;
+ Fri, 30 Oct 2020 01:57:53 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+ by aserp3030.oracle.com with ESMTP id 34cwuqf3e4-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 30 Oct 2020 01:57:53 +0000
+Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 09U1vpxP008819;
+ Fri, 30 Oct 2020 01:57:51 GMT
+Received: from ca-mkp.ca.oracle.com (/10.159.214.123)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Thu, 29 Oct 2020 18:57:50 -0700
+To: Tyrel Datwyler <tyreld@linux.ibm.com>
+Subject: Re: [PATCH] ibmvfc: add new fields for version 2 of several MADs
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <yq1h7qc1nmy.fsf@ca-mkp.ca.oracle.com>
+References: <20201026013649.10147-1-tyreld@linux.ibm.com>
+ <yq1v9ew4ekf.fsf@ca-mkp.ca.oracle.com>
+ <c94f0f87-1863-9c0a-3561-4cbc9330e011@linux.ibm.com>
+Date: Thu, 29 Oct 2020 21:57:48 -0400
+In-Reply-To: <c94f0f87-1863-9c0a-3561-4cbc9330e011@linux.ibm.com> (Tyrel
+ Datwyler's message of "Tue, 27 Oct 2020 14:52:09 -0700")
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-10-29_12:2020-10-29,
- 2020-10-29 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=1 spamscore=0
- clxscore=1015 mlxscore=0 priorityscore=1501 phishscore=0 adultscore=0
- malwarescore=0 mlxlogscore=567 bulkscore=0 lowpriorityscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2010300003
+Content-Type: text/plain
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9789
+ signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0
+ mlxscore=0 bulkscore=0
+ spamscore=0 adultscore=0 malwarescore=0 mlxlogscore=999 suspectscore=1
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2010300012
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9789
+ signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ lowpriorityscore=0 adultscore=0
+ malwarescore=0 spamscore=0 clxscore=1015 mlxscore=0 suspectscore=1
+ priorityscore=1501 impostorscore=0 bulkscore=0 phishscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010300011
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,77 +104,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, mmc@linux.vnet.ibm.com,
- cforno12@linux.vnet.ibm.com, drt@linux.vnet.ibm.com, brking@linux.ibm.com
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+ james.bottomley@hansenpartnership.com, brking@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pseries hibernate code calls post_mobility_fixup() which is sort
-of a dumping ground of fixups that need to run after resuming from
-suspend regardless of whether suspend was a hibernation or a
-migration. Calling post_mobility_fixup() from
-pseries_suspend_enable_irqs() runs this code early in resume with
-devices suspended and only one CPU up, while the much more commonly
-used migration case runs these fixups in a more typical process
-context.
 
-Call post_mobility_fixup() after the suspend core returns a success
-status to the hibernate sysfs store method and remove
-pseries_suspend_enable_irqs().
+Tyrel,
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/suspend.c | 21 ++++-----------------
- 1 file changed, 4 insertions(+), 17 deletions(-)
+> I'm going to have to ask that this patch be unstaged.
 
-diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-index 6a94cc0deb88..589a91730db8 100644
---- a/arch/powerpc/platforms/pseries/suspend.c
-+++ b/arch/powerpc/platforms/pseries/suspend.c
-@@ -50,21 +50,6 @@ static int pseries_suspend_begin(u64 stream_id)
- 	return 0;
- }
- 
--/**
-- * pseries_suspend_enable_irqs
-- *
-- * Post suspend configuration updates
-- *
-- **/
--static void pseries_suspend_enable_irqs(void)
--{
--	/*
--	 * Update configuration which can be modified based on device tree
--	 * changes during resume.
--	 */
--	post_mobility_fixup();
--}
--
- /**
-  * pseries_suspend_enter - Final phase of hibernation
-  *
-@@ -127,8 +112,11 @@ static ssize_t store_hibernate(struct device *dev,
- 	if (!rc)
- 		rc = pm_suspend(PM_SUSPEND_MEM);
- 
--	if (!rc)
-+	if (!rc) {
- 		rc = count;
-+		post_mobility_fixup();
-+	}
-+
- 
- 	return rc;
- }
-@@ -214,7 +202,6 @@ static int __init pseries_suspend_init(void)
- 	if ((rc = pseries_suspend_sysfs_register(&suspend_dev)))
- 		return rc;
- 
--	ppc_md.suspend_enable_irqs = pseries_suspend_enable_irqs;
- 	suspend_set_ops(&pseries_suspend_ops);
- 	return 0;
- }
+Done!
+
 -- 
-2.25.4
-
+Martin K. Petersen	Oracle Linux Engineering
