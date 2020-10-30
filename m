@@ -2,63 +2,104 @@ Return-Path: <SRS0=J6Sm=EF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A7DBC2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 00:50:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CAB3C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:21:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BA5182071A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 00:50:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2803420731
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:21:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ellerman.id.au header.i=@ellerman.id.au header.b="HwfSehNv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA5182071A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="JfERsmP9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2803420731
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMkHY6byJzDqlL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 11:50:17 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkFb1jGqzDqjM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 11:48:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMkzF5c2wzDqbl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 12:21:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
+ helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au
- header.a=rsa-sha256 header.s=201909 header.b=HwfSehNv; 
- dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 4CMkFZ6vryz9sPB;
- Fri, 30 Oct 2020 11:48:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ellerman.id.au;
- s=201909; t=1604018915;
- bh=NXDJ+W6AruE7t9bsOTVMhirY27hZ6xexbabMGso5090=;
- h=From:To:Subject:In-Reply-To:References:Date:From;
- b=HwfSehNv9LOk5emhPkZABLJOOMKAFoawwzrM0R2dIcqxLXxwqQsqU7qw44EuviiwR
- NjazC3hrtXd//7X1oaqPTxxYQcDiv4a72BklYzdxRqcTEWahYtRKDSCpYdGve8jGVT
- PQv+UQn8ur/L5zOVFetaGDSuZxH2iIxA1Ap6NaASwnZ6lD6zfpEesod6Rcdo4yt3uV
- BLZkCtlXz5xRBAMML73A2Wb5rGxbY6pdSMmjRabT9YdbkuuMPQdY4kuDYehjuST+Tc
- vt4Vb7Mu3ZoVRyuNJafK+Q06+3AM91B8RpPThQjZKyqnPavJBAR0PYGmlyWcn2Vx0w
- LlbM/oWtwk5vw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jens Axboe <axboe@kernel.dk>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc: add support for TIF_NOTIFY_SIGNAL
-In-Reply-To: <7adea1eb-d193-9d31-6244-e8cd5b2084b2@kernel.dk>
-References: <7adea1eb-d193-9d31-6244-e8cd5b2084b2@kernel.dk>
-Date: Fri, 30 Oct 2020 11:48:30 +1100
-Message-ID: <871rhgwnc1.fsf@mpe.ellerman.id.au>
+ unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
+ header.s=pp1 header.b=JfERsmP9; dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkvn3mSWzDqk8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:18:12 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09U11xv6186029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
+ h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=ec/hpHJdP3+sTuIU7OrkuPuSbUoZ4Z/xVXw+GZiVce0=;
+ b=JfERsmP970ejOU+N51l+Cr/ntIt1uPycQQl001ZYWk1C3LhR8gqMk+et21SGfG1capHo
+ zinm2dFGjJkSkIUSOc77VFbzBxAqvkMyb3lMis/z11ZnzxzYAXkl0Z2F0QNPQmye7S7v
+ YiMxwoBP1qd10EDWf63ZTPa2fFEt2NLerKoKA49FuJAeTosAAOPnEtz187JPrLjm9jmy
+ yIWhzM764VmjNHX+iQGx6uAlnVWxbI6OttuLypcHcyLwBnFTCkUDbMacTzcFM87+RXLr
+ UnJGT5sHWM5MI6FDde1JdSmPE1UvFsjWpFjefla7kv4N9Aii+h2XiOK8RL+XDYzxwvN8 WQ== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com
+ [169.63.214.131])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 34fyxshxma-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:09 -0400
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+ by ppma01dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1HNtr027674
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:08 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by ppma01dal.us.ibm.com with ESMTP id 34cbw9s9uv-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:08 +0000
+Received: from b03ledav005.gho.boulder.ibm.com
+ (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09U1I1XQ24838738
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 30 Oct 2020 01:18:01 GMT
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 33E7ABE056;
+ Fri, 30 Oct 2020 01:18:07 +0000 (GMT)
+Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ED6B1BE04F;
+ Fri, 30 Oct 2020 01:18:06 +0000 (GMT)
+Received: from localhost (unknown [9.65.225.148])
+ by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Oct 2020 01:18:06 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 01/29] powerpc/rtas: move rtas_call_reentrant() out of pseries
+ guards
+Date: Thu, 29 Oct 2020 20:17:37 -0500
+Message-Id: <20201030011805.1224603-2-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20201030011805.1224603-1-nathanl@linux.ibm.com>
+References: <20201030011805.1224603-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
+ definitions=2020-10-29_12:2020-10-29,
+ 2020-10-29 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0
+ suspectscore=1 phishscore=0 clxscore=1015 impostorscore=0 adultscore=0
+ spamscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 mlxlogscore=954
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010300001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,79 +111,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: tyreld@linux.ibm.com, ajd@linux.ibm.com, mmc@linux.vnet.ibm.com,
+ cforno12@linux.vnet.ibm.com, drt@linux.vnet.ibm.com, brking@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jens Axboe <axboe@kernel.dk> writes:
-> Wire up TIF_NOTIFY_SIGNAL handling for powerpc.
->
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Jens Axboe <axboe@kernel.dk>
-> ---
->
-> 5.11 has support queued up for TIF_NOTIFY_SIGNAL, see this posting
-> for details:
->
-> https://lore.kernel.org/io-uring/20201026203230.386348-1-axboe@kernel.dk/
->
-> As part of that work, I'm adding TIF_NOTIFY_SIGNAL support to all archs,
-> as that will enable a set of cleanups once all of them support it. I'm
-> happy carrying this patch if need be, or it can be funelled through the
-> arch tree. Let me know.
+rtas_call_reentrant() isn't platform-dependent; move it out of
+CONFIG_PPC_PSERIES-guarded code.
 
-Happy for you to take it along with the rest of the series.
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+ arch/powerpc/kernel/rtas.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 954f41676f69..b40fc892138b 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -897,6 +897,12 @@ int rtas_ibm_suspend_me(u64 handle)
+ 
+ 	return atomic_read(&data.error);
+ }
++#else /* CONFIG_PPC_PSERIES */
++int rtas_ibm_suspend_me(u64 handle)
++{
++	return -ENOSYS;
++}
++#endif
+ 
+ /**
+  * rtas_call_reentrant() - Used for reentrant rtas calls
+@@ -948,13 +954,6 @@ int rtas_call_reentrant(int token, int nargs, int nret, int *outputs, ...)
+ 	return ret;
+ }
+ 
+-#else /* CONFIG_PPC_PSERIES */
+-int rtas_ibm_suspend_me(u64 handle)
+-{
+-	return -ENOSYS;
+-}
+-#endif
+-
+ /**
+  * Find a specific pseries error log in an RTAS extended event log.
+  * @log: RTAS error/event log
+-- 
+2.25.4
 
-
-cheers
-
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 46a210b03d2b..53115ae61495 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -90,6 +90,7 @@ void arch_setup_new_exec(void);
->  #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
->  #define TIF_SIGPENDING		1	/* signal pending */
->  #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
-> +#define TIF_NOTIFY_SIGNAL	3	/* signal notifications exist */
->  #define TIF_SYSCALL_EMU		4	/* syscall emulation active */
->  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
->  #define TIF_PATCH_PENDING	6	/* pending live patching update */
-> @@ -115,6 +116,7 @@ void arch_setup_new_exec(void);
->  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
->  #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
->  #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
-> +#define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
->  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->  #define _TIF_32BIT		(1<<TIF_32BIT)
->  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
-> @@ -136,7 +138,8 @@ void arch_setup_new_exec(void);
->  
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
-> -				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
-> +				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
-> +				 _TIF_NOTIFY_SIGNAL)
->  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
->  
->  /* Bits in local_flags */
-> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> index d2c356f37077..a8bb0aca1d02 100644
-> --- a/arch/powerpc/kernel/signal.c
-> +++ b/arch/powerpc/kernel/signal.c
-> @@ -318,7 +318,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
->  	if (thread_info_flags & _TIF_PATCH_PENDING)
->  		klp_update_patch_state(current);
->  
-> -	if (thread_info_flags & _TIF_SIGPENDING) {
-> +	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL)) {
->  		BUG_ON(regs != current->thread.regs);
->  		do_signal(current);
->  	}
-> -- 
-> 2.29.0
->
-> -- 
-> Jens Axboe
