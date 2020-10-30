@@ -7,82 +7,83 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD6BEC4741F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B272C4741F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:28:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC770206B5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:26:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6FF96206E5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 01:28:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="jlcHuR95"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC770206B5
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="AgYyrcaa"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FF96206E5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CMl5V4NcCzDqlP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 12:26:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CMl7B07yRzDqrs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Oct 2020 12:28:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
+ helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=jlcHuR95; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ header.s=pp1 header.b=AgYyrcaa; dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkvp4rCJzDqkG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:18:14 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 09U11wk5186017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:12 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CMkvp1qgzzDqkD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 12:18:13 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
+ 09U0kCrD167831
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:11 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
  h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=kdxMNhRM3CjJdy6bNjAWx/svIOiAO3K1UKWXPpdKYfA=;
- b=jlcHuR95kEuEGnZUdT2e+QT9BGRGCgmU8LXUEJS8se2vLbLjrmFeqJ5jatV2eYuiKDi9
- dJnzrZr7W96oPO5T8VROSER/LdbQGZR8/VY2J1/j3O0Qa46lSXJD4lxuDgfGQY9tyMrR
- /ThBrc5JxnHr9DNXiDVEbyGozs+WsBR3UtLBb0t5jUYLRyu8/kOVO7sI98otE7WtEW7p
- OZpZ10h9+mX1qRQuytWlRETBwYaCT8LG5mmWbcneK08wMebYdhblJuuhUskZCccupCdI
- SRosPjMkAmPCrR8FVv75pmDDU6eg4dhO0Ep/OKTJp6v1vIJVR5G6N0jhqQZOX9u4pMoq rA== 
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com
- [169.62.189.10])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34fyxshxn8-1
+ bh=mIPBrNhjaI/MT+da97W2cvJW3P49B4M4M9415JcsVLU=;
+ b=AgYyrcaav60MGrGbG+QS2KCFlN2SEaRsdEXIWNfOYKdiaggCVNovWnQ0oYOiNTT/HOgw
+ pVlm6DgSX7ExMKcG7z9PXhu+LesBWYuLa8vJnAnqkbo3M2Z8kmd13RUQ151Y0TATcAkn
+ cJ0Kn5cfv13UnqQw/SFMrCO5pLGS98kpI1mcbKNjfcj63sAr7h7NDuQlR7Qc88qNpj/q
+ Uz7MnlgAPbFn8ggvmfQhXRo6D0eMsJ1Lpm1FN12mDaGhT58hmsQ/yq6HOmedCOvUJdlw
+ GQvXhusEZDQmGfsLOIsWTWw4OwQV7k7Sju8cNV5jQW6HFbr+HoQKZwjqoh+zhOWBKFmm eA== 
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com
+ [169.62.189.11])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 34g15gxpu2-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:12 -0400
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
- by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1HG4U000763
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:11 GMT
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25]) by ppma02dal.us.ibm.com with ESMTP id 34e1gpc5b0-1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Oct 2020 21:18:10 -0400
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+ by ppma03dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 09U1GnoR027929
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:10 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28]) by ppma03dal.us.ibm.com with ESMTP id 34etf9fq5v-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:11 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 09U1IAlE44564904
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Oct 2020 01:18:10 +0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 09U1I9Zv49742206
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 30 Oct 2020 01:18:10 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C6A54112063;
- Fri, 30 Oct 2020 01:18:10 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8EC38112062;
- Fri, 30 Oct 2020 01:18:10 +0000 (GMT)
+ Fri, 30 Oct 2020 01:18:09 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 75C6C124053;
+ Fri, 30 Oct 2020 01:18:09 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3AC7F124052;
+ Fri, 30 Oct 2020 01:18:09 +0000 (GMT)
 Received: from localhost (unknown [9.65.225.148])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 30 Oct 2020 01:18:10 +0000 (GMT)
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 30 Oct 2020 01:18:09 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/29] powerpc/rtas: add rtas_activate_firmware()
-Date: Thu, 29 Oct 2020 20:17:42 -0500
-Message-Id: <20201030011805.1224603-7-nathanl@linux.ibm.com>
+Subject: [PATCH 04/29] powerpc/rtas: rtas_ibm_suspend_me ->
+ rtas_ibm_suspend_me_unsafe
+Date: Thu, 29 Oct 2020 20:17:40 -0500
+Message-Id: <20201030011805.1224603-5-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20201030011805.1224603-1-nathanl@linux.ibm.com>
 References: <20201030011805.1224603-1-nathanl@linux.ibm.com>
@@ -93,10 +94,10 @@ X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
  definitions=2020-10-29_12:2020-10-29,
  2020-10-29 signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0
- suspectscore=1 phishscore=0 clxscore=1015 impostorscore=0 adultscore=0
- spamscore=0 malwarescore=0 priorityscore=1501 bulkscore=0 mlxlogscore=887
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ phishscore=0 mlxlogscore=747
+ priorityscore=1501 suspectscore=3 bulkscore=0 adultscore=0 mlxscore=0
+ spamscore=0 lowpriorityscore=0 clxscore=1015 malwarescore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2010300001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -115,73 +116,88 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide a documented wrapper function for the ibm,activate-firmware
-service, which must be called after a partition migration or
-hibernation.
+The pseries partition suspend sequence requires that all active CPUs
+call H_JOIN, which suspends all but one of them with interrupts
+disabled. The "chosen" CPU is then to call ibm,suspend-me to complete
+the suspend. Upon returning from ibm,suspend-me, the chosen CPU is to
+use H_PROD to wake the joined CPUs.
 
-If the function is absent or the call fails, the OS will continue to
-run normally with the current firmware, so there is no need to perform
-any recovery. Just log it and continue.
+Using on_each_cpu() for this, as rtas_ibm_suspend_me() does to
+implement partition migration, is susceptible to deadlock with other
+users of on_each_cpu() and with users of stop_machine APIs. The
+callback passed to on_each_cpu() is not allowed to synchronize with
+other CPUs in the way it is used here.
+
+Complicating the fix is the fact that rtas_ibm_suspend_me() also
+occupies the function name that should be used to provide a more
+conventional wrapper for ibm,suspend-me. Rename rtas_ibm_suspend_me()
+to rtas_ibm_suspend_me_unsafe() to free up the name and indicate that
+it should not gain users.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h |  1 +
- arch/powerpc/kernel/rtas.c      | 30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/powerpc/include/asm/rtas.h           | 2 +-
+ arch/powerpc/kernel/rtas.c                | 6 +++---
+ arch/powerpc/platforms/pseries/mobility.c | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index b43165fc6c2a..fdefe6a974eb 100644
+index f060181a0d32..8436ed01567b 100644
 --- a/arch/powerpc/include/asm/rtas.h
 +++ b/arch/powerpc/include/asm/rtas.h
-@@ -247,6 +247,7 @@ extern void __noreturn rtas_restart(char *cmd);
- extern void rtas_power_off(void);
- extern void __noreturn rtas_halt(void);
- extern void rtas_os_term(char *str);
-+void rtas_activate_firmware(void);
- extern int rtas_get_sensor(int sensor, int index, int *state);
- extern int rtas_get_sensor_fast(int sensor, int index, int *state);
- extern int rtas_get_power_level(int powerdomain, int *level);
+@@ -257,7 +257,7 @@ extern int rtas_set_indicator_fast(int indicator, int index, int new_value);
+ extern void rtas_progress(char *s, unsigned short hex);
+ extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+ extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+-extern int rtas_ibm_suspend_me(u64 handle);
++int rtas_ibm_suspend_me_unsafe(u64 handle);
+ 
+ struct rtc_time;
+ extern time64_t rtas_get_boot_time(void);
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 70c570269d7b..58bbd69a233f 100644
+index 132b2ae39009..33adefa84a42 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -961,6 +961,36 @@ int rtas_ibm_suspend_me_unsafe(u64 handle)
+@@ -843,7 +843,7 @@ static void rtas_percpu_suspend_me(void *info)
+ 	__rtas_suspend_cpu((struct rtas_suspend_me_data *)info, 1);
  }
- #endif
  
-+/**
-+ * rtas_activate_firmware() - Activate a new version of firmware.
-+ *
-+ * Activate a new version of partition firmware. The OS must call this
-+ * after resuming from a partition hibernation or migration in order
-+ * to maintain the ability to perform live firmware updates. It's not
-+ * catastrophic for this method to be absent or to fail; just log the
-+ * condition in that case.
-+ *
-+ * Context: This function may sleep.
-+ */
-+void rtas_activate_firmware(void)
-+{
-+	int token;
-+	int fwrc;
-+
-+	token = rtas_token("ibm,activate-firmware");
-+	if (token == RTAS_UNKNOWN_SERVICE) {
-+		pr_notice("ibm,activate-firmware method unavailable\n");
-+		return;
-+	}
-+
-+	do {
-+		fwrc = rtas_call(token, 0, 1, NULL);
-+	} while (rtas_busy_delay(fwrc));
-+
-+	if (fwrc)
-+		pr_err("ibm,activate-firmware failed (%i)\n", fwrc);
-+}
-+
- /**
-  * rtas_call_reentrant() - Used for reentrant rtas calls
-  * @token:	Token for desired reentrant RTAS call
+-int rtas_ibm_suspend_me(u64 handle)
++int rtas_ibm_suspend_me_unsafe(u64 handle)
+ {
+ 	long state;
+ 	long rc;
+@@ -898,7 +898,7 @@ int rtas_ibm_suspend_me(u64 handle)
+ 	return atomic_read(&data.error);
+ }
+ #else /* CONFIG_PPC_PSERIES */
+-int rtas_ibm_suspend_me(u64 handle)
++int rtas_ibm_suspend_me_unsafe(u64 handle)
+ {
+ 	return -ENOSYS;
+ }
+@@ -1184,7 +1184,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 		int rc = 0;
+ 		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
+ 		              | be32_to_cpu(args.args[1]);
+-		rc = rtas_ibm_suspend_me(handle);
++		rc = rtas_ibm_suspend_me_unsafe(handle);
+ 		if (rc == -EAGAIN)
+ 			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
+ 		else if (rc == -EIO)
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index d6f4162478a5..b6de65cbfcd9 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -370,7 +370,7 @@ static ssize_t migration_store(struct class *class,
+ 		return rc;
+ 
+ 	do {
+-		rc = rtas_ibm_suspend_me(streamid);
++		rc = rtas_ibm_suspend_me_unsafe(streamid);
+ 		if (rc == -EAGAIN)
+ 			ssleep(1);
+ 	} while (rc == -EAGAIN);
 -- 
 2.25.4
 
