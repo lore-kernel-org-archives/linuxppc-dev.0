@@ -4,21 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FF09C00A89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 17:39:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73F24C00A89
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 17:49:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C25821556
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 17:39:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C25821556
+	by mail.kernel.org (Postfix) with ESMTPS id 85FD921534
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 17:49:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85FD921534
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQ0XX4dmKzDqMy
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 04:39:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQ0mN4Sd8zDqFD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 04:49:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
  envelope-from=srs0=k05g=ei=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
@@ -27,24 +27,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQ0VK631bzDqHm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 04:37:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQ0hQ6vYYzDqS6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 04:46:14 +1100 (AEDT)
 Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
  [66.24.58.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5BC1F207BB;
- Mon,  2 Nov 2020 17:37:23 +0000 (UTC)
-Date: Mon, 2 Nov 2020 12:37:21 -0500
+ by mail.kernel.org (Postfix) with ESMTPSA id 11A0822226;
+ Mon,  2 Nov 2020 17:46:07 +0000 (UTC)
+Date: Mon, 2 Nov 2020 12:46:06 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Petr Mladek <pmladek@suse.com>
 Subject: Re: [PATCH 11/11 v2] ftrace: Add recording of functions that caused
  recursion
-Message-ID: <20201102123721.4fcce2cb@gandalf.local.home>
-In-Reply-To: <20201102164147.GJ20201@alley>
+Message-ID: <20201102124606.72bd89c5@gandalf.local.home>
+In-Reply-To: <20201102123721.4fcce2cb@gandalf.local.home>
 References: <20201030213142.096102821@goodmis.org>
  <20201030214014.801706340@goodmis.org>
  <20201102164147.GJ20201@alley>
+ <20201102123721.4fcce2cb@gandalf.local.home>
 X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -84,67 +85,113 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2 Nov 2020 17:41:47 +0100
-Petr Mladek <pmladek@suse.com> wrote:
+On Mon, 2 Nov 2020 12:37:21 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > +	i = atomic_read(&nr_records);
-> > +	smp_mb__after_atomic();
-> > +	if (i < 0)
-> > +		cmpxchg(&recursed_functions[index].ip, ip, 0);
-> > +	else if (i <= index)
-> > +		atomic_cmpxchg(&nr_records, i, index + 1);  
+
+> The only race that I see that can happen, is the one in the comment I
+> showed. And that is after enabling the recursed functions again after
+> clearing, one CPU could add a function while another CPU that just added
+> that same function could be just exiting this routine, notice that a
+> clearing of the array happened, and remove its function (which was the same
+> as the one just happened). So we get a "zero" in the array. If this
+> happens, it is likely that that function will recurse again and will be
+> added later.
 > 
-> This looks weird. It would shift nr_records past the record added
-> in this call. It might skip many slots that were zeroed when clearing.
-> Also we do not know if our entry was not zeroed as well.
 
-nr_records always holds the next position to write to.
+Updated version of this function:
 
-	index = nr_records;
-	recursed_functions[index].ip = ip;
-	nr_records++;
+-- Steve
 
-Before clearing, we have:
 
-	nr_records = -1;
-	smp_mb();
-	memset(recursed_functions, 0);
-	smp_wmb();
-	nr_records = 0;
+void ftrace_record_recursion(unsigned long ip, unsigned long parent_ip)
+{
+	int index = 0;
+	int i;
+	unsigned long old;
 
-When we enter this function:
+ again:
+	/* First check the last one recorded */
+	if (ip == cached_function)
+		return;
 
-	i = nr_records;
-	smp_mb();
+	i = atomic_read(&nr_records);
+	/* nr_records is -1 when clearing records */
+	smp_mb__after_atomic();
 	if (i < 0)
 		return;
 
+	/*
+	 * If there's two writers and this writer comes in second,
+	 * the cmpxchg() below to update the ip will fail. Then this
+	 * writer will try again. It is possible that index will now
+	 * be greater than nr_records. This is because the writer
+	 * that succeeded has not updated the nr_records yet.
+	 * This writer could keep trying again until the other writer
+	 * updates nr_records. But if the other writer takes an
+	 * interrupt, and that interrupt locks up that CPU, we do
+	 * not want this CPU to lock up due to the recursion protection,
+	 * and have a bug report showing this CPU as the cause of
+	 * locking up the computer. To not lose this record, this
+	 * writer will simply use the next position to update the
+	 * recursed_functions, and it will update the nr_records
+	 * accordingly.
+	 */
+	if (index < i)
+		index = i;
+	if (index >= CONFIG_FTRACE_RECORD_RECURSION_SIZE)
+		return;
 
-Thus, we just stopped all new updates while clearing the records.
+	for (i = index - 1; i >= 0; i--) {
+		if (recursed_functions[i].ip == ip) {
+			cached_function = ip;
+			return;
+		}
+	}
 
-But what about if something is currently updating?
+	cached_function = ip;
 
-	i = nr_records;
-	smp_mb();
+	/*
+	 * We only want to add a function if it hasn't been added before.
+	 * Add to the current location before incrementing the count.
+	 * If it fails to add, then increment the index (save in i)
+	 * and try again.
+	 */
+	old = cmpxchg(&recursed_functions[index].ip, 0, ip);
+	if (old != 0) {
+		/* Did something else already added this for us? */
+		if (old == ip)
+			return;
+		/* Try the next location (use i for the next index) */
+		index++;
+		goto again;
+	}
+
+	recursed_functions[index].parent_ip = parent_ip;
+
+	/*
+	 * It's still possible that we could race with the clearing
+	 *    CPU0                                    CPU1
+	 *    ----                                    ----
+	 *                                       ip = func
+	 *  nr_records = -1;
+	 *  recursed_functions[0] = 0;
+	 *                                       i = -1
+	 *                                       if (i < 0)
+	 *  nr_records = 0;
+	 *  (new recursion detected)
+	 *      recursed_functions[0] = func
+	 *                                            cmpxchg(recursed_functions[0],
+	 *                                                    func, 0)
+	 *
+	 * But the worse that could happen is that we get a zero in
+	 * the recursed_functions array, and it's likely that "func" will
+	 * be recorded again.
+	 */
+	i = atomic_read(&nr_records);
+	smp_mb__after_atomic();
 	if (i < 0)
-		cmpxchg(recursed_functions, ip, 0);
-
-The above shows that if the current updating process notices that the
-clearing happens, it will clear the function it added.
-
+		cmpxchg(&recursed_functions[index].ip, ip, 0);
 	else if (i <= index)
-		cmpxchg(nr_records, i, index + 1);
-
-This makes sure that nr_records only grows if it is greater or equal to
-zero.
-
-The only race that I see that can happen, is the one in the comment I
-showed. And that is after enabling the recursed functions again after
-clearing, one CPU could add a function while another CPU that just added
-that same function could be just exiting this routine, notice that a
-clearing of the array happened, and remove its function (which was the same
-as the one just happened). So we get a "zero" in the array. If this
-happens, it is likely that that function will recurse again and will be
-added later.
-
--- Steve
+		atomic_cmpxchg(&nr_records, i, index + 1);
+}
