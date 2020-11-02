@@ -2,107 +2,63 @@ Return-Path: <SRS0=b2NF=EI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF291C00A89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 14:34:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DA6FC00A89
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:16:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B84E02072C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 14:34:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7D4EC21556
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:16:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="VTlEatNm"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B84E02072C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="U5iA6iZ+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D4EC21556
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CPwR14vfXzDqTg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 01:34:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CPxMK5XdkzDqPf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 02:16:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0a-001b2d01.pphosted.com; envelope-from=fbarrat@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=VTlEatNm; dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
+ header.s=default header.b=U5iA6iZ+; dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CPwKq2CTpzDqBd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 01:29:50 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0A2E21nB096586; Mon, 2 Nov 2020 09:29:39 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=A211HEQL0o7cFFR+RWcWVCddjHLxzWcqy3gPnBa+C8k=;
- b=VTlEatNmT6+qBybENdZpVeDhU5nPZsplJ8TMszK0Q0GjbcatAZ8F8LHfM1oooVKYqpqU
- uE7uRVde+VYVzqyVnMRYgnZBYY1xF4UfZeNzQ/585ul7rBhCpAMDtod7V+QoAIR9JS6J
- kY7K6GFhSxuPQ+3f2diB8+G5EnLVJlgG84jkq+TbVuQt9+9TLrlOOJjUgOYTI6l1x31m
- qxD5aD1LGnyasJ46kQXTOh9dF/gq9qZEkXr0qT2WIGc97kZkF8aUlJjZ4yG9Ce8p1v4w
- AjQouYhZeTwvSsk5MOFrmSL7k0yhzyycJCBzRYDjaunbc5LcfuJssyGtdB9FsjvDMWqB Rw== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com
- [169.51.49.102])
- by mx0b-001b2d01.pphosted.com with ESMTP id 34jfjpgq0a-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Nov 2020 09:29:38 -0500
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
- by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0A2ET8ap001320;
- Mon, 2 Nov 2020 14:29:36 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by ppma06ams.nl.ibm.com with ESMTP id 34h0fct6xp-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Nov 2020 14:29:36 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- 0A2ETYBC852580
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 2 Nov 2020 14:29:34 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 473C911C04C;
- Mon,  2 Nov 2020 14:29:34 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0FAE511C04A;
- Mon,  2 Nov 2020 14:29:34 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.145.4.98])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  2 Nov 2020 14:29:33 +0000 (GMT)
-Subject: Re: [PATCH v2 2/2] misc: ocxl: config: Rename function attribute
- description
-To: Lee Jones <lee.jones@linaro.org>, gregkh@linuxfoundation.org, arnd@arndb.de
-References: <20201102142001.560490-1-lee.jones@linaro.org>
- <20201102142001.560490-2-lee.jones@linaro.org>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Message-ID: <b06fdb27-c799-c339-f3be-c1d5bccf41c1@linux.ibm.com>
-Date: Mon, 2 Nov 2020 15:29:33 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CPxHs3L5RzDqQj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 02:13:13 +1100 (AEDT)
+Received: from kernel.org (unknown [87.71.17.26])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 97C3A22258;
+ Mon,  2 Nov 2020 15:13:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1604329990;
+ bh=pQm13rJ0TtLsoFHOZA52H/TzTWUyG6xri7XGlle4HPo=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=U5iA6iZ+4RrbBTruBVP23DAtPFm6+kceLiKQw3J0W+zg1uOK+4S4JJxuhMMUqU1YR
+ AbaxuhUr3wcVgMFL7UiNf9Rgt38tsM1oxGu8FMS5KMZthwA6c6ykTjZZtEvaQ3kHdo
+ qOQc20cDKQCRHjZYM2XM4fU6aSAxgj4DgVoNXSRU=
+Date: Mon, 2 Nov 2020 17:12:56 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v3 2/4] PM: hibernate: make direct map manipulations more
+ explicit
+Message-ID: <20201102151256.GA4879@kernel.org>
+References: <20201101170815.9795-1-rppt@kernel.org>
+ <20201101170815.9795-3-rppt@kernel.org>
+ <55cd2a4a-cfa8-d420-66b3-a25fcdd9b876@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20201102142001.560490-2-lee.jones@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-02_07:2020-11-02,
- 2020-11-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 spamscore=0
- phishscore=0 adultscore=0 suspectscore=0 impostorscore=0 bulkscore=0
- malwarescore=0 mlxscore=0 mlxlogscore=999 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011020107
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <55cd2a4a-cfa8-d420-66b3-a25fcdd9b876@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,47 +70,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Andrew Donnellan <ajd@linux.ibm.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Len Brown <len.brown@intel.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
+ linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+ David Rientjes <rientjes@google.com>, Borislav Petkov <bp@alien8.de>,
+ Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Thomas Gleixner <tglx@linutronix.de>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, Pekka Enberg <penberg@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
+ "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 02/11/2020 à 15:20, Lee Jones a écrit :
-> Fixes the following W=1 kernel build warning(s):
+On Mon, Nov 02, 2020 at 10:19:36AM +0100, David Hildenbrand wrote:
+> On 01.11.20 18:08, Mike Rapoport wrote:
+> > From: Mike Rapoport <rppt@linux.ibm.com>
+> > 
+> > When DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP is enabled a page may be
+> > not present in the direct map and has to be explicitly mapped before it
+> > could be copied.
+> > 
+> > Introduce hibernate_map_page() that will explicitly use
+> > set_direct_map_{default,invalid}_noflush() for ARCH_HAS_SET_DIRECT_MAP case
+> > and debug_pagealloc_map_pages() for DEBUG_PAGEALLOC case.
+> > 
+> > The remapping of the pages in safe_copy_page() presumes that it only
+> > changes protection bits in an existing PTE and so it is safe to ignore
+> > return value of set_direct_map_{default,invalid}_noflush().
+> > 
+> > Still, add a WARN_ON() so that future changes in set_memory APIs will not
+> > silently break hibernation.
+> > 
+> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >   include/linux/mm.h      | 12 ------------
+> >   kernel/power/snapshot.c | 30 ++++++++++++++++++++++++++++--
+> >   2 files changed, 28 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 1fc0609056dc..14e397f3752c 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -2927,16 +2927,6 @@ static inline bool debug_pagealloc_enabled_static(void)
+> >   #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP)
+> >   extern void __kernel_map_pages(struct page *page, int numpages, int enable);
+> > -/*
+> > - * When called in DEBUG_PAGEALLOC context, the call should most likely be
+> > - * guarded by debug_pagealloc_enabled() or debug_pagealloc_enabled_static()
+> > - */
+> > -static inline void
+> > -kernel_map_pages(struct page *page, int numpages, int enable)
+> > -{
+> > -	__kernel_map_pages(page, numpages, enable);
+> > -}
+> > -
+> >   static inline void debug_pagealloc_map_pages(struct page *page,
+> >   					     int numpages, int enable)
+> >   {
+> > @@ -2948,8 +2938,6 @@ static inline void debug_pagealloc_map_pages(struct page *page,
+> >   extern bool kernel_page_present(struct page *page);
+> >   #endif	/* CONFIG_HIBERNATION */
+> >   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+> > -static inline void
+> > -kernel_map_pages(struct page *page, int numpages, int enable) {}
+> >   static inline void debug_pagealloc_map_pages(struct page *page,
+> >   					     int numpages, int enable) {}
+> >   #ifdef CONFIG_HIBERNATION
+> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > index 46b1804c1ddf..054c8cce4236 100644
+> > --- a/kernel/power/snapshot.c
+> > +++ b/kernel/power/snapshot.c
+> > @@ -76,6 +76,32 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
+> >   static inline void hibernate_restore_unprotect_page(void *page_address) {}
+> >   #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
+> > +static inline void hibernate_map_page(struct page *page, int enable)
+> > +{
+> > +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+> > +		unsigned long addr = (unsigned long)page_address(page);
+> > +		int ret;
+> > +
+> > +		/*
+> > +		 * This should not fail because remapping a page here means
+> > +		 * that we only update protection bits in an existing PTE.
+> > +		 * It is still worth to have WARN_ON() here if something
+> > +		 * changes and this will no longer be the case.
+> > +		 */
+> > +		if (enable)
+> > +			ret = set_direct_map_default_noflush(page);
+> > +		else
+> > +			ret = set_direct_map_invalid_noflush(page);
+> > +
+> > +		if (WARN_ON(ret))
+> > +			return;
 > 
->   drivers/misc/ocxl/config.c:81: warning: Function parameter or member 'dev' not described in 'get_function_0'
->   drivers/misc/ocxl/config.c:81: warning: Excess function parameter 'device' description in 'get_function_0'
-> 
-> Cc: Frederic Barrat <fbarrat@linux.ibm.com>
-> Cc: Andrew Donnellan <ajd@linux.ibm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
-> ---
+> People seem to prefer pr_warn() now that production kernels have panic on
+> warn enabled. It's weird.
 
+Weird indeed as the whole point of WARN to yell without causing a
+crash...
+I can change to pr_warn though...
+
+> > +
+> > +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> > +	} else {
+> > +		debug_pagealloc_map_pages(page, 1, enable);
+> 
+> Reviewed-by: David Hildenbrand <david@redhat.com>
 
 Thanks!
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
+> -- 
+> Thanks,
+> 
+> David / dhildenb
+> 
 
->   drivers/misc/ocxl/config.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-> index 4d490b92d951f..a68738f382521 100644
-> --- a/drivers/misc/ocxl/config.c
-> +++ b/drivers/misc/ocxl/config.c
-> @@ -73,7 +73,7 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
->   
->   /**
->    * get_function_0() - Find a related PCI device (function 0)
-> - * @device: PCI device to match
-> + * @dev: PCI device to match
->    *
->    * Returns a pointer to the related device, or null if not found
->    */
-> 
+-- 
+Sincerely yours,
+Mike.
