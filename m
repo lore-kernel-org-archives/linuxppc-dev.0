@@ -2,63 +2,73 @@ Return-Path: <SRS0=b2NF=EI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLACK,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DA6FC00A89
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A6C2C00A89
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:18:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D4EC21556
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:16:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="U5iA6iZ+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D4EC21556
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7629A22226
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 15:18:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7629A22226
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CPxMK5XdkzDqPf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 02:16:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CPxPx2nGvzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 02:18:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=kernel.org (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
+ smtp.mailfrom=kaod.org (client-ip=46.105.37.156; helo=8.mo52.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256
- header.s=default header.b=U5iA6iZ+; dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 2117 seconds by postgrey-1.36 at bilbo;
+ Tue, 03 Nov 2020 02:14:55 AEDT
+Received: from 8.mo52.mail-out.ovh.net (8.mo52.mail-out.ovh.net
+ [46.105.37.156])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CPxHs3L5RzDqQj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 02:13:13 +1100 (AEDT)
-Received: from kernel.org (unknown [87.71.17.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 97C3A22258;
- Mon,  2 Nov 2020 15:13:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1604329990;
- bh=pQm13rJ0TtLsoFHOZA52H/TzTWUyG6xri7XGlle4HPo=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=U5iA6iZ+4RrbBTruBVP23DAtPFm6+kceLiKQw3J0W+zg1uOK+4S4JJxuhMMUqU1YR
- AbaxuhUr3wcVgMFL7UiNf9Rgt38tsM1oxGu8FMS5KMZthwA6c6ykTjZZtEvaQ3kHdo
- qOQc20cDKQCRHjZYM2XM4fU6aSAxgj4DgVoNXSRU=
-Date: Mon, 2 Nov 2020 17:12:56 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v3 2/4] PM: hibernate: make direct map manipulations more
- explicit
-Message-ID: <20201102151256.GA4879@kernel.org>
-References: <20201101170815.9795-1-rppt@kernel.org>
- <20201101170815.9795-3-rppt@kernel.org>
- <55cd2a4a-cfa8-d420-66b3-a25fcdd9b876@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CPxKq0grjzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 02:14:51 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.1.149])
+ by mo52.mail-out.ovh.net (Postfix) with ESMTPS id 4C11D202E3A;
+ Mon,  2 Nov 2020 15:39:30 +0100 (CET)
+Received: from kaod.org (37.59.142.104) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2044.4; Mon, 2 Nov 2020
+ 15:39:28 +0100
+Authentication-Results: garm.ovh; auth=pass
+ (GARM-104R0056532ddeb-85b3-4075-ace5-1479fb1b9dae,
+ 8DD5A59BB4BDDF13F63AE8D0997EBD433013A0F2) smtp.auth=clg@kaod.org
+Subject: Re: [PATCH v2] powerpc/pci: unmap legacy INTx interrupts when a PHB
+ is removed
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, Qian Cai <cai@redhat.com>, Michael
+ Ellerman <mpe@ellerman.id.au>
+References: <20200807101854.844619-1-clg@kaod.org>
+ <9c5eca863c63e360662fae7597213e8927c2a885.camel@redhat.com>
+ <fce8ffe1-521c-8344-c7ad-53550e408cdc@kaod.org>
+ <89726af2-00ca-9d47-f417-4bea8d5b8b1f@ozlabs.ru>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <3497b725-9108-9f63-9cc2-ac7b1dd06c09@kaod.org>
+Date: Mon, 2 Nov 2020 15:39:27 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <55cd2a4a-cfa8-d420-66b3-a25fcdd9b876@redhat.com>
+In-Reply-To: <89726af2-00ca-9d47-f417-4bea8d5b8b1f@ozlabs.ru>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [37.59.142.104]
+X-ClientProxiedBy: DAG3EX2.mxp5.local (172.16.2.22) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 572cb46b-2a68-40ca-8586-e75424dab774
+X-Ovh-Tracer-Id: 1882504645398334316
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedruddtuddgieejucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfhisehtkeertddtfeejnecuhfhrohhmpeevrogurhhitggpnfgvpgfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepffekffefvdfgtdduvefhveegjeevgffgjeehleeihfdvueegkeevkeduvdehfefhnecuffhomhgrihhnpehgihhtlhgrsgdrtghomhenucfkpheptddrtddrtddrtddpfeejrdehledrudegvddruddtgeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhrtghpthhtoheprghikhesohiilhgrsghsrdhruh
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,135 +80,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, Will Deacon <will@kernel.org>,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, x86@kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Len Brown <len.brown@intel.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>,
- linux-pm@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
- David Rientjes <rientjes@google.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- Thomas Gleixner <tglx@linutronix.de>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, Pekka Enberg <penberg@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>,
- "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-next@vger.kernel.org,
+ Oliver O'Halloran <oohall@gmail.com>, linux-kernel@vger.kernel.org,
+ Stephen Rothwell <sfr@canb.auug.org.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 02, 2020 at 10:19:36AM +0100, David Hildenbrand wrote:
-> On 01.11.20 18:08, Mike Rapoport wrote:
-> > From: Mike Rapoport <rppt@linux.ibm.com>
-> > 
-> > When DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP is enabled a page may be
-> > not present in the direct map and has to be explicitly mapped before it
-> > could be copied.
-> > 
-> > Introduce hibernate_map_page() that will explicitly use
-> > set_direct_map_{default,invalid}_noflush() for ARCH_HAS_SET_DIRECT_MAP case
-> > and debug_pagealloc_map_pages() for DEBUG_PAGEALLOC case.
-> > 
-> > The remapping of the pages in safe_copy_page() presumes that it only
-> > changes protection bits in an existing PTE and so it is safe to ignore
-> > return value of set_direct_map_{default,invalid}_noflush().
-> > 
-> > Still, add a WARN_ON() so that future changes in set_memory APIs will not
-> > silently break hibernation.
-> > 
-> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >   include/linux/mm.h      | 12 ------------
-> >   kernel/power/snapshot.c | 30 ++++++++++++++++++++++++++++--
-> >   2 files changed, 28 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > index 1fc0609056dc..14e397f3752c 100644
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
-> > @@ -2927,16 +2927,6 @@ static inline bool debug_pagealloc_enabled_static(void)
-> >   #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP)
-> >   extern void __kernel_map_pages(struct page *page, int numpages, int enable);
-> > -/*
-> > - * When called in DEBUG_PAGEALLOC context, the call should most likely be
-> > - * guarded by debug_pagealloc_enabled() or debug_pagealloc_enabled_static()
-> > - */
-> > -static inline void
-> > -kernel_map_pages(struct page *page, int numpages, int enable)
-> > -{
-> > -	__kernel_map_pages(page, numpages, enable);
-> > -}
-> > -
-> >   static inline void debug_pagealloc_map_pages(struct page *page,
-> >   					     int numpages, int enable)
-> >   {
-> > @@ -2948,8 +2938,6 @@ static inline void debug_pagealloc_map_pages(struct page *page,
-> >   extern bool kernel_page_present(struct page *page);
-> >   #endif	/* CONFIG_HIBERNATION */
-> >   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> > -static inline void
-> > -kernel_map_pages(struct page *page, int numpages, int enable) {}
-> >   static inline void debug_pagealloc_map_pages(struct page *page,
-> >   					     int numpages, int enable) {}
-> >   #ifdef CONFIG_HIBERNATION
-> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> > index 46b1804c1ddf..054c8cce4236 100644
-> > --- a/kernel/power/snapshot.c
-> > +++ b/kernel/power/snapshot.c
-> > @@ -76,6 +76,32 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
-> >   static inline void hibernate_restore_unprotect_page(void *page_address) {}
-> >   #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
-> > +static inline void hibernate_map_page(struct page *page, int enable)
-> > +{
-> > +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
-> > +		unsigned long addr = (unsigned long)page_address(page);
-> > +		int ret;
-> > +
-> > +		/*
-> > +		 * This should not fail because remapping a page here means
-> > +		 * that we only update protection bits in an existing PTE.
-> > +		 * It is still worth to have WARN_ON() here if something
-> > +		 * changes and this will no longer be the case.
-> > +		 */
-> > +		if (enable)
-> > +			ret = set_direct_map_default_noflush(page);
-> > +		else
-> > +			ret = set_direct_map_invalid_noflush(page);
-> > +
-> > +		if (WARN_ON(ret))
-> > +			return;
+On 10/14/20 4:55 AM, Alexey Kardashevskiy wrote:
 > 
-> People seem to prefer pr_warn() now that production kernels have panic on
-> warn enabled. It's weird.
-
-Weird indeed as the whole point of WARN to yell without causing a
-crash...
-I can change to pr_warn though...
-
-> > +
-> > +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-> > +	} else {
-> > +		debug_pagealloc_map_pages(page, 1, enable);
 > 
-> Reviewed-by: David Hildenbrand <david@redhat.com>
-
-Thanks!
-
-> -- 
-> Thanks,
+> On 23/09/2020 17:06, Cédric Le Goater wrote:
+>> On 9/23/20 2:33 AM, Qian Cai wrote:
+>>> On Fri, 2020-08-07 at 12:18 +0200, Cédric Le Goater wrote:
+>>>> When a passthrough IO adapter is removed from a pseries machine using
+>>>> hash MMU and the XIVE interrupt mode, the POWER hypervisor expects the
+>>>> guest OS to clear all page table entries related to the adapter. If
+>>>> some are still present, the RTAS call which isolates the PCI slot
+>>>> returns error 9001 "valid outstanding translations" and the removal of
+>>>> the IO adapter fails. This is because when the PHBs are scanned, Linux
+>>>> maps automatically the INTx interrupts in the Linux interrupt number
+>>>> space but these are never removed.
+>>>>
+>>>> To solve this problem, we introduce a PPC platform specific
+>>>> pcibios_remove_bus() routine which clears all interrupt mappings when
+>>>> the bus is removed. This also clears the associated page table entries
+>>>> of the ESB pages when using XIVE.
+>>>>
+>>>> For this purpose, we record the logical interrupt numbers of the
+>>>> mapped interrupt under the PHB structure and let pcibios_remove_bus()
+>>>> do the clean up.
+>>>>
+>>>> Since some PCI adapters, like GPUs, use the "interrupt-map" property
+>>>> to describe interrupt mappings other than the legacy INTx interrupts,
+>>>> we can not restrict the size of the mapping array to PCI_NUM_INTX. The
+>>>> number of interrupt mappings is computed from the "interrupt-map"
+>>>> property and the mapping array is allocated accordingly.
+>>>>
+>>>> Cc: "Oliver O'Halloran" <oohall@gmail.com>
+>>>> Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>
+>>> Some syscall fuzzing will trigger this on POWER9 NV where the traces pointed to
+>>> this patch.
+>>>
+>>> .config: https://gitlab.com/cailca/linux-mm/-/blob/master/powerpc.config
+>>
+>> OK. The patch is missing a NULL assignement after kfree() and that
+>> might be the issue.
+>>
+>> I did try PHB removal under PowerNV, so I would like to understand
+>> how we managed to remove twice the PCI bus and possibly reproduce.
+>> Any chance we could grab what the syscall fuzzer (syzkaller) did ?
 > 
-> David / dhildenb
 > 
+> How do you remove PHBs exactly? There is no such thing in the powernv platform, I thought someone added this and you are fixing it but no. PHBs on powernv are created at the boot time and there is no way to remove them, you can only try removing all the bridges.
 
--- 
-Sincerely yours,
-Mike.
+yes. I noticed that later when proposing the fix for the double 
+free.
+
+> So what exactly are you doing?
+
+What you just said above, with the commands : 
+
+  echo 1 >  /sys/devices/pci0031\:00/0031\:00\:00.0/remove
+  echo 1 >  /sys/devices/pci0031\:00/pci_bus/0031\:00/rescan
+
+
+C. 
+
