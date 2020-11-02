@@ -2,27 +2,27 @@ Return-Path: <SRS0=b2NF=EI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9974C388F9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 09:21:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56C74C00A89
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 09:25:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C65922226
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 09:21:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7E63521D91
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 09:25:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Zu2waH4r";
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Zu2waH4r"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C65922226
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="IG3PanUB";
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="IG3PanUB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E63521D91
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CPnVS3fGMzDqRy
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 20:21:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CPnZJ2RqHzDqRf
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Nov 2020 20:25:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=redhat.com (client-ip=63.128.21.124;
  helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com;
@@ -31,66 +31,66 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256
- header.s=mimecast20190719 header.b=Zu2waH4r; 
+ header.s=mimecast20190719 header.b=IG3PanUB; 
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Zu2waH4r; 
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=IG3PanUB; 
  dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [63.128.21.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CPnSH4GrxzDqQS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2020 20:19:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CPnXb1tdQzDqQZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Nov 2020 20:23:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1604308796;
+ s=mimecast20190719; t=1604309020;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=7Fw8UzFDCnhqj5U8VjwS50spEGfFEI10XeNVmZ9tLlQ=;
- b=Zu2waH4rE7HiHb8vMFx50g3SRWcFwIeC9vwC5230amnmz6+2qLjk7kGj6qnwAweLREBQGl
- 8hehoUD/zJQMD757k02qVeREU07/2dGmQLzOae6n0KP2SFvXGK8W31b/zZ0qWbcIV55Dyo
- Min5rcJKiPEunm2gWp8iNzhe+JHHBI8=
+ bh=dvzFTHWSHGEnWR6Ifj3GAv6gxH6+jHEcfGAXbqacOLM=;
+ b=IG3PanUBjPioQMFY6/GzArSHeUQYDMALPjaiObG5V9L6Rp+nn3SIqB6YtDVks0tRjzn/hk
+ jC3Kbri0cyYiQSZhXMuwqtF5c/4HUTLMB4e2lfQJQuuhmE1DNYLjZShI78glm6ckAVqvTy
+ 4P4lClkQPR1T49/6OEh/6eUvzscOF4M=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
- s=mimecast20190719; t=1604308796;
+ s=mimecast20190719; t=1604309020;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=7Fw8UzFDCnhqj5U8VjwS50spEGfFEI10XeNVmZ9tLlQ=;
- b=Zu2waH4rE7HiHb8vMFx50g3SRWcFwIeC9vwC5230amnmz6+2qLjk7kGj6qnwAweLREBQGl
- 8hehoUD/zJQMD757k02qVeREU07/2dGmQLzOae6n0KP2SFvXGK8W31b/zZ0qWbcIV55Dyo
- Min5rcJKiPEunm2gWp8iNzhe+JHHBI8=
+ bh=dvzFTHWSHGEnWR6Ifj3GAv6gxH6+jHEcfGAXbqacOLM=;
+ b=IG3PanUBjPioQMFY6/GzArSHeUQYDMALPjaiObG5V9L6Rp+nn3SIqB6YtDVks0tRjzn/hk
+ jC3Kbri0cyYiQSZhXMuwqtF5c/4HUTLMB4e2lfQJQuuhmE1DNYLjZShI78glm6ckAVqvTy
+ 4P4lClkQPR1T49/6OEh/6eUvzscOF4M=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-374-r38_d9yVPFKybO8Ug1IDcw-1; Mon, 02 Nov 2020 04:19:52 -0500
-X-MC-Unique: r38_d9yVPFKybO8Ug1IDcw-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
+ us-mta-166-4rIlLjXWNA2GtVbijb8Etw-1; Mon, 02 Nov 2020 04:23:34 -0500
+X-MC-Unique: 4rIlLjXWNA2GtVbijb8Etw-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 482D2809DCF;
- Mon,  2 Nov 2020 09:19:47 +0000 (UTC)
+ by mimecast-mx01.redhat.com (Postfix) with ESMTPS id A23411074652;
+ Mon,  2 Nov 2020 09:23:29 +0000 (UTC)
 Received: from [10.36.113.163] (ovpn-113-163.ams2.redhat.com [10.36.113.163])
- by smtp.corp.redhat.com (Postfix) with ESMTP id E85FB1002C16;
- Mon,  2 Nov 2020 09:19:36 +0000 (UTC)
-Subject: Re: [PATCH v3 2/4] PM: hibernate: make direct map manipulations more
- explicit
+ by smtp.corp.redhat.com (Postfix) with ESMTP id CC9DF21E86;
+ Mon,  2 Nov 2020 09:23:21 +0000 (UTC)
+Subject: Re: [PATCH v3 3/4] arch, mm: restore dependency of
+ __kernel_map_pages() of DEBUG_PAGEALLOC
 To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 References: <20201101170815.9795-1-rppt@kernel.org>
- <20201101170815.9795-3-rppt@kernel.org>
+ <20201101170815.9795-4-rppt@kernel.org>
 From: David Hildenbrand <david@redhat.com>
 Organization: Red Hat GmbH
-Message-ID: <55cd2a4a-cfa8-d420-66b3-a25fcdd9b876@redhat.com>
-Date: Mon, 2 Nov 2020 10:19:36 +0100
+Message-ID: <8eac2aa4-114e-f981-c8f8-ad8523175cf8@redhat.com>
+Date: Mon, 2 Nov 2020 10:23:20 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 MIME-Version: 1.0
-In-Reply-To: <20201101170815.9795-3-rppt@kernel.org>
+In-Reply-To: <20201101170815.9795-4-rppt@kernel.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,8 +102,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Peter Zijlstra <peterz@infradead.org>,
+Cc: Peter Zijlstra <peterz@infradead.org>,
  Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org,
  Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
  "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
@@ -127,98 +126,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01.11.20 18:08, Mike Rapoport wrote:
-> From: Mike Rapoport <rppt@linux.ibm.com>
-> 
-> When DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP is enabled a page may be
-> not present in the direct map and has to be explicitly mapped before it
-> could be copied.
-> 
-> Introduce hibernate_map_page() that will explicitly use
-> set_direct_map_{default,invalid}_noflush() for ARCH_HAS_SET_DIRECT_MAP case
-> and debug_pagealloc_map_pages() for DEBUG_PAGEALLOC case.
-> 
-> The remapping of the pages in safe_copy_page() presumes that it only
-> changes protection bits in an existing PTE and so it is safe to ignore
-> return value of set_direct_map_{default,invalid}_noflush().
-> 
-> Still, add a WARN_ON() so that future changes in set_memory APIs will not
-> silently break hibernation.
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   include/linux/mm.h      | 12 ------------
->   kernel/power/snapshot.c | 30 ++++++++++++++++++++++++++++--
->   2 files changed, 28 insertions(+), 14 deletions(-)
-> 
+
+>   int __init kernel_map_pages_in_pgd(pgd_t *pgd, u64 pfn, unsigned long address,
+>   				   unsigned numpages, unsigned long page_flags)
 > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 1fc0609056dc..14e397f3752c 100644
+> index 14e397f3752c..ab0ef6bd351d 100644
 > --- a/include/linux/mm.h
 > +++ b/include/linux/mm.h
-> @@ -2927,16 +2927,6 @@ static inline bool debug_pagealloc_enabled_static(void)
->   #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP)
->   extern void __kernel_map_pages(struct page *page, int numpages, int enable);
+> @@ -2924,7 +2924,11 @@ static inline bool debug_pagealloc_enabled_static(void)
+>   	return static_branch_unlikely(&_debug_pagealloc_enabled);
+>   }
 >   
-> -/*
-> - * When called in DEBUG_PAGEALLOC context, the call should most likely be
-> - * guarded by debug_pagealloc_enabled() or debug_pagealloc_enabled_static()
-> - */
-> -static inline void
-> -kernel_map_pages(struct page *page, int numpages, int enable)
-> -{
-> -	__kernel_map_pages(page, numpages, enable);
-> -}
-> -
->   static inline void debug_pagealloc_map_pages(struct page *page,
->   					     int numpages, int enable)
->   {
-> @@ -2948,8 +2938,6 @@ static inline void debug_pagealloc_map_pages(struct page *page,
->   extern bool kernel_page_present(struct page *page);
->   #endif	/* CONFIG_HIBERNATION */
->   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> -static inline void
-> -kernel_map_pages(struct page *page, int numpages, int enable) {}
->   static inline void debug_pagealloc_map_pages(struct page *page,
->   					     int numpages, int enable) {}
->   #ifdef CONFIG_HIBERNATION
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 46b1804c1ddf..054c8cce4236 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -76,6 +76,32 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
->   static inline void hibernate_restore_unprotect_page(void *page_address) {}
->   #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
->   
-> +static inline void hibernate_map_page(struct page *page, int enable)
-> +{
-> +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
-> +		unsigned long addr = (unsigned long)page_address(page);
-> +		int ret;
-> +
-> +		/*
-> +		 * This should not fail because remapping a page here means
-> +		 * that we only update protection bits in an existing PTE.
-> +		 * It is still worth to have WARN_ON() here if something
-> +		 * changes and this will no longer be the case.
-> +		 */
-> +		if (enable)
-> +			ret = set_direct_map_default_noflush(page);
-> +		else
-> +			ret = set_direct_map_invalid_noflush(page);
-> +
-> +		if (WARN_ON(ret))
-> +			return;
+> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP)
+> +#ifdef CONFIG_DEBUG_PAGEALLOC
+> +/*
+> + * To support DEBUG_PAGEALLOC architecture must ensure that
+> + * __kernel_map_pages() never fails
 
-People seem to prefer pr_warn() now that production kernels have panic 
-on warn enabled. It's weird.
+Maybe add here, that this implies mapping everything via PTEs during boot.
 
-> +
-> +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-> +	} else {
-> +		debug_pagealloc_map_pages(page, 1, enable);
-
-Reviewed-by: David Hildenbrand <david@redhat.com>
+Acked-by: David Hildenbrand <david@redhat.com>
 
 -- 
 Thanks,
