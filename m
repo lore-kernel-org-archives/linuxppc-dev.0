@@ -8,83 +8,81 @@ X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07D48C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BCA9C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:49:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F12FA2074B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:47:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CAC7120786
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:49:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G1JRzHPG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F12FA2074B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PMy31dQJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAC7120786
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQf0M52nnzDqqD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:47:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQf2b3GvNzDqZR
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:49:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::744;
- helo=mail-qk1-x744.google.com; envelope-from=zhuyifei1999@gmail.com;
+ smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::843;
+ helo=mail-qt1-x843.google.com; envelope-from=zhuyifei1999@gmail.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
- header.s=20161025 header.b=G1JRzHPG; dkim-atps=neutral
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
+ header.s=20161025 header.b=PMy31dQJ; dkim-atps=neutral
+Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
+ [IPv6:2607:f8b0:4864:20::843])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQWJ36fhPzDqhK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQWJ45WdQzDqjb
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 00:45:23 +1100 (AEDT)
-Received: by mail-qk1-x744.google.com with SMTP id a64so11234850qkc.5
+Received: by mail-qt1-x843.google.com with SMTP id m14so11535113qtc.12
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2020 05:45:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=es+7eu/1JIS0u6NUqnkeBJLaNZv/3XzsgPMcIjCfPvw=;
- b=G1JRzHPGQrx/xpiw57sn8HU7v/308dFEf/ILepEmaZjyWnlEsJ7Jt8m85wS0ZL7hAX
- XJeTMJwilfEZakFun1JP0oOz/kjVO7ntj0lbqnvdowtp9Sjnb4O57j6xGZ2A2TDRxJ5E
- 4hyVqojJ8zyBb4O4e8FxEZk0ckMCMU3mtuanjys2GXmepYyg59GuQpOTy/c3oAXZmE4r
- zn17hosEuRctElxq5KH0mRPs2x9n7TVfGejNrQeTj7gxbeRUVtnODP8Albhmr3L5TIw9
- um6WfN/bCe4QtVClrP0rodIxZuduSktya09MfYs5Ip8/wx86oaN0d6GJOt+Tk6mRBi/J
- YDVg==
+ bh=9/hEAP0td3DKDEonOQx/BrDGR67nDcwn+HdeFH8wdFU=;
+ b=PMy31dQJueagbOReuh4TyHKDHnWAkQvYrpAxEIErX4xPuMN4MlNB2tU7IkrAnlx5qR
+ uhiVg0r41UxTv/gr4jsg2Wl8FCoeHTXIjjT8/6kSbvOBLPV4TYfJCrk8J0g2rFJRrlKD
+ 1hx2REJtkovGnmyDSF4OhzIchxZlhVI33gOeYruCrarfFMdqwMbuze+ne7D3usBg1+Vq
+ DnVMU0VjWHDphquu2ZmwzzqKtLL7eO8+3YSpHLjN+/oLDv2OFzem5txt9rfYq8LN1OI+
+ 2+w6DzMI4hNFhProTsfpRsIxSVaEXoTrzgUyJ2J91ehNlbAFEuRmMAY+8h22ZlecP47B
+ /smQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references:mime-version:content-transfer-encoding;
- bh=es+7eu/1JIS0u6NUqnkeBJLaNZv/3XzsgPMcIjCfPvw=;
- b=LtRxZxayrWEVWCpUIzsrCRjrgD/ZWi0xwY39ylgMZRJopne5Jl28fqqxuGYrHq6Q3c
- Ip42TIIQqC6h9OQ9mA9bEYAJ7IiQR0aujjU8PxLoE29tlclMXqRGJmWYQq/+nuhlfCFu
- H1+HRTBznwZsmQqsR+/6LMh6rHzYQd0jEDS80XTV8x3s5GdxY8n3oRYUb4bPdy2yb8bn
- Dl4W1k37n778+rDv5p3xSck2KYbA6ac3rc5+Ef0LPKmWNZ9/hI1jVofCu05aTj29Vsbn
- a8NRRFO+V8b7beyNPbBm7XE6KCS71WpazmD1+bStb9iL/6gEKinqsSQ6k6A1o2MXfV5o
- Ss9g==
-X-Gm-Message-State: AOAM531GpUKGh4msQ0k2mtGg+m+mAsKiV7tnHfiqC5Srnim6u0RoU69C
- qQUCQ5ovOsaYsd6usKknM2mVBX98CAweRA==
-X-Google-Smtp-Source: ABdhPJzUUsDjnuEHVk6XCSkkESwGkcTgkeydQBunRI0YUoWla6WErrBjgwkAC8sVvIMrobSGWNFG7g==
-X-Received: by 2002:a37:7e82:: with SMTP id
- z124mr19653601qkc.107.1604411120584; 
- Tue, 03 Nov 2020 05:45:20 -0800 (PST)
+ bh=9/hEAP0td3DKDEonOQx/BrDGR67nDcwn+HdeFH8wdFU=;
+ b=b76CXokVbtTqGKnaVf6yiuNR9xIcpZCZ44FlBD0t7ukNwMGYkTYUZMyKp3MmI8Mip4
+ 7yrLR3nfogkesbf/+u50cr6/EL9ED2kK8GqvDdKkVviTe3+0NrWVzMXielUdkhsHT1sE
+ X0DN0iQRrGRb9jCEjjRpa/Gv2GfAwJzXb35X29dSCt1Qst6JSTTY3oNYlOvbT55aIDna
+ BP7DC1CdfVApIhkAef3MmZhfC8uv9V6seD/0u4absRL9EiOtVmtc01RtJkboPYi9g5ag
+ p1J7nzmeOE4wH4ZxjEIcPOBr7Y9rB550D+ygelGvpLMYL+PIk9JfIZSm4OhaHjR4KJEf
+ 31Mg==
+X-Gm-Message-State: AOAM531ywfrTrrNnTf9pL+KqKFPJlWt8EUAhqLxFArd562a3pSLqZStl
+ uKiCIuortU3Vx/d1QKlLEbE=
+X-Google-Smtp-Source: ABdhPJxZpuM+FL2rdeo54BZFwmZgnUAh5zGzhGJrI7NUoaE9OPGoZYZ+/yTeLM9bmqKuOcXR8gpKgw==
+X-Received: by 2002:aed:2064:: with SMTP id 91mr19450606qta.383.1604411117345; 
+ Tue, 03 Nov 2020 05:45:17 -0800 (PST)
 Received: from zhuyifei1999-ThinkPad-T480.gw.illinois.edu
  ([2620:0:e00:400f::31])
- by smtp.gmail.com with ESMTPSA id a206sm7356568qkb.64.2020.11.03.05.45.19
+ by smtp.gmail.com with ESMTPSA id a206sm7356568qkb.64.2020.11.03.05.45.15
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 03 Nov 2020 05:45:19 -0800 (PST)
+ Tue, 03 Nov 2020 05:45:16 -0800 (PST)
 From: YiFei Zhu <zhuyifei1999@gmail.com>
 To: containers@lists.linux-foundation.org
-Subject: [PATCH seccomp 8/8] seccomp/cache: Report cache data through
- /proc/pid/seccomp_cache
-Date: Tue,  3 Nov 2020 07:43:04 -0600
-Message-Id: <6bf174724c135a880fb8cbe602b665f613bab58e.1604410035.git.yifeifz2@illinois.edu>
+Subject: [PATCH seccomp 6/8] sh: Enable seccomp architecture tracking
+Date: Tue,  3 Nov 2020 07:43:02 -0600
+Message-Id: <46d7f8d02bdaadf364a59db2d60f43466227b3af.1604410035.git.yifeifz2@illinois.edu>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <cover.1604410035.git.yifeifz2@illinois.edu>
 References: <cover.1604410035.git.yifeifz2@illinois.edu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 04 Nov 2020 05:23:00 +1100
+X-Mailman-Approved-At: Wed, 04 Nov 2020 05:23:01 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,191 +114,34 @@ Sender: "Linuxppc-dev"
 
 From: YiFei Zhu <yifeifz2@illinois.edu>
 
-Currently the kernel does not provide an infrastructure to translate
-architecture numbers to a human-readable name. Translating syscall
-numbers to syscall names is possible through FTRACE_SYSCALL
-infrastructure but it does not provide support for compat syscalls.
+To enable seccomp constant action bitmaps, we need to have a static
+mapping to the audit architecture and system call table size. Add these
+for sh.
 
-This will create a file for each PID as /proc/pid/seccomp_cache.
-The file will be empty when no seccomp filters are loaded, or be
-in the format of:
-<arch name> <decimal syscall number> <ALLOW | FILTER>
-where ALLOW means the cache is guaranteed to allow the syscall,
-and filter means the cache will pass the syscall to the BPF filter.
-
-For the docker default profile on x86_64 it looks like:
-x86_64 0 ALLOW
-x86_64 1 ALLOW
-x86_64 2 ALLOW
-x86_64 3 ALLOW
-[...]
-x86_64 132 ALLOW
-x86_64 133 ALLOW
-x86_64 134 FILTER
-x86_64 135 FILTER
-x86_64 136 FILTER
-x86_64 137 ALLOW
-x86_64 138 ALLOW
-x86_64 139 FILTER
-x86_64 140 ALLOW
-x86_64 141 ALLOW
-[...]
-
-This file is guarded by CONFIG_SECCOMP_CACHE_DEBUG with a default
-of N because I think certain users of seccomp might not want the
-application to know which syscalls are definitely usable. For
-the same reason, it is also guarded by CAP_SYS_ADMIN.
-
-Suggested-by: Jann Horn <jannh@google.com>
-Link: https://lore.kernel.org/lkml/CAG48ez3Ofqp4crXGksLmZY6=fGrF_tWyUCg7PBkAetvbbOPeOA@mail.gmail.com/
 Signed-off-by: YiFei Zhu <yifeifz2@illinois.edu>
 ---
- arch/Kconfig            | 15 +++++++++++
- fs/proc/base.c          |  6 +++++
- include/linux/seccomp.h |  7 +++++
- kernel/seccomp.c        | 59 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 87 insertions(+)
+ arch/sh/include/asm/seccomp.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 56b6ccc0e32d..6e2eb7171da0 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -514,6 +514,21 @@ config SECCOMP_FILTER
+diff --git a/arch/sh/include/asm/seccomp.h b/arch/sh/include/asm/seccomp.h
+index 54111e4d32b8..b8d169292a34 100644
+--- a/arch/sh/include/asm/seccomp.h
++++ b/arch/sh/include/asm/seccomp.h
+@@ -8,4 +8,14 @@
+ #define __NR_seccomp_exit __NR_exit
+ #define __NR_seccomp_sigreturn __NR_rt_sigreturn
  
- 	  See Documentation/userspace-api/seccomp_filter.rst for details.
- 
-+config SECCOMP_CACHE_DEBUG
-+	bool "Show seccomp filter cache status in /proc/pid/seccomp_cache"
-+	depends on SECCOMP
-+	depends on SECCOMP_FILTER && !HAVE_SPARSE_SYSCALL_NR
-+	depends on PROC_FS
-+	help
-+	  This enables the /proc/pid/seccomp_cache interface to monitor
-+	  seccomp cache data. The file format is subject to change. Reading
-+	  the file requires CAP_SYS_ADMIN.
-+
-+	  This option is for debugging only. Enabling presents the risk that
-+	  an adversary may be able to infer the seccomp filter logic.
-+
-+	  If unsure, say N.
-+
- config HAVE_ARCH_STACKLEAK
- 	bool
- 	help
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 0f707003dda5..d652f9dbaecc 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -3261,6 +3261,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_PROC_PID_ARCH_STATUS
- 	ONE("arch_status", S_IRUGO, proc_pid_arch_status),
- #endif
-+#ifdef CONFIG_SECCOMP_CACHE_DEBUG
-+	ONE("seccomp_cache", S_IRUSR, proc_pid_seccomp_cache),
++#ifdef CONFIG_CPU_LITTLE_ENDIAN
++#define __SECCOMP_ARCH_LE_BIT		__AUDIT_ARCH_LE
++#else
++#define __SECCOMP_ARCH_LE_BIT		0
 +#endif
- };
- 
- static int proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)
-@@ -3590,6 +3593,9 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_PROC_PID_ARCH_STATUS
- 	ONE("arch_status", S_IRUGO, proc_pid_arch_status),
- #endif
-+#ifdef CONFIG_SECCOMP_CACHE_DEBUG
-+	ONE("seccomp_cache", S_IRUSR, proc_pid_seccomp_cache),
-+#endif
- };
- 
- static int proc_tid_base_readdir(struct file *file, struct dir_context *ctx)
-diff --git a/include/linux/seccomp.h b/include/linux/seccomp.h
-index 02aef2844c38..76963ec4641a 100644
---- a/include/linux/seccomp.h
-+++ b/include/linux/seccomp.h
-@@ -121,4 +121,11 @@ static inline long seccomp_get_metadata(struct task_struct *task,
- 	return -EINVAL;
- }
- #endif /* CONFIG_SECCOMP_FILTER && CONFIG_CHECKPOINT_RESTORE */
 +
-+#ifdef CONFIG_SECCOMP_CACHE_DEBUG
-+struct seq_file;
++#define SECCOMP_ARCH_NATIVE		(AUDIT_ARCH_SH | __SECCOMP_ARCH_LE)
++#define SECCOMP_ARCH_NATIVE_NR		NR_syscalls
++#define SECCOMP_ARCH_NATIVE_NAME	"sh"
 +
-+int proc_pid_seccomp_cache(struct seq_file *m, struct pid_namespace *ns,
-+			   struct pid *pid, struct task_struct *task);
-+#endif
- #endif /* _LINUX_SECCOMP_H */
-diff --git a/kernel/seccomp.c b/kernel/seccomp.c
-index d8cf468dbe1e..76f524e320b1 100644
---- a/kernel/seccomp.c
-+++ b/kernel/seccomp.c
-@@ -553,6 +553,9 @@ void seccomp_filter_release(struct task_struct *tsk)
- {
- 	struct seccomp_filter *orig = tsk->seccomp.filter;
- 
-+	/* We are effectively holding the siglock by not having any sighand. */
-+	WARN_ON(tsk->sighand != NULL);
-+
- 	/* Detach task from its filter tree. */
- 	tsk->seccomp.filter = NULL;
- 	__seccomp_filter_release(orig);
-@@ -2335,3 +2338,59 @@ static int __init seccomp_sysctl_init(void)
- device_initcall(seccomp_sysctl_init)
- 
- #endif /* CONFIG_SYSCTL */
-+
-+#ifdef CONFIG_SECCOMP_CACHE_DEBUG
-+/* Currently CONFIG_SECCOMP_CACHE_DEBUG implies SECCOMP_ARCH_NATIVE */
-+static void proc_pid_seccomp_cache_arch(struct seq_file *m, const char *name,
-+					const void *bitmap, size_t bitmap_size)
-+{
-+	int nr;
-+
-+	for (nr = 0; nr < bitmap_size; nr++) {
-+		bool cached = test_bit(nr, bitmap);
-+		char *status = cached ? "ALLOW" : "FILTER";
-+
-+		seq_printf(m, "%s %d %s\n", name, nr, status);
-+	}
-+}
-+
-+int proc_pid_seccomp_cache(struct seq_file *m, struct pid_namespace *ns,
-+			   struct pid *pid, struct task_struct *task)
-+{
-+	struct seccomp_filter *f;
-+	unsigned long flags;
-+
-+	/*
-+	 * We don't want some sandboxed process to know what their seccomp
-+	 * filters consist of.
-+	 */
-+	if (!file_ns_capable(m->file, &init_user_ns, CAP_SYS_ADMIN))
-+		return -EACCES;
-+
-+	if (!lock_task_sighand(task, &flags))
-+		return -ESRCH;
-+
-+	f = READ_ONCE(task->seccomp.filter);
-+	if (!f) {
-+		unlock_task_sighand(task, &flags);
-+		return 0;
-+	}
-+
-+	/* prevent filter from being freed while we are printing it */
-+	__get_seccomp_filter(f);
-+	unlock_task_sighand(task, &flags);
-+
-+	proc_pid_seccomp_cache_arch(m, SECCOMP_ARCH_NATIVE_NAME,
-+				    f->cache.allow_native,
-+				    SECCOMP_ARCH_NATIVE_NR);
-+
-+#ifdef SECCOMP_ARCH_COMPAT
-+	proc_pid_seccomp_cache_arch(m, SECCOMP_ARCH_COMPAT_NAME,
-+				    f->cache.allow_compat,
-+				    SECCOMP_ARCH_COMPAT_NR);
-+#endif /* SECCOMP_ARCH_COMPAT */
-+
-+	__put_seccomp_filter(f);
-+	return 0;
-+}
-+#endif /* CONFIG_SECCOMP_CACHE_DEBUG */
+ #endif /* __ASM_SECCOMP_H */
 -- 
 2.29.2
 
