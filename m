@@ -2,112 +2,62 @@ Return-Path: <SRS0=iSul=EJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 114D3C4742C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 00:03:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17A79C00A89
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 00:23:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 16FAE22268
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 00:03:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="GpLg8o8h"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16FAE22268
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 227C42225E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 00:23:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 227C42225E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQ93n4ZZTzDqVC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:03:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQ9W65JHMzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:23:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5;
- helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com;
- receiver=<UNKNOWN>)
+ smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com;
+ envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256
- header.s=pp1 header.b=GpLg8o8h; dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQ91g09pmzDqLK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 11:01:41 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id
- 0A2NXESV171339; Mon, 2 Nov 2020 19:01:30 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com;
- h=subject : to : cc :
- references : from : message-id : date : mime-version : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Y9Nos3ahvz3IxqudanRH2iJeOKQpNN+5l54NhP5KCzo=;
- b=GpLg8o8hjViBDzluxNHyklEF+vhU8vjmP2xyfuH6d4Rv/kMexNEGOhTqc1hIh63yib6y
- m/TFDF9sIeN1Z1mOr8+KLU9z5LWH+PCFLF8sX+H19/mLvJNf7WnGQrkuuwmk+ShUgX/6
- y6LPzyZ9FjC1R+R0hVawrrpjilykMY2wfzrNIIwa1705dE3dnjFVOm5N9+CxpmlBH9hZ
- W2e8dqWPuxRv/u4s4OVGS8/XSlxYzaFqDR103DecE8Dc3JH8okN9EblgddwA3IKPysGp
- w9/F/7hDCyU33jOq77tfBaMSur/dVYJSCvbwKAphBFXXwnX8YRc54XJMmWuYMUaOQVlk gw== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com
- [159.122.73.72])
- by mx0a-001b2d01.pphosted.com with ESMTP id 34jm70eska-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Mon, 02 Nov 2020 19:01:30 -0500
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
- by ppma06fra.de.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 0A2NvnaX013803;
- Tue, 3 Nov 2020 00:01:28 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com
- (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
- by ppma06fra.de.ibm.com with ESMTP id 34h01khb87-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
- Tue, 03 Nov 2020 00:01:28 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP
- id 0A301PBZ55050680
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 3 Nov 2020 00:01:25 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CA332AE04D;
- Tue,  3 Nov 2020 00:01:25 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 762FCAE045;
- Tue,  3 Nov 2020 00:01:25 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue,  3 Nov 2020 00:01:25 +0000 (GMT)
-Received: from [9.81.211.185] (unknown [9.81.211.185])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A72E8A00BD;
- Tue,  3 Nov 2020 11:01:23 +1100 (AEDT)
-Subject: Re: [PATCH v2 2/2] misc: ocxl: config: Rename function attribute
- description
-To: Lee Jones <lee.jones@linaro.org>, gregkh@linuxfoundation.org, arnd@arndb.de
-References: <20201102142001.560490-1-lee.jones@linaro.org>
- <20201102142001.560490-2-lee.jones@linaro.org>
-From: Andrew Donnellan <ajd@linux.ibm.com>
-Message-ID: <82b78262-14a5-d384-0c78-d4876d85f713@linux.ibm.com>
-Date: Tue, 3 Nov 2020 11:01:22 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQ9TF1FFczDqQQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 11:22:06 +1100 (AEDT)
+IronPort-SDR: JTFvEH2+IhZtscgemuhXC8Hg6X1+QsiLrT1diSAz+qHGQMXYoTzdCoJiEHOnDp1s4pEv2lGRYR
+ gKW1hcigttaA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9793"; a="148255822"
+X-IronPort-AV: E=Sophos;i="5.77,446,1596524400"; d="scan'208";a="148255822"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Nov 2020 16:22:03 -0800
+IronPort-SDR: gk0TcGKeNNJLV8rtYvYbKh1sm2HxnME6Tkh9dVylH7TyEkiGKR4I/YcykJtdPzxEA+9gHbxLpi
+ BW1eAeVGQV+A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,446,1596524400"; d="scan'208";a="357496533"
+Received: from lkp-server02.sh.intel.com (HELO 9353403cd79d) ([10.239.97.151])
+ by fmsmga002.fm.intel.com with ESMTP; 02 Nov 2020 16:22:02 -0800
+Received: from kbuild by 9353403cd79d with local (Exim 4.92)
+ (envelope-from <lkp@intel.com>)
+ id 1kZk5J-0000F4-VJ; Tue, 03 Nov 2020 00:22:01 +0000
+Date: Tue, 03 Nov 2020 08:21:25 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 2d83b0f30c1483a556c8aa1f7d891006fffcd5e0
+Message-ID: <5fa0a285.FY9PDbmCmZ6PNJje%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-In-Reply-To: <20201102142001.560490-2-lee.jones@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312, 18.0.737
- definitions=2020-11-02_16:2020-11-02,
- 2020-11-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxscore=0 suspectscore=0
- spamscore=0 lowpriorityscore=0 priorityscore=1501 impostorscore=0
- phishscore=0 clxscore=1011 malwarescore=0 bulkscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2011020181
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,29 +69,235 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/11/20 1:20 am, Lee Jones wrote:
-> Fixes the following W=1 kernel build warning(s):
-> 
->   drivers/misc/ocxl/config.c:81: warning: Function parameter or member 'dev' not described in 'get_function_0'
->   drivers/misc/ocxl/config.c:81: warning: Excess function parameter 'device' description in 'get_function_0'
-> 
-> Cc: Frederic Barrat <fbarrat@linux.ibm.com>
-> Cc: Andrew Donnellan <ajd@linux.ibm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  next-test
+branch HEAD: 2d83b0f30c1483a556c8aa1f7d891006fffcd5e0  powerpc: Avoid broken GCC __attribute__((optimize))
 
-Thanks!
+elapsed time: 1338m
 
-Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
+configs tested: 209
+configs skipped: 3
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+c6x                        evmc6457_defconfig
+arm                       imx_v6_v7_defconfig
+powerpc                      cm5200_defconfig
+arm                        magician_defconfig
+powerpc                     skiroot_defconfig
+sh                        sh7757lcr_defconfig
+powerpc                    adder875_defconfig
+mips                         bigsur_defconfig
+mips                           rs90_defconfig
+powerpc                       holly_defconfig
+arm                        trizeps4_defconfig
+arm                    vt8500_v6_v7_defconfig
+powerpc                    amigaone_defconfig
+arm                        spear6xx_defconfig
+arm                            mmp2_defconfig
+ia64                        generic_defconfig
+mips                    maltaup_xpa_defconfig
+sh                          rsk7269_defconfig
+arm                      tct_hammer_defconfig
+arm                            xcep_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                      maltasmvp_defconfig
+nios2                         10m50_defconfig
+sh                           se7712_defconfig
+mips                         mpc30x_defconfig
+powerpc                   currituck_defconfig
+sh                           se7750_defconfig
+arm                         at91_dt_defconfig
+arm                              zx_defconfig
+sh                           se7343_defconfig
+sh                            hp6xx_defconfig
+powerpc                      makalu_defconfig
+powerpc                       maple_defconfig
+mips                           ip28_defconfig
+arm                         lpc18xx_defconfig
+c6x                         dsk6455_defconfig
+powerpc                     kilauea_defconfig
+arc                          axs101_defconfig
+arc                        vdk_hs38_defconfig
+arm                           omap1_defconfig
+arm                         lpc32xx_defconfig
+mips                      fuloong2e_defconfig
+arm                        mvebu_v5_defconfig
+powerpc                      ppc6xx_defconfig
+m68k                        mvme16x_defconfig
+mips                        bcm47xx_defconfig
+mips                            gpr_defconfig
+powerpc                 mpc837x_mds_defconfig
+alpha                               defconfig
+ia64                             allyesconfig
+riscv                    nommu_k210_defconfig
+powerpc                 mpc832x_rdb_defconfig
+c6x                                 defconfig
+arm                        oxnas_v6_defconfig
+arm                     davinci_all_defconfig
+mips                     decstation_defconfig
+powerpc                 mpc8315_rdb_defconfig
+parisc                generic-64bit_defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                              ul2_defconfig
+mips                      maltaaprp_defconfig
+arc                            hsdk_defconfig
+m68k                          sun3x_defconfig
+powerpc                     tqm8548_defconfig
+um                            kunit_defconfig
+arc                     haps_hs_smp_defconfig
+m68k                       bvme6000_defconfig
+arm                         vf610m4_defconfig
+arm                         mv78xx0_defconfig
+powerpc                      ppc40x_defconfig
+sh                          sdk7780_defconfig
+powerpc                       eiger_defconfig
+m68k                          multi_defconfig
+arm                         socfpga_defconfig
+riscv                            allyesconfig
+arm                          badge4_defconfig
+arm                           sunxi_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                      obs600_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                      arches_defconfig
+sh                            migor_defconfig
+arm                          pxa168_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                      ppc44x_defconfig
+i386                             alldefconfig
+powerpc                 mpc8560_ads_defconfig
+arm                          iop32x_defconfig
+mips                malta_kvm_guest_defconfig
+mips                        jmr3927_defconfig
+powerpc                 mpc836x_rdk_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                        cell_defconfig
+powerpc                 mpc8313_rdb_defconfig
+arm                        keystone_defconfig
+riscv                          rv32_defconfig
+powerpc                     tqm8541_defconfig
+sh                ecovec24-romimage_defconfig
+arm                        multi_v5_defconfig
+powerpc                     tqm5200_defconfig
+powerpc                   lite5200b_defconfig
+m68k                        mvme147_defconfig
+h8300                     edosk2674_defconfig
+sh                           sh2007_defconfig
+ia64                             alldefconfig
+mips                         cobalt_defconfig
+microblaze                    nommu_defconfig
+arm                          gemini_defconfig
+sparc                       sparc32_defconfig
+powerpc                           allnoconfig
+arm                       aspeed_g4_defconfig
+arm                       imx_v4_v5_defconfig
+sh                          rsk7264_defconfig
+arm                       versatile_defconfig
+sh                            titan_defconfig
+arm                             rpc_defconfig
+c6x                              alldefconfig
+powerpc                      pmac32_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                        icon_defconfig
+arm                          pxa3xx_defconfig
+arm                       cns3420vb_defconfig
+arm                  colibri_pxa270_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a004-20201101
+x86_64               randconfig-a003-20201101
+x86_64               randconfig-a005-20201101
+x86_64               randconfig-a002-20201101
+x86_64               randconfig-a006-20201101
+x86_64               randconfig-a001-20201101
+i386                 randconfig-a004-20201102
+i386                 randconfig-a006-20201102
+i386                 randconfig-a005-20201102
+i386                 randconfig-a001-20201102
+i386                 randconfig-a002-20201102
+i386                 randconfig-a003-20201102
+i386                 randconfig-a004-20201101
+i386                 randconfig-a006-20201101
+i386                 randconfig-a005-20201101
+i386                 randconfig-a001-20201101
+i386                 randconfig-a002-20201101
+i386                 randconfig-a003-20201101
+x86_64               randconfig-a012-20201102
+x86_64               randconfig-a015-20201102
+x86_64               randconfig-a011-20201102
+x86_64               randconfig-a013-20201102
+x86_64               randconfig-a014-20201102
+x86_64               randconfig-a016-20201102
+i386                 randconfig-a013-20201102
+i386                 randconfig-a015-20201102
+i386                 randconfig-a014-20201102
+i386                 randconfig-a016-20201102
+i386                 randconfig-a011-20201102
+i386                 randconfig-a012-20201102
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20201102
+x86_64               randconfig-a005-20201102
+x86_64               randconfig-a003-20201102
+x86_64               randconfig-a002-20201102
+x86_64               randconfig-a006-20201102
+x86_64               randconfig-a001-20201102
+x86_64               randconfig-a012-20201101
+x86_64               randconfig-a015-20201101
+x86_64               randconfig-a013-20201101
+x86_64               randconfig-a011-20201101
+x86_64               randconfig-a014-20201101
+x86_64               randconfig-a016-20201101
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
