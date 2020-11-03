@@ -2,90 +2,84 @@ Return-Path: <SRS0=iSul=EJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E131C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06154C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:56:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 449CB2074B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:54:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="HlBdVjW4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 449CB2074B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2002A206DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 18:56:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2002A206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQf8y6lcxzDqgf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:54:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::143;
- helo=mail-lf1-x143.google.com; envelope-from=torvalds@linuxfoundation.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.a=rsa-sha256 header.s=google header.b=HlBdVjW4; 
- dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQfBy5qWTzDqsM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 05:56:26 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQcsj2nLRzDqNN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 04:56:25 +1100 (AEDT)
-Received: by mail-lf1-x143.google.com with SMTP id v6so23333334lfa.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2020 09:56:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=o0HUqTtrB0uneYNpLQNhQJ6FusME7LjWI9KZLqRyy8M=;
- b=HlBdVjW42hUSJkakIiVHCgxY07l6tlPx/MKTOg49MQqEt9fKpSl2tO6bNlSfEMf3/D
- yOb2ZUXxHpDZzPlQCZuCKgGgj4iIodCB3C8y4WCLAE53N4IY/fO4MumxqPXGllxVBzjJ
- AuMTxQdvsElAjMkZERbVlQwjny9JwixE30+4I=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=o0HUqTtrB0uneYNpLQNhQJ6FusME7LjWI9KZLqRyy8M=;
- b=Eu05Q1Y5ac1uYypCgiPRkHd6oFA9J/0VhgI4Am/7NVPGxAVkAnytBgUQ1ElBv+ERvj
- UXvHQYAbcIuOW+F7YUpN+S2ahbLPqFjozkbBPkt6FtTLZmYlUetV4SAXZGSDrOYfVtOM
- zIN0C0RQe1nZdj7KV8P4+LP1aO3Ym+5/g2bvK3cfLMrnMhn2/2ec+14fNE5k0LqkeSab
- ByM4H7LWoh4hJGHQpSXVgNBECWIx0LHRvZjcmK2D5zAr4VO/E52HLkGPlYEMLvt7w/Cx
- JwkyV0FVgCvnLK873IC/79/ngLksKrpk5BONXcNNjNC+spJs1Lgwg/GVlaQ5YyzkuHVI
- K1gA==
-X-Gm-Message-State: AOAM533B8aH8xHcXg7WVNAiz4lF88JIJ6XNjp1yUb/vHaXiyjGpzXV0/
- 3vI1ZjdX1oTcRGAd//CcYSezqnoqToCHDg==
-X-Google-Smtp-Source: ABdhPJyivikhjFaCRYA7YhlChzzzDW2aZNtNwM6TSUpcrgpNAKcYMT3nc+S+VdvpkPSDO04sSaNS6g==
-X-Received: by 2002:ac2:5c0d:: with SMTP id r13mr8955374lfp.46.1604426181176; 
- Tue, 03 Nov 2020 09:56:21 -0800 (PST)
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com.
- [209.85.208.170])
- by smtp.gmail.com with ESMTPSA id t66sm4116560lff.85.2020.11.03.09.56.20
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 03 Nov 2020 09:56:20 -0800 (PST)
-Received: by mail-lj1-f170.google.com with SMTP id d24so19988512ljg.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Nov 2020 09:56:20 -0800 (PST)
-X-Received: by 2002:a19:4815:: with SMTP id v21mr8859386lfa.603.1604425706752; 
- Tue, 03 Nov 2020 09:48:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQdBk4rNBzDqLM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 05:11:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4CQdBj5tLYz8tWB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 05:11:09 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 4CQdBj5T6bz9sVN; Wed,  4 Nov 2020 05:11:09 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4CQdBg2wlxz9sVK
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2020 05:11:06 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CQdBY61ZJz9v1mr;
+ Tue,  3 Nov 2020 19:11:01 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id hH_M8vkh2aQq; Tue,  3 Nov 2020 19:11:01 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CQdBY5DrWz9v1mk;
+ Tue,  3 Nov 2020 19:11:01 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7A2DF8B7DB;
+ Tue,  3 Nov 2020 19:11:03 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id wJwWUaoqKYD6; Tue,  3 Nov 2020 19:11:03 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CB358B7D9;
+ Tue,  3 Nov 2020 19:11:03 +0100 (CET)
+Subject: Re: C vdso
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20200916165516.Horde.uocmo3irPb7BMg__NUSqRA9@messagerie.si.c-s.fr>
+ <87r1r0oa4o.fsf@mpe.ellerman.id.au>
+ <cc532aa8-a9e0-a105-b7b1-ee8d723b7ed6@csgroup.eu>
+ <be21c7c8-6828-b757-064d-20f74e5c1a31@csgroup.eu>
+ <877drhxeg8.fsf@mpe.ellerman.id.au> <874kmkx7gi.fsf@mpe.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <a27bde01-5498-4527-042a-44d2146b92d3@csgroup.eu>
+Date: Tue, 3 Nov 2020 19:11:02 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.1
 MIME-Version: 1.0
-References: <20201103092712.714480842@linutronix.de>
- <20201103095858.827582066@linutronix.de>
-In-Reply-To: <20201103095858.827582066@linutronix.de>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 3 Nov 2020 09:48:10 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wg2D_yjgKYkXCybD3uf0dtwYh6HxZ9BQJfV5t+EBqLGQQ@mail.gmail.com>
-Message-ID: <CAHk-=wg2D_yjgKYkXCybD3uf0dtwYh6HxZ9BQJfV5t+EBqLGQQ@mail.gmail.com>
-Subject: Re: [patch V3 22/37] highmem: High implementation details and
- document API
-To: Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 04 Nov 2020 05:22:55 +1100
+In-Reply-To: <874kmkx7gi.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,96 +91,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-aio@kvack.org,
- Peter Zijlstra <peterz@infradead.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- dri-devel <dri-devel@lists.freedesktop.org>, linux-mips@vger.kernel.org,
- Ben Segall <bsegall@google.com>, Chris Mason <clm@fb.com>,
- Huang Rui <ray.huang@amd.com>, Paul Mackerras <paulus@samba.org>,
- Gerd Hoffmann <kraxel@redhat.com>,
- Daniel Bristot de Oliveira <bristot@redhat.com>,
- linux-sparc <sparclinux@vger.kernel.org>, Vincent Chen <deanbo422@gmail.com>,
- Christoph Hellwig <hch@lst.de>, Vincent Guittot <vincent.guittot@linaro.org>,
- Paul McKenney <paulmck@kernel.org>, Max Filippov <jcmvbkbc@gmail.com>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, David Airlie <airlied@linux.ie>,
- VMware Graphics <linux-graphics-maintainer@vmware.com>,
- Mel Gorman <mgorman@suse.de>, nouveau@lists.freedesktop.org,
- Dave Airlie <airlied@redhat.com>,
- "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>,
- Ben Skeggs <bskeggs@redhat.com>, linux-xtensa@linux-xtensa.org,
- Arnd Bergmann <arnd@arndb.de>, intel-gfx <intel-gfx@lists.freedesktop.org>,
- Roland Scheidegger <sroland@vmware.com>, Josef Bacik <josef@toxicpanda.com>,
- Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, spice-devel@lists.freedesktop.org,
- David Sterba <dsterba@suse.com>, virtualization@lists.linux-foundation.org,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Jani Nikula <jani.nikula@linux.intel.com>, Chris Zankel <chris@zankel.net>,
- Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Nick Hu <nickhu@andestech.com>, Linux-MM <linux-mm@kvack.org>,
- Vineet Gupta <vgupta@synopsys.com>, LKML <linux-kernel@vger.kernel.org>,
- Christian Koenig <christian.koenig@amd.com>, Benjamin LaHaise <bcrl@kvack.org>,
- Daniel Vetter <daniel@ffwll.ch>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- linux-btrfs <linux-btrfs@vger.kernel.org>, Greentime Hu <green.hu@gmail.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 3, 2020 at 2:33 AM Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> +static inline void *kmap(struct page *page)
-> +{
-> +       void *addr;
-> +
-> +       might_sleep();
-> +       if (!PageHighMem(page))
-> +               addr = page_address(page);
-> +       else
-> +               addr = kmap_high(page);
-> +       kmap_flush_tlb((unsigned long)addr);
-> +       return addr;
-> +}
-> +
-> +static inline void kunmap(struct page *page)
-> +{
-> +       might_sleep();
-> +       if (!PageHighMem(page))
-> +               return;
-> +       kunmap_high(page);
-> +}
 
-I have no complaints about the patch, but it strikes me that if people
-want to actually have much better debug coverage, this is where it
-should be (I like the "every other address" thing too, don't get me
-wrong).
 
-In particular, instead of these PageHighMem(page) tests, I think
-something like this would be better:
+Le 24/10/2020 à 12:07, Michael Ellerman a écrit :
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>>> Le 24/09/2020 à 15:17, Christophe Leroy a écrit :
+>>>> Le 17/09/2020 à 14:33, Michael Ellerman a écrit :
+>>>>> Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+>>>>>>
+>>>>>> What is the status with the generic C vdso merge ?
+>>>>>> In some mail, you mentionned having difficulties getting it working on
+>>>>>> ppc64, any progress ? What's the problem ? Can I help ?
+>>>>>
+>>>>> Yeah sorry I was hoping to get time to work on it but haven't been able
+>>>>> to.
+>>>>>
+>>>>> It's causing crashes on ppc64 ie. big endian.
+>> ...
+>>>>
+>>>> Can you tell what defconfig you are using ? I have been able to setup a full glibc PPC64 cross
+>>>> compilation chain and been able to test it under QEMU with success, using Nathan's vdsotest tool.
+>>>
+>>> What config are you using ?
+>>
+>> ppc64_defconfig + guest.config
+>>
+>> Or pseries_defconfig.
+>>
+>> I'm using Ubuntu GCC 9.3.0 mostly, but it happens with other toolchains too.
+> 
+> I'm also seeing warnings because of the feature fixups:
+> 
 
-   #ifdef CONFIG_DEBUG_HIGHMEM
-     #define page_use_kmap(page) ((page),1)
-   #else
-     #define page_use_kmap(page) PageHighMem(page)
-   #endif
+[...]
 
-adn then replace those "if (!PageHighMem(page))" tests with "if
-(!page_use_kmap())" instead.
+> 
+> That's happening because the 32-bit VDSO is built with CONFIG_PPC32=y,
+> due to config-fake32.h, and that causes the feature fixup entries to be
+> the wrong size.
+> 
+> See the logic in feature-fixup.h:
+> 
+>    #if defined(CONFIG_PPC64) && !defined(__powerpc64__)
+>    /* 64 bits kernel, 32 bits code (ie. vdso32) */
+>    #define FTR_ENTRY_LONG		.8byte
+>    #define FTR_ENTRY_OFFSET	.long 0xffffffff; .long
+>    #elif defined(CONFIG_PPC64)
+>    #define FTR_ENTRY_LONG		.8byte
+>    #define FTR_ENTRY_OFFSET	.8byte
+>    #else
+>    #define FTR_ENTRY_LONG		.long
+>    #define FTR_ENTRY_OFFSET	.long
+>    #endif
+> 
+> 
+> We expect the fixup entries to still use 64-bit values, even for the
+> 32-bit VDSO in a 64-bit kernel.
+> 
+> TBH I'm not sure how config-fake32.h can work long term, it's so fragile
+> to be defining/redefining a handful of CONFIG symbols like that.
+> 
+> The generic VDSO code is fairly careful to only include uapi and vdso
+> headers, not linux ones. So I think we need to better split our headers
+> so that we can build the VDSO code with few or no linux headers, and so
+> avoid the need to define any (or most) CONFIG symbols.
+> 
 
-IOW, in debug mode, it would _always_ remap the page, whether it's
-highmem or not. That would really stress the highmem code and find any
-fragilities.
+Finally, it was easy to do, just had to change a couple of __powerpc64__ into CONFIG_PPC64 in 
+asm/cputable.h, and move asm/time.h functions playing with timebase into asm/timebase.h
 
-No?
-
-Anyway, this is all sepatrate from the series, which still looks fine
-to me. Just a reaction to seeing the patch, and Thomas' earlier
-mention that the highmem debugging doesn't actually do much.
-
-               Linus
+Christophe
