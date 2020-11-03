@@ -2,53 +2,82 @@ Return-Path: <SRS0=iSul=EJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69EA7C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 19:09:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A4C8C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 19:24:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8411420786
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 19:09:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8411420786
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=depni.sinp.msu.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 7CE0D20870
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 19:24:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CE0D20870
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQfVQ54jvzDqf4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 06:09:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record)
- smtp.mailfrom=depni.sinp.msu.ru (client-ip=213.131.7.21;
- helo=depni-mx.sinp.msu.ru; envelope-from=belyshev@depni.sinp.msu.ru;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=depni.sinp.msu.ru
-X-Greylist: delayed 584 seconds by postgrey-1.36 at bilbo;
- Wed, 04 Nov 2020 06:08:08 AEDT
-Received: from depni-mx.sinp.msu.ru (depni-mx.sinp.msu.ru [213.131.7.21])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CQfSS0x7yzDqT2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 06:08:08 +1100 (AEDT)
-Received: from spider (unknown [176.192.246.239])
- by depni-mx.sinp.msu.ru (Postfix) with ESMTPSA id 4CE1F1BF450;
- Tue,  3 Nov 2020 21:58:22 +0300 (MSK)
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Setup the early hash table at all time.
-References: <b8f8101c368b8a6451844a58d7bd7d83c14cf2aa.1601566529.git.christophe.leroy@csgroup.eu>
- <87wnz8vizm.fsf@igel.home> <87y2jouw8k.fsf@mpe.ellerman.id.au>
- <87v9esaxlv.fsf@igel.home>
- <20201030140047.Horde.TJJqKGzG9vSGbMRNIj-MPg7@messagerie.c-s.fr>
- <87pn4zc0zl.fsf@igel.home>
- <1f8494cd-36db-e3a2-8ea4-28fb976468e7@csgroup.eu>
-Date: Tue, 03 Nov 2020 21:58:17 +0300
-In-Reply-To: <1f8494cd-36db-e3a2-8ea4-28fb976468e7@csgroup.eu> (Christophe
- Leroy's message of "Tue, 3 Nov 2020 08:41:38 +0100")
-Message-ID: <875z6mmfna.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.0.50 (gnu/linux)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQfqT2p9lzDqqW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Nov 2020 06:24:37 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQfnQ5PMTzDqg7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 06:22:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4CQfnQ4HxLz8tVV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Nov 2020 06:22:50 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 4CQfnQ3gYwz9sTL; Wed,  4 Nov 2020 06:22:50 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=csgroup.eu
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4CQfnN57msz9sT6
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Nov 2020 06:22:41 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 4CQfnB6jf2z9v1x2;
+ Tue,  3 Nov 2020 20:22:38 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id aXaB3QGDvAPG; Tue,  3 Nov 2020 20:22:38 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4CQfnB5hq2z9v1x1;
+ Tue,  3 Nov 2020 20:22:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CF268B7DC;
+ Tue,  3 Nov 2020 20:22:37 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id yeXrxSvxsMzB; Tue,  3 Nov 2020 20:22:37 +0100 (CET)
+Received: from [192.168.4.90] (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0BF998B7DB;
+ Tue,  3 Nov 2020 20:22:37 +0100 (CET)
+Subject: Re: [PATCH] powerpc: Don't use asm goto for put_user() with GCC 4.9
+To: Segher Boessenkool <segher@kernel.crashing.org>
+References: <20201103132915.529337-1-mpe@ellerman.id.au>
+ <4fe837f8-ecae-f009-c193-8da386a70705@csgroup.eu>
+ <20201103185829.GM2672@gate.crashing.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Message-ID: <04ba7852-be06-dcda-3f91-7739025035e2@csgroup.eu>
+Date: Tue, 3 Nov 2020 20:22:35 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20201103185829.GM2672@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,16 +89,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Andreas Schwab <schwab@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: schwab@linux-m68k.org, linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> Would you mind checking that with that patch reverted, you are able to
-> boot a kernel built with CONFIG_KASAN ?
 
-I can reproduce the same problem on a powerbook G4, and no,
-CONFIG_KASAN=y kernel with that patch reverted also does not boot with
-the same symptom: white screen at the bootloader right after "Booting Linux
-via __start() @ 0x0140000 ..."
+
+Le 03/11/2020 à 19:58, Segher Boessenkool a écrit :
+> On Tue, Nov 03, 2020 at 03:43:55PM +0100, Christophe Leroy wrote:
+>> Le 03/11/2020 à 14:29, Michael Ellerman a écrit :
+>>> For now though let's just not use asm goto with GCC 4.9, to avoid this
+>>> bug and any other issues we haven't noticed yet. Possibly in future we
+>>> can find a smaller workaround.
+>>
+>> Is that https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58670 ?
+> 
+> That was fixed in 4.8.1 (and all 4.9), so probably not.
+> 
+
+Ok.
+
+Regardless, using "asm_volatile_goto()" instead of "asm volatile goto()" fixes the issue it seems.
+
+Christophe
