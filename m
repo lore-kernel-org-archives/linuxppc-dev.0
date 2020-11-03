@@ -4,25 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B840DC388F2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:00:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF747C2D0A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:02:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A82F6208B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:00:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EFA3A208B6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 11:02:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="b6UWG1RX";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="7x5E7bhv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A82F6208B6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="qxeKab/j";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="sa3bXF2K"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFA3A208B6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQRdR3jkgzDqLY
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 22:00:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQRgk3f5WzDq5n
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 22:02:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
  smtp.mailfrom=linutronix.de (client-ip=193.142.43.55;
  helo=galois.linutronix.de; envelope-from=tglx@linutronix.de;
@@ -31,40 +30,40 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256
- header.s=2020 header.b=b6UWG1RX; 
+ header.s=2020 header.b=qxeKab/j; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=7x5E7bhv; 
+ header.a=ed25519-sha256 header.s=2020e header.b=sa3bXF2K; 
  dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR2g0jCyzDqSk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:33:30 +1100 (AEDT)
-Message-Id: <20201103095856.979798613@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CQR2j2JylzDqTn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:33:32 +1100 (AEDT)
+Message-Id: <20201103095857.078043987@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020; t=1604399607;
+ s=2020; t=1604399609;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=oF4DYonwtBNvmWHcqJ3amZKMdxENJ+WTSLMv3+rtHDM=;
- b=b6UWG1RXLdBy2bRiDY0A2P6zUTcJ5Ww3Hloamuegv/bL3cd0Jtr2ttgYbbJrW5BYak/rkk
- PIZxdNYfysNFn3hkTOqqRZTgj7HKUJeNhycoOe7m3Id4B0EFsqDbR5SzgKvmyNco7YPeDJ
- 7zGBcL24S5tqjz5nUv65X7+akcl8LQTNORQzEg/iFXRbEmU8I/BDt33Ieg2A5XD5DrODpw
- Mks84NTPIQAyqEH3f2oDzt/ae9t4w9OMJO+I7JYrxIGeYRIj6k6PPK6tR2mIaKluksa7bD
- OXSaYC6IDAc3KYdm99Ww55f3jctY1IJoZnRNbxPldLZF+7xYm+DqO5Hw2kBfKA==
+ bh=ut1GkVw4OXMSCtChDMtmqVv6FlrafPsAPVPH5qh/+W4=;
+ b=qxeKab/jnzonAYIBxQj7C+lU1MXIOtv9AUxIqLZgMNOheS1/C1ppYtMhiRGWGILT0p9BRX
+ pgQSNcMXtj2Uc5P/cIyFA85cG3zt2PWv30XyG8pKoOND+ze18oEqwDagKsMk4iFbkxn6w3
+ nHjpZ+/5f9nyGALGAnCDWfSOLvmz6+kVq3EXJm/nem1WmvK7IfNuhg+QYUzzvNXpCI5JCV
+ /zpQKKIRbeU1LpPLNe05AoFKzjsDBQG2wAWha8c2KiRVj55HfMkJaQutHQqfH87MuhQYm+
+ dvAy7X7H2pEzrttiZjmlLL/Ut6jFrU2e2uklduyXACJvrBvG+GDZzRfAbFAKGQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
- s=2020e; t=1604399607;
+ s=2020e; t=1604399609;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:  references:references;
- bh=oF4DYonwtBNvmWHcqJ3amZKMdxENJ+WTSLMv3+rtHDM=;
- b=7x5E7bhvi7aofzhhPh9QlETURgTfsCteOpP5xZ/APbluJpgTom1zgixNGKJtT0nUZF2P72
- bnhVHwiHvnfzpbCg==
-Date: Tue, 03 Nov 2020 10:27:16 +0100
+ bh=ut1GkVw4OXMSCtChDMtmqVv6FlrafPsAPVPH5qh/+W4=;
+ b=sa3bXF2K349r2Sx437G+viH7NII4z1vmSjqFyQiLWboorIUK0oCNgpdHH/H8Y0GgaZiyhO
+ PJb8yq1jh8Mfa0Dw==
+Date: Tue, 03 Nov 2020 10:27:17 +0100
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V3 04/37] sh/highmem: Remove all traces of unused cruft
+Subject: [patch V3 05/37] asm-generic: Provide kmap_size.h
 References: <20201103092712.714480842@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -122,80 +121,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For whatever reasons SH has highmem bits all over the place but does
-not enable it via Kconfig. Remove the bitrot.
+kmap_types.h is a misnomer because the old atomic MAP based array does not
+exist anymore and the whole indirection of architectures including
+kmap_types.h is inconinstent and does not allow to provide guard page
+debugging for this misfeature.
+
+Add a common header file which defines the mapping stack size for all
+architectures. Will be used when converting architectures over to a
+generic kmap_local/atomic implementation.
+
+The array size is chosen with the following constraints in mind:
+
+    - The deepest nest level in one context is 3 according to code
+      inspection.
+
+    - The worst case nesting for the upcoming reemptible version would be:
+
+      2 maps in task context and a fault inside
+      2 maps in the fault handler
+      3 maps in softirq
+      2 maps in interrupt
+
+So a total of 16 is sufficient and probably overestimated.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/sh/include/asm/fixmap.h     |    8 --------
- arch/sh/include/asm/kmap_types.h |   15 ---------------
- arch/sh/mm/init.c                |    8 --------
- 3 files changed, 31 deletions(-)
+V3: New patch
+---
+ include/asm-generic/Kbuild      |    1 +
+ include/asm-generic/kmap_size.h |   12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
---- a/arch/sh/include/asm/fixmap.h
-+++ b/arch/sh/include/asm/fixmap.h
-@@ -13,9 +13,6 @@
- #include <linux/kernel.h>
- #include <linux/threads.h>
- #include <asm/page.h>
--#ifdef CONFIG_HIGHMEM
--#include <asm/kmap_types.h>
--#endif
- 
- /*
-  * Here we define all the compile-time 'special' virtual
-@@ -53,11 +50,6 @@ enum fixed_addresses {
- 	FIX_CMAP_BEGIN,
- 	FIX_CMAP_END = FIX_CMAP_BEGIN + (FIX_N_COLOURS * NR_CPUS) - 1,
- 
--#ifdef CONFIG_HIGHMEM
--	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
--	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_TYPE_NR * NR_CPUS) - 1,
--#endif
--
- #ifdef CONFIG_IOREMAP_FIXED
- 	/*
- 	 * FIX_IOREMAP entries are useful for mapping physical address
---- a/arch/sh/include/asm/kmap_types.h
-+++ /dev/null
-@@ -1,15 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef __SH_KMAP_TYPES_H
--#define __SH_KMAP_TYPES_H
--
--/* Dummy header just to define km_type. */
--
--#ifdef CONFIG_DEBUG_HIGHMEM
--#define  __WITH_KM_FENCE
--#endif
--
--#include <asm-generic/kmap_types.h>
--
--#undef __WITH_KM_FENCE
--
--#endif
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -362,9 +362,6 @@ void __init mem_init(void)
- 	mem_init_print_info(NULL);
- 	pr_info("virtual kernel memory layout:\n"
- 		"    fixmap  : 0x%08lx - 0x%08lx   (%4ld kB)\n"
--#ifdef CONFIG_HIGHMEM
--		"    pkmap   : 0x%08lx - 0x%08lx   (%4ld kB)\n"
--#endif
- 		"    vmalloc : 0x%08lx - 0x%08lx   (%4ld MB)\n"
- 		"    lowmem  : 0x%08lx - 0x%08lx   (%4ld MB) (cached)\n"
- #ifdef CONFIG_UNCACHED_MAPPING
-@@ -376,11 +373,6 @@ void __init mem_init(void)
- 		FIXADDR_START, FIXADDR_TOP,
- 		(FIXADDR_TOP - FIXADDR_START) >> 10,
- 
--#ifdef CONFIG_HIGHMEM
--		PKMAP_BASE, PKMAP_BASE+LAST_PKMAP*PAGE_SIZE,
--		(LAST_PKMAP*PAGE_SIZE) >> 10,
--#endif
--
- 		(unsigned long)VMALLOC_START, VMALLOC_END,
- 		(VMALLOC_END - VMALLOC_START) >> 20,
- 
+--- a/include/asm-generic/Kbuild
++++ b/include/asm-generic/Kbuild
+@@ -31,6 +31,7 @@ mandatory-y += irq_regs.h
+ mandatory-y += irq_work.h
+ mandatory-y += kdebug.h
+ mandatory-y += kmap_types.h
++mandatory-y += kmap_size.h
+ mandatory-y += kprobes.h
+ mandatory-y += linkage.h
+ mandatory-y += local.h
+--- /dev/null
++++ b/include/asm-generic/kmap_size.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ASM_GENERIC_KMAP_SIZE_H
++#define _ASM_GENERIC_KMAP_SIZE_H
++
++/* For debug this provides guard pages between the maps */
++#ifdef CONFIG_DEBUG_HIGHMEM
++# define KM_MAX_IDX	33
++#else
++# define KM_MAX_IDX	16
++#endif
++
++#endif
 
