@@ -2,72 +2,61 @@ Return-Path: <SRS0=iSul=EJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15407C2D0A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 09:57:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2D2FC4742C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 10:17:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E4A2122404
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 09:57:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E4A2122404
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=csgroup.eu
+	by mail.kernel.org (Postfix) with ESMTPS id DBF92206F8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 10:17:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.com header.i=@suse.com header.b="RqyOPtG4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBF92206F8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from bilbo.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4CQQFB6q7RzDqXf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 20:57:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4CQQgt5BThzDqXK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Nov 2020 21:17:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized)
- smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+ smtp.mailfrom=suse.com (client-ip=195.135.220.15; helo=mx2.suse.de;
+ envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=csgroup.eu
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CQQCD5LFhzDqTd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 20:55:47 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4CQQC11G6dz9vBL6;
- Tue,  3 Nov 2020 10:55:41 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id gMUBwbi-TI51; Tue,  3 Nov 2020 10:55:41 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4CQQC109jtz9vBL4;
- Tue,  3 Nov 2020 10:55:41 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 273D38B77E;
- Tue,  3 Nov 2020 10:55:42 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id BFsGvPi7rmNr; Tue,  3 Nov 2020 10:55:42 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 79F678B7BD;
- Tue,  3 Nov 2020 10:55:41 +0100 (CET)
+ dmarc=pass (p=none dis=none) header.from=suse.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256
+ header.s=susede1 header.b=RqyOPtG4; dkim-atps=neutral
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CQQdg1W3lzDqMV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Nov 2020 21:15:18 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+ t=1604398517;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:  in-reply-to:in-reply-to; 
+ bh=gxl6UrgUka1LZn4LDJZ1QkMxr+7IymDRgsTPhk9KCpI=;
+ b=RqyOPtG4XInzVOUVFzRB9rYeH3W811AgkRMHbhzpOqmNQin+m+1J7SY1mwScla2INQGUKF
+ KXrtJLfXVAG8SZpxXVoNeD4CLQ11HZeV2Rmiv2aSpqH4d+8gvPjk5qH6dg11ZTzZy/z0xf
+ mxVE/AApY2HSVeHSab/nWf3gQspDn6c=
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 18532ABCC;
+ Tue,  3 Nov 2020 10:15:17 +0000 (UTC)
+Date: Tue, 3 Nov 2020 11:15:16 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Santosh Sivaraj <santosh@fossix.org>
 Subject: Re: [RESEND PATCH] kernel/watchdog: Fix watchdog_allowed_mask not
  used warning
-To: Santosh Sivaraj <santosh@fossix.org>,
- Linux Kernel <linux-kernel@vger.kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20201103093235.655665-1-santosh@fossix.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Message-ID: <214be993-96ec-82b0-b841-c80f7e7faefb@csgroup.eu>
-Date: Tue, 3 Nov 2020 10:55:11 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:68.0) Gecko/20100101
- Thunderbird/68.12.1
+Message-ID: <20201103101516.GM20201@alley>
 MIME-Version: 1.0
-In-Reply-To: <20201103093235.655665-1-santosh@fossix.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <214be993-96ec-82b0-b841-c80f7e7faefb@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,56 +68,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pmladek@suse.com, Thomas Gleixner <tglx@linutronix.de>,
- bala24@linux.ibm.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, bala24@linux.ibm.com,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 03/11/2020 Ã  10:32, Santosh Sivaraj a Ã©critÂ :
-> Define watchdog_allowed_mask only when SOFTLOCKUP_DETECTOR is enabled.
+On Tue 2020-11-03 10:55:11, Christophe Leroy wrote:
 > 
-> Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> 
+> Le 03/11/2020 à 10:32, Santosh Sivaraj a écrit :
+> > Define watchdog_allowed_mask only when SOFTLOCKUP_DETECTOR is enabled.
+> > 
+> > Signed-off-by: Santosh Sivaraj <santosh@fossix.org>
+> 
+> I think maybe you should add a Fixes: tag (Towards https://github.com/linuxppc/linux/commit/7feeb9cd ?)
+> 
+> And copy Thomas (tglx)
 
-I think maybe you should add a Fixes: tag (Towards https://github.com/linuxppc/linux/commit/7feeb9cd ?)
+And also Andrew that usually take patches in this area.
 
-And copy Thomas (tglx)
+Finally, you should add my Reviewed-by that I provided for the first
+resend. Sigh, I have missed that the important people were not in CC.
 
-Christophe
+Best Regards,
+Petr
 
-> ---
+> Christophe
 > 
-> Original patch is here:
-> https://lore.kernel.org/lkml/20190807014417.9418-1-santosh@fossix.org/
-> 
-> A similar patch was also sent by Balamuruhan and reviewed by Petr.
-> https://lkml.org/lkml/2020/8/20/1030
-> 
->   kernel/watchdog.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-> index 5abb5b22ad13..71109065bd8e 100644
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -44,8 +44,6 @@ int __read_mostly soft_watchdog_user_enabled = 1;
->   int __read_mostly watchdog_thresh = 10;
->   static int __read_mostly nmi_watchdog_available;
->   
-> -static struct cpumask watchdog_allowed_mask __read_mostly;
-> -
->   struct cpumask watchdog_cpumask __read_mostly;
->   unsigned long *watchdog_cpumask_bits = cpumask_bits(&watchdog_cpumask);
->   
-> @@ -162,6 +160,8 @@ static void lockup_detector_update_enable(void)
->   int __read_mostly sysctl_softlockup_all_cpu_backtrace;
->   #endif
->   
-> +static struct cpumask watchdog_allowed_mask __read_mostly;
-> +
->   /* Global variables, exported for sysctl */
->   unsigned int __read_mostly softlockup_panic =
->   			CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE;
-> 
+> > ---
+> > 
+> > Original patch is here:
+> > https://lore.kernel.org/lkml/20190807014417.9418-1-santosh@fossix.org/
+> > 
+> > A similar patch was also sent by Balamuruhan and reviewed by Petr.
+> > https://lkml.org/lkml/2020/8/20/1030
+> > 
+> >   kernel/watchdog.c | 4 ++--
+> >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+> > index 5abb5b22ad13..71109065bd8e 100644
+> > --- a/kernel/watchdog.c
+> > +++ b/kernel/watchdog.c
+> > @@ -44,8 +44,6 @@ int __read_mostly soft_watchdog_user_enabled = 1;
+> >   int __read_mostly watchdog_thresh = 10;
+> >   static int __read_mostly nmi_watchdog_available;
+> > -static struct cpumask watchdog_allowed_mask __read_mostly;
+> > -
+> >   struct cpumask watchdog_cpumask __read_mostly;
+> >   unsigned long *watchdog_cpumask_bits = cpumask_bits(&watchdog_cpumask);
+> > @@ -162,6 +160,8 @@ static void lockup_detector_update_enable(void)
+> >   int __read_mostly sysctl_softlockup_all_cpu_backtrace;
+> >   #endif
+> > +static struct cpumask watchdog_allowed_mask __read_mostly;
+> > +
+> >   /* Global variables, exported for sysctl */
+> >   unsigned int __read_mostly softlockup_panic =
+> >   			CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE;
+> > 
